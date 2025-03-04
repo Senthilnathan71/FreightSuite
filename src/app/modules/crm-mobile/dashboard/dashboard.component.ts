@@ -24,7 +24,7 @@ export class DashboardComponent implements OnInit {
     { name: 'Calendar', badge: null, link: '/crm/calendar', category: 'nav-calendar' },
     { name: 'Customer', badge: null, link: '/crm/customer', category: 'nav-customer' },
     { name: 'To Do', badge: null, link: '/crm/todo', category: 'nav-todo' },
-    { name: 'Rate Request', badge: null, link: 'crm/rate-request/view', category: 'nav-rate-request' },
+    { name: 'Rate Request', badge: null, link: '/crm/rate-request/view', category: 'nav-rate-request' },
     { name: 'Sailing Schedule', badge: null, link: '', category: 'nav-sailing-schedule' },
     { name: 'Quotation', badge: null, link: 'quotation', category: 'nav-quotation' },
     { name: 'Dues', badge: null, link: '', category: 'nav-dues' },
