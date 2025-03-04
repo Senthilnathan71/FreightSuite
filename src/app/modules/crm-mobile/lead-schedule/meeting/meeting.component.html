@@ -1,0 +1,200 @@
+<!-- 
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <section class="card-body">
+                <div class="card-title">Schedule Meeting</div>
+                <div class="row">
+                    <div class="col-sm-12 col-md-3">
+                        <div class="mb-2">
+                            <label for="" class="control-label col-form-label">Customer Name</label>
+                            <input type="text" name="" id="" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-3">
+                        <div class="mb-2">
+                            <label for="" class="control-label col-form-label">Meeting Date</label>
+                            <input type="date" name="" id="" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-3">
+                        <div class="mb-2">
+                            <label for="" class="control-label col-form-label">Meeting Type</label>
+                            <select name="" id="" class="form-select">
+                                <option value="">Call</option>
+                                <option value="">Visit</option>
+                                <option value="">Phone</option>
+                                <option value="">eMeeting</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-3">
+                        <div class="mb-2">
+                            <label for="" class="control-label col-form-label">Salesperson</label>
+                            <select name="" id="" class="form-select">
+                                <option value="">Person 1</option>
+                                <option value="">Person 2</option>
+                                <option value="">Person 3</option>
+                                <option value="">Person 4</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-4">
+                        <div class="mb-2">
+                            <label for="" class="control-label col-form-label">Contact</label>
+                            <input type="text" name="" id="" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-4">
+                        <div class="mb-2">
+                            <label for="" class="control-label col-form-label">Phone</label>
+                            <input type="text" name="" id="" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-4">
+                        <div class="mb-2">
+                            <label for="" class="control-label col-form-label">Status</label>
+                            <input type="text" name="" id="" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="d-flex align-items-center justify-content-start gap-2">
+            <button class="btn btn-sm btn-outline-secondary btn-rounded waves-effect waves-light btn-min-width">
+                <i-feather class="feather-sm me-1" name="arrow-left"></i-feather> Back
+            </button>
+            <button class="btn btn-sm btn-outline-secondary btn-rounded waves-effect waves-light btn-min-width ms-auto">
+                <i-feather class="feather-sm me-1" name="refresh-cw"></i-feather> Reset
+            </button>
+            <button class="btn btn-sm btn-info btn-rounded waves-effect waves-light btn-min-width">
+                <i-feather class="feather-sm me-1" name="upload-cloud"></i-feather> Save
+            </button>
+        </div>
+    </div>
+</div>
+ -->
+
+
+
+ <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <section class="card-body">
+          <div class="card-title">Schedule Meeting</div>
+          <form [formGroup]="meetingForm" (ngSubmit)="onSubmit()">
+            <div class="row">
+              <div class="col-sm-12 col-md-3">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Customer Name</label>
+                  <input type="text" formControlName="customerName" class="form-control" />
+                  <small *ngIf="f['customerName'].touched && f['customerName'].invalid" class="text-danger">
+                    Customer name is required.
+                  </small>
+                </div>
+              </div>
+  
+              <div class="col-sm-12 col-md-3">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Meeting Date</label>
+                  <input type="datetime-local" formControlName="meetingDate" class="form-control" [min]="minDate" />
+                  <small *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="text-danger">
+                    Meeting date is required.
+                  </small>
+                </div>
+              </div>
+  
+              <div class="col-sm-12 col-md-3">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Meeting Type</label>
+                  <select formControlName="meetingType" class="form-select">
+                    <option value="">Select</option>
+                    <option value="Call">Call</option>
+                    <option value="Visit">Visit</option>
+                    <option value="Phone">Phone</option>
+                    <option value="eMeeting">eMeeting</option>
+                  </select>
+                  <small *ngIf="f['meetingType'].touched && f['meetingType'].invalid" class="text-danger">
+                    Meeting type is required.
+                  </small>
+                </div>
+              </div>
+  
+              <div class="col-sm-12 col-md-3">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Salesperson</label>
+                  <select formControlName="leadAssignTo" class="form-select">
+                    <option value="">Select</option>
+                    <option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
+                      {{ person.userName }}
+                    </option>
+                  </select>
+                  <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="text-danger">
+                    Salesperson is required.
+                  </small>
+                </div>
+              </div>
+              
+  
+              <div class="col-sm-12 col-md-4">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Contact Person</label>
+                  <input type="text" formControlName="contactPerson" class="form-control" />
+                  <small *ngIf="f['contactPerson'].touched && f['contactPerson'].invalid" class="text-danger">
+                    Contact Person is required.
+                  </small>
+                </div>
+              </div>
+  
+              <div class="col-sm-12 col-md-4">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Phone</label>
+                  <input type="text" formControlName="phone" class="form-control" />
+                  <small *ngIf="f['phone'].touched && f['phone'].invalid" class="text-danger">
+                    Valid 10-digit phone number is required.
+                  </small>
+                </div>
+              </div>
+  
+              <div class="col-sm-12 col-md-4">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Status</label>
+                  <input type="text" formControlName="status" class="form-control" [disabled]="true"/>
+                  <small *ngIf="f['status'].touched && f['status'].invalid" class="text-danger">
+                    Status is required.
+                  </small>
+                </div>
+              </div>
+
+
+
+              <div class="col-sm-12 col-md-4">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Customer Profile</label>
+                  <textarea type="text" formControlName="customerProfile" class="form-control"></textarea>
+                  <small *ngIf="f['customerProfile'].touched && f['customerProfile'].invalid" class="text-danger">
+                    Customer profile is required.
+                  </small>
+                </div>
+              </div>
+            </div>
+  
+            <div class="d-flex align-items-center justify-content-start gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary btn-rounded waves-effect waves-light btn-min-width">
+                <i-feather class="feather-sm me-1" name="arrow-left"></i-feather> Back
+              </button>
+              <button type="button" (click)="resetForm()" class="btn btn-sm btn-outline-secondary btn-rounded waves-effect waves-light btn-min-width ms-auto">
+                <i-feather class="feather-sm me-1" name="refresh-cw"></i-feather> Reset
+              </button>
+              <button type="submit" class="btn btn-sm btn-info btn-rounded waves-effect waves-light btn-min-width">
+                <i-feather class="feather-sm me-1" name="upload-cloud"></i-feather> Save
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+  

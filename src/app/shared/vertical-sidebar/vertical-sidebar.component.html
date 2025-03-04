@@ -1,0 +1,115 @@
+<nav class="sidebar-nav" [ngClass]="{ 'sidebar-nav-mobile pt-3': isMobile, 'sidebar-nav-desktop': !isMobile}">
+    <ul id="sidebarnav">
+        <!-- User Profile-->
+        <!-- <li> -->
+            <!-- <div class="user-profile d-flex no-block mt-3">
+                <div class="user-pic">
+                    <img src="assets/images/users/user4.jpg" alt="users" class="rounded-circle" width="40" />
+                </div>
+                <div class="user-content hide-menu ms-2 overflow-inherit" ngbDropdown placement="bottom-right">
+                    <a ngbDropdownToggle href="javascript:void(0)" id="Userdd" role="button">
+                        <h5 class="mb-0 user-name font-medium">Steave Jobs
+                            <i class="fa fa-angle-down"></i>
+                        </h5>
+                        <span class="op-5 user-email">steve&#64;gmail.com</span>
+                    </a>
+                    <div aria-labelledby="Userdd" class="shadow-sm" ngbDropdownMenu>
+                        <a ngbDropdownItem href="javascript:void(0)">
+                            <i class="ti-user me-2 ms-1"></i> My Profile</a>
+                        <a ngbDropdownItem href="javascript:void(0)">
+                            <i class="ti-wallet me-2 ms-1"></i> My Balance</a>
+                        <a ngbDropdownItem href="javascript:void(0)">
+                            <i class="ti-email me-2 ms-1"></i> Inbox</a>
+                        <div class="dropdown-divider"></div>
+                        <a ngbDropdownItem href="javascript:void(0)">
+                            <i class="ti-settings me-2 ms-1"></i> Account Setting</a>
+                        <div class="dropdown-divider"></div>
+                        <a ngbDropdownItem href="javascript:void(0)">
+                            <i class="fa fa-power-off me-2 ms-1"></i> Logout</a>
+                    </div>
+                </div>
+            </div> -->
+        <!-- </li> -->
+        <!-- <li class="p-3 mt-2">
+            <a href="javascript:void(0)"
+                class="btn d-block w-100 create-btn text-white no-block d-flex align-items-center">
+                <i class="fa fa-plus-square"></i>
+                <span class="hide-menu ms-1">Create New</span>
+            </a>
+        </li> -->
+        <!-- First level menu -->
+        @for(sidebarnavItem of sidebarnavItems; track sidebarnavItem) {
+        <li class="sidebar-item" [class.active]="showMenu === sidebarnavItem.title"
+            (click)="sidebarnavItem.submenu.length != 0 ? '' : handleNotify()"
+            [routerLinkActive]="sidebarnavItem.submenu.length != 0 ? '' : 'active'">
+            @if(sidebarnavItem.extralink === true) {
+            <div class="nav-small-cap"><i [ngClass]="[sidebarnavItem.icon]"></i><span
+                    class="hide-menu">{{sidebarnavItem.title |
+                    translate}}</span></div>
+            }
+
+            @if(!sidebarnavItem.extralink) {
+            <a class="sidebar-link waves-effect waves-dark"
+                [routerLink]="sidebarnavItem.class === '' ? [sidebarnavItem.path] : null"
+                [ngClass]="[sidebarnavItem.class]" (click)="addExpandClass(sidebarnavItem.title)"
+                [routerLinkActive]="sidebarnavItem.submenu.length != 0 ? '' : 'active'">
+                <i-feather [name]="sidebarnavItem.icon" [ngClass]="[sidebarnavItem.icon]"></i-feather>
+                <span class="hide-menu">{{sidebarnavItem.title |translate}}
+
+                    @if(sidebarnavItem.label != '') {
+                    <span [ngClass]="[sidebarnavItem.labelClass]">{{sidebarnavItem.label | translate}}</span>
+                    }
+
+                </span>
+            </a>
+            }
+
+            <!-- Second level menu -->
+            @if(sidebarnavItem.submenu.length > 0) {
+            <ul aria-expanded="false" class="collapse first-level"
+                [ngClass]="{'in' : showMenu === sidebarnavItem.title }">
+                @for(sidebarnavSubItem of sidebarnavItem.submenu; track sidebarnavSubItem) {
+                <li class="sidebar-item" (click)="sidebarnavSubItem.submenu.length != 0 ? '' : handleNotify()"
+                    [class.active]="showSubMenu === sidebarnavSubItem.title"
+                    [routerLinkActive]="sidebarnavSubItem.submenu.length > 0 ? '' : 'active'">
+                    @if(!sidebarnavSubItem.extralink) {
+                    <a class="sidebar-link"
+                        [routerLink]="sidebarnavSubItem.submenu.length > 0 ? null : [sidebarnavSubItem.path]"
+                        [routerLinkActive]="sidebarnavSubItem.submenu.length > 0 ? '' : 'router-link-active'"
+                        [ngClass]="[sidebarnavSubItem.class]" (click)="addActiveClass(sidebarnavSubItem.title)">
+                        <i [ngClass]="[sidebarnavSubItem.icon]"></i>
+                        <span class="hide-menu">{{sidebarnavSubItem.title| translate}}</span>
+                    </a>
+                    }
+
+                    <!-- Third level menu -->
+                    @if(sidebarnavSubItem.submenu.length > 0) {
+                    <ul aria-expanded="false" class="collapse Second-level"
+                        [ngClass]="{'in' : showSubMenu === sidebarnavSubItem.title }">
+                        @for(sidebarnavSubsubItem of sidebarnavSubItem.submenu; track sidebarnavSubsubItem) {
+                        <li class="sidebar-item" routerLinkActive="active" [ngClass]="[sidebarnavSubsubItem.class]">
+                            @if(!sidebarnavSubsubItem.extralink) {
+                            <a class="sidebar-link" [routerLink]="[sidebarnavSubsubItem.path]"
+                                [routerLinkActive]="sidebarnavSubsubItem.submenu.length > 0 ? '' : 'router-link-active'">
+                                <i [ngClass]="[sidebarnavSubsubItem.icon]"></i>
+                                <span class="hide-menu">{{sidebarnavSubsubItem.title| translate}}</span>
+                            </a>
+                            }
+
+                        </li>
+                        }
+
+                    </ul>
+                    }
+
+                </li>
+                }
+
+            </ul>
+            }
+
+        </li>
+        }
+
+    </ul>
+</nav>

@@ -1,0 +1,139 @@
+<div class="round text-white d-inline-block fw-normal text-center rounded-circle align-self-center round-info mt-2 mb-2 position-fixed cursor-pointer border"
+    style="right: 1rem; bottom:1rem; z-index: 9; --bs-border-color:rgba(var(--bs-white-rgb), 0.5)"
+    (click)="open(content)">
+    <i-feather class="feather-sm" name="plus"></i-feather>
+</div>
+
+
+<ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs tab-custom">
+    <li [ngbNavItem]="1">
+        <button ngbNavLink class="mb-0">All</button>
+        <ng-template ngbNavContent>
+            <ng-container *ngTemplateOutlet="todoList"></ng-container>
+        </ng-template>
+    </li>
+    <li [ngbNavItem]="2">
+        <button ngbNavLink class="mb-0">Completed</button>
+        <ng-template ngbNavContent>
+            <ng-container *ngTemplateOutlet="todoListCompleted"></ng-container>
+        </ng-template>
+    </li>
+</ul>
+
+<div [ngbNavOutlet]="nav" class="mt-2"></div>
+
+<!-- <pre>Active: {{ active }}</pre> -->
+
+@for (todo of toDoList; track $index) {
+    <ng-template #statusIndicator>
+        <i class="fas fa-circle dofi-font-11 me-1" [ngClass]="{ 
+            'text-success': todo.status === 'To Meet', 
+            'text-warning': todo.status === 'Not Meet', 
+            'text-danger': todo.status === 'Never Meet' 
+        }" ngbTooltip="{{ todo.status }}"></i>
+    </ng-template>
+}
+
+
+<ng-template #todoList>
+    <div class="list-group bg-white">
+        <div *ngFor="let todo of toDoList"
+            class="list-group-item list-group-item-action cursor-pointer d-flex" 
+                [ngClass]="{ 
+                    'bg-body-secondary': todo.isChecked, 
+                    'align-items-start': isMobile, 
+                    'align-items-center': !isMobile }">
+            <div class="form-check">
+                <input type="checkbox" [id]="'toDo' + todo.id" class="form-check-input" [(ngModel)]="todo.isChecked">
+                <label [for]="'toDo' + todo.id" class="form-check-label"
+                    [class.text-decoration-line-through]="todo.isChecked">
+                    <!-- Status Indicator -->
+                    @if (!isMobile) {
+                        <!-- <ng-container *ngTemplateOutlet="statusIndicator"></ng-container> -->
+                        <i class="fas fa-circle dofi-font-11 me-1" [ngClass]="{ 
+                            'text-success': todo.status === 'To Meet', 
+                            'text-warning': todo.status === 'Not Meet', 
+                            'text-danger': todo.status === 'Never Meet' 
+                        }" ngbTooltip="{{ todo.status }}"></i>
+                    }
+                    {{ todo.text }}
+                </label>
+            </div>
+            <div ngbDropdown class="d-flex align-items-center ms-auto ps-2">
+                
+                @if (isMobile) {
+                    <!-- <ng-container *ngTemplateOutlet="statusIndicator"></ng-container> -->
+                    <i class="fas fa-circle dofi-font-11 me-1" [ngClass]="{ 
+                        'text-success': todo.status === 'To Meet', 
+                        'text-warning': todo.status === 'Not Meet', 
+                        'text-danger': todo.status === 'Never Meet' 
+                    }" ngbTooltip="{{ todo.status }}"></i>
+                }
+
+
+                <button type="button" class="btn btn-sm has-arrow px-0" id="dropdownBasic{{todo.id}}" ngbDropdownToggle>
+                    <i-feather class="feather-sm" name="more-vertical"></i-feather>
+                </button>
+
+                <div ngbDropdownMenu [attr.aria-labelledby]="'dropdownBasic' + todo.id" class="shadow" class="shadow">
+                    <button ngbDropdownItem class="text-dark"><i
+                            class="fas fa-circle me-1 text-success dofi-font-10"></i> To Meet</button>
+                    <button ngbDropdownItem class="text-dark"><i
+                            class="fas fa-circle me-1 text-warning dofi-font-10"></i> Not Meet</button>
+                    <button ngbDropdownItem class="text-dark"><i
+                            class="fas fa-circle me-1 text-danger dofi-font-10"></i> Never Meet</button>
+                    <button ngbDropdownItem class="text-dark"><i
+                            class="fas fa-circle me-1 text-secondary dofi-font-10"></i> In Active</button>
+                    <hr class="dropdown-divider">
+                    <button ngbDropdownItem class="text-dark" (click)="toggleActive(todo)">Move to complete</button>
+                </div>
+            </div>
+
+            
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #todoListCompleted>
+    <div class="list-group bg-white">
+        <div class="list-group-item list-group-item-action cursor-pointer d-flex align-items-start">
+            <div class="form-check">
+                <input type="checkbox" id="toDoc1" class="form-check-input" checked>
+                <label for="toDoc1" class="form-check-label text-decoration-line-through">Follow up on outstanding
+                    payment from "BlueWave Shipping" client</label>
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+
+
+
+<ng-template #content let-modal>
+	<div class="modal-header">
+		<h4 class="modal-title" id="modal-basic-title">Create Todo</h4>
+		<button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+	</div>
+	<div class="modal-body">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="mb-2">
+                    <label for="todoText" class="control-label col-form-label">Text</label>
+                    <textarea name="" id="todoText" class="form-control"></textarea>
+                </div>
+                <div class="mb-2">
+                    <label for="todoStatus" class="control-label col-form-label">Status</label>
+                    <select class="form-select" id="todoStatus">
+                        <option>To Meet</option>
+                        <option>Not Meet</option>
+                        <option>Never Meet</option>
+                        <option>In Active</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-info">Save</button>
+	</div>
+</ng-template>

@@ -1,0 +1,201 @@
+<form [formGroup]="leadForm">
+    <div class="row">
+        <div class="col-12">
+            <!-- <div ngbAccordion #accordion="ngbAccordion">
+            <div *ngFor="let lead of leads" ngbAccordionItem="{{ lead.id }}" [collapsed]="true">
+                <div ngbAccordionHeader class="accordion-button custom-header justify-content-between">
+                    <button ngbAccordionToggle
+                        class="p-0 btn btn-link text-decoration-none container-fluid text-start ps-0 fw-bold">
+                        {{ lead.name }}
+                    </button>
+                </div>
+                <div ngbAccordionCollapse>
+                    <div ngbAccordionBody class="bg-white">
+                        <ng-container *ngTemplateOutlet="leadform"></ng-container>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+            <ng-container *ngTemplateOutlet="leadform"></ng-container>
+        </div>
+
+        <div class="col-12">
+            <div class="">
+                <!-- <button (click)="createNewLead()" class="btn btn-primary w-100">
+                <i class="me-2 mdi mdi-plus"></i> Create New Lead
+            </button> -->
+                <div class="d-flex align-items-center justify-content-start gap-2">
+
+                    <button class="btn btn-sm btn-outline-secondary btn-rounded waves-effect waves-light btn-min-width"
+                        (click)="goBack()">
+                        <i-feather class="feather-sm me-1" name="arrow-left"></i-feather> Back
+                    </button>
+                    <button
+                        class="btn btn-sm btn-outline-secondary btn-rounded waves-effect waves-light btn-min-width ms-auto"
+                        (click)="reset()">
+                        <i-feather class="feather-sm me-1" name="refresh-cw"></i-feather> Reset
+                    </button>
+                    <button class="btn btn-sm btn-info btn-rounded waves-effect waves-light btn-min-width"
+                        (click)="onSubmit()" [disabled]="leadForm.invalid || btnDisable">
+                        <i-feather class="feather-sm me-1" name="upload-cloud"></i-feather> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <ng-template #leadform>
+
+        <div class="card">
+            <section class="card-body">
+                <h4 class="card-title">Lead Details</h4>
+
+                <div class="row">
+                    <div class="col-sm-12 col-md-4">
+                        <div class="mb-2">
+                            <label for="preCustomerName" class="control-label col-form-label">Customer Name</label>
+                            <input type="text" id="preCustomerName" formControlName="preCustomerName" placeholder=""
+                                class="form-control">
+                            <div
+                                *ngIf="leadForm.controls['preCustomerName'].invalid && leadForm.controls['preCustomerName'].touched">
+                                <small
+                                    *ngIf="leadForm.controls['preCustomerName'].errors?.['required']">Required.</small>
+                                <small *ngIf="leadForm.controls['preCustomerName'].errors?.['minlength']">Must be at
+                                    least 5 characters.</small>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-sm-12 col-md-4">
+                        <div class="mb-2">
+                            <label for="leadReferr edBy" class="control-label col-form-label">Lead Form</label>
+                            <select formControlName="leadReferredBy" class="form-select">
+                                <option value="" disabled selected>Select Customer Source</option>
+                                <option *ngFor="let option of customerByOptions" [value]="option">{{ option }}</option>
+                            </select>
+                            <div
+                                *ngIf="leadForm.controls['leadReferredBy'].invalid && leadForm.controls['leadReferredBy'].touched">
+                                <small>Required.</small>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-sm-12 col-md-4">
+                        <div class="mb-2">
+                            <label for="leadFrom" class="control-label col-form-label">Customer Reference</label>
+                            <input type="text" id="leadFrom" formControlName="leadFrom" placeholder=""
+                                class="form-control">
+                            <div *ngIf="leadForm.controls['leadFrom'].invalid && leadForm.controls['leadFrom'].touched">
+                                <small>Required.</small>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    @if (this.PreCustomerMasterSid) {
+                    <div class="col-sm-12 col-md-4">
+                        <div class="mb-2">
+                            <label class="control-label col-form-label">Status</label>
+                            <select formControlName="status" class="form-select">
+                                <option value="">Status</option>
+                                <option *ngFor="let option of statusList" [value]="option">{{ option }}</option>
+                            </select>
+                            <small *ngIf="leadForm.controls['status'].invalid && leadForm.controls['status'].touched">
+                                Status is required.
+                            </small>
+                        </div>
+                    </div>
+
+                    }
+                </div>
+            </section>
+
+            <section class="card-body border-top">
+                <h4 class="card-title">Contact Information</h4>
+                <div class="row">
+                    <div class="col-sm-12 col-md-6">
+                        <div class="mb-2">
+                            <label for="preCustomerAddress1" class="control-label col-form-label">Address 1</label>
+                            <textarea id="preCustomerAddress1" aria-label="" formControlName="preCustomerAddress1"
+                                placeholder="" class="form-control"></textarea>
+                            <div
+                                *ngIf="leadForm.controls['preCustomerAddress1'].invalid && leadForm.controls['preCustomerAddress1'].touched">
+                                <small
+                                    *ngIf="leadForm.controls['preCustomerAddress1'].errors?.['required']">Required.</small>
+                                <small *ngIf="leadForm.controls['preCustomerAddress1'].errors?.['minlength']">Must be at
+                                    least 10 characters.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12 col-md-6">
+                        <div class="mb-2">
+                            <label for="preCustomerAddress2" class="control-label col-form-label">Address 2</label>
+                            <textarea id="preCustomerAddress2" formControlName="preCustomerAddress2" aria-label=""
+                                placeholder="" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12 col-md-3">
+                        <div class="mb-2">
+                            <label for="CityMasterSid" class="control-label col-form-label">City</label>
+                            <select formControlName="CityMasterSid" class="form-select" (change)="onCityChange($event)">
+                                <option value="" disabled selected>Select City</option>
+                                <option *ngFor="let city of citys" [value]="city.CityMasterSid">{{city['cityName']}}
+                                </option>
+                            </select>
+                            <div
+                                *ngIf="leadForm.controls['CityMasterSid'].invalid && leadForm.controls['CityMasterSid'].touched">
+                                <small>Required.</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-3">
+                        <div class="mb-2">
+                            <label for="contactPerson" class="control-label col-form-label">Contact Person</label>
+                            <input type="text" formControlName="contactPerson" id="contactPerson" placeholder=""
+                                class="form-control">
+                            <div
+                                *ngIf="leadForm.controls['contactPerson'].invalid && leadForm.controls['contactPerson'].touched">
+                                <small *ngIf="leadForm.controls['contactPerson'].errors?.['required']">Required.</small>
+                                <small *ngIf="leadForm.controls['contactPerson'].errors?.['minlength']">Must be at least
+                                    5 characters.</small>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-3">
+                        <div class="mb-2">
+                            <label for="email" class="control-label col-form-label">Email</label>
+                            <input type="text" formControlName="email" id="email" placeholder="" class="form-control">
+                            <div *ngIf="leadForm.controls['email'].invalid && leadForm.controls['email'].touched">
+                                <small *ngIf="leadForm.controls['email'].errors?.['required']">Required.</small>
+                                <small *ngIf="leadForm.controls['email'].errors?.['email']">Invalid email
+                                    format.</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-3">
+                        <div class="mb-2">
+                            <label for="phone" class="control-label col-form-label">Phone</label>
+                            <input type="text" formControlName="phone" id="phone" placeholder="" class="form-control">
+                            <div *ngIf="leadForm.controls['phone'].invalid && leadForm.controls['phone'].touched">
+                                <small *ngIf="leadForm.controls['phone'].errors?.['required']">Required.</small>
+                                <small *ngIf="leadForm.controls['phone'].errors?.['pattern']">Invalid phone
+                                    number.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+        </div>
+    </ng-template>
+</form>

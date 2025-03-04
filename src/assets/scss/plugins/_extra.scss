@@ -1,0 +1,119 @@
+// Icons Page
+.icon-hover {
+  cursor: pointer;
+  border-radius: $border-radius;
+  i {
+    font-size: 20px;
+    margin-right: 8px;
+  }
+  &:hover {
+    background-color: $gray-100;
+    color: $info;
+  }
+}
+
+// this is for custom pills
+.custom-pills {
+  .nav-pills {
+    .nav-link {
+      border-radius: 0;
+      opacity: 0.7;
+
+      &.active {
+        color: $themecolor;
+        opacity: 1;
+        background-color: transparent;
+        border-bottom: 2px solid $themecolor;
+      }
+    }
+  }
+}
+
+// scrollbar
+.scrollable {
+  position: relative;
+}
+
+// 
+// Pricing Page
+// 
+.price-label {
+  position: absolute;
+  top: -10px;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  width: 100px;
+  padding: 5px 10px;
+}
+
+.price-sign {
+  position: absolute;
+  font-size: 15px;
+  top: 5px;
+  margin-left: -10px;
+}
+
+.cal-month-view .cal-events {
+  margin: 0;
+  padding: 3px;
+}
+
+.weather-img {
+  min-height: 155px;
+  border-radius: 5px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+// 
+// Feather Icon
+// 
+.feather-sm {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.feather-lg {
+  width: 28px !important;
+  height: 28px !important;
+}
+
+.feather-sm,
+.feather-lg {
+  position: relative;
+  // border:1px solid red;
+  svg {
+    position: relative;
+    top: -3px;
+    // border:1px solid green;
+    .appmode-mobile & {
+      top:-2px;
+    }
+  }
+}
+
+
+.fill-white .feather {
+  fill: rgba(255, 255, 255, 0.1);
+}
+
+// calendar
+.flatpickr-day {
+  color: $body-color !important;
+}
+
+// image overlay
+.image-overlay {
+  position: relative;
+  &:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(0,0,0,0.5);
+  }
+}

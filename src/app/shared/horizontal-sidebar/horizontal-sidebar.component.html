@@ -1,0 +1,70 @@
+<nav class="sidebar-nav">
+    <ul id="sidebarnav">
+        <!-- First level menu -->
+        @for(sidebarnavItem of sidebarnavItems; track sidebarnavItem){
+        <li class="sidebar-item" [ngClass]="[sidebarnavItem.ddclass]" [class.active]="showMenu === sidebarnavItem.title"
+            [routerLinkActive]="sidebarnavItem.submenu.length != 0 ? '' : 'active'">
+            @if(sidebarnavItem.extralink === true) {
+            <div class="nav-small-cap">{{sidebarnavItem.title | translate}}</div>
+            }
+
+            @if(!sidebarnavItem.extralink) {
+            <a class="sidebar-link waves-effect waves-dark"
+                [routerLink]="sidebarnavItem.class === '' ? [sidebarnavItem.path] : null"
+                [ngClass]="[sidebarnavItem.class]" (mouseover)="addExpandClass(sidebarnavItem.title)"
+                [routerLinkActive]="sidebarnavItem.submenu.length != 0 ? '' : 'active'">
+                <!-- <i [ngClass]="[sidebarnavItem.icon]"></i> -->
+                <i-feather [name]="sidebarnavItem.icon" [ngClass]="[sidebarnavItem.icon]"></i-feather>
+                <span class="hide-menu">{{sidebarnavItem.title | translate}}</span>
+            </a>
+            }
+
+            <!-- Second level menu -->
+            @if(sidebarnavItem.submenu.length > 0) {
+            <ul aria-expanded="false" class="collapse first-level"
+                [ngClass]="{'in' : showMenu === sidebarnavItem.title }">
+                @for(sidebarnavSubItem of sidebarnavItem.submenu; track sidebarnavSubItem) {
+                <li class="sidebar-item" [class.active]="showSubMenu === sidebarnavSubItem.title"
+                    [routerLinkActive]="sidebarnavSubItem.submenu.length > 0 ? '' : 'active'">
+                    @if(!sidebarnavSubItem.extralink) {
+                    <a class="sidebar-link"
+                        [routerLink]="sidebarnavSubItem.submenu.length > 0 ? null : [sidebarnavSubItem.path]"
+                        [routerLinkActive]="sidebarnavSubItem.submenu.length != 0 ? '' : 'router-link-active'"
+                        [ngClass]="[sidebarnavSubItem.class]" (mouseover)="addActiveClass(sidebarnavSubItem.title)">
+                        <i [ngClass]="[sidebarnavSubItem.icon]"></i>
+                        <span class="hide-menu">{{sidebarnavSubItem.title | translate}}</span>
+                    </a>
+                    }
+
+                    <!-- Third level menu -->
+                    @if(sidebarnavSubItem.submenu.length > 0) {
+                    <ul aria-expanded="false" class="collapse second-level"
+                        [ngClass]="{'in' : showSubMenu === sidebarnavSubItem.title }">
+                        @for(sidebarnavSubsubItem of sidebarnavSubItem.submenu; track sidebarnavSubsubItem) {
+                        <li class="sidebar-item" [ngClass]="[sidebarnavSubsubItem.class]">
+                            @if(!sidebarnavSubsubItem.extralink) {
+                            <a class="sidebar-link"
+                                [routerLinkActive]="sidebarnavSubsubItem.submenu.length != 0 ? '' : ''"
+                                [routerLink]="sidebarnavSubsubItem.submenu.length > 0 ? null : [sidebarnavSubsubItem.path]">
+                                <i [ngClass]="[sidebarnavSubsubItem.icon]"></i>
+                                <span class="hide-menu">{{sidebarnavSubsubItem.title | translate}}</span>
+                            </a>
+                            }
+
+                        </li>
+                        }
+
+                    </ul>
+                    }
+
+                </li>
+                }
+
+            </ul>
+            }
+
+        </li>
+        }
+
+    </ul>
+</nav>

@@ -1,0 +1,29 @@
+<!-- ============================================================== -->
+<!-- Bread crumb and right sidebar toggle -->
+<!-- ============================================================== -->
+<div class="page-breadcrumb">
+  <div class="row">
+    <div class="col-12 align-self-center">
+      <h4 class="page-title">{{ pageInfo?.['title'] }}</h4>
+      <div>
+        <nav style="--bs-breadcrumb-divider: '>'" class="d-flex align-items-center" aria-label="breadcrumb">
+          @for (url of pageInfo?.['urls']; track url.url;let index = $index,last
+          = $last ) {
+          @if(!last) {
+          <li class="breadcrumb-item" [routerLink]="url.url">
+            <a [routerLink]="url.url">{{ url.title }}</a>
+          </li>
+          }
+          @else {
+          <li class="breadcrumb-item active">{{ url.title }}</li>
+          }
+          }
+        </nav>
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ============================================================== -->
+<!-- End Bread crumb and right sidebar toggle -->
+<!-- ============================================================== -->

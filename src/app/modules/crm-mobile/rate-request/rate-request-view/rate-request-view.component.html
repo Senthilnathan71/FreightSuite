@@ -1,0 +1,131 @@
+<div class="row">
+    <!-- #region Search Panel -->
+    <div class="col-12">
+        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
+            <form class="d-flex align-items-center gap-2">
+                <div class="form-outline col">
+                    <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
+                        (input)="searchEnquiry()" autocomplete="off" placeholder="Search">
+                    <i class="fas fa-search ms-3"></i>
+                </div>
+                <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
+                    <i class="mdi mdi-plus" [class.me-1]="!isMobile"></i>
+                    @if (!isMobile) {
+                    Create New Enquiry
+                    }
+                </button>
+            </form>
+        </div>
+    </div>
+    <!-- #endregion -->
+    <div class="col-12">
+        <div *ngIf="isMobile; else desktopTemplate">
+            <ng-container *ngTemplateOutlet="mobileTemplate"></ng-container>
+        </div>
+    </div>
+</div>
+
+
+<!-- MOBILE CODE -->
+<ng-template #mobileTemplate>
+    <div class="mobile-view">
+        <div class="card" *ngFor="let enq of enquiryItems">
+            <div class="card-body">
+                <div class="d-flex flex-column gap-2 position-relative">
+                    <div class="d-flex align-items-center fw-bold dofi-font-16 text-uppercase">
+                        <div class="text-truncate">
+                            {{ enq.EnquiryNumber }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <div class="ms-2">{{ enq.CustomerName }}</div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="ms-2">{{ enq.ShipmentType }}</div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="ms-2">{{ enq.ShipmentExpectedDate }}</div>
+                        <div class="ms-auto d-flex align-items-center gap-1">
+                            <a class="text-info" (click)="editEnquiry(enq.EnquiryHeaderSid)">
+                                <i-feather name="edit" class="feather-sm"></i-feather>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+<!-- DESKTOP CODE -->
+<ng-template #desktopTemplate>
+    <div class="desktop-view">
+        <div class="row">
+
+            <div class="col-12">
+                <!-- #region filter and add new -->
+
+                <!-- #endregion -->
+
+                <div class="card">
+                    <!-- #region lead view -->
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle no-wrap table-bordered">
+                            <thead>
+                                <tr class="gredient-info-bg">
+                                    <th class="bg-transparent text-light" scope="col">Enquiry Number</th>
+                                    <th class="bg-transparent text-light" scope="col">Customer Name</th>
+                                    <th class="bg-transparent text-light" scope="col">Shipment Type</th>
+                                    <th class="bg-transparent text-light" scope="col">Shipping Date</th>
+                                    <th class="bg-transparent text-light" scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let enq of enquiryItems">
+                                    <td data-label="Company">
+                                        <div class="text-truncate">
+                                            {{ enq.EnquiryNumber }}
+                                        </div>
+                                    </td>
+                                    <td data-label="Company">
+                                        <div class="text-truncate">
+                                            {{ enq.CustomerName }}
+                                        </div>
+                                    </td>
+                                    <td data-label="Company">
+                                        <div class="text-truncate">
+                                            {{ enq.ShipmentType }}
+                                        </div>
+                                    </td>
+                                    <td data-label="Phone">
+                                        <div class="text-truncate">
+                                            {{ enq.ShipmentExpectedDate }}
+                                        </div>
+                                    </td>
+
+                                    <td data-label="Action">
+                                        <section class="action-items">
+                                            <a class="text-info mx-2" (click)="editEnquiry(enq.EnquiryHeaderSid)">
+                                                <i-feather name="edit" class="feather-sm"></i-feather>
+                                            </a>
+                                        </section>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- #endregion -->
+
+                    <div class="card-body">
+                        <!-- #region Pagination -->
+                        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                            [pageSize]="pageSize" [(page)]="page"></ngb-pagination>
+                        <!-- #endregion -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</ng-template>

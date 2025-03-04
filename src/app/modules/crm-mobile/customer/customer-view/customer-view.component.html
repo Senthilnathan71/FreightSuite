@@ -1,0 +1,70 @@
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <!-- #region lead view -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered mobile-table">
+                    <thead>
+                        <tr class="gredient-info-bg">
+                            <th class="bg-transparent text-light" scope="col">Lead Name</th>
+                            <th class="bg-transparent text-light" scope="col">Phone Number</th>
+                            <th class="bg-transparent text-light" scope="col">Type</th>
+                            <th class="bg-transparent text-light" scope="col">Schedule</th>
+                            <th class="bg-transparent text-light" scope="col">Notes</th>
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let customer of customerItemsView">
+                            <td data-label="Lead Name">
+                                <div class="text-truncate">
+                                    {{ customer.Name }}
+                                </div>
+                            </td>
+                            <td data-label="Phone">
+                                <div class="text-truncate">
+                                    <i-feather name="phone" class="feather-sm"></i-feather> {{ customer.phone }}
+                                </div>
+                            </td>
+                            <td data-label="Type">{{ customer.type }}</td>
+                            <td data-label="Schedule">
+                                <!-- <span class="badge font-medium" [ngClass]="getScheduleClass(customer.schedule)">{{
+                                    customer.schedule }}</span> -->
+                                    <div class="">
+                                        <i-feather name="calendar" class="feather-sm"></i-feather> {{customer.schedule}}
+                                    </div>
+                            </td>
+                            <td data-label="Notes">
+                                    <div class="text-truncate">
+                                        <i-feather name="file-text" class="feather-sm"></i-feather> {{customer.notes}}
+                                    </div>
+                            </td>
+                            <td data-label="Action">
+                                <section class="action-items">
+                                    <a class="text-info mx-2">
+                                        <i-feather name="edit" class="feather-sm"></i-feather>
+                                    </a>
+
+                                    <a href="javascript:void(0)" class="text-danger mx-2 ps-3 border-start">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </a>
+                                </section>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- #endregion -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <div *ngIf="isMobile; else desktopTemplate">
+    <h2>You are using a mobile device 📱</h2>
+  </div>
+  
+<ng-template #desktopTemplate>
+<h2>You are using a desktop/laptop 💻</h2>
+</ng-template> -->

@@ -1,0 +1,94 @@
+$base-dimension: 1px;
+// Prefix class names for organization and avoiding conflicts (default: "dofi-").
+$base-prefix: dofi-;
+
+$dimension: $base-dimension;
+
+$prefixVariable: $base-prefix;
+
+// Control the number of times loop here
+$number-of-counts: 1000;
+
+$prefixVariable: dofi- !default;
+
+// Generate a class with the specified property, abbreviation, key and value.
+@mixin dimension($property, $property-abbreviation, $key, $value) {
+
+  .#{$prefixVariable}#{$property-abbreviation}-#{$key},
+  .#{$prefixVariable}#{$property-abbreviation}-#{$key}px {
+    #{$property}: #{$value}; // use !important to enforece values, potentially
+  }
+}
+
+// Interface to create classess for a range of dimentions (controlled by $number-of-counts).
+@for $i from 1 through $number-of-counts {
+  $value: $dimension * $i;
+
+  // height | min-height | max-height
+  @include dimension(height, h, $i, $value);
+  @include dimension(min-height, min-h, $i, $value);
+  @include dimension(max-height, max-h, $i, $value);
+
+  // width | min-width | max-width
+  @include dimension(width, w, $i, $value);
+  @include dimension(min-width, min-w, $i, $value);
+  @include dimension(max-width, max-w, $i, $value);
+
+  // top | start(left) | end(right) | bottom
+  @include dimension(top, top, $i, $value);
+  @include dimension(right, end, $i, $value);
+  @include dimension(bottom, bottom, $i, $value);
+  @include dimension(left, start, $i, $value);
+
+  // Padding | top | end | bottom | start
+  @include dimension(padding-top, pt, $i, $value);
+  @include dimension(padding-right, pe, $i, $value);
+  @include dimension(padding-bottom, pb, $i, $value);
+  @include dimension(padding-left, ps, $i, $value);
+
+  // margin | top | end | bottom | start
+  @include dimension(margin-top, mt, $i, $value);
+  @include dimension(margin-right, me, $i, $value);
+  @include dimension(margin-bottom, mb, $i, $value);
+  @include dimension(margin-left, ms, $i, $value);
+
+  // font size
+  @include dimension(font-size, font, $i, $value);
+}
+
+// @for $i from 0 through 120 {
+//     .font-#{$i} {
+//         font-size: #{$i}px;
+//     }
+// }
+
+// ribbon
+
+.ribbon-e {
+  --f: 10px;
+  /* control the folded part*/
+  --r: 15px;
+  /* control the ribbon shape */
+  --t: 10px;
+  /* the top offset */
+
+  position: absolute;
+  inset: var(--t) calc(-1*var(--f)) auto auto;
+  padding: 0 10px var(--f) calc(10px + var(--r));
+  clip-path:
+    polygon(0 0, 100% 0, 100% calc(100% - var(--f)), calc(100% - var(--f)) 100%,
+      calc(100% - var(--f)) calc(100% - var(--f)), 0 calc(100% - var(--f)),
+      var(--r) calc(50% - var(--f)/2));
+  background: #BD1550;
+  box-shadow: 0 calc(-1*var(--f)) 0 inset #0005;
+}
+
+
+.col-form-label {
+  padding-top:calc(0.125rem + var(--bs-border-width));
+  padding-bottom:calc(0.125rem + var(--bs-border-width));
+}
+
+.form-label {
+  margin-bottom:calc(0.125rem + var(--bs-border-width));
+}

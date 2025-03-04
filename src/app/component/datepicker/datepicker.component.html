@@ -1,0 +1,100 @@
+<div class="row">
+  <!-- ==================================-->
+  <!-- =======Simple date picker ===== -->
+  <!-- ==================================-->
+  <div class="col-12 d-flex align-items-stretch">
+    <app-datepicker-simple class="w-100"></app-datepicker-simple>
+  </div>
+
+  <!-- ==================================-->
+  <!-- =======Disabled picker ===== -->
+  <!-- ==================================-->
+  <div class="col-12 d-flex align-items-stretch">
+    <div class="card w-100">
+      <div class="p-3">
+        <h4 class="card-title mb-0">Disabled datepicker</h4>
+      </div>
+      <div class="card-body border-top">
+        <h6 class="card-subtitle fw-normal mb-2">
+          Bind <code>[disabled]</code> by passing true to disable date picker &
+          false to enable date picker.
+        </h6>
+        <ngb-datepicker
+          [(ngModel)]="model"
+          [disabled]="disabled"
+        ></ngb-datepicker>
+
+        <div class="mt-3">
+          <button
+            class="btn btn-light-{{ disabled ? 'danger' : 'success' }} text-{{
+              disabled ? 'danger' : 'success'
+            }}"
+            (click)="disabled = !disabled"
+          >
+            {{ disabled ? "Disabled" : "Enabled" }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ==================================-->
+  <!-- =======Footer template ===== -->
+  <!-- ==================================-->
+  <div class="col-12 d-flex align-items-stretch">
+    <div class="card w-100">
+      <div class="p-3">
+        <h4 class="card-title mb-0">Footer template</h4>
+      </div>
+      <div class="card-body border-top">
+        <h6 class="card-subtitle fw-normal mb-2">
+          This datepicker uses a footer template which is presented inside
+          datepicker. Today and close buttons used as an example.
+        </h6>
+        <form class="row row-cols-sm-auto">
+          <div class="col-12">
+            <div class="input-group">
+              <input
+                class="form-control"
+                placeholder="yyyy-mm-dd"
+                name="dp"
+                [(ngModel)]="model"
+                ngbDatepicker
+                [footerTemplate]="footerTemplate"
+                #d="ngbDatepicker"
+              />
+              <button
+                class="btn btn-outline-secondary bi bi-calendar3"
+                (click)="d.toggle()"
+                type="button"
+              >
+                <i-feather class="feather-sm" name="calendar"></i-feather>
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <ng-template #footerTemplate>
+          <hr class="my-0" />
+          <button
+            class="btn btn-primary btn-sm m-2 float-start"
+            (click)="model = today; d.close()"
+          >
+            Today
+          </button>
+          <button
+            class="btn btn-secondary btn-sm m-2 float-end"
+            (click)="d.close()"
+          >
+            Close
+          </button>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+  <!-- ==================================-->
+  <!-- =======Custom ===== -->
+  <!-- ==================================-->
+  <div class="col-12 d-flex align-items-stretch">
+    <app-customonth class="w-100"></app-customonth>
+  </div>
+</div>

@@ -1,0 +1,339 @@
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="p-3">
+        <h4 class="card-title mb-0">Basic Accordion</h4>
+      </div>
+      <div class="card-body border-top">
+        <h6 class="card-subtitle fw-normal mb-2">This is basic toggletype accordion</h6>
+        <div ngbAccordion>
+          <div ngbAccordionItem [collapsed]="false">
+            <h2 ngbAccordionHeader>
+              <button ngbAccordionButton>Simple</button>
+            </h2>
+            <div ngbAccordionCollapse>
+              <div ngbAccordionBody>
+                <ng-template>
+                  Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf
+                  moon
+                  officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                  Brunch 3 wolf
+                  moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et.
+                  Nihil anim
+                  keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan
+                  excepteur
+                  butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you
+                  probably
+                  haven't heard of them accusamus labore sustainable VHS.
+                </ng-template>
+              </div>
+            </div>
+          </div>
+          <div ngbAccordionItem>
+            <h2 ngbAccordionHeader>
+              <button ngbAccordionButton>
+                <span>&#9733; <b>Fancy</b> title &#9733;</span>
+              </button>
+            </h2>
+            <div ngbAccordionCollapse>
+              <div ngbAccordionBody>
+                <ng-template>
+                  Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf
+                  moon
+                  officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                  Brunch 3 wolf
+                  moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et.
+                  Nihil anim
+                  keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan
+                  excepteur
+                  butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you
+                  probably
+                  haven't heard of them accusamus labore sustainable VHS.
+                </ng-template>
+              </div>
+            </div>
+          </div>
+          <div ngbAccordionItem [disabled]="true">
+            <h2 ngbAccordionHeader>
+              <button ngbAccordionButton>Disabled</button>
+            </h2>
+            <div ngbAccordionCollapse>
+              <div ngbAccordionBody>
+                <ng-template>
+                  Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf
+                  moon
+                  officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                  Brunch 3 wolf
+                  moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et.
+                  Nihil anim
+                  keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan
+                  excepteur
+                  butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you
+                  probably
+                  haven't heard of them accusamus labore sustainable VHS.
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="p-3">
+        <h4 class="card-title mb-0">One open panel at a time Accordion</h4>
+      </div>
+      <div class="card-body border-top">
+        <h6 class="card-subtitle fw-normal mb-2">This is One open panel accordion</h6>
+        <div ngbAccordion [closeOthers]="true">
+          @for(panel of panels; track panel) {
+          <div ngbAccordionItem [collapsed]="panel !== 'First'">
+            <h2 ngbAccordionHeader>
+              <button ngbAccordionButton>{{ panel }}</button>
+            </h2>
+            <div ngbAccordionCollapse>
+              <div ngbAccordionBody>
+                <ng-template>
+                  Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf
+                  moon
+                  officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                  Brunch 3 wolf
+                  moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et.
+                  Nihil anim
+                  keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan
+                  excepteur
+                  butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you
+                  probably
+                  haven't heard of them accusamus labore sustainable VHS.
+                </ng-template>
+              </div>
+            </div>
+          </div>
+          }
+
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="p-3">
+        <h4 class="card-title mb-0">Toggle Panel</h4>
+      </div>
+      <div class="card-body border-top">
+        <h6 class="card-subtitle fw-normal mb-2">This is toggle panel accordion</h6>
+
+        <div ngbAccordion #accordion="ngbAccordion">
+          <div ngbAccordionItem="first">
+            <h2 ngbAccordionHeader>
+              <button ngbAccordionButton>First panel</button>
+            </h2>
+            <div ngbAccordionCollapse>
+              <div ngbAccordionBody>
+                <ng-template>
+                  Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf
+                  moon
+                  officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                  Brunch 3 wolf
+                  moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et.
+                  Nihil anim
+                  keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan
+                  excepteur
+                  butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you
+                  probably
+                  haven't heard of them accusamus labore sustainable VHS.
+                </ng-template>
+              </div>
+            </div>
+          </div>
+          <div ngbAccordionItem="second">
+            <h2 ngbAccordionHeader>
+              <button ngbAccordionButton>Second panel</button>
+            </h2>
+            <div ngbAccordionCollapse>
+              <div ngbAccordionBody>
+                <ng-template>
+                  Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf
+                  moon
+                  officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                  Brunch 3 wolf
+                  moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et.
+                  Nihil anim
+                  keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan
+                  excepteur
+                  butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you
+                  probably
+                  haven't heard of them accusamus labore sustainable VHS.
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <button class="btn btn-sm btn-outline-primary me-2" (click)="accordion.toggle('first')">Toggle first</button>
+        <button class="btn btn-sm btn-outline-primary me-2" (click)="accordion.toggle('second')">Toggle second</button>
+        <button class="btn btn-sm btn-outline-primary me-2" (click)="accordion.expandAll()">Expand all</button>
+        <button class="btn btn-sm btn-outline-primary me-2" (click)="accordion.collapseAll()">Collapse all</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="p-3">
+        <h4 class="card-title mb-0">Custom header</h4>
+      </div>
+      <div class="card-body border-top">
+        <div ngbAccordion #accordion="ngbAccordion">
+          <div ngbAccordionItem="first" #first="ngbAccordionItem" [collapsed]="false">
+            <div ngbAccordionHeader class="accordion-button accordion-custom-header justify-content-between">
+              <p class="m-0">First panel - {{ first.collapsed ? 'collapsed' : 'opened' }}</p>
+              <button ngbAccordionToggle class="btn btn-link p-0">Toggle first</button>
+            </div>
+            <div ngbAccordionCollapse>
+              <div ngbAccordionBody>
+                <ng-template>
+                  Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf
+                  moon
+                  officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                  Brunch 3 wolf
+                  moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et.
+                  Nihil anim
+                  keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan
+                  excepteur
+                  butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you
+                  probably
+                  haven't heard of them accusamus labore sustainable VHS.
+                </ng-template>
+              </div>
+            </div>
+          </div>
+          <div ngbAccordionItem="second">
+            <div ngbAccordionHeader class="accordion-button custom-header justify-content-between">
+              <p class="m-0">Second panel</p>
+              <div>
+                <button ngbAccordionToggle class="btn btn-sm btn-outline-primary ms-2">Toggle second</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary ms-2"
+                  (click)="third.disabled = !third.disabled">
+                  {{ third.disabled ? 'En' : 'Dis' }}able third
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger ms-2" (click)="accordion.collapseAll()">
+                  Collapse all
+                </button>
+              </div>
+            </div>
+            <div ngbAccordionCollapse>
+              <div ngbAccordionBody>
+                <ng-template>
+                  Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf
+                  moon
+                  officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                  Brunch 3 wolf
+                  moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et.
+                  Nihil anim
+                  keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan
+                  excepteur
+                  butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you
+                  probably
+                  haven't heard of them accusamus labore sustainable VHS.
+                </ng-template>
+              </div>
+            </div>
+          </div>
+          <div ngbAccordionItem="third" #third="ngbAccordionItem" [class.disabled]="third.disabled">
+            <div ngbAccordionHeader class="accordion-button custom-header">
+              <button ngbAccordionToggle [disabled]="third.disabled"
+                class="p-0 btn btn-link container-fluid text-start ps-0">
+                Third panel
+              </button>
+              @if(third.disabled) {
+              <p class="text-muted m-0 small">[I'm&nbsp;disabled]</p>
+              }
+
+            </div>
+            <div ngbAccordionCollapse>
+              <div ngbAccordionBody>
+                <ng-template>
+                  Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf
+                  moon
+                  officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                  Brunch 3 wolf
+                  moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et.
+                  Nihil anim
+                  keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan
+                  excepteur
+                  butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you
+                  probably
+                  haven't heard of them accusamus labore sustainable VHS.
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="p-3">
+        <h4 class="card-title mb-0">Keep content</h4>
+      </div>
+      <div class="card-body border-top">
+        <h6 class="card-subtitle fw-normal mb-2">You can use [destroyOnHide] input either for the whole accordion or for
+          any individual panel</h6>
+
+        <div ngbAccordion [closeOthers]="true">
+          <div ngbAccordionItem [collapsed]="false">
+            <h2 ngbAccordionHeader>
+              <button ngbAccordionButton>Destroy content</button>
+            </h2>
+            <div ngbAccordionCollapse>
+              <div ngbAccordionBody>
+                <ng-template>
+                  <ngb-alert [dismissible]="false" class="d-block mt-3" type="danger">
+                    This panel content DOM will de destroyed when collapsed
+                  </ngb-alert>
+                  <p>
+                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3
+                    wolf moon
+                    officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                    Brunch 3
+                    wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch
+                    et.
+                    Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad
+                    vegan
+                    excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth
+                    nesciunt
+                    you probably haven't heard of them accusamus labore sustainable VHS.
+                  </p>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+          <div ngbAccordionItem [destroyOnHide]="false">
+            <h2 ngbAccordionHeader>
+              <button ngbAccordionButton>Keep content</button>
+            </h2>
+            <div ngbAccordionCollapse>
+              <div ngbAccordionBody>
+                <ng-template>
+                  <ngb-alert [dismissible]="false" class="d-block mt-3" type="success">
+                    This panel content is always present in DOM
+                  </ngb-alert>
+                  <p>
+                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3
+                    wolf moon
+                    officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod.
+                    Brunch 3
+                    wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch
+                    et.
+                    Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad
+                    vegan
+                    excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth
+                    nesciunt
+                    you probably haven't heard of them accusamus labore sustainable VHS.
+                  </p>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

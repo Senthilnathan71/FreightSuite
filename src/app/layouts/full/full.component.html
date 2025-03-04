@@ -1,0 +1,719 @@
+<!-- ============================================================== -->
+<!-- Main wrapper - style you can find in pages.scss -->
+<!-- ============================================================== -->
+<div id="main-wrapper" [ngClass]="{ 'appmode-mobile': isMobile, 'appmode-desktop': !isMobile,  'show-sidebar': showMobileMenu }" [dir]="options.dir"
+  [attr.data-bs-theme]="options.theme" [attr.data-layout]="options.layout" [attr.data-sidebartype]="options.sidebartype"
+  [attr.data-sidebar-position]="options.sidebarpos" [attr.data-header-position]="options.headerpos"
+  [attr.data-boxed-layout]="options.boxed" data-sidebartype="full">
+  <!-- ============================================================== -->
+  <!-- Topbar header - style you can find in topbar.scss -->
+  <!-- ============================================================== -->
+  <header class="topbar" [attr.data-navbarbg]="options.navbarbg">
+    <nav class="d-flex top-navbar navbar-expand-lg"
+      [ngClass]="options.navbarbg == 'skin6' ? 'navbar-light' : 'navbar-dark'">
+      <div class="navbar-header" [ngClass]="expandLogo ? 'expand-logo' : ''" [attr.data-logobg]="options.logobg">
+        <!-- This is for the sidebar toggle which is visible on mobile only -->
+        <a (click)="showMobileMenu = !showMobileMenu" class="nav-toggler waves-effect waves-light d-block d-lg-none"
+          href="javascript:void(0)">
+          <i [ngClass]="showMobileMenu ? 'ti-close' : 'ti-menu'"></i>
+        </a>
+        <!-- ============================================================== -->
+        <!-- Logo -->
+        <!-- ============================================================== -->
+        <a class="navbar-brand" href="/" [class.d-none]="isMobile">
+          <!-- Logo icon -->
+          <b class="logo-icon">
+            <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
+            <!-- Dark Logo icon -->
+            <img src="assets/images/logos/xtreme-dark-icon.svg" alt="homepage" class="dark-logo" />
+            <!-- Light Logo icon -->
+            <img src="assets/images/logos/xtreme-white-icon.svg" alt="homepage" class="light-logo" />
+          </b>
+          <!--End Logo icon -->
+          <!-- Logo text -->
+          <span class="logo-text">
+            <!-- dark Logo text -->
+            <img src="assets/images/logos/xtreme-dark-text.svg" alt="homepage" class="dark-logo" />
+            <!-- Light Logo text -->
+            <img src="assets/images/logos/xtreme-white-text.svg" class="light-logo" alt="homepage" />
+          </span>
+        </a>
+        <!-- ============================================================== -->
+        <!-- End Logo -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Toggle which is visible on mobile only -->
+        <!-- ============================================================== -->
+        <a class="topbartoggler d-block d-lg-none waves-effect waves-light" href="javascript:void(0)"
+          (click)="isCollapsed = !isCollapsed" [attr.aria-expanded]="!isCollapsed" data-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent">
+          <!-- <i class="ti-more"></i> -->
+          <i-feather class="feather-sm" name="more-vertical"></i-feather>
+        </a>
+      </div>
+      <!-- ============================================================== -->
+      <!-- End Logo -->
+      <!-- ============================================================== -->
+      <div class="navbar-collapse collapse" id="navbarSupportedContent" [attr.data-navbarbg]="options.navbarbg"
+        [ngbCollapse]="!isCollapsed">
+        <!-- Horizontal Header -->
+        @if(options.layout === 'horizontal') {
+        <div class="w-100">
+          <app-horizontal-navigation class="w-100 d-flex align-items-center justify-content-between">
+          </app-horizontal-navigation>
+        </div>
+        }
+        @if(options.layout === 'vertical'){
+        <!-- Vertical Header -->
+
+        <div class="w-100">
+          <app-vertical-navigation (toggleSidebar)="toggleSidebarType()">
+          </app-vertical-navigation>
+        </div>
+
+        }
+
+
+
+      </div>
+    </nav>
+    <!-- @if (isMobile) {
+      <ng-container *ngTemplateOutlet="mobileWave"></ng-container>
+    } -->
+  </header>
+  <!-- ============================================================== -->
+  <!-- Left Sidebar - style you can find in sidebar.scss  -->
+  <!-- ============================================================== -->
+  <aside class="left-sidebar" [ngClass]="{ 'left-sidebar-mobile': isMobile, 'left-sidebar-desktop': !isMobile}" [attr.data-sidebarbg]="options.sidebarbg" (mouseover)="Logo()" (mouseout)="Logo()">
+    <!-- Sidebar scroll-->
+    @if(options.layout === 'horizontal') {
+    <div>
+      <app-horizontal-sidebar></app-horizontal-sidebar>
+    </div>
+    }
+
+    @if(options.layout === 'vertical') {
+    <!-- Horizontal Header -->
+
+    <ng-scrollbar class="scroll-sidebar">
+      <app-vertical-sidebar [showClass]="showMobileMenu" (notify)="handleClick($event)">
+      </app-vertical-sidebar>
+    </ng-scrollbar>
+
+    <!-- End Sidebar scroll-->
+    }
+
+    @if (isMobile) {
+      <div class="position-absolute start-0 end-0 d-flex align-items-center justify-content-center" style="bottom:70px;">
+        <img src="assets/images/sidebar-logo.png" class="img-fluid" width="86" height="86" alt="">
+      </div>
+      <div class="position-absolute start-0 end-0 dofi-b-16px ">
+        <ng-container *ngTemplateOutlet="mobileWaveSidebar"></ng-container>
+      </div>
+    }
+
+
+
+  </aside>
+  <!-- ============================================================== -->
+  <!-- End Left Sidebar - style you can find in sidebar.scss  -->
+  <!-- ============================================================== -->
+  <!-- ============================================================== -->
+  <!-- Page wrapper  -->
+  <!-- ============================================================== -->
+  <div class="page-wrapper">
+    <div class="d-flex align-items-center">
+      <app-breadcrumb></app-breadcrumb>
+      <!-- <div class="ms-auto" style="padding:20px 20px 0 20px">
+        <button class="btn btn-sm">
+          <i-feather class="feather-sm" name="arrow-left"></i-feather>
+          Back
+        </button>
+      </div> -->
+
+    </div>
+    <!-- ============================================================== -->
+    <!-- Container fluid  -->
+    <!-- ============================================================== -->
+    <div class="container-fluid">
+      <!-- ============================================================== -->
+      <!-- Start Page Content -->
+      <!-- ============================================================== -->
+      <router-outlet></router-outlet>
+      <!-- ============================================================== -->
+      <!-- End Start Page Content -->
+      <!-- ============================================================== -->
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Container fluid  -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- footer -->
+    <!-- ============================================================== -->
+    <footer class="footer text-center">
+      Copyright © 2025 <span class="fw-bold">DOFI Infosys LLC</span>
+    </footer>
+    <!-- ============================================================== -->
+    <!-- End footer -->
+    <!-- ============================================================== -->
+  </div>
+  <!-- ============================================================== -->
+  <!-- End Page wrapper  -->
+  <!-- ============================================================== -->
+  <aside class="customizer d-none" [ngClass]="{ 'show-service-panel': showSettings }">
+    <a href="javascript:void(0)" class="service-panel-toggle" (click)="showSettings = !showSettings">
+      <i class="fa fa-spin fa-cog"></i>
+    </a>
+    <ng-scrollbar class="customizer-body custom-pills">
+      <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-pills nav-justified">
+        <li [ngbNavItem]="1">
+          <a ngbNavLink>
+            <i class="mdi mdi-wrench fs-6"></i>
+          </a>
+          <ng-template ngbNavContent>
+            <div class="p-3 border-bottom">
+              <h5 class="font-medium mb-4 mt-2">Layout Settings</h5>
+              <div class="form-check mt-2">
+                <input type="checkbox" class="form-check-input" name="layout" id="layout" [attr.checked]="
+                    options.layout == 'horizontal' ? 'checked' : null
+                  " (change)="
+                    options.layout =
+                      options.layout == 'vertical' ? 'horizontal' : 'vertical'
+                  " (click)="
+                    options.boxed = options.boxed == 'full' ? 'boxed' : 'full'
+                  " />
+                <label class="form-check-label" for="layout">Horizontal</label>
+              </div>
+
+              <div class="form-check mt-2">
+                <input type="checkbox" class="form-check-input" name="theme-view" id="theme-view"
+                  [attr.checked]="options.theme == 'dark' ? 'checked' : null" (change)="
+                    options.theme = options.theme == 'light' ? 'dark' : 'light'
+                  " />
+                <label class="form-check-label" for="theme-view">Dark Theme</label>
+              </div>
+              <div class="form-check mt-2">
+                <input type="checkbox" class="form-check-input" name="sidebar-position" id="sidebar-position"
+                  [attr.checked]="
+                    options.sidebarpos == 'fixed' ? 'checked' : null
+                  " (change)="
+                    options.sidebarpos =
+                      options.sidebarpos == 'fixed' ? 'absolute' : 'fixed'
+                  " />
+                <label class="form-check-label" for="sidebar-position">Fixed Sidebar</label>
+              </div>
+              <div class="form-check mt-2">
+                <input type="checkbox" class="form-check-input" name="header-position" id="header-position"
+                  [attr.checked]="
+                    options.headerpos == 'fixed' ? 'checked' : null
+                  " (change)="
+                    options.headerpos =
+                      options.headerpos == 'fixed' ? 'absolute' : 'fixed'
+                  " />
+                <label class="form-check-label" for="header-position">Fixed Header</label>
+              </div>
+              <div class="form-check mt-2">
+                <input type="checkbox" class="form-check-input" name="boxed-layout" id="boxed-layout"
+                  [attr.checked]="options.boxed == 'boxed' ? 'checked' : null" (change)="
+                    options.boxed = options.boxed == 'full' ? 'boxed' : 'full'
+                  " />
+                <label class="form-check-label" for="boxed-layout">Boxed Layout</label>
+              </div>
+              <div class="form-check mt-2">
+                <input type="checkbox" class="form-check-input" name="rtl-layout" id="rtl-layout"
+                  [attr.checked]="options.dir == 'rtl' ? 'checked' : null"
+                  (change)="options.dir = options.dir == 'rtl' ? 'ltr' : 'rtl'" />
+                <label class="form-check-label" for="rtl-layout">RTL</label>
+              </div>
+            </div>
+            @if(options.layout === 'vertical') {
+            <div class="p-3 border-bottom">
+              <h5 class="font-medium mb-4 mt-2">Sidebar Types</h5>
+              <div class="form-check mt-2">
+                <input type="radio" class="form-check-input" name="sidebar" [(ngModel)]="options.sidebartype"
+                  value="mini-sidebar" id="minisidebar" (change)="options.sidebartype = 'mini-sidebar'" />
+                <label class="form-check-label" for="minisidebar">Mini Sidebar</label>
+              </div>
+              <div class="form-check mt-2">
+                <input type="radio" class="form-check-input" name="sidebar" [(ngModel)]="options.sidebartype"
+                  value="iconbar" id="iconsidebar" (change)="options.sidebartype = 'iconbar'" />
+                <label class="form-check-label" for="iconsidebar">Icon Sidebar</label>
+              </div>
+              <div class="form-check mt-2">
+                <input type="radio" class="form-check-input" name="sidebar" [(ngModel)]="options.sidebartype"
+                  value="overlay" id="overlaysidebar" (change)="options.sidebartype = 'overlay'" />
+                <label class="form-check-label" for="overlaysidebar">Overlay Sidebar</label>
+              </div>
+              <div class="form-check mt-2">
+                <input type="radio" class="form-check-input" name="sidebar" [(ngModel)]="options.sidebartype"
+                  value="full" id="fullsidebar" (change)="options.sidebartype = 'full'" />
+                <label class="form-check-label" for="fullsidebar">Full Sidebar</label>
+              </div>
+            </div>
+            }
+            @if(options.layout === 'vertical') {
+            <div class="p-3 border-bottom">
+              <h5 class="font-medium mb-4 mt-2">Logo Backgrounds</h5>
+              <ul class="theme-color">
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-logobg="skin1"
+                    (click)="options.logobg = 'skin1'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-logobg="skin2"
+                    (click)="options.logobg = 'skin2'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-logobg="skin3"
+                    (click)="options.logobg = 'skin3'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-logobg="skin4"
+                    (click)="options.logobg = 'skin4'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-logobg="skin5"
+                    (click)="options.logobg = 'skin5'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-logobg="skin6"
+                    (click)="options.logobg = 'skin6'"></a>
+                </li>
+              </ul>
+            </div>
+            }
+
+            <div class="p-3 border-bottom">
+              <h5 class="font-medium mb-4 mt-2">Navbar Backgrounds</h5>
+              <ul class="theme-color">
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-navbarbg="skin1"
+                    (click)="options.navbarbg = 'skin1'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-navbarbg="skin2"
+                    (click)="options.navbarbg = 'skin2'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-navbarbg="skin3"
+                    (click)="options.navbarbg = 'skin3'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-navbarbg="skin4"
+                    (click)="options.navbarbg = 'skin4'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-navbarbg="skin5"
+                    (click)="options.navbarbg = 'skin5'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-navbarbg="skin6"
+                    (click)="options.navbarbg = 'skin6'"></a>
+                </li>
+              </ul>
+            </div>
+            <div class="p-3 border-bottom">
+              <h5 class="font-medium mb-4 mt-2">Sidebar Backgrounds</h5>
+              <ul class="theme-color">
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-sidebarbg="skin1"
+                    (click)="options.sidebarbg = 'skin1'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-sidebarbg="skin2"
+                    (click)="options.sidebarbg = 'skin2'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-sidebarbg="skin3"
+                    (click)="options.sidebarbg = 'skin3'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-sidebarbg="skin4"
+                    (click)="options.sidebarbg = 'skin4'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-sidebarbg="skin5"
+                    (click)="options.sidebarbg = 'skin5'"></a>
+                </li>
+                <li class="theme-item">
+                  <a href="javascript:void(0)" class="theme-link" data-sidebarbg="skin6"
+                    (click)="options.sidebarbg = 'skin6'"></a>
+                </li>
+              </ul>
+            </div>
+          </ng-template>
+        </li>
+
+        <li [ngbNavItem]="2">
+          <a ngbNavLink><i class="mdi mdi-message-reply fs-6"></i></a>
+          <ng-template ngbNavContent>
+            <ul class="mailbox list-style-none mt-3">
+              <li>
+                <ng-scrollbar class="message-center chat-scroll">
+                  <a href="#" class="message-item border-bottom d-block text-decoration-none" id="chat_user_1"
+                    data-user-id="1">
+                    <span class="user-img position-relative d-inline-block">
+                      <img src="assets/images/users/user1.jpg" alt="user" class="rounded-circle" />
+                      <span class="profile-status rounded-circle d-inline-block online float-end"
+                        data-status="online"></span>
+                    </span>
+                    <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                      <h5 class="mb-0">Chris Evans</h5>
+                      <span class="mail-desc fs-2 d-block text-muted text-truncate">Just see the my admin!</span>
+                      <span class="time fs-2 d-block text-muted text-truncate">9:30 AM</span>
+                    </span>
+                  </a>
+
+                  <a href="#" class="message-item border-bottom d-block text-decoration-none" id="chat_user_2"
+                    data-user-id="2">
+                    <span class="user-img position-relative d-inline-block">
+                      <img src="assets/images/users/user2.jpg" alt="user" class="rounded-circle" />
+                      <span class="profile-status rounded-circle d-inline-block busy float-end"
+                        data-status="busy"></span>
+                    </span>
+                    <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                      <h5 class="mb-0">Ray Hudson</h5>
+                      <span class="mail-desc fs-2 d-block text-muted text-truncate">I've sung a song! See you at</span>
+                      <span class="time fs-2 d-block text-muted text-truncate">9:10 AM</span>
+                    </span>
+                  </a>
+
+                  <a href="#" class="message-item border-bottom d-block text-decoration-none" id="chat_user_3"
+                    data-user-id="3">
+                    <span class="user-img position-relative d-inline-block">
+                      <img src="assets/images/users/user3.jpg" alt="user" class="rounded-circle" />
+                      <span class="profile-status rounded-circle d-inline-block away float-end"
+                        data-status="away"></span>
+                    </span>
+                    <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                      <h5 class="mb-0">Lb James</h5>
+                      <span class="mail-desc fs-2 d-block text-muted text-truncate">I am a singer!</span>
+                      <span class="time fs-2 d-block text-muted text-truncate">9:08 AM</span>
+                    </span>
+                  </a>
+
+                  <a href="#" class="message-item border-bottom d-block text-decoration-none" id="chat_user_4"
+                    data-user-id="4">
+                    <span class="user-img position-relative d-inline-block">
+                      <img src="assets/images/users/user4.jpg" alt="user" class="rounded-circle" />
+                      <span class="profile-status rounded-circle d-inline-block offline float-end"
+                        data-status="offline"></span>
+                    </span>
+                    <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                      <h5 class="mb-0">Don Andres</h5>
+                      <span class="mail-desc fs-2 d-block text-muted text-truncate">Just see the my admin!</span>
+                      <span class="time fs-2 d-block text-muted text-truncate">9:02 AM</span>
+                    </span>
+                  </a>
+
+                  <a href="#" class="message-item border-bottom d-block text-decoration-none" id="chat_user_5"
+                    data-user-id="5">
+                    <span class="user-img position-relative d-inline-block">
+                      <img src="assets/images/users/user1.jpg" alt="user" class="rounded-circle" />
+                      <span class="profile-status rounded-circle d-inline-block online float-end"
+                        data-status="online"></span>
+                    </span>
+                    <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                      <h5 class="mb-0">Chris Evans</h5>
+                      <span class="mail-desc fs-2 d-block text-muted text-truncate">Just see the my admin!</span>
+                      <span class="time fs-2 d-block text-muted text-truncate">9:30 AM</span>
+                    </span>
+                  </a>
+
+                  <a href="#" class="message-item border-bottom d-block text-decoration-none" id="chat_user_6"
+                    data-user-id="6">
+                    <span class="user-img position-relative d-inline-block">
+                      <img src="assets/images/users/user2.jpg" alt="user" class="rounded-circle" />
+                      <span class="profile-status rounded-circle d-inline-block busy float-end"
+                        data-status="busy"></span>
+                    </span>
+                    <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                      <h5 class="mb-0">Ray Hudson</h5>
+                      <span class="mail-desc fs-2 d-block text-muted text-truncate">I've sung a song! See you at</span>
+                      <span class="time fs-2 d-block text-muted text-truncate">9:10 AM</span>
+                    </span>
+                  </a>
+
+                  <a href="#" class="message-item border-bottom d-block text-decoration-none" id="chat_user_7"
+                    data-user-id="7">
+                    <span class="user-img position-relative d-inline-block">
+                      <img src="assets/images/users/user3.jpg" alt="user" class="rounded-circle" />
+                      <span class="profile-status rounded-circle d-inline-block away float-end"
+                        data-status="away"></span>
+                    </span>
+                    <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                      <h5 class="mb-0">Lb James</h5>
+                      <span class="mail-desc fs-2 d-block text-muted text-truncate">I am a singer!</span>
+                      <span class="time fs-2 d-block text-muted text-truncate">9:08 AM</span>
+                    </span>
+                  </a>
+
+                  <a href="#" class="message-item border-bottom d-block text-decoration-none" id="chat_user_8"
+                    data-user-id="8">
+                    <span class="user-img position-relative d-inline-block">
+                      <img src="assets/images/users/user4.jpg" alt="user" class="rounded-circle" />
+                      <span class="profile-status rounded-circle d-inline-block offline float-end"
+                        data-status="offline"></span>
+                    </span>
+                    <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                      <h5 class="mb-0">Don Andres</h5>
+                      <span class="mail-desc fs-2 d-block text-muted text-truncate">Just see the my admin!</span>
+                      <span class="time fs-2 d-block text-muted text-truncate">9:02 AM</span>
+                    </span>
+                  </a>
+
+                  <a href="#" class="message-item border-bottom d-block text-decoration-none" id="chat_user_9"
+                    data-user-id="9">
+                    <span class="user-img position-relative d-inline-block">
+                      <img src="assets/images/users/user1.jpg" alt="user" class="rounded-circle" />
+                      <span class="profile-status rounded-circle d-inline-block online float-end"
+                        data-status="online"></span>
+                    </span>
+                    <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                      <h5 class="mb-0">Chris Evans</h5>
+                      <span class="mail-desc fs-2 d-block text-muted text-truncate">Just see the my admin!</span>
+                      <span class="time fs-2 d-block text-muted text-truncate">9:30 AM</span>
+                    </span>
+                  </a>
+
+                  <a href="#" class="message-item border-bottom d-block text-decoration-none" id="chat_user_10"
+                    data-user-id="10">
+                    <span class="user-img position-relative d-inline-block">
+                      <img src="assets/images/users/user2.jpg" alt="user" class="rounded-circle" />
+                      <span class="profile-status rounded-circle d-inline-block busy float-end"
+                        data-status="busy"></span>
+                    </span>
+                    <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                      <h5 class="mb-0">Ray Hudson</h5>
+                      <span class="mail-desc fs-2 d-block text-muted text-truncate">I've sung a song! See you at</span>
+                      <span class="time fs-2 d-block text-muted text-truncate">9:10 AM</span>
+                    </span>
+                  </a>
+
+                  <a href="#" class="message-item border-bottom d-block text-decoration-none" id="chat_user_11"
+                    data-user-id="11">
+                    <span class="user-img position-relative d-inline-block">
+                      <img src="assets/images/users/user3.jpg" alt="user" class="rounded-circle" />
+                      <span class="profile-status rounded-circle d-inline-block away float-end"
+                        data-status="away"></span>
+                    </span>
+                    <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                      <h5 class="mb-0">Lb James</h5>
+                      <span class="mail-desc fs-2 d-block text-muted text-truncate">I am a singer!</span>
+                      <span class="time fs-2 d-block text-muted text-truncate">9:08 AM</span>
+                    </span>
+                  </a>
+
+                  <a href="#" class="message-item border-bottom d-block text-decoration-none" id="chat_user_12"
+                    data-user-id="12">
+                    <span class="user-img position-relative d-inline-block">
+                      <img src="assets/images/users/user4.jpg" alt="user" class="rounded-circle" />
+                      <span class="profile-status rounded-circle d-inline-block offline float-end"
+                        data-status="offline"></span>
+                    </span>
+                    <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                      <h5 class="mb-0">Don Andres</h5>
+                      <span class="mail-desc fs-2 d-block text-muted text-truncate">Just see the my admin!</span>
+                      <span class="time fs-2 d-block text-muted text-truncate">9:02 AM</span>
+                    </span>
+                  </a>
+                </ng-scrollbar>
+              </li>
+            </ul>
+          </ng-template>
+        </li>
+        <li [ngbNavItem]="3">
+          <a ngbNavLink><i class="mdi mdi-star-circle fs-6"></i></a>
+          <ng-template ngbNavContent>
+            <div class="p-3">
+              <h6 class="mt-3 mb-4">Activity Timeline</h6>
+              <div class="steamline position-relative border-start ms-4">
+                <div class="sl-item my-3 py-1 border-bottom">
+                  <div class="
+                      sl-left
+                      float-start
+                      text-center
+                      rounded-circle
+                      text-white
+                      me-3
+                      bg-success
+                    ">
+                    <i class="ti-user"></i>
+                  </div>
+                  <div class="sl-right ps-4">
+                    <div class="font-medium">
+                      Meeting today
+                      <span class="sl-date"> 5pm</span>
+                    </div>
+                    <div class="desc">you can write anything</div>
+                  </div>
+                </div>
+                <div class="sl-item my-3 py-1 border-bottom">
+                  <div class="
+                      sl-left
+                      float-start
+                      text-center
+                      rounded-circle
+                      text-white
+                      me-3
+                      bg-info
+                    ">
+                    <i class="fas fa-image"></i>
+                  </div>
+                  <div class="sl-right ps-4">
+                    <div class="font-medium">Send documents to Clark</div>
+                    <div class="desc">Lorem Ipsum is simply</div>
+                  </div>
+                </div>
+                <div class="sl-item my-3 py-1 border-bottom">
+                  <div class="
+                      sl-left
+                      float-start
+                      text-center
+                      rounded-circle
+                      text-white
+                      me-3
+                    ">
+                    <img class="rounded-circle" alt="user" src="assets/images/users/user2.jpg" />
+                  </div>
+                  <div class="sl-right ps-4">
+                    <div class="font-medium">
+                      Go to the Doctor
+                      <span class="sl-date">5 minutes ago</span>
+                    </div>
+                    <div class="desc">Contrary to popular belief</div>
+                  </div>
+                </div>
+                <div class="sl-item my-3 py-1 border-bottom">
+                  <div class="
+                      sl-left
+                      float-start
+                      text-center
+                      rounded-circle
+                      text-white
+                      me-3
+                    ">
+                    <img class="rounded-circle" alt="user" src="assets/images/users/user1.jpg" />
+                  </div>
+                  <div class="sl-right ps-4">
+                    <div>
+                      <a href="javascript:void(0)">Stephen</a>
+                      <span class="sl-date">5 minutes ago</span>
+                    </div>
+                    <div class="desc">Approve meeting with tiger</div>
+                  </div>
+                </div>
+                <div class="sl-item my-3 py-1 border-bottom">
+                  <div class="
+                      sl-left
+                      float-start
+                      text-center
+                      rounded-circle
+                      text-white
+                      me-3
+                      bg-primary
+                    ">
+                    <i class="ti-user"></i>
+                  </div>
+                  <div class="sl-right ps-4">
+                    <div class="font-medium">
+                      Meeting today
+                      <span class="sl-date"> 5pm</span>
+                    </div>
+                    <div class="desc">you can write anything</div>
+                  </div>
+                </div>
+                <div class="sl-item my-3 py-1 border-bottom">
+                  <div class="
+                      sl-left
+                      float-start
+                      text-center
+                      rounded-circle
+                      text-white
+                      me-3
+                      bg-info
+                    ">
+                    <i class="fas fa-image"></i>
+                  </div>
+                  <div class="sl-right ps-4">
+                    <div class="font-medium">Send documents to Clark</div>
+                    <div class="desc">Lorem Ipsum is simply</div>
+                  </div>
+                </div>
+                <div class="sl-item my-3 py-1 border-bottom">
+                  <div class="
+                      sl-left
+                      float-start
+                      text-center
+                      rounded-circle
+                      text-white
+                      me-3
+                    ">
+                    <img class="rounded-circle" alt="user" src="assets/images/users/user4.jpg" />
+                  </div>
+                  <div class="sl-right ps-4">
+                    <div class="font-medium">
+                      Go to the Doctor
+                      <span class="sl-date">5 minutes ago</span>
+                    </div>
+                    <div class="desc">Contrary to popular belief</div>
+                  </div>
+                </div>
+                <div class="sl-item my-3 py-1">
+                  <div class="
+                      sl-left
+                      float-start
+                      text-center
+                      rounded-circle
+                      text-white
+                      me-3
+                    ">
+                    <img class="rounded-circle" alt="user" src="assets/images/users/user3.jpg" />
+                  </div>
+                  <div class="sl-right ps-4">
+                    <div>
+                      <a href="javascript:void(0)">Stephen</a>
+                      <span class="sl-date">5 minutes ago</span>
+                    </div>
+                    <div class="desc">Approve meeting with tiger</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </li>
+      </ul>
+
+      <div [ngbNavOutlet]="nav" class="mt-2"></div>
+    </ng-scrollbar>
+  </aside>
+  <div class="chat-windows"></div>
+</div>
+
+
+
+<ng-template #mobileWave>
+    <svg width="1920" height="225" class="mobileWave img-fluid w-100" [class.waveCollapsed]="showMobileMenu" viewBox="0 0 1920 225" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g clip-path="url(#clip0_171_2563)">
+      <path d="M1920 0H0V50.3999C1 50.7999 4.19995 52.3999 9.69995 54.3999C15.4 56.6999 24.8 59.9999 36.7 63.3999C50.3062 67.2305 64.1315 70.236 78.1001 72.3999C95.4734 75.0621 113.024 76.3993 130.6 76.3999C141.2 76.3999 151.8 75.8999 162.2 74.8999C171.711 73.9879 181.139 72.3498 190.4 70C198.57 67.9554 206.589 65.3494 214.4 62.2002C229.2 56.2002 242.2 48.7998 254.7 41.7998C280.9 26.9998 305.6 13 343.7 13C352.237 13.0628 360.758 13.7312 369.2 15C376.853 16.1256 384.363 18.0699 391.6 20.7998C399.523 23.8244 407.24 27.3654 414.7 31.3999C431.385 40.596 447.666 50.5053 463.5 61.1001C479.1 71.2001 495.1 81.6001 512 91.1001C520.449 95.9147 529.089 100.385 537.9 104.5C546.691 108.661 555.704 112.333 564.9 115.5C574.6 118.7 586.1 120.2 600.3 120.2C616.217 119.867 632.106 118.699 647.9 116.7C663.9 115 680.4 113.2 695.4 113.2C703.986 113.069 712.563 113.806 721 115.4C748.5 121 774.4 139.1 799.5 156.4C809.433 163.512 819.605 170.282 830 176.7C834.833 179.608 839.806 182.278 844.9 184.7C849.611 187.031 854.492 189.003 859.5 190.6C871.438 194.162 883.842 195.914 896.3 195.8C915.3 195.8 934 192.2 952.1 188.8C960.5 187.1 969.3 185.4 977.7 184.2C986.041 182.927 994.463 182.259 1002.9 182.2C1007.95 182.241 1012.97 182.811 1017.9 183.9C1023.62 185.172 1029.26 186.775 1034.8 188.7C1046.4 192.7 1058.9 198 1071.1 203.1C1083.09 208.364 1095.27 213.201 1107.6 217.6C1113.14 219.523 1118.78 221.126 1124.5 222.4C1129.52 223.538 1134.65 224.142 1139.8 224.2H1141.8C1147.46 223.901 1153.08 223.097 1158.6 221.8C1164.52 220.457 1170.36 218.788 1176.1 216.8C1187.9 212.8 1200.1 207.5 1211.8 202.4C1222.23 197.764 1232.8 193.462 1243.5 189.5C1248.49 187.696 1253.56 186.127 1258.7 184.8C1263.43 183.54 1268.24 182.637 1273.1 182.1C1277.8 181.7 1283.1 181.4 1288.5 181.4C1307 181.4 1327.5 184 1347.2 186.6H1347.6C1367.2 189.1 1387.4 191.7 1405.1 191.7C1411.35 191.773 1417.6 191.405 1423.8 190.6C1447.2 187.2 1472.7 164.1 1497.3 141.6C1508.7 131.3 1519.4 121.6 1530 113.6C1534.88 109.887 1540.02 106.545 1545.4 103.6C1549.96 100.999 1554.88 99.0784 1560 97.8999C1565.06 96.87 1570.16 96.1025 1575.3 95.6001C1580.1 95.1001 1584.9 94.8999 1589.8 94.8999C1601.71 94.9657 1613.58 96.3067 1625.2 98.8999C1636.6 101.3 1647.2 104.6 1657.2 107.7L1659.7 108.5L1661 108.9C1680 114.9 1698.1 120.5 1716.5 120.5C1720.34 120.528 1724.19 120.294 1728 119.8C1759.9 115.4 1779.2 103.8 1797.8 92.6001C1807.6 86.6001 1816.9 81.1001 1827.8 76.6001C1837.8 72.4001 1848.9 68.3998 1860.8 64.7998C1880.23 58.8118 1899.99 54.0031 1920 50.3999V0Z" fill="#05608D"/>
+      </g>
+      <defs>
+      <clipPath id="clip0_171_2563">
+      <rect width="1920" height="225" fill="#05608D" transform="matrix(1 0 0 -1 0 225)"/>
+      </clipPath>
+      </defs>
+      </svg>
+</ng-template>
+
+<ng-template #mobileWaveSidebar>
+  <svg width="1920" height="225" viewBox="0 0 1920 225" class="img-fluid" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clip-path="url(#clip0_19_12)">
+    <path d="M1920 224.2H0V173.8C1 173.4 4.19995 171.8 9.69995 169.8C15.4 167.5 24.8 164.2 36.7 160.8C50.3062 156.969 64.1315 153.964 78.1001 151.8C95.4734 149.138 113.024 147.801 130.6 147.8C141.2 147.8 151.8 148.3 162.2 149.3C171.711 150.212 181.139 151.85 190.4 154.2C198.57 156.245 206.589 158.851 214.4 162C229.2 168 242.2 175.4 254.7 182.4C280.9 197.2 305.6 211.2 343.7 211.2C352.237 211.137 360.758 210.469 369.2 209.2C376.853 208.074 384.363 206.13 391.6 203.4C399.523 200.376 407.24 196.835 414.7 192.8C431.385 183.604 447.666 173.695 463.5 163.1C479.1 153 495.1 142.6 512 133.1C520.449 128.285 529.089 123.815 537.9 119.7C546.691 115.539 555.704 111.867 564.9 108.7C574.6 105.5 586.1 104 600.3 104C616.217 104.333 632.106 105.501 647.9 107.5C663.9 109.2 680.4 111 695.4 111C703.986 111.131 712.563 110.394 721 108.8C748.5 103.2 774.4 85.1001 799.5 67.8C809.433 60.6884 819.605 53.9175 830 47.4998C834.833 44.5918 839.806 41.9219 844.9 39.4998C849.611 37.1687 854.492 35.1965 859.5 33.5999C871.438 30.038 883.843 28.2855 896.3 28.4001C915.3 28.4001 934 32.0001 952.1 35.4001C960.5 37.1001 969.3 38.7998 977.7 39.9998C986.041 41.2727 994.463 41.9411 1002.9 41.9998C1007.95 41.9588 1012.97 41.3893 1017.9 40.3C1023.62 39.0281 1029.26 37.4251 1034.8 35.4998C1046.4 31.4998 1058.9 26.1999 1071.1 21.0999C1083.09 15.8355 1095.27 10.9991 1107.6 6.59985C1113.14 4.67685 1118.78 3.07439 1124.5 1.80005C1129.52 0.662084 1134.65 0.0584322 1139.8 -0.000244141H1141.8C1147.46 0.299091 1153.08 1.10266 1158.6 2.40015C1164.52 3.74279 1170.36 5.412 1176.1 7.40015C1187.9 11.4001 1200.1 16.7 1211.8 21.8C1222.23 26.4358 1232.8 30.7378 1243.5 34.7C1248.49 36.5044 1253.56 38.073 1258.7 39.4001C1263.43 40.6604 1268.24 41.5626 1273.1 42.0999C1277.8 42.4999 1283.1 42.8 1288.5 42.8C1307 42.8 1327.5 40.1999 1347.2 37.5999H1347.6C1367.2 35.0999 1387.4 32.4998 1405.1 32.4998C1411.35 32.4271 1417.6 32.7948 1423.8 33.5999C1447.2 36.9999 1472.7 60.0999 1497.3 82.5999C1508.7 92.8999 1519.4 102.6 1530 110.6C1534.88 114.313 1540.02 117.655 1545.4 120.6C1549.96 123.201 1554.88 125.122 1560 126.3C1565.06 127.33 1570.16 128.097 1575.3 128.6C1580.1 129.1 1584.9 129.3 1589.8 129.3C1601.71 129.234 1613.58 127.893 1625.2 125.3C1636.6 122.9 1647.2 119.6 1657.2 116.5L1659.7 115.7L1661 115.3C1680 109.3 1698.1 103.7 1716.5 103.7C1720.34 103.672 1724.19 103.906 1728 104.4C1759.9 108.8 1779.2 120.4 1797.8 131.6C1807.6 137.6 1816.9 143.1 1827.8 147.6C1837.8 151.8 1848.9 155.8 1860.8 159.4C1880.23 165.388 1899.99 170.197 1920 173.8V224.2Z" fill="white"/>
+    </g>
+    <defs>
+    <clipPath id="clip0_19_12">
+    <rect width="1920" height="225" fill="white"/>
+    </clipPath>
+    </defs>
+    </svg>
+</ng-template>
