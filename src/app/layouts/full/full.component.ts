@@ -58,7 +58,7 @@ export class FullComponent implements OnInit {
     theme: 'light', // two possible values: light, dark
     dir: 'ltr', // two possible values: ltr, rtl
     layout: 'vertical', // fixed value. shouldn't be changed.
-    sidebartype: 'mini-sidebar', // four possible values: full, iconbar, overlay, mini-sidebar
+    sidebartype: 'overlay', // four possible values: full, iconbar, overlay, mini-sidebar
     sidebarpos: 'fixed', // two possible values: fixed, absolute
     headerpos: 'fixed', // two possible values: fixed, absolute
     boxed: 'full', // two possible values: full, boxed

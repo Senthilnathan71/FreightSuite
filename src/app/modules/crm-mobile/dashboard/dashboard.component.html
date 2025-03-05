@@ -8,8 +8,8 @@
             <h2>You are using a desktop/laptop 💻</h2>
           </ng-template>
     </div> -->
-    <div class="col-12">
-        @for (item of menuItems; track $index) {
+    <!-- <div class="col-12 col-md-3">
+         @for (item of menuItems; track $index) {
         <section class="menu-card" [ngClass]="item.category">
             <a [routerLink]="item.link">
                 <div class="d-flex align-items-center justify-content-between">
@@ -26,5 +26,22 @@
             </a>
         </section>
         }
-    </div>
+    </div> -->
+    @for (item of menuItems; track $index) {
+        <div class="col-12 col-md-3">
+            <div class="card card-hover cursor-pointer" [routerLink]="item.link">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <h4 class="mb-0">{{ item.name }}</h4>
+                        <div class="ms-auto d-flex align-items-center gap-2">
+                            @if (item.badge) {
+                                <span class="bg-danger py-0 rounded-pill d-flex align-items-center px-2 text-white">{{ item.badge }}</span>
+                            }
+                            <i-feather class="feather-sm ms-auto"  name="chevron-right"></i-feather>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>

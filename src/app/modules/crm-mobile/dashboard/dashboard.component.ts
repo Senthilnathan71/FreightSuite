@@ -20,6 +20,7 @@ export class DashboardComponent implements OnInit {
   isMobile: boolean = false;
 
   menuItems = [
+    { name: 'Port Master', badge: null, link: '/crm/port-master/view', category: 'nav-port-master' },
     { name: 'Lead', badge: 99, link: '/crm/lead/list', category: 'nav-lead' },
     { name: 'Calendar', badge: null, link: '/crm/calendar', category: 'nav-calendar' },
     { name: 'Customer', badge: null, link: '/crm/customer', category: 'nav-customer' },
@@ -30,7 +31,7 @@ export class DashboardComponent implements OnInit {
     { name: 'Dues', badge: null, link: '', category: 'nav-dues' },
     { name: 'Lead Analysis', badge: null, link: '', category: 'nav-lead-analysis' },
     { name: 'CRM', badge: null, link: '', category: 'nav-crm' },
-    { name: 'Lead Schedule Pending', badge: null, link: '', category: 'nav-lead-schedule' }
+    { name: 'Lead Schedule Pending', badge: null, link: '', category: 'nav-lead-schedule' },
   ];
   i: any;
 

@@ -12,6 +12,10 @@ import { FullcalendarComponent } from './fullcalendar/fullcalendar.component';
 import { TodoComponent } from './todo/todo.component';
 import { MeetingComponent } from './lead-schedule/meeting/meeting.component';
 import { PendingComponent } from './lead-schedule/pending/pending.component';
+import { PostMasterViewComponent } from './port-master/post-master-view/post-master-view.component';
+import { PostMasterListComponent } from './port-master/post-master-list/post-master-list.component';
+
+
 
 
 export const CrmMobileRoutes: Routes = [
@@ -184,6 +188,28 @@ export const CrmMobileRoutes: Routes = [
                     urls: [
                         { title: "CRM", url: "/crm" },
                         { title: "Lead Schedule (pending)" },
+                    ],
+                },
+            },
+            {
+                path: "port-master/view",
+                component: PostMasterViewComponent,
+                data: {
+                    title: "Port Master",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Port Master" },
+                    ],
+                },
+            },
+            {
+                path: "port-master/list",
+                component: PostMasterListComponent,
+                data: {
+                    title: "Port Master",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Port Master List" },
                     ],
                 },
             },
