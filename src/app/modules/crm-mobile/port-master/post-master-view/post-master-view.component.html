@@ -27,19 +27,27 @@
                     <div class="col-md-4">
                         <div class="mb-2">
                             <label for="" class="control-label col-form-label">Country</label>
-                            <input type="text" class="form-control" name="" id="">
+                            <ng-select [(ngModel)]="selectedCountry">
+                                @for (country of countries; track country.id) {
+                                    <ng-option [value]="country.id">{{country.name}}</ng-option>
+                                }
+                              </ng-select>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-2">
                             <label for="" class="control-label col-form-label">State</label>
-                            <input type="text" class="form-control" name="" id="">
+                            <ng-select [(ngModel)]="selectedState">
+                                @for (state of states; track state.id) {
+                                    <ng-option [value]="state.id">{{state.name}}</ng-option>
+                                }
+                              </ng-select>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="mb-2">
                             <label for="" class="control-label col-form-label">Time Zone</label>
-                            <input type="text" class="form-control" name="" id="">
+                            <input type="time" class="form-control" name="" id="">
                         </div>
                     </div>
                 </div>

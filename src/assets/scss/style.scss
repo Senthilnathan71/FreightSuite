@@ -30,15 +30,18 @@
 //This is for the responsive (Required file)
 @import "responsive";
 
-//In This scss you can write your scss
-@import "custom-function";
-@import "custom";
-@import "mobile-table";
-@import "mode-mobile";
 
 //This is for the icons (Required file)
 @import "icons/font-awesome/css/fontawesome-all.css";
 @import "icons/simple-line-icons/css/simple-line-icons.css";
 @import "icons/themify-icons/themify-icons.css";
 @import "icons/material-design-iconic-font/css/materialdesignicons.min.css";
+// @import "~@ng-select/ng-select/themes/default.theme.css";
 
+
+//In This scss you can write your scss
+@import "./plugins/packages/ng-select/default.theme.scss";
+@import "custom-function";
+@import "custom";
+@import "mobile-table";
+@import "mode-mobile";
