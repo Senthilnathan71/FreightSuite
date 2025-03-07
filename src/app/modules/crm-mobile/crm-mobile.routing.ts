@@ -14,6 +14,8 @@ import { MeetingComponent } from './lead-schedule/meeting/meeting.component';
 import { PendingComponent } from './lead-schedule/pending/pending.component';
 import { PostMasterViewComponent } from './port-master/post-master-view/post-master-view.component';
 import { PostMasterListComponent } from './port-master/post-master-list/post-master-list.component';
+import { UOMMListComponent } from './UOM-Master/uomm-list/uomm-list.component';
+import { UOMMViewComponent } from './UOM-Master/uomm-view/uomm-view.component';
 
 
 
@@ -210,6 +212,28 @@ export const CrmMobileRoutes: Routes = [
                     urls: [
                         { title: "CRM", url: "/crm" },
                         { title: "Port Master List" },
+                    ],
+                },
+            },
+            {
+                path: "uom-master/list",
+                component: UOMMListComponent,
+                data: {
+                    title: "UOM Master",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "UOM Master List" },
+                    ],
+                },
+            },
+            {
+                path: "uom-master/view",
+                component: UOMMViewComponent,
+                data: {
+                    title: "UOM Master List",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "UOM Master View" },
                     ],
                 },
             },
