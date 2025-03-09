@@ -20,6 +20,7 @@ import { CommonModule } from '@angular/common';
 export class PostMasterViewComponent {
   selectedState: number;
   selectedCountry: number;
+  selectedTransport: number;
 
   states = [
     { id: 1,  name: 'State 1' },
@@ -72,6 +73,14 @@ countries = [
     { id: 22, name: 'Country 22' },
     { id: 23, name: 'Country 23' },
     { id: 24, name: 'Country 24' },
+];
+modeOfTransports = [
+    { id: 1,  name: 'Sea' },
+    { id: 2,  name: 'Air' },
+    { id: 3,  name: 'ICD' },
+    { id: 4,  name: 'Terminal' },
+    { id: 5,  name: 'Road' },
+    { id: 6,  name: 'Rail' },
 ];
 
   constructor(private config: NgSelectConfig) {

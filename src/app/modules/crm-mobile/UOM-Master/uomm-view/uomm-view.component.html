@@ -2,58 +2,56 @@
     <div class="col-8">
         <div class="card">
             <div class="card-body">
-                <div class="row">
-                    <h4 class="card-title mb-0">Basic Information</h4>
-                    
-                    <div class="col-md-6">
-                        <div class="mb-2">
-                            <label for="" class="control-label col-form-label">UOM Name</label>
-                            <input type="text" class="form-control" name="" id="">
+                <section class="row">
+                    <h6 class="card-title mb-0">Basic Information</h6>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
+                            <label for="text-input" class="input-label">UOM Name</label>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-2">
-                            <label for="" class="control-label col-form-label">UOM Code</label>
-                            <input type="text" class="form-control" name="" id="">
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
+                            <label for="text-input" class="input-label">UOM Code</label>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-2">
-                            <label for="" class="control-label col-form-label">Shipment Type</label>
-                            <!-- <input type="text" class="form-control" name="" id=""> -->
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
                             <ng-select [multiple]="true" [(ngModel)]="selectedShipmentType">
                                 @for (shipmenttype of shipmenttypes; track shipmenttype.id) {
                                     <ng-option [value]="shipmenttype.id">{{shipmenttype.name}}</ng-option>
                                 }
-                              </ng-select>
+                            </ng-select>
+                            <label for="text-input" class="input-label">Shipment Type</label>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-2">
-                            <label for="" class="control-label col-form-label">Diemension</label>
-                            <input type="text" class="form-control" name="" id="">
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
+                            <label for="text-input" class="input-label">Diemension</label>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-2">
-                            <label for="" class="control-label col-form-label">Vol</label>
-                            <input type="text" class="form-control" name="" id="">
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" class="custom-input-field sm error" placeholder=" " />
+                            <label for="text-input" class="input-label">Vol</label>
+                            <p class="error-message">Invalid input</p>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-2">
-                            <label for="" class="control-label col-form-label">Weight</label>
-                            <input type="text" class="form-control" name="" id="">
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
+                            <label for="text-input" class="input-label">Weight</label>
                         </div>
-                    </div>
-                    <div class="col-md-12">
-                        <div class="mb-2">
-                            <label for="" class="control-label col-form-label">Remarks</label>
-                            <textarea class="form-control" name="" id=""></textarea>
+                    </aside>
+                    <aside class="col-md-12">
+                        <div class="custom-form-group">
+                            <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1"></textarea>
+                            <label for="text-input" class="input-label">Remarks</label>
                         </div>
-                    </div>
-
-                </div>
+                    </aside>
+                </section>
             </div>
         </div>
     </div>

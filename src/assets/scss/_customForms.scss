@@ -1,0 +1,103 @@
+@mixin customInput {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #D3D9E4;
+    border-radius: 5px;
+    outline: none;
+    font-size: 16px;
+    background: white;
+    appearance: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .custom-form-group {
+    position: relative;
+    margin-top: 0.5rem;
+    margin-bottom: 0.7rem;
+  }
+  
+  .custom-input-field, select, textarea {
+    @include customInput;
+  
+    &:focus {
+      border-color: var(--bs-blue);
+      box-shadow: 0 0 5px rgba(5, 96, 141, 0.5);
+    }
+  
+    &.error:focus {
+      border-color: var(--bs-form-invalid-color);
+      box-shadow: 0 0 5px rgba(249, 50, 50, 0.5);
+    }
+  
+    &.success:focus {
+      border-color: var(--bs-form-valid-color);
+      box-shadow: 0 0 5px rgba(23, 213, 64, 0.5);
+    }
+  }
+  
+  .input-label {
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: var(--bs-body-color);
+    transition: 0.3s ease;
+    background: white;
+    padding: 0 5px;
+    pointer-events: none;
+    text-box: cap alphabetic;
+  }
+  
+  .custom-input-field:focus + .input-label,
+  .custom-input-field:not(:placeholder-shown) + .input-label,
+  select:focus + .input-label,
+  select:not([value=""]) + .input-label,
+  textarea:focus + .input-label,
+  textarea:not(:placeholder-shown) + .input-label,
+  .custom-form-group-select .input-label {
+    top: 0;
+    font-size: 11px;
+    color: var(--bs-blue);
+    padding: 0 5px;
+    font-weight:600;
+  }
+  
+  .select-wrapper {
+    position: relative;
+  
+    select {
+      width: 100%;
+      padding-right: 30px;
+      background: transparent;
+      cursor: pointer;
+    }
+  
+    &::after {
+      content: '\25BC';
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--bs-body-color);
+    }
+  }
+  
+  .sm { font-size: 14px; padding: 6px 8px; }
+  .md { font-size: 16px; padding: 12px 16px; }
+  .lg { font-size: 18px; padding: 16px 20px; }
+  
+  .error  { border-color: var(--bs-form-invalid-color); }
+  .success { border-color: var(--bs-form-valid-color); }
+
+  .error-message { color: var(--bs-form-invalid-color); margin: 0; }
+  .success-message { color: var(--bs-form-valid-color); margin: 0; }
+  
+  .error-message, .success-message {
+    font-size: 12px;
+    margin-top: 0px;
+    position: absolute;
+    right: 8px;
+    top: 100%;
+  }
