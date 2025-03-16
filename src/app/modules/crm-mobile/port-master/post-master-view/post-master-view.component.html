@@ -8,13 +8,13 @@
                     <aside class="col-md-8">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
-                            <label for="text-input" class="input-label">Name</label>
+                            <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <div class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" class="custom-input-field sm error" placeholder=" " />
-                            <label for="text-input" class="input-label">Code</label>
+                            <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
                             <p class="error-message">Invalid input</p>
                         </div>
                     </div>
@@ -78,7 +78,7 @@
                                 <ng-option [value]="transport.id">{{transport.name}}</ng-option>
                                 }
                             </ng-select>
-                            <label for="" class="input-label">Mode of Transport</label>
+                            <label for="" class="input-label">Mode of Transport <span class="text-danger">*</span></label>
                         </div>
                     </aside>
 

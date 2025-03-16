@@ -81,7 +81,7 @@ export const CrmMobileRoutes: Routes = [
                 },
             },
             {
-                path: 'customer',
+                path: 'customer/list',
                 component: CustomerComponent,
                 data: {
                     title: 'Customer',

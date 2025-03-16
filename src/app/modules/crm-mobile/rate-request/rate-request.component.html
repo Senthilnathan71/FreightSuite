@@ -79,8 +79,8 @@
             <!-- #region Route Details -->
             <div formArrayName="routes">
                 <div *ngFor="let route of routes.controls; let routeIndex = index" [formGroupName]="routeIndex">
-                    <div class="card border border-primary position-relative">
-                        <div class="card-header bg-primary rounded-top-1 d-flex align-items-center">
+                    <div class="card border border-info position-relative">
+                        <div class="card-header bg-info rounded-top-1 d-flex align-items-center">
                             <h6 class="font-bold mb-0 text-light">Route Details</h6>
                             <button class="btn btn-sm waves-effect waves-light text-light" (click)="resetForm()">
                                 <i-feather class="feather-sm me-1" name="refresh-cw"></i-feather>
@@ -166,7 +166,7 @@
                                         <div>
                                             <table class="table table-hover align-middle no-wrap table-bordered">
                                                 <thead>
-                                                    <tr class="gredient-info-bg">
+                                                    <tr class="bg-info">
                                                         <td class="bg-transparent text-light"
                                                             [ngClass]="{ 'dofi-min-w-120 dofi-max-w-120': isMobile, '': !isMobile }">
                                                             <label for="" class="form-label mb-0">Cargo Type <span
@@ -238,7 +238,7 @@
                                         <div>
                                             <table class="table table-hover align-middle no-wrap table-bordered">
                                                 <thead>
-                                                    <tr class="gredient-info-bg">
+                                                    <tr class="bg-info">
                                                         <td class="bg-transparent text-light"
                                                             [ngClass]="{ 'dofi-min-w-120 dofi-max-w-120': isMobile, '': !isMobile }">
                                                             <label class="form-label mb-0">Cargo Type <span
