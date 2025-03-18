@@ -4,7 +4,17 @@
 <div class="page-breadcrumb">
   <div class="row">
     <div class="col-12 align-self-center">
-      <h4 class="page-title">{{ pageInfo?.['title'] }}</h4>
+      <h4 class="page-title">
+        <!-- <a *ngIf="pageInfo?.backOption?.length" [routerLink]="pageInfo?.backOption?.[0]?.url"
+          class="me-2 text-decoration-none cursor-pointer">
+          <i-feather name="arrow-left" class="feather-sm"></i-feather>
+        </a> -->
+        <a
+          class="me-2 text-decoration-none cursor-pointer">
+          <i-feather name="arrow-left" class="feather-sm"></i-feather>
+        </a>
+        {{ pageInfo?.['title']}}
+      </h4>
       <div>
         <nav style="--bs-breadcrumb-divider: '>'" class="d-flex align-items-center" aria-label="breadcrumb">
           @for (url of pageInfo?.['urls']; track url.url;let index = $index,last

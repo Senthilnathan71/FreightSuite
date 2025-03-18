@@ -1,12 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router, NavigationEnd, ActivatedRoute, Data, RouterModule } from '@angular/router';
+import { FeatherModule } from 'angular-feather';
 import { filter, map, mergeMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-breadcrumb',
   standalone: true,
-  imports: [RouterModule],
+  imports: [
+    RouterModule,
+    FeatherModule
+  ],
   templateUrl: './breadcrumb.component.html',
   styleUrls: [],
 })

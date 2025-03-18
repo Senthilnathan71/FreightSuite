@@ -1,70 +1,175 @@
 <div class="row">
-    <div class="col-12">
-        <div class="card">
+        
+            <div class="col-12">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <button class="btn btn-sm btn-outline-info"><i-feather name="file-text" class="feather-sm me-1"></i-feather> eDoc</button>
+                    <button class="btn btn-sm btn-light-secondary ms-auto"><i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit</button>
+                    <button class="btn btn-sm btn-info"><i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> Save</button>
+                </div>
+              </div>
+           
+    <div class="col-md-6">
+        <div class="card h-100">
             <div class="card-body">
-                <!-- #region lead view -->
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered mobile-table">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Lead Name</th>
-                            <th class="bg-transparent text-light" scope="col">Phone Number</th>
-                            <th class="bg-transparent text-light" scope="col">Type</th>
-                            <th class="bg-transparent text-light" scope="col">Schedule</th>
-                            <th class="bg-transparent text-light" scope="col">Notes</th>
-                            <th class="bg-transparent text-light" scope="col">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let customer of customerItemsView">
-                            <td data-label="Lead Name">
-                                <div class="text-truncate">
-                                    {{ customer.Name }}
-                                </div>
-                            </td>
-                            <td data-label="Phone">
-                                <div class="text-truncate">
-                                    <i-feather name="phone" class="feather-sm"></i-feather> {{ customer.phone }}
-                                </div>
-                            </td>
-                            <td data-label="Type">{{ customer.type }}</td>
-                            <td data-label="Schedule">
-                                <!-- <span class="badge font-medium" [ngClass]="getScheduleClass(customer.schedule)">{{
-                                    customer.schedule }}</span> -->
-                                    <div class="">
-                                        <i-feather name="calendar" class="feather-sm"></i-feather> {{customer.schedule}}
-                                    </div>
-                            </td>
-                            <td data-label="Notes">
-                                    <div class="text-truncate">
-                                        <i-feather name="file-text" class="feather-sm"></i-feather> {{customer.notes}}
-                                    </div>
-                            </td>
-                            <td data-label="Action">
-                                <section class="action-items">
-                                    <a class="text-info mx-2">
-                                        <i-feather name="edit" class="feather-sm"></i-feather>
-                                    </a>
-
-                                    <a href="javascript:void(0)" class="text-danger mx-2 ps-3 border-start">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
-                                </section>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="row">
+                    <h6 class="card-title mb-0">Customer Information</h6>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Customer Name <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Alias </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Group Name </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Country <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Website </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <textarea id="" placeholder="" rows="1" class="input-field sm"></textarea>
+                            <label for="text-input" class="input-label">Address1 </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <textarea id="" placeholder="" rows="1" class="input-field sm"></textarea>
+                            <label for="text-input" class="input-label">Address2 </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Cash/Credit <span class="text-danger">*</span> </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Network  </label>
+                        </div>
+                    </aside>
+                </div>
             </div>
-            <!-- #endregion -->
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="row">
+                    <h6 class="card-title mb-0">KYC Details</h6>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Specified? <span class="text-danger">*</span> </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Registration No </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Company Type <span class="text-danger">*</span> </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Pan Available </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Pan/Vat </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Name as per Pan </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">is MSME </label>
+                        </div>
+                    </aside>
+
+                    
+                </div>
+            </div>
+            <div class="card-body border-top">
+                <div class="row">
+                    <h6 class="card-title mb-0">Salesman Details</h6>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Department <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Salesperson </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">CS Person </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Doc Person </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Branch </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Effective From <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- <div *ngIf="isMobile; else desktopTemplate">
-    <h2>You are using a mobile device 📱</h2>
-  </div>
-  
-<ng-template #desktopTemplate>
-<h2>You are using a desktop/laptop 💻</h2>
-</ng-template> -->
