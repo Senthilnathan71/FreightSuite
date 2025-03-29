@@ -1,10 +1,16 @@
 import { Component } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
-import { FormsModule } from '@angular/forms';
+import { FormsModule,FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { NgSelectConfig, NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { PortService } from '../../Services/port.service';
+import { Country } from '../../Interfaces/country.interface';
+import { State } from '../../Interfaces/state.interface';
+import { Sector } from '../../Interfaces/sector.interface';
 
-
+ 
 @Component({
   selector: 'app-post-master-view',
   standalone: true,
@@ -12,78 +18,35 @@ import { CommonModule } from '@angular/common';
     FeatherModule,
     CommonModule,
     NgSelectModule, 
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule
   ],
   templateUrl: './post-master-view.component.html',
   styleUrl: './post-master-view.component.scss'
 })
 export class PostMasterViewComponent {
+  portForm!: FormGroup;
   selectedState: number;
   selectedCountry: number;
   selectedTransport: number;
+  btnDisable: boolean = false;
+  countries : Country[]=[]; 
+  states : State[] = [];
+  sectors : Sector[]=[]; 
 
-  states = [
-    { id: 1,  name: 'State 1' },
-    { id: 2,  name: 'State 2' },
-    { id: 3,  name: 'State 3' },
-    { id: 4,  name: 'State 4' },
-    { id: 5,  name: 'State 5' },
-    { id: 6,  name: 'State 6' },
-    { id: 7,  name: 'State 7' },
-    { id: 8,  name: 'State 8' },
-    { id: 9,  name: 'State 9' },
-    { id: 10, name: 'State 10' },
-    { id: 11, name: 'State 11' },
-    { id: 12, name: 'State 12' },
-    { id: 13, name: 'State 13' },
-    { id: 14, name: 'State 14' },
-    { id: 15, name: 'State 15' },
-    { id: 16, name: 'State 16' },
-    { id: 17, name: 'State 17' },
-    { id: 18, name: 'State 18' },
-    { id: 19, name: 'State 19' },
-    { id: 20, name: 'State 20' },
-    { id: 21, name: 'State 21' },
-    { id: 22, name: 'State 22' },
-    { id: 23, name: 'State 23' },
-    { id: 24, name: 'State 24' },
-];
-countries = [
-    { id: 1,  name: 'Country 1' },
-    { id: 2,  name: 'Country 2' },
-    { id: 3,  name: 'Country 3' },
-    { id: 4,  name: 'Country 4' },
-    { id: 5,  name: 'Country 5' },
-    { id: 6,  name: 'Country 6' },
-    { id: 7,  name: 'Country 7' },
-    { id: 8,  name: 'Country 8' },
-    { id: 9,  name: 'Country 9' },
-    { id: 10, name: 'Country 10' },
-    { id: 11, name: 'Country 11' },
-    { id: 12, name: 'Country 12' },
-    { id: 13, name: 'Country 13' },
-    { id: 14, name: 'Country 14' },
-    { id: 15, name: 'Country 15' },
-    { id: 16, name: 'Country 16' },
-    { id: 17, name: 'Country 17' },
-    { id: 18, name: 'Country 18' },
-    { id: 19, name: 'Country 19' },
-    { id: 20, name: 'Country 20' },
-    { id: 21, name: 'Country 21' },
-    { id: 22, name: 'Country 22' },
-    { id: 23, name: 'Country 23' },
-    { id: 24, name: 'Country 24' },
-];
 modeOfTransports = [
-    { id: 1,  name: 'Sea' },
-    { id: 2,  name: 'Air' },
-    { id: 3,  name: 'ICD' },
-    { id: 4,  name: 'Terminal' },
-    { id: 5,  name: 'Road' },
-    { id: 6,  name: 'Rail' },
+    { id: 'Sea',  name: 'Sea' },
+    { id: 'Air',  name: 'Air' },
+    { id: 'ICD',  name: 'ICD' },
+    { id: 'Terminal',  name: 'Terminal' },
+    { id: 'Road',  name: 'Road' },
+    { id: 'Rail',  name: 'Rail' }
 ];
+  errorMessage: any;
 
-  constructor(private config: NgSelectConfig) {
+  constructor(private config: NgSelectConfig,private fb: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router,private appSettingService: AppSettingsService,private portService: PortService) {
     this.config.notFoundText = 'Custom not found';
     this.config.appendTo = 'body';
     this.config.bindValue = 'value';
@@ -92,6 +55,106 @@ modeOfTransports = [
     const car2: any = this.states[1];
     car2.disabled = !car2.disabled;
   }
+  ngOnInit() { 
+    this.loadCountry();
+    this.loadSector();
+    this.portForm = new FormGroup({
+      PortName: new FormControl('', [Validators.required, Validators.maxLength(50)]),
+      PortCode: new FormControl('', [Validators.required, Validators.maxLength(5)]),
+      CountryMasterSid: new FormControl(null, []),
+      StateMasterSid: new FormControl(null, []),
+      TimeZone: new FormControl('', []),
+      SectorMasterSid: new FormControl(null, [Validators.required]),
+      TerminalCode: new FormControl('', [Validators.maxLength(10)]),
+      PortType: new FormControl(null, [Validators.maxLength(10)]),
+      ExportRestriction: new FormControl('', [Validators.maxLength(100)]),
+      ImportRestriction: new FormControl('', [Validators.maxLength(100)]),
+      SCMTPortCode: new FormControl('', [Validators.maxLength(10)]),
+      CBMRequire: new FormControl('', []),
+      EdiPortCode: new FormControl('', [Validators.maxLength(10)]),
+      Remarks: new FormControl('', [Validators.maxLength(100)]),
+    });
 
-  ngOnInit() { }
+    // Watch for changes in the selected country and load states accordingly
+    this.portForm.get('CountryMasterSid')?.valueChanges.subscribe(CountryMasterSid => {
+      this.loadStates(CountryMasterSid);
+    });
+
+  }
+
+  loadCountry(): void {
+      this.portService.getAllCountry().subscribe(
+        (resp: Country[]) => {
+          console.log(resp, 'Countries')
+          this.countries = resp['data'];  
+        },
+        (error) => {
+          this.errorMessage = error.message;  
+          console.error('Error loading leads:', error);  
+        }
+      );
+    }
+
+    loadSector(): void {
+      this.portService.getAllSector().subscribe(
+        (resp: Country[]) => {
+          console.log(resp, 'Sectors')
+          this.sectors = resp['data'];  
+        },
+        (error) => {
+          this.errorMessage = error.message;  
+          console.error('Error loading leads:', error);  
+        }
+      );
+    }
+
+    loadStates(CountryMasterSid): void {
+      this.portService.getAllState(CountryMasterSid).subscribe(
+        (resp: State[]) => {
+          console.log(resp, 'States')
+          this.states = resp['data'];  
+        },
+        (error) => {
+          this.errorMessage = error.message;  
+          console.error('Error loading leads:', error);  
+        }
+      );
+    }
+
+  reset() {
+    this.portForm.reset();
+  }
+
+  goBack() {
+    this.router.navigate(['crm/port-master/list'])
+  }
+
+   // Handle Form Submission
+   onSubmit() {   
+    if (this.portForm.invalid) {
+      this.portForm.markAllAsTouched(); // Force validation messages to show
+      this.portForm.updateValueAndValidity(); // Ensure validation is refreshed
+      this.appSettingService.showWarning('Please fill all required fields correctly.')
+      return;
+    }else{ 
+     
+     // let payload = this.portForm.value;
+     
+       let createdBy = {createdBy: this.appSettingService.userSettingSource.value['userLogin']};
+       const payload = { ...this.portForm.value, ...createdBy };
+       payload.CBMRequire = (this.portForm.value.CBMRequire)?'Y':'N';
+       console.log('payload',payload);
+      this.portService.createPort(payload).subscribe(
+              (resp: any) => {
+                this.appSettingService.showSuccess(resp.message);  
+                console.log(resp);
+                this.router.navigate(['crm/port-master/list']);
+              },
+              (error) => {
+                this.errorMessage = error.message; 
+                console.error('Error loading ports:', error);  
+              }
+            );
+    }
+  }
 }

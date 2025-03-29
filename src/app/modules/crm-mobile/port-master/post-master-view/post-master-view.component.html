@@ -1,143 +1,213 @@
-<div class="row">
 
-    <div class="col-6">
-        <div class="card h-100">
-            <section class="card-body">
-                <section class="row">
-                    <h6 class="card-title mb-0">Basic Information</h6>
-                    <aside class="col-md-8">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
-                            <label for="text-input" class="input-label">Name</label>
-                        </div>
-                    </aside>
-                    <div class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" class="custom-input-field sm error" placeholder=" " />
-                            <label for="text-input" class="input-label">Code</label>
-                            <p class="error-message">Invalid input</p>
-                        </div>
-                    </div>
-                </section>
-            </section>
+<form [formGroup]="portForm"> 
+    <div class="row">
+        <div class="col-12">
+            
+            <ng-container *ngTemplateOutlet="portform"></ng-container>
+        </div>
 
-            <section class="card-body border-top">
-                <h6 class="card-title mb-0">Location Details</h6>
-                <section class="row">
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [(ngModel)]="selectedCountry">
-                                @for (country of countries; track country.id) {
-                                <ng-option [value]="country.id">{{country.name}}</ng-option>
-                                }
-                            </ng-select>
-                            <label for="text-input" class="input-label">Shipment Type</label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [(ngModel)]="selectedState">
-                                @for (state of states; track state.id) {
-                                <ng-option [value]="state.id">{{state.name}}</ng-option>
-                                }
-                            </ng-select>
-                            <label for="" class="input-label">State</label>
-                        </div>
-                    </aside>
-                    <div class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="time" id="text-input" class="custom-input-field sm" placeholder=" " />
-                            <label for="text-input" class="input-label">Time Zome</label>
-                        </div>
-                    </div>
-                </section>
-            </section>
+        <div class="col-12">
+            <div class="">
+                <div class="d-flex align-items-center justify-content-start gap-2">
 
-            <section class="card-body border-top">
-                <h6 class="card-title mb-0">Port Specifications</h6>
+                    <button class="btn btn-sm btn-outline-secondary btn-rounded waves-effect waves-light btn-min-width"
+                        (click)="goBack()">
+                        <i-feather class="feather-sm me-1" name="arrow-left"></i-feather> Back
+                    </button>
+                    <button
+                        class="btn btn-sm btn-outline-secondary btn-rounded waves-effect waves-light btn-min-width ms-auto"
+                        (click)="reset()">
+                        <i-feather class="feather-sm me-1" name="refresh-cw"></i-feather> Reset
+                    </button>
+                    <button class="btn btn-sm btn-info btn-rounded waves-effect waves-light btn-min-width"
+                        (click)="onSubmit()" [disabled]=" btnDisable">
+                        <i-feather class="feather-sm me-1" name="upload-cloud"></i-feather> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <ng-template #portform>
+
+            
                 <div class="row">
 
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
-                            <label for="text-input" class="input-label">Sector</label>
+                    <div class="col-6">
+                        <div class="card h-100">
+                            <section class="card-body">
+                                <section class="row">
+                                    <h6 class="card-title mb-0">Basic Information</h6>
+                                    <aside class="col-md-8">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " formControlName="PortName"  />
+                                            <label for="text-input" class="input-label">Name</label>
+                                            <div *ngIf="portForm.get('PortName')?.touched && portForm.get('PortName')?.invalid">
+                                                    <p *ngIf="portForm.get('PortName')?.errors?.['required']" class="error-message">Name is required.</p>
+                                                    <p *ngIf="portForm.get('PortName')?.errors?.['maxlength']" class="error-message">Name  characters must be maximum 50 characters long.</p>
+                                              </div>
+                                        </div>
+                                    </aside>
+                                    <div class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" class="custom-input-field sm " formControlName="PortCode" placeholder=" " />
+                                            <label for="text-input" class="input-label">Code</label>
+                                            <div *ngIf="portForm.get('PortCode')?.touched && portForm.get('PortCode')?.invalid">
+                                                <p *ngIf="portForm.get('PortCode')?.errors?.['required']" class="error-message">Code is required.</p>
+                                                <p *ngIf="portForm.get('PortCode')?.errors?.['maxlength']" class="error-message">Code characters must be maximum 5 characters long.</p>
+                                          </div> 
+                                        </div>
+                                    </div>
+                                </section>
+                            </section>
+                
+                            <section class="card-body border-top">
+                                <h6 class="card-title mb-0">Location Details</h6>
+                                <section class="row">
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <ng-select formControlName="CountryMasterSid" [items]="countries" bindLabel="countryName" bindValue="CountryMasterSid">
+                                               
+                                            </ng-select>
+                                            <label for="text-input" class="input-label">Country</label>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <ng-select formControlName="StateMasterSid" [items]="states" bindLabel="stateName" bindValue="StateMasterSid">
+                                               
+                                            </ng-select>
+                                            <label for="" class="input-label">State</label>
+                                        </div>
+                                    </aside>
+                                    <div class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="time" id="text-input"  formControlName="TimeZone" class="custom-input-field sm" placeholder=" " />
+                                            <label for="text-input" class="input-label">Time Zome</label>
+                                            
+                                        </div>
+                                    </div>
+                                </section>
+                            </section>
+                
+                            <section class="card-body border-top">
+                                <h6 class="card-title mb-0">Port Specifications</h6>
+                                <div class="row">
+                
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <ng-select formControlName="SectorMasterSid" [items]="sectors" bindLabel="sectorName" bindValue="SectorMasterSid">
+                                               
+                                            </ng-select>
+                                            <label for="text-input" class="input-label">Sector</label>
+                                            <div *ngIf="portForm.get('SectorMasterSid')?.touched && portForm.get('SectorMasterSid')?.invalid">
+                                                <p *ngIf="portForm.get('SectorMasterSid')?.errors?.['required']" class="error-message">Sector is required.</p>
+                                          </div>
+                                        </div>
+                                    </aside>
+                
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " formControlName="TerminalCode"/>
+                                            <label for="text-input" class="input-label">Terminal</label>
+                                            <div *ngIf="portForm.get('TerminalCode')?.touched && portForm.get('TerminalCode')?.invalid">
+                                                <p *ngIf="portForm.get('TerminalCode')?.errors?.['maxlength']" class="error-message">Code characters must be maximum 10 characters long.</p>
+                                          </div> 
+                                        </div>
+                                    </aside>
+                
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <ng-select formControlName="PortType" [items]="modeOfTransports" bindLabel="name" bindValue="name">
+                                               
+                                            </ng-select>
+                                            <label for="" class="input-label">Mode of Transport</label>
+                                        </div>
+                                    </aside>
+                
+                                </div>
+                            </section>
                         </div>
-                    </aside>
+                    </div>
+                    <div class="col-6">
+                        <div class="card h-100">
+                
+                            <section class="card-body">
+                                <h6 class="card-title mb-0">Compliance & Regulations</h6>
+                                <section class="row">
+                                    <aside class="col-md-6">
+                                        <div class="custom-form-group">
+                                            <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1" formControlName="ExportRestriction"></textarea>
+                                            <label for="text-input" class="input-label">Export Restriction</label>
+                                            <div *ngIf="portForm.get('ExportRestriction')?.touched && portForm.get('ExportRestriction')?.invalid">
+                                                <p *ngIf="portForm.get('ExportRestriction')?.errors?.['maxlength']" class="error-message">characters must be maximum 100 characters long.</p>
+                                          </div> 
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-6">
+                                        <div class="custom-form-group">
+                                            <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1" formControlName="ImportRestriction"></textarea>
+                                            <label for="text-input" class="input-label">Import Restriction</label>
+                                            <div *ngIf="portForm.get('ImportRestriction')?.touched && portForm.get('ImportRestriction')?.invalid">
+                                                <p *ngIf="portForm.get('ImportRestriction')?.errors?.['maxlength']" class="error-message">characters must be maximum 100 characters long.</p>
+                                          </div>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-6">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " formControlName="SCMTPortCode"/>
+                                            <label for="text-input" class="input-label">SCMT Port</label>
+                                            <div *ngIf="portForm.get('SCMTPortCode')?.touched && portForm.get('SCMTPortCode')?.invalid">
+                                                <p *ngIf="portForm.get('SCMTPortCode')?.errors?.['maxlength']" class="error-message">characters must be maximum 100 characters long.</p>
+                                          </div>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-6">
+                                        <div class="custom-form-group">
 
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
-                            <label for="text-input" class="input-label">Terminal</label>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" formControlName="CBMRequire">
+                                                <label class="form-check-label">
+                                                    CBM Require
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </aside>
+                
+                                </section>
+                            </section>
+                
+                            <section class="card-body border-top">
+                                <h6 class="card-title mb-0">Additional Settings</h6>
+                                <section class="row">
+                                    <aside class="col-md-6">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " formControlName="EdiPortCode" />
+                                            <label for="text-input" class="input-label">Edit Portal</label>
+                                            <div *ngIf="portForm.get('EdiPortCode')?.touched && portForm.get('EdiPortCode')?.invalid">
+                                                <p *ngIf="portForm.get('EdiPortCode')?.errors?.['maxlength']" class="error-message">characters must be maximum 10 character long.</p>
+                                           </div>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-6">
+                                        <div class="custom-form-group">
+                                            <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1" formControlName="Remarks" ></textarea>
+                                            <label for="text-input" class="input-label">Remarks</label>
+                                            <div *ngIf="portForm.get('Remarks')?.touched && portForm.get('Remarks')?.invalid">
+                                                <p *ngIf="portForm.get('Remarks')?.errors?.['maxlength']" class="error-message">characters must be maximum 100 character long.</p>
+                                           </div>
+                                        </div>
+                                    </aside>
+                                </section>
+                            </section>
+                
                         </div>
-                    </aside>
-
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [(ngModel)]="selectedTransport">
-                                @for (transport of modeOfTransports; track transport.id) {
-                                <ng-option [value]="transport.id">{{transport.name}}</ng-option>
-                                }
-                            </ng-select>
-                            <label for="" class="input-label">Mode of Transport</label>
-                        </div>
-                    </aside>
-
+                    </div>
+                </div> 
+                <div class="row">
+                    <section class="card-body"><h1></h1></section>
                 </div>
-            </section>
-        </div>
-    </div>
-    <div class="col-6">
-        <div class="card h-100">
-
-            <section class="card-body">
-                <h6 class="card-title mb-0">Compliance & Regulations</h6>
-                <section class="row">
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1"></textarea>
-                            <label for="text-input" class="input-label">Export Restriction</label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1"></textarea>
-                            <label for="text-input" class="input-label">Import Restriction</label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
-                            <label for="text-input" class="input-label">SCMT Port</label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
-                            <label for="text-input" class="input-label">CBM Require</label>
-                        </div>
-                    </aside>
-
-                </section>
-            </section>
-
-            <section class="card-body border-top">
-                <h6 class="card-title mb-0">Additional Settings</h6>
-                <section class="row">
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
-                            <label for="text-input" class="input-label">Edit Portal</label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1"></textarea>
-                            <label for="text-input" class="input-label">Remarks</label>
-                        </div>
-                    </aside>
-                </section>
-            </section>
-
-        </div>
-    </div>
-</div>
+                
+    </ng-template>
+</form>
