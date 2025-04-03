@@ -1,0 +1,81 @@
+<div class="row">
+    <!-- #region Search Panel -->
+    <div class="col-12">
+        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
+            <form action="" class="d-flex align-items-center gap-2">
+                <div class="form-outline col">
+                    <input type="search" class="form-control ps-5" name="search" autocomplete="off"
+                        placeholder="Search">
+                    <i class="fas fa-search ms-3"></i>
+                </div>
+                <!-- <button type="button" class="btn btn-info btn-sm" >
+                        <i class="mdi mdi-plus"></i> Add
+                    </button> -->
+            </form>
+        </div>
+    </div>
+    <!-- #endregion -->
+
+    <div class="col-12">
+        <div class="card">
+            <!-- #region lead view -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Name</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Region</th>
+                            <th class="bg-transparent text-light" scope="col">Country</th>
+                            <th class="bg-transparent text-light" scope="col">Remarks</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8,9]; track $index) {
+
+                            <tr>
+                                <td>
+                                    GainWell Ltd
+                                </td>
+                                <td>
+                                    #FF5864
+                                </td>
+                                <td>
+                                    N/A
+                                </td>
+                                <td>
+                                    N/A
+                                </td>
+                                <td>
+                                    N/A
+                                </td>
+                                <td>
+                                    N/A
+                                    
+                                </td>
+                                <td>
+                                    N/A
+                                </td>
+                                <td>
+                                    <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                        Active</span>
+                                </td>
+                                <td>
+                                    <a    class="text-dark mx-2">
+                                        <i-feather name="edit-3" class="feather-sm"></i-feather>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+
+                        
+                    </tbody>
+                </table>
+            </div>
+            <!-- #endregion -->
+        </div>
+    </div>
+</div>

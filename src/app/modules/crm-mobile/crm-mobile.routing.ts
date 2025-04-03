@@ -16,6 +16,10 @@ import { PostMasterViewComponent } from './port-master/post-master-view/post-mas
 import { PostMasterListComponent } from './port-master/post-master-list/post-master-list.component';
 import { UOMMListComponent } from './UOM-Master/uomm-list/uomm-list.component';
 import { UOMMViewComponent } from './UOM-Master/uomm-view/uomm-view.component';
+import { CountryListComponent } from './country/country-list/country-list.component';
+import { CountryEntryComponent } from './country/country-entry/country-entry.component';
+import { StateListComponent } from './state/state-list/state-list.component';
+import { StateEntryComponent } from './state/state-entry/state-entry.component';
 
 
 
@@ -234,6 +238,50 @@ export const CrmMobileRoutes: Routes = [
                     urls: [
                         { title: "CRM", url: "/crm" },
                         { title: "UOM Master View" },
+                    ],
+                },
+            },
+            {
+                path: "country/list",
+                component: CountryListComponent,
+                data: {
+                    title: "Country",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Country List" },
+                    ],
+                },
+            },
+            {
+                path: "country/entry",
+                component: CountryEntryComponent,
+                data: {
+                    title: "Country",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Country Add" },
+                    ],
+                },
+            },
+            {
+                path: "state/list",
+                component: StateListComponent,
+                data: {
+                    title: "State",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "State List" },
+                    ],
+                },
+            },
+            {
+                path: "state/entry",
+                component: StateEntryComponent,
+                data: {
+                    title: "State",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "State Add" },
                     ],
                 },
             },

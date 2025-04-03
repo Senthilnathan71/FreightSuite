@@ -23,6 +23,8 @@ export class DashboardComponent implements OnInit {
     { name: 'Port Master', badge: null, link: '/crm/port-master/list', category: 'nav-port-master' },
     { name: 'UOM Master', badge: null, link: '/crm/uom-master/list', category: 'nav-uom-master' },
     { name: 'Customer', badge: null, link: '/crm/customer/list', category: 'nav-uom-master' },
+    { name: 'Country', badge: null, link: '/crm/country/list', category: 'nav-country-list' },
+    { name: 'State', badge: null, link: '/crm/state/list', category: 'nav-state-list' },
     // { name: 'Lead', badge: 99, link: '/crm/lead/list', category: 'nav-lead' },
     // { name: 'Calendar', badge: null, link: '/crm/calendar', category: 'nav-calendar' },
     // { name: 'Customer', badge: null, link: '/crm/customer', category: 'nav-customer' },
