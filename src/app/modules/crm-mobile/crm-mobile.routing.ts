@@ -20,6 +20,10 @@ import { CountryListComponent } from './country/country-list/country-list.compon
 import { CountryEntryComponent } from './country/country-entry/country-entry.component';
 import { StateListComponent } from './state/state-list/state-list.component';
 import { StateEntryComponent } from './state/state-entry/state-entry.component';
+import { UnitListComponent } from './unit/unit-list/unit-list.component';
+import { UnitEntryComponent } from './unit/unit-entry/unit-entry.component';
+import { ZoneListComponent } from './zone/zone-list/zone-list.component';
+import { ZoneEntryComponent } from './zone/zone-entry/zone-entry.component';
 
 
 
@@ -282,6 +286,72 @@ export const CrmMobileRoutes: Routes = [
                     urls: [
                         { title: "CRM", url: "/crm" },
                         { title: "State Add" },
+                    ],
+                },
+            },
+            {
+                path: "unit/list",
+                component: UnitListComponent,
+                data: {
+                    title: "Unit",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Unit List" },
+                    ],
+                },
+            },
+            {
+                path: "unit/entry",
+                component: UnitEntryComponent,
+                data: {
+                    title: "Unit",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Unit Add" },
+                    ],
+                },
+            },
+            {
+                path: "vessel/list",
+                component: UnitListComponent,
+                data: {
+                    title: "Vessel",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Vessel List" },
+                    ],
+                },
+            },
+            {
+                path: "vessel/entry",
+                component: UnitEntryComponent,
+                data: {
+                    title: "Vessel",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Vessel Add" },
+                    ],
+                },
+            },
+            {
+                path: "zone/list",
+                component: ZoneListComponent,
+                data: {
+                    title: "Zone",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Zone List" },
+                    ],
+                },
+            },
+            {
+                path: "zone/entry",
+                component: ZoneEntryComponent,
+                data: {
+                    title: "Zone",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Zone Add" },
                     ],
                 },
             },
