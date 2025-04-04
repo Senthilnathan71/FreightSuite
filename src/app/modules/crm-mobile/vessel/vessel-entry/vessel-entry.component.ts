@@ -2,14 +2,14 @@ import { Component } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 
 @Component({
-  selector: 'app-vessel-list',
+  selector: 'app-vessel-entry',
   standalone: true,
   imports: [
     FeatherModule
   ],
-  templateUrl: './vessel-list.component.html',
-  styleUrl: './vessel-list.component.scss'
+  templateUrl: './vessel-entry.component.html',
+  styleUrl: './vessel-entry.component.scss'
 })
-export class VesselListComponent {
+export class VesselEntryComponent {
 
 }

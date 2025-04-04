@@ -24,6 +24,8 @@ import { UnitListComponent } from './unit/unit-list/unit-list.component';
 import { UnitEntryComponent } from './unit/unit-entry/unit-entry.component';
 import { ZoneListComponent } from './zone/zone-list/zone-list.component';
 import { ZoneEntryComponent } from './zone/zone-entry/zone-entry.component';
+import { VesselListComponent } from './vessel/vessel-list/vessel-list.component';
+import { VesselEntryComponent } from './vessel/vessel-entry/vessel-entry.component';
 
 
 
@@ -313,7 +315,7 @@ export const CrmMobileRoutes: Routes = [
             },
             {
                 path: "vessel/list",
-                component: UnitListComponent,
+                component: VesselListComponent,
                 data: {
                     title: "Vessel",
                     urls: [
@@ -324,7 +326,7 @@ export const CrmMobileRoutes: Routes = [
             },
             {
                 path: "vessel/entry",
-                component: UnitEntryComponent,
+                component: VesselEntryComponent,
                 data: {
                     title: "Vessel",
                     urls: [
