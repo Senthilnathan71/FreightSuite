@@ -2,19 +2,24 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppService } from 'src/app/service/app.service';
 import { FeatherModule } from 'angular-feather';
+import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-customer-view',
   standalone: true,
   imports: [
     CommonModule,
-    FeatherModule
+    FeatherModule,
+    NgbNavModule
   ],
   templateUrl: './customer-view.component.html',
   styleUrl: './customer-view.component.scss'
 })
 export class CustomerViewComponent implements OnInit {
   isMobile: boolean = false;
+
+  active = 1;
+
 
   customerItemsView = [
     {

@@ -1,13 +1,16 @@
 <div class="row">
-        
-            <div class="col-12">
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <button class="btn btn-sm btn-outline-info"><i-feather name="file-text" class="feather-sm me-1"></i-feather> eDoc</button>
-                    <button class="btn btn-sm btn-light-secondary ms-auto"><i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit</button>
-                    <button class="btn btn-sm btn-info"><i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> Save</button>
-                </div>
-              </div>
-           
+
+    <div class="col-12">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <button class="btn btn-sm btn-outline-info"><i-feather name="file-text" class="feather-sm me-1"></i-feather>
+                eDoc</button>
+            <button class="btn btn-sm btn-light-secondary ms-auto"><i-feather name="edit-3"
+                    class="feather-sm me-1"></i-feather> Edit</button>
+            <button class="btn btn-sm btn-info"><i-feather name="upload-cloud" class="feather-sm me-1"></i-feather>
+                Save</button>
+        </div>
+    </div>
+
     <div class="col-md-6">
         <div class="card h-100">
             <div class="card-body">
@@ -16,7 +19,8 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Customer Name <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">Customer Name <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-4">
@@ -40,7 +44,8 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Country <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">Country <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-4">
@@ -64,13 +69,14 @@
                     <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Cash/Credit <span class="text-danger">*</span> </label>
+                            <label for="text-input" class="input-label">Cash/Credit <span class="text-danger">*</span>
+                            </label>
                         </div>
                     </aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Network  </label>
+                            <label for="text-input" class="input-label">Network </label>
                         </div>
                     </aside>
                 </div>
@@ -85,7 +91,8 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Specified? <span class="text-danger">*</span> </label>
+                            <label for="text-input" class="input-label">Specified? <span class="text-danger">*</span>
+                            </label>
                         </div>
                     </aside>
                     <aside class="col-md-4">
@@ -97,7 +104,8 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Company Type <span class="text-danger">*</span> </label>
+                            <label for="text-input" class="input-label">Company Type <span class="text-danger">*</span>
+                            </label>
                         </div>
                     </aside>
                     <aside class="col-md-4">
@@ -125,7 +133,7 @@
                         </div>
                     </aside>
 
-                    
+
                 </div>
             </div>
             <div class="card-body border-top">
@@ -135,7 +143,8 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Department <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">Department <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-4">
@@ -165,7 +174,8 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Effective From <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">Effective From <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
                 </div>
@@ -173,3 +183,77 @@
         </div>
     </div>
 </div>
+
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
+                    <li [ngbNavItem]="1">
+                        <button ngbNavLink>Customer Branch</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="customerBranch"></ng-container>
+                        </ng-template>
+                    </li>
+                    <li [ngbNavItem]="2">
+                        <button ngbNavLink>Branch Contact</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="customerBranchContact"></ng-container>
+                        </ng-template>
+                    </li>
+                    <li [ngbNavItem]="3">
+                        <button ngbNavLink>eMail</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="customerEmail"></ng-container>
+                        </ng-template>
+                    </li>
+                    <li [ngbNavItem]="4">
+                        <button ngbNavLink>Milestone</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="customerMilestone"></ng-container>
+                        </ng-template>
+                    </li>
+                    <li [ngbNavItem]="5">
+                        <button ngbNavLink>Movement Terms</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="customerMovementTerms"></ng-container>
+                        </ng-template>
+                    </li>
+                    <li [ngbNavItem]="6">
+                        <button ngbNavLink>eLogin</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="customerElogin"></ng-container>
+                        </ng-template>
+                    </li>
+                </ul>
+                
+                <div [ngbNavOutlet]="nav" class="mt-2 border border-danger p-2"></div>
+            </div>
+        </div>
+       
+        
+        <!-- <pre>Active: {{ active }}</pre> -->
+    </div>
+</div>
+
+
+
+
+<ng-template #customerBranch>
+    Customer Branch
+</ng-template>
+<ng-template #customerBranchContact>
+    Branch Contact
+</ng-template>
+<ng-template #customerEmail>
+    Email
+</ng-template>
+<ng-template #customerMilestone>
+    Milestone
+</ng-template>
+<ng-template #customerMovementTerms>
+    Movement Terms
+</ng-template>
+<ng-template #customerElogin>
+    eLogin
+</ng-template>

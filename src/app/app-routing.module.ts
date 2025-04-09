@@ -9,7 +9,7 @@ export const Approutes: Routes = [
   {
     path: '',
     component: FullComponent,
-    canActivate:[AuthGuard],
+    // canActivate:[AuthGuard],
     data:{
       type: 'FullComponent'
     },
