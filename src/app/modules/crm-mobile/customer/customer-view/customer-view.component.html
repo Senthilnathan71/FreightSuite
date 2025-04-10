@@ -226,12 +226,12 @@
                         </ng-template>
                     </li>
                 </ul>
-                
-                <div [ngbNavOutlet]="nav" class="mt-2 border border-danger p-2"></div>
+
+                <section [ngbNavOutlet]="nav" class="mt-2 p-2"></section>
             </div>
         </div>
-       
-        
+
+
         <!-- <pre>Active: {{ active }}</pre> -->
     </div>
 </div>
@@ -240,20 +240,239 @@
 
 
 <ng-template #customerBranch>
-    Customer Branch
+    <div class="row">
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">City <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Branch Name <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Branch Type <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Branch Code <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">State <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Zip/Post Code <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Contact Person <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Phone <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Email <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">State <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-6">
+            <div class="custom-form-group">
+                <textarea id="" placeholder="" rows="1" class="input-field sm"></textarea>
+                <label for="text-input" class="input-label">Address <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+    </div>
+    <div class="row border-top">
+        <h6 class="card-title mb-0"></h6>
+        <aside class="col-md-4">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Registered? <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-4">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">GST Type <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-4">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">GSTIN <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+    </div>
 </ng-template>
 <ng-template #customerBranchContact>
-    Branch Contact
+    <div class="row">
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Contact Type <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Contact Name <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Mobile No <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Email <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+    </div>
 </ng-template>
 <ng-template #customerEmail>
-    Email
+    <div class="row">
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Menu Name <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Branch <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Department <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">To eMail <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">CC eMail <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+    </div>
 </ng-template>
 <ng-template #customerMilestone>
-    Milestone
+    <div class="row">
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">MileStone <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Update by <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Update Id <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Effective From <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+    </div>
 </ng-template>
 <ng-template #customerMovementTerms>
-    Movement Terms
+    <div class="row">
+        <aside class="col-md-6">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Department <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-6">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Services Request <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+    </div>
 </ng-template>
 <ng-template #customerElogin>
-    eLogin
+    <div class="row">
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Branch <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">eMail <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Password <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+        <aside class="col-md-3">
+            <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
+            </div>
+        </aside>
+    </div>
 </ng-template>
