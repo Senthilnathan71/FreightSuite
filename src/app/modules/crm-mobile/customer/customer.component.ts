@@ -4,6 +4,7 @@ import { FeatherModule } from 'angular-feather';
 import { AppService } from 'src/app/service/app.service';
 import { LeadService } from '../Services/lead.service';
 import { FormsModule } from '@angular/forms';
+import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-customer',
@@ -11,12 +12,15 @@ import { FormsModule } from '@angular/forms';
   imports: [
     CommonModule,
     FeatherModule,
-    FormsModule
+    FormsModule,
+    NgbNavModule
   ],
   templateUrl: './customer.component.html',
   styleUrl: './customer.component.scss'
 })
 export class CustomerComponent {
+  active = 1;
+
   // customerItemsView = [
   //   {
   //     "Name": "John Smith",

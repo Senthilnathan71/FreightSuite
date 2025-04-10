@@ -4,7 +4,8 @@
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
             <form action="" class="d-flex align-items-center gap-2">
                 <div class="form-outline col">
-                    <input type="search" class="form-control ps-5"  name="search"  autocomplete="off" placeholder="Search">
+                    <input type="search" class="form-control ps-5" name="search" autocomplete="off"
+                        placeholder="Search">
                     <i class="fas fa-search ms-3"></i>
                 </div>
                 <!-- <button type="button" class="btn btn-info btn-sm" >
@@ -49,12 +50,13 @@
                                 IN
                             </td>
                             <td>
-                                <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                     Approved</span>
+                                <span
+                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Approved</span>
                             </td>
                             <td>
-                                <a routerLink="/crm/customer/view"   class="text-dark mx-2">
+                                <a routerLink="/crm/customer/view" class="text-dark mx-2">
                                     <i-feather name="eye" class="feather-sm"></i-feather>
                                 </a>
                                 <a href="javascript:void(0)" class="text-danger mx-2 ps-3 border-start">
@@ -80,9 +82,10 @@
                                 IN
                             </td>
                             <td>
-                                <span class="bg-light-warning px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                     <span class="dofi-w-4 dofi-h-4 bg-warning d-inline-block rounded"></span>
-                                     Pending</span>
+                                <span
+                                    class="bg-light-warning px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-warning d-inline-block rounded"></span>
+                                    Pending</span>
                             </td>
                             <td>
                                 <a href="javascript:void(0)" class="text-dark mx-2">
@@ -112,8 +115,8 @@
                             </td>
                             <td>
                                 <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                     <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                     Canceled</span>
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Canceled</span>
                             </td>
                             <td>
                                 <a href="javascript:void(0)" class="text-dark mx-2">
@@ -142,9 +145,10 @@
                                 IN
                             </td>
                             <td>
-                                <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                     Approved</span>
+                                <span
+                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Approved</span>
                             </td>
                             <td>
                                 <a href="javascript:void(0)" class="text-dark mx-2">
@@ -161,4 +165,230 @@
             <!-- #endregion -->
         </div>
     </div>
+
+    <!-- Tab -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
+                    <li [ngbNavItem]="1">
+                        <button ngbNavLink>Customer Branch</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="customerListBranch"></ng-container>
+                        </ng-template>
+                    </li>
+                    <li [ngbNavItem]="2">
+                        <button ngbNavLink>Branch Contact</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="customerListBranchContact"></ng-container>
+                        </ng-template>
+                    </li>
+                    <li [ngbNavItem]="3">
+                        <button ngbNavLink>eMail</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="customerListEmail"></ng-container>
+                        </ng-template>
+                    </li>
+                    <li [ngbNavItem]="4">
+                        <button ngbNavLink>Milestone</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="customerListMilestone"></ng-container>
+                        </ng-template>
+                    </li>
+                    <li [ngbNavItem]="5">
+                        <button ngbNavLink>Movement Terms</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="customerListMovementTerms"></ng-container>
+                        </ng-template>
+                    </li>
+                    <li [ngbNavItem]="6">
+                        <button ngbNavLink>eLogin</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="ccustomerListElogin"></ng-container>
+                        </ng-template>
+                    </li>
+                </ul>
+
+                <section [ngbNavOutlet]="nav" class="mt-2 p-2"></section>
+            </div>
+        </div>
+
+
+        <!-- <pre>Active: {{ active }}</pre> -->
+    </div>
 </div>
+
+<ng-template #customerListBranch>
+    <div class="table-responsive">
+        <div class="table table-hover align-middle no-wrap table-bordered">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            data
+                        </td>
+                        <td>
+                            data
+                        </td>
+                        <td>
+                            data
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</ng-template>
+<ng-template #customerListBranchContact>
+    <div class="table-responsive">
+        <div class="table table-hover align-middle no-wrap table-bordered">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            data
+                        </td>
+                        <td>
+                            data
+                        </td>
+                        <td>
+                            data
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</ng-template>
+<ng-template #customerListEmail>
+    <div class="table-responsive">
+        <div class="table table-hover align-middle no-wrap table-bordered">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            data
+                        </td>
+                        <td>
+                            data
+                        </td>
+                        <td>
+                            data
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</ng-template>
+<ng-template #customerListMilestone>
+    <div class="table-responsive">
+        <div class="table table-hover align-middle no-wrap table-bordered">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            data
+                        </td>
+                        <td>
+                            data
+                        </td>
+                        <td>
+                            data
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</ng-template>
+<ng-template #customerListMovementTerms>
+    <div class="table-responsive">
+        <div class="table table-hover align-middle no-wrap table-bordered">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            data
+                        </td>
+                        <td>
+                            data
+                        </td>
+                        <td>
+                            data
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</ng-template>
+<ng-template #ccustomerListElogin>
+    <div class="table-responsive">
+        <div class="table table-hover align-middle no-wrap table-bordered">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+                        <th class="bg-transparent text-light" scope="col">your title</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            data
+                        </td>
+                        <td>
+                            data
+                        </td>
+                        <td>
+                            data
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</ng-template>
