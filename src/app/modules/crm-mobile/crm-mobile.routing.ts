@@ -26,6 +26,8 @@ import { ZoneListComponent } from './zone/zone-list/zone-list.component';
 import { ZoneEntryComponent } from './zone/zone-entry/zone-entry.component';
 import { VesselListComponent } from './vessel/vessel-list/vessel-list.component';
 import { VesselEntryComponent } from './vessel/vessel-entry/vessel-entry.component';
+import { TarrifListComponent } from './tarrif/tarrif-list/tarrif-list.component';
+import { TarrifEntryComponent } from './tarrif/tarrif-entry/tarrif-entry.component';
 
 
 
@@ -354,6 +356,28 @@ export const CrmMobileRoutes: Routes = [
                     urls: [
                         { title: "CRM", url: "/crm" },
                         { title: "Zone Add" },
+                    ],
+                },
+            },
+            {
+                path: "tarrif/list",
+                component: TarrifListComponent,
+                data: {
+                    title: "Tarrif",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Tarrif" },
+                    ],
+                },
+            },
+            {
+                path: "tarrif/entry",
+                component: TarrifEntryComponent,
+                data: {
+                    title: "Add Tarrif",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Tarrif" },
                     ],
                 },
             },
