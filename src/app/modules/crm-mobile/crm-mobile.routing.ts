@@ -28,6 +28,14 @@ import { VesselListComponent } from './vessel/vessel-list/vessel-list.component'
 import { VesselEntryComponent } from './vessel/vessel-entry/vessel-entry.component';
 import { TarrifListComponent } from './tarrif/tarrif-list/tarrif-list.component';
 import { TarrifEntryComponent } from './tarrif/tarrif-entry/tarrif-entry.component';
+import { CityListComponent } from './city/city-list/city-list.component';
+import { CityEntryComponent } from './city/city-entry/city-entry.component';
+import { DepartmentListComponent } from './department/department-list/department-list.component';
+import { DepartmentEntryComponent } from './department/department-entry/department-entry.component';
+import { CurrencyListComponent } from './currency/currency-list/currency-list.component';
+import { CurrencyEntryComponent } from './currency/currency-entry/currency-entry.component';
+import { CurrencyExchangeEntryComponent } from './currency-exchange/currency-exchange-entry/currency-exchange-entry.component';
+import { CurrencyExchangeListComponent } from './currency-exchange/currency-exchange-list/currency-exchange-list.component';
 
 
 
@@ -378,6 +386,94 @@ export const CrmMobileRoutes: Routes = [
                     urls: [
                         { title: "CRM", url: "/crm" },
                         { title: "Tarrif" },
+                    ],
+                },
+            },
+            {
+                path: "city/list",
+                component: CityListComponent,
+                data: {
+                    title: "City",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "City" },
+                    ],
+                },
+            },
+            {
+                path: "city/entry",
+                component: CityEntryComponent,
+                data: {
+                    title: "Add City",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "City" },
+                    ],
+                },
+            },
+            {
+                path: "department/list",
+                component: DepartmentListComponent,
+                data: {
+                    title: "Department",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Department" },
+                    ],
+                },
+            },
+            {
+                path: "department/entry",
+                component: DepartmentEntryComponent,
+                data: {
+                    title: "Add Department",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Department" },
+                    ],
+                },
+            },
+            {
+                path: "currency/list",
+                component: CurrencyListComponent,
+                data: {
+                    title: "Currency",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Currency" },
+                    ],
+                },
+            },
+            {
+                path: "currency/entry",
+                component: CurrencyEntryComponent,
+                data: {
+                    title: "Add Currency",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Currency" },
+                    ],
+                },
+            },
+            {
+                path: "currency-exchange/list",
+                component: CurrencyExchangeListComponent,
+                data: {
+                    title: "Currency Exchange",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Currency Exchange" },
+                    ],
+                },
+            },
+            {
+                path: "currency-exchange/entry",
+                component: CurrencyExchangeEntryComponent,
+                data: {
+                    title: "Add Currency Exchange",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Currency Exchange" },
                     ],
                 },
             },

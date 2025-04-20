@@ -5,7 +5,7 @@ export const ROUTES: RouteInfo[] = [
   {
     path: '/crm',
     title: 'Dashboard',
-    icon: 'Home',
+    icon: 'mdi mdi-view-dashboard',
     class: '',
     extralink: false,
     label: '',
@@ -13,9 +13,9 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: 'crm/lead/list',
-    title: 'Lead',
-    icon: 'trending-up',
+    path: '/crm/port-master/list',
+    title: 'Port Master',
+    icon: 'mdi mdi-anchor',
     class: '',
     extralink: false,
     label: '',
@@ -23,9 +23,9 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: 'crm/lead-schedule-pending',
-    title: 'Lead Schedule Pending',
-    icon: 'calendar',
+    path: '/crm/uom-master/list',
+    title: 'UOM Master',
+    icon: 'mdi mdi-ruler	',
     class: '',
     extralink: false,
     label: '',
@@ -33,9 +33,9 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: 'crm/customer',
+    path: '/crm/customer/list',
     title: 'Customer',
-    icon: 'users',
+    icon: 'mdi mdi-account',
     class: '',
     extralink: false,
     label: '',
@@ -43,9 +43,9 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: 'crm/rate-request/view',
-    title: 'Rate Request',
-    icon: 'dollar-sign',
+    path: '/crm/country/list',
+    title: 'Country',
+    icon: 'mdi mdi-earth',
     class: '',
     extralink: false,
     label: '',
@@ -53,9 +53,9 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: 'crm/quotation',
-    title: 'Quotation',
-    icon: 'briefcase',
+    path: '/crm/state/list',
+    title: 'State',
+    icon: 'mdi mdi-map',
     class: '',
     extralink: false,
     label: '',
@@ -63,15 +63,86 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: 'crm/todo',
-    title: 'Todo',
-    icon: 'list',
+    path: '/crm/unit/list',
+    title: 'Unit',
+    icon: 'mdi mdi-cube',
     class: '',
     extralink: false,
     label: '',
     labelClass: '',
     submenu: []
   },
+  {
+    path: '/crm/vessel/list',
+    title: 'Vessel',
+    icon: 'mdi mdi-ferry',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/crm/zone/list',
+    title: 'Zone',
+    icon: 'mdi mdi-vector-square',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/crm/tarrif/list',
+    title: 'Tarrif',
+    icon: 'mdi mdi-file-document',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/crm/city/list',
+    title: 'City',
+    icon: 'mdi mdi-city',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/crm/department/list',
+    title: 'Department',
+    icon: 'mdi mdi-office',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/crm/currency/list',
+    title: 'Currency',
+    icon: 'mdi mdi-currency-usd',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/crm/currency-exchange/list',
+    title: 'Currency Exchange',
+    icon: 'mdi mdi-stackexchange',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  
 
 
 
