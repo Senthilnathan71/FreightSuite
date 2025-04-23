@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule, PreloadAllModules  } from '@angular/router';
+import { Routes, RouterModule, PreloadAllModules } from '@angular/router';
 
 import { FullComponent } from './layouts/full/full.component';
 import { BlankComponent } from './layouts/blank/blank.component';
@@ -9,14 +9,16 @@ export const Approutes: Routes = [
   {
     path: '',
     component: FullComponent,
-    // canActivate:[AuthGuard],
-    data:{
+    canActivate: [AuthGuard],
+    data: {
       type: 'FullComponent'
     },
     children: [
-      { path: '', 
+      {
+        path: '',
         redirectTo: 'crm/dashboard',
-        pathMatch: 'full' },
+        pathMatch: 'full'
+      },
       {
         path: 'crm',
         loadChildren: () => import('./modules/crm-mobile/crm-mobile.module').then(m => m.CrmMobileModule)
@@ -34,7 +36,7 @@ export const Approutes: Routes = [
   {
     path: '',
     component: BlankComponent,
-    data:{
+    data: {
       type: 'BlankComponent'
     },
     children: [
@@ -60,4 +62,4 @@ export const Approutes: Routes = [
   exports: [RouterModule]
 })
 
-export class AppRoutingModule {}
+export class AppRoutingModule { }
