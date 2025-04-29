@@ -43,7 +43,7 @@ export const Approutes: Routes = [
       {
         path: 'auth',
         loadChildren: () =>
-          import('./authentication/authentication.module').then(
+          import('./modules/authentication/authentication.module').then(
             (m) => m.AuthenticationModule
           ),
       },
