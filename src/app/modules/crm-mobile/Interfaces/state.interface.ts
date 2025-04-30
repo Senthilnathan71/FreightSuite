@@ -9,5 +9,12 @@ export interface State {
     updatedBy: string,
     status: string,
     createdOn: string,
-    updatedOn: string
+    updatedOn: string,
+    Remarks: string,
+    region: string,
+    zone: number,
+    countryMaster: {
+        countryName: string;
+    }
+    
 }

@@ -33,40 +33,45 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @for (item of [0,1,2,3,4,5,6,7,8,9]; track $index) {
-
-                            <tr>
+                       
+                            <tr *ngFor="let state of filteredState" >
                                 <td>
-                                    GainWell Ltd
+                                    {{ state.stateName}}
                                 </td>
                                 <td>
-                                    #FF5864
+                                    {{ state.stateCode}}
                                 </td>
                                 <td>
-                                    N/A
+                                    {{ state.region}}
                                 </td>
                                 <td>
-                                    N/A
+                                    {{ state.countryMaster?state.countryMaster.countryName:'' }}
                                 </td>
                                 <td>
-                                    N/A
+                                    {{ state.Remarks}}
                                 </td>
                                 <td>
                                     <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
                                         <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                        Active</span>
+                                        {{ state.status === 'A' ? 'Active' : 'Cancelled' }}</span>
                                 </td>
                                 <td>
-                                    <a    class="text-dark mx-2">
+                                    <a routerLink="/crm/state/entry"   class="text-dark mx-2">
                                         <i-feather name="edit-3" class="feather-sm"></i-feather>
                                     </a>
                                 </td>
                             </tr>
-                        }
-
-                        
+                         
                     </tbody>
                 </table>
+            </div>
+
+            <div class="card-body">
+                <!-- #region Pagination -->
+                <ngb-pagination class="d-flex justify-content-end
+                " [collectionSize]="totalLengthOfCollection"
+                    [pageSize]="pageSize" [(page)]="page"></ngb-pagination>
+                <!-- #endregion -->
             </div>
             <!-- #endregion -->
         </div>

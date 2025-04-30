@@ -4,12 +4,13 @@
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
             <form action="" class="d-flex align-items-center gap-2">
                 <div class="form-outline col">
-                    <input type="search" class="form-control ps-5"  name="search"  autocomplete="off" placeholder="Search">
+                    <input type="search" class="form-control ps-5"  [(ngModel)]="searchText" name="search"
+                    (input)="searchUnit()" autocomplete="off" placeholder="Search">
                     <i class="fas fa-search ms-3"></i>
                 </div>
-                <!-- <button type="button" class="btn btn-info btn-sm" >
+                <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
                     <i class="mdi mdi-plus"></i> Add
-                </button> -->
+                </button>
             </form>
         </div>
     </div>
@@ -24,52 +25,62 @@
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col">Name</th>
                             <th class="bg-transparent text-light" scope="col">Code</th>
-                            <th class="bg-transparent text-light" scope="col">dimension</th>
-                            <th class="bg-transparent text-light" scope="col">Weight</th>
-                            <th class="bg-transparent text-light" scope="col">Value</th>
+                            <th class="bg-transparent text-light" scope="col">job Type</th>
+                            <th class="bg-transparent text-light" scope="col">containerType</th>
+                            <th class="bg-transparent text-light" scope="col">measurementType</th>
                             <th class="bg-transparent text-light" scope="col">Remarks</th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
                             <th class="bg-transparent text-light" scope="col">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @for (item of [0,1,2,3,4,5,6,7,8,9]; track $index) {
-                            <tr>
+                       
+                            <tr *ngFor="let unit of filteredUnit">
                                 <td>
-                                    GainWell Ltd
+                                    {{ unit.unitName}}
                                 </td>
                                 <td>
-                                    PER 45FT
+                                    {{ unit.unitCode}}
                                 </td>
                                 <td>
-                                    -
+                                    {{ unit.jobType}}
                                 </td>
                                 <td>
-                                    Y
+                                    {{ unit.containerType}}
                                 </td>
                                 <td>
-                                    Y
+                                    {{ unit.measurementType}}
                                 </td>
                                 <td>
-                                    N / A
+                                    {{ unit.remarks}}
                                 </td>
                                 <td>
                                     <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
                                         <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                        Approved</span>
+                                        {{ unit.status === 'A' ? 'Active' : 'Cancelled' }}</span>
                                 </td>
                                 <td>
-                                    <a class="text-dark mx-2">
-                                        <i-feather name="edit-3" class="feather-sm"></i-feather>
-                                    </a>
-                                    <a href="javascript:void(0)" class="text-danger mx-2 ps-3 border-start">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
+                                    <div class="d-flex align-items-center">
+                                        <a class="text-info mx-2" class="link mx-2 ps-3 " [routerLink]="['/crm/unit/entry/', unit.UnitMasterSid]">
+                                            <i-feather class="feather-sm" name="eye"></i-feather>
+                                        </a>
+                                        <a class="text-danger mx-2 ps-3 border-start" (click)="deleteUnit(unit.UnitMasterSid)">
+                                            <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
-                        }
+                        
                     </tbody>
                 </table>
+            </div>
+
+            <div class="card-body">
+                <!-- #region Pagination -->
+                <ngb-pagination class="d-flex justify-content-end
+                " [collectionSize]="totalLengthOfCollection"
+                    [pageSize]="pageSize" [(page)]="page"></ngb-pagination>
+                <!-- #endregion -->
             </div>
             <!-- #endregion -->
         </div>

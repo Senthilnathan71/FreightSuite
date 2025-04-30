@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { UOMMViewComponent } from './uomm-view.component';
+import { UOMViewComponent } from './uom-view.component';
 
-describe('UOMMViewComponent', () => {
-  let component: UOMMViewComponent;
-  let fixture: ComponentFixture<UOMMViewComponent>;
+describe('UOMViewComponent', () => {
+  let component: UOMViewComponent;
+  let fixture: ComponentFixture<UOMViewComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UOMMViewComponent]
+      imports: [UOMViewComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(UOMMViewComponent);
+    fixture = TestBed.createComponent(UOMViewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
