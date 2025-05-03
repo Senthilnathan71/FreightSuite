@@ -1,14 +1,15 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { MasterRoutingModule } from './master-routing.module';
+import { Materroutes } from './master-routing.module';
+import { RouterModule } from '@angular/router';
 
 
 @NgModule({
   declarations: [],
   imports: [
     CommonModule,
-    MasterRoutingModule
+    RouterModule.forChild(Materroutes)
   ]
 })
 export class MasterModule { }

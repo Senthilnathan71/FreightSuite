@@ -39,7 +39,7 @@ export function HttpLoaderFactory(http: HttpClient) {
 }
 
 @NgModule({
-  declarations: [AppComponent, SpinnerComponent],
+  declarations: [AppComponent, SpinnerComponent], //component,pipes directives
   imports: [
     CommonModule,
     BrowserModule,

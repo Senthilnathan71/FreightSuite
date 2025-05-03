@@ -24,6 +24,10 @@ export const Approutes: Routes = [
         loadChildren: () => import('./modules/crm-mobile/crm-mobile.module').then(m => m.CrmMobileModule)
       },
       {
+        path: 'master',
+        loadChildren: () => import('./modules/master/master.module').then(m => m.MasterModule)
+      },
+      {
         path: 'starter',
         loadChildren: () => import('./starter/starter.module').then(m => m.StarterModule)
       },
