@@ -31,6 +31,7 @@ import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import { FlatpickrModule } from 'angularx-flatpickr';
 import { HttpInterceptorService } from './core/http.interceptor';
 import { ToastrModule } from 'ngx-toastr';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 
 export function HttpLoaderFactory(http: HttpClient) {
@@ -38,7 +39,7 @@ export function HttpLoaderFactory(http: HttpClient) {
 }
 
 @NgModule({
-  declarations: [AppComponent, SpinnerComponent],
+  declarations: [AppComponent, SpinnerComponent], //component,pipes directives
   imports: [
     CommonModule,
     BrowserModule,
@@ -73,7 +74,8 @@ export function HttpLoaderFactory(http: HttpClient) {
       provide: HTTP_INTERCEPTORS,  // Register the interceptor in the providers array
       useClass: HttpInterceptorService,  // Provide the interceptor class
       multi: true  // Ensures that multiple interceptors can be provided if needed
-    }
+    },
+    provideAnimationsAsync()
   ],
   bootstrap: [AppComponent],
 })

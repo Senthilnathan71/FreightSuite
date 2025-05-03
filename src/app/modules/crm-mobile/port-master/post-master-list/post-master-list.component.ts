@@ -3,18 +3,25 @@ import { FeatherModule } from 'angular-feather';
 import { PortService } from '../../Services/port.service';
 import { Port } from '../../Interfaces/port.interface';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AppService } from 'src/app/service/app.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-@Component({
+import { DeleteWarningComponent } from '../../delete-warning.component';
+import { MatDialog , MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+@Component({ 
   selector: 'app-post-master-list',
   standalone: true,
   imports: [
      CommonModule,
         FeatherModule,
         NgbPaginationModule,
-        FormsModule
+        FormsModule,
+        RouterModule,
+        MatDialogModule, 
+        MatButtonModule
   ],
   templateUrl: './post-master-list.component.html',
   styleUrl: './post-master-list.component.scss'
@@ -28,7 +35,7 @@ export class PostMasterListComponent implements OnInit{
     searchText: string = '';
     filteredPorts: Port[] = [];
     isMobile: boolean = false;
-  constructor(private portService: PortService, private route: Router, private appService: AppService) { }
+  constructor(private portService: PortService, private route: Router, private appService: AppService, private dialog: MatDialog, private appSettingService: AppSettingsService) { }
   
   ngOnInit(): void {
     this.loadPorts();
@@ -72,6 +79,26 @@ export class PostMasterListComponent implements OnInit{
           );
         });
       }
+    }
+
+    
+    deletePort(id: number) {
+      const dialogRef = this.dialog.open(DeleteWarningComponent);
+    
+      dialogRef.afterClosed().subscribe(result => {
+        if (result === true) {
+          this.portService.deletePortById(id).subscribe((resp: any) => {
+
+            this.appSettingService.showSuccess("Deleted!");  
+                console.log(resp);
+               // if(resp.status){
+                  this.loadPorts();
+
+               // }
+            
+          });
+        }
+      });
     }
 
 }

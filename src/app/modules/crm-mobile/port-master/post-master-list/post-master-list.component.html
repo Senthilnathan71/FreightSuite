@@ -93,11 +93,11 @@
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <a class="text-info mx-2">
+                                            <a class="text-info mx-2" class="link mx-2 ps-3 " [routerLink]="['/crm/port-master/view/', port.PortMasterSid]">
                                                 <i-feather class="feather-sm" name="eye"></i-feather>
                                             </a>
-                                            <a class="link mx-2 ps-3 border-start">
-                                                <i-feather class="feather-sm" name="edit-3"></i-feather>
+                                            <a class="text-danger mx-2 ps-3 border-start" (click)="deletePort(port.PortMasterSid)">
+                                                <i-feather name="trash-2" class="feather-sm"></i-feather>
                                             </a>
                                         </div>
                                     </td>
@@ -121,5 +121,6 @@
         </div>
     </div>
 </ng-template>
+
  
     

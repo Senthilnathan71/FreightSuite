@@ -14,8 +14,8 @@ import { MeetingComponent } from './lead-schedule/meeting/meeting.component';
 import { PendingComponent } from './lead-schedule/pending/pending.component';
 import { PostMasterViewComponent } from './port-master/post-master-view/post-master-view.component';
 import { PostMasterListComponent } from './port-master/post-master-list/post-master-list.component';
-import { UOMMListComponent } from './UOM-Master/uomm-list/uomm-list.component';
-import { UOMMViewComponent } from './UOM-Master/uomm-view/uomm-view.component';
+import { UOMListComponent } from './UOM-Master/uom-list/uom-list.component';
+import { UOMViewComponent } from './UOM-Master/uom-view/uom-view.component';
 import { CountryListComponent } from './country/country-list/country-list.component';
 import { CountryEntryComponent } from './country/country-entry/country-entry.component';
 import { StateListComponent } from './state/state-list/state-list.component';
@@ -225,6 +225,17 @@ export const CrmMobileRoutes: Routes = [
                 },
             },
             {
+                path: "port-master/view/:id",
+                component: PostMasterViewComponent,
+                data: {
+                    title: "Port Master",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Port Master" },
+                    ],
+                },
+            },
+            {
                 path: "port-master/list",
                 component: PostMasterListComponent,
                 data: {
@@ -237,7 +248,7 @@ export const CrmMobileRoutes: Routes = [
             },
             {
                 path: "uom-master/list",
-                component: UOMMListComponent,
+                component: UOMListComponent,
                 data: {
                     title: "UOM Master",
                     urls: [
@@ -248,9 +259,20 @@ export const CrmMobileRoutes: Routes = [
             },
             {
                 path: "uom-master/view",
-                component: UOMMViewComponent,
+                component: UOMViewComponent,
                 data: {
-                    title: "UOM Master List",
+                    title: "UOM Master Entry",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "UOM Master View" },
+                    ],
+                },
+            },
+            {
+                path: "uom-master/view/:id",
+                component: UOMViewComponent,
+                data: {
+                    title: "UOM Master Edit",
                     urls: [
                         { title: "CRM", url: "/crm" },
                         { title: "UOM Master View" },
@@ -276,6 +298,17 @@ export const CrmMobileRoutes: Routes = [
                     urls: [
                         { title: "CRM", url: "/crm" },
                         { title: "Country Add" },
+                    ],
+                },
+            },
+            {
+                path: "country/entry/:id",
+                component: CountryEntryComponent,
+                data: {
+                    title: "Country",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Country update" },
                     ],
                 },
             },
@@ -320,6 +353,17 @@ export const CrmMobileRoutes: Routes = [
                     urls: [
                         { title: "CRM", url: "/crm" },
                         { title: "Unit Add" },
+                    ],
+                },
+            },
+            {
+                path: "unit/entry/:id",
+                component: UnitEntryComponent,
+                data: {
+                    title: "Unit",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Unit Edit" },
                     ],
                 },
             },

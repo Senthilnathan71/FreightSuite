@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { FormsModule,FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { NgSelectConfig, NgSelectModule } from '@ng-select/ng-select';
+import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -9,6 +10,7 @@ import { PortService } from '../../Services/port.service';
 import { Country } from '../../Interfaces/country.interface';
 import { State } from '../../Interfaces/state.interface';
 import { Sector } from '../../Interfaces/sector.interface';
+import { Port } from '../../Interfaces/port.interface';
 
  
 @Component({
@@ -17,15 +19,18 @@ import { Sector } from '../../Interfaces/sector.interface';
   imports: [
     FeatherModule,
     CommonModule,
+    RouterModule,
     NgSelectModule, 
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    
   ],
   templateUrl: './post-master-view.component.html',
   styleUrl: './post-master-view.component.scss'
 })
 export class PostMasterViewComponent {
   portForm!: FormGroup;
+  isEditMode = false;
   selectedState: number;
   selectedCountry: number;
   selectedTransport: number;
@@ -43,6 +48,7 @@ modeOfTransports = [
     { id: 'Rail',  name: 'Rail' }
 ];
   errorMessage: any;
+  idParam:number;
 
   constructor(private config: NgSelectConfig,private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -61,8 +67,8 @@ modeOfTransports = [
     this.portForm = new FormGroup({
       PortName: new FormControl('', [Validators.required, Validators.maxLength(50)]),
       PortCode: new FormControl('', [Validators.required, Validators.maxLength(5)]),
-      CountryMasterSid: new FormControl(null, []),
-      StateMasterSid: new FormControl(null, []),
+      CountryMasterSid: new FormControl(Validators.required, []),
+      StateMasterSid: new FormControl(Validators.required, []),
       TimeZone: new FormControl('', []),
       SectorMasterSid: new FormControl(null, [Validators.required]),
       TerminalCode: new FormControl('', [Validators.maxLength(10)]),
@@ -75,11 +81,35 @@ modeOfTransports = [
       Remarks: new FormControl('', [Validators.maxLength(100)]),
     });
 
+    this.route.paramMap.subscribe(params=> {
+       this.idParam = Number(params.get('id'));
+      if(this.idParam){
+        this.isEditMode = true;
+        this.loadPort(this.idParam);
+      }
+    })
+
+
     // Watch for changes in the selected country and load states accordingly
     this.portForm.get('CountryMasterSid')?.valueChanges.subscribe(CountryMasterSid => {
       this.loadStates(CountryMasterSid);
     });
 
+  }
+
+  loadPort(PortMasterSid): void {
+    this.portService.getPortById(PortMasterSid).subscribe(
+      (resp) => {
+        console.log(resp, 'portdata')
+        this.portForm.patchValue(resp);
+        this.portForm.patchValue({CBMRequire : (resp.CBMRequire=='Y'?true:false)})
+        //this.states = resp['data'];  
+      },
+      (error) => {
+        this.errorMessage = error.message;  
+        console.error('Error loading port:', error);  
+      }
+    );
   }
 
   loadCountry(): void {
@@ -109,7 +139,7 @@ modeOfTransports = [
     }
 
     loadStates(CountryMasterSid): void {
-      this.portService.getAllState(CountryMasterSid).subscribe(
+      this.portService.getAllStateByCountry(CountryMasterSid).subscribe(
         (resp: State[]) => {
           console.log(resp, 'States')
           this.states = resp['data'];  
@@ -140,21 +170,55 @@ modeOfTransports = [
      
      // let payload = this.portForm.value;
      
-       let createdBy = {createdBy: this.appSettingService.userSettingSource.value['userLogin']};
-       const payload = { ...this.portForm.value, ...createdBy };
+       let createdBy = {createdBy: this.appSettingService.userSettingSource.value['userEmail']};
+       let updatedBy = {updatedBy: this.appSettingService.userSettingSource.value['userEmail']};
+       const payload = (this.isEditMode)?{ ...this.portForm.value, ...updatedBy }:{ ...this.portForm.value, ...createdBy };
+
+
        payload.CBMRequire = (this.portForm.value.CBMRequire)?'Y':'N';
        console.log('payload',payload);
-      this.portService.createPort(payload).subscribe(
+
+       if(this.isEditMode){
+            this.portService.updatePortById(this.idParam,payload).subscribe(
               (resp: any) => {
-                this.appSettingService.showSuccess(resp.message);  
+                 
                 console.log(resp);
-                this.router.navigate(['crm/port-master/list']);
+                if(resp.status){
+                  this.appSettingService.showSuccess(resp.message); 
+                  this.router.navigate(['crm/port-master/list']);
+
+                }else{
+                  this.appSettingService.showError(resp.message);
+                }
+                
               },
               (error) => {
                 this.errorMessage = error.message; 
                 console.error('Error loading ports:', error);  
               }
             );
+       }else{
+          this.portService.createPort(payload).subscribe(
+            (resp: any) => {
+              
+              console.log(resp);
+              if(resp.status){
+                this.appSettingService.showSuccess(resp.message);  
+                this.router.navigate(['crm/port-master/list']);
+
+              }else{
+                this.appSettingService.showError(resp.message);
+              }
+              
+            },
+            (error) => {
+              this.errorMessage = error.message; 
+              console.error('Error loading ports:', error);  
+            }
+          );
+       }
+      
+
     }
   }
 }

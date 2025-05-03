@@ -43,7 +43,7 @@ export class PortService {
   updatePortById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`port/${id}`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     )
@@ -67,8 +67,8 @@ export class PortService {
     )
   }
 
-  getAllState(CountryMasterSid: any) {
-    return this.http.get<State>(`state/${CountryMasterSid}`).pipe(
+  getAllStateByCountry(CountryMasterSid: any) {
+    return this.http.get<State>(`state/statesbyCountry/${CountryMasterSid}`).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
