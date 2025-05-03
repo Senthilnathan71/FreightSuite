@@ -3,16 +3,17 @@
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
             <form action="" class="d-flex align-items-center gap-2">
                 <div class="form-outline col">
-                    <input type="search" class="form-control ps-5"  name="search"  autocomplete="off" placeholder="Search">
+                    <input type="search" class="form-control ps-5" name="search" [(ngModel)]="searchText"
+                        autocomplete="off" (input)="searchDepartmentsData()" placeholder="Search">
                     <i class="fas fa-search ms-3"></i>
                 </div>
-                <button type="button" class="btn btn-info btn-sm" >
+                <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateDepartment()">
                     <i class="mdi mdi-plus"></i> Add
                 </button>
             </form>
         </div>
     </div>
-    <div class="col-12">
+    <div class="col-12" *ngIf="totalLengthofCollection>1">
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
@@ -22,38 +23,40 @@
                         <th class="bg-transparent text-light" scope="col">Dept Type</th>
                         <th class="bg-transparent text-light" scope="col">Exp/Imp</th>
                         <th class="bg-transparent text-light" scope="col">FCL/LCL</th>
-                        <th class="bg-transparent text-light" scope="col">Division</th>
                         <th class="bg-transparent text-light" scope="col">Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                        <tr>
-                            <td>
-                                <div class="text-truncate">FE</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">FCL Export</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Sea</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Export</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">FCL</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">FCL</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Active</div>
-                            </td>
-                        </tr>
+                    @for (item of filterDepartmentList; track $index) {
+                    <tr>
+                        <td>
+                            <div class="text-truncate">{{item.departmentCode}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.departmentName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.departmentType}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.ExportImport}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.FCLLCL}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">Active</div>
+                        </td>
+                    </tr>
                     }
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <div class="col-12" *ngIf="totalLengthofCollection === 0">
+        <div>
+            No records found
         </div>
     </div>
 </div>
