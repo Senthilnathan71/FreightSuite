@@ -1,28 +1,349 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { CustomerComponent } from '../crm-mobile/customer/customer.component';
-import { DepartmentListComponent } from '../crm-mobile/department/department-list/department-list.component';
-import { DepartmentEntryComponent } from '../crm-mobile/department/department-entry/department-entry.component';
+import { Routes } from '@angular/router';
+import { CustomerComponent } from './customer/customer.component';
+import { DepartmentListComponent } from './department/department-list/department-list.component';
+import { DepartmentEntryComponent } from './department/department-entry/department-entry.component';
+import { PostMasterViewComponent } from './port-master/post-master-view/post-master-view.component';
+import { PostMasterListComponent } from './port-master/post-master-list/post-master-list.component';
+import { UOMListComponent } from './UOM-Master/uom-list/uom-list.component';
+import { UOMViewComponent } from './UOM-Master/uom-view/uom-view.component';
+import { CountryListComponent } from './country/country-list/country-list.component';
+import { CountryEntryComponent } from './country/country-entry/country-entry.component';
+import { StateListComponent } from './state/state-list/state-list.component';
+import { StateEntryComponent } from './state/state-entry/state-entry.component';
+import { UnitListComponent } from './unit/unit-list/unit-list.component';
+import { UnitEntryComponent } from './unit/unit-entry/unit-entry.component';
+import { VesselListComponent } from './vessel/vessel-list/vessel-list.component';
+import { VesselEntryComponent } from './vessel/vessel-entry/vessel-entry.component';
+import { CustomerViewComponent } from './customer/customer-view/customer-view.component';
+import { CurrencyEntryComponent } from './currency/currency-entry/currency-entry.component';
+import { CurrencyListComponent } from './currency/currency-list/currency-list.component';
+import { CityEntryComponent } from './city/city-entry/city-entry.component';
+import { CityListComponent } from './city/city-list/city-list.component';
+import { TarrifEntryComponent } from './tarrif/tarrif-entry/tarrif-entry.component';
+import { TarrifListComponent } from './tarrif/tarrif-list/tarrif-list.component';
+import { ZoneEntryComponent } from './zone/zone-entry/zone-entry.component';
+import { ZoneListComponent } from './zone/zone-list/zone-list.component';
 
-// const routes: Routes = [];
 
 
-export  const Materroutes: Routes = [
+
+export const MasterRoutes: Routes = [
   {
-    path:'',
-    children:[
+    path: '',
+    children: [
       {
-        path:'',
-      component : CustomerComponent,
+        path: '',
+        component: CustomerComponent,
       },
       {
-        path:'departmentList',
-        component : DepartmentListComponent
+        path: 'customer/list',
+        component: CustomerComponent,
+        data: {
+          title: 'Customer',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Customer' },
+          ],
+        },
       },
       {
-        path:'departmentEntry',
-        component: DepartmentEntryComponent
-      }
+        path: 'customer/view',
+        component: CustomerViewComponent,
+        data: {
+          title: 'New Customer',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Customer', url: 'customer' },
+            { title: 'View' },
+          ],
+        },
+      },
+      {
+        path: "city/list",
+        component: CityListComponent,
+        data: {
+          title: "City",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "City" },
+          ],
+        },
+      },
+      {
+        path: "city/entry",
+        component: CityEntryComponent,
+        data: {
+          title: "Add City",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "City" },
+          ],
+        },
+      },
+      {
+        path: "department/list",
+        component: DepartmentListComponent,
+        data: {
+          title: "Department",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Department" },
+          ],
+        },
+      },
+      {
+        path: "department/entry",
+        component: DepartmentEntryComponent,
+        data: {
+          title: "Add Department",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Department" },
+          ],
+        },
+      },
+      {
+        path: "currency/list",
+        component: CurrencyListComponent,
+        data: {
+          title: "Currency",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Currency" },
+          ],
+        },
+      },
+      {
+        path: "currency/entry",
+        component: CurrencyEntryComponent,
+        data: {
+          title: "Add Currency",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Currency" },
+          ],
+        },
+      },
+      {
+        path: "port-master/view",
+        component: PostMasterViewComponent,
+        data: {
+          title: "Port Master",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Port Master" },
+          ],
+        },
+      },
+      {
+        path: "port-master/view/:id",
+        component: PostMasterViewComponent,
+        data: {
+          title: "Port Master",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Port Master" },
+          ],
+        },
+      },
+      {
+        path: "port-master/list",
+        component: PostMasterListComponent,
+        data: {
+          title: "Port Master",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Port Master List" },
+          ],
+        },
+      },
+      {
+        path: "uom-master/list",
+        component: UOMListComponent,
+        data: {
+          title: "UOM Master",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "UOM Master List" },
+          ],
+        },
+      },
+      {
+        path: "uom-master/view",
+        component: UOMViewComponent,
+        data: {
+          title: "UOM Master Entry",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "UOM Master View" },
+          ],
+        },
+      },
+      {
+        path: "uom-master/view/:id",
+        component: UOMViewComponent,
+        data: {
+          title: "UOM Master Edit",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "UOM Master View" },
+          ],
+        },
+      },
+      {
+        path: "country/list",
+        component: CountryListComponent,
+        data: {
+          title: "Country",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Country List" },
+          ],
+        },
+      },
+      {
+        path: "country/entry",
+        component: CountryEntryComponent,
+        data: {
+          title: "Country",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Country Add" },
+          ],
+        },
+      },
+      {
+        path: "country/entry/:id",
+        component: CountryEntryComponent,
+        data: {
+          title: "Country",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Country update" },
+          ],
+        },
+      },
+      {
+        path: "state/list",
+        component: StateListComponent,
+        data: {
+          title: "State",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "State List" },
+          ],
+        },
+      },
+      {
+        path: "state/entry",
+        component: StateEntryComponent,
+        data: {
+          title: "State",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "State Add" },
+          ],
+        },
+      },
+      {
+        path: "unit/list",
+        component: UnitListComponent,
+        data: {
+          title: "Unit",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Unit List" },
+          ],
+        },
+      },
+      {
+        path: "unit/entry",
+        component: UnitEntryComponent,
+        data: {
+          title: "Unit",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Unit Add" },
+          ],
+        },
+      },
+      {
+        path: "unit/entry/:id",
+        component: UnitEntryComponent,
+        data: {
+          title: "Unit",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Unit Edit" },
+          ],
+        },
+      },
+      {
+        path: "vessel/list",
+        component: VesselListComponent,
+        data: {
+          title: "Vessel",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Vessel List" },
+          ],
+        },
+      },
+      {
+        path: "vessel/entry",
+        component: VesselEntryComponent,
+        data: {
+          title: "Vessel",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Vessel Add" },
+          ],
+        },
+      },
+      {
+        path: "zone/list",
+        component: ZoneListComponent,
+        data: {
+          title: "Zone",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Zone List" },
+          ],
+        },
+      },
+      {
+        path: "zone/entry",
+        component: ZoneEntryComponent,
+        data: {
+          title: "Zone",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Zone Add" },
+          ],
+        },
+      },
+      {
+        path: "tarrif/list",
+        component: TarrifListComponent,
+        data: {
+          title: "Tarrif",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Tarrif" },
+          ],
+        },
+      },
+      {
+        path: "tarrif/entry",
+        component: TarrifEntryComponent,
+        data: {
+          title: "Add Tarrif",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Tarrif" },
+          ],
+        },
+      },
     ]
   }
 
