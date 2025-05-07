@@ -14,6 +14,8 @@ import { SectorListComponent } from './sector/sector-list/sector-list.component'
 import { SectorEntryComponent } from './sector/sector-entry/sector-entry.component';
 import { VesselListComponent } from './vessel/vessel-list/vessel-list.component';
 import { VesselEntryComponent } from './vessel/vessel-entry/vessel-entry.component';
+import { VoyageListComponent } from './voyage/voyage-list/voyage-list.component';
+import { VoyageEntryComponent } from './voyage/voyage-entry/voyage-entry.component';
 
 
 
@@ -210,6 +212,28 @@ export const CrmMobileRoutes: Routes = [
                     urls: [
                         { title: "CRM", url: "/crm" },
                         { title: "Vessel" },
+                    ],
+                },
+            },
+            {
+                path: "voyage/list",
+                component: VoyageListComponent,
+                data: {
+                    title: "Voyage List",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Voyage" },
+                    ],
+                },
+            },
+            {
+                path: "voyage/entry",
+                component: VoyageEntryComponent,
+                data: {
+                    title: "Voyage Entry",
+                    urls: [
+                        { title: "CRM", url: "/crm" },
+                        { title: "Voyage" },
                     ],
                 },
             },
