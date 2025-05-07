@@ -13,7 +13,7 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/crm/port-master/list',
+    path: '/master/port-master/list',
     title: 'Port Master',
     icon: 'mdi mdi-anchor',
     class: '',
@@ -23,7 +23,7 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/crm/uom-master/list',
+    path: '/master/uom-master/list',
     title: 'UOM Master',
     icon: 'mdi mdi-ruler	',
     class: '',
@@ -33,7 +33,7 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/crm/customer/list',
+    path: '/master/customer/list',
     title: 'Customer',
     icon: 'mdi mdi-account',
     class: '',
@@ -43,7 +43,7 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/crm/country/list',
+    path: '/master/country/list',
     title: 'Country',
     icon: 'mdi mdi-earth',
     class: '',
@@ -53,7 +53,7 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/crm/state/list',
+    path: '/master/state/list',
     title: 'State',
     icon: 'mdi mdi-map',
     class: '',
@@ -63,7 +63,7 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/crm/unit/list',
+    path: '/master/unit/list',
     title: 'Unit',
     icon: 'mdi mdi-cube',
     class: '',
@@ -73,7 +73,7 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/crm/vessel/list',
+    path: '/master/vessel/list',
     title: 'Vessel',
     icon: 'mdi mdi-ferry',
     class: '',
@@ -83,7 +83,7 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/crm/zone/list',
+    path: '/master/zone/list',
     title: 'Zone',
     icon: 'mdi mdi-vector-square',
     class: '',
@@ -93,7 +93,7 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/crm/tarrif/list',
+    path: '/master/tarrif/list',
     title: 'Tarrif',
     icon: 'mdi mdi-file-document',
     class: '',
@@ -103,7 +103,7 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/crm/city/list',
+    path: '/master/city/list',
     title: 'City',
     icon: 'mdi mdi-city',
     class: '',
@@ -113,7 +113,7 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/crm/department/list',
+    path: '/master/department/list',
     title: 'Department',
     icon: 'mdi mdi-office',
     class: '',
@@ -123,7 +123,7 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/crm/currency/list',
+    path: '/master/currency/list',
     title: 'Currency',
     icon: 'mdi mdi-currency-usd',
     class: '',
@@ -133,7 +133,7 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/crm/currency-exchange/list',
+    path: '/accounts/currency-exchange/list',
     title: 'Currency Exchange',
     icon: 'mdi mdi-stackexchange',
     class: '',
@@ -142,7 +142,7 @@ export const ROUTES: RouteInfo[] = [
     labelClass: '',
     submenu: []
   },
-  
+
 
 
 

@@ -28,6 +28,10 @@ export const Approutes: Routes = [
         loadChildren: () => import('./modules/master/master.module').then(m => m.MasterModule)
       },
       {
+        path: 'accounts',
+        loadChildren: () => import('./modules/accounts/accounts.module').then(m => m.AccountsModule)
+      },
+      {
         path: 'starter',
         loadChildren: () => import('./starter/starter.module').then(m => m.StarterModule)
       },
