@@ -43,7 +43,7 @@
 
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="type">
@@ -59,7 +59,7 @@
 
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-5">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="parameterName">
@@ -79,7 +79,7 @@
                 <div class="row">
                     <aside class="col-md-6">
                         <div class="custom-form-group">
-                            <textarea id="" placeholder="" rows="" class="input-field sm"
+                            <textarea id="" placeholder="" rows="1" class="input-field sm"
                                 formControlName="titleFormat"></textarea>
                             <label for="text-input" class="input-label">Title Format </label>
                         </div>
@@ -93,7 +93,7 @@
                     </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <textarea id="" placeholder="" rows="" class="input-field sm"
+                            <textarea id="" placeholder="" rows="1" class="input-field sm"
                                 formControlName="Remarks"></textarea>
                             <label for="text-input" class="input-label">Remarks </label>
                         </div>
@@ -109,7 +109,7 @@
                     </aside>
                     <aside class="col-md-4">
                         <div class="form-check form-check-inline">
-                            <div class="form-check">
+                            <div class="form-check d-flex align-items-center gap-2">
                                 <input type="checkbox" id="defaultSelected" class="form-check-input">
                                 <label for="defaultSelected" class="form-check-label">Default Selected</label>
                             </div>
@@ -144,7 +144,7 @@
 
                     <aside class="col-md-12">
                         <div class="custom-form-group">
-                            <textarea id="" placeholder="" rows="" class="input-field sm"
+                            <textarea id="" placeholder="" rows="1" class="input-field sm"
                                 formControlName="mailSubject"></textarea>
                             <label for="text-input" class="input-label">Mail Subject </label>
                         </div>
@@ -160,7 +160,7 @@
                     <aside class="col-md-6">
                         <div class="custom-form-group">
                             <div class="form-check form-check-inline">
-                                <div class="form-check">
+                                <div class="form-check d-flex align-items-center gap-2">
                                     <input type="checkbox" id="sendMailRequired" class="form-check-input">
                                     <label for="sendMailRequired" class="form-check-label">Send Mail Required?</label>
                                 </div>
@@ -188,6 +188,33 @@
         </div>
     </div>
 
+    <div class="col-12 mt-5">
+        <div class="card">
+            <div class="card-body">
+                <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
+                    <li [ngbNavItem]="1">
+                        <button ngbNavLink>Parameter</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="parameter"></ng-container>
+                        </ng-template>
+                    </li>
+                    <li [ngbNavItem]="2">
+                        <button ngbNavLink>Logo</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="logo"></ng-container>
+                        </ng-template>
+                    </li>
+                </ul>
+    
+                <section [ngbNavOutlet]="nav" class="mt-2 p-2"></section>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<ng-template #parameter>
+       
     <div class="col-12 mt-4">
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered">
@@ -242,5 +269,73 @@
             </table>
         </div>
     </div>
+</ng-template>
 
-</div>
+<ng-template #logo>
+       
+    <div class="row">
+        
+            <div class="col-md-6">
+                <div class="card ">
+                    <div class="card-body">
+                        <div class="row">
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+                                    <input type="file" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="file">
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="fileName">
+                                    <label for="text-input" class="input-label">File Name <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="mimeType">
+                                    <label for="text-input" class="input-label">Mime Type <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card ">
+                    <div class="card-body">
+                        <div class="row">
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+                                    <input type="file" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="file">
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="fileName">
+                                    <label for="text-input" class="input-label">File Name <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="mimeType">
+                                    <label for="text-input" class="input-label">Mime Type <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+    </div>
+</ng-template>
