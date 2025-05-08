@@ -8,5 +8,5 @@ import { Component } from '@angular/core';
   styleUrl: './organization-entry.component.scss'
 })
 export class OrganizationEntryComponent {
-
+  
 }

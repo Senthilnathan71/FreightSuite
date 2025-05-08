@@ -48,6 +48,7 @@ import { CommodityListComponent } from './commodity/commodity-list/commodity-lis
 import { CommodityEntryComponent } from './commodity/commodity-entry/commodity-entry.component';
 import { PackageTypeListComponent } from './package-type/package-type-list/package-type-list.component';
 import { PackageTypeEntryComponent } from './package-type/package-type-entry/package-type-entry.component';
+import { MenuEntryComponent } from './menu/menu-entry/menu-entry.component';
 
 
 
@@ -404,7 +405,7 @@ export const MasterRoutes: Routes = [
       },
       {
         path: "menu/entry",
-        component: MenuListComponent,
+        component: MenuEntryComponent,
         data: {
           title: "Menu Entry",
           urls: [
