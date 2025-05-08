@@ -3,20 +3,17 @@
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
             <form class="d-flex align-items-center gap-2">
                 <div class="form-outline col">
-                    <input type="search" class="form-control ps-5"  name="search" placeholder="Search Type">
+                    <input type="search" class="form-control ps-5" name="search" placeholder="Search Type">
                     <i class="fas fa-search ms-3"></i>
                 </div>
                 <div class="form-outline col">
-                    <input type="search" class="form-control ps-5"  name="search" placeholder="Enter Name">
-                    <i class="fas fa-search ms-3"></i>
+                    <input type="search" class="form-control" name="search" placeholder="Enter Name">
                 </div>
                 <div class="form-outline col">
-                    <input type="search" class="form-control ps-5"  name="search" placeholder="AR/AP">
-                    <i class="fas fa-search ms-3"></i>
+                    <input type="search" class="form-control" name="search" placeholder="AR/AP">
                 </div>
                 <div class="form-outline col">
-                    <input type="search" class="form-control ps-5"  name="search" placeholder="Status">
-                    <i class="fas fa-search ms-3"></i>
+                    <input type="search" class="form-control" name="search" placeholder="Status">
                 </div>
                 <button type="button" class="btn btn-info btn-sm">
                     <i class="fas fa-search"></i>
@@ -54,30 +51,30 @@
                 </thead>
                 <tbody>
                     @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                        <tr>
-                            <td>
-                                <div class="text-truncate">Oman Rials</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">RO</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                           
-                        </tr>
+                    <tr>
+                        <td>
+                            <div class="text-truncate">Oman Rials</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">OMR</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">RO</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">Rial</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">Baizas</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">Baizas</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">Baizas</div>
+                        </td>
+
+                    </tr>
                     }
                 </tbody>
             </table>

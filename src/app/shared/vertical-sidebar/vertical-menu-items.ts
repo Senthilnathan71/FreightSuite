@@ -243,6 +243,16 @@ export const ROUTES: RouteInfo[] = [
     labelClass: '',
     submenu: []
   },
+  {
+    path: '/master/airline/list',
+    title: 'Airline',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
 
 
 
