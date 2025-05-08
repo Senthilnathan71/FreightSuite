@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { Sector } from '../crm-mobile/Interfaces/sector.interface';
 import { State } from '../crm-mobile/Interfaces/state.interface';
 import { Country } from '../crm-mobile/Interfaces/country.interface';
@@ -12,6 +12,7 @@ import { Uom } from '../crm-mobile/Interfaces/uom.interface';
   providedIn: 'root'
 })
 export class MasterService {
+  apiUrl: any;
 
   constructor(private http: HttpClient) { }
 
@@ -119,14 +120,66 @@ export class MasterService {
   }
 
   //state-master
-  getAllState() {
-    return this.http.get('state').pipe(
-      map((resp: any) => {
-        let response = resp;
-        return response;
-      })
-    )
-  }
+  
+// getAllState() {
+//   return this.http.get('state').pipe(
+//     map((resp: any) => resp.data || resp)
+//   );
+// }
+
+// getStateById(id: number): Observable<any> {
+//   return this.http.get<any>(`state/fetch/${id}`);
+// }
+
+
+// createState(payload: any) {
+//   return this.http.post("state", payload).pipe(
+//     map((res: any) => res)
+//   );
+// }
+
+// updateStateById(id: number, payload: any) {
+//   return this.http.patch(`state/${id}`, payload).pipe(
+//     map((resp: any) => resp.data)
+//   );
+// }
+
+// deleteStateById(id: number) {
+//   return this.http.delete(`state/${id}`).pipe(
+//     map((resp: any) => resp.data)
+//   );
+// }
+// state-master
+getAllState(): Observable<State[]> {
+  return this.http.get('state').pipe(
+    map((resp: any) => resp.data || resp)
+  );
+}
+
+getStateById(id: number): Observable<State> {
+  return this.http.get<State>(`state/fetch/${id}`).pipe(
+    map((resp: any) => resp.data || resp)
+  );
+}
+
+createState(payload: any): Observable<State> {
+  return this.http.post<State>("state/create", payload).pipe(
+    map((res: any) => res.data || res)
+  );
+}
+
+updateStateById(id: number, payload: any): Observable<State> {
+  return this.http.patch<State>(`state/update/${id}`, payload).pipe(
+    map((resp: any) => resp.data || resp)
+  );
+}
+
+deleteStateById(id: number): Observable<any> {
+  return this.http.delete(`state/delete/${id}`).pipe(
+    map((resp: any) => resp.data || resp)
+  );
+}  
+  
 
   //port-master
   getAllPorts() {

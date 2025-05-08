@@ -1,70 +1,164 @@
-<div class="row">
+<div class="container-fluid">
+  <!-- Breadcrumb -->
+  <div class="row">
     <div class="col-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a routerLink="/master">Master</a></li>
+          <li class="breadcrumb-item active" aria-current="page">
+            {{ isEditMode ? 'State Edit' : 'State Add' }}
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="stateForm" (ngSubmit)="onSubmit()">
+    <div class="row">
+      <!-- Top buttons -->
+      <div class="col-12">
         <div class="d-flex align-items-center gap-2 mb-3">
-            <button class="btn btn-sm btn-light-secondary ms-auto">
-                <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
-            </button>
-            <button class="btn btn-sm btn-info">
-                <i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> Edit
-            </button>
+          <button type="submit" [disabled]="loading" class="btn btn-primary">
+            <span *ngIf="!loading">
+              <i-feather name="save" class="feather-sm me-1"></i-feather>
+              {{ isEditMode ? 'Update' : 'Create' }}
+            </span>
+            <span *ngIf="loading">
+              <i-feather name="loader" class="feather-sm spin me-1"></i-feather>
+              Processing...
+            </span>
+          </button>
+          <button type="button" class="btn btn-sm btn-info" (click)="resetForm()">
+            <i-feather name="rotate-ccw" class="feather-sm me-1"></i-feather> Reset
+          </button>
         </div>
-    </div>
+      </div>
 
-    <div class="col-md-6">
+      <!-- Left card section -->
+      <div class="col-md-6">
         <div class="card h-100">
-            <div class="card-body">
-                <div class="row">
-                    <h6 class="card-title mb-0">Basic Info</h6>
-                    <aside class="col-md-12">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Country <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Region <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <!-- <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
-                        </div>
-                    </aside> -->
-                    <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
-                               
-                            </ng-select>
-                            <label for="" class="input-label">Status</label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-12">
-                        <div class="custom-form-group">
-                            <textarea id="" placeholder="" rows="1" class="input-field sm"></textarea>
-                            <label for="text-input" class="input-label">Remarks </label>
-                        </div>
-                    </aside>
-                   
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Basic Info</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <!-- Name -->
+              <aside class="col-md-12">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    id="stateName"
+                    formControlName="stateName"
+                    class="custom-input-field sm"
+                    [class.is-invalid]="stateForm.get('stateName')?.invalid && stateForm.get('stateName')?.touched"
+                  />
+                  <label for="stateName" class="input-label">Name <span class="text-danger">*</span></label>
+                  <div *ngIf="stateForm.get('stateName')?.invalid && stateForm.get('stateName')?.touched" class="invalid-feedback">
+                    Name is required
+                  </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    
+              </aside>
 
-   
+              <!-- Code -->
+              <aside class="col-md-6">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    id="stateCode"
+                    formControlName="stateCode"
+                    class="custom-input-field sm"
+                    [class.is-invalid]="stateForm.get('stateCode')?.invalid && stateForm.get('stateCode')?.touched"
+                  />
+                  <label for="stateCode" class="input-label">Code <span class="text-danger">*</span></label>
+                  <div *ngIf="stateForm.get('stateCode')?.invalid && stateForm.get('stateCode')?.touched" class="invalid-feedback">
+                    Code is required
+                  </div>
+                </div>
+              </aside>
+
+              <!-- Country -->
+              <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                  <ng-select
+                    [items]="countries"
+                    bindLabel="countryName"
+                    bindValue="CountryMasterSid"
+                    formControlName="CountryMasterSid"
+                    [class.is-invalid]="stateForm.get('CountryMasterSid')?.invalid && stateForm.get('CountryMasterSid')?.touched"
+                  ></ng-select>
+                  <label class="input-label">Country <span class="text-danger">*</span></label>
+                  <div *ngIf="stateForm.get('CountryMasterSid')?.invalid && stateForm.get('CountryMasterSid')?.touched" class="invalid-feedback">
+                    Country is required
+                  </div>
+                </div>
+              </aside>
+
+              <!-- Region -->
+              <aside class="col-md-6">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    id="region"
+                    formControlName="region"
+                    class="custom-input-field sm"
+                  />
+                  <label for="region" class="input-label">Region</label>
+                </div>
+              </aside>
+
+              <!-- Status -->
+              <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                  <ng-select
+                    [items]="statusOptions"
+                    bindLabel="name"
+                    bindValue="id"
+                    formControlName="status"
+                  ></ng-select>
+                  <label class="input-label">Status</label>
+                </div>
+              </aside>
+
+              <!-- Remarks -->
+              <aside class="col-md-12">
+                <div class="custom-form-group">
+                  <textarea
+                    rows="1"
+                    class="input-field sm"
+                    formControlName="Remarks"
+                  ></textarea>
+                  <label class="input-label">Remarks</label>
+                </div>
+              </aside>
+
+              <!-- Action Buttons -->
+              <aside class="col-md-12 d-flex justify-content-between mt-3">
+                <button
+                  *ngIf="isEditMode"
+                  type="button"
+                  class="btn btn-danger btn-sm"
+                  (click)="confirmDelete()"
+                  (click)="onDelete()"
+                  [disabled]="loading"
+                  aria-label="Delete state"
+                >
+                  <span *ngIf="!loading">
+                    <i-feather name="trash-2" class="feather-sm me-1"></i-feather> Delete
+                  </span>
+                  <span *ngIf="loading">
+                    <i-feather name="loader" class="feather-sm spin me-1"></i-feather> Deleting...
+                  </span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="goBack()">
+                  <i-feather name="arrow-left" class="feather-sm me-1"></i-feather> Back
+                </button>
+                
+              </aside>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
 </div>

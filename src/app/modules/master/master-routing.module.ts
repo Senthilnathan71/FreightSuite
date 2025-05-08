@@ -222,29 +222,67 @@ export const MasterRoutes: Routes = [
             { title: "Country update" },
           ],
         },
+      },{
+        path: "state",
+        children: [
+          {
+            path: "list",
+            component: StateListComponent,
+            data: {
+              title: "State",
+              urls: [
+                { title: "Master", url: "/master" },
+                { title: "State List" },
+              ],
+            },
+          },
+          {
+            path: "entry",
+            component: StateEntryComponent,
+            data: {
+              title: "State",
+              urls: [
+                { title: "Master", url: "/master" },
+                { title: "State Add" },
+              ],
+            },
+          },
+          {
+            path: "entry/:id",
+            component: StateEntryComponent,
+            data: {
+              title: "State",
+              urls: [
+                { title: "Master", url: "/master" },
+                { title: "State Edit" },
+              ],
+            },
+          }
+        ]
       },
-      {
-        path: "state/list",
-        component: StateListComponent,
-        data: {
-          title: "State",
-          urls: [
-            { title: "Master", url: "/master" },
-            { title: "State List" },
-          ],
-        },
-      },
-      {
-        path: "state/entry",
-        component: StateEntryComponent,
-        data: {
-          title: "State",
-          urls: [
-            { title: "Master", url: "/master" },
-            { title: "State Add" },
-          ],
-        },
-      },
+
+        // {
+        //   path: "state/list",
+        //   component: StateListComponent,
+        //   data: {
+        //     title: "State",
+        //     urls: [
+        //       { title: "Master", url: "/master" },
+        //       { title: "State List" },
+        //     ],
+        //   },
+        // },
+        // {
+        //   path: "state/entry",
+        //   component: StateEntryComponent,
+        //   data: {
+        //     title: "State",
+        //     urls: [
+        //       { title: "Master", url: "/master" },
+        //       { title: "State Add" },
+        //     ],
+        //   },
+        // },
       {
         path: "unit/list",
         component: UnitListComponent,

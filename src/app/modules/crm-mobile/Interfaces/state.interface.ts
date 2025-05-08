@@ -1,4 +1,5 @@
 export interface State {
+    data: any;
     StateMasterSid: number,
     CountryMasterSid: number,
     stateCode: string,

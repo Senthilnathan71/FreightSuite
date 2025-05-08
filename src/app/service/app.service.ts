@@ -5,6 +5,12 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class AppService {
+  showErrorToast(errorMessage: string) {
+    throw new Error('Method not implemented.');
+  }
+  showSuccessToast(arg0: string) {
+    throw new Error('Method not implemented.');
+  }
   private deviceDetectorSource = new BehaviorSubject<boolean>(false); // Default value
   deviceDetector$ = this.deviceDetectorSource.asObservable();
   
