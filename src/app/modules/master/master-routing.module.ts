@@ -25,6 +25,25 @@ import { ZoneEntryComponent } from './zone/zone-entry/zone-entry.component';
 import { ZoneListComponent } from './zone/zone-list/zone-list.component';
 import { SectorEntryComponent } from './sector/sector-entry/sector-entry.component';
 import { SectorListComponent } from './sector/sector-list/sector-list.component';
+import { MenuListComponent } from './menu/menu-list/menu-list.component';
+import { ReportListComponent } from './report/report-list/report-list.component';
+import { ReportEntryComponent } from './report/report-entry/report-entry.component';
+import { RegionListComponent } from './region/region-list/region-list.component';
+import { RegionEntryComponent } from './region/region-entry/region-entry.component';
+import { CompanyListComponent } from './company/company-list/company-list.component';
+import { CompanyEntryComponent } from './company/company-entry/company-entry.component';
+import { BranchListComponent } from './branch/branch-list/branch-list.component';
+import { BranchEntryComponent } from './branch/branch-entry/branch-entry.component';
+import { AirlineListComponent } from './airline/airline-list/airline-list.component';
+import { AirlineEntryComponent } from './airline/airline-entry/airline-entry.component';
+import { MilestoneListComponent } from './milestone/milestone-list/milestone-list.component';
+import { MilestoneEntryComponent } from './milestone/milestone-entry/milestone-entry.component';
+import { OrganizationListComponent } from './organization/organization-list/organization-list.component';
+import { OrganizationEntryComponent } from './organization/organization-entry/organization-entry.component';
+import { DivisionListComponent } from './division/division-list/division-list.component';
+import { DivisionEntryComponent } from './division/division-entry/division-entry.component';
+import { ContainerTypeListComponent } from './container-type/container-type-list/container-type-list.component';
+import { ContainerTypeEntryComponent } from './container-type/container-type-entry/container-type-entry.component';
 
 
 
@@ -368,6 +387,183 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
+      {
+        path: "menu/list",
+        component: MenuListComponent,
+        data: {
+          title: "Menu List",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Menu" },
+          ],
+        },
+      },
+      {
+        path: "menu/entry",
+        component: MenuListComponent,
+        data: {
+          title: "Menu Entry",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Menu" },
+          ],
+        },
+      },
+      {
+        path: "report/list",
+        component: ReportListComponent,
+        data: {
+          title: "Report",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Report" },
+          ],
+        },
+      },
+      {
+        path: "report/entry",
+        component: ReportEntryComponent,
+        data: {
+          title: "Report",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Report" },
+          ],
+        },
+      },
+      {
+        path: "region/list",
+        component: RegionListComponent,
+        data: {
+          title: "Region",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Region" },
+          ],
+        },
+      },
+      {
+        path: "region/entry",
+        component: RegionEntryComponent,
+        data: {
+          title: "Region",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Region" },
+          ],
+        },
+      },
+      {
+        path: "company/list",
+        component: CompanyListComponent,
+        data: {
+          title: "Company",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Company" },
+          ],
+        },
+      },
+      {
+        path: "company/entry",
+        component: CompanyEntryComponent,
+        data: {
+          title: "Company",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Company" },
+          ],
+        },
+      },
+      {
+        path: "branch/list",
+        component: BranchListComponent,
+        data: {
+          title: "Branch",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Branch" },
+          ],
+        },
+      },
+      {
+        path: "branch/entry",
+        component: BranchEntryComponent,
+        data: {
+          title: "Branch",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Branch" },
+          ],
+        },
+      },
+      {
+        path: "airline/list",
+        component: AirlineListComponent,
+        data: {
+          title: "Airline",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Airline" },
+          ],
+        },
+      },
+      {
+        path: "airline/entry",
+        component: AirlineEntryComponent,
+        data: {
+          title: "Airline",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Airline" },
+          ],
+        },
+      },
+      {
+        path: "division/list",
+        component: DivisionListComponent,
+        data: {
+          title: "Division",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Division" },
+          ],
+        },
+      },
+      {
+        path: "division/entry",
+        component: DivisionEntryComponent,
+        data: {
+          title: "Division",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "division" },
+          ],
+        },
+      },
+      {
+        path: "container-type/list",
+        component: ContainerTypeListComponent,
+        data: {
+          title: "Container Type",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Container Type" },
+          ],
+        },
+      },
+      {
+        path: "container-type/entry",
+        component: ContainerTypeEntryComponent,
+        data: {
+          title: "Container Type",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Container Type" },
+          ],
+        },
+      },
+      
     ]
   }
 
