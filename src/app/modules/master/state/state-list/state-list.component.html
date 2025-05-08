@@ -17,7 +17,20 @@
     <!-- #endregion -->
 
     <div class="col-12">
-        <div class="card">
+
+        <!-- Loading Spinner -->
+        <div *ngIf="loading" class="text-center p-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="alert alert-danger">
+            {{ errorMessage }}
+        </div>
+
+        <div class="card" *ngIf="!loading && !errorMessage">
             <!-- #region lead view -->
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
@@ -33,9 +46,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr  *ngFor="let state of filteredState | slice: (page-1) * pageSize : page * pageSize"
-                        [id]="'state-' + state.StateMasterSid"
-                        [class.highlight-row]="state.StateMasterSid === highlightedId">
+                        <tr *ngFor="let state of filteredState | slice: (page-1) * pageSize : page * pageSize"
+                            [id]="'state-' + state.StateMasterSid"
+                            [class.highlight-row]="state.StateMasterSid === highlightedId">
                             <td>{{ state.stateName }}</td>
                             <td>{{ state.stateCode }}</td>
                             <td>{{ state.region }}</td>
@@ -65,9 +78,9 @@
 
             <div class="card-body">
                 <!-- #region Pagination -->
-                <ngb-pagination class="d-flex justify-content-end" 
+                <ngb-pagination class="d-flex justify-content-end"
                     [collectionSize]="filteredState.length"
-                    [pageSize]="pageSize" 
+                    [pageSize]="pageSize"
                     [(page)]="page"
                     [maxSize]="5"
                     [boundaryLinks]="true">

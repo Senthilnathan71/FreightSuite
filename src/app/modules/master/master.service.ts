@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable, throwError } from 'rxjs';
 import { Sector } from '../crm-mobile/Interfaces/sector.interface';
 import { State } from '../crm-mobile/Interfaces/state.interface';
 import { Country } from '../crm-mobile/Interfaces/country.interface';
@@ -152,7 +152,15 @@ export class MasterService {
 // state-master
 getAllState(): Observable<State[]> {
   return this.http.get('state').pipe(
-    map((resp: any) => resp.data || resp)
+    map((resp: any) => resp.data || resp),
+    catchError(error => {
+      console.error('Error fetching states:', error);
+      let errorMsg = 'Failed to load states';
+      if (error.error?.message) {
+        errorMsg += `: ${error.error.message}`;
+      }
+      return throwError(() => new Error(errorMsg));
+    })
   );
 }
 

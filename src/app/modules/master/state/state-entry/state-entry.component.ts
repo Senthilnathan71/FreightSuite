@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
@@ -23,9 +23,6 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./state-entry.component.scss']
 })
 export class StateEntryComponent implements OnInit {
-confirmDelete() {
-throw new Error('Method not implemented.');
-}
   stateForm: FormGroup;
   countries: Country[] = [];
   statusOptions = [
@@ -35,7 +32,7 @@ throw new Error('Method not implemented.');
   isEditMode = false;
   btnDisable = false;
   stateId: number;
-  loading = false; // Added loading state
+  loading = false;
   notifyService: any;
 
   constructor(
@@ -45,14 +42,35 @@ throw new Error('Method not implemented.');
     private router: Router
   ) {
     this.stateForm = this.fb.group({
-      stateName: ['',[Validators.required, Validators.maxLength(100)]],
-      stateCode: ['', Validators.required],
+      stateName: ['', [
+        Validators.required,
+        Validators.maxLength(100),
+        this.alphaSpaceValidator()
+      ]],
+      stateCode: ['', [
+        Validators.required,
+        Validators.minLength(2),
+        Validators.maxLength(3),
+        this.alphaValidator()
+      ]],
       CountryMasterSid: [null, Validators.required],
       region: [''],
       status: ['A', Validators.required],
       Remarks: ['']
     });
+
+    this.stateForm.get('stateCode')?.valueChanges.subscribe(val => {
+      if (val) {
+        this.stateForm.get('stateCode')?.setValue(val.toUpperCase(), { emitEvent: false });
+      }
+    });
   }
+  // alphaValidator(): any | string {
+  //   throw new Error('Method not implemented.');
+  // }
+  // alphaSpaceValidator(): any | string {
+  //   throw new Error('Method not implemented.');
+  // }
 
   ngOnInit(): void {
     this.loadCountries();
@@ -65,22 +83,53 @@ throw new Error('Method not implemented.');
     });
   }
 
+  private alphaValidator(): ValidatorFn {
+    return (control: AbstractControl): {[key: string]: any} | null => {
+      if (!control.value) return null;
+      const valid = /^[A-Za-z]+$/.test(control.value);
+      return valid ? null : { invalidAlpha: true };
+    };
+  }
+
+  private alphaSpaceValidator(): ValidatorFn {
+    return (control: AbstractControl): {[key: string]: any} | null => {
+      if (!control.value) return null;
+      const valid = /^[A-Za-z\s]+$/.test(control.value);
+      return valid ? null : { invalidAlphaSpace: true };
+    };
+  }
+
+  onKeyPress(event: KeyboardEvent, field: string) {
+    if (field === 'stateCode') {
+      const pattern = /[A-Za-z]/;
+      if (!pattern.test(event.key)) {
+        event.preventDefault();
+      }
+    } else if (field === 'stateName') {
+      const pattern = /[A-Za-z\s]/;
+      if (!pattern.test(event.key)) {
+        event.preventDefault();
+      }
+    }
+  }
+
+
   loadCountries() {
-    this.loading = true; // Start loading
+    this.loading = true;
     this.masterService.getAllCountry().subscribe({
       next: (resp: any) => {
         this.countries = resp.data || resp;
-        this.loading = false; // End loading
+        this.loading = false;
       },
       error: (err) => {
         console.error('Error loading countries:', err);
-        this.loading = false; // End loading on error
+        this.loading = false;
       }
     });
   }
 
   getStateById(id: number) {
-    this.loading = true; // Start loading
+    this.loading = true;
     this.masterService.getStateById(id).subscribe({
       next: (state: State) => {
         this.stateForm.patchValue({
@@ -91,11 +140,11 @@ throw new Error('Method not implemented.');
           status: state.status,
           Remarks: state.Remarks 
         });
-        this.loading = false; // End loading
+        this.loading = false;
       },
       error: (err) => {
         console.error('Error loading state:', err);
-        this.loading = false; // End loading on error
+        this.loading = false;
         alert('Failed to load state data');
       }
     });
@@ -108,7 +157,7 @@ throw new Error('Method not implemented.');
     }
 
     this.btnDisable = true;
-    this.loading = true; // Start loading
+    this.loading = true;
     const payload = this.stateForm.value;
 
     const operation = this.isEditMode 
@@ -117,7 +166,7 @@ throw new Error('Method not implemented.');
 
     operation.subscribe({
       next: (resp) => {
-        this.loading = false; // End loading
+        this.loading = false;
         this.btnDisable = false;
         const message = this.isEditMode 
           ? 'State updated successfully!' 
@@ -136,7 +185,7 @@ throw new Error('Method not implemented.');
       },
       error: (err) => {
         console.error(err);
-        this.loading = false; // End loading on error
+        this.loading = false;
         this.btnDisable = false;
         const errorMessage = `Error ${this.isEditMode ? 'updating' : 'creating'} state`;
         
@@ -191,6 +240,7 @@ throw new Error('Method not implemented.');
       });
     }
   }
+
   resetForm() {
     if (this.isEditMode) {
       this.getStateById(this.stateId);
@@ -217,5 +267,9 @@ throw new Error('Method not implemented.');
         this.markFormGroupTouched(control);
       }
     });
+  }
+
+  confirmDelete() {
+    throw new Error('Method not implemented.');
   }
 }
