@@ -143,6 +143,88 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
 
+  {
+    path: '/master/menu/list',
+    title: 'Menu',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  }, //
+  {
+    path: '/master/report/list',
+    title: 'Report',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/master/region/list',
+    title: 'Region',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/master/company/list',
+    title: 'Company',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/master/branch/list',
+    title: 'Branch',
+    icon: 'fas fa-code-branch',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/master/organization/list',
+    title: 'Organization',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/master/division/list',
+    title: 'division',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/master/container-type/list',
+    title: 'Container Type',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+
+
 
 
 
