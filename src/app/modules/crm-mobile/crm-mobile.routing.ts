@@ -169,7 +169,7 @@ export const CrmMobileRoutes: Routes = [
                         { title: "Lead Schedule (pending)" },
                     ],
                 },
-            } //
+            }, 
             {
                 path: "commodity/list",
                 component: CommodityListComponent,
@@ -214,7 +214,6 @@ export const CrmMobileRoutes: Routes = [
                     ],
                 },
             },
-
         ],
     },
 ];
