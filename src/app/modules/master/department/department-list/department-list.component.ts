@@ -54,7 +54,7 @@ export class DepartmentListComponent {
   }
 
   navigateToCreateDepartment() {
-    this.router.navigate(['master/departmentEntry'])
+    this.router.navigate(['master/department/entry'])
   }
 
 }

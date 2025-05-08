@@ -1,57 +1,72 @@
 <div class="row">
     <div class="col-12">
         <div class="d-flex align-items-center gap-2 mb-3">
-            <button class="btn btn-sm btn-light-secondary ms-auto">
-                <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
-            </button>
-            <button class="btn btn-sm btn-info">
+            <button class="btn btn-sm btn-info" (click)="onSubmit()">
                 <i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> Save
             </button>
         </div>
     </div>
+    <form [formGroup]="cityForm">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input formControlName="cityName" type="text" id="text-input" placeholder=""
+                                    class="custom-input-field sm">
+                                <label for="text-input" class="input-label">City Name <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input formControlName="cityCode" type="text" id="text-input" placeholder=""
+                                    class="custom-input-field sm">
+                                <label for="text-input" class="input-label">City Code <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <select formControlName="CountryMasterSid" class="form-select">
+                                    <option value="" disabled selected>Select Country</option>
+                                    <option *ngFor="let option of countryList" [value]="option.CountryMasterSid">
+                                        {{option.countryName }}</option>
+                                </select>
+                                <label for="text-input" class="input-label">Country <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <select formControlName="StateMasterSid" class="form-select">
+                                    <option value="" disabled selected>Select State</option>
+                                    <option *ngFor="let option of stateList" [value]="option.StateMasterSid">{{
+                                        option.stateName }}</option>
+                                </select>
+                                <label for="text-input" class="input-label">State <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
 
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">City Name <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">City Code <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">State <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Country <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Status <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <select formControlName="status" class="form-select" [disabled]="true">
+                                    <option value="Active">Active</option>
+                                </select>
+                                <label for="text-input" class="input-label">
+                                    Status <span class="text-danger fw-bold">*</span>
+                                </label>
+                            </div>
+                        </aside>
+
+
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </form>
+
 
 </div>

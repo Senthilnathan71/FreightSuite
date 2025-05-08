@@ -107,6 +107,17 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: "city/entry/:id",
+        component: CityEntryComponent,
+        data: {
+          title: "Edit City",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "City" },
+          ],
+        },
+      },
+      {
         path: "department/list",
         component: DepartmentListComponent,
         data: {
@@ -656,7 +667,7 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
-      
+
     ]
   }
 
