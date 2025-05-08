@@ -10,16 +10,11 @@ import { FullcalendarComponent } from './fullcalendar/fullcalendar.component';
 import { TodoComponent } from './todo/todo.component';
 import { MeetingComponent } from './lead-schedule/meeting/meeting.component';
 import { PendingComponent } from './lead-schedule/pending/pending.component';
-import { SectorListComponent } from './sector/sector-list/sector-list.component';
-import { SectorEntryComponent } from './sector/sector-entry/sector-entry.component';
-import { VesselListComponent } from './vessel/vessel-list/vessel-list.component';
-import { VesselEntryComponent } from './vessel/vessel-entry/vessel-entry.component';
-import { VoyageListComponent } from './voyage/voyage-list/voyage-list.component';
-import { VoyageEntryComponent } from './voyage/voyage-entry/voyage-entry.component';
-import { CommodityListComponent } from './commodity/commodity-list/commodity-list.component';
-import { CommodityEntryComponent } from './commodity/commodity-entry/commodity-entry.component';
-import { PackageListComponent } from './package/package-list/package-list.component';
 import { PackageEntryComponent } from './package/package-entry/package-entry.component';
+import { PackageListComponent } from './package/package-list/package-list.component';
+import { CommodityEntryComponent } from './commodity/commodity-entry/commodity-entry.component';
+import { CommodityListComponent } from './commodity/commodity-list/commodity-list.component';
+
 
 
 
@@ -174,73 +169,7 @@ export const CrmMobileRoutes: Routes = [
                         { title: "Lead Schedule (pending)" },
                     ],
                 },
-            },
-            {
-                path: "sector/list",
-                component: SectorListComponent,
-                data: {
-                    title: "Sector List",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "sector" },
-                    ],
-                },
-            },
-            {
-                path: "sector/entry",
-                component: SectorEntryComponent,
-                data: {
-                    title: "Sector Entry",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "sector" },
-                    ],
-                },
-            },
-            {
-                path: "vessel/list",
-                component: VesselListComponent,
-                data: {
-                    title: "Vessel List",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Vessel" },
-                    ],
-                },
-            },
-            {
-                path: "vessel/entry",
-                component: VesselEntryComponent,
-                data: {
-                    title: "Vessel Entry",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Vessel" },
-                    ],
-                },
-            },
-            {
-                path: "voyage/list",
-                component: VoyageListComponent,
-                data: {
-                    title: "Voyage List",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Voyage" },
-                    ],
-                },
-            },
-            {
-                path: "voyage/entry",
-                component: VoyageEntryComponent,
-                data: {
-                    title: "Voyage Entry",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Voyage" },
-                    ],
-                },
-            },
+            } //
             {
                 path: "commodity/list",
                 component: CommodityListComponent,
@@ -285,6 +214,7 @@ export const CrmMobileRoutes: Routes = [
                     ],
                 },
             },
+
         ],
     },
 ];

@@ -23,6 +23,8 @@ import { TarrifEntryComponent } from './tarrif/tarrif-entry/tarrif-entry.compone
 import { TarrifListComponent } from './tarrif/tarrif-list/tarrif-list.component';
 import { ZoneEntryComponent } from './zone/zone-entry/zone-entry.component';
 import { ZoneListComponent } from './zone/zone-list/zone-list.component';
+import { SectorEntryComponent } from './sector/sector-entry/sector-entry.component';
+import { SectorListComponent } from './sector/sector-list/sector-list.component';
 
 
 
@@ -341,6 +343,28 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: "Master", url: "/master" },
             { title: "Tarrif" },
+          ],
+        },
+      },
+      {
+        path: "sector/list",
+        component: SectorListComponent,
+        data: {
+          title: "Sector List",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "sector" },
+          ],
+        },
+      },
+      {
+        path: "sector/entry",
+        component: SectorEntryComponent,
+        data: {
+          title: "Sector Entry",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "sector" },
           ],
         },
       },
