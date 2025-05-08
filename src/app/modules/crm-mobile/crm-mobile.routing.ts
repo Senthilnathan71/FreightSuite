@@ -10,10 +10,6 @@ import { FullcalendarComponent } from './fullcalendar/fullcalendar.component';
 import { TodoComponent } from './todo/todo.component';
 import { MeetingComponent } from './lead-schedule/meeting/meeting.component';
 import { PendingComponent } from './lead-schedule/pending/pending.component';
-import { PackageEntryComponent } from './package/package-entry/package-entry.component';
-import { PackageListComponent } from './package/package-list/package-list.component';
-import { CommodityEntryComponent } from './commodity/commodity-entry/commodity-entry.component';
-import { CommodityListComponent } from './commodity/commodity-list/commodity-list.component';
 
 
 
@@ -170,50 +166,7 @@ export const CrmMobileRoutes: Routes = [
                     ],
                 },
             }, 
-            {
-                path: "commodity/list",
-                component: CommodityListComponent,
-                data: {
-                    title: "Commodity List",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Commodity" },
-                    ],
-                },
-            },
-            {
-                path: "commodity/entry",
-                component: CommodityEntryComponent,
-                data: {
-                    title: "Commodity Entry",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Commodity" },
-                    ],
-                },
-            },
-            {
-                path: "package/list",
-                component: PackageListComponent,
-                data: {
-                    title: "Package List",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Package" },
-                    ],
-                },
-            },
-            {
-                path: "package/entry",
-                component: PackageEntryComponent,
-                data: {
-                    title: "Package Entry",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Package" },
-                    ],
-                },
-            },
+            
         ],
     },
 ];

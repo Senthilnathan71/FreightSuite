@@ -44,6 +44,10 @@ import { DivisionListComponent } from './division/division-list/division-list.co
 import { DivisionEntryComponent } from './division/division-entry/division-entry.component';
 import { ContainerTypeListComponent } from './container-type/container-type-list/container-type-list.component';
 import { ContainerTypeEntryComponent } from './container-type/container-type-entry/container-type-entry.component';
+import { CommodityListComponent } from './commodity/commodity-list/commodity-list.component';
+import { CommodityEntryComponent } from './commodity/commodity-entry/commodity-entry.component';
+import { PackageTypeListComponent } from './package-type/package-type-list/package-type-list.component';
+import { PackageTypeEntryComponent } from './package-type/package-type-entry/package-type-entry.component';
 
 
 
@@ -604,6 +608,50 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: "Master", url: "/master" },
             { title: "Organization" },
+          ],
+        },
+      },
+      {
+        path: "commodity/list",
+        component: CommodityListComponent,
+        data: {
+          title: "Commodity",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Commodity" },
+          ],
+        },
+      },
+      {
+        path: "commodity/entry",
+        component: CommodityEntryComponent,
+        data: {
+          title: "Commodity",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Commodity" },
+          ],
+        },
+      },
+      {
+        path: "package-type/list",
+        component: PackageTypeListComponent,
+        data: {
+          title: "Package Type",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Package Type" },
+          ],
+        },
+      },
+      {
+        path: "package-type/entry",
+        component: PackageTypeEntryComponent,
+        data: {
+          title: "Package Type",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Package Type" },
           ],
         },
       },

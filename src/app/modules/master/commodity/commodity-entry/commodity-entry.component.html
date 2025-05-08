@@ -1,0 +1,125 @@
+<div class="row py-3">
+    <div class="col-12">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <button class="btn btn-sm btn-light-secondary ms-auto">Edit</button>
+            <button class="btn btn-sm btn-info">Update</button>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="row">
+                    <!-- <h6 class="card-title mb-0">Basic Info</h6> -->
+                    <aside class="col-md-12">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="commodityName" >
+                            <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>    
+                        </div>
+                    </aside>
+                    <aside class="col-md-12">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="commodityCode" >
+                            <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="HsCode" >
+                            <label for="text-input" class="input-label">HS Code <span class="text-danger">*</span></label>
+                            
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Unit" >
+                            <label for="text-input" class="input-label">Unit <span class="text-danger">*</span></label>
+                           
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="CommodityType" >
+                            <label for="text-input" class="input-label">Commodity Type <span class="text-danger">*</span></label>
+                           
+                        </div>
+                    </aside>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="row">
+                    <!-- <h6 class="card-title mb-0">Basic Info 2</h6> -->
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="MinTemp" >
+                            <label for="text-input" class="input-label">Min Temp <span class="text-danger">*</span></label>
+                           
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Max Temp" >
+                            <label for="text-input" class="input-label">Max Temp <span class="text-danger">*</span></label>
+                           
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Status" >
+                            <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
+                           
+                        </div>
+                    </aside>   
+                    <aside class="col-md-12 pt-2">
+                        <div class="custom-form-group">
+                            <textarea id="" placeholder="" rows="" class="input-field sm" formControlName="Remarks"></textarea>
+                            <label for="text-input" class="input-label">Remarks </label>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="">
+                    <div class="form-check form-check-inline">
+                        <div class="form-check">
+                            <input type="checkbox" id="timber" class="form-check-input">
+                            <label for="timber" class="form-check-label">Timber</label>
+                        </div>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <div class="form-check">
+                            <input type="checkbox" id="Flamable" class="form-check-input">
+                            <label for="Flamable" class="form-check-label">Flamable</label>
+                        </div>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <div class="form-check">
+                            <input type="checkbox" id="Perishable" class="form-check-input">
+                            <label for="Perishable" class="form-check-label">Perishable</label>
+                        </div>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <div class="form-check">
+                            <input type="checkbox" id="Haz" class="form-check-input">
+                            <label for="Haz" class="form-check-label">Haz</label>
+                        </div>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <div class="form-check">
+                            <input type="checkbox" id="cvR" class="form-check-input">
+                            <label for="cvR" class="form-check-label">Container Vent Required</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

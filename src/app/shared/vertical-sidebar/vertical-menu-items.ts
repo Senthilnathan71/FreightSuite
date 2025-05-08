@@ -223,6 +223,26 @@ export const ROUTES: RouteInfo[] = [
     labelClass: '',
     submenu: []
   },
+  {
+    path: '/master/commodity/list',
+    title: 'Commodity',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/master/package-type/list',
+    title: 'Package Type',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
 
 
 

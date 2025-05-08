@@ -36,7 +36,7 @@ export class DashboardComponent implements OnInit {
     { name: 'Currency Exchange', badge: null, link: '/crm/currency-exchange/list', category: 'nav-currency-exchange-list' },
     { name: 'Sector', badge: null, link: '/crm/sector/list', category: 'nav-sector-list' },
     { name: 'Voyage', badge: null, link: '/crm/voyage/list', category: 'nav-voyage-list' },
-    { name: 'Commodity', badge: null, link: '/crm/commodity/list', category: 'nav-commodity-list' },
+    // { name: 'Commodity', badge: null, link: '/crm/commodity/list', category: 'nav-commodity-list' },
     { name: 'Package', badge: null, link: '/crm/package/list', category: 'nav-package-list' },
     // { name: 'Lead', badge: 99, link: '/crm/lead/list', category: 'nav-lead' },
     // { name: 'Calendar', badge: null, link: '/crm/calendar', category: 'nav-calendar' },
