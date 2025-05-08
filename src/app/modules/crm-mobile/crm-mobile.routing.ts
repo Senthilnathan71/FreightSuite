@@ -10,10 +10,7 @@ import { FullcalendarComponent } from './fullcalendar/fullcalendar.component';
 import { TodoComponent } from './todo/todo.component';
 import { MeetingComponent } from './lead-schedule/meeting/meeting.component';
 import { PendingComponent } from './lead-schedule/pending/pending.component';
-import { SectorListComponent } from './sector/sector-list/sector-list.component';
-import { SectorEntryComponent } from './sector/sector-entry/sector-entry.component';
-import { VesselListComponent } from './vessel/vessel-list/vessel-list.component';
-import { VesselEntryComponent } from './vessel/vessel-entry/vessel-entry.component';
+
 
 
 
@@ -168,51 +165,8 @@ export const CrmMobileRoutes: Routes = [
                         { title: "Lead Schedule (pending)" },
                     ],
                 },
-            },
-            {
-                path: "sector/list",
-                component: SectorListComponent,
-                data: {
-                    title: "Sector List",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "sector" },
-                    ],
-                },
-            },
-            {
-                path: "sector/entry",
-                component: SectorEntryComponent,
-                data: {
-                    title: "Sector Entry",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "sector" },
-                    ],
-                },
-            },
-            {
-                path: "vessel/list",
-                component: VesselListComponent,
-                data: {
-                    title: "Vessel List",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Vessel" },
-                    ],
-                },
-            },
-            {
-                path: "vessel/entry",
-                component: VesselEntryComponent,
-                data: {
-                    title: "Vessel Entry",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Vessel" },
-                    ],
-                },
-            },
+            }
+
         ],
     },
 ];
