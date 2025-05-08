@@ -563,9 +563,60 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
+      {
+        path: "milestone/list",
+        component: MilestoneListComponent,
+        data: {
+          title: "Milestone",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Milestone" },
+          ],
+        },
+      },
+      {
+        path: "milestone/entry",
+        component: MilestoneEntryComponent,
+        data: {
+          title: "Container Type",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Milestone" },
+          ],
+        },
+      },
+      {
+        path: "organization/list",
+        component: OrganizationListComponent,
+        data: {
+          title: "Organization",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Organization" },
+          ],
+        },
+      },
+      {
+        path: "organization/entry",
+        component: OrganizationEntryComponent,
+        data: {
+          title: "Organization",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Organization" },
+          ],
+        },
+      },
       
     ]
   }
 
 ];
 
+
+
+
+// import { MilestoneListComponent } from './milestone/milestone-list/milestone-list.component';
+// import { MilestoneEntryComponent } from './milestone/milestone-entry/milestone-entry.component';
+// import { OrganizationListComponent } from './organization/organization-list/organization-list.component';
+// import { OrganizationEntryComponent } from './organization/organization-entry/organization-entry.component';
