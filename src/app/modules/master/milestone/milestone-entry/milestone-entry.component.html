@@ -16,19 +16,24 @@
                             <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>    
                         </div>
                     </aside>
+                  
                     <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="shipmentType" >
-                            <label for="text-input" class="input-label">Shipment Type</label>
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfShipmentType" bindLabel="name" bindValue="name">
+                               
+                            </ng-select>
+                            <label for="" class="input-label">Shipment Type </label>
                         </div>
-                    </aside>
+                    </aside>   
                     <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="departmentType" >
-                            <label for="text-input" class="input-label">Deparment Type</label>
-                            
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfDepartmentType" bindLabel="name" bindValue="name">
+                               
+                            </ng-select>
+                            <label for="" class="input-label">Deparment Type </label>
                         </div>
-                    </aside>
+                    </aside>   
+                   
                     <aside class="col-md-12">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="orderBy" >
@@ -63,10 +68,11 @@
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Status" >
-                            <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
-                           
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
+                               
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
                         </div>
                     </aside>   
                     <aside class="col-md-12 ">

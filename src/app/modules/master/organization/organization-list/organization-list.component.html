@@ -9,12 +9,22 @@
                 <div class="form-outline col">
                     <input type="search" class="form-control" name="search" placeholder="Enter Name">
                 </div>
-                <div class="form-outline col">
-                    <input type="search" class="form-control" name="search" placeholder="AR/AP">
-                </div>
-                <div class="form-outline col">
-                    <input type="search" class="form-control" name="search" placeholder="Status">
-                </div>
+                <aside class="col">
+                    <div class="custom-form-group custom-form-group-select">
+                        <ng-select formControlName="PortType" [items]="modeOfARAP" bindLabel="name" bindValue="name">
+                           
+                        </ng-select>
+                        <label for="" class="input-label">AR/AP</label>
+                    </div>
+                </aside> 
+                <aside class="col">
+                    <div class="custom-form-group custom-form-group-select">
+                        <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
+                           
+                        </ng-select>
+                        <label for="" class="input-label">Status </label>
+                    </div>
+                </aside>  
                 <button type="button" class="btn btn-info btn-sm">
                     <i class="fas fa-search"></i>
                     Search
@@ -23,12 +33,12 @@
                     <i class="mdi mdi-plus"></i>
                     Create
                 </button>
-                <button type="button" class="btn btn-secondary btn-sm">
-                    <!-- <i class="mdi mdi-plus"></i> -->
-                    report
+                <button type="button" class="btn btn-secondary btn-sm d-flex align-items-center gap-1">
+                    <i-feather name="arrow-down-right" class="feather-sm "></i-feather>
+                    Report
                 </button>
-                <button type="button" class="btn btn-secondary btn-sm">
-                    <!-- <i class="mdi mdi-plus"></i> -->
+                <button type="button" class="btn btn-secondary btn-sm d-flex align-items-center gap-1">
+                    <i-feather name="arrow-down-right" class="feather-sm"></i-feather>
                     Reset
                 </button>
             </form>
@@ -53,7 +63,7 @@
                     @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
                     <tr>
                         <td>
-                            <div class="text-truncate">Oman Rials</div>
+                            <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
                         </td>
                         <td>
                             <div class="text-truncate">OMR</div>
@@ -71,7 +81,10 @@
                             <div class="text-truncate">Baizas</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <span
+                                class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                Approved</span>
                         </td>
 
                     </tr>

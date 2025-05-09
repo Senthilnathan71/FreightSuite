@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
+import { FeatherModule } from 'angular-feather';
 
 @Component({
   selector: 'app-milestone-list',
   standalone: true,
-  imports: [],
+  imports: [FeatherModule],
   templateUrl: './milestone-list.component.html',
   styleUrl: './milestone-list.component.scss'
 })

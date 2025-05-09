@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
+import { FeatherModule } from 'angular-feather';
 
 @Component({
   selector: 'app-commodity-list',
   standalone: true,
-  imports: [],
+  imports: [FeatherModule],
   templateUrl: './commodity-list.component.html',
   styleUrl: './commodity-list.component.scss'
 })

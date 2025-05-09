@@ -20,13 +20,15 @@
                         </ng-template>
                     </li>
                     <li [ngbNavItem]="2">
-                        <button ngbNavLink>Logo</button>
+                        <button ngbNavLink> 
+                            <i-feather name="file-text" class="feather-sm"></i-feather>
+                        Logo</button>
                         <ng-template ngbNavContent>
                             <ng-container *ngTemplateOutlet="Logo"></ng-container>
                         </ng-template>
                     </li>
                     <li [ngbNavItem]="3">
-                        <button ngbNavLink>eDocs Setup</button>
+                        <button ngbNavLink><i-feather name="settings" class="feather-sm"></i-feather> eDocs Setup</button>
                         <ng-template ngbNavContent>
                             <ng-container *ngTemplateOutlet="eDocssetup"></ng-container>
                         </ng-template>
@@ -137,7 +139,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card h-100">
+            <div class="card h-100 ">
                 <div class="card-body">
                     <div class="row">
                         
@@ -279,10 +281,11 @@
                             </div>
                         </aside>
                         <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="status" >
-                                <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
-                               
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
+                                   
+                                </ng-select>
+                                <label for="" class="input-label">Status <span class="text-danger">*</span></label>
                             </div>
                         </aside>
                      
@@ -296,7 +299,51 @@
 
 <ng-template #Logo>
     <div class="row">
-
+        <div class="col-md-12">
+            <div class="card h-100 ">
+                <div class="card-body">
+                    <div class="row">
+                        
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="file" id="text-input" placeholder="" class="custom-input-field sm" formControlName="file" >
+                        
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="file" id="text-input" placeholder="" class="custom-input-field sm" formControlName="file" >
+                        
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Width" >
+                                <label for="text-input" class="input-label">Width</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Height" >
+                                <label for="text-input" class="input-label">Height</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="additioalLogoRequired" class="form-check-input sm">
+                                    <label for="additioalLogoRequired" class="form-check-label sm">Additional Logo Required? </label>
+                                </div>
+                            </div>
+                        </aside>
+                      
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </ng-template>
 

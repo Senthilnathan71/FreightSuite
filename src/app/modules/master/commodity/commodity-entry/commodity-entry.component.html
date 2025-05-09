@@ -68,12 +68,13 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Status" >
-                            <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
-                           
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
+                               
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
                         </div>
-                    </aside>   
+                    </aside>  
                     <aside class="col-md-12 pt-2">
                         <div class="custom-form-group">
                             <textarea id="" placeholder="" rows="" class="input-field sm" formControlName="Remarks"></textarea>

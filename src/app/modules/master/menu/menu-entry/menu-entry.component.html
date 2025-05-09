@@ -24,13 +24,13 @@
                         </div>
                     </aside>
                     <aside class="col-md-12">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="type">
-                            <label for="text-input" class="input-label">Type <span class="text-danger">*</span></label>
-
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfType" bindLabel="name" bindValue="name">
+                               
+                            </ng-select>
+                            <label for="" class="input-label">Type <span class="text-danger">*</span></label>
                         </div>
-                    </aside>
+                    </aside>  
                     <aside class="col-md-12">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
