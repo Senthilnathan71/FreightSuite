@@ -140,6 +140,17 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: "department/entry/:id",
+        component: DepartmentEntryComponent,
+        data: {
+          title: "Edit Department",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Department" },
+          ],
+        },
+      },
+      {
         path: "currency/list",
         component: CurrencyListComponent,
         data: {

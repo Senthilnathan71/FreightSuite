@@ -11,5 +11,7 @@ import { FeatherModule } from 'angular-feather';
   styleUrl: './department-entry.component.scss'
 })
 export class DepartmentEntryComponent {
-
+  goBack() {
+    history.back()
+  }
 }

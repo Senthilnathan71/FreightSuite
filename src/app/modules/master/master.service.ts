@@ -25,6 +25,14 @@ export class MasterService {
     )
   }
 
+  searchDepartmentList(payload) {
+    return this.http.post("department/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    )
+  }
+
 
 
   //uom-master

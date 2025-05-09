@@ -1,19 +1,47 @@
 <div class="row">
     <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <form action="" class="d-flex align-items-center gap-2">
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5" name="search" [(ngModel)]="searchText"
-                        autocomplete="off" (input)="searchDepartmentsData()" placeholder="Search">
-                    <i class="fas fa-search ms-3"></i>
+            <div class="col-12">
+                <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
+                    <form class="d-flex align-items-center gap-2">
+                        <div class="form-outline col">
+                            <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                                <option value="departmentName">Department Name</option>
+                                <option value="departmentCode">Department Code</option>
+                                <option value="departmentType">Department Type</option>
+                                <option value="ExportImport">Export/Import</option>
+                                <option value="FCLLCL">FCLLCL</option>
+                                <option value="status">Status</option>
+                            </select>
+                        </div>
+                        <div class="form-outline col">
+                            <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
+                                placeholder="Enter filter value">
+                            <i
+                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                        </div>
+
+                        <button type="button" class="btn btn-info btn-sm" (click)="search()">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateDepartment()">
+                            <i class="mdi mdi-plus"></i> Create
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm">
+                            <!-- <i class="mdi mdi-plus"></i> -->
+                            report
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm">
+                            <!-- <i class="mdi mdi-plus"></i> -->
+                            Reset
+                        </button>
+                    </form>
                 </div>
-                <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateDepartment()">
-                    <i class="mdi mdi-plus"></i> Add
-                </button>
-            </form>
+            </div>
         </div>
     </div>
-    <div class="col-12" *ngIf="totalLengthofCollection>1">
+    <div class="col-12" *ngIf="totalLengthOfCollection > 0">
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
@@ -24,11 +52,11 @@
                         <th class="bg-transparent text-light" scope="col">Exp/Imp</th>
                         <th class="bg-transparent text-light" scope="col">FCL/LCL</th>
                         <th class="bg-transparent text-light" scope="col">Status</th>
+                        <th class="bg-transparent text-light" scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of filterDepartmentList; track $index) {
-                    <tr>
+                    <tr *ngFor="let item of departmentList; let i = index; trackBy: trackByIndex">
                         <td>
                             <div class="text-truncate">{{item.departmentCode}}</div>
                         </td>
@@ -45,18 +73,33 @@
                             <div class="text-truncate">{{item.FCLLCL}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Active</div>
+                            <div class="text-truncate">{{item.Status === 'A'? "Active":"Invalid"}}</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="text-info mx-2" class="link mx-2 ps-3 "
+                                    [routerLink]="['/master/department/entry/', item.DepartmentMasterSid]">
+                                    <i-feather class="feather-sm" name="eye"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start"
+                                    (click)="deleteDepartment(item.DepartmentMasterSid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
                         </td>
                     </tr>
-                    }
                 </tbody>
             </table>
         </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+            </ngb-pagination>
+        </div>
     </div>
 
-    <div class="col-12" *ngIf="totalLengthofCollection === 0">
-        <div>
-            No records found
-        </div>
+    <!-- No records found -->
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0">
+        <div>No records found</div>
     </div>
 </div>
