@@ -1,1 +1,83 @@
-<p>organization-list works!</p>
+<div class="row">
+    <div class="col-12">
+        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
+            <form class="d-flex align-items-center gap-2">
+                <div class="form-outline col">
+                    <input type="search" class="form-control ps-5" name="search" placeholder="Search Type">
+                    <i class="fas fa-search ms-3"></i>
+                </div>
+                <div class="form-outline col">
+                    <input type="search" class="form-control" name="search" placeholder="Enter Name">
+                </div>
+                <div class="form-outline col">
+                    <input type="search" class="form-control" name="search" placeholder="AR/AP">
+                </div>
+                <div class="form-outline col">
+                    <input type="search" class="form-control" name="search" placeholder="Status">
+                </div>
+                <button type="button" class="btn btn-info btn-sm">
+                    <i class="fas fa-search"></i>
+                    Search
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm">
+                    <i class="mdi mdi-plus"></i>
+                    Create
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm">
+                    <!-- <i class="mdi mdi-plus"></i> -->
+                    report
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm">
+                    <!-- <i class="mdi mdi-plus"></i> -->
+                    Reset
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">Action</th>
+                        <th class="bg-transparent text-light" scope="col">Name</th>
+                        <th class="bg-transparent text-light" scope="col">Code</th>
+                        <th class="bg-transparent text-light" scope="col">Shortname</th>
+                        <th class="bg-transparent text-light" scope="col">Fullname</th>
+                        <th class="bg-transparent text-light" scope="col">UNO Code</th>
+                        <th class="bg-transparent text-light" scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                    <tr>
+                        <td>
+                            <div class="text-truncate">Oman Rials</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">OMR</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">RO</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">Rial</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">Baizas</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">Baizas</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">Baizas</div>
+                        </td>
+
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

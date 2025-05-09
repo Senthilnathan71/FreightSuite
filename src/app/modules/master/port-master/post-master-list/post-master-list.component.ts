@@ -42,7 +42,7 @@ export class PostMasterListComponent implements OnInit {
     this.isMobile = this.appService.getDevice();
   }
   createNew() {
-    this.route.navigate(['crm/port-master/view'])
+    this.route.navigate(['master/port-master/view'])
   }
 
 

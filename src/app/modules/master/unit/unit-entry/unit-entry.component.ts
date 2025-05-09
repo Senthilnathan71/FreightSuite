@@ -94,7 +94,7 @@ export class UnitEntryComponent {
   }
 
   goBack() {
-    this.router.navigate(['crm/unit/list'])
+    history.back()
   }
 
   // Handle Form Submission
@@ -122,7 +122,7 @@ export class UnitEntryComponent {
             console.log(resp.message);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['crm/unit/list']);
+              this.router.navigate(['master/unit/list']);
 
             } else {
               this.appSettingService.showError(resp.message);
@@ -141,7 +141,7 @@ export class UnitEntryComponent {
             console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['crm/unit/list']);
+              this.router.navigate(['master/unit/list']);
 
             } else {
               this.appSettingService.showError(resp.message);
