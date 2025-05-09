@@ -42,30 +42,39 @@ export class StateListComponent implements OnInit, OnDestroy {
     private appService: AppService,
   ) { }
 
-  ngOnInit(): void {
-    this.loadState();
-    this.isMobile = this.appService.getDevice();
+  // In state-list.component.ts, modify ngOnInit():
+ngOnInit(): void {
+  // Always load data when component initializes
+  this.loadState();
+  
+  this.isMobile = this.appService.getDevice();
 
-    // Check for highlighted record in query params
-    this.route.queryParams.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(params => {
-      if (params['highlight']) {
-        this.highlightedId = +params['highlight'];
-        // Scroll to the highlighted record after data loads
-        setTimeout(() => {
-          const element = document.getElementById(`state-${this.highlightedId}`);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            element.classList.add('highlight-row');
-            setTimeout(() => element.classList.remove('highlight-row'), 3000);
-          }
-        }, 500);
+  // Check for highlighted record in query params
+  // Replace the existing queryParams subscription with this:
+this.route.queryParams.pipe(
+  takeUntil(this.destroy$)
+).subscribe(params => {
+  // Always check for refresh first
+  if (params['refresh']) {
+    this.loadState(); // Force data reload
+  }
+
+  // Then handle highlight if present
+  if (params['highlight']) {
+    this.highlightedId = +params['highlight'];
+    
+    // Scroll to the highlighted record after data loads
+    setTimeout(() => {
+      const element = document.getElementById(`state-${this.highlightedId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.classList.add('highlight-row');
+        setTimeout(() => element.classList.remove('highlight-row'), 3000);
       }
-      if (params['refresh']) {
-        this.loadState(); // Refresh data when requested
-      }
-    });
+    }, 500);
+  }
+});
+
   }
 
   ngOnDestroy(): void {
@@ -78,11 +87,13 @@ export class StateListComponent implements OnInit, OnDestroy {
   }
 
   loadState() {
+    console.log('Loading state data...'); // Add this
     this.loading = true;
     this.masterService.getAllState().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (resp: any) => {
+        console.log('State data received:', resp); // Add this
         this.state = resp.data || resp;
         this.filteredState = [...this.state];
         this.totalLengthOfCollection = this.state.length || 0;

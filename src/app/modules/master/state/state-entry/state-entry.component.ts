@@ -49,13 +49,13 @@ export class StateEntryComponent implements OnInit {
       ]],
       stateCode: ['', [
         Validators.required,
-        Validators.minLength(2),
-        Validators.maxLength(3),
+        // Validators.minLength(2),
+        Validators.maxLength(2),
         this.alphaValidator()
       ]],
       CountryMasterSid: [null, Validators.required],
       region: [''],
-      status: ['A', Validators.required],
+      status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
       Remarks: ['']
     });
 
@@ -78,6 +78,7 @@ export class StateEntryComponent implements OnInit {
       if (params['id']) {
         this.stateId = +params['id'];
         this.isEditMode = true;
+        this.stateForm.get('status')?.enable();
         this.getStateById(this.stateId);
       }
     });
