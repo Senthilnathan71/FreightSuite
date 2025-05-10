@@ -7,6 +7,7 @@ import { Country } from '../crm-mobile/Interfaces/country.interface';
 import { Port } from '../crm-mobile/Interfaces/port.interface';
 import { Unit } from '../crm-mobile/Interfaces/unit.interface';
 import { Uom } from '../crm-mobile/Interfaces/uom.interface';
+import { City } from '../crm-mobile/Interfaces/city.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +23,14 @@ export class MasterService {
       let response = resp.data
       return response
     })
+    )
+  }
+
+  searchDepartmentList(payload) {
+    return this.http.post("department/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
     )
   }
 
@@ -261,6 +270,7 @@ deleteStateById(id: number): Observable<any> {
     return this.http.get('country').pipe(
       map((resp: any) => {
         let response = resp;
+        console.log(response)
         return response;
       })
     )
@@ -295,6 +305,54 @@ deleteStateById(id: number): Observable<any> {
 
   deleteCountryById(id: number) {
     return this.http.delete<{ data: any }>(`country/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  //city-master
+
+  getAllCity() {
+    return this.http.get<City>('city').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+
+  getCityById(id: number) {
+    return this.http.get<{ data: City }>(`city/cityId/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+
+  createCity(payload: any) {
+    return this.http.post("city/add", payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    )
+  }
+
+  updateCityById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`city/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  deleteCityById(id: number) {
+    return this.http.delete<{ data: any }>(`city/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;

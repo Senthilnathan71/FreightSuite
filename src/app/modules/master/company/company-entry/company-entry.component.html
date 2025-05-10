@@ -1,0 +1,345 @@
+
+<div class="row py-3">
+
+
+    <div class="col-12">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <button class="btn btn-sm btn-light-secondary ms-auto">Edit</button>
+            <button class="btn btn-sm btn-info">Update</button>
+        </div>
+    </div>
+   
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
+                    <li [ngbNavItem]="1">
+                        <button ngbNavLink>Company</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="company"></ng-container>
+                        </ng-template>
+                    </li>
+                    <li [ngbNavItem]="2">
+                        <button ngbNavLink>Logo</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="Logo"></ng-container>
+                        </ng-template>
+                    </li>
+                    <li [ngbNavItem]="3">
+                        <button ngbNavLink>eDocs Setup</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="eDocssetup"></ng-container>
+                        </ng-template>
+                    </li>
+                </ul>
+    
+                <section [ngbNavOutlet]="nav" class="mt-2 p-2"></section>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<ng-template #company>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row">
+                        <aside class="col-md-8">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="CompanyName" >
+                                <label for="text-input" class="input-label">Company Name <span class="text-danger">*</span></label>    
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Code" >
+                                <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="organization" >
+                                <label for="text-input" class="input-label">Organization </label>
+                                
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="address1" >
+                                <label for="text-input" class="input-label">Address1</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="address2" >
+                                <label for="text-input" class="input-label">Address2</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="address3" >
+                                <label for="text-input" class="input-label">Address3</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="city" >
+                                <label for="text-input" class="input-label">City</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="state" >
+                                <label for="text-input" class="input-label">State</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="postCode" >
+                                <label for="text-input" class="input-label">Post Code</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="phone" >
+                                <label for="text-input" class="input-label">Phone</label>
+                               
+                            </div>
+                           
+                        </aside>
+                       
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="email" id="text-input" placeholder="" class="custom-input-field sm" formControlName="email" >
+                                <label for="text-input" class="input-label">Email</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="fax" >
+                                <label for="text-input" class="input-label">Fax</label>
+                               
+                            </div>
+                        </aside>
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row">
+                        
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="registrationno1" >
+                                <label for="text-input" class="input-label">Registration No1</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="registrationno2" >
+                                <label for="text-input" class="input-label">Registration No2</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="registrationno3" >
+                                <label for="text-input" class="input-label">Registration No3</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="VATno" >
+                                <label for="text-input" class="input-label">VAT No </label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="servicetaxno" >
+                                <label for="text-input" class="input-label">Service Tax No </label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="GSTno" >
+                                <label for="text-input" class="input-label">GST No</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="localLanguage" >
+                                <label for="text-input" class="input-label">Local Language </label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="country" >
+                                <label for="text-input" class="input-label">Country </label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="remarks" >
+                                <label for="text-input" class="input-label">Remarks </label>
+                               
+                            </div>
+                        </aside>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row">
+                        
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="timedifference" >
+                                <label for="text-input" class="input-label">Time Difference</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="currency" >
+                                <label for="text-input" class="input-label">Currency</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="exchargeRateDisplay" >
+                                <label for="text-input" class="input-label">Excharge Rate Display</label>
+                               
+                            </div>
+                        </aside>   
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="decimal" >
+                                <label for="text-input" class="input-label">Decimal </label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="currentYear" >
+                                <label for="text-input" class="input-label">Current Year</label>
+                               
+                            </div>
+                        </aside>
+                       
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="noofPeriod" >
+                                <label for="text-input" class="input-label">No of Period</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="currentPeriod" >
+                                <label for="text-input" class="input-label"> Current Period</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="periodWeenkendDay" >
+                                <label for="text-input" class="input-label">Period Weekend Day </label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="website" >
+                                <label for="text-input" class="input-label">Website</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="status" >
+                                <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
+                               
+                            </div>
+                        </aside>
+                     
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+   
+</ng-template>
+
+<ng-template #Logo>
+    <div class="row">
+
+    </div>
+</ng-template>
+
+<ng-template #eDocssetup>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row">
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="width" >
+                                <label for="text-input" class="input-label">Width </label>
+                                
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="password" >
+                                <label for="text-input" class="input-label">Password</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="SMTPIP" >
+                                <label for="text-input" class="input-label">SMTP IP</label>
+                               
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="SMTPPort" >
+                                <label for="text-input" class="input-label">SMTP Port</label>
+                               
+                            </div>
+                        </aside>
+                       
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</ng-template>
+

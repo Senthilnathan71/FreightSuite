@@ -23,6 +23,32 @@ import { TarrifEntryComponent } from './tarrif/tarrif-entry/tarrif-entry.compone
 import { TarrifListComponent } from './tarrif/tarrif-list/tarrif-list.component';
 import { ZoneEntryComponent } from './zone/zone-entry/zone-entry.component';
 import { ZoneListComponent } from './zone/zone-list/zone-list.component';
+import { SectorEntryComponent } from './sector/sector-entry/sector-entry.component';
+import { SectorListComponent } from './sector/sector-list/sector-list.component';
+import { MenuListComponent } from './menu/menu-list/menu-list.component';
+import { ReportListComponent } from './report/report-list/report-list.component';
+import { ReportEntryComponent } from './report/report-entry/report-entry.component';
+import { RegionListComponent } from './region/region-list/region-list.component';
+import { RegionEntryComponent } from './region/region-entry/region-entry.component';
+import { CompanyListComponent } from './company/company-list/company-list.component';
+import { CompanyEntryComponent } from './company/company-entry/company-entry.component';
+import { BranchListComponent } from './branch/branch-list/branch-list.component';
+import { BranchEntryComponent } from './branch/branch-entry/branch-entry.component';
+import { AirlineListComponent } from './airline/airline-list/airline-list.component';
+import { AirlineEntryComponent } from './airline/airline-entry/airline-entry.component';
+import { MilestoneListComponent } from './milestone/milestone-list/milestone-list.component';
+import { MilestoneEntryComponent } from './milestone/milestone-entry/milestone-entry.component';
+import { OrganizationListComponent } from './organization/organization-list/organization-list.component';
+import { OrganizationEntryComponent } from './organization/organization-entry/organization-entry.component';
+import { DivisionListComponent } from './division/division-list/division-list.component';
+import { DivisionEntryComponent } from './division/division-entry/division-entry.component';
+import { ContainerTypeListComponent } from './container-type/container-type-list/container-type-list.component';
+import { ContainerTypeEntryComponent } from './container-type/container-type-entry/container-type-entry.component';
+import { CommodityListComponent } from './commodity/commodity-list/commodity-list.component';
+import { CommodityEntryComponent } from './commodity/commodity-entry/commodity-entry.component';
+import { PackageTypeListComponent } from './package-type/package-type-list/package-type-list.component';
+import { PackageTypeEntryComponent } from './package-type/package-type-entry/package-type-entry.component';
+import { MenuEntryComponent } from './menu/menu-entry/menu-entry.component';
 
 
 
@@ -81,6 +107,17 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: "city/entry/:id",
+        component: CityEntryComponent,
+        data: {
+          title: "Edit City",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "City" },
+          ],
+        },
+      },
+      {
         path: "department/list",
         component: DepartmentListComponent,
         data: {
@@ -96,6 +133,17 @@ export const MasterRoutes: Routes = [
         component: DepartmentEntryComponent,
         data: {
           title: "Add Department",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Department" },
+          ],
+        },
+      },
+      {
+        path: "department/entry/:id",
+        component: DepartmentEntryComponent,
+        data: {
+          title: "Edit Department",
           urls: [
             { title: "Master", url: "/master" },
             { title: "Department" },
@@ -382,8 +430,302 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
+      {
+        path: "sector/list",
+        component: SectorListComponent,
+        data: {
+          title: "Sector List",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "sector" },
+          ],
+        },
+      },
+      {
+        path: "sector/entry",
+        component: SectorEntryComponent,
+        data: {
+          title: "Sector Entry",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "sector" },
+          ],
+        },
+      },
+      {
+        path: "menu/list",
+        component: MenuListComponent,
+        data: {
+          title: "Menu List",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Menu" },
+          ],
+        },
+      },
+      {
+        path: "menu/entry",
+        component: MenuEntryComponent,
+        data: {
+          title: "Menu Entry",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Menu" },
+          ],
+        },
+      },
+      {
+        path: "report/list",
+        component: ReportListComponent,
+        data: {
+          title: "Report",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Report" },
+          ],
+        },
+      },
+      {
+        path: "report/entry",
+        component: ReportEntryComponent,
+        data: {
+          title: "Report",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Report" },
+          ],
+        },
+      },
+      {
+        path: "region/list",
+        component: RegionListComponent,
+        data: {
+          title: "Region",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Region" },
+          ],
+        },
+      },
+      {
+        path: "region/entry",
+        component: RegionEntryComponent,
+        data: {
+          title: "Region",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Region" },
+          ],
+        },
+      },
+      {
+        path: "company/list",
+        component: CompanyListComponent,
+        data: {
+          title: "Company",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Company" },
+          ],
+        },
+      },
+      {
+        path: "company/entry",
+        component: CompanyEntryComponent,
+        data: {
+          title: "Company",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Company" },
+          ],
+        },
+      },
+      {
+        path: "branch/list",
+        component: BranchListComponent,
+        data: {
+          title: "Branch",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Branch" },
+          ],
+        },
+      },
+      {
+        path: "branch/entry",
+        component: BranchEntryComponent,
+        data: {
+          title: "Branch",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Branch" },
+          ],
+        },
+      },
+      {
+        path: "airline/list",
+        component: AirlineListComponent,
+        data: {
+          title: "Airline",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Airline" },
+          ],
+        },
+      },
+      {
+        path: "airline/entry",
+        component: AirlineEntryComponent,
+        data: {
+          title: "Airline",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Airline" },
+          ],
+        },
+      },
+      {
+        path: "division/list",
+        component: DivisionListComponent,
+        data: {
+          title: "Division",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Division" },
+          ],
+        },
+      },
+      {
+        path: "division/entry",
+        component: DivisionEntryComponent,
+        data: {
+          title: "Division",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "division" },
+          ],
+        },
+      },
+      {
+        path: "container-type/list",
+        component: ContainerTypeListComponent,
+        data: {
+          title: "Container Type",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Container Type" },
+          ],
+        },
+      },
+      {
+        path: "container-type/entry",
+        component: ContainerTypeEntryComponent,
+        data: {
+          title: "Container Type",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Container Type" },
+          ],
+        },
+      },
+      {
+        path: "milestone/list",
+        component: MilestoneListComponent,
+        data: {
+          title: "Milestone",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Milestone" },
+          ],
+        },
+      },
+      {
+        path: "milestone/entry",
+        component: MilestoneEntryComponent,
+        data: {
+          title: "Container Type",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Milestone" },
+          ],
+        },
+      },
+      {
+        path: "organization/list",
+        component: OrganizationListComponent,
+        data: {
+          title: "Organization",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Organization" },
+          ],
+        },
+      },
+      {
+        path: "organization/entry",
+        component: OrganizationEntryComponent,
+        data: {
+          title: "Organization",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Organization" },
+          ],
+        },
+      },
+      {
+        path: "commodity/list",
+        component: CommodityListComponent,
+        data: {
+          title: "Commodity",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Commodity" },
+          ],
+        },
+      },
+      {
+        path: "commodity/entry",
+        component: CommodityEntryComponent,
+        data: {
+          title: "Commodity",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Commodity" },
+          ],
+        },
+      },
+      {
+        path: "package-type/list",
+        component: PackageTypeListComponent,
+        data: {
+          title: "Package Type",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Package Type" },
+          ],
+        },
+      },
+      {
+        path: "package-type/entry",
+        component: PackageTypeEntryComponent,
+        data: {
+          title: "Package Type",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Package Type" },
+          ],
+        },
+      },
+
     ]
   }
 
 ];
 
+
+
+
+// import { MilestoneListComponent } from './milestone/milestone-list/milestone-list.component';
+// import { MilestoneEntryComponent } from './milestone/milestone-entry/milestone-entry.component';
+// import { OrganizationListComponent } from './organization/organization-list/organization-list.component';
+// import { OrganizationEntryComponent } from './organization/organization-entry/organization-entry.component';

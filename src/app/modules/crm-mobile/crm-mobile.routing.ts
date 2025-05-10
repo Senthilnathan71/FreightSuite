@@ -15,6 +15,7 @@ import { PendingComponent } from './lead-schedule/pending/pending.component';
 
 
 
+
 export const CrmMobileRoutes: Routes = [
     {
         path: '',
@@ -164,7 +165,8 @@ export const CrmMobileRoutes: Routes = [
                         { title: "Lead Schedule (pending)" },
                     ],
                 },
-            },
+            }, 
+            
         ],
     },
 ];

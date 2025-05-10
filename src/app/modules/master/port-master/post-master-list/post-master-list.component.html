@@ -93,10 +93,12 @@
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <a class="text-info mx-2" class="link mx-2 ps-3 " [routerLink]="['/crm/port-master/view/', port.PortMasterSid]">
+                                            <a class="text-info mx-2" class="link mx-2 ps-3 "
+                                                [routerLink]="['/master/port-master/view/', port.PortMasterSid]">
                                                 <i-feather class="feather-sm" name="eye"></i-feather>
                                             </a>
-                                            <a class="text-danger mx-2 ps-3 border-start" (click)="deletePort(port.PortMasterSid)">
+                                            <a class="text-danger mx-2 ps-3 border-start"
+                                                (click)="deletePort(port.PortMasterSid)">
                                                 <i-feather name="trash-2" class="feather-sm"></i-feather>
                                             </a>
                                         </div>
@@ -111,8 +113,8 @@
                     <div class="card-body">
                         <!-- #region Pagination -->
                         <ngb-pagination class="d-flex justify-content-end
-                        " [collectionSize]="totalLengthOfCollection"
-                            [pageSize]="pageSize" [(page)]="page"></ngb-pagination>
+                        " [collectionSize]="totalLengthOfCollection" [pageSize]="pageSize"
+                            [(page)]="page"></ngb-pagination>
                         <!-- #endregion -->
                     </div>
                 </div>
@@ -121,6 +123,3 @@
         </div>
     </div>
 </ng-template>
-
- 
-    

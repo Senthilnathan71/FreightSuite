@@ -42,7 +42,7 @@ export class UnitListComponent {
     this.isMobile = this.appService.getDevice();
   }
   createNew() {
-    this.route.navigate(['crm/unit/entry'])
+    this.route.navigate(['master/unit/entry'])
   }
 
   loadUnit(): void {

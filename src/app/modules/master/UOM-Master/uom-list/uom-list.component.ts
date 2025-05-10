@@ -44,7 +44,7 @@ export class UOMListComponent {
   }
 
   createNew() {
-    this.route.navigate(['crm/uom-master/view'])
+    this.route.navigate(['master/uom-master/view'])
   }
 
   loadUom(): void {

@@ -156,7 +156,7 @@ export class PostMasterViewComponent {
   }
 
   goBack() {
-    this.router.navigate(['crm/port-master/list'])
+    history.back()
   }
 
   // Handle Form Submission
@@ -185,7 +185,7 @@ export class PostMasterViewComponent {
             console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['crm/port-master/list']);
+              this.router.navigate(['master/port-master/list']);
 
             } else {
               this.appSettingService.showError(resp.message);
@@ -204,7 +204,7 @@ export class PostMasterViewComponent {
             console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['crm/port-master/list']);
+              this.router.navigate(['master/port-master/list']);
 
             } else {
               this.appSettingService.showError(resp.message);

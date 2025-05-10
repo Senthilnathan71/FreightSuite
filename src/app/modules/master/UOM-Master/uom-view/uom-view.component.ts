@@ -96,7 +96,7 @@ export class UOMViewComponent {
   }
 
   goBack() {
-    this.router.navigate(['crm/uom-master/list'])
+    history.back()
   }
 
   // Handle Form Submission

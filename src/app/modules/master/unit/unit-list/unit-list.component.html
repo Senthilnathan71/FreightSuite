@@ -4,8 +4,8 @@
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
             <form action="" class="d-flex align-items-center gap-2">
                 <div class="form-outline col">
-                    <input type="search" class="form-control ps-5"  [(ngModel)]="searchText" name="search"
-                    (input)="searchUnit()" autocomplete="off" placeholder="Search">
+                    <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
+                        (input)="searchUnit()" autocomplete="off" placeholder="Search">
                     <i class="fas fa-search ms-3"></i>
                 </div>
                 <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
@@ -64,9 +64,9 @@
                                         <a class="text-info mx-2" class="link mx-2 ps-3 " [routerLink]="['/crm/unit/entry/', unit.UnitMasterSid]">
                                             <i-feather class="feather-sm" name="eye"></i-feather>
                                         </a>
-                                        <!-- <a class="text-danger mx-2 ps-3 border-start" (click)="deleteUnit(unit.UnitMasterSid)">
+                                        <a class="text-danger mx-2 ps-3 border-start" (click)="deleteUnit(unit.UnitMasterSid)">
                                             <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                        </a> -->
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -78,8 +78,7 @@
             <div class="card-body">
                 <!-- #region Pagination -->
                 <ngb-pagination class="d-flex justify-content-end
-                " [collectionSize]="totalLengthOfCollection"
-                    [pageSize]="pageSize" [(page)]="page"></ngb-pagination>
+                " [collectionSize]="totalLengthOfCollection" [pageSize]="pageSize" [(page)]="page"></ngb-pagination>
                 <!-- #endregion -->
             </div>
             <!-- #endregion -->

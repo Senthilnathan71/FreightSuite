@@ -1,0 +1,87 @@
+<div>
+    <div class="d-flex justify-content-between align-items-center px-5 py-3">
+        <h4 class="m-0">Package Type List</h4>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-info btn-sm" >
+                <i class="bi bi-arrow-down-right"></i> Search
+            </button>
+            <button type="button" class="btn btn-info btn-sm" >
+                <i class="bi bi-arrow-down-right"></i> Reset
+            </button>
+            <button type="button" class="btn btn-info btn-sm" >
+                <i class="bi bi-arrow-down-right"></i> Report
+            </button>
+            <button type="button" class="btn btn-info btn-sm" >
+                <i class="bi bi-arrow-down-right"></i> Create
+            </button>
+            <button type="button" class="btn btn-info btn-sm" >
+                <i class="bi bi-arrow-down-right"></i> Close
+            </button>
+        </div>
+    </div>
+    <hr class="m-0">
+    <div class="row justify-content-center py-2">
+       
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="SearchType " >
+                    <label for="text-input" class="input-label">Search Type <span class="text-danger">*</span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="EnterName" >
+                    <label for="text-input" class="input-label">Enter Name <span class="text-danger">*</span></label>
+                </div>
+            </aside>
+    </div>
+    <hr class="m-0">
+
+    <div class="col-12 pt-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">Action</th>
+                        <th class="bg-transparent text-light" scope="col">Name</th>
+                        <th class="bg-transparent text-light" scope="col">Code</th>
+                        <th class="bg-transparent text-light" scope="col">Remarks</th>
+                        <th class="bg-transparent text-light" scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <td>
+                                <div class="text-truncate">Oman Rials</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">1000</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">3</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Active</div>
+                            </td>
+                        </tr>
+                    } -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+  
+</div>
+

@@ -2,59 +2,59 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { FeatherModule } from 'angular-feather';
 import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
   selector: 'app-department-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule],
   templateUrl: './department-list.component.html',
   styleUrl: './department-list.component.scss'
 })
 export class DepartmentListComponent {
-  departments: any
-  searchText: string = ''
-  filterDepartmentList: any[] = []
-  totalLengthofCollection: number = 0
+  searchType = 'departmentName';
+  filterValue = '';
+  results: any[] = [];
+  departmentList: any[] = []
+  searchPerformed = false;
+
+  // pagination
+  page = 1;
+  pageSize = 5;
+  totalLengthOfCollection: number;
+
   constructor(private masterService: MasterService, private router: Router) { }
-  ngOnInit() {
-    this.departments = []
-    this.filterDepartmentList = []
-  }
+  ngOnInit() { }
 
-
-  loadDepartments(searchQuery: string): void {
-    this.masterService.getAllDepartments().subscribe((resp: any[]) => {
-      this.departments = resp
-      console.log(this.departments, 'departments')
-      this.applySearch(searchQuery)
-    })
-  }
-
-  searchDepartmentsData() {
-    const searchQuery = this.searchText.toLowerCase().trim()
-    if (!searchQuery) {
-      this.departments = []
-      this.filterDepartmentList = []
-      this.totalLengthofCollection = 0
-    } else {
-      this.loadDepartments(searchQuery)
+  search() {
+    const payload = {
+      searchType: this.searchType,
+      filterValue: this.filterValue,
     }
+    this.masterService.searchDepartmentList(payload).subscribe((res: any) => {
+      this.results = res;
+      this.searchPerformed = true;
+      this.updatePaginatedData();  // Update paginated data
+      this.totalLengthOfCollection = this.results.length || 0;
+    });
   }
 
-  applySearch(searchQuery: string): void {
-    this.filterDepartmentList = this.departments.filter((department) => {
-      return (
-        department.departmentCode?.toLowerCase().includes(searchQuery) ||
-        department.departmentName?.toLowerCase().includes(searchQuery) ||
-        department.departmentType?.toLowerCase().includes(searchQuery)
-      )
-    })
-    this.totalLengthofCollection = this.filterDepartmentList.length || 0
+  updatePaginatedData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.departmentList = this.results.slice(startIndex, endIndex);
   }
+
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
+
+  deleteDepartment(id) { }
 
   navigateToCreateDepartment() {
-    this.router.navigate(['master/departmentEntry'])
+    this.router.navigate(['master/department/entry'])
   }
 
 }
