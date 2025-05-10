@@ -35,7 +35,7 @@ export class UnitListComponent {
   searchText: string = '';
   filteredUnit: Unit[] = [];
   isMobile: boolean = false;
-  constructor(private masterService: MasterService, private route: Router, private appService: AppService, private appSettingService: AppSettingsService) { }
+  constructor(private masterService: MasterService, private route: Router, private appService: AppService, private appSettingService: AppSettingsService, private dialog:MatDialog) { }
 
   ngOnInit(): void {
     this.loadUnit();
@@ -81,23 +81,23 @@ export class UnitListComponent {
   }
 
 
-  // deleteUnit(id: number) {
-  //   const dialogRef = this.dialog.open(DeleteWarningComponent);
+  deleteUnit(id: number) {
+    const dialogRef = this.dialog.open(DeleteWarningComponent);
 
-  //   dialogRef.afterClosed().subscribe(result => {
-  //     if (result === true) {
-  //       this.masterService.deleteUnitById(id).subscribe((resp: any) => {
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.masterService.deleteUnitById(id).subscribe((resp: any) => {
 
-  //         this.appSettingService.showSuccess("Deleted!");
-  //         console.log(resp);
-  //         // if(resp.status){
-  //         this.loadUnit();
+          this.appSettingService.showSuccess("Deleted!");
+          console.log(resp);
+          // if(resp.status){
+          this.loadUnit();
 
-  //         // }
+          // }
 
-  //       });
-  //     }
-  //   });
-  // }
+        });
+      }
+    });
+  }
 
 }
