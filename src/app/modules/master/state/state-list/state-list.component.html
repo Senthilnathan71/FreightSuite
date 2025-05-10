@@ -1,93 +1,64 @@
 <div class="row">
-    <!-- #region Search Panel -->
     <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <div class="d-flex align-items-center gap-2">
+            <form action="" class="d-flex align-items-center gap-2">
                 <div class="form-outline col">
-                    <input type="search" class="form-control ps-5" name="search" autocomplete="off"
-                        placeholder="Search by name, code or country" [(ngModel)]="searchText" (input)="onSearch()">
+                    <input type="search" class="form-control ps-5" name="search" placeholder="Search">
                     <i class="fas fa-search ms-3"></i>
                 </div>
-                <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
+                <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateState()">
                     <i class="mdi mdi-plus"></i> Add
                 </button>
-            </div>
+            </form>
         </div>
     </div>
-    <!-- #endregion -->
-
     <div class="col-12">
-
-        <!-- Loading Spinner -->
-        <div *ngIf="loading" class="text-center p-3">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-
-        <!-- Error Message -->
-        <div *ngIf="errorMessage" class="alert alert-danger">
-            {{ errorMessage }}
-        </div>
-
-        <div class="card" *ngIf="!loading && !errorMessage">
-            <!-- #region lead view -->
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Name</th>
-                            <th class="bg-transparent text-light" scope="col">Code</th>
-                            <th class="bg-transparent text-light" scope="col">Region</th>
-                            <th class="bg-transparent text-light" scope="col">Country</th>
-                            <th class="bg-transparent text-light" scope="col">Remarks</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
-                            <th class="bg-transparent text-light" scope="col">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let state of filteredState | slice: (page-1) * pageSize : page * pageSize"
-                            [id]="'state-' + state.StateMasterSid"
-                            [class.highlight-row]="state.StateMasterSid === highlightedId">
-                            <td>{{ state.stateName }}</td>
-                            <td>{{ state.stateCode }}</td>
-                            <td>{{ state.region }}</td>
-                            <td>{{ state.countryMaster?.countryName || '' }}</td>
-                            <td>{{ state.Remarks }}</td>
-                            <td>
-                                <span class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    {{ state.status === 'A' ? 'Active' : 'Inactive' }}
-                                </span>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-link text-primary" (click)="editState(state.StateMasterSid)">
-                                    <i-feather name="edit-3" class="feather-sm"></i-feather>
-                                </button>
-                                <button class="btn btn-sm btn-link text-danger" (click)="deleteState(state.StateMasterSid)">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">State Name</th>
+                        <th class="bg-transparent text-light" scope="col">State Code</th>
+                        <th class="bg-transparent text-light" scope="col">Country</th>
+                        <th class="bg-transparent text-light" scope="col">Status</th>
+                        <th class="bg-transparent text-light" scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (item of states; track $index) {
+                    <tr>
+                        <td>
+                            <div class="text-truncate">{{item.stateName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.stateCode}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.countryName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">
+                                {{ item.status === 'A' ? 'Active' : 'Cancelled' }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="text-primary mx-2 ps-3" 
+                                   [routerLink]="['/master/state/entry/', item.StateMasterSid]"
+                                   title="Edit">
+                                   <i-feather name="edit-3" class="feather-sm"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start"
+                                   (click)="deleteState(item.StateMasterSid)"
+                                   title="Delete">
                                     <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr *ngIf="filteredState.length === 0">
-                            <td colspan="7" class="text-center">No records found</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="card-body">
-                <!-- #region Pagination -->
-                <ngb-pagination class="d-flex justify-content-end"
-                    [collectionSize]="filteredState.length"
-                    [pageSize]="pageSize"
-                    [(page)]="page"
-                    [maxSize]="5"
-                    [boundaryLinks]="true">
-                </ngb-pagination>
-                <!-- #endregion -->
-            </div>
-            <!-- #endregion -->
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

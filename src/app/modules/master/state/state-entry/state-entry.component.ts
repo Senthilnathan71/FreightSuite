@@ -49,7 +49,6 @@ export class StateEntryComponent implements OnInit {
       ]],
       stateCode: ['', [
         Validators.required,
-        // Validators.minLength(2),
         Validators.maxLength(2),
         this.alphaValidator()
       ]],
@@ -65,12 +64,6 @@ export class StateEntryComponent implements OnInit {
       }
     });
   }
-  // alphaValidator(): any | string {
-  //   throw new Error('Method not implemented.');
-  // }
-  // alphaSpaceValidator(): any | string {
-  //   throw new Error('Method not implemented.');
-  // }
 
   ngOnInit(): void {
     this.loadCountries();
@@ -113,7 +106,6 @@ export class StateEntryComponent implements OnInit {
       }
     }
   }
-
 
   loadCountries() {
     this.loading = true;
@@ -199,49 +191,6 @@ export class StateEntryComponent implements OnInit {
     });
   }
 
-  onDelete() {
-    if (confirm('Are you sure you want to delete this state?')) {
-      this.loading = true;
-      this.masterService.deleteStateById(this.stateId).subscribe({
-        next: () => {
-          this.loading = false;
-          // Use notifyService if available, otherwise use alert
-          if (this.notifyService?.showSuccess) {
-            this.notifyService.showSuccess('State deleted successfully!');
-          } else {
-            alert('State deleted successfully!');
-          }
-          
-          // Navigate to list with reload to ensure fresh data
-          this.router.navigate(['/master/state/list'], {
-            queryParams: { refresh: new Date().getTime() } // Force refresh
-          });
-        },
-        error: (err) => {
-          this.loading = false;
-          console.error('Detailed error:', err);
-          
-          let errorMessage = 'Error deleting state';
-          if (err.error?.message) {
-            errorMessage += `: ${err.error.message}`;
-          } else if (err.status === 404) {
-            errorMessage = 'State not found (may have already been deleted)';
-          } else if (err.status === 403) {
-            errorMessage = 'You do not have permission to delete this state';
-          } else if (err.status === 409) {
-            errorMessage = 'Cannot delete state as it is being referenced elsewhere';
-          }
-  
-          if (this.notifyService?.showError) {
-            this.notifyService.showError(errorMessage);
-          } else {
-            alert(errorMessage);
-          }
-        }
-      });
-    }
-  }
-
   resetForm() {
     if (this.isEditMode) {
       this.getStateById(this.stateId);
@@ -268,9 +217,5 @@ export class StateEntryComponent implements OnInit {
         this.markFormGroupTouched(control);
       }
     });
-  }
-
-  confirmDelete() {
-    throw new Error('Method not implemented.');
   }
 }

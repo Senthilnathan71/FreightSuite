@@ -128,76 +128,51 @@ export class MasterService {
     )
   }
 
-  //state-master
+  // state-master
+  getAllState() {
+    return this.http.get('state').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getStateById(id: number) {
+    return this.http.get<{ data: State }>(`state/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  createState(payload: any) {
+    return this.http.post("state/create", payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    )
+  }
+
+  updateStateById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`state/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  deleteStateById(id: number) {
+    return this.http.delete<{ data: any }>(`state/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
   
-// getAllState() {
-//   return this.http.get('state').pipe(
-//     map((resp: any) => resp.data || resp)
-//   );
-// }
-
-// getStateById(id: number): Observable<any> {
-//   return this.http.get<any>(`state/fetch/${id}`);
-// }
-
-
-// createState(payload: any) {
-//   return this.http.post("state", payload).pipe(
-//     map((res: any) => res)
-//   );
-// }
-
-// updateStateById(id: number, payload: any) {
-//   return this.http.patch(`state/${id}`, payload).pipe(
-//     map((resp: any) => resp.data)
-//   );
-// }
-
-// deleteStateById(id: number) {
-//   return this.http.delete(`state/${id}`).pipe(
-//     map((resp: any) => resp.data)
-//   );
-// }
-// state-master
-getAllState(): Observable<State[]> {
-  return this.http.get('state').pipe(
-    map((resp: any) => resp.data || resp),
-    catchError(error => {
-      console.error('Error fetching states:', error);
-      let errorMsg = 'Failed to load states';
-      if (error.error?.message) {
-        errorMsg += `: ${error.error.message}`;
-      }
-      return throwError(() => new Error(errorMsg));
-    })
-  );
-}
-
-getStateById(id: number): Observable<State> {
-  return this.http.get<State>(`state/fetch/${id}`).pipe(
-    map((resp: any) => resp.data || resp)
-  );
-}
-
-createState(payload: any): Observable<State> {
-  return this.http.post<State>("state/create", payload).pipe(
-    map((res: any) => res.data || res)
-  );
-}
-
-updateStateById(id: number, payload: any): Observable<State> {
-  return this.http.patch<State>(`state/update/${id}`, payload).pipe(
-    map((resp: any) => resp.data || resp)
-  );
-}
-
-deleteStateById(id: number): Observable<any> {
-  return this.http.delete(`state/delete/${id}`).pipe(
-    map((resp: any) => resp.data || resp)
-  );
-}  
-  
-
   //port-master
   getAllPorts() {
     return this.http.get('port').pipe(

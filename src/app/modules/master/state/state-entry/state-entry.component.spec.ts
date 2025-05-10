@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { StateEntryComponent } from './state-entry.component';
 import { describe } from 'node:test';
-import { beforeEach } from 'node:test';
 
 describe('StateEntryComponent', () => {
   let component: StateEntryComponent;
