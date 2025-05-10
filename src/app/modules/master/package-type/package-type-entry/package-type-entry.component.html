@@ -1,30 +1,32 @@
-<div class="row py-3">
-    <div class="col-12">
-        <div class="d-flex align-items-center gap-2 mb-3">
-            <button class="btn btn-sm btn-light-secondary ms-auto">Edit</button>
-            <button class="btn btn-sm btn-info">Update</button>
-        </div>
+<div class="row py-3" [formGroup]="inputForm">
+  <div class="col-12">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <!-- <button class="btn btn-sm btn-light-secondary ms-auto">Edit</button> -->
+      <button class="btn btn-sm btn-info" (click)="savePackageType()">
+        {{ packageMasterSid ? "Update" : "Create" }}
+      </button>
     </div>
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row">
-                    <!-- <h6 class="card-title mb-0">Basic Info</h6> -->
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="commodityName">
-                            <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="commodityCode">
-                            <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-8">
+  </div>
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="row">
+          <!-- <h6 class="card-title mb-0">Basic Info</h6> -->
+          <aside class="col-md-6">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="PackageName" />
+              <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
+            </div>
+          </aside>
+          <aside class="col-md-6">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="PackageCode" />
+              <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
+            </div>
+          </aside>
+          <!-- <aside class="col-md-8">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="HsCode">
@@ -32,34 +34,31 @@
                                     class="text-danger">*</span></label>
 
                         </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
-                               
-                            </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>  
-                    <aside class="col-md-12 pt-2">
+                    </aside> -->
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="status" />
+              <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
+            </div>
+          </aside>
+          <!-- <aside class="col-md-12 pt-2">
                         <div class="custom-form-group">
                             <textarea id="" placeholder="" rows="" class="input-field sm"
                                 formControlName="Remarks"></textarea>
                             <label for="text-input" class="input-label">Remarks </label>
                         </div>
-                    </aside>
-
-
-                </div>
-            </div>
+                    </aside> -->
         </div>
+      </div>
     </div>
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row">
-                    <!-- <h6 class="card-title mb-0">Basic Info 2</h6> -->
-                    <aside class="col-md-12">
+  </div>
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="row">
+          <!-- <h6 class="card-title mb-0">Basic Info 2</h6> -->
+          <!-- <aside class="col-md-12">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="MinTemp">
@@ -94,9 +93,9 @@
                                     class="text-danger">*</span></label>
 
                         </div>
-                    </aside>
-                </div>
-            </div>
+                    </aside> -->
         </div>
+      </div>
     </div>
+  </div>
 </div>

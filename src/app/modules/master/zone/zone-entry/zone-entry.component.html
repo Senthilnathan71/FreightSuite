@@ -1,59 +1,77 @@
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex align-items-center gap-2 mb-3">
-            <button class="btn btn-sm btn-light-secondary ms-auto"><i-feather name="edit-3"
-                    class="feather-sm me-1"></i-feather> Edit</button>
-            <button class="btn btn-sm btn-info"><i-feather name="upload-cloud" class="feather-sm me-1"></i-feather>
-                Save</button>
-        </div>
+<div class="row" [formGroup]="inputForm">
+  <div class="col-12">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <!-- <button class="btn btn-sm btn-light-secondary ms-auto">
+        <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
+      </button> -->
+      <button class="btn btn-sm btn-info" (click)="saveZone()">
+        <i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> Save
+      </button>
     </div>
-    
-    <div class="col-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row">
-                    <aside class="col-md-12">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
-                            <label for="text-input" class="input-label">Name</label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
-                            <label for="text-input" class="input-label">Code</label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
+  </div>
+
+  <div class="col-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="row">
+          <aside class="col-md-12">
+            <div class="custom-form-group">
+              <input
+                type="text"
+                id="text-input"
+                class="custom-input-field sm"
+                placeholder=" "
+                formControlName="ZoneName"
+              />
+              <label for="text-input" class="input-label">Name</label>
+            </div>
+          </aside>
+          <aside class="col-md-6">
+            <div class="custom-form-group">
+              <input
+                type="text"
+                id="text-input"
+                class="custom-input-field sm"
+                placeholder=" "
+                formControlName="ZoneCode"
+              />
+              <label for="text-input" class="input-label">Code</label>
+            </div>
+          </aside>
+          <!-- <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
                             <label for="text-input" class="input-label">country</label>
                         </div>
-                    </aside>
-                </div>
-            </div>
+                    </aside> -->
         </div>
+      </div>
     </div>
-    <div class="col-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row">
-                    
-                    <aside class="col-md-9">
+  </div>
+  <div class="col-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="row">
+          <!-- <aside class="col-md-9">
                         <div class="custom-form-group">
                             <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1"></textarea>
                             <label for="text-input" class="input-label">Remarks</label>
                         </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " />
-                            <label for="text-input" class="input-label">Status</label>
-                        </div>
-                    </aside>
-                </div>
+                    </aside> -->
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input
+                type="text"
+                id="text-input"
+                class="custom-input-field sm"
+                placeholder=" "
+                formControlName="status"
+              />
+              <label for="text-input" class="input-label">Status</label>
             </div>
+          </aside>
         </div>
+      </div>
     </div>
-
+  </div>
 </div>

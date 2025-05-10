@@ -8,22 +8,23 @@ import { Port } from '../crm-mobile/Interfaces/port.interface';
 import { Unit } from '../crm-mobile/Interfaces/unit.interface';
 import { Uom } from '../crm-mobile/Interfaces/uom.interface';
 import { City } from '../crm-mobile/Interfaces/city.interface';
+import { Zone } from '../crm-mobile/Interfaces/zone.interface';
+import { PackageType } from '../crm-mobile/Interfaces/packageType.interface';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MasterService {
-  apiUrl: any;
-
   constructor(private http: HttpClient) { }
 
   //department-master
   getAllDepartments() {
-    return this.http.get('enquiry/department').pipe(map((resp: any) => {
-      let response = resp.data
-      return response
-    })
-    )
+    return this.http.get('enquiry/department').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
   }
 
   searchDepartmentList(payload) {
@@ -43,7 +44,7 @@ export class MasterService {
         let response = resp;
         return response;
       })
-    )
+    );
   }
 
   getUomById(id: number) {
@@ -52,16 +53,15 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
-
   createUom(payload: any) {
-    return this.http.post("uom", payload).pipe(
+    return this.http.post('uom', payload).pipe(
       map((res: any) => {
         return res;
       })
-    )
+    );
   }
 
   updateUomById(id: number, payload: any) {
@@ -70,7 +70,7 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
   deleteUomById(id: number) {
@@ -79,7 +79,7 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
   //unit-master
@@ -89,7 +89,7 @@ export class MasterService {
         let response = resp;
         return response;
       })
-    )
+    );
   }
 
   getUnitById(id: number) {
@@ -98,16 +98,15 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
-
   createUnit(payload: any) {
-    return this.http.post("unit", payload).pipe(
+    return this.http.post('unit', payload).pipe(
       map((res: any) => {
         return res;
       })
-    )
+    );
   }
 
   updateUnitById(id: number, payload: any) {
@@ -116,7 +115,7 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
   deleteUnitById(id: number) {
@@ -125,7 +124,7 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
   // state-master
@@ -135,7 +134,7 @@ export class MasterService {
         let response = resp;
         return response;
       })
-    )
+    );
   }
 
   getStateById(id: number) {
@@ -172,7 +171,7 @@ export class MasterService {
       })
     )
   }
-  
+
   //port-master
   getAllPorts() {
     return this.http.get('port').pipe(
@@ -180,7 +179,7 @@ export class MasterService {
         let response = resp;
         return response;
       })
-    )
+    );
   }
 
   getPortById(id: number) {
@@ -189,16 +188,15 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
-
   createPort(payload: any) {
-    return this.http.post("port", payload).pipe(
+    return this.http.post('port', payload).pipe(
       map((res: any) => {
         return res;
       })
-    )
+    );
   }
 
   updatePortById(id: number, payload: any) {
@@ -207,7 +205,7 @@ export class MasterService {
         let response = resp;
         return response;
       })
-    )
+    );
   }
 
   deletePortById(id: number) {
@@ -216,18 +214,18 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
-
-
   getAllStateByCountry(CountryMasterSid: any) {
-    return this.http.get<State>(`state/statesbyCountry/${CountryMasterSid}`).pipe(
-      map((resp: any) => {
-        let response = resp;
-        return response;
-      })
-    )
+    return this.http
+      .get<State>(`state/statesbyCountry/${CountryMasterSid}`)
+      .pipe(
+        map((resp: any) => {
+          let response = resp;
+          return response;
+        })
+      );
   }
 
   getAllSector() {
@@ -236,7 +234,7 @@ export class MasterService {
         let response = resp;
         return response;
       })
-    )
+    );
   }
 
   //country-master
@@ -245,10 +243,10 @@ export class MasterService {
     return this.http.get('country').pipe(
       map((resp: any) => {
         let response = resp;
-        console.log(response)
+        console.log(response);
         return response;
       })
-    )
+    );
   }
 
   getCountryById(id: number) {
@@ -257,16 +255,15 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
-
   createCountry(payload: any) {
-    return this.http.post("country", payload).pipe(
+    return this.http.post('country', payload).pipe(
       map((res: any) => {
         return res;
       })
-    )
+    );
   }
 
   updateCountryById(id: number, payload: any) {
@@ -275,7 +272,7 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
   deleteCountryById(id: number) {
@@ -284,7 +281,7 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
   //city-master
@@ -295,9 +292,8 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
-
 
   getCityById(id: number) {
     return this.http.get<{ data: City }>(`city/cityId/${id}`).pipe(
@@ -305,16 +301,15 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
-
   createCity(payload: any) {
-    return this.http.post("city/add", payload).pipe(
+    return this.http.post('city/add', payload).pipe(
       map((res: any) => {
         return res;
       })
-    )
+    );
   }
 
   updateCityById(id: number, payload: any) {
@@ -323,7 +318,7 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
   deleteCityById(id: number) {
@@ -332,6 +327,103 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
-    )
+    );
+  }
+
+  // Zone - Master
+
+  getAllZones() {
+    return this.http.get<{ data: Zone[] }>(`zone`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getZoneById(id: number) {
+    return this.http.get<{ data: Zone }>(`zone/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+  deleteZone(id: number) {
+    return this.http.delete<{ data: any }>(`zone/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  updateZoneById(id: number, data: any) {
+    return this.http.patch<{ data: any }>(`zone/update/${id}`, data).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createZone(newData: Zone) {
+    return this.http.post<{ data: any }>(`zone/create`, newData).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  // Package Type Master
+
+  getAllPackageTypes() {
+    return this.http.get<{ data: any }>('package-type').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getPackageTypeById(id: number) {
+    return this.http
+      .get<{ data: PackageType }>(`package-type/fetch/${id}`)
+      .pipe(
+        map((resp) => {
+          let response = resp.data;
+          return response;
+        })
+      );
+  }
+
+  createNewPackageType(newData: any) {
+    return this.http.post<{ data: any }>('package-type/create', newData).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  updatePackageTypeById(id: number, newData: any) {
+    return this.http
+      .patch<{ data: any }>(`package-type/update/${id}`, newData)
+      .pipe(
+        map((resp) => {
+          let response = resp.data;
+          return response;
+        })
+      );
+  }
+
+  deletePackageById(id: number) {
+    return this.http.delete<{ data: any }>(`package-type/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
   }
 }
