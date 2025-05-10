@@ -3,13 +3,21 @@
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
             <form class="d-flex align-items-center gap-2">
                 <div class="form-outline col">
-                    <input type="search" class="form-control ps-5" name="search" placeholder="Search Type">
-                    <i class="fas fa-search ms-3"></i>
+                    <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                        <option value="CustomerName">Customer Name</option>
+                        <option value="CustomerShortCode">Customer Code</option>
+                        <option value="CustomerAliasName">Customer Full Name</option>
+                        <option value="Website">Website</option>
+                        <option value="LocalLanguage">Language</option>
+                        <option value="status">Status</option>
+                    </select>
                 </div>
                 <div class="form-outline col">
-                    <input type="search" class="form-control" name="search" placeholder="Enter Name">
+                    <input [(ngModel)]="filterValue" type="text" class="form-control" name="search"
+                        placeholder="Enter Name">
+                    <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
                 </div>
-                <aside class="col">
+                <!-- <aside class="col">
                     <div class="custom-form-group custom-form-group-select">
                         <ng-select formControlName="PortType" [items]="modeOfARAP" bindLabel="name" bindValue="name">
                            
@@ -24,12 +32,12 @@
                         </ng-select>
                         <label for="" class="input-label">Status </label>
                     </div>
-                </aside>  
-                <button type="button" class="btn btn-info btn-sm">
+                </aside>   -->
+                <button type="button" class="btn btn-info btn-sm" (click)="search()">
                     <i class="fas fa-search"></i>
                     Search
                 </button>
-                <button type="button" class="btn btn-secondary btn-sm">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="navigateToCreateOrganization()">
                     <i class="mdi mdi-plus"></i>
                     Create
                 </button>
@@ -45,52 +53,67 @@
         </div>
     </div>
 
-    <div class="col-12">
+    <div class="col-12" *ngIf="totalLengthOfCollection > 0">
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
                         <th class="bg-transparent text-light" scope="col">Name</th>
                         <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Shortname</th>
-                        <th class="bg-transparent text-light" scope="col">Fullname</th>
-                        <th class="bg-transparent text-light" scope="col">UNO Code</th>
+                        <th class="bg-transparent text-light" scope="col">Full Name</th>
+                        <th class="bg-transparent text-light" scope="col">Website</th>
+                        <th class="bg-transparent text-light" scope="col">Language</th>
                         <th class="bg-transparent text-light" scope="col">Status</th>
+                        <th class="bg-transparent text-light" scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <span
-                                class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                Approved</span>
-                        </td>
+                    <tr *ngFor="let item of organizationList; let i = index; trackBy: trackByIndex">
 
+                        <td>
+                            <div class="text-truncate">{{item.CustomerName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.CustomerShortCode}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.CustomerAliasName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.Website}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.LocalLanguage}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.status === 'A'? "Active":"Invalid"}}</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="text-info mx-2" class="link mx-2 ps-3 "
+                                    [routerLink]="['/master/organization/entry/', item.CustomerMasterSid]">
+                                    <i-feather class="feather-sm" name="eye"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start"
+                                    (click)="deleteOrganization(item.CustomerMasterSid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
+                        </td>
                     </tr>
-                    }
+
                 </tbody>
             </table>
         </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+            </ngb-pagination>
+        </div>
+    </div>
+
+    <!-- No records found -->
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0">
+        <div>No records found</div>
     </div>
 </div>

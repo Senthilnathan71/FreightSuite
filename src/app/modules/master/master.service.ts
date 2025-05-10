@@ -17,10 +17,75 @@ import { PackageType } from '../crm-mobile/Interfaces/packageType.interface';
 export class MasterService {
   constructor(private http: HttpClient) { }
 
+  //organization-master or customer-master
+  searchOrganizationList(payload) {
+    return this.http.post("customer/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    )
+  }
+
+
+  getAllCustomers() {
+    return this.http.get('customer').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+  getCustomerById(id: number) {
+    return this.http.get<{ data: Uom }>(`customer/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createCustomer(payload: any) {
+    return this.http.post('customer/create', payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    );
+  }
+
+  updateCustomerById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`customer/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  deleteOrganizationById(id: number) {
+    return this.http.delete<{ data: any }>(`customer/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
   //department-master
   getAllDepartments() {
     return this.http.get('enquiry/department').pipe(
       map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  deleteDepartmentById(id: number) {
+    return this.http.delete<{ data: any }>(`department/${id}`).pipe(
+      map((resp) => {
         let response = resp.data;
         return response;
       })

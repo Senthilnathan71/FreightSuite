@@ -1,137 +1,133 @@
-<div class="row py-3 ">
-    <div class="col-12">
-        <div class="d-flex align-items-center gap-2 mb-3">
-            <button class="btn btn-sm btn-light-secondary ms-auto">Edit</button>
-            <button class="btn btn-sm btn-info">Update</button>
+<form [formGroup]="customerForm">
+    <div class="row py-3 ">
+        <div class="col-12">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <button class="btn btn-sm btn-light-secondary ms-auto" (click)="goBack()">Back</button>
+                <button class="btn btn-sm btn-info" (click)="onSubmit()">Submit</button>
+            </div>
         </div>
-    </div>
 
-    <div class="col-md-6 ">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row">
+        <div class="col-md-6 ">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row">
 
-                    <aside class="col-md-8">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="commodityName">
-                            <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Code">
-                            <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="fullName">
-                            <label for="text-input" class="input-label">Full Name <span
-                                    class="text-danger">*</span></label>
+                        <aside class="col-md-8">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="CustomerName">
+                                <label for="text-input" class="input-label">Name <span
+                                        class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="CustomerShortCode">
+                                <label for="text-input" class="input-label">Code <span
+                                        class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="CustomerAliasName">
+                                <label for="text-input" class="input-label">Full Name <span
+                                        class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <textarea id="CustomerAddress1" class="custom-input-field sm"
+                                    formControlName="CustomerAddress1" rows="4"></textarea>
+                                <label for="CustomerAddress1" class="input-label">Address</label>
+                            </div>
+                        </aside>
 
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="shortName">
-                            <label for="text-input" class="input-label">Short Name</label>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="GroupName">
+                                <label for="text-input" class="input-label">Group Name </label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="Website">
+                                <label for="text-input" class="input-label">Website</label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <select formControlName="CountryMasterSid" class="form-select">
+                                    <option value="" disabled selected>Select UNO</option>
+                                    <option *ngFor="let option of countryList" [value]="option.CountryMasterSid">
+                                        {{option.countryName}} - {{option.countryCode}}</option>
+                                </select>
+                                <label for="text-input" class="input-label">UNO Location <span
+                                        class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="LocalLanguage">
+                                <label for="text-input" class="input-label">Language</label>
 
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="groupName">
-                            <label for="text-input" class="input-label">Group Name </label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
+                                    bindValue="name">
 
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="website">
-                            <label for="text-input" class="input-label">Website</label>
+                                </ng-select>
+                                <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <textarea id="" placeholder="" rows="1" class="input-field sm"
+                                    formControlName="Remarks"></textarea>
+                                <label for="text-input" class="input-label">Remarks </label>
+                            </div>
+                        </aside>
 
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="unolocation">
-                            <label for="text-input" class="input-label">UNO Location <span
-                                    class="text-danger">*</span></label>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="PanType" [items]="modeofPAN" bindLabel="name"
+                                    bindValue="name">
+                                </ng-select>
+                                <label for="" class="input-label">PAN Type </label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="PanName">
+                                <label for="text-input" class="input-label">PAN Name</label>
 
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="language">
-                            <label for="text-input" class="input-label">Language</label>
-
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
-                                bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <textarea id="" placeholder="" rows="1" class="input-field sm"
-                                formControlName="Remarks"></textarea>
-                            <label for="text-input" class="input-label">Remarks </label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <textarea id="" placeholder="" rows="1" class="input-field sm"
-                                formControlName="blDisplay"></textarea>
-                            <label for="text-input" class="input-label">BL Display Address </label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PANType" [items]="modeofPAN" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">PAN Type </label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="PAN">
-                            <label for="text-input" class="input-label">PAN </label>
-
-                        </div>
-                    </aside>
+                            </div>
+                        </aside>
 
 
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-6 ">
-        <div class="card h-100">
-            <div class="card-body">
-                <ul ngbNav #nav1="ngbNav" [(activeId)]="active1" class="nav-tabs">
-                    <li [ngbNavItem]="1">
-                        <button ngbNavLink>Customer Type</button>
-                        <ng-template ngbNavContent>
-                            <ng-container *ngTemplateOutlet="customerType"></ng-container>
-                        </ng-template>
-                    </li>
-                    <li [ngbNavItem]="2">
+        <div class="col-md-6 ">
+            <div class="card h-100">
+                <div class="card-body">
+                    <ul ngbNav #nav1="ngbNav" [(activeId)]="active1" class="nav-tabs">
+                        <li [ngbNavItem]="1">
+                            <button ngbNavLink>Customer Type</button>
+                            <ng-template ngbNavContent>
+                                <ng-container *ngTemplateOutlet="customerType"></ng-container>
+                            </ng-template>
+                        </li>
+                        <!-- <li [ngbNavItem]="2">
                         <button ngbNavLink>Status Update</button>
                         <ng-template ngbNavContent>
                             <ng-container *ngTemplateOutlet="statusUpadte"></ng-container>
@@ -148,25 +144,25 @@
                         <ng-template ngbNavContent>
                             <ng-container *ngTemplateOutlet="markupPercentage"></ng-container>
                         </ng-template>
-                    </li>
-                </ul>
+                    </li> -->
+                    </ul>
 
-                <section [ngbNavOutlet]="nav1" class="mt-2 p-2"></section>
+                    <section [ngbNavOutlet]="nav1" class="mt-2 p-2"></section>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-12 mt-3">
-        <div class="card h-100">
-            <div class="card-body">
-                <ul ngbNav #nav2="ngbNav" [(activeId)]="active2" class="nav-tabs">
-                    <li [ngbNavItem]="1">
-                        <button ngbNavLink>Address</button>
-                        <ng-template ngbNavContent>
-                            <ng-container *ngTemplateOutlet="address"></ng-container>
-                        </ng-template>
-                    </li>
-                    <li [ngbNavItem]="2">
+        <div class="col-md-12 mt-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <ul ngbNav #nav2="ngbNav" [(activeId)]="active2" class="nav-tabs">
+                        <li [ngbNavItem]="1">
+                            <button ngbNavLink>Customer Branch</button>
+                            <ng-template ngbNavContent>
+                                <ng-container *ngTemplateOutlet="address"></ng-container>
+                            </ng-template>
+                        </li>
+                        <!-- <li [ngbNavItem]="2">
                         <button ngbNavLink>
                             <i-feather name="phone" class="feather-sm "></i-feather>
                             Contacts</button>
@@ -233,235 +229,258 @@
                         <ng-template ngbNavContent>
                             <ng-container *ngTemplateOutlet="members"></ng-container>
                         </ng-template>
-                    </li>
-                </ul>
+                    </li> -->
+                    </ul>
 
-                <section [ngbNavOutlet]="nav2" class="mt-2 p-2"></section>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-
-<ng-template #customerType>
-    <div class="col-md-12">
-        <div class="card h-100">
-            <div class="card-body p-0">
-                <div class="row">
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="forwarder" class="form-check-input sm">
-                                <label for="forwarder" class="form-check-label sm">Forwarder</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="airline" class="form-check-input sm">
-                                <label for="airline" class="form-check-label sm">Airline</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="airlineName">
-                            <label for="text-input" class="input-label">Airline Name </label>
-
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="shipper" class="form-check-input sm">
-                                <label for="shipper" class="form-check-label sm">Shipper</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="airlineAgent" class="form-check-input sm">
-                                <label for="airlineAgent" class="form-check-label sm">Airline Agent</label>
-                            </div>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-4 d-flex align-items-start">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="seacto" class="form-check-input sm">
-                                <label for="seacto" class="form-check-label sm">Sea CTO</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="oeverseasAgent" class="form-check-input sm">
-                                <label for="oeverseasAgent" class="form-check-label sm">Overseas Agent</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="consignee" class="form-check-input sm">
-                                <label for="consignee" class="form-check-label sm">Consignee</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="SCACcode">
-                            <label for="text-input" class="input-label">SCAC Code</label>
-
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="shippingLine" class="form-check-input sm">
-                                <label for="shippingLine" class="form-check-label sm">Shipping Line</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="broker" class="form-check-input sm">
-                                <label for="broker" class="form-check-label sm">Broker</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="unpackCFS" class="form-check-input sm">
-                                <label for="unpackCFS" class="form-check-label sm">Unpack CFS</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="shippingLineAgent" class="form-check-input sm">
-                                <label for="shippingLineAgent" class="form-check-label sm">Shippingline Agent</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="transportClient" class="form-check-input sm">
-                                <label for="transportClient" class="form-check-label sm">Transport Client</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="localTransporter" class="form-check-input sm">
-                                <label for="localTransporter" class="form-check-label sm">Local Transporter</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="Coloader" class="form-check-input sm">
-                                <label for="Coloader" class="form-check-label sm">Co-Loader</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="containerTerminal" class="form-check-input sm">
-                                <label for="containerTerminal" class="form-check-label sm">Container Terminal</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="ownGroupCompany" class="form-check-input sm">
-                                <label for="ownGroupCompany" class="form-check-label sm">Own Group Company</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="NVOCC" class="form-check-input sm">
-                                <label for="NVOCC" class="form-check-label sm">NVOCC</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="Yard" class="form-check-input sm">
-                                <label for="Yard" class="form-check-label sm">Yard</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="Transporter" class="form-check-input sm">
-                                <label for="Transporter" class="form-check-label sm">Transporter</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="airCTO" class="form-check-input sm">
-                                <label for="airCTO" class="form-check-label sm">Air CTO</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="packCFS" class="form-check-input sm">
-                                <label for="packCFS" class="form-check-label sm">Pack CFS</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="Warehouse" class="form-check-input sm">
-                                <label for="Warehouse" class="form-check-label sm">Warehouse</label>
-                            </div>
-                        </div>
-                    </aside>
+                    <section [ngbNavOutlet]="nav2" class="mt-2 p-2"></section>
                 </div>
             </div>
         </div>
-    </div>
-
-</ng-template>
-
-<ng-template #statusUpadte>
-    <div class="row">
 
     </div>
-</ng-template>
 
-<ng-template #businessHistory>
-    <div class="row">
+
+    <ng-template #customerType>
         <div class="col-md-12">
             <div class="card h-100">
-                <div class="card-body">
+                <div class="card-body p-0">
                     <div class="row">
-                        <!-- <aside class="col-md-3">
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" formControlName="forwarder" id="forwarder"
+                                        class="form-check-input sm">
+                                    <label for="forwarder" class="form-check-label sm">Forwarder</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" formControlName="airline" id="airline"
+                                        class="form-check-input sm">
+                                    <label for="airline" class="form-check-label sm">Airline</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="checkbox" id="text-input" class="form-check-input sm"
+                                    formControlName="airlineName">
+                                <label for="text-input" class="form-check-label sm">Airline Name </label>
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="shipper" class="form-check-input sm"
+                                        formControlName="shipper">
+                                    <label for="shipper" class="form-check-label sm">Shipper</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="airlineAgent" formControlName="airlineAgent"
+                                        class="form-check-input sm">
+                                    <label for="airlineAgent" class="form-check-label sm">Airline Agent</label>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4 d-flex align-items-start">
+                            <div class="form-check form-check-inline p-0">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" formControlName="seacto" id="seacto"
+                                        class="form-check-input sm">
+                                    <label for="seacto" class="form-check-label sm">Sea CTO</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" formControlName="overseasAgent" id="oeverseasAgent"
+                                        class="form-check-input sm">
+                                    <label for="oeverseasAgent" class="form-check-label sm">Overseas Agent</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" formControlName="consignee" id="consignee"
+                                        class="form-check-input sm">
+                                    <label for="consignee" class="form-check-label sm">Consignee</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="checkbox" id="text-input" placeholder="" class="form-check-input sm"
+                                    formControlName="SCACcode">
+                                <label for="text-input" class="form-check-label sm">SCAC Code</label>
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input formControlName="shippingLine" type="checkbox" id="shippingLine"
+                                        class="form-check-input sm">
+                                    <label for="shippingLine" class="form-check-label sm">Shipping Line</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="broker" class="form-check-input sm"
+                                        formControlName="broker">
+                                    <label for="broker" class="form-check-label sm">Broker</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline p-0">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="unpackCFS" class="form-check-input sm"
+                                        formControlName="unpackCFS">
+                                    <label for="unpackCFS" class="form-check-label sm">Unpack CFS</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="shippingLineAgent" class="form-check-input sm"
+                                        formControlName="shippingLineAgent">
+                                    <label for="shippingLineAgent" class="form-check-label sm">Shippingline
+                                        Agent</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="transportClient" class="form-check-input sm"
+                                        formControlName="transportClient">
+                                    <label for="transportClient" class="form-check-label sm">Transport Client</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline p-0">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="localTransporter" class="form-check-input sm"
+                                        formControlName="localTransporter">
+                                    <label for="localTransporter" class="form-check-label sm">Local Transporter</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" formControlName="Coloader" id="Coloader"
+                                        class="form-check-input sm">
+                                    <label for="Coloader" class="form-check-label sm">Co-Loader</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input formControlName="containerTerminal" type="checkbox" id="containerTerminal"
+                                        class="form-check-input sm">
+                                    <label for="containerTerminal" class="form-check-label sm">Container
+                                        Terminal</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline p-0">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="ownGroupCompany" class="form-check-input sm"
+                                        formControlName="ownGroupCompany">
+                                    <label for="ownGroupCompany" class="form-check-label sm">Own Group Company</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="NVOCC" class="form-check-input sm"
+                                        formControlName="NVOCC">
+                                    <label for="NVOCC" class="form-check-label sm">NVOCC</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="Yard" class="form-check-input sm" formControlName="Yard">
+                                    <label for="Yard" class="form-check-label sm">Yard</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline p-0">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="Transporter" class="form-check-input sm"
+                                        formControlName="Transporter">
+                                    <label for="Transporter" class="form-check-label sm">Transporter</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="airCTO" class="form-check-input sm"
+                                        formControlName="airCTO">
+                                    <label for="airCTO" class="form-check-label sm">Air CTO</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="packCFS" class="form-check-input sm"
+                                        formControlName="packCFS">
+                                    <label for="packCFS" class="form-check-label sm">Pack CFS</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline p-0">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="Warehouse" class="form-check-input sm"
+                                        formControlName="Warehouse">
+                                    <label for="Warehouse" class="form-check-label sm">Warehouse</label>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </ng-template>
+
+    <ng-template #statusUpadte>
+        <div class="row">
+
+        </div>
+    </ng-template>
+
+    <ng-template #businessHistory>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="width" >
                                 <label for="text-input" class="input-label">Width </label>
@@ -491,749 +510,750 @@
                         </aside>
                         -->
 
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
 
-<ng-template #markupPercentage>
+    <ng-template #markupPercentage>
 
-</ng-template>
-
+    </ng-template>
 
 
 
-<ng-template #address>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+    <ng-template #address>
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Phone</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <td>
+                                <div class="text-truncate">Oman Rials</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
 
-</ng-template>
+    </ng-template>
 
-<ng-template #Contacts>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+    <ng-template #Contacts>
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Phone</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <td>
+                                <div class="text-truncate">Oman Rials</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
 
-<ng-template #notes>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+    <ng-template #notes>
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Phone</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <td>
+                                <div class="text-truncate">Oman Rials</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
 
-<ng-template #customesrefernece>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+    <ng-template #customesrefernece>
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Phone</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <td>
+                                <div class="text-truncate">Oman Rials</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
 
-<ng-template #documentdelivery>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+    <ng-template #documentdelivery>
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Phone</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <td>
+                                <div class="text-truncate">Oman Rials</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
 
-<ng-template #eDocs>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+    <ng-template #eDocs>
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Phone</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <td>
+                                <div class="text-truncate">Oman Rials</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
 
-<ng-template #arap>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+    <ng-template #arap>
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Phone</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <td>
+                                <div class="text-truncate">Oman Rials</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
 
-<ng-template #TDSDetails>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+    <ng-template #TDSDetails>
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Phone</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <td>
+                                <div class="text-truncate">Oman Rials</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
 
-<ng-template #sales>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+    <ng-template #sales>
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Phone</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <td>
+                                <div class="text-truncate">Oman Rials</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
 
-<ng-template #commodity>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+    <ng-template #commodity>
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Phone</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <td>
+                                <div class="text-truncate">Oman Rials</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
 
-<ng-template #relation>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+    <ng-template #relation>
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Phone</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <td>
+                                <div class="text-truncate">Oman Rials</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
 
-<ng-template #members>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
+    <ng-template #members>
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Address Type</th>
 
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Phone</th>
-                        <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Phone</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <td>
-                            <div class="text-truncate">Oman Rials</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Baizas</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <td>
+                                <div class="text-truncate">Oman Rials</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
+</form>

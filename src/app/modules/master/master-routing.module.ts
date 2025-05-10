@@ -661,6 +661,17 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: "organization/entry/:id",
+        component: OrganizationEntryComponent,
+        data: {
+          title: "Organization",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Organization" },
+          ],
+        },
+      },
+      {
         path: "commodity/list",
         component: CommodityListComponent,
         data: {
