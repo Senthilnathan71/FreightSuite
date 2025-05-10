@@ -99,14 +99,13 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="status">
-                            <label for="text-input" class="input-label">Status <span
-                                    class="text-danger">*</span></label>
-
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
+                               
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
                         </div>
-                    </aside>
+                    </aside>  
                     <aside class="col-md-4">
                         <div class="form-check form-check-inline">
                             <div class="form-check d-flex align-items-center gap-2">
@@ -127,8 +126,7 @@
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="companyBlockedList">
-                            <label for="text-input" class="input-label">Company Blocked List <span
-                                    class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">Company Blocked List </label>
 
                         </div>
                     </aside>
@@ -193,13 +191,14 @@
             <div class="card-body">
                 <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
                     <li [ngbNavItem]="1">
-                        <button ngbNavLink>Parameter</button>
+                        <button ngbNavLink>
+                            <i-feather name="shopping-cart" class="feather-sm ms-2"></i-feather> Parameter</button>
                         <ng-template ngbNavContent>
                             <ng-container *ngTemplateOutlet="parameter"></ng-container>
                         </ng-template>
                     </li>
                     <li [ngbNavItem]="2">
-                        <button ngbNavLink>Logo</button>
+                        <button ngbNavLink> <i-feather name="shopping-cart" class="feather-sm ms-2"></i-feather> Logo</button>
                         <ng-template ngbNavContent>
                             <ng-container *ngTemplateOutlet="logo"></ng-container>
                         </ng-template>
@@ -235,7 +234,7 @@
                     @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
                         <tr>
                             <td>
-                                <div class="text-truncate">Oman Rials</div>
+                                <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
                             </td>
                             <td>
                                 <div class="text-truncate">OMR</div>
@@ -289,16 +288,15 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="fileName">
-                                    <label for="text-input" class="input-label">File Name <span
-                                            class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">File Name 
+                                            </label>
                                 </div>
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="mimeType">
-                                    <label for="text-input" class="input-label">Mime Type <span
-                                            class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">Mime Type </label>
                                 </div>
                             </aside>
                         </div>
@@ -320,16 +318,14 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="fileName">
-                                    <label for="text-input" class="input-label">File Name <span
-                                            class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">File Name </label>
                                 </div>
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="mimeType">
-                                    <label for="text-input" class="input-label">Mime Type <span
-                                            class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">Mime Type </label>
                                 </div>
                             </aside>
                         </div>
