@@ -1,69 +1,83 @@
 <div class="row">
-    <!-- #region Search Panel -->
-    <div class="col-12">
-        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <form action="" class="d-flex align-items-center gap-2">
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5" name="search" autocomplete="off"
-                        placeholder="Search">
-                    <i class="fas fa-search ms-3"></i>
-                </div>
-                <!-- <button type="button" class="btn btn-info btn-sm" >
-                        <i class="mdi mdi-plus"></i> Add
-                    </button> -->
-            </form>
+  <!-- #region Search Panel -->
+  <div class="col-12">
+    <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
+      <form action="" class="d-flex align-items-center gap-2">
+        <div class="form-outline col">
+          <input
+            type="search"
+            class="form-control ps-5"
+            name="search"
+            autocomplete="off"
+            placeholder="Search"
+            [(ngModel)]="searchText"
+            (input)="loadZoneWithQuery()"
+          />
+          <i class="fas fa-search ms-3"></i>
         </div>
+        <button
+          type="button"
+          class="btn btn-info btn-sm"
+          (click)="navigateToCreate()"
+        >
+          <i class="mdi mdi-plus"></i> Add
+        </button>
+      </form>
     </div>
-    <!-- #endregion -->
+  </div>
+  <!-- #endregion -->
 
-    <div class="col-12">
-        <div class="card">
-            <!-- #region lead view -->
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Name</th>
-                            <th class="bg-transparent text-light" scope="col">Code</th>
-                            <th class="bg-transparent text-light" scope="col">Country Name</th>
-                            <th class="bg-transparent text-light" scope="col">Remarks</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
-                            <th class="bg-transparent text-light" scope="col">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (item of [0,1,2,3,4,5,6,7,8,9]; track $index) {
+  <div class="col-12">
+    <div class="card">
+      <!-- #region lead view -->
+      <div class="table-responsive">
+        <table class="table table-hover align-middle no-wrap table-bordered">
+          <thead>
+            <tr class="bg-info">
+              <th class="bg-transparent text-light" scope="col">Name</th>
+              <th class="bg-transparent text-light" scope="col">Code</th>
+              <!-- <th class="bg-transparent text-light" scope="col">
+                Country Name
+              </th>
+              <th class="bg-transparent text-light" scope="col">Remarks</th> -->
+              <th class="bg-transparent text-light" scope="col">Status</th>
+              <th class="bg-transparent text-light" scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (zone of filteredZones; track zone.ZoneMasterSid) {
 
-                            <tr>
-                                <td>
-                                    GainWell Ltd
-                                </td>
-                                <td>
-                                    N/A
-                                </td>
-                                <td>
-                                    N/A
-                                </td>
-                                <td>
-                                    N/A
-                                </td>
-                                <td>
-                                    N/A
-                                </td>
-                                
-                                <td>
-                                    <a routerLink="/crm/customer/view"   class="text-dark mx-2">
-                                        <i-feather name="edit-3" class="feather-sm"></i-feather>
-                                    </a>
-                                </td>
-                            </tr>
-                        }
+            <tr>
+              <td>{{ zone.ZoneName }}</td>
+              <td>{{ zone.ZoneCode }}</td>
+              <td>{{ zone.status === "A" ? "Active" : "Cancelled" }}</td>
+              <!-- <td>N/A</td> -->
+              <!-- <td>N/A</td> -->
 
-                        
-                    </tbody>
-                </table>
-            </div>
-            <!-- #endregion -->
-        </div>
+              <td>
+                <a
+                  [routerLink]="['/master/zone/entry/', zone.ZoneMasterSid]"
+                  class="text-dark mx-2"
+                >
+                  <i-feather name="edit-3" class="feather-sm"></i-feather>
+                </a>
+                <a
+                  class="text-danger mx-2 ps-3 border-start"
+                  (click)="deleteZone(zone.ZoneMasterSid)"
+                >
+                  <i-feather name="trash-2" class="feather-sm"></i-feather>
+                </a>
+              </td>
+            </tr>
+            } @empty {
+            <tr class="col">
+              No records Found
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <!-- #endregion -->
     </div>
+  </div>
 </div>
