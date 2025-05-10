@@ -1,56 +1,75 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import { Router } from '@angular/router';
-import { AppService } from 'src/app/service/app.service';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { State } from 'src/app/modules/crm-mobile/Interfaces/state.interface';
 import { MasterService } from '../../master.service';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 @Component({
   selector: 'app-state-list',
   standalone: true,
   imports: [
-    CommonModule,
     FeatherModule,
-    NgbPaginationModule,
-    FormsModule
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    MatDialogModule
   ],
   templateUrl: './state-list.component.html',
   styleUrl: './state-list.component.scss'
 })
 export class StateListComponent {
-  state: State[] = [];
-  errorMessage: string = '';
-  page = 1;
-  pageSize = 5;
-  totalLengthOfCollection: number;
+  states: any;
   searchText: string = '';
-  filteredState: State[] = [];
-  isMobile: boolean = false;
-  constructor(private masterService: MasterService, private route: Router, private appService: AppService) { }
+  filterStateList: any[] = [];
+  totalLengthofCollection: number = 0;
+  countryList: any;
 
-  ngOnInit(): void {
+  constructor(
+    private masterService: MasterService, 
+    private router: Router, 
+    private dialog: MatDialog,
+    private appSettingService: AppSettingsService
+  ) { }
+
+  ngOnInit() {
     this.loadState();
-    this.isMobile = this.appService.getDevice();
-  }
-  createNew() {
-    this.route.navigate(['crm/state/entry'])
   }
 
   loadState() {
-    this.masterService.getAllState().subscribe(
-      (resp: State[]) => {
-        this.state = resp['data'];
-        console.log(this.state);
-        this.filteredState = [...this.state];
-        this.totalLengthOfCollection = this.state.length || 0;
-      },
-      (error) => {
-        this.errorMessage = error.message;
-        console.error('Error loading ports:', error);
+    forkJoin({
+      countries: this.masterService.getAllCountry(),
+      states: this.masterService.getAllState()
+    }).subscribe(({ countries, states }) => {
+      this.countryList = countries.data;
+      this.states = states.data.map(state => {
+        const country = this.countryList.find(c => c.CountryMasterSid === state.CountryMasterSid);
+        return {
+          ...state,
+          countryName: country ? country.countryName : ''
+        };
+      });
+    });
+  }
+
+  deleteState(id: number) {
+    const dialogRef = this.dialog.open(DeleteWarningComponent);
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.masterService.deleteStateById(id).subscribe((resp: any) => {
+          this.appSettingService.showSuccess("Deleted!");
+          this.loadState();
+        });
       }
-    );
+    });
+  }
+
+  navigateToCreateState() {
+    this.router.navigate(['master/state/entry']);
   }
 }

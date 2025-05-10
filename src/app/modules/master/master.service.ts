@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map } from 'rxjs';
+import { catchError, map, Observable, throwError } from 'rxjs';
 import { Sector } from '../crm-mobile/Interfaces/sector.interface';
 import { State } from '../crm-mobile/Interfaces/state.interface';
 import { Country } from '../crm-mobile/Interfaces/country.interface';
@@ -13,6 +13,7 @@ import { City } from '../crm-mobile/Interfaces/city.interface';
   providedIn: 'root'
 })
 export class MasterService {
+  apiUrl: any;
 
   constructor(private http: HttpClient) { }
 
@@ -127,7 +128,7 @@ export class MasterService {
     )
   }
 
-  //state-master
+  // state-master
   getAllState() {
     return this.http.get('state').pipe(
       map((resp: any) => {
@@ -137,6 +138,41 @@ export class MasterService {
     )
   }
 
+  getStateById(id: number) {
+    return this.http.get<{ data: State }>(`state/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  createState(payload: any) {
+    return this.http.post("state/create", payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    )
+  }
+
+  updateStateById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`state/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  deleteStateById(id: number) {
+    return this.http.delete<{ data: any }>(`state/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+  
   //port-master
   getAllPorts() {
     return this.http.get('port').pipe(

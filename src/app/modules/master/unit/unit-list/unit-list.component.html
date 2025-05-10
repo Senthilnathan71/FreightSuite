@@ -34,46 +34,43 @@
                         </tr>
                     </thead>
                     <tbody>
-
-                        <tr *ngFor="let unit of filteredUnit">
-                            <td>
-                                {{ unit.unitName}}
-                            </td>
-                            <td>
-                                {{ unit.unitCode}}
-                            </td>
-                            <td>
-                                {{ unit.jobType}}
-                            </td>
-                            <td>
-                                {{ unit.containerType}}
-                            </td>
-                            <td>
-                                {{ unit.measurementType}}
-                            </td>
-                            <td>
-                                {{ unit.remarks}}
-                            </td>
-                            <td>
-                                <span
-                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    {{ unit.status === 'A' ? 'Active' : 'Cancelled' }}</span>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <a class="text-info mx-2" class="link mx-2 ps-3 "
-                                        [routerLink]="['/master/unit/entry/', unit.UnitMasterSid]">
-                                        <i-feather class="feather-sm" name="eye"></i-feather>
-                                    </a>
-                                    <a class="text-danger mx-2 ps-3 border-start"
-                                        (click)="deleteUnit(unit.UnitMasterSid)">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-
+                       
+                            <tr *ngFor="let unit of filteredUnit">
+                                <td>
+                                    {{ unit.unitName}}
+                                </td>
+                                <td>
+                                    {{ unit.unitCode}}
+                                </td>
+                                <td>
+                                    {{ unit.jobType}}
+                                </td>
+                                <td>
+                                    {{ unit.containerType}}
+                                </td>
+                                <td>
+                                    {{ unit.measurementType}}
+                                </td>
+                                <td>
+                                    {{ unit.remarks}}
+                                </td>
+                                <td>
+                                    <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                        {{ unit.status === 'A' ? 'Active' : 'Cancelled' }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <a class="text-info mx-2" class="link mx-2 ps-3 " [routerLink]="['/crm/unit/entry/', unit.UnitMasterSid]">
+                                            <i-feather class="feather-sm" name="eye"></i-feather>
+                                        </a>
+                                        <a class="text-danger mx-2 ps-3 border-start" (click)="deleteUnit(unit.UnitMasterSid)">
+                                            <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        
                     </tbody>
                 </table>
             </div>

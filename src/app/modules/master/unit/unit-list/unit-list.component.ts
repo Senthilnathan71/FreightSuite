@@ -21,9 +21,7 @@ import { MasterService } from '../../master.service';
     FeatherModule,
     NgbPaginationModule,
     FormsModule,
-    RouterModule,
-    MatDialogModule,
-    MatButtonModule
+    RouterModule
   ],
   templateUrl: './unit-list.component.html',
   styleUrl: './unit-list.component.scss'
@@ -37,7 +35,7 @@ export class UnitListComponent {
   searchText: string = '';
   filteredUnit: Unit[] = [];
   isMobile: boolean = false;
-  constructor(private masterService: MasterService, private route: Router, private appService: AppService, private dialog: MatDialog, private appSettingService: AppSettingsService) { }
+  constructor(private masterService: MasterService, private route: Router, private appService: AppService, private appSettingService: AppSettingsService, private dialog:MatDialog) { }
 
   ngOnInit(): void {
     this.loadUnit();

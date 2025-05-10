@@ -1,79 +1,64 @@
 <div class="row">
-    <!-- #region Search Panel -->
     <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
             <form action="" class="d-flex align-items-center gap-2">
                 <div class="form-outline col">
-                    <input type="search" class="form-control ps-5" name="search" autocomplete="off"
-                        placeholder="Search">
+                    <input type="search" class="form-control ps-5" name="search" placeholder="Search">
                     <i class="fas fa-search ms-3"></i>
                 </div>
-                <!-- <button type="button" class="btn btn-info btn-sm" >
-                        <i class="mdi mdi-plus"></i> Add
-                    </button> -->
+                <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateState()">
+                    <i class="mdi mdi-plus"></i> Add
+                </button>
             </form>
         </div>
     </div>
-    <!-- #endregion -->
-
     <div class="col-12">
-        <div class="card">
-            <!-- #region lead view -->
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Name</th>
-                            <th class="bg-transparent text-light" scope="col">Code</th>
-                            <th class="bg-transparent text-light" scope="col">Region</th>
-                            <th class="bg-transparent text-light" scope="col">Country</th>
-                            <th class="bg-transparent text-light" scope="col">Remarks</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
-                            <th class="bg-transparent text-light" scope="col">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                       
-                            <tr *ngFor="let state of filteredState" >
-                                <td>
-                                    {{ state.stateName}}
-                                </td>
-                                <td>
-                                    {{ state.stateCode}}
-                                </td>
-                                <td>
-                                    {{ state.region}}
-                                </td>
-                                <td>
-                                    {{ state.countryMaster?state.countryMaster.countryName:'' }}
-                                </td>
-                                <td>
-                                    {{ state.Remarks}}
-                                </td>
-                                <td>
-                                    <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                        {{ state.status === 'A' ? 'Active' : 'Cancelled' }}</span>
-                                </td>
-                                <td>
-                                    <a routerLink="/crm/state/entry"   class="text-dark mx-2">
-                                        <i-feather name="edit-3" class="feather-sm"></i-feather>
-                                    </a>
-                                </td>
-                            </tr>
-                         
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="card-body">
-                <!-- #region Pagination -->
-                <ngb-pagination class="d-flex justify-content-end
-                " [collectionSize]="totalLengthOfCollection"
-                    [pageSize]="pageSize" [(page)]="page"></ngb-pagination>
-                <!-- #endregion -->
-            </div>
-            <!-- #endregion -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">State Name</th>
+                        <th class="bg-transparent text-light" scope="col">State Code</th>
+                        <th class="bg-transparent text-light" scope="col">Country</th>
+                        <th class="bg-transparent text-light" scope="col">Status</th>
+                        <th class="bg-transparent text-light" scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (item of states; track $index) {
+                    <tr>
+                        <td>
+                            <div class="text-truncate">{{item.stateName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.stateCode}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.countryName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">
+                                {{ item.status === 'A' ? 'Active' : 'Cancelled' }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="text-primary mx-2 ps-3" 
+                                   [routerLink]="['/master/state/entry/', item.StateMasterSid]"
+                                   title="Edit">
+                                   <i-feather name="edit-3" class="feather-sm"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start"
+                                   (click)="deleteState(item.StateMasterSid)"
+                                   title="Delete">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
