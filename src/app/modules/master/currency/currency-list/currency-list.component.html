@@ -3,10 +3,15 @@
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
             <form action="" class="d-flex align-items-center gap-2">
                 <div class="form-outline col">
-                    <input type="search" class="form-control ps-5"  name="search"  autocomplete="off" placeholder="Search">
-                    <i class="fas fa-search ms-3"></i>
+                    <input type="search" class="form-control ps-5" name="search" 
+                    [(ngModel)]="searchText" (input)="filterCurrencies()"
+                    placeholder="Search" autocomplete="off">
+                    <div *ngIf="errorMessage" class="text-danger mt-2">
+                       {{ errorMessage }}
+                       </div>
+               <i class="fas fa-search ms-3"></i>
                 </div>
-                <button type="button" class="btn btn-info btn-sm" >
+                <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateCurrency()">
                     <i class="mdi mdi-plus"></i> Add
                 </button>
             </form>
@@ -22,40 +27,36 @@
                         <th class="bg-transparent text-light" scope="col">Symbol</th>
                         <th class="bg-transparent text-light" scope="col">Unit</th>
                         <th class="bg-transparent text-light" scope="col">Sub Unit</th>
-                        <th class="bg-transparent text-light" scope="col">Sub Unit In</th>
-                        <th class="bg-transparent text-light" scope="col">Round off</th>
                         <th class="bg-transparent text-light" scope="col">Status</th>
+                        <th class="bg-transparent text-light" scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                        <tr>
-                            <td>
-                                <div class="text-truncate">Oman Rials</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">RO</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">1000</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">3</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Active</div>
-                            </td>
-                        </tr>
-                    }
+                    <!-- Static placeholder rows -->
+                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index){
+                    <tr>
+                        <td><div class="text-truncate">Oman Rials</div></td>
+                        <td><div class="text-truncate">OMR</div></td>
+                        <td><div class="text-truncate">RO</div></td>
+                        <td><div class="text-truncate">Rial</div></td>
+                        <td><div class="text-truncate">Baizas</div></td>
+                        <td><div class="text-truncate">Active</div></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="text-primary mx-2 ps-3" 
+                                   [routerLink]="['/master/currency/entry/', 1]"
+                                   title="Edit">
+                                   <i-feather name="edit-3" class="feather-sm"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start"
+                                   (click)="deleteCurrency(1)"
+                                   title="Delete">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
+                        </td>      
+                    </tr>
+                }
                 </tbody>
             </table>
         </div>

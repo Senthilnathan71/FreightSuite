@@ -154,7 +154,7 @@ export const MasterRoutes: Routes = [
         path: "currency/list",
         component: CurrencyListComponent,
         data: {
-          title: "Currency",
+          title: "Currency- List",
           urls: [
             { title: "Master", url: "/master" },
             { title: "Currency" },
@@ -165,10 +165,21 @@ export const MasterRoutes: Routes = [
         path: "currency/entry",
         component: CurrencyEntryComponent,
         data: {
-          title: "Add Currency",
+          title: "Currency - Add",
           urls: [
             { title: "Master", url: "/master" },
-            { title: "Currency" },
+            { title: "Add Currency" },
+          ],
+        },
+      },
+      {
+        path: "currency/entry/:id",  // Fixed: removed space
+        component: CurrencyEntryComponent,
+        data: {
+          title: "Currency - Edit",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Edit Currency" },
           ],
         },
       },
@@ -308,29 +319,6 @@ export const MasterRoutes: Routes = [
           }
         ]
       },
-
-        // {
-        //   path: "state/list",
-        //   component: StateListComponent,
-        //   data: {
-        //     title: "State",
-        //     urls: [
-        //       { title: "Master", url: "/master" },
-        //       { title: "State List" },
-        //     ],
-        //   },
-        // },
-        // {
-        //   path: "state/entry",
-        //   component: StateEntryComponent,
-        //   data: {
-        //     title: "State",
-        //     urls: [
-        //       { title: "Master", url: "/master" },
-        //       { title: "State Add" },
-        //     ],
-        //   },
-        // },
       {
         path: "unit/list",
         component: UnitListComponent,

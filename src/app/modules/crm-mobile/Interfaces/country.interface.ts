@@ -1,4 +1,6 @@
 export interface Country {
+    [x: string]: any;
+    id: any;
     CountryMasterSid: number,
     countryCode: string,
     countryName: string,

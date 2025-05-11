@@ -8,6 +8,7 @@ import { Port } from '../crm-mobile/Interfaces/port.interface';
 import { Unit } from '../crm-mobile/Interfaces/unit.interface';
 import { Uom } from '../crm-mobile/Interfaces/uom.interface';
 import { City } from '../crm-mobile/Interfaces/city.interface';
+import { Currency } from '../crm-mobile/Interfaces/currency.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -334,4 +335,50 @@ export class MasterService {
       })
     )
   }
+  // //currency-master
+  
+  getAllCurrency() {
+    return this.http.get<Currency>('currency').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+  getCurrencyById(id: number) {
+    return this.http.get<{ data:Currency}>(`currency/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+
+  createCurrency(payload: any) {
+    return this.http.post("currency/create", payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    )
+  }
+
+  updateCurrencyById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`currency/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  deleteCurrencyById(id: number) {
+    return this.http.delete<{ data: any }>(`currency/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
 }
