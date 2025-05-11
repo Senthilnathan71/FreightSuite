@@ -32,16 +32,16 @@ export const ROUTES: RouteInfo[] = [
     labelClass: '',
     submenu: []
   },
-  {
-    path: '/master/customer/list',
-    title: 'Customer',
-    icon: 'mdi mdi-account',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
+  // {
+  //   path: '/master/customer/list',
+  //   title: 'Customer',
+  //   icon: 'mdi mdi-account',
+  //   class: '',
+  //   extralink: false,
+  //   label: '',
+  //   labelClass: '',
+  //   submenu: []
+  // },
   {
     path: '/master/country/list',
     title: 'Country',
@@ -246,6 +246,46 @@ export const ROUTES: RouteInfo[] = [
   {
     path: '/master/airline/list',
     title: 'Airline',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/master/sector/list',
+    title: 'Sector',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/master/service-level/list',
+    title: 'Service Level',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/master/inco/list',
+    title: 'Inco',
+    icon: 'fas fa-dot-circle',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
+    path: '/master/time-zone/list',
+    title: 'Time Zone',
     icon: 'fas fa-dot-circle',
     class: '',
     extralink: false,

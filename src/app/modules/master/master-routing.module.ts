@@ -49,6 +49,12 @@ import { CommodityEntryComponent } from './commodity/commodity-entry/commodity-e
 import { PackageTypeListComponent } from './package-type/package-type-list/package-type-list.component';
 import { PackageTypeEntryComponent } from './package-type/package-type-entry/package-type-entry.component';
 import { MenuEntryComponent } from './menu/menu-entry/menu-entry.component';
+import { ServiceLevelListComponent } from './service-level/service-level-list/service-level-list.component';
+import { ServiceLevelComponent } from './service-level/service-level.component';
+import { TimeZoneComponent } from './time-zone/time-zone.component';
+import { TimeZoneListComponent } from './time-zone/time-zone-list/time-zone-list.component';
+import { IncoComponent } from './inco/inco.component';
+import { IncoListComponent } from './inco/inco-list/inco-list.component';
 
 
 
@@ -727,15 +733,73 @@ export const MasterRoutes: Routes = [
         },
       },
 
+      {
+        path: "service-level/list",
+        component: ServiceLevelListComponent,
+        data: {
+          title: "Service Level",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Service Level" },
+          ],
+        },
+      },
+      {
+        path: "service-level/entry",
+        component: ServiceLevelComponent,
+        data: {
+          title: "Service Level",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Service Level" },
+          ],
+        },
+      },
+      {
+        path: "inco/list",
+        component: IncoListComponent,
+        data: {
+          title: "Inco",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Inco" },
+          ],
+        },
+      },
+      {
+        path: "inco/entry",
+        component: IncoComponent,
+        data: {
+          title: "Inco",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Inco" },
+          ],
+        },
+      },
+      {
+        path: "time-zone/list",
+        component: TimeZoneListComponent,
+        data: {
+          title: "Time Zone",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Time Zone" },
+          ],
+        },
+      },
+      {
+        path: "time-zone/entry",
+        component: TimeZoneComponent,
+        data: {
+          title: "Time Zone",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Time Zone" },
+          ],
+        },
+      },
     ]
   }
 
 ];
-
-
-
-
-// import { MilestoneListComponent } from './milestone/milestone-list/milestone-list.component';
-// import { MilestoneEntryComponent } from './milestone/milestone-entry/milestone-entry.component';
-// import { OrganizationListComponent } from './organization/organization-list/organization-list.component';
-// import { OrganizationEntryComponent } from './organization/organization-entry/organization-entry.component';
