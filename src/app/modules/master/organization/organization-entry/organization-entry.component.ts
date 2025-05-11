@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -14,7 +14,7 @@ import { MasterService } from '../../master.service';
   standalone: true,
   imports: [NgbNavModule, CommonModule, NgSelectModule, FeatherModule,
     FormsModule,
-    ReactiveFormsModule,
+    ReactiveFormsModule,NgbModalModule ,
   ],
   templateUrl: './organization-entry.component.html',
   styleUrl: './organization-entry.component.scss'
@@ -22,6 +22,7 @@ import { MasterService } from '../../master.service';
 export class OrganizationEntryComponent {
   active1 = 1;
   active2 = 1;
+  active3=1;
   modeOfStatus = [
     { id: 'Active', name: 'Active' },
     { id: 'Invalid', name: 'Invalid' },
@@ -33,9 +34,24 @@ export class OrganizationEntryComponent {
     { id: '3', name: "Not Applicable" },
   ]
 
+    modeOfCountry = [
+    { id: 'India', name: 'India' },
+    { id: 'Singapore', name: 'Singapore' },
+    { id: 'Canada', name: 'Canada' }
+  ];
 
 
+     modeOfCompanyType= [
+    { id: 'Company1', name: 'Company1' },
+    { id: 'Company2', name: 'Company2' },
+    { id: 'Company3', name: 'Company3' }
+  ];
+  
 
+  openModal(content: any) {
+    this.modalService.open(content, { size:"xl",backdrop: 'static', keyboard: false });
+  }
+  
 
   customerForm!: FormGroup;
   isEditMode = false; // Flag for edit mode
@@ -50,7 +66,8 @@ export class OrganizationEntryComponent {
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private modalService: NgbModal,
   ) { }
 
   ngOnInit(): void {

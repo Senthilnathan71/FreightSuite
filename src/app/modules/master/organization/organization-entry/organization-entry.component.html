@@ -7,6 +7,9 @@
             </div>
         </div>
 
+
+
+
         <div class="col-md-6 ">
             <div class="card h-100">
                 <div class="card-body">
@@ -16,7 +19,7 @@
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                     formControlName="CustomerName">
-                                <label for="text-input" class="input-label">Name <span
+                                <label for="text-input" class="input-label">Customer Name <span
                                         class="text-danger">*</span></label>
                             </div>
                         </aside>
@@ -32,15 +35,8 @@
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                     formControlName="CustomerAliasName">
-                                <label for="text-input" class="input-label">Full Name <span
-                                        class="text-danger">*</span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <textarea id="CustomerAddress1" class="custom-input-field sm"
-                                    formControlName="CustomerAddress1" rows="4"></textarea>
-                                <label for="CustomerAddress1" class="input-label">Address</label>
+                                <label for="text-input" class="input-label">Alias<span
+                                        class="text-danger"></span></label>
                             </div>
                         </aside>
 
@@ -54,11 +50,38 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="Website">
-                                <label for="text-input" class="input-label">Website</label>
+                                    formControlName="CustomerAddress1">
+                                <label for="text-input" class="input-label">Address1<span
+                                        class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="CustomerAddress2">
+                                <label for="text-input" class="input-label">Address2<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+
+                        <!-- <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <textarea id="CustomerAddress1" class="custom-input-field sm"
+                                    formControlName="CustomerAddress1" rows="4"></textarea>
+                                <label for="CustomerAddress1" class="input-label">Address1</label>
+                            </div>
+                        </aside>
+                          <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <textarea id="CustomerAddress1" class="custom-input-field sm"
+                                    formControlName="CustomerAddress2" rows="4"></textarea>
+                                <label for="CustomerAddress1" class="input-label">Address2</label>
+                            </div>
+                        </aside> -->
+
+
+
+                        <!-- <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <select formControlName="CountryMasterSid" class="form-select">
                                     <option value="" disabled selected>Select UNO</option>
@@ -68,13 +91,65 @@
                                 <label for="text-input" class="input-label">UNO Location <span
                                         class="text-danger">*</span></label>
                             </div>
+                        </aside> -->
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="Country" [items]="modeOfCountry" bindLabel="name"
+                                    bindValue="name">
+
+                                </ng-select>
+                                <label for="" class="input-label">Country <span class="text-danger">*</span></label>
+                            </div>
                         </aside>
-                        <aside class="col-md-3">
+                        <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="LocalLanguage">
-                                <label for="text-input" class="input-label">Language</label>
+                                    formControlName="Website">
+                                <label for="text-input" class="input-label">Website</label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="Country" [items]="modeOfCountry" bindLabel="name"
+                                    bindValue="name">
 
+                                </ng-select>
+                                <label for="" class="input-label">Country <span class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="form-check form-check-inline mt-3">
+                                <div class="form-check">
+                                    <input type="radio" id="Cash" class="form-check-input">
+                                    <label for="Cash" class="form-check-label">Cash</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="form-check form-check-inline mt-3">
+                                <div class="form-check">
+                                    <input type="radio" id="Credit" class="form-check-input">
+                                    <label for="Credit" class="form-check-label">Credit</label>
+                                </div>
+                            </div>
+                        </aside>
+
+
+
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <textarea id="" placeholder="" rows="1" class="input-field sm"
+                                    formControlName="Remarks"></textarea>
+                                <label for="text-input" class="input-label">Remarks </label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" formControlName="IsMSME" id="IsMSME"
+                                        class="form-check-input sm">
+                                    <label for="IsMSME" class="form-check-label sm">Is MSME</label>
+                                </div>
                             </div>
                         </aside>
                         <aside class="col-md-3">
@@ -86,31 +161,69 @@
                                 <label for="" class="input-label">Status <span class="text-danger">*</span></label>
                             </div>
                         </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <textarea id="" placeholder="" rows="1" class="input-field sm"
-                                    formControlName="Remarks"></textarea>
-                                <label for="text-input" class="input-label">Remarks </label>
-                            </div>
-                        </aside>
 
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="PanType" [items]="modeofPAN" bindLabel="name"
-                                    bindValue="name">
-                                </ng-select>
-                                <label for="" class="input-label">PAN Type </label>
+                        <h5 class="text-center mt-2">KYC SECTION</h5>
+                        <!-- <aside class="col-md-6">
+                                    <div class="custom-form-group custom-form-group-select">
+                                        <ng-select formControlName="PanType" [items]="modeofPAN" bindLabel="name"
+                                            bindValue="name">
+                                        </ng-select>
+                                        <label for="" class="input-label">PAN Type </label>
+                                    </div>
+                                </aside> -->
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" formControlName="KYCSpecified" id="KYCSpecified"
+                                        class="form-check-input sm">
+                                    <label for="KYCSpecified" class="form-check-label sm">KYC Specified</label>
+                                </div>
                             </div>
                         </aside>
-                        <aside class="col-md-6">
+                        <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="PanName">
-                                <label for="text-input" class="input-label">PAN Name</label>
+                                    formControlName="RegistrationNo">
+                                <label for="text-input" class="input-label">Registration No</label>
 
                             </div>
                         </aside>
 
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="CompanyType" [items]="modeOfCompanyType" bindLabel="name"
+                                    bindValue="name">
+
+                                </ng-select>
+                                <label for="" class="input-label">Company Type</label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4 d-flex align-items-center">
+                            <div class="form-check form-check-inline ">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" formControlName="PanAvailable" id="PanAvailable"
+                                        class="form-check-input sm">
+                                    <label for="PanAvailable" class="form-check-label sm">Pan Available</label>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="PAN/VAT">
+                                <label for="text-input" class="input-label">PAN/VAT</label>
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="NameasperPAN">
+                                <label for="text-input" class="input-label">Name as per PAN</label>
+
+                            </div>
+                        </aside>
 
                     </div>
                 </div>
@@ -157,11 +270,16 @@
                 <div class="card-body">
                     <ul ngbNav #nav2="ngbNav" [(activeId)]="active2" class="nav-tabs">
                         <li [ngbNavItem]="1">
-                            <button ngbNavLink>Customer Branch</button>
+                            <button ngbNavLink>
+                                <button class="btn btn-info p-0 me-2" (click)="openModal(content)"> <i-feather
+                                        name="plus-circle" class="feather-sm "></i-feather></button>
+                                Branch</button>
+
                             <ng-template ngbNavContent>
                                 <ng-container *ngTemplateOutlet="address"></ng-container>
                             </ng-template>
                         </li>
+
                         <!-- <li [ngbNavItem]="2">
                         <button ngbNavLink>
                             <i-feather name="phone" class="feather-sm "></i-feather>
@@ -239,6 +357,565 @@
 
     </div>
 
+
+
+    <ng-template #content let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">Branch</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
+
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="City">
+                                    <label for="text-input" class="input-label">City <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchName">
+                                    <label for="text-input" class="input-label">Branch Name <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchType">
+                                    <label for="text-input" class="input-label">Branch Type <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchCode">
+                                    <label for="text-input" class="input-label">Branch Code <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="State">
+                                    <label for="text-input" class="input-label">State <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="ZipPostCode">
+                                    <label for="text-input" class="input-label">Zip/Post Code<span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="ContactPerson">
+                                    <label for="text-input" class="input-label">Contact Person </label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="Phone">
+                                    <label for="text-input" class="input-label">Phone<span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="Email">
+                                    <label for="text-input" class="input-label">Email<span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="State">
+                                    <label for="text-input" class="input-label">State<span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="Address">
+                                    <label for="text-input" class="input-label">Address<span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+
+
+
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="Registered">
+                                    <label for="text-input" class="input-label">Registered</label>
+                                </div>
+                            </aside>
+
+
+
+
+
+
+
+
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="GSTtype">
+                                    <label for="text-input" class="input-label">GST Type</label>
+
+                                </div>
+                            </aside>
+
+
+
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="GSTIN">
+                                    <label for="text-input" class="input-label">GSTIN</label>
+
+                                </div>
+                            </aside>
+
+                            <div class="col-md-12 mt-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <ul ngbNav #nav2="ngbNav" [(activeId)]="active3" class="nav-tabs">
+                                            <li [ngbNavItem]="1">
+                                                <button ngbNavLink>
+                                                    <button class="btn btn-info p-0 me-2" (click)="openModal(content1)">
+                                                        <i-feather name="plus-circle"
+                                                            class="feather-sm "></i-feather></button>
+                                                    Branch Contact</button>
+
+                                                <ng-template ngbNavContent>
+                                                    <ng-container *ngTemplateOutlet="BranchContacts"></ng-container>
+                                                </ng-template>
+                                            </li>
+
+                                            <li [ngbNavItem]="2">
+                                                <button ngbNavLink>
+                                                    <button class="btn btn-info p-0 me-2" (click)="openModal(content2)">
+                                                        <i-feather name="plus-circle"
+                                                            class="feather-sm "></i-feather></button>
+                                                    Email</button>
+                                                <ng-template ngbNavContent>
+                                                    <ng-container *ngTemplateOutlet="Email"></ng-container>
+                                                </ng-template>
+                                            </li>
+                                            <li [ngbNavItem]="3">
+                                                <button ngbNavLink> <button class="btn btn-info p-0 me-2"
+                                                        (click)="openModal(content3)">
+                                                        <i-feather name="plus-circle"
+                                                            class="feather-sm "></i-feather></button>Milestoe</button>
+                                                <ng-template ngbNavContent>
+                                                    <ng-container *ngTemplateOutlet="TabMilestone"></ng-container>
+                                                </ng-template>
+                                            </li>
+                                            <li [ngbNavItem]="4">
+                                                <button ngbNavLink><button class="btn btn-info p-0 me-2"
+                                                        (click)="openModal(content4)">
+                                                        <i-feather name="plus-circle"
+                                                            class="feather-sm "></i-feather></button>Movement
+                                                    Terms</button>
+                                                <ng-template ngbNavContent>
+                                                    <ng-container *ngTemplateOutlet="TabMovementTerms"></ng-container>
+                                                </ng-template>
+                                            </li>
+                                            <li [ngbNavItem]="5">
+                                                <button ngbNavLink><button class="btn btn-info p-0 me-2"
+                                                        (click)="openModal(content5)">
+                                                        <i-feather name="plus-circle"
+                                                            class="feather-sm "></i-feather></button>eLogin</button>
+                                                <ng-template ngbNavContent>
+                                                    <ng-container *ngTemplateOutlet="eLogin"></ng-container>
+                                                </ng-template>
+                                            </li>
+                                            <!-- <li [ngbNavItem]="6">
+                                                <button ngbNavLink>eDOCS</button>
+                                                <ng-template ngbNavContent>
+                                                    <ng-container *ngTemplateOutlet="eDocs"></ng-container>
+                                                </ng-template>
+                                            </li>
+                                            <li [ngbNavItem]="7">
+                                                <button ngbNavLink><i-feather name="file-text"
+                                                        class="feather-sm "></i-feather> A/R-A/P</button>
+                                                <ng-template ngbNavContent>
+                                                    <ng-container *ngTemplateOutlet="arap"></ng-container>
+                                                </ng-template>
+                                            </li>
+                                            <li [ngbNavItem]="8">
+                                                <button ngbNavLink><i-feather name="flag"
+                                                        class="feather-sm "></i-feather> TDS Details</button>
+                                                <ng-template ngbNavContent>
+                                                    <ng-container *ngTemplateOutlet="TDSDetails"></ng-container>
+                                                </ng-template>
+                                            </li>
+                                            <li [ngbNavItem]="9">
+                                                <button ngbNavLink><i-feather name="shopping-cart"
+                                                        class="feather-sm "></i-feather> Sales</button>
+                                                <ng-template ngbNavContent>
+                                                    <ng-container *ngTemplateOutlet="sales"></ng-container>
+                                                </ng-template>
+                                            </li>
+                                            <li [ngbNavItem]="10">
+                                                <button ngbNavLink>Commodity</button>
+                                                <ng-template ngbNavContent>
+                                                    <ng-container *ngTemplateOutlet="commodity"></ng-container>
+                                                </ng-template>
+                                            </li>
+                                            <li [ngbNavItem]="11">
+                                                <button ngbNavLink>Relation</button>
+                                                <ng-template ngbNavContent>
+                                                    <ng-container *ngTemplateOutlet="relation"></ng-container>
+                                                </ng-template>
+                                            </li>
+                                            <li [ngbNavItem]="12">
+                                                <button ngbNavLink>Members</button>
+                                                <ng-template ngbNavContent>
+                                                    <ng-container *ngTemplateOutlet="members"></ng-container>
+                                                </ng-template>
+                                            </li> -->
+                                        </ul>
+
+                                        <section [ngbNavOutlet]="nav2" class="mt-2 p-2"></section>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+    </ng-template>
+
+    <ng-template #content1 let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">Branch Contact</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
+
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="City">
+                                    <label for="text-input" class="input-label">Contact Type <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchName">
+                                    <label for="text-input" class="input-label">Contact Name <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchType">
+                                    <label for="text-input" class="input-label">Mobile No<span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchCode">
+                                    <label for="text-input" class="input-label">Email<span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+
+
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </ng-template>
+
+     <ng-template #content2 let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">email</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
+
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="City">
+                                    <label for="text-input" class="input-label">Menu Name<span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchName">
+                                    <label for="text-input" class="input-label">Branch <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchType">
+                                    <label for="text-input" class="input-label">Department <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchCode">
+                                    <label for="text-input" class="input-label">To Email <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                             <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchCode">
+                                    <label for="text-input" class="input-label">CC Email <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+
+
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </ng-template>
+
+      <ng-template #content3 let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">Milestone</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
+
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="City">
+                                    <label for="text-input" class="input-label">Milestone <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchName">
+                                    <label for="text-input" class="input-label">Update by <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchType">
+                                    <label for="text-input" class="input-label">Update Id <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchCode">
+                                    <label for="text-input" class="input-label">Effective Form <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                             <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchCode">
+                                    <label for="text-input" class="input-label">Status <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+
+
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </ng-template>
+
+     <ng-template #content4 let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">Movement Terms</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
+
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="City">
+                                    <label for="text-input" class="input-label">Department <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchName">
+                                    <label for="text-input" class="input-label">Services Request <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <!-- <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchType">
+                                    <label for="text-input" class="input-label">Update Id <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchCode">
+                                    <label for="text-input" class="input-label">Effective Form <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                             <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchCode">
+                                    <label for="text-input" class="input-label">Status <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside> -->
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </ng-template>
+
+      <ng-template #content5 let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">eLogin</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
+
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="City">
+                                    <label for="text-input" class="input-label">Branch <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchName">
+                                    <label for="text-input" class="input-label">Name<span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchType">
+                                    <label for="text-input" class="input-label">email<span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchCode">
+                                    <label for="text-input" class="input-label">Password <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                             <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchCode">
+                                    <label for="text-input" class="input-label">Status <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </ng-template>
 
     <ng-template #customerType>
         <div class="col-md-12">
@@ -586,23 +1263,23 @@
 
     </ng-template>
 
-    <ng-template #Contacts>
+    <ng-template #BranchContacts>
         <div class="col-12">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Code</th>
-                            <th class="bg-transparent text-light" scope="col">Address Type</th>
+                            <th class="bg-transparent text-light" scope="col">Contact Type</th>
+                            <th class="bg-transparent text-light" scope="col">Mobile No</th>
 
-                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th>
+                            <!-- <th class="bg-transparent text-light" scope="col">Address Line 2</th>
                             <th class="bg-transparent text-light" scope="col">Address Line 3</th>
                             <th class="bg-transparent text-light" scope="col">City</th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
                             <th class="bg-transparent text-light" scope="col">Phone</th>
-                            <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th> -->
 
                         </tr>
                     </thead>
@@ -621,7 +1298,7 @@
                             <td>
                                 <div class="text-truncate">Rial</div>
                             </td>
-                            <td>
+                            <!-- <td>
                                 <div class="text-truncate">Baizas</div>
                             </td>
                             <td>
@@ -638,7 +1315,7 @@
                             </td>
                             <td>
                                 <div class="text-truncate">Baizas</div>
-                            </td>
+                            </td> -->
                         </tr>
                         }
                     </tbody>
@@ -647,23 +1324,24 @@
         </div>
     </ng-template>
 
-    <ng-template #notes>
+    <ng-template #Email>
         <div class="col-12">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Code</th>
-                            <th class="bg-transparent text-light" scope="col">Address Type</th>
+                            <th class="bg-transparent text-light" scope="col">Menu Name</th>
+                            <th class="bg-transparent text-light" scope="col">Branch</th>
+                            <th class="bg-transparent text-light" scope="col">Department</th>
 
-                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
+                            <th class="bg-transparent text-light" scope="col">To email</th>
+                            <th class="bg-transparent text-light" scope="col">CC email</th>
+                            <!-- <th class="bg-transparent text-light" scope="col">Address Line 2</th>
                             <th class="bg-transparent text-light" scope="col">Address Line 3</th>
                             <th class="bg-transparent text-light" scope="col">City</th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
                             <th class="bg-transparent text-light" scope="col">Phone</th>
-                            <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th> -->
 
                         </tr>
                     </thead>
@@ -685,7 +1363,7 @@
                             <td>
                                 <div class="text-truncate">Baizas</div>
                             </td>
-                            <td>
+                            <!-- <td>
                                 <div class="text-truncate">Baizas</div>
                             </td>
                             <td>
@@ -699,7 +1377,7 @@
                             </td>
                             <td>
                                 <div class="text-truncate">Baizas</div>
-                            </td>
+                            </td> -->
                         </tr>
                         }
                     </tbody>
@@ -708,23 +1386,23 @@
         </div>
     </ng-template>
 
-    <ng-template #customesrefernece>
+    <ng-template #TabMilestone>
         <div class="col-12">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Code</th>
-                            <th class="bg-transparent text-light" scope="col">Address Type</th>
+                            <th class="bg-transparent text-light" scope="col">Milestone</th>
+                            <th class="bg-transparent text-light" scope="col">Update by</th>
+                            <th class="bg-transparent text-light" scope="col">Update Id</th>
 
-                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">Effective Form</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <!-- <th class="bg-transparent text-light" scope="col">Address Line 3</th>
                             <th class="bg-transparent text-light" scope="col">City</th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
                             <th class="bg-transparent text-light" scope="col">Phone</th>
-                            <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th> -->
 
                         </tr>
                     </thead>
@@ -746,7 +1424,7 @@
                             <td>
                                 <div class="text-truncate">Baizas</div>
                             </td>
-                            <td>
+                            <!-- <td>
                                 <div class="text-truncate">Baizas</div>
                             </td>
                             <td>
@@ -760,7 +1438,7 @@
                             </td>
                             <td>
                                 <div class="text-truncate">Baizas</div>
-                            </td>
+                            </td> -->
                         </tr>
                         }
                     </tbody>
@@ -769,15 +1447,15 @@
         </div>
     </ng-template>
 
-    <ng-template #documentdelivery>
+    <ng-template #TabMovementTerms>
         <div class="col-12">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Code</th>
-                            <th class="bg-transparent text-light" scope="col">Address Type</th>
+                            <th class="bg-transparent text-light" scope="col">Department</th>
+                            <th class="bg-transparent text-light" scope="col">Services Request</th>
+                            <!-- <th class="bg-transparent text-light" scope="col">Address Type</th>
 
                             <th class="bg-transparent text-light" scope="col">Address Line 1</th>
                             <th class="bg-transparent text-light" scope="col">Address Line 2</th>
@@ -785,7 +1463,7 @@
                             <th class="bg-transparent text-light" scope="col">City</th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
                             <th class="bg-transparent text-light" scope="col">Phone</th>
-                            <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th> -->
 
                         </tr>
                     </thead>
@@ -798,7 +1476,7 @@
                             <td>
                                 <div class="text-truncate">OMR</div>
                             </td>
-                            <td>
+                            <!-- <td>
                                 <div class="text-truncate">RO</div>
                             </td>
                             <td>
@@ -821,7 +1499,7 @@
                             </td>
                             <td>
                                 <div class="text-truncate">Baizas</div>
-                            </td>
+                            </td> -->
                         </tr>
                         }
                     </tbody>
@@ -830,23 +1508,23 @@
         </div>
     </ng-template>
 
-    <ng-template #eDocs>
+    <ng-template #eLogin>
         <div class="col-12">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Code</th>
-                            <th class="bg-transparent text-light" scope="col">Address Type</th>
+                            <th class="bg-transparent text-light" scope="col">Branch</th>
+                            <th class="bg-transparent text-light" scope="col">Name</th>
+                            <th class="bg-transparent text-light" scope="col">email</th>
 
-                            <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                            <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">Password</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <!-- <th class="bg-transparent text-light" scope="col">Address Line 3</th>
                             <th class="bg-transparent text-light" scope="col">City</th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
                             <th class="bg-transparent text-light" scope="col">Phone</th>
-                            <th class="bg-transparent text-light" scope="col">Email</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th> -->
 
                         </tr>
                     </thead>
@@ -868,7 +1546,7 @@
                             <td>
                                 <div class="text-truncate">Baizas</div>
                             </td>
-                            <td>
+                            <!-- <td>
                                 <div class="text-truncate">Baizas</div>
                             </td>
                             <td>
@@ -882,7 +1560,7 @@
                             </td>
                             <td>
                                 <div class="text-truncate">Baizas</div>
-                            </td>
+                            </td> -->
                         </tr>
                         }
                     </tbody>
