@@ -276,7 +276,7 @@
                                 Branch</button>
 
                             <ng-template ngbNavContent>
-                                <ng-container *ngTemplateOutlet="address"></ng-container>
+                                <ng-container *ngTemplateOutlet="branch"></ng-container>
                             </ng-template>
                         </li>
 
@@ -1201,7 +1201,7 @@
 
 
 
-    <ng-template #address>
+    <ng-template #branch>
         <div class="col-12">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
@@ -1225,7 +1225,7 @@
                         @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
                         <tr>
                             <td>
-                                <div class="text-truncate">Oman Rials</div>
+                                 <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
                             </td>
                             <td>
                                 <div class="text-truncate">OMR</div>
@@ -1287,7 +1287,7 @@
                         @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
                         <tr>
                             <td>
-                                <div class="text-truncate">Oman Rials</div>
+                                 <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
                             </td>
                             <td>
                                 <div class="text-truncate">OMR</div>

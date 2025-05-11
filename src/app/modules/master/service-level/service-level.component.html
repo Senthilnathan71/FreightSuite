@@ -1,1 +1,86 @@
-<p>service-level works!</p>
+<div class="row py-3">
+    <div class="col-12">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <button class="btn btn-sm btn-light-secondary ms-auto">Edit</button>
+            <button class="btn btn-sm btn-info">Update</button>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="row">
+
+                    <aside class="col-md-8">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="commodityName">
+                            <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="commodityCode">
+                            <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-8 mt-2">
+                        <div class="col-12 mt-3">
+                            <div class="card ">
+                                <div class="card-body p-0">
+                                    <div class="">
+                                        <div class="form-check form-check-inline p-0 me-5">
+                                            <div class="form-check">
+                                                <input type="checkbox" id="DoorToDoor" class="form-check-input">
+                                                <label for="DoorToDoor" class="form-check-label">Door to Door</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-check-inline p-0 me-5">
+                                            <div class="form-check">
+                                                <input type="checkbox" id="IsSea" class="form-check-input">
+                                                <label for="IsSea" class="form-check-label">Is Sea</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-check-inline p-0 me-5">
+                                            <div class="form-check">
+                                                <input type="checkbox" id="IsAir" class="form-check-input">
+                                                <label for="IsAir" class="form-check-label">Is Air</label>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4 mt-2">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
+                                bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="row">
+
+                    <aside class="col-md-12 pt-2">
+                        <div class="custom-form-group">
+                            <textarea id="" placeholder="" rows="" class="input-field sm"
+                                formControlName="Remarks"></textarea>
+                            <label for="text-input" class="input-label">Remarks </label>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

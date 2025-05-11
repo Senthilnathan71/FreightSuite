@@ -1,12 +1,16 @@
 import { Component } from '@angular/core';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-sector-entry',
   standalone: true,
-  imports: [],
+  imports: [NgSelectModule],
   templateUrl: './sector-entry.component.html',
   styleUrl: './sector-entry.component.scss'
 })
 export class SectorEntryComponent {
-
+ modeOfStatus=[
+    {id:"Active",name:"Active"},
+    {id:"Inactive",name:"Inactive"},
+  ]
 }
