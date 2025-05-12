@@ -4,54 +4,74 @@
             <button class="btn btn-sm btn-light-secondary ms-auto" (click)="goBack()">
                 <i-feather name="edit-3" class="feather-sm me-1"></i-feather> back
             </button>
-            <button class="btn btn-sm btn-info">
+            <button class="btn btn-sm btn-info" (click)="onSubmit()">
                 <i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> Save
             </button>
         </div>
     </div>
 
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
+    <form [formGroup]="departmentForm">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
 
-                <div class="row">
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Dept Code <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Dept Name <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Dept Type <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Exp/Imp <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">FCL/LCL <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
+                    <div class="row">
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" formControlName="departmentName" placeholder=""
+                                    class="custom-input-field sm">
+                                <label for="text-input" class="input-label">Dept Name <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" formControlName="departmentCode" id="text-input" placeholder=""
+                                    class="custom-input-field sm">
+
+                                <label for="text-input" class="input-label">Dept Code <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" formControlName="departmentType" placeholder=""
+                                    class="custom-input-field sm">
+                                <label for="text-input" class="input-label">Dept Type <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" formControlName="ExportImport" placeholder=""
+                                    class="custom-input-field sm">
+                                <label for="text-input" class="input-label">Exp/Imp <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" formControlName="FCLLCL" placeholder=""
+                                    class="custom-input-field sm">
+                                <label for="text-input" class="input-label">FCL/LCL <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <select formControlName="Status" class="form-select">
+                                    <option value="">Status</option>
+                                    <option *ngFor="let option of statusList" [value]="option">{{ option }}</option>
+                                </select>
+                                <label for="text-input" class="input-label">
+                                    Status <span class="text-danger fw-bold">*</span>
+                                </label>
+                            </div>
+                        </aside>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </form>
 </div>

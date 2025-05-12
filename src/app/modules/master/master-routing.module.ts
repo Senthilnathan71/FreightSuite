@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { CustomerComponent } from './customer/customer.component';
 import { DepartmentListComponent } from './department/department-list/department-list.component';
 import { DepartmentEntryComponent } from './department/department-entry/department-entry.component';
 import { PostMasterViewComponent } from './port-master/post-master-view/post-master-view.component';
@@ -14,7 +13,6 @@ import { UnitListComponent } from './unit/unit-list/unit-list.component';
 import { UnitEntryComponent } from './unit/unit-entry/unit-entry.component';
 import { VesselListComponent } from './vessel/vessel-list/vessel-list.component';
 import { VesselEntryComponent } from './vessel/vessel-entry/vessel-entry.component';
-import { CustomerViewComponent } from './customer/customer-view/customer-view.component';
 import { CurrencyEntryComponent } from './currency/currency-entry/currency-entry.component';
 import { CurrencyListComponent } from './currency/currency-list/currency-list.component';
 import { CityEntryComponent } from './city/city-entry/city-entry.component';
@@ -65,30 +63,7 @@ export const MasterRoutes: Routes = [
     children: [
       {
         path: '',
-        component: CustomerComponent,
-      },
-      {
-        path: 'customer/list',
-        component: CustomerComponent,
-        data: {
-          title: 'Customer',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Customer' },
-          ],
-        },
-      },
-      {
-        path: 'customer/view',
-        component: CustomerViewComponent,
-        data: {
-          title: 'New Customer',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Customer', url: 'customer' },
-            { title: 'View' },
-          ],
-        },
+        component: OrganizationListComponent,
       },
       {
         path: "city/list",

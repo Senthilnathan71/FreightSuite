@@ -72,4 +72,11 @@ export class DepartmentListComponent {
     this.router.navigate(['master/department/entry'])
   }
 
+  resetPage() {
+    this.departmentList = []
+    this.totalLengthOfCollection = 0
+  }
+
+  report() { }
+
 }

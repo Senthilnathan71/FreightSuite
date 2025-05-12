@@ -74,8 +74,35 @@ export class MasterService {
 
 
   //department-master
+
+  getDepartmentById(id: number) {
+    return this.http.get<{ data: City }>(`department/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createDepartment(payload: any) {
+    return this.http.post('department/create', payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    );
+  }
+
+  updateDepartmentById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`department/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
   getAllDepartments() {
-    return this.http.get('enquiry/department').pipe(
+    return this.http.get('department').pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -84,7 +111,7 @@ export class MasterService {
   }
 
   deleteDepartmentById(id: number) {
-    return this.http.delete<{ data: any }>(`department/${id}`).pipe(
+    return this.http.delete<{ data: any }>(`department/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;

@@ -13,6 +13,16 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
+    path: '/master/department/list',
+    title: 'Department',
+    icon: 'mdi mdi-office',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+  {
     path: '/master/port-master/list',
     title: 'Port Master',
     icon: 'mdi mdi-anchor',
@@ -93,16 +103,6 @@ export const ROUTES: RouteInfo[] = [
     submenu: []
   },
   {
-    path: '/master/tarrif/list',
-    title: 'Tarrif',
-    icon: 'mdi mdi-file-document',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
     path: '/master/city/list',
     title: 'City',
     icon: 'mdi mdi-city',
@@ -112,16 +112,7 @@ export const ROUTES: RouteInfo[] = [
     labelClass: '',
     submenu: []
   },
-  {
-    path: '/master/department/list',
-    title: 'Department',
-    icon: 'mdi mdi-office',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
+
   {
     path: '/master/currency/list',
     title: 'Currency',
@@ -132,6 +123,17 @@ export const ROUTES: RouteInfo[] = [
     labelClass: '',
     submenu: []
   },
+  {
+    path: '/master/tarrif/list',
+    title: 'Tarrif',
+    icon: 'mdi mdi-file-document',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: []
+  },
+
   {
     path: '/accounts/currency-exchange/list',
     title: 'Currency Exchange',
