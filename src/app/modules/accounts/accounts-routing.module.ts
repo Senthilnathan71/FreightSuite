@@ -2,6 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { CurrencyExchangeListComponent } from './currency-exchange/currency-exchange-list/currency-exchange-list.component';
 import { CurrencyExchangeEntryComponent } from './currency-exchange/currency-exchange-entry/currency-exchange-entry.component';
+import { TaxGroupListComponent } from './tax-group/tax-group-list/tax-group-list.component';
+import { TaxGroupComponent } from './tax-group/tax-group.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -17,7 +19,7 @@ export const AccountRoutes: Routes = [
         data: {
           title: "Currency Exchange",
           urls: [
-            { title: "CRM", url: "/crm" },
+            { title: "Accounts", url: "/accounts" },
             { title: "Currency Exchange" },
           ],
         },
@@ -28,8 +30,30 @@ export const AccountRoutes: Routes = [
         data: {
           title: "Add Currency Exchange",
           urls: [
-            { title: "CRM", url: "/crm" },
+            { title: "Accounts", url: "/accounts" },
             { title: "Currency Exchange" },
+          ],
+        },
+      },
+      {
+        path: "tax-group/list",
+        component: TaxGroupListComponent,
+        data: {
+          title: "Tax Group",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Tax Group" },
+          ],
+        },
+      },
+      {
+        path: "tax-group/entry",
+        component: TaxGroupComponent,
+        data: {
+          title: "Add Tax Group",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Tax Group" },
           ],
         },
       },

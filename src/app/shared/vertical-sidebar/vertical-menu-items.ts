@@ -82,16 +82,6 @@ export const ROUTES: RouteInfo[] = [
         submenu: []
       },
       {
-        path: '/master/vessel/list',
-        title: 'Vessel',
-        icon: 'mdi mdi-ferry',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
-      {
         path: '/master/zone/list',
         title: 'Zone',
         icon: 'mdi mdi-vector-square',
@@ -111,7 +101,6 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-    
       {
         path: '/master/currency/list',
         title: 'Currency',
@@ -123,9 +112,49 @@ export const ROUTES: RouteInfo[] = [
         submenu: []
       },
       {
+        path: '/master/vessel/list',
+        title: 'Vessel',
+        icon: 'mdi mdi-ferry',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
         path: '/master/tarrif/list',
         title: 'Tarrif',
         icon: 'mdi mdi-file-document',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/organization/list',
+        title: 'Organization',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/company/list',
+        title: 'Company',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/branch/list',
+        title: 'Branch',
+        icon: 'fas fa-code-branch',
         class: '',
         extralink: false,
         label: '',
@@ -155,36 +184,6 @@ export const ROUTES: RouteInfo[] = [
       {
         path: '/master/region/list',
         title: 'Region',
-        icon: 'fas fa-dot-circle',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
-      {
-        path: '/master/company/list',
-        title: 'Company',
-        icon: 'fas fa-dot-circle',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
-      {
-        path: '/master/branch/list',
-        title: 'Branch',
-        icon: 'fas fa-code-branch',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
-      {
-        path: '/master/organization/list',
-        title: 'Organization',
         icon: 'fas fa-dot-circle',
         class: '',
         extralink: false,
@@ -284,19 +283,6 @@ export const ROUTES: RouteInfo[] = [
       },
     ]
   },
-  
-  
-  // {
-  //   path: '/master/customer/list',
-  //   title: 'Customer',
-  //   icon: 'mdi mdi-account',
-  //   class: '',
-  //   extralink: false,
-  //   label: '',
-  //   labelClass: '',
-  //   submenu: []
-  // },
-
 
   {
     path: '',
@@ -319,12 +305,12 @@ export const ROUTES: RouteInfo[] = [
       },
     ]
   },
-  
 
 
 
-   //
-  
+
+  //
+
 
 
 

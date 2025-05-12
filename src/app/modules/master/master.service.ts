@@ -17,6 +17,26 @@ import { PackageType } from '../crm-mobile/Interfaces/packageType.interface';
 export class MasterService {
   constructor(private http: HttpClient) { }
 
+
+
+  //vessel-master
+  searchVesselList(payload) {
+    return this.http.post("vessel/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    )
+  }
+
+  deleteVesselById(id: number) {
+    return this.http.delete<{ data: any }>(`vessel/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
   //organization-master or customer-master
   searchOrganizationList(payload) {
     return this.http.post("customer/search-list", payload).pipe(

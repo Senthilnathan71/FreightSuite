@@ -337,7 +337,18 @@ export const MasterRoutes: Routes = [
         path: "vessel/entry",
         component: VesselEntryComponent,
         data: {
-          title: "Vessel",
+          title: "Add Vessel",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Vessel Add" },
+          ],
+        },
+      },
+      {
+        path: "vessel/entry/:id",
+        component: VesselEntryComponent,
+        data: {
+          title: "Edit Vessel",
           urls: [
             { title: "Master", url: "/master" },
             { title: "Vessel Add" },
