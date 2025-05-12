@@ -2,46 +2,290 @@ import { RouteInfo } from './vertical-sidebar.metadata';
 
 export const ROUTES: RouteInfo[] = [
 
+  // {
+  //   path: '/crm',
+  //   title: 'Dashboard',
+  //   icon: 'mdi mdi-view-dashboard',
+  //   class: '',
+  //   extralink: false,
+  //   label: '',
+  //   labelClass: '',
+  //   submenu: []
+  // },
   {
-    path: '/crm',
-    title: 'Dashboard',
+    path: '',
+    title: 'Master',
     icon: 'mdi mdi-view-dashboard',
     class: '',
     extralink: false,
     label: '',
     labelClass: '',
-    submenu: []
+    submenu: [
+      {
+        path: '/master/department/list',
+        title: 'Department',
+        icon: 'mdi mdi-office',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/port-master/list',
+        title: 'Port Master',
+        icon: 'mdi mdi-anchor',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/uom-master/list',
+        title: 'UOM Master',
+        icon: 'mdi mdi-ruler	',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/country/list',
+        title: 'Country',
+        icon: 'mdi mdi-earth',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/state/list',
+        title: 'State',
+        icon: 'mdi mdi-map',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/unit/list',
+        title: 'Unit',
+        icon: 'mdi mdi-cube',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/vessel/list',
+        title: 'Vessel',
+        icon: 'mdi mdi-ferry',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/zone/list',
+        title: 'Zone',
+        icon: 'mdi mdi-vector-square',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/city/list',
+        title: 'City',
+        icon: 'mdi mdi-city',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+    
+      {
+        path: '/master/currency/list',
+        title: 'Currency',
+        icon: 'mdi mdi-currency-usd',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/tarrif/list',
+        title: 'Tarrif',
+        icon: 'mdi mdi-file-document',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/menu/list',
+        title: 'Menu',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/report/list',
+        title: 'Report',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/region/list',
+        title: 'Region',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/company/list',
+        title: 'Company',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/branch/list',
+        title: 'Branch',
+        icon: 'fas fa-code-branch',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/organization/list',
+        title: 'Organization',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/division/list',
+        title: 'division',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/container-type/list',
+        title: 'Container Type',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/commodity/list',
+        title: 'Commodity',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/package-type/list',
+        title: 'Package Type',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/airline/list',
+        title: 'Airline',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/sector/list',
+        title: 'Sector',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/service-level/list',
+        title: 'Service Level',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/inco/list',
+        title: 'Inco',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/time-zone/list',
+        title: 'Time Zone',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+    ]
   },
-  {
-    path: '/master/department/list',
-    title: 'Department',
-    icon: 'mdi mdi-office',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/port-master/list',
-    title: 'Port Master',
-    icon: 'mdi mdi-anchor',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/uom-master/list',
-    title: 'UOM Master',
-    icon: 'mdi mdi-ruler	',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
+  
+  
   // {
   //   path: '/master/customer/list',
   //   title: 'Customer',
@@ -52,249 +296,35 @@ export const ROUTES: RouteInfo[] = [
   //   labelClass: '',
   //   submenu: []
   // },
-  {
-    path: '/master/country/list',
-    title: 'Country',
-    icon: 'mdi mdi-earth',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/state/list',
-    title: 'State',
-    icon: 'mdi mdi-map',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/unit/list',
-    title: 'Unit',
-    icon: 'mdi mdi-cube',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/vessel/list',
-    title: 'Vessel',
-    icon: 'mdi mdi-ferry',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/zone/list',
-    title: 'Zone',
-    icon: 'mdi mdi-vector-square',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/city/list',
-    title: 'City',
-    icon: 'mdi mdi-city',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
+
 
   {
-    path: '/master/currency/list',
-    title: 'Currency',
-    icon: 'mdi mdi-currency-usd',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/tarrif/list',
-    title: 'Tarrif',
-    icon: 'mdi mdi-file-document',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-
-  {
-    path: '/accounts/currency-exchange/list',
-    title: 'Currency Exchange',
+    path: '',
+    title: 'Account',
     icon: 'mdi mdi-stackexchange',
     class: '',
     extralink: false,
     label: '',
     labelClass: '',
-    submenu: []
+    submenu: [
+      {
+        path: '/accounts/currency-exchange/list',
+        title: 'Currency Exchange',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+    ]
   },
+  
 
-  {
-    path: '/master/menu/list',
-    title: 'Menu',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  }, //
-  {
-    path: '/master/report/list',
-    title: 'Report',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/region/list',
-    title: 'Region',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/company/list',
-    title: 'Company',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/branch/list',
-    title: 'Branch',
-    icon: 'fas fa-code-branch',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/organization/list',
-    title: 'Organization',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/division/list',
-    title: 'division',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/container-type/list',
-    title: 'Container Type',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/commodity/list',
-    title: 'Commodity',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/package-type/list',
-    title: 'Package Type',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/airline/list',
-    title: 'Airline',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/sector/list',
-    title: 'Sector',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/service-level/list',
-    title: 'Service Level',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/inco/list',
-    title: 'Inco',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
-  {
-    path: '/master/time-zone/list',
-    title: 'Time Zone',
-    icon: 'fas fa-dot-circle',
-    class: '',
-    extralink: false,
-    label: '',
-    labelClass: '',
-    submenu: []
-  },
+
+
+   //
+  
 
 
 
