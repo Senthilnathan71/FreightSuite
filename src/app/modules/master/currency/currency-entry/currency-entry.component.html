@@ -32,7 +32,7 @@
                                 <label for="currencyName" class="input-label">Currency Name <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div *ngIf="currencyForm.get('currencyName')?.invalid && (currencyForm.get('currencyName')?.touched || currencyForm.get('currencyName')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('currencyName')?.hasError('required')">Required</span>
+                                    <span *ngIf="currencyForm.get('currencyName')?.hasError('required')">Currency Name is required</span>
                                     <span *ngIf="currencyForm.get('currencyName')?.hasError('maxlength')">Maximum 100 characters</span>
                                 </div>
                             </div>
@@ -47,7 +47,7 @@
                                 <label for="currencyCode" class="input-label">Currency Code <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div *ngIf="currencyForm.get('currencyCode')?.invalid && (currencyForm.get('currencyCode')?.touched || currencyForm.get('currencyCode')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('currencyCode')?.hasError('required')">Required</span>
+                                    <span *ngIf="currencyForm.get('currencyCode')?.hasError('required')">Currency Code is required</span>
                                     <span *ngIf="currencyForm.get('currencyCode')?.hasError('maxlength')">Maximum 3 characters</span>
                                 </div>
                             </div>
@@ -80,7 +80,7 @@
                                 <label for="currencyUnit" class="input-label">Currency Unit <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div *ngIf="currencyForm.get('currencyUnit')?.invalid && (currencyForm.get('currencyUnit')?.touched || currencyForm.get('currencyUnit')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('currencyUnit')?.hasError('required')">Required</span>
+                                    <span *ngIf="currencyForm.get('currencyUnit')?.hasError('required')">Currency Unit is required</span>
                                     <span *ngIf="currencyForm.get('currencyUnit')?.hasError('maxlength')">Maximum 50 characters</span>
                                 </div>
                             </div>
@@ -95,7 +95,7 @@
                                 <label for="currencySubUnit" class="input-label">Currency Sub Unit <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div *ngIf="currencyForm.get('currencySubUnit')?.invalid && (currencyForm.get('currencySubUnit')?.touched || currencyForm.get('currencySubUnit')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('currencySubUnit')?.hasError('required')">Required</span>
+                                    <span *ngIf="currencyForm.get('currencySubUnit')?.hasError('required')">Currency Sub Unit is required</span>
                                     <span *ngIf="currencyForm.get('currencySubUnit')?.hasError('maxlength')">Maximum 50 characters</span>
                                 </div>
                             </div>
@@ -110,7 +110,7 @@
                                 <label for="symbol" class="input-label">Symbol <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div *ngIf="currencyForm.get('symbol')?.invalid && (currencyForm.get('symbol')?.touched || currencyForm.get('symbol')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('symbol')?.hasError('required')">Required</span>
+                                    <span *ngIf="currencyForm.get('symbol')?.hasError('required')">Symbol is required</span>
                                     <span *ngIf="currencyForm.get('symbol')?.hasError('maxlength')">Maximum 5 characters</span>
                                 </div>
                             </div>

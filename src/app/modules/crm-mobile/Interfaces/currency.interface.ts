@@ -1,4 +1,6 @@
 export interface Currency {
+  subUnit: any;
+  unit: any;
   countryMasterSid: any;
   remarks: string;
   symbol: any;

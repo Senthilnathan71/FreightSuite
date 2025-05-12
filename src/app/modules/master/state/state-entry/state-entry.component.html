@@ -84,16 +84,16 @@
                     <span *ngIf="stateForm.get('stateCode')?.hasError('required')">Code is required</span>
                     <span *ngIf="stateForm.get('stateCode')?.hasError('minlength') || 
                                  stateForm.get('stateCode')?.hasError('maxlength')">
-                     Invalid state code length (2 digits only)
+                     Invalid state code, max length should be 2 characters.
                     </span>
                     <span *ngIf="stateForm.get('stateCode')?.hasError('invalidAlpha')">
                       Only alphabetic characters are allowed (A-Z, a-z)
                     </span>
                   </div>
                 </div>
-              </aside>
+              </aside><!-- Country -->
 
-              <!-- Country -->
+              
               <aside class="col-md-6">
                 <div class="custom-form-group custom-form-group-select">
                   <ng-select

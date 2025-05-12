@@ -1,18 +1,44 @@
 <div class="row">
     <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <form action="" class="d-flex align-items-center gap-2">
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5" name="search" placeholder="Search">
-                    <i class="fas fa-search ms-3"></i>
+            <div class="col-12">
+                <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
+                    <form class="d-flex align-items-center gap-2">
+                        <div class="form-outline col">
+                            <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                                <option value="cityName">City Name</option>
+                                <option value="cityCode">City Code</option>
+                                <option value="countryName">Country</option>
+                                <option value="stateName">State</option>
+                                <option value="status">Status</option>
+                            </select>
+                        </div>
+                        <div class="form-outline col">
+                            <input [(ngModel)]="searchText" name="searchText" type="text" class="form-control"
+                                placeholder="Enter filter value">
+                            <i
+                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                        </div>
+
+                        <button type="button" class="btn btn-info btn-sm" (click)="search()">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateCity()">
+                            <i class="mdi mdi-plus"></i> Add
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm">
+                            report
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm" (click)="resetSearch()">
+                            Reset
+                        </button>
+                    </form>
                 </div>
-                <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateCity()">
-                    <i class="mdi mdi-plus"></i> Add
-                </button>
-            </form>
+            </div>
         </div>
     </div>
-    <div class="col-12">
+    <div class="col-12" *ngIf="totalLengthofCollection > 0">
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
@@ -26,8 +52,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of cities; track $index) {
-                    <tr>
+                    <tr *ngFor="let item of filteredCityList; let i = index; trackBy: trackByIndex">
                         <td>
                             <div class="text-truncate">{{item.cityName}}</div>
                         </td>
@@ -42,26 +67,32 @@
                         </td>
                         <td>
                             <div class="text-truncate">
-                                {{ item.status === 'A' ? 'Active' : 'Cancelled' }}
+                                {{ getStatusText(item.status) }}
                             </div>
                         </td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <a class="text-info mx-2" class="link mx-2 ps-3 "
-                                    [routerLink]="['/master/city/entry/', item.CityMasterSid]">
+                                <a class="text-info mx-2" [routerLink]="['/master/city/entry/', item.CityMasterSid]">
                                     <i-feather class="feather-sm" name="eye"></i-feather>
                                 </a>
-                                <a class="text-danger mx-2 ps-3 border-start"
-                                    (click)="deleteCountry(item.CityMasterSid)">
+                                <a class="text-danger mx-2 ps-3 border-start" (click)="deleteCity(item.CityMasterSid)">
                                     <i-feather name="trash-2" class="feather-sm"></i-feather>
                                 </a>
                             </div>
                         </td>
                     </tr>
-                    }
                 </tbody>
             </table>
         </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthofCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+            </ngb-pagination>
+        </div>
     </div>
-
+    
+    <!-- No records found -->
+    <div class="col-12" *ngIf="searchPerformed && totalLengthofCollection === 0">
+        <div>No records found</div>
+    </div>
 </div>

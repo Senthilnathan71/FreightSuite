@@ -39,6 +39,7 @@ goBack() {
     { id: 'A', name: 'Active' },
     { id: 'I', name: 'Inactive' }
   ];
+  
 
   constructor(
     private fb: FormBuilder,
@@ -101,13 +102,14 @@ goBack() {
 
   getCurrencyById(id: number) {
     this.loading = true;
+    this.currencyForm.reset();
     this.masterService.getCurrencyById(id).subscribe({
       next: (currency: Currency) => {
         this.currencyForm.patchValue({
           currencyName: currency.currencyName,
           currencyCode: currency.currencyCode,
-          currencyUnit: currency.currencyUnit,
-          currencySubUnit: currency.currencySubUnit,
+          currencyUnit: currency.unit || currency.currencyUnit,
+          currencySubUnit: currency.subUnit || currency.currencySubUnit,
           symbol: currency.symbol,
           currencyFirstName: currency.currencyFirstName || '',
           currencyLastName: currency.currencyLastName || '',

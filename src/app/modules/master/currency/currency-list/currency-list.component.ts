@@ -7,11 +7,12 @@ import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 
 interface Currency {
-roundOff: any;
-subUnit: any;
-unit: any;
+  CurrencyMasterSid: any|string;
+  subUnit: any;
+  unit: any;
   currencyMasterSid: number;
   currencyCode: string;
   currencyName: string;
@@ -33,18 +34,26 @@ unit: any;
     CommonModule,
     RouterModule,
     FormsModule,
-    MatDialogModule
+    MatDialogModule,
+    NgbPaginationModule
   ],
   templateUrl: './currency-list.component.html',
   styleUrl: './currency-list.component.scss'
 })
 export class CurrencyListComponent implements OnInit {
+  searchType = 'currencyName';
+  filterValue = '';
   currencies: Currency[] = [];
-  searchText: string = '';
   filteredCurrencies: Currency[] = [];
-  totalLength: number = 0;
+  searchPerformed = false;
   loading: boolean = false;
   errorMessage: string = '';
+
+  // pagination
+  page = 1;
+  pageSize = 5;
+  totalLengthOfCollection: number = 0;
+  CurrencyList: any;
 
   constructor(
     private masterService: MasterService,
@@ -75,7 +84,8 @@ export class CurrencyListComponent implements OnInit {
       next: (resp: any) => {
         this.currencies = resp.data || resp;
         this.filteredCurrencies = [...this.currencies];
-        this.totalLength = this.currencies.length;
+        this.totalLengthOfCollection = this.currencies.length;
+        this.updatePaginatedData();
         this.loading = false;
       },
       error: (err) => {
@@ -84,6 +94,58 @@ export class CurrencyListComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  search() {
+    if (!this.filterValue) {
+      this.filteredCurrencies = [...this.currencies];
+      this.errorMessage = '';
+      this.updatePaginatedData();
+      return;
+    }
+
+    const searchValue = this.filterValue.toLowerCase();
+  
+    this.filteredCurrencies = this.currencies.filter(currency => {
+      switch(this.searchType) {
+        case 'currencyName':
+          return currency.currencyName?.toLowerCase().includes(searchValue);
+        case 'currencyCode':
+          return currency.currencyCode?.toLowerCase().includes(searchValue);
+        case 'symbol':
+          return currency.symbol?.toLowerCase().includes(searchValue);
+        case 'unit':
+          return currency.unit?.toString().toLowerCase().includes(searchValue);
+        case 'subUnit':
+          return currency.subUnit?.toString().toLowerCase().includes(searchValue);
+        case 'status':
+          return this.getStatusText(currency.status).toLowerCase().includes(searchValue);
+        case 'countryName':
+          return currency.countryName?.toLowerCase().includes(searchValue);
+        default:
+          return true;
+      }
+    });
+    
+    this.errorMessage = this.filteredCurrencies.length === 0 ? 
+      'No matching currency found.' : '';
+    this.searchPerformed = true;
+    this.updatePaginatedData();
+    this.totalLengthOfCollection = this.filteredCurrencies.length;
+  }
+  // Add this method to your component class
+resetSearch() {
+  this.searchType = 'currencyName';
+  this.filterValue = '';
+  this.searchPerformed = false;
+  this.page = 1;
+  this.loadCurrencies(); // This will reload all currencies
+}
+
+  updatePaginatedData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.filteredCurrencies = this.filteredCurrencies.slice(startIndex, endIndex);
   }
 
   deleteCurrency(id: number) {
@@ -95,10 +157,12 @@ export class CurrencyListComponent implements OnInit {
           next: (resp: any) => {
             this.appSettingService.showSuccess("Currency deleted successfully!");
             this.loadCurrencies();
+            this.loading = false;
           },
           error: (err) => {
             console.error('Error deleting currency:', err);
             this.appSettingService.showError("Failed to delete currency");
+            this.loading = false;
           }
         });
       }
@@ -109,28 +173,15 @@ export class CurrencyListComponent implements OnInit {
     this.router.navigate(['master/currency/entry']);
   }
 
-  filterCurrencies() {
-    if (!this.searchText) {
-      this.filteredCurrencies = [...this.currencies];
-      this.errorMessage = '';
-      return;
-    }
-
-    this.filteredCurrencies = this.currencies.filter(currency =>
-      currency.currencyName.toLowerCase().includes(this.searchText.toLowerCase()) ||
-      currency.currencyCode.toLowerCase().includes(this.searchText.toLowerCase()) ||
-      (currency.countryName && currency.countryName.toLowerCase().includes(this.searchText.toLowerCase()))
-    );
-    
-    this.errorMessage = this.filteredCurrencies.length === 0 ? 
-      'No matching currency found.' : '';
-  }
-
   getStatusClass(status: string): string {
     return status === 'A' ? 'badge bg-success' : 'badge bg-danger';
   }
 
   getStatusText(status: string): string {
     return status === 'A' ? 'Active' : 'Inactive';
+  }
+
+  trackByIndex(index: number, item: any): number {
+    return index;
   }
 }

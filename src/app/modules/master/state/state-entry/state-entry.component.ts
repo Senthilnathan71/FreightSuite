@@ -8,6 +8,7 @@ import { MasterService } from '../../master.service';
 import { State } from 'src/app/modules/crm-mobile/Interfaces/state.interface';
 import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-state-entry',
@@ -23,6 +24,9 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./state-entry.component.scss']
 })
 export class StateEntryComponent implements OnInit {
+onCountryChange($event: any) {
+throw new Error('Method not implemented.');
+}
   stateForm: FormGroup;
   countries: Country[] = [];
   statusOptions = [
@@ -34,6 +38,8 @@ export class StateEntryComponent implements OnInit {
   stateId: number;
   loading = false;
   notifyService: any;
+countryOptions: readonly any[];
+countryInput$: Subject<string>;
 
   constructor(
     private fb: FormBuilder,
