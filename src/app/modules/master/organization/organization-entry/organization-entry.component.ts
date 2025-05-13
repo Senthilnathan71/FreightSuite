@@ -14,7 +14,7 @@ import { MasterService } from '../../master.service';
   standalone: true,
   imports: [NgbNavModule, CommonModule, NgSelectModule, FeatherModule,
     FormsModule,
-    ReactiveFormsModule,NgbModalModule ,
+    ReactiveFormsModule, NgbModalModule,
   ],
   templateUrl: './organization-entry.component.html',
   styleUrl: './organization-entry.component.scss'
@@ -22,7 +22,7 @@ import { MasterService } from '../../master.service';
 export class OrganizationEntryComponent {
   active1 = 1;
   active2 = 1;
-  active3=1;
+  active3 = 1;
   modeOfStatus = [
     { id: 'Active', name: 'Active' },
     { id: 'Invalid', name: 'Invalid' },
@@ -34,31 +34,39 @@ export class OrganizationEntryComponent {
     { id: '3', name: "Not Applicable" },
   ]
 
-    modeOfCountry = [
+  modeOfCountry = [
     { id: 'India', name: 'India' },
     { id: 'Singapore', name: 'Singapore' },
     { id: 'Canada', name: 'Canada' }
   ];
 
 
-     modeOfCompanyType= [
-    { id: 'Company1', name: 'Company1' },
-    { id: 'Company2', name: 'Company2' },
-    { id: 'Company3', name: 'Company3' }
+  companyList = [
+    { id: '1', name: 'Artificial Juridical Person' },
+    { id: '2', name: 'Association Of Persons(AOP)' },
+    { id: '3', name: 'Body Of Individuals' },
+    { id: '4', name: 'Company' },
+    { id: '5', name: 'Firm' },
+    { id: '6', name: 'Government Agency' },
+    { id: '7', name: 'Individual(proprietor)' },
+    { id: '8', name: 'Limited Liability Company(LLC)' },
+    { id: '9', name: 'Limited Liability Partnership(LLP)' },
+    { id: '10', name: 'Local Authority' }
   ];
-  
+
 
   openModal(content: any) {
-    this.modalService.open(content, { size:"xl",backdrop: 'static', keyboard: false });
+    this.modalService.open(content, { size: "xl", backdrop: 'static', keyboard: false });
   }
-  
+  stateList: any
 
   customerForm!: FormGroup;
+  customerBranchForm!: FormGroup;
   isEditMode = false; // Flag for edit mode
   errorMessage: string = '';  // To store any error messages
   btnDisable: boolean = false;
   CustomerMasterSid: number;
-
+  cityList: any
   countryList: any
   status: any
   constructor(
@@ -92,10 +100,16 @@ export class OrganizationEntryComponent {
       CustomerAddress1: ['', [Validators.required]],
       CountryMasterSid: ['', [Validators.required]], // Dropdown
       LocalLanguage: ['', [Validators.required]],
+      PanAvailable: false,
       PanType: ['', [Validators.required]],
       PanName: ['', [Validators.required]],
       GroupName: ['', [Validators.required]],
       Website: ['', [Validators.required]],
+      paymentType: [''], // or 'Cash' as default if you want
+      IsMSME: ['', [Validators.required]],
+      KYCSpecified: false,
+      RegistrationNo: [''],
+      CompanyType: [''],
       Remarks: ['', [Validators.required]],
       status: [''],
       airlineName: [false],
@@ -126,6 +140,26 @@ export class OrganizationEntryComponent {
     });
     this.setupCheckboxWatcher();
 
+  }
+
+  initCustomerBranchForm() {
+    this.customerForm = this.fb.group({
+      CustomerName: ['', [Validators.required]],
+      CustomerMasterSid: ['', [Validators.required]],
+      CompanyMasterSid: ['', [Validators.required]],
+      StateMasterSid: ['', [Validators.required]],
+      CityMasterSid: ['', [Validators.required]],
+      BranchName: ['', [Validators.required]],
+      Zip_PostBox: ['', [Validators.required]],
+      TanNo: ['', [Validators.required]],
+      Address: ['', [Validators.required]],
+      Email: ['', [Validators.required]],
+      Registered: ['', [Validators.required]],
+      CustomerGstType: ['', [Validators.required]],
+      VendorGstType: ['', [Validators.required]],
+      GSTNo: ['', [Validators.required]],
+      ContactNo: ['', [Validators.required]],
+    });
   }
 
   setupCheckboxWatcher() {
@@ -176,85 +210,89 @@ export class OrganizationEntryComponent {
 
 
   onSubmit() {
-    if (this.customerForm.invalid) {
-      this.customerForm.markAllAsTouched(); // Force validation messages to show
-      this.customerForm.updateValueAndValidity(); // Ensure validation is refreshed
-      this.appSettingService.showWarning('Please fill all required fields correctly.')
-      return;
+
+    let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
+    let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
+    const formValue = this.customerForm.value;
+    const selectedPaymentType = this.customerForm.value.paymentType;
+
+    const payload = (this.isEditMode) ? {
+      CustomerName: formValue.CustomerName,
+      CustomerShortCode: formValue.CustomerShortCode,
+      CustomerAliasName: formValue.CustomerAliasName,
+      CustomerAddress1: formValue.CustomerAddress1,
+      LocalLanguage: formValue.LocalLanguage,
+      PanType: formValue.PanType,
+      PanName: formValue.PanName,
+      GroupName: formValue.GroupName,
+      Website: formValue.Website,
+      Remarks: formValue.Remarks,
+      CountryMasterSid: Number(formValue.CountryMasterSid),
+      CustomerType: formValue.CustomerType,
+      CashCredit: selectedPaymentType,
+      IsMSME: formValue.IsMSME ? "A" : "I",
+      CompanyType: formValue.CompanyType,
+      RegistrationNo: formValue.RegistrationNo,
+      ...updatedBy,
+      status: this.status === "A" ? "A" : "C"
+    } : {
+      CustomerName: formValue.CustomerName,
+      CustomerShortCode: formValue.CustomerShortCode,
+      CustomerAliasName: formValue.CustomerAliasName,
+      CustomerAddress1: formValue.CustomerAddress1,
+      LocalLanguage: formValue.LocalLanguage,
+      PanType: formValue.PanType,
+      PanName: formValue.PanName,
+      GroupName: formValue.GroupName,
+      Website: formValue.Website,
+      Remarks: formValue.Remarks,
+      CountryMasterSid: Number(formValue.CountryMasterSid),
+      CustomerType: formValue.CustomerType,
+      CashCredit: selectedPaymentType,
+      IsMSME: formValue.IsMSME ? "A" : "I",
+      CompanyType: formValue.CompanyType,
+      RegistrationNo: formValue.RegistrationNo,
+      ...createdBy,
+      status: formValue.status === "Active" ? "A" : "C"
+    };
+
+    if (this.isEditMode) {
+      this.masterService.updateCustomerById(this.CustomerMasterSid, payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess(resp.message);
+            this.router.navigate(['master/organization/list']);
+
+          } else {
+            this.appSettingService.showError(resp.message);
+          }
+
+        },
+        (error) => {
+          this.errorMessage = error.message;
+          console.error('Error loading country:', error);
+        }
+      );
     } else {
-      let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      const formValue = this.customerForm.value;
 
-      const payload = (this.isEditMode) ? {
-        CustomerName: formValue.CustomerName,
-        CustomerShortCode: formValue.CustomerShortCode,
-        CustomerAliasName: formValue.CustomerAliasName,
-        CustomerAddress1: formValue.CustomerAddress1,
-        LocalLanguage: formValue.LocalLanguage,
-        PanType: formValue.PanType,
-        PanName: formValue.PanName,
-        GroupName: formValue.GroupName,
-        Website: formValue.Website,
-        Remarks: formValue.Remarks,
-        CountryMasterSid: Number(formValue.CountryMasterSid),
-        CustomerType: formValue.CustomerType,
-        ...updatedBy,
-        status: this.status === "A" ? "A" : "C"
-      } : {
-        CustomerName: formValue.CustomerName,
-        CustomerShortCode: formValue.CustomerShortCode,
-        CustomerAliasName: formValue.CustomerAliasName,
-        CustomerAddress1: formValue.CustomerAddress1,
-        LocalLanguage: formValue.LocalLanguage,
-        PanType: formValue.PanType,
-        PanName: formValue.PanName,
-        GroupName: formValue.GroupName,
-        Website: formValue.Website,
-        Remarks: formValue.Remarks,
-        CountryMasterSid: Number(formValue.CountryMasterSid),
-        CustomerType: formValue.CustomerType,
-        ...createdBy,
-        status: formValue.status === "Active" ? "A" : "C"
-      };
+      this.masterService.createCustomer(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess(resp.message);
+            this.router.navigate(['master/organization/list']);
 
-      if (this.isEditMode) {
-        this.masterService.updateCustomerById(this.CustomerMasterSid, payload).subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['master/organization/list']);
-
-            } else {
-              this.appSettingService.showError(resp.message);
-            }
-
-          },
-          (error) => {
-            this.errorMessage = error.message;
-            console.error('Error loading country:', error);
+          } else {
+            this.appSettingService.showError(resp.message);
           }
-        );
-      } else {
 
-        this.masterService.createCustomer(payload).subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['master/organization/list']);
-
-            } else {
-              this.appSettingService.showError(resp.message);
-            }
-
-          },
-          (error) => {
-            this.errorMessage = error.message;
-            console.error('Error loading country:', error);
-          }
-        );
-      }
+        },
+        (error) => {
+          this.errorMessage = error.message;
+          console.error('Error loading country:', error);
+        }
+      );
     }
+
   }
 
   // Mapping for API status values
@@ -298,6 +336,105 @@ export class OrganizationEntryComponent {
     })
   }
 
+  getAllState() {
+    this.masterService.getAllState().subscribe((res) => {
+      this.stateList = res.data
+    })
+  }
+
+  loadCity(): void {
+    this.masterService.getAllCity().subscribe(
+      (resp: City[]) => {
+        this.cityList = resp['data'];  // On success, store the leads data in the component
+      });
+  }
+
+
+  customerBranchSubmit() {
+
+    let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
+    let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
+    const formValue = this.customerForm.value;
+    const selectedPaymentType = this.customerForm.value.paymentType;
+
+    const payload = (this.isEditMode) ? {
+      CustomerName: formValue.CustomerName,
+      CustomerShortCode: formValue.CustomerShortCode,
+      CustomerAliasName: formValue.CustomerAliasName,
+      CustomerAddress1: formValue.CustomerAddress1,
+      LocalLanguage: formValue.LocalLanguage,
+      PanType: formValue.PanType,
+      PanName: formValue.PanName,
+      GroupName: formValue.GroupName,
+      Website: formValue.Website,
+      Remarks: formValue.Remarks,
+      CountryMasterSid: Number(formValue.CountryMasterSid),
+      CustomerType: formValue.CustomerType,
+      CashCredit: selectedPaymentType,
+      IsMSME: formValue.IsMSME ? "A" : "I",
+      CompanyType: formValue.CompanyType,
+      RegistrationNo: formValue.RegistrationNo,
+      ...updatedBy,
+      status: this.status === "A" ? "A" : "C"
+    } : {
+      CustomerName: formValue.CustomerName,
+      CustomerShortCode: formValue.CustomerShortCode,
+      CustomerAliasName: formValue.CustomerAliasName,
+      CustomerAddress1: formValue.CustomerAddress1,
+      LocalLanguage: formValue.LocalLanguage,
+      PanType: formValue.PanType,
+      PanName: formValue.PanName,
+      GroupName: formValue.GroupName,
+      Website: formValue.Website,
+      Remarks: formValue.Remarks,
+      CountryMasterSid: Number(formValue.CountryMasterSid),
+      CustomerType: formValue.CustomerType,
+      CashCredit: selectedPaymentType,
+      IsMSME: formValue.IsMSME ? "A" : "I",
+      CompanyType: formValue.CompanyType,
+      RegistrationNo: formValue.RegistrationNo,
+      ...createdBy,
+      status: formValue.status === "Active" ? "A" : "C"
+    };
+
+    if (this.isEditMode) {
+      this.masterService.updateCustomerById(this.CustomerMasterSid, payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess(resp.message);
+            this.router.navigate(['master/organization/list']);
+
+          } else {
+            this.appSettingService.showError(resp.message);
+          }
+
+        },
+        (error) => {
+          this.errorMessage = error.message;
+          console.error('Error loading country:', error);
+        }
+      );
+    } else {
+
+      this.masterService.createCustomer(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess(resp.message);
+            this.router.navigate(['master/organization/list']);
+
+          } else {
+            this.appSettingService.showError(resp.message);
+          }
+
+        },
+        (error) => {
+          this.errorMessage = error.message;
+          console.error('Error loading country:', error);
+        }
+      );
+    }
+
+  }
 
   reset() {
     this.customerForm.reset();
