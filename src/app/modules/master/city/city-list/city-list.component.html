@@ -14,7 +14,7 @@
                             </select>
                         </div>
                         <div class="form-outline col">
-                            <input [(ngModel)]="searchText" name="searchText" type="text" class="form-control"
+                            <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
                                 placeholder="Enter filter value">
                             <i
                                 class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
@@ -38,7 +38,7 @@
             </div>
         </div>
     </div>
-    <div class="col-12" *ngIf="totalLengthofCollection > 0">
+    <div class="col-12" *ngIf="totalLengthOfCollection > 0">
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
@@ -52,7 +52,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let item of filteredCityList; let i = index; trackBy: trackByIndex">
+                    <tr *ngFor="let item of cityList; let i = index; trackBy: trackByIndex">
                         <td>
                             <div class="text-truncate">{{item.cityName}}</div>
                         </td>
@@ -85,14 +85,14 @@
             </table>
         </div>
         <div>
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthofCollection"
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
                 [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
             </ngb-pagination>
         </div>
     </div>
     
     <!-- No records found -->
-    <div class="col-12" *ngIf="searchPerformed && totalLengthofCollection === 0">
+    <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
         <div>No records found</div>
     </div>
 </div>

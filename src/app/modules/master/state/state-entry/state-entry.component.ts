@@ -24,7 +24,7 @@ import { Subject } from 'rxjs';
   styleUrls: ['./state-entry.component.scss']
 })
 export class StateEntryComponent implements OnInit {
-onCountryChange($event: any) {
+onCountryChange(event: any) {
 throw new Error('Method not implemented.');
 }
   stateForm: FormGroup;

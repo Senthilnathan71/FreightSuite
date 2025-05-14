@@ -9,6 +9,7 @@ import { Unit } from '../crm-mobile/Interfaces/unit.interface';
 import { Uom } from '../crm-mobile/Interfaces/uom.interface';
 import { City } from '../crm-mobile/Interfaces/city.interface';
 import { Currency } from '../crm-mobile/Interfaces/currency.interface';
+// import { Currency } from '../crm-mobile/Interfaces/currency.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -135,6 +136,13 @@ export class MasterService {
       map((resp: any) => {
         let response = resp;
         return response;
+      })
+    )
+  }
+  searchStateList(payload) {
+    return this.http.post("state/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
       })
     )
   }
@@ -298,6 +306,13 @@ export class MasterService {
       })
     )
   }
+  searchCityList(payload) {
+    return this.http.post("city/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    )
+  }
 
 
   getCityById(id: number) {
@@ -337,48 +352,55 @@ export class MasterService {
   }
   // //currency-master
   
-  getAllCurrency() {
-    return this.http.get<Currency>('currency').pipe(
-      map((resp: any) => {
-        let response = resp;
-        return response;
-      })
-    )
-  }
-  getCurrencyById(id: number) {
-    return this.http.get<{ data:Currency}>(`currency/fetch/${id}`).pipe(
-      map((resp) => {
-        let response = resp.data;
-        return response;
-      })
-    )
-  }
+getAllCurrency() {
+  return this.http.get<Currency>('currency').pipe(
+    map((resp: any) => {
+      let response = resp;
+      return response;
+    })
+  )
+}
 
+searchCurrencyList(payload) {
+  return this.http.post("currency/search-list", payload).pipe(
+    map((res: any) => {
+      return res.data;
+    })
+  )
+}
 
-  createCurrency(payload: any) {
-    return this.http.post("currency/create", payload).pipe(
-      map((res: any) => {
-        return res;
-      })
-    )
-  }
+getCurrencyById(id: number) {
+  return this.http.get<{ data:Currency}>(`currency/fetch/${id}`).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  )
+}
 
-  updateCurrencyById(id: number, payload: any) {
-    return this.http.patch<{ data: any }>(`currency/update/${id}`, payload).pipe(
-      map((resp) => {
-        let response = resp.data;
-        return response;
-      })
-    )
-  }
+createCurrency(payload: any) {
+  return this.http.post("currency/create", payload).pipe(
+    map((res: any) => {
+      return res;
+    })
+  )
+}
 
-  deleteCurrencyById(id: number) {
-    return this.http.delete<{ data: any }>(`currency/delete/${id}`).pipe(
-      map((resp) => {
-        let response = resp.data;
-        return response;
-      })
-    )
-  }
+updateCurrencyById(id: number, payload: any) {
+  return this.http.patch<{ data: any }>(`currency/update/${id}`, payload).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  )
+}
 
+deleteCurrencyById(id: number) {
+  return this.http.delete<{ data: any }>(`currency/delete/${id}`).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  )
+}
 }

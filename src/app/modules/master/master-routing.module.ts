@@ -173,7 +173,7 @@ export const MasterRoutes: Routes = [
         },
       },
       {
-        path: "currency/entry/:id",  // Fixed: removed space
+        path: "currency/entry/:id",
         component: CurrencyEntryComponent,
         data: {
           title: "Currency - Edit",

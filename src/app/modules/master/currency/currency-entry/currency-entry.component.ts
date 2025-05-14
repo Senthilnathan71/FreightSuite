@@ -108,8 +108,8 @@ goBack() {
         this.currencyForm.patchValue({
           currencyName: currency.currencyName,
           currencyCode: currency.currencyCode,
-          currencyUnit: currency.unit || currency.currencyUnit,
-          currencySubUnit: currency.subUnit || currency.currencySubUnit,
+          currencyUnit: currency.unit, 
+          currencySubUnit: currency.subUnit,
           symbol: currency.symbol,
           currencyFirstName: currency.currencyFirstName || '',
           currencyLastName: currency.currencyLastName || '',
@@ -117,7 +117,7 @@ goBack() {
           amountDecimal: currency.amountDecimal,
           exchangeDecimal: currency.exchangeDecimal,
           status: currency.status,
-          countryMasterSid: currency.CountryMasterSid,
+          CountryMasterSid: currency.CountryMasterSid,
           remarks: currency.remarks || ''
         });
         this.loading = false;
@@ -135,26 +135,30 @@ goBack() {
       this.markFormGroupTouched(this.currencyForm);
       return;
     }
-
+  
     this.btnDisable = true;
     this.loading = true;
     
     const payload = {
-      ...this.currencyForm.value,
+      currencyName: this.currencyForm.value.currencyName,
+      currencyCode: this.currencyForm.value.currencyCode,
+      unit: this.currencyForm.value.currencyUnit, // Changed from currencyUnit to unit
+      subUnit: this.currencyForm.value.currencySubUnit, // Changed from currencySubUnit to subUnit
+      symbol: this.currencyForm.value.symbol,
+      currencyFirstName: this.currencyForm.value.currencyFirstName,
+      currencyLastName: this.currencyForm.value.currencyLastName,
       currencyRatio: Number(this.currencyForm.value.currencyRatio),
       amountDecimal: Number(this.currencyForm.value.amountDecimal),
       exchangeDecimal: Number(this.currencyForm.value.exchangeDecimal),
       CountryMasterSid: Number(this.currencyForm.value.CountryMasterSid),
-      currencyID: this.isEditMode ? this.currencyId.toString() : '0',
-      CurrencyMasterSid: this.isEditMode ? this.currencyId : 0,
-      createdBy: 'system',
-      updatedBy: 'system'
+      status: this.currencyForm.value.status,
+      remarks: this.currencyForm.value.remarks
     };
-
+  
     const operation = this.isEditMode 
       ? this.masterService.updateCurrencyById(this.currencyId, payload)
       : this.masterService.createCurrency(payload);
-
+  
     operation.subscribe({
       next: (resp) => {
         this.loading = false;
@@ -165,7 +169,7 @@ goBack() {
         
         this.appSettingService.showSuccess(message);
         this.router.navigate(['/master/currency/list'], {
-          queryParams: { refresh: true }
+          queryParams: { refresh: Date.now() }
         });
       },
       error: (err) => {
@@ -173,11 +177,11 @@ goBack() {
         this.loading = false;
         this.btnDisable = false;
         const errorMessage = `Error ${this.isEditMode ? 'updating' : 'creating'} currency`;
-        this.appSettingService.showError(errorMessage + ': ' + (err.error?.message || ''));
+        this.appSettingService.showError(errorMessage + ': ' + (err.error?.message || err.message || ''));
       }
     });
   }
-
+  
   resetForm() {
     if (this.isEditMode) {
       this.getCurrencyById(this.currencyId);

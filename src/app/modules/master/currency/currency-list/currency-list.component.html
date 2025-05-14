@@ -3,7 +3,7 @@
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
             <div class="col-12">
                 <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
-                    <form class="d-flex align-items-center gap-2">
+                    <form class="d-flex align-items-center gap-2" (ngSubmit)="search(); $event.preventDefault()">
                         <div class="form-outline col">
                             <select [(ngModel)]="searchType" name="searchType" class="form-select">
                                 <option value="currencyName">Currency Name</option>
@@ -22,9 +22,10 @@
                                 class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
                         </div>
 
-                        <button type="button" class="btn btn-info btn-sm" (click)="search()">
+                        <button type="submit" class="btn btn-info btn-sm" [disabled]="loading">
                             <i class="fas fa-search"></i>
-                            Search
+                            <span *ngIf="!loading">Search</span>
+                            <span *ngIf="loading">Searching...</span>
                         </button>
                         <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateCurrency()">
                             <i class="mdi mdi-plus"></i> Add
@@ -40,7 +41,7 @@
             </div>
         </div>
     </div>
-    <div class="col-12" *ngIf="totalLengthOfCollection > 0">
+    <div class="col-12" *ngIf="totalLengthOfCollection > 0 && !loading">
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
@@ -55,7 +56,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let item of filteredCurrencies; let i = index; trackBy: trackByIndex">
+                    <tr *ngFor="let item of currencyList; let i = index; trackBy: trackByIndex">
                         <td>
                             <div class="text-truncate">{{item.currencyName}}</div>
                         </td>
@@ -72,7 +73,7 @@
                             <div class="text-truncate">{{item.subUnit}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{ item.status === 'A' ? 'Active' : 'Inactive' }}</div>
+                            <div class="text-truncate">{{ getStatusText(item.status) }}</div>
                         </td>
                         <td>
                             <div class="d-flex align-items-center">
@@ -82,10 +83,10 @@
                                    <i-feather name="edit-3" class="feather-sm"></i-feather>
                                 </a>
                                 <a class="text-danger mx-2 ps-3 border-start"
-                                   (click)="deleteCurrency(item.CurrencyMasterSid)"
-                                   title="Delete">
-                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                </a>
+                                (click)="deleteCurrency(item.CurrencyMasterSid)"
+                                title="Delete">
+                                 <i-feather name="trash-2" class="feather-sm"></i-feather>
+                             </a>
                             </div>
                         </td>
                     </tr>
@@ -99,8 +100,18 @@
         </div>
     </div>
 
+    <!-- Loading indicator -->
+    <div class="col-12" *ngIf="loading">
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading data...</p>
+        </div>
+    </div>
+
     <!-- No records found -->
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
-        <div>No records found</div>
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed && !loading">
+        <div class="alert alert-info">No records found matching your search criteria</div>
     </div>
 </div>

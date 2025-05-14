@@ -1,55 +1,43 @@
-import { Component, OnInit } from '@angular/core';
-import { FeatherModule } from 'angular-feather';
-import { MasterService } from '../../master.service';
-import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { FeatherModule } from 'angular-feather';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MasterService } from '../../master.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-
-interface State {
-  StateMasterSid: number;
-  stateName: string;
-  stateCode: string;
-  status: string;
-  countryName: string;
-  CountryMasterSid: number;
-}
 
 @Component({
   selector: 'app-state-list',
   standalone: true,
   imports: [
-    FeatherModule,
-    CommonModule,
+    CommonModule, 
+    FeatherModule, 
+    FormsModule, 
+    NgbPaginationModule, 
     RouterModule,
-    FormsModule,
-    MatDialogModule,
-    NgbPaginationModule
+    MatDialogModule
   ],
   templateUrl: './state-list.component.html',
   styleUrl: './state-list.component.scss'
 })
-export class StateListComponent implements OnInit {
+export class StateListComponent {
   searchType = 'stateName';
-  searchText: string = '';
-  filteredStateList: State[] = [];
-  stateList: State[] = [];
-  totalLengthofCollection: number = 0;
-  countryList: any;
-  loading: boolean = false;
-  errorMessage: string = '';
+  filterValue = '';
+  results: any[] = [];
+  stateList: any[] = [];
   searchPerformed = false;
+  loading: boolean = false;
 
   // pagination
   page = 1;
   pageSize = 5;
+  totalLengthOfCollection: number;
 
   constructor(
-    private masterService: MasterService, 
+    private masterService: MasterService,
     private router: Router,
     private route: ActivatedRoute,
     private dialog: MatDialog,
@@ -58,36 +46,14 @@ export class StateListComponent implements OnInit {
 
   ngOnInit() {
     this.loadState();
-    
-    this.route.queryParams.subscribe(params => {
-      if (params['refresh'] === 'true') {
-        this.loadState();
-        this.router.navigate([], {
-          relativeTo: this.route,
-          queryParams: {},
-          replaceUrl: true
-        });
-      }
-    });
   }
 
   loadState() {
     this.loading = true;
-    forkJoin({
-      countries: this.masterService.getAllCountry(),
-      states: this.masterService.getAllState()
-    }).subscribe({
-      next: ({ countries, states }) => {
-        this.countryList = countries.data || countries;
-        this.stateList = (states.data || states).map((state: any) => {
-          const country = this.countryList.find((c: any) => c.CountryMasterSid === state.CountryMasterSid);
-          return {
-            ...state,
-            countryName: country ? country.countryName : ''
-          };
-        });
-        this.filteredStateList = [...this.stateList];
-        this.totalLengthofCollection = this.stateList.length;
+    this.masterService.getAllState().subscribe({
+      next: (res: any) => {
+        this.results = res.data;
+        this.totalLengthOfCollection = this.results.length;
         this.updatePaginatedData();
         this.loading = false;
       },
@@ -100,50 +66,48 @@ export class StateListComponent implements OnInit {
   }
 
   search() {
-    if (!this.searchText) {
-      this.filteredStateList = [...this.stateList];
-      this.errorMessage = '';
+    if (!this.filterValue) {
+      this.loadState();
       this.searchPerformed = false;
-      this.updatePaginatedData();
       return;
     }
 
-    this.filteredStateList = this.stateList.filter(state => {
-      const searchValue = this.searchText.toLowerCase();
-      switch(this.searchType) {
-        case 'stateName':
-          return state.stateName.toLowerCase().includes(searchValue);
-        case 'stateCode':
-          return state.stateCode.toLowerCase().includes(searchValue);
-        case 'countryName':
-          return state.countryName && state.countryName.toLowerCase().includes(searchValue);
-        case 'status':
-          return this.getStatusText(state.status).toLowerCase().includes(searchValue);
-        default:
-          return true;
+    const payload = {
+      searchType: this.searchType,
+      filterValue: this.searchType === 'status' 
+        ? this.filterValue === 'Active' ? 'A' : 'I' 
+        : this.filterValue,
+    };
+
+    this.loading = true;
+    this.masterService.searchStateList(payload).subscribe({
+      next: (res: any) => {
+        this.results = res.data || res;
+        this.searchPerformed = true;
+        this.totalLengthOfCollection = this.results.length;
+        this.updatePaginatedData();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error searching states:', err);
+        this.appSettingService.showError('Failed to search states');
+        this.loading = false;
       }
     });
-    
-    this.errorMessage = this.filteredStateList.length === 0 ? 
-      'No matching state found.' : '';
-    this.searchPerformed = true;
-    this.updatePaginatedData();
-    this.totalLengthofCollection = this.filteredStateList.length;
   }
+
   resetSearch() {
     this.searchType = 'stateName';
-    this.searchText = '';
+    this.filterValue = '';
     this.searchPerformed = false;
     this.page = 1;
-    this.filteredStateList = [...this.stateList];
-    this.totalLengthofCollection = this.stateList.length;
-    this.updatePaginatedData();
+    this.loadState();
   }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.filteredStateList = this.filteredStateList.slice(startIndex, endIndex);
+    this.stateList = this.results.slice(startIndex, endIndex);
   }
 
   deleteState(id: number) {
@@ -151,11 +115,11 @@ export class StateListComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
+        this.loading = true;
         this.masterService.deleteStateById(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("State deleted successfully!");
             this.loadState();
-            this.loading = false;
           },
           error: (err) => {
             console.error('Error deleting state:', err);
