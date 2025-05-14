@@ -8,6 +8,7 @@ import { Port } from '../crm-mobile/Interfaces/port.interface';
 import { Unit } from '../crm-mobile/Interfaces/unit.interface';
 import { Uom } from '../crm-mobile/Interfaces/uom.interface';
 import { City } from '../crm-mobile/Interfaces/city.interface';
+import { ContainerType } from '../crm-mobile/Interfaces/container-type.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -328,6 +329,54 @@ export class MasterService {
 
   deleteCityById(id: number) {
     return this.http.delete<{ data: any }>(`city/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  //container-type-master
+
+  getAllContainerType() {
+    return this.http.get<ContainerType>('ConatinerType').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+
+  getContainerTypeById(id: number) {
+    return this.http.get<{ data: ContainerType }>(`containerType/containerTypeId/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+
+  createNewContainerType(payload: any) {
+    return this.http.post("containerType/add", payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    )
+  }
+
+  updateContainerTypeById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`containerType/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  deleteContainerTypeById(id: number) {
+    return this.http.delete<{ data: any }>(`containerType/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
