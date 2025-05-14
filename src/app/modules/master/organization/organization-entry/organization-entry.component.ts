@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbModal, NgbModalModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalModule, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -14,12 +14,17 @@ import { MasterService } from '../../master.service';
   standalone: true,
   imports: [NgbNavModule, CommonModule, NgSelectModule, FeatherModule,
     FormsModule,
+    NgbPaginationModule,
     ReactiveFormsModule, NgbModalModule,
   ],
   templateUrl: './organization-entry.component.html',
   styleUrl: './organization-entry.component.scss'
 })
 export class OrganizationEntryComponent {
+  // pagination
+  page = 1;
+  pageSize = 5;
+  totalLengthOfCollection: number;
   active1 = 1;
   active2 = 1;
   active3 = 1;
@@ -28,19 +33,26 @@ export class OrganizationEntryComponent {
     { id: 'Invalid', name: 'Invalid' },
     { id: 'Block', name: 'Block' }
   ];
+
+  modeOfRegistered = [
+    { id: 'Active', name: 'Yes' },
+    { id: 'Invalid', name: 'No' },
+  ];
   modeofPAN = [
     { id: '1', name: "Company" },
     { id: '2', name: "Individual" },
     { id: '3', name: "Not Applicable" },
   ]
-
+  customerBranchData: any
   modeOfCountry = [
     { id: 'India', name: 'India' },
     { id: 'Singapore', name: 'Singapore' },
     { id: 'Canada', name: 'Canada' }
   ];
 
-
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
   companyList = [
     { id: '1', name: 'Artificial Juridical Person' },
     { id: '2', name: 'Association Of Persons(AOP)' },
@@ -54,6 +66,16 @@ export class OrganizationEntryComponent {
     { id: '10', name: 'Local Authority' }
   ];
 
+  gstTypeList = [
+    { id: '1', name: 'Composite' },
+    { id: '2', name: 'Exempt' },
+    { id: '3', name: 'RCM Others' },
+    { id: '4', name: 'RCM Specified' },
+    { id: '5', name: 'Regular' },
+    { id: '6', name: 'SEZ' },
+    { id: '7', name: 'Zero Rated' }
+  ]
+
 
   openModal(content: any) {
     this.modalService.open(content, { size: "xl", backdrop: 'static', keyboard: false });
@@ -61,7 +83,7 @@ export class OrganizationEntryComponent {
   stateList: any
 
   customerForm!: FormGroup;
-  customerBranchForm!: FormGroup;
+  customerBranchForm!: FormGroup
   isEditMode = false; // Flag for edit mode
   errorMessage: string = '';  // To store any error messages
   btnDisable: boolean = false;
@@ -69,6 +91,7 @@ export class OrganizationEntryComponent {
   cityList: any
   countryList: any
   status: any
+  customerBranchResults: any
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -86,6 +109,7 @@ export class OrganizationEntryComponent {
       this.CustomerMasterSid = +params.get('id');
       if (this.CustomerMasterSid) {
         this.isEditMode = true;
+        this.initCustomerBranchForm()
         this.loadCustomerData(this.CustomerMasterSid);
       }
     });
@@ -143,23 +167,19 @@ export class OrganizationEntryComponent {
   }
 
   initCustomerBranchForm() {
-    this.customerForm = this.fb.group({
-      CustomerName: ['', [Validators.required]],
-      CustomerMasterSid: ['', [Validators.required]],
-      CompanyMasterSid: ['', [Validators.required]],
-      StateMasterSid: ['', [Validators.required]],
-      CityMasterSid: ['', [Validators.required]],
+    this.customerBranchForm = this.fb.group({
+      CustomerMasterSid: [''],
+      CityMasterSid: [''],
+      StateMasterSid: [''],
       BranchName: ['', [Validators.required]],
       Zip_PostBox: ['', [Validators.required]],
-      TanNo: ['', [Validators.required]],
-      Address: ['', [Validators.required]],
+      ContactNo: ['', [Validators.required]],
       Email: ['', [Validators.required]],
+      Address: ['', [Validators.required]],
       Registered: ['', [Validators.required]],
       CustomerGstType: ['', [Validators.required]],
-      VendorGstType: ['', [Validators.required]],
       GSTNo: ['', [Validators.required]],
-      ContactNo: ['', [Validators.required]],
-    });
+    })
   }
 
   setupCheckboxWatcher() {
@@ -261,7 +281,7 @@ export class OrganizationEntryComponent {
         (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
-            this.router.navigate(['master/organization/list']);
+            this.router.navigate([`master/organization/${this.CustomerMasterSid}`]);
 
           } else {
             this.appSettingService.showError(resp.message);
@@ -279,7 +299,7 @@ export class OrganizationEntryComponent {
         (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
-            this.router.navigate(['master/organization/list']);
+            this.router.navigate([`master/organization/${this.CustomerMasterSid}`]);
 
           } else {
             this.appSettingService.showError(resp.message);
@@ -354,47 +374,36 @@ export class OrganizationEntryComponent {
 
     let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
     let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
-    const formValue = this.customerForm.value;
-    const selectedPaymentType = this.customerForm.value.paymentType;
+    const formValue = this.customerBranchForm.value;
 
     const payload = (this.isEditMode) ? {
-      CustomerName: formValue.CustomerName,
-      CustomerShortCode: formValue.CustomerShortCode,
-      CustomerAliasName: formValue.CustomerAliasName,
-      CustomerAddress1: formValue.CustomerAddress1,
-      LocalLanguage: formValue.LocalLanguage,
-      PanType: formValue.PanType,
-      PanName: formValue.PanName,
-      GroupName: formValue.GroupName,
-      Website: formValue.Website,
-      Remarks: formValue.Remarks,
-      CountryMasterSid: Number(formValue.CountryMasterSid),
-      CustomerType: formValue.CustomerType,
-      CashCredit: selectedPaymentType,
-      IsMSME: formValue.IsMSME ? "A" : "I",
-      CompanyType: formValue.CompanyType,
-      RegistrationNo: formValue.RegistrationNo,
+      CustomerMasterSid: this.CustomerMasterSid,
+      CityMasterSid: formValue.CustBranchCity,
+      StateMasterSid: formValue.CustBranchState,
+      BranchName: formValue.CustBranchBranchName,
+      Zip_PostBox: formValue.CustBranchZipPostCode,
+      ContactNo: formValue.CustBranchPhone,
+      Email: formValue.CustBranchEmail,
+      Address: formValue.CustBranchAddress,
+      Registered: formValue.CustBranchRegistered,
+      CustomerGstType: formValue.CustBranchGSTtype,
+      GSTNo: formValue.CustBranchGSTIN,
       ...updatedBy,
-      status: this.status === "A" ? "A" : "C"
+      status: formValue.status
     } : {
-      CustomerName: formValue.CustomerName,
-      CustomerShortCode: formValue.CustomerShortCode,
-      CustomerAliasName: formValue.CustomerAliasName,
-      CustomerAddress1: formValue.CustomerAddress1,
-      LocalLanguage: formValue.LocalLanguage,
-      PanType: formValue.PanType,
-      PanName: formValue.PanName,
-      GroupName: formValue.GroupName,
-      Website: formValue.Website,
-      Remarks: formValue.Remarks,
-      CountryMasterSid: Number(formValue.CountryMasterSid),
-      CustomerType: formValue.CustomerType,
-      CashCredit: selectedPaymentType,
-      IsMSME: formValue.IsMSME ? "A" : "I",
-      CompanyType: formValue.CompanyType,
-      RegistrationNo: formValue.RegistrationNo,
+      CustomerMasterSid: this.CustomerMasterSid,
+      CityMasterSid: formValue.CustBranchCity,
+      StateMasterSid: formValue.CustBranchState,
+      BranchName: formValue.CustBranchBranchName,
+      Zip_PostBox: formValue.CustBranchZipPostCode,
+      ContactNo: formValue.CustBranchPhone,
+      Email: formValue.CustBranchEmail,
+      Address: formValue.CustBranchAddress,
+      Registered: formValue.CustBranchRegistered,
+      CustomerGstType: formValue.CustBranchGSTtype,
+      GSTNo: formValue.CustBranchGSTIN,
       ...createdBy,
-      status: formValue.status === "Active" ? "A" : "C"
+      status: formValue.status
     };
 
     if (this.isEditMode) {
@@ -435,6 +444,13 @@ export class OrganizationEntryComponent {
     }
 
   }
+
+  updatePaginatedData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.customerBranchData = this.customerBranchResults.slice(startIndex, endIndex);
+  }
+  deleteCustomerBranch(id) { }
 
   reset() {
     this.customerForm.reset();

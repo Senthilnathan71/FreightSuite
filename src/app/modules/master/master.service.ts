@@ -92,6 +92,52 @@ export class MasterService {
     );
   }
 
+  //customer-branch
+
+  getAllCustomerBranches() {
+    return this.http.get('customer-branch').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+  getCustomerBranchById(id: number) {
+    return this.http.get<{ data: Uom }>(`customer-branch/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createCustomerBranch(payload: any) {
+    return this.http.post('customer-branch/create', payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    );
+  }
+
+  updateCustomerBranchById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`customer-branch/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  deleteCustomerBranchById(id: number) {
+    return this.http.delete<{ data: any }>(`customer-branch/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
 
   //department-master
 

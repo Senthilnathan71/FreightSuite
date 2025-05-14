@@ -428,7 +428,7 @@
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="CustBranchPhone">
                                     <label for="text-input" class="input-label">Phone<span
                                             class="text-danger"></span></label>
@@ -452,22 +452,31 @@
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="CustBranchRegistered">
+                                    <ng-select formControlName="CustBranchRegistered" [items]="modeOfRegistered"
+                                        bindLabel="name" bindValue="name">
+                                    </ng-select>
                                     <label for="text-input" class="input-label">Registered</label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-3">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
+                                        bindValue="name">
+                                    </ng-select>
+                                    <label for="" class="input-label">Status <span class="text-danger">*</span></label>
                                 </div>
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="CustBranchGSTtype">
+                                    <select formControlName="CustBranchGSTtype" class="form-select">
+                                        <option value="" disabled selected>Select GST Type</option>
+                                        <option *ngFor="let option of gstTypeList" [value]="option.name">
+                                            {{option.name}}</option>
+                                    </select>
                                     <label for="text-input" class="input-label">GST Type</label>
 
                                 </div>
                             </aside>
-
-
-
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -1184,14 +1193,12 @@
 
 <ng-template #branch>
     <div class="col-12">
-        <div class="table-responsive">
+        <div class="table-responsive" *ngIf="customerBranchData.length > 0">
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
                         <th class="bg-transparent text-light" scope="col">Code</th>
                         <th class="bg-transparent text-light" scope="col">Address Type</th>
-
                         <th class="bg-transparent text-light" scope="col">Address Line 1</th>
                         <th class="bg-transparent text-light" scope="col">Address Line 2</th>
                         <th class="bg-transparent text-light" scope="col">Address Line 3</th>
@@ -1199,47 +1206,65 @@
                         <th class="bg-transparent text-light" scope="col">Status</th>
                         <th class="bg-transparent text-light" scope="col">Phone</th>
                         <th class="bg-transparent text-light" scope="col">Email</th>
+                        <th class="bg-transparent text-light" scope="col">Action</th>
 
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
+                    <tr *ngFor="let item of customerBranchData;let i = index; trackBy: trackByIndex">
                         <td>
                             <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
                         </td>
                         <td>
-                            <div class="text-truncate">OMR</div>
+                            <div class="text-truncate">{{item}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">RO</div>
+                            <div class="text-truncate">{{item}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Rial</div>
+                            <div class="text-truncate">{{item}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="d-flex align-items-center">
+                                <a class="text-info mx-2" class="link mx-2 ps-3 ">
+                                    <i-feather class="feather-sm" name="eye"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start"
+                                    (click)="deleteCustomerBranch(item.CustomerBranchSid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
                         </td>
                     </tr>
-                    }
+
                 </tbody>
             </table>
         </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+            </ngb-pagination>
+        </div>
+    </div>
+
+    <!-- No records found -->
+    <div class="col-12" *ngIf="customerBranchData.length === 0">
+        <div>No records found</div>
     </div>
 
 </ng-template>
