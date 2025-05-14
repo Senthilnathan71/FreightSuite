@@ -392,14 +392,7 @@
                                             class="text-danger">*</span></label>
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="CustBranchBranchCode">
-                                    <label for="text-input" class="input-label">Branch Code <span
-                                            class="text-danger">*</span></label>
-                                </div>
-                            </aside>
+
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <select formControlName="CustBranchState" class="form-select">
@@ -442,16 +435,9 @@
                                             class="text-danger"></span></label>
                                 </div>
                             </aside>
-                            <aside class="col-md-12">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="CustBranchAddress">
-                                    <label for="text-input" class="input-label">Address<span
-                                            class="text-danger">*</span></label>
-                                </div>
-                            </aside>
+                            
                             <aside class="col-md-6">
-                                <div class="custom-form-group">
+                                <div class="custom-form-group custom-form-group custom-form-group-select">
                                     <ng-select formControlName="CustBranchRegistered" [items]="modeOfRegistered"
                                         bindLabel="name" bindValue="name">
                                     </ng-select>
@@ -483,6 +469,14 @@
                                         formControlName="CustBranchGSTIN">
                                     <label for="text-input" class="input-label">GSTIN</label>
 
+                                </div>
+                            </aside>
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="CustBranchAddress">
+                                    <label for="text-input" class="input-label">Address<span
+                                            class="text-danger">*</span></label>
                                 </div>
                             </aside>
 

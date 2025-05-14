@@ -104,6 +104,8 @@ export class OrganizationEntryComponent {
   ngOnInit(): void {
     this.initForm();
     this.getAllCountries()
+    this.getAllState()
+    this.loadCity()
     // Subscribe to route params and load lead if ID exists
     this.route.paramMap.subscribe(params => {
       this.CustomerMasterSid = +params.get('id');

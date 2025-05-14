@@ -139,6 +139,151 @@ export class MasterService {
     );
   }
 
+  //customer-branch-contact
+
+  getAllCustomerBranchContacts() {
+    return this.http.get('customer-branch-contact').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+  getCustomerBranchContactById(id: number) {
+    return this.http.get<{ data: Uom }>(`customer-branch-contact/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createCustomerBranchContact(payload: any) {
+    return this.http.post('customer-branch-contact/create', payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    );
+  }
+
+  updateCustomerBranchContactById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`customer-branch-contact/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  deleteCustomerBranchContactById(id: number) {
+    return this.http.delete<{ data: any }>(`customer-branch-contact/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  //customer-branch-email
+
+  getAllCustomerBranchEmail() {
+    return this.http.get('customer-branch-email').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+  getCustomerBranchEmailById(id: number) {
+    return this.http.get<{ data: Uom }>(`customer-branch-email/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createCustomerBranchEmail(payload: any) {
+    return this.http.post('customer-branch-email/create', payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    );
+  }
+
+  updateCustomerBranchEmailById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`customer-branch-email/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  deleteCustomerBranchEmailById(id: number) {
+    return this.http.delete<{ data: any }>(`customer-branch-email/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+  //customer-login
+
+  getAllCustomerLogin() {
+    return this.http.get('customer-login').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+  getCustomerLoginById(id: number) {
+    return this.http.get<{ data: Uom }>(`customer-login/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createCustomerLogin(payload: any) {
+    return this.http.post('customer-login/create', payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    );
+  }
+
+  updateCustomerLoginById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`customer-login/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  deleteCustomerLoginById(id: number) {
+    return this.http.delete<{ data: any }>(`customer-login/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+
+
   //department-master
 
   getDepartmentById(id: number) {
