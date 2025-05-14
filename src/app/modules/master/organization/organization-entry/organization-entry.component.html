@@ -366,116 +366,102 @@
 
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-
-                                    <select formControlName="CustBranchCity" class="form-select">
-                                        <option value="" disabled selected>Select City</option>
+                                    <select id="city" formControlName="CustBranchCity" class="form-select">
+                                        <option value="">Select City</option>
                                         <option *ngFor="let option of cityList" [value]="option.CityMasterSid">
                                             {{option.cityName}} - {{option.cityCode}}</option>
                                     </select>
-                                    <label for="text-input" class="input-label">City <span
+                                    <label for="city" class="input-label">City <span
                                             class="text-danger">*</span></label>
                                 </div>
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="CustBranchBranchName">
-                                    <label for="text-input" class="input-label">Branch Name <span
+                                    <select id="state" formControlName="CustBranchState" class="form-select">
+                                        <option value="" disabled>Select State</option>
+                                        <option *ngFor="let option of stateList" [value]="option.StateMasterSid">
+                                            {{option.stateName}} - {{option.stateCode}}</option>
+                                    </select>
+                                    <label for="state" class="input-label">State <span
                                             class="text-danger">*</span></label>
                                 </div>
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="CustBranchBranchType">
-                                    <label for="text-input" class="input-label">Branch Type <span
+                                    <input id="branchName" type="text" id="text-input" placeholder=""
+                                        class="custom-input-field sm" formControlName="CustBranchName">
+                                    <label for="branchName" class="input-label">Branch Name <span
                                             class="text-danger">*</span></label>
                                 </div>
                             </aside>
 
+
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <select formControlName="CustBranchState" class="form-select">
-                                        <option value="" disabled selected>Select State</option>
-                                        <option *ngFor="let option of stateList" [value]="option.StateMasterSid">
-                                            {{option.stateName}} - {{option.stateCode}}</option>
-                                    </select>
-                                    <label for="text-input" class="input-label">State <span
-                                            class="text-danger">*</span></label>
-                                </div>
-                            </aside>
-                            <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="CustBranchZipPostCode">
-                                    <label for="text-input" class="input-label">Zip/Post Code<span
+                                    <input id="zip" type="number" id="text-input" placeholder=""
+                                        class="custom-input-field sm" formControlName="CustBranchZipPostCode">
+                                    <label for="zip" class="input-label">Zip/Post Code<span
                                             class="text-danger"></span></label>
                                 </div>
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="CustBranchContactPerson">
-                                    <label for="text-input" class="input-label">Contact Person </label>
-                                </div>
-                            </aside>
-                            <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="CustBranchPhone">
-                                    <label for="text-input" class="input-label">Phone<span
+                                    <input id="phone" type="number" id="text-input" placeholder=""
+                                        class="custom-input-field sm" formControlName="CustBranchPhone">
+                                    <label for="phone" class="input-label">Phone<span
                                             class="text-danger"></span></label>
                                 </div>
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="CustBranchEmail">
-                                    <label for="text-input" class="input-label">Email<span
+                                    <input id="email" type="text" id="text-input" placeholder=""
+                                        class="custom-input-field sm" formControlName="CustBranchEmail">
+                                    <label for="email" class="input-label">Email<span
                                             class="text-danger"></span></label>
                                 </div>
                             </aside>
-                            
+
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group custom-form-group-select">
-                                    <ng-select formControlName="CustBranchRegistered" [items]="modeOfRegistered"
-                                        bindLabel="name" bindValue="name">
+                                    <ng-select id="registered" formControlName="CustBranchRegistered"
+                                        [items]="modeOfRegistered" bindLabel="name" bindValue="name">
                                     </ng-select>
-                                    <label for="text-input" class="input-label">Registered</label>
+                                    <label for="registered" class="input-label">Registered</label>
                                 </div>
                             </aside>
                             <aside class="col-md-3">
                                 <div class="custom-form-group custom-form-group-select">
-                                    <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
-                                        bindValue="name">
+                                    <ng-select id="status" formControlName="status" [items]="modeOfStatus"
+                                        bindLabel="name" bindValue="name">
                                     </ng-select>
-                                    <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                                    <label for="status" class="input-label">Status <span
+                                            class="text-danger">*</span></label>
                                 </div>
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <select formControlName="CustBranchGSTtype" class="form-select">
+                                    <select id="gstType" formControlName="CustBranchGSTtype" class="form-select">
                                         <option value="" disabled selected>Select GST Type</option>
                                         <option *ngFor="let option of gstTypeList" [value]="option.name">
                                             {{option.name}}</option>
                                     </select>
-                                    <label for="text-input" class="input-label">GST Type</label>
+                                    <label for="gstType" class="input-label">GST Type</label>
 
                                 </div>
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    <input type="text" id="gstIn" placeholder="" class="custom-input-field sm"
                                         formControlName="CustBranchGSTIN">
-                                    <label for="text-input" class="input-label">GSTIN</label>
+                                    <label for="gstIn" class="input-label">GSTIN</label>
 
                                 </div>
                             </aside>
                             <aside class="col-md-12">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    <input type="text" id="address" placeholder="" class="custom-input-field sm"
                                         formControlName="CustBranchAddress">
-                                    <label for="text-input" class="input-label">Address<span
+                                    <label for="address" class="input-label">Address<span
                                             class="text-danger">*</span></label>
                                 </div>
                             </aside>
@@ -593,7 +579,7 @@
         </form>
     </div>
     <div>
-        <button class="btn btn-sm btn-info" (click)="customerBranchSubmit()">Submit</button>
+        <button class="btn btn-sm btn-info" (click)="customerBranchSubmit()">CBSubmit</button>
     </div>
 
 
@@ -611,44 +597,46 @@
             <div class="card h-100">
                 <div class="card-body">
                     <div class="row">
-
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="City">
-                                <label for="text-input" class="input-label">Contact Type <span
-                                        class="text-danger">*</span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchName">
-                                <label for="text-input" class="input-label">Contact Name <span
-                                        class="text-danger">*</span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchType">
-                                <label for="text-input" class="input-label">Mobile No<span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchCode">
-                                <label for="text-input" class="input-label">Email<span
-                                        class="text-danger">*</span></label>
-                            </div>
-                        </aside>
-
-
-
-
-
+                        <form [formGroup]="customerBranchContactForm">
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <select id="contactType" formControlName="ContactType" class="form-select">
+                                        <option value="">Select Contact Type</option>
+                                        <option *ngFor="let option of contactList" [value]="option">
+                                            {{option}}</option>
+                                    </select>
+                                    <label for="contactType" class="input-label">Contact Type <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="ContactType" id="text-input" placeholder=""
+                                        class="custom-input-field sm" formControlName="ContactName">
+                                    <label for="ContactType" class="input-label">Contact Name <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="MobileNo" placeholder="" class="custom-input-field sm"
+                                        formControlName="MobileNo">
+                                    <label for="MobileNo" class="input-label">Mobile No<span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="Email" placeholder="" class="custom-input-field sm"
+                                        formControlName="Email">
+                                    <label for="Email" class="input-label">Email<span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                        </form>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-info" (click)="customerBranchContactSubmit()">CBSubmit</button>
                     </div>
                 </div>
             </div>
@@ -1187,55 +1175,52 @@
 
 <ng-template #branch>
     <div class="col-12">
-        <div class="table-responsive" *ngIf="customerBranchData.length > 0">
+        <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Address Type</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 1</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                        <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                        <th class="bg-transparent text-light" scope="col">Branch Name</th>
+                        <th class="bg-transparent text-light" scope="col">Address</th>
                         <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
+                        <th class="bg-transparent text-light" scope="col">State</th>
                         <th class="bg-transparent text-light" scope="col">Phone</th>
                         <th class="bg-transparent text-light" scope="col">Email</th>
+                        <th class="bg-transparent text-light" scope="col">GST Type</th>
+                        <th class="bg-transparent text-light" scope="col">Status</th>
                         <th class="bg-transparent text-light" scope="col">Action</th>
 
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let item of customerBranchData;let i = index; trackBy: trackByIndex">
+
                         <td>
-                            <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
+                            <div class="text-truncate">{{item.BranchName}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item}}</div>
+                            <div class="text-truncate">{{item.Address}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item}}</div>
+                            <div class="text-truncate">{{ getCityName(item.CityMasterSid) }}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item}}</div>
+                            <div class="text-truncate">{{ getStateName(item.StateMasterSid) }}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item}}</div>
+                            <div class="text-truncate">{{item.ContactNo}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item}}</div>
+                            <div class="text-truncate">{{item.Email}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item}}</div>
+                            <div class="text-truncate">{{item.CustomerGstType}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item}}</div>
+                            <div class="text-truncate">{{item.status==='A'? "Active":"In Active"}}</div>
                         </td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <a class="text-info mx-2" class="link mx-2 ps-3 ">
+                                <a class="text-info mx-2" class="link mx-2 ps-3" (click)="openModal(content, item)">
                                     <i-feather class="feather-sm" name="eye"></i-feather>
                                 </a>
                                 <a class="text-danger mx-2 ps-3 border-start"
@@ -1257,7 +1242,7 @@
     </div>
 
     <!-- No records found -->
-    <div class="col-12" *ngIf="customerBranchData.length === 0">
+    <div class="col-12">
         <div>No records found</div>
     </div>
 
@@ -1269,53 +1254,39 @@
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
                         <th class="bg-transparent text-light" scope="col">Contact Type</th>
+                        <th class="bg-transparent text-light" scope="col">Contact Name</th>
                         <th class="bg-transparent text-light" scope="col">Mobile No</th>
-
                         <th class="bg-transparent text-light" scope="col">Email</th>
-                        <!-- <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                            <th class="bg-transparent text-light" scope="col">City</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
-                            <th class="bg-transparent text-light" scope="col">Phone</th>
-                            <th class="bg-transparent text-light" scope="col">Email</th> -->
-
+                        <th class="bg-transparent text-light" scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                    @for (item of customerBranchContactData; track $index) {
                     <tr>
                         <td>
-                            <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
+                            <div class="text-truncate">{{item.ContactType}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">OMR</div>
+                            <div class="text-truncate">{{item.ContactName}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">RO</div>
+                            <div class="text-truncate">{{item.MobileNo}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Rial</div>
+                            <div class="text-truncate">{{item.Email}}</div>
                         </td>
-                        <!-- <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td> -->
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="text-info mx-2" class="link mx-2 ps-3" (click)="openModal(content, item)">
+                                    <i-feather class="feather-sm" name="eye"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start"
+                                    (click)="deleteCustomerBranchContact(item.CustomerBranchSid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
+                        </td>
                     </tr>
                     }
                 </tbody>
