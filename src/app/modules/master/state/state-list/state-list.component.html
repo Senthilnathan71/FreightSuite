@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-12">
+    <!-- <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
             <form action="" class="d-flex align-items-center gap-2">
                 <div class="form-outline col">
@@ -10,6 +10,44 @@
                     <i class="mdi mdi-plus"></i> Add
                 </button>
             </form>
+        </div>
+    </div> -->
+
+    <div class="col-12">
+        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
+            <div class="col-8 mx-auto">
+                <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
+                    <form class="d-flex align-items-center gap-2">
+                        <div class="form-outline col">
+                            <input type="search" class="form-control ps-5" name="search" placeholder="Search">
+                            <i class="fas fa-search ms-3"></i>
+                        </div>
+                        <div class="form-outline col">
+                            <input name="filterValue" type="text" class="form-control"
+                                placeholder="Enter filter value">
+                            <i
+                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                        </div>
+
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80"
+                            (click)="navigateToCreateState()">
+                            <i class="mdi mdi-plus"></i> Create
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
+                            <!-- <i class="mdi mdi-plus"></i> -->
+                            Report
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
+                            <!-- <i class="mdi mdi-plus"></i> -->
+                            Reset
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
     <div class="col-12">
@@ -43,14 +81,12 @@
                         </td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <a class="text-primary mx-2 ps-3" 
-                                   [routerLink]="['/master/state/entry/', item.StateMasterSid]"
-                                   title="Edit">
-                                   <i-feather name="edit-3" class="feather-sm"></i-feather>
+                                <a class="text-primary mx-2 ps-3"
+                                    [routerLink]="['/master/state/entry/', item.StateMasterSid]" title="Edit">
+                                    <i-feather name="edit-3" class="feather-sm"></i-feather>
                                 </a>
-                                <a class="text-danger mx-2 ps-3 border-start"
-                                   (click)="deleteState(item.StateMasterSid)"
-                                   title="Delete">
+                                <a class="text-danger mx-2 ps-3 border-start" (click)="deleteState(item.StateMasterSid)"
+                                    title="Delete">
                                     <i-feather name="trash-2" class="feather-sm"></i-feather>
                                 </a>
                             </div>

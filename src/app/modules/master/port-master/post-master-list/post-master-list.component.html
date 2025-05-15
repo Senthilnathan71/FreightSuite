@@ -1,6 +1,6 @@
 <div class="row">
     <!-- #region Search Panel -->
-    <div class="col-12">
+    <!-- <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
             <form class="d-flex align-items-center gap-2">
                 <div class="form-outline col">
@@ -15,6 +15,44 @@
                     }
                 </button>
             </form>
+        </div>
+    </div> -->
+    <div class="col-12">
+        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
+            <div class="col-8 mx-auto">
+                <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
+                    <form class="d-flex align-items-center gap-2">
+                        <div class="form-outline col">
+                            <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
+                                (input)="searchPorts()" autocomplete="off" placeholder="Search">
+                            <i class="fas fa-search ms-3"></i>
+                        </div>
+                        <div class="form-outline col">
+                            <input name="filterValue" type="text" class="form-control" placeholder="Enter filter value">
+                            <i
+                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                        </div>
+
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="createNew()">
+                            <i class="mdi mdi-plus" [class.me-1]="!isMobile"></i> @if (!isMobile) {
+                            Create
+                            }
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
+                            <!-- <i class="mdi mdi-plus"></i> -->
+                            Report
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
+                            <!-- <i class="mdi mdi-plus"></i> -->
+                            Reset
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
     <!-- #endregion -->
@@ -43,7 +81,7 @@
                     <div class="table-responsive">
                         <table class="table table-hover align-middle no-wrap table-bordered">
                             <thead>
-                                <tr class="gredient-info-bg">
+                                <tr class="bg-info">
                                     <th class="bg-transparent text-light" scope="col">Port Name</th>
                                     <th class="bg-transparent text-light" scope="col">Port Code</th>
                                     <th class="bg-transparent text-light" scope="col">Country</th>
