@@ -46,6 +46,7 @@ export class DepartmentListComponent {
     });
   }
 
+  
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
