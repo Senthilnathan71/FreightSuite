@@ -29,78 +29,34 @@ export class PostMasterListComponent {
   filterValue = '';
   results: any[] = [];
   portList: any[] = [];
-  errorMessage: string = '';
   searchPerformed = false;
-  isMobile: boolean = false;
 
   // pagination
   page = 1;
   pageSize = 5;
   totalLengthOfCollection: number = 0;
-  loading: boolean = false;
 
   constructor(
     private masterService: MasterService, 
     private router: Router,
-    private appService: AppService,
     private dialog: MatDialog,
     private appSettingService: AppSettingsService
   ) { }
 
-  ngOnInit() {
-    this.loadPorts();
-    this.isMobile = this.appService.getDevice();
-  }
-
-  loadPorts() {
-    this.loading = true;
-    this.masterService.getAllPorts().subscribe({
-      next: (resp: any) => {
-        this.results = resp.data || resp;
-        this.updatePaginatedData();
-        this.totalLengthOfCollection = this.results.length;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading ports:', err);
-        this.appSettingService.showError('Failed to load ports');
-        this.loading = false;
-      }
-    });
-  }
+  ngOnInit() { }
 
   search() {
-    this.filterValue = this.filterValue?.trim();
-    
-    if (!this.filterValue) {
-      this.loadPorts();
-      this.page = 1;
-      this.searchPerformed = false;
-      return;
-    }
-    
     const payload = {
       searchType: this.searchType,
       filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'C' 
+        ? this.filterValue === 'Active' ? 'A' : 'I' 
         : this.filterValue,
     }
-    
-    this.loading = true;
-    this.page = 1;
-    this.masterService.searchPortList(payload).subscribe({
-      next: (res: any) => {
-        this.results = res.data || res;
-        this.searchPerformed = true;
-        this.updatePaginatedData();
-        this.totalLengthOfCollection = this.results.length;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error searching ports:', err);
-        this.appSettingService.showError('Failed to search ports');
-        this.loading = false;
-      }
+    this.masterService.searchPortList(payload).subscribe((res: any) => {
+      this.results = res;
+      this.searchPerformed = true;
+      this.updatePaginatedData();
+      this.totalLengthOfCollection = this.results.length || 0;
     });
   }
 
@@ -116,18 +72,11 @@ export class PostMasterListComponent {
 
   deletePort(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
-
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         this.masterService.deletePortById(id).subscribe((resp: any) => {
-
           this.appSettingService.showSuccess("Deleted!");
-          console.log(resp);
-          // if(resp.status){
-          this.loadPorts();
-
-          // }
-
+          this.router.navigate(['master/port-master/list']);
         });
       }
     });
@@ -137,12 +86,9 @@ export class PostMasterListComponent {
     this.router.navigate(['master/port-master/view']);
   }
 
-  resetSearch() {
-    this.searchType = 'PortName';
-    this.filterValue = '';
-    this.searchPerformed = false;
-    this.page = 1;
-    this.loadPorts();
+  resetPage() {
+    this.portList = [];
+    this.totalLengthOfCollection = 0;
   }
 
   getStatusText(status: string): string {
