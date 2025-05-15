@@ -472,7 +472,8 @@
                                         <ul ngbNav #nav2="ngbNav" [(activeId)]="active3" class="nav-tabs">
                                             <li [ngbNavItem]="1">
                                                 <button ngbNavLink>
-                                                    <button class="btn btn-info p-0 me-2" (click)="openModal(content1)">
+                                                    <button class="btn btn-info p-0 me-2"
+                                                        (click)="openBranchContactModal(content1)">
                                                         <i-feather name="plus-circle"
                                                             class="feather-sm "></i-feather></button>
                                                     Branch Contact</button>
@@ -484,7 +485,8 @@
 
                                             <li [ngbNavItem]="2">
                                                 <button ngbNavLink>
-                                                    <button class="btn btn-info p-0 me-2" (click)="openModal(content2)">
+                                                    <button class="btn btn-info p-0 me-2"
+                                                        (click)="openBranchEmailModal(content2)">
                                                         <i-feather name="plus-circle"
                                                             class="feather-sm "></i-feather></button>
                                                     Email</button>
@@ -592,18 +594,19 @@
         <h4 class="modal-title">Branch Contact</h4>
         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
-    <div class="modal-body">
-        <div class="col-md-12">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="row">
-                        <form [formGroup]="customerBranchContactForm">
+    <form [formGroup]="customerBranchContactForm">
+
+        <div class="modal-body">
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <select id="contactType" formControlName="ContactType" class="form-select">
                                         <option value="">Select Contact Type</option>
-                                        <option *ngFor="let option of contactList" [value]="option">
-                                            {{option}}</option>
+                                        <option *ngFor="let option of contactList" [value]="option.name">
+                                            {{option.name}}</option>
                                     </select>
                                     <label for="contactType" class="input-label">Contact Type <span
                                             class="text-danger">*</span></label>
@@ -633,16 +636,16 @@
                                             class="text-danger">*</span></label>
                                 </div>
                             </aside>
-                        </form>
-                    </div>
-                    <div>
-                        <button class="btn btn-sm btn-info" (click)="customerBranchContactSubmit()">CBSubmit</button>
+
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-info" (click)="customerBranchContactSubmit()">Submit</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
+    </form>
 </ng-template>
 
 <ng-template #content2 let-modal>
@@ -650,62 +653,66 @@
         <h4 class="modal-title">email</h4>
         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
-    <div class="modal-body">
-        <div class="col-md-12">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="row">
+    <form [formGroup]="customerBranchEmailForm">
+        <div class="modal-body">
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
 
-                        <aside class="col-md-6">
+                            <!-- <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                     formControlName="City">
                                 <label for="text-input" class="input-label">Menu Name<span
                                         class="text-danger"></span></label>
                             </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchName">
-                                <label for="text-input" class="input-label">Branch <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchType">
-                                <label for="text-input" class="input-label">Department <span
-                                        class="text-danger">*</span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchCode">
-                                <label for="text-input" class="input-label">To Email <span
-                                        class="text-danger">*</span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchCode">
-                                <label for="text-input" class="input-label">CC Email <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-
-
-
-
-
+                        </aside> -->
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchName">
+                                    <label for="text-input" class="input-label">Branch <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <select formControlName="DepartmentMasterSid" class="form-select">
+                                        <option value="">Select Department</option>
+                                        <option *ngFor="let option of departmentList"
+                                            [value]="option.DepartmentMasterSid">
+                                            {{option.departmentName}}</option>
+                                    </select>
+                                    <label for="text-input" class="input-label">Department <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="Toemail">
+                                    <label for="text-input" class="input-label">To Email <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="CCemail">
+                                    <label for="text-input" class="input-label">CC Email <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+        <div>
+            <button class="btn btn-sm btn-info" (click)="customerBranchEmailSubmit()">Submit</button>
+        </div>
+    </form>
 
 </ng-template>
 
@@ -1258,12 +1265,12 @@
                         <th class="bg-transparent text-light" scope="col">Contact Name</th>
                         <th class="bg-transparent text-light" scope="col">Mobile No</th>
                         <th class="bg-transparent text-light" scope="col">Email</th>
+                        <th class="bg-transparent text-light" scope="col">Status</th>
                         <th class="bg-transparent text-light" scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of customerBranchContactData; track $index) {
-                    <tr>
+                    <tr *ngFor="let item of customerBranchContactData;let i = index; trackBy: trackByIndex">
                         <td>
                             <div class="text-truncate">{{item.ContactType}}</div>
                         </td>
@@ -1277,21 +1284,35 @@
                             <div class="text-truncate">{{item.Email}}</div>
                         </td>
                         <td>
+                            <div class="text-truncate">{{item.status==='A'?"Active":"Invalid"}}</div>
+                        </td>
+                        <td>
                             <div class="d-flex align-items-center">
-                                <a class="text-info mx-2" class="link mx-2 ps-3" (click)="openModal(content, item)">
+                                <a class="text-info mx-2" class="link mx-2 ps-3"
+                                    (click)="openBranchContactModal(content1, item)">
                                     <i-feather class="feather-sm" name="eye"></i-feather>
                                 </a>
                                 <a class="text-danger mx-2 ps-3 border-start"
-                                    (click)="deleteCustomerBranchContact(item.CustomerBranchSid)">
+                                    (click)="deleteCustomerBranchContact(item.CusBranchContactSid)">
                                     <i-feather name="trash-2" class="feather-sm"></i-feather>
                                 </a>
                             </div>
                         </td>
                     </tr>
-                    }
+
                 </tbody>
             </table>
         </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedContactData()">
+            </ngb-pagination>
+        </div>
+    </div>
+
+    <!-- No records found -->
+    <div class="col-12">
+        <div>No records found</div>
     </div>
 </ng-template>
 
@@ -1301,59 +1322,57 @@
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Menu Name</th>
                         <th class="bg-transparent text-light" scope="col">Branch</th>
                         <th class="bg-transparent text-light" scope="col">Department</th>
-
                         <th class="bg-transparent text-light" scope="col">To email</th>
                         <th class="bg-transparent text-light" scope="col">CC email</th>
-                        <!-- <th class="bg-transparent text-light" scope="col">Address Line 2</th>
-                            <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                            <th class="bg-transparent text-light" scope="col">City</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
-                            <th class="bg-transparent text-light" scope="col">Phone</th>
-                            <th class="bg-transparent text-light" scope="col">Email</th> -->
-
+                        <th class="bg-transparent text-light" scope="col">Status</th>
+                        <th class="bg-transparent text-light" scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
+                    <tr *ngFor="let item of customerEmailData;let i = index; trackBy: trackByIndex">
                         <td>
-                            <div class="text-truncate">Oman Rials</div>
+                            <div class="text-truncate">{{item.CustomerBranchSid}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">OMR</div>
+                            <div class="text-truncate">{{item.DepartmentMasterSid}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">RO</div>
+                            <div class="text-truncate">{{item.Toemail}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Rial</div>
+                            <div class="text-truncate">{{item.CCemail}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item.status==='A'?"Active":"Invalid"}}</div>
                         </td>
-                        <!-- <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td> -->
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="text-info mx-2" class="link mx-2 ps-3"
+                                    (click)="openBranchEmailModal(content2, item)">
+                                    <i-feather class="feather-sm" name="eye"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start"
+                                    (click)="deleteCustomerBranchEmail(item.CustomerBrEmailSid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
+                        </td>
                     </tr>
-                    }
                 </tbody>
             </table>
         </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedEmailData()">
+            </ngb-pagination>
+        </div>
+    </div>
+
+    <!-- No records found -->
+    <div class="col-12">
+        <div>No records found</div>
     </div>
 </ng-template>
 
@@ -1488,14 +1507,8 @@
                         <th class="bg-transparent text-light" scope="col">Branch</th>
                         <th class="bg-transparent text-light" scope="col">Name</th>
                         <th class="bg-transparent text-light" scope="col">email</th>
-
-                        <th class="bg-transparent text-light" scope="col">Password</th>
+                        <!-- <th class="bg-transparent text-light" scope="col">Password</th> -->
                         <th class="bg-transparent text-light" scope="col">Status</th>
-                        <!-- <th class="bg-transparent text-light" scope="col">Address Line 3</th>
-                            <th class="bg-transparent text-light" scope="col">City</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
-                            <th class="bg-transparent text-light" scope="col">Phone</th>
-                            <th class="bg-transparent text-light" scope="col">Email</th> -->
 
                     </tr>
                 </thead>
@@ -1537,6 +1550,16 @@
                 </tbody>
             </table>
         </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedLoginData()">
+            </ngb-pagination>
+        </div>
+    </div>
+
+    <!-- No records found -->
+    <div class="col-12">
+        <div>No records found</div>
     </div>
 </ng-template>
 

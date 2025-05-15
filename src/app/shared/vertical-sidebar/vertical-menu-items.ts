@@ -305,6 +305,37 @@ export const ROUTES: RouteInfo[] = [
       },
     ]
   },
+  {
+    path: '',
+    title: 'CRM',
+    icon: 'mdi mdi-stackexchange',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: [
+      {
+        path: '/crm/rate-request/view',
+        title: 'Rate Request',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/crm/quotation/view',
+        title: 'Quotation',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+    ]
+  },
 
 
 

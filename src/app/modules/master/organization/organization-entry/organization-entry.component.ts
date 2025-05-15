@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, TemplateRef } from '@angular/core';
+import { ChangeDetectorRef, Component, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
@@ -21,6 +21,7 @@ import { MasterService } from '../../master.service';
   styleUrl: './organization-entry.component.scss'
 })
 export class OrganizationEntryComponent {
+
   // pagination
   page = 1;
   pageSize = 5;
@@ -45,11 +46,15 @@ export class OrganizationEntryComponent {
   ]
   customerBranchData: any
   customerBranchContactData: any
+  customerBranchEmailData: any
+  departmentList: any
+  customerBranchName: any
   modeOfCountry = [
     { id: 'India', name: 'India' },
     { id: 'Singapore', name: 'Singapore' },
     { id: 'Canada', name: 'Canada' }
   ];
+  customerBranchLoginResults: any
 
   trackByIndex(index: number, item: any): number {
     return index;
@@ -66,7 +71,8 @@ export class OrganizationEntryComponent {
     { id: '9', name: 'Limited Liability Partnership(LLP)' },
     { id: '10', name: 'Local Authority' }
   ];
-
+  customerBranchEmailResults: any
+  customerBranchLoginData: any
   gstTypeList = [
     { id: '1', name: 'Composite' },
     { id: '2', name: 'Exempt' },
@@ -95,10 +101,10 @@ export class OrganizationEntryComponent {
   customerBranchId: any
   customerBranchContactResults: any
   CusBranchContactSid: any
+  customerEmailData: any
   openModal(content: TemplateRef<any>, data?: any) {
     // Initialize both forms before patching
     this.initCustomerBranchForm();
-    this.initCustomerBranchContactForm();
     if (data) {
       this.isModalEditMode = true;
       // Patch form #1
@@ -117,6 +123,29 @@ export class OrganizationEntryComponent {
         CustomerMasterSid: data.CustomerMasterSid || ''
       });
 
+      this.customerBranchName = data.BranchName
+
+      // Add extra controls only if they exist
+      if (data.CustomerBranchSid) {
+        this.customerBranchForm.addControl('CustomerBranchSid', this.fb.control(data.CustomerBranchSid));
+      }
+
+
+
+      this.customerBranchId = data.CustomerBranchSid
+    } else {
+      this.isModalEditMode = false;
+    }
+
+    this.modalRef = this.modalService.open(content, { size: 'lg' }); // ✅ open the template
+    this.loadCustomerBranchContact()
+    this.loadCustomerBranchEmail()
+  }
+
+
+  openBranchContactModal(content: TemplateRef<any>, data?: any) {
+    this.initCustomerBranchContactForm();
+    if (data) {
       // Patch form #2
       this.customerBranchContactForm.patchValue({
         ContactType: data.ContactType || '',
@@ -124,25 +153,51 @@ export class OrganizationEntryComponent {
         MobileNo: data.MobileNo || '',
         Email: data.Email || ''
       });
-
-      // Add extra controls only if they exist
-      if (data.CustomerBranchSid) {
-        this.customerBranchForm.addControl('CustomerBranchSid', this.fb.control(data.CustomerBranchSid));
-      }
-
       if (data.CusBranchContactSid) {
         this.customerBranchContactForm.addControl('CusBranchContactSid', this.fb.control(data.CusBranchContactSid));
       }
-
-      this.customerBranchId = data.CustomerBranchSid
       this.CusBranchContactSid = data.CusBranchContactSid
+      if (this.CusBranchContactSid) {
+        this.loadCustomerBranchContactData()
+      }
+
     } else {
       this.isModalEditMode = false;
     }
 
     this.modalRef = this.modalService.open(content, { size: 'lg' }); // ✅ open the template
+
+
   }
 
+
+
+  openBranchEmailModal(content: TemplateRef<any>, data?: any) {
+    this.initCustomerBranchEmailForm();
+    if (data) {
+      // Patch form #2
+      this.customerBranchEmailForm.patchValue({
+        CustomerBranchSid: data.CustomerBranchSid,
+        DepartmentMasterSid: data.DepartmentMasterSid || '',
+        Toemail: data.Toemail || '',
+        CCemail: data.CCemail || '',
+      });
+      if (data.CustomerBrEmailSid) {
+        this.customerBranchEmailForm.addControl('CustomerBrEmailSid', this.fb.control(data.CustomerBrEmailSid));
+      }
+      this.CustomerBrEmailSid = data.CustomerBrEmailSid
+      if (this.CustomerBrEmailSid) {
+        this.loadCustomerBranchEmailData()
+      }
+
+    } else {
+      this.isModalEditMode = false;
+    }
+
+    this.modalRef = this.modalService.open(content, { size: 'lg' }); // ✅ open the template
+
+
+  }
   modalRef: NgbModalRef;
 
 
@@ -151,6 +206,9 @@ export class OrganizationEntryComponent {
   customerForm!: FormGroup;
   customerBranchForm!: FormGroup
   customerBranchContactForm!: FormGroup
+  customerBranchEmailForm!: FormGroup
+  customerBranchLoginForm!: FormGroup
+
   isEditMode = false; // Flag for edit mode
   isModalEditMode = false
   errorMessage: string = '';  // To store any error messages
@@ -159,6 +217,7 @@ export class OrganizationEntryComponent {
   cityList: any
   countryList: any
   status: any
+  CustomerBrEmailSid: any
   customerBranchResults: any
   constructor(
     private fb: FormBuilder,
@@ -253,13 +312,14 @@ export class OrganizationEntryComponent {
       CustBranchRegistered: ['', [Validators.required]],
       CustBranchGSTtype: ['', [Validators.required]],
       CustBranchGSTIN: ['', [Validators.required]],
+      status: ['']
     })
 
   }
 
 
   initCustomerBranchContactForm() {
-    this.customerBranchForm = this.fb.group({
+    this.customerBranchContactForm = this.fb.group({
       CustomerMasterSid: [''],
       CustomerBranchSid: [''],
       ContactType: ['', [Validators.required]],
@@ -267,6 +327,18 @@ export class OrganizationEntryComponent {
       MobileNo: ['', [Validators.required]],
       Email: ['', [Validators.required]],
     })
+  }
+
+
+  initCustomerBranchEmailForm() {
+    this.customerBranchEmailForm = this.fb.group({
+      CustomerBranchSid: [''],
+      DepartmentMasterSid: [''],
+      BranchName: [{ value: this.customerBranchName || '', disabled: true }],
+      Toemail: ['', [Validators.required]],
+      CCemail: ['', [Validators.required]],
+    })
+    this.loadDepartments()
   }
 
   setupCheckboxWatcher() {
@@ -479,8 +551,8 @@ export class OrganizationEntryComponent {
         this.customerBranchContactData = resp.filter(
           item => item.CustomerMasterSid === this.CustomerMasterSid
         );
-        this.updatePaginatedData();  // Update paginated data
-        this.totalLengthOfCollection = this.customerBranchContactResults.length || 0;
+        // this.updatePaginatedContactData();  // Update paginated data
+        // this.totalLengthOfCollection = this.customerBranchContactResults.length || 0;
         this.cdRef.detectChanges(); // trigger change detection
       });
   }
@@ -581,6 +653,25 @@ export class OrganizationEntryComponent {
     this.customerBranchData = this.customerBranchResults.slice(startIndex, endIndex);
   }
 
+  updatePaginatedContactData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.customerBranchContactData = this.customerBranchContactResults.slice(startIndex, endIndex);
+  }
+
+  updatePaginatedEmailData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.customerBranchEmailData = this.customerBranchEmailResults.slice(startIndex, endIndex);
+  }
+
+  updatePaginatedLoginData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.customerBranchLoginData = this.customerBranchLoginResults.slice(startIndex, endIndex);
+  }
+
+
   deleteCustomerBranch(id) {
     this.masterService.deleteCustomerBranchById(id).subscribe((resp: any) => {
       this.appSettingService.showSuccess("Deleted!");
@@ -622,7 +713,7 @@ export class OrganizationEntryComponent {
         CustomerBranchSid: this.customerBranchId,
         ContactType: formValue.ContactType,
         MobileNo: String(formValue.MobileNo),
-        Email: formValue.CustBranchEmail,
+        Email: formValue.Email,
         ContactName: formValue.ContactName,
         ...updatedBy,
         status: formValue.status
@@ -632,7 +723,7 @@ export class OrganizationEntryComponent {
           CustomerBranchSid: this.customerBranchId,
           ContactType: formValue.ContactType,
           MobileNo: String(formValue.MobileNo),
-          Email: formValue.CustBranchEmail,
+          Email: formValue.Email,
           ContactName: formValue.ContactName,
           ...createdBy,
           status: formValue.status
@@ -645,6 +736,7 @@ export class OrganizationEntryComponent {
             this.appSettingService.showSuccess(resp.message);
             this.customerBranchForm.reset()
             this.modalRef.close()
+            this.loadCustomerBranchContact()
           } else {
             this.appSettingService.showError(resp.message);
           }
@@ -663,6 +755,7 @@ export class OrganizationEntryComponent {
             this.appSettingService.showSuccess(resp.message);
             this.customerBranchForm.reset()
             this.modalRef.close()
+            this.loadCustomerBranchContact()
           } else {
             this.appSettingService.showError(resp.message);
           }
@@ -686,8 +779,8 @@ export class OrganizationEntryComponent {
   }
 
   // Fetch lead data and patch the form
-  loadCustomerBranchContactData(cusBranchContactId: number) {
-    this.masterService.getCustomerBranchById(cusBranchContactId).subscribe(
+  loadCustomerBranchContactData() {
+    this.masterService.getCustomerBranchById(this.CusBranchContactSid).subscribe(
       (cusData: any) => {
         console.log(cusData)
         const formattedStatus = this.statusMap[cusData.Status] || '';
@@ -702,6 +795,119 @@ export class OrganizationEntryComponent {
       }
     );
   }
+
+
+  //customer-branch-email
+  customerBranchEmailSubmit() {
+
+    let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
+    let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
+    const formValue = this.customerBranchEmailForm.value;
+
+    const payload =
+      (this.isModalEditMode && this.CustomerBrEmailSid) ? {
+        CustomerBranchSid: Number(this.customerBranchId),
+        DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
+        Toemail: formValue.Toemail,
+        CCemail: formValue.CCemail,
+        ...updatedBy,
+      } :
+        {
+          CustomerBranchSid: Number(this.customerBranchId),
+          DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
+          Toemail: formValue.Toemail,
+          CCemail: formValue.CCemail,
+          ...createdBy,
+        };
+
+    if (this.isModalEditMode && this.CustomerBrEmailSid) {
+      this.masterService.updateCustomerBranchEmailById(this.CustomerBrEmailSid, payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess(resp.message);
+            this.customerBranchForm.reset()
+            this.modalRef.close()
+            this.loadCustomerBranchEmail()
+          } else {
+            this.appSettingService.showError(resp.message);
+          }
+
+        },
+        (error) => {
+          this.errorMessage = error.message;
+          console.error('Error loading country:', error);
+        }
+      );
+    } else {
+
+      this.masterService.createCustomerBranchEmail(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess(resp.message);
+            this.customerBranchForm.reset()
+            this.modalRef.close()
+            this.loadCustomerBranchEmail()
+          } else {
+            this.appSettingService.showError(resp.message);
+          }
+
+        },
+        (error) => {
+          this.errorMessage = error.message;
+          console.error('Error loading country:', error);
+        }
+      );
+    }
+
+  }
+
+
+  deleteCustomerBranchEmail(id) {
+    this.masterService.deleteCustomerBranchEmailById(id).subscribe((resp: any) => {
+      this.appSettingService.showSuccess("Deleted!");
+      this.loadCustomerBranchContact()
+    });
+  }
+
+  // Fetch lead data and patch the form
+  loadCustomerBranchEmailData() {
+    this.masterService.getCustomerBranchEmailById(this.CustomerBrEmailSid).subscribe(
+      (cusData: any) => {
+        console.log(cusData)
+        const formattedStatus = this.statusMap[cusData.Status] || '';
+        this.customerBranchEmailForm.patchValue({
+          ...cusData,
+          Status: formattedStatus
+        },
+        );
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading lead data.');
+      }
+    );
+  }
+
+
+  loadCustomerBranchEmail(): void {
+    this.masterService.getAllCustomerBranchEmail().subscribe(
+      (resp: any[]) => {
+        // Filter only items with matching CustomerMasterSid
+        this.customerBranchEmailData = resp.filter(
+          item => item.CustomerBranchSid === this.customerBranchId
+        );
+        // this.updatePaginatedEmailData();  // Update paginated data
+        // this.totalLengthOfCollection = this.customerBranchEmailResults.length || 0;
+        this.cdRef.detectChanges(); // trigger change detection
+      });
+  }
+
+
+  loadDepartments() {
+    this.masterService.getAllDepartments().subscribe((res) => {
+      this.departmentList = res
+    })
+  }
+
 
   reset() {
     this.customerForm.reset();
