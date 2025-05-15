@@ -1,16 +1,16 @@
 <div class="row">
     <div class="col-12">
         <div class="d-flex align-items-center gap-2 mb-3">
-            <button class="btn btn-sm btn-light-secondary ms-auto">
-                <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
+            <button class="btn btn-sm btn-light-secondary ms-auto" (click)="navigateBack()">
+                <i-feather name="corner-up-left" class="feather-sm me-1"></i-feather> Back
             </button>
-            <button class="btn btn-sm btn-info">
-                <i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> Edit
+            <button class="btn btn-sm btn-info" (click)="onSave()">
+                <i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> Save
             </button>
         </div>
     </div>
 
-    <div class="col-12">
+    <div class="col-12" [formGroup]="inputForm">
         <div class="card h-100">
             <div class="card-body">
                 <div class="row">
@@ -18,91 +18,129 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Dept Name <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">Dept Name <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <input type="text" formControlName="POOSid" id="text-input" placeholder=""
+                                class="custom-input-field sm">
                             <label for="text-input" class="input-label">POO <span class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <input type="text" formControlName="POLSid" id="text-input" placeholder=""
+                                class="custom-input-field sm">
                             <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <input type="text" id="text-input" formControlName="PODSid" placeholder=""
+                                class="custom-input-field sm">
                             <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <input type="text" id="text-input" formControlName="FDCSid" placeholder=""
+                                class="custom-input-field sm">
                             <label for="text-input" class="input-label">FDC <span class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Via Port <span class="text-danger">*</span></label>
+                            <input type="text" id="text-input" formControlName="ViaPortSid" placeholder=""
+                                class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Via Port <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">POL Terminal <span class="text-danger">*</span></label>
+                            <input type="text" id="text-input" formControlName="POLTerminal" placeholder=""
+                                class="custom-input-field sm">
+                            <label for="text-input" class="input-label">POL Terminal <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">POD Terminal <span class="text-danger">*</span></label>
+                            <input type="text" id="text-input" formControlName="PODTerminal" placeholder=""
+                                class="custom-input-field sm">
+                            <label for="text-input" class="input-label">POD Terminal <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Carrier <span class="text-danger">*</span></label>
+                            <input type="text" formControlName="Carrier" id="text-input" placeholder=""
+                                class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Carrier <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Cargo Type <span class="text-danger">*</span></label>
+                            <input type="text" formControlName="CargoType" id="text-input" placeholder=""
+                                class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Cargo Type <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <input type="text" formControlName="ServiceLevel" id="text-input" placeholder=""
+                                class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Service Level <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="AgentSid" id="text-input" placeholder=""
+                                class="custom-input-field sm">
                             <label for="text-input" class="input-label">Agent <span class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Stuffing At <span class="text-danger">*</span></label>
+                            <input type="text" formControlName="StuffingAt" id="text-input" placeholder=""
+                                class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Stuffing At <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Inco Terms <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Remarks <span class="text-danger">*</span></label>
+                            <input type="text" formControlName="IncoTerms" id="text-input" placeholder=""
+                                class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Inco Terms <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
+                            <input type="text" formControlName="Remarks" id="text-input" placeholder=""
+                                class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Remarks <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <!-- <input type="text" formControlName="status" id="text-input" placeholder=""
+                                class="custom-input-field sm"> -->
+                            <select formControlName="status" name="status" class="form-select" [(ngModel)]="Status">
+                                <option value="" [disabled]="!isEditMode">Status</option>
+                                <option value="A">Active</option>
+                                <option value="I" [disabled]="!isEditMode">Invalid</option>
+                                <option value="B" [disabled]="!isEditMode">Block</option>
+                            </select>
+                            <label for="text-input" class="input-label">Status <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
                 </div>
@@ -148,8 +186,10 @@
                                         FRT
                                     </td>
                                     <td>
-                                        <div class="dofi-max-w-200 text-truncate" ngbTooltip="Ocean Freight Lorem ipsum dolor sit amet, consectetur adipisicing elit. Animi, harum.">
-                                            Ocean Freight Lorem ipsum dolor sit amet, consectetur adipisicing elit. Animi, harum.
+                                        <div class="dofi-max-w-200 text-truncate"
+                                            ngbTooltip="Ocean Freight Lorem ipsum dolor sit amet, consectetur adipisicing elit. Animi, harum.">
+                                            Ocean Freight Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                                            Animi, harum.
                                         </div>
                                     </td>
                                     <td>

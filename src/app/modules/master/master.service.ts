@@ -729,4 +729,51 @@ export class MasterService {
       })
     );
   }
+
+  // Tariff Master
+
+  searchTariff(payload: any) {
+    return this.http.post<{ data: any }>(`tariff/search-list`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  deleteTariffById(TariffHeaderSid: number) {
+    return this.http.delete<{ data: any }>(`tariff/delete/${TariffHeaderSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  getTariffById(TariffHeaderSid: number) {
+    return this.http.get<{ data: any }>(`tariff/fetch/${TariffHeaderSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  updateTariffById(TariffHeaderSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`tariff/update/${TariffHeaderSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  createTariff(payload) {
+    return this.http.post<{ data: any }>('tariff/create', payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
 }
