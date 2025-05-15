@@ -349,6 +349,14 @@ export class MasterService {
       })
     );
   }
+  searchUomList(payload) {
+    return this.http.post("uom/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    )
+  }
+
 
   getUomById(id: number) {
     return this.http.get<{ data: Uom }>(`uom/${id}`).pipe(
@@ -393,6 +401,13 @@ export class MasterService {
         return response;
       })
     );
+  }
+  searchUnitList(payload) {
+    return this.http.post("unit/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    )
   }
 
   getUnitById(id: number) {
@@ -483,6 +498,13 @@ export class MasterService {
         return response;
       })
     );
+  }
+  searchPortList(payload) {
+    return this.http.post("port/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    )
   }
 
   getPortById(id: number) {

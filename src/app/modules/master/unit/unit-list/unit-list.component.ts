@@ -1,85 +1,118 @@
-import { Component, OnInit } from '@angular/core';
-import { FeatherModule } from 'angular-feather';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import { Router, RouterModule } from '@angular/router';
-import { AppService } from 'src/app/service/app.service';
-import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
-import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { Unit } from 'src/app/modules/crm-mobile/Interfaces/unit.interface';
-import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
-
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { AppService } from 'src/app/service/app.service';
 
 @Component({
   selector: 'app-unit-list',
   standalone: true,
   imports: [
-    CommonModule,
-    FeatherModule,
-    NgbPaginationModule,
-    FormsModule,
-    RouterModule
+    CommonModule, 
+    FeatherModule, 
+    FormsModule, 
+    NgbPaginationModule, 
+    RouterModule,
+    MatDialogModule
   ],
   templateUrl: './unit-list.component.html',
   styleUrl: './unit-list.component.scss'
 })
 export class UnitListComponent {
-  unit: Unit[] = [];
+  searchType = 'unitName';
+  filterValue = '';
+  results: any[] = [];
+  unitList: any[] = [];
   errorMessage: string = '';
+  searchPerformed = false;
+  isMobile: boolean = false;
+
+  // pagination
   page = 1;
   pageSize = 5;
-  totalLengthOfCollection: number;
-  searchText: string = '';
-  filteredUnit: Unit[] = [];
-  isMobile: boolean = false;
-  constructor(private masterService: MasterService, private route: Router, private appService: AppService, private appSettingService: AppSettingsService, private dialog:MatDialog) { }
+  totalLengthOfCollection: number = 0;
+  loading: boolean = false;
 
-  ngOnInit(): void {
-    this.loadUnit();
+  constructor(
+    private masterService: MasterService, 
+    private router: Router,
+    private appService: AppService,
+    private dialog: MatDialog,
+    private appSettingService: AppSettingsService
+  ) { }
+
+  ngOnInit() {
+    this.loadUnits();
     this.isMobile = this.appService.getDevice();
   }
-  createNew() {
-    this.route.navigate(['master/unit/entry'])
-  }
 
-  loadUnit(): void {
-    this.masterService.getAllUnits().subscribe(
-      (resp: Unit[]) => {
-        this.unit = resp['data'];
-        console.log(this.unit);
-        this.filteredUnit = [...this.unit];
-        this.totalLengthOfCollection = this.unit.length || 0;
+  loadUnits() {
+    this.loading = true;
+    this.masterService.getAllUnits().subscribe({
+      next: (resp: any) => {
+        this.results = resp.data || resp;
+        this.updatePaginatedData();
+        this.totalLengthOfCollection = this.results.length;
+        this.loading = false;
       },
-      (error) => {
-        this.errorMessage = error.message;
-        console.error('Error loading unit:', error);
+      error: (err) => {
+        console.error('Error loading units:', err);
+        this.appSettingService.showError('Failed to load units');
+        this.loading = false;
       }
-    );
+    });
   }
 
-  searchUnit(): void {
-    const searchQuery = this.searchText?.toLowerCase().trim(); // Trim spaces and handle null/undefined
-
-    if (!searchQuery) {
-      this.filteredUnit = [...this.unit];
-    } else {
-      this.filteredUnit = this.unit.filter((unit) => {
-        return (
-          unit.unitName?.toLowerCase().includes(searchQuery) ||
-          unit.unitCode?.toLowerCase().includes(searchQuery) ||
-          unit.jobType?.toLowerCase().includes(searchQuery) ||
-          unit.containerType?.toLowerCase().includes(searchQuery) ||
-          unit.measurementType?.toLowerCase().includes(searchQuery) ||
-          unit.remarks?.toLowerCase().includes(searchQuery) ||
-          (unit.status === 'A' ? 'Active' : 'Cancelled').toLowerCase().includes(searchQuery)
-        );
-      });
+  search() {
+    this.filterValue = this.filterValue?.trim();
+    
+    if (!this.filterValue) {
+      this.loadUnits();
+      this.page = 1;
+      this.searchPerformed = false;
+      return;
     }
+    
+    const payload = {
+      searchType: this.searchType,
+      filterValue: this.searchType === 'status' 
+        ? this.filterValue === 'Active' ? 'A' : 'C' 
+        : this.filterValue,
+    }
+    
+    this.loading = true;
+    this.page = 1;
+    this.masterService.searchUnitList(payload).subscribe({
+      next: (res: any) => {
+        this.results = res.data || res;
+        this.searchPerformed = true;
+        this.updatePaginatedData();
+        this.totalLengthOfCollection = this.results.length;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error searching units:', err);
+        this.appSettingService.showError('Failed to search units');
+        this.loading = false;
+      }
+    });
   }
 
+  updatePaginatedData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.unitList = this.results.slice(startIndex, endIndex);
+  }
+
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
 
   deleteUnit(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
@@ -91,7 +124,7 @@ export class UnitListComponent {
           this.appSettingService.showSuccess("Deleted!");
           console.log(resp);
           // if(resp.status){
-          this.loadUnit();
+          this.loadUnits();
 
           // }
 
@@ -99,5 +132,20 @@ export class UnitListComponent {
       }
     });
   }
+  
+  navigateToCreateUnit() {
+    this.router.navigate(['master/unit/entry']);
+  }
 
+  resetSearch() {
+    this.searchType = 'unitName';
+    this.filterValue = '';
+    this.searchPerformed = false;
+    this.page = 1;
+    this.loadUnits();
+  }
+
+  getStatusText(status: string): string {
+    return status === 'A' ? 'Active' : 'Cancelled';
+  }
 }

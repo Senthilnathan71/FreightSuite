@@ -1,64 +1,101 @@
 <div class="row">
     <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <form action="" class="d-flex align-items-center gap-2">
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
-                        (input)="searchUom()" autocomplete="off" placeholder="Search">
-                    <i class="fas fa-search ms-3"></i>
+            <div class="col-12">
+                <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
+                    <form class="d-flex align-items-center gap-2" (ngSubmit)="search(); $event.preventDefault()">
+                        <div class="form-outline col">
+                            <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                                <option value="UOMName">UOM Name</option>
+                                <option value="UOMCode">UOM Code</option>
+                                <option value="status">Status</option>
+                            </select>
+                        </div>
+                        <div class="form-outline col">
+                            <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
+                                placeholder="Enter filter value">
+                            <i
+                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                        </div>
+
+                        <button type="submit" class="btn btn-info btn-sm" [disabled]="loading">
+                            <i class="fas fa-search"></i>
+                            <span *ngIf="!loading">Search</span>
+                            <span *ngIf="loading">Searching...</span>
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
+                            <i class="mdi mdi-plus"></i> Add
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm">
+                            report
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm" (click)="resetSearch()">
+                            Reset
+                        </button>
+                    </form>
                 </div>
-                <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
-                    <i class="mdi mdi-plus"></i> Add
-                </button>
-            </form>
+            </div>
         </div>
     </div>
-    <div class="col-12">
-        <div class="card">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">UOM Name</th>
-                            <th class="bg-transparent text-light" scope="col">UOM Code</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
-                            <th class="bg-transparent text-light" scope="col">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let uom of filteredUom">
-                            <td>
-                                <div class="text-truncate">{{ uom.UOMName}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{ uom.UOMCode}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{ uom.status === 'A' ? 'Active' : 'Cancelled' }}</div>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <a class="text-info mx-2" class="link mx-2 ps-3 "
-                                        [routerLink]="['/master/uom-master/view/', uom.UOMMasterSid]">
-                                        <i-feather class="feather-sm" name="eye"></i-feather>
-                                    </a>
-                                    <a class="text-danger mx-2 ps-3 border-start" (click)="deleteUom(uom.UOMMasterSid)">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="card-body">
-                <!-- #region Pagination -->
-                <ngb-pagination class="d-flex justify-content-end
-                " [collectionSize]="totalLengthOfCollection" [pageSize]="pageSize" [(page)]="page"></ngb-pagination>
-                <!-- #endregion -->
-            </div>
-
+    <div class="col-12" *ngIf="totalLengthOfCollection > 0 && !loading">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">UOM Name</th>
+                        <th class="bg-transparent text-light" scope="col">UOM Code</th>
+                        <th class="bg-transparent text-light" scope="col">Status</th>
+                        <th class="bg-transparent text-light" scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of uomList; let i = index; trackBy: trackByIndex">
+                        <td>
+                            <div class="text-truncate">{{item.UOMName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.UOMCode}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{ getStatusText(item.status) }}</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="text-primary mx-2" 
+                                   [routerLink]="['/master/uom-master/view/', item.UOMMasterSid]"
+                                   title="Edit">
+                                   <i-feather name="edit-3" class="feather-sm"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start"
+                                (click)="deleteUom(item.UOMMasterSid)"
+                                title="Delete">
+                                 <i-feather name="trash-2" class="feather-sm"></i-feather>
+                             </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+            </ngb-pagination>
+        </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div class="col-12" *ngIf="loading">
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading data...</p>
+        </div>
+    </div>
+
+    <!-- No records found -->
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed && !loading">
+        <div class="alert alert-info">No records found matching your search criteria</div>
     </div>
 </div>
