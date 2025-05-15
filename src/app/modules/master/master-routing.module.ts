@@ -411,6 +411,17 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: "tarrif/entry/:id",
+        component: TarrifEntryComponent,
+        data: {
+          title: "Edit Tarrif",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Edit Tarrif" },
+          ],
+        },
+      },
+      {
         path: "sector/list",
         component: SectorListComponent,
         data: {
