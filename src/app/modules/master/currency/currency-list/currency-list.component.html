@@ -1,9 +1,9 @@
 <div class="row">
     <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <div class="col-12">
-                <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
-                    <form class="d-flex align-items-center gap-2" (ngSubmit)="search(); $event.preventDefault()">
+            <div class="col-8 mx-auto">
+                <div class="rounded-3 p-2 bg-body-tertiary mb-2" data-bs-theme="light">
+                    <form class="d-flex align-items-center gap-2">
                         <div class="form-outline col">
                             <select [(ngModel)]="searchType" name="searchType" class="form-select">
                                 <option value="currencyName">Currency Name</option>
@@ -18,22 +18,21 @@
                         <div class="form-outline col">
                             <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
                                 placeholder="Enter filter value">
-                            <i
-                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                            <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
                         </div>
 
-                        <button type="submit" class="btn btn-info btn-sm" [disabled]="loading">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="search()">
                             <i class="fas fa-search"></i>
-                            <span *ngIf="!loading">Search</span>
-                            <span *ngIf="loading">Searching...</span>
+                            Search
                         </button>
-                        <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateCurrency()">
-                            <i class="mdi mdi-plus"></i> Add
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" 
+                                (click)="navigateToCreateCurrency()">
+                            <i class="mdi mdi-plus"></i> Create
                         </button>
-                        <button type="button" class="btn btn-secondary btn-sm">
-                            report
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="report()">
+                            Report
                         </button>
-                        <button type="button" class="btn btn-secondary btn-sm" (click)="resetSearch()">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="resetPage()">
                             Reset
                         </button>
                     </form>
@@ -41,77 +40,65 @@
             </div>
         </div>
     </div>
-    <div class="col-12" *ngIf="totalLengthOfCollection > 0 && !loading">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Currency Name</th>
-                        <th class="bg-transparent text-light" scope="col">Currency Code</th>
-                        <th class="bg-transparent text-light" scope="col">Symbol</th>
-                        <th class="bg-transparent text-light" scope="col">Unit</th>
-                        <th class="bg-transparent text-light" scope="col">Sub Unit</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of currencyList; let i = index; trackBy: trackByIndex">
-                        <td>
-                            <div class="text-truncate">{{item.currencyName}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.currencyCode}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.symbol}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.unit}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.subUnit}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{ getStatusText(item.status) }}</div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <a class="text-primary mx-2" 
-                                   [routerLink]="['/master/currency/entry/', item.CurrencyMasterSid]"
-                                   title="Edit">
-                                   <i-feather name="edit-3" class="feather-sm"></i-feather>
-                                </a>
-                                <a class="text-danger mx-2 ps-3 border-start"
-                                (click)="deleteCurrency(item.CurrencyMasterSid)"
-                                title="Delete">
-                                 <i-feather name="trash-2" class="feather-sm"></i-feather>
-                             </a>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div>
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
-            </ngb-pagination>
-        </div>
-    </div>
+</div>
 
-    <!-- Loading indicator -->
-    <div class="col-12" *ngIf="loading">
-        <div class="text-center py-4">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Loading data...</p>
-        </div>
+<div class="col-12" *ngIf="totalLengthOfCollection > 0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle no-wrap table-bordered">
+            <thead>
+                <tr class="bg-info">
+                    <th class="bg-transparent text-light" scope="col">Currency Name</th>
+                    <th class="bg-transparent text-light" scope="col">Currency Code</th>
+                    <th class="bg-transparent text-light" scope="col">Symbol</th>
+                    <th class="bg-transparent text-light" scope="col">Unit</th>
+                    <th class="bg-transparent text-light" scope="col">Sub Unit</th>
+                    <th class="bg-transparent text-light" scope="col">Status</th>
+                    <th class="bg-transparent text-light" scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of currencyList; let i = index; trackBy: trackByIndex">
+                    <td>
+                        <div class="text-truncate">{{item.currencyName}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{item.currencyCode}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{item.Symbol || '-'}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{item.CurrencySubUnit || '-'}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{item.CurrencyUnit || '-'}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{getStatusText(item.status)}}</div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <a class="text-info mx-2" [routerLink]="['/master/currency/entry/', item.CurrencyMasterSid]">
+                                <i-feather class="feather-sm" name="eye"></i-feather>
+                            </a>
+                            <a class="text-danger mx-2 ps-3 border-start" 
+                               (click)="deleteCurrency(item.CurrencyMasterSid)">
+                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
+    <div>
+        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+            [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+        </ngb-pagination>
+    </div>
+</div>
 
-    <!-- No records found -->
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed && !loading">
-        <div class="alert alert-info">No records found matching your search criteria</div>
-    </div>
+<!-- No records found -->
+<div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
+    <div>No records found</div>
 </div>

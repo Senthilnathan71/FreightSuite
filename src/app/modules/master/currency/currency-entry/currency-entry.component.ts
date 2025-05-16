@@ -31,7 +31,7 @@ goBack() {
   currencyForm: FormGroup;
   isEditMode = false;
   btnDisable = false;
-  currencyId: number;
+  currencyID: number;
   loading = false;
   countries: Country[] = [];
   
@@ -55,9 +55,9 @@ goBack() {
     this.loadCountries();
     this.route.params.subscribe(params => {
       if (params['id']) {
-        this.currencyId = +params['id'];
+        this.currencyID = +params['id'];
         this.isEditMode = true;
-        this.getCurrencyById(this.currencyId);
+        this.getCurrencyById(this.currencyID);
       }
     });
   }
@@ -66,6 +66,7 @@ goBack() {
     this.currencyForm = this.fb.group({
       currencyName: ['', [Validators.required, Validators.maxLength(100)]],
       currencyCode: ['', [Validators.required, Validators.maxLength(3)]],
+      currencyID: ['', [Validators.required, Validators.maxLength(1)]],
       currencyUnit: ['', [Validators.required, Validators.maxLength(50)]],
       currencySubUnit: ['', [Validators.required, Validators.maxLength(50)]],
       symbol: ['', [Validators.required, Validators.maxLength(5)]],
@@ -74,7 +75,7 @@ goBack() {
       currencyRatio: [1, [Validators.required, Validators.min(0)]],
       amountDecimal: [2, [Validators.required, Validators.min(0), Validators.max(8)]],
       exchangeDecimal: [4, [Validators.required, Validators.min(0), Validators.max(8)]],
-      status: ['A', Validators.required],
+      status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
       CountryMasterSid: ['', Validators.required],
       remarks: ['']
     });
@@ -108,9 +109,10 @@ goBack() {
         this.currencyForm.patchValue({
           currencyName: currency.currencyName,
           currencyCode: currency.currencyCode,
-          currencyUnit: currency.unit, 
-          currencySubUnit: currency.subUnit,
-          symbol: currency.symbol,
+          currencyID: currency.currencyID,
+          currencyUnit: currency.CurrencyUnit, 
+          currencySubUnit: currency.CurrencySubUnit,
+          symbol: currency.Symbol,
           currencyFirstName: currency.currencyFirstName || '',
           currencyLastName: currency.currencyLastName || '',
           currencyRatio: currency.currencyRatio,
@@ -118,7 +120,7 @@ goBack() {
           exchangeDecimal: currency.exchangeDecimal,
           status: currency.status,
           CountryMasterSid: currency.CountryMasterSid,
-          remarks: currency.remarks || ''
+          Remarks: currency.Remarks || ''
         });
         this.loading = false;
       },
@@ -142,9 +144,10 @@ goBack() {
     const payload = {
       currencyName: this.currencyForm.value.currencyName,
       currencyCode: this.currencyForm.value.currencyCode,
-      unit: this.currencyForm.value.currencyUnit, // Changed from currencyUnit to unit
-      subUnit: this.currencyForm.value.currencySubUnit, // Changed from currencySubUnit to subUnit
-      symbol: this.currencyForm.value.symbol,
+      currencyID: this.currencyForm.value.currencyID,
+      CurrencyUnit: this.currencyForm.value.currencyUnit, 
+      CurrencySubUnit: this.currencyForm.value.currencySubUnit, 
+      Symbol: this.currencyForm.value.symbol,
       currencyFirstName: this.currencyForm.value.currencyFirstName,
       currencyLastName: this.currencyForm.value.currencyLastName,
       currencyRatio: Number(this.currencyForm.value.currencyRatio),
@@ -152,11 +155,11 @@ goBack() {
       exchangeDecimal: Number(this.currencyForm.value.exchangeDecimal),
       CountryMasterSid: Number(this.currencyForm.value.CountryMasterSid),
       status: this.currencyForm.value.status,
-      remarks: this.currencyForm.value.remarks
+      Remarks: this.currencyForm.value.Remarks
     };
   
     const operation = this.isEditMode 
-      ? this.masterService.updateCurrencyById(this.currencyId, payload)
+      ? this.masterService.editCurrency(this.currencyID, payload)
       : this.masterService.createCurrency(payload);
   
     operation.subscribe({
@@ -176,22 +179,26 @@ goBack() {
         console.error(err);
         this.loading = false;
         this.btnDisable = false;
-        const errorMessage = `Error ${this.isEditMode ? 'updating' : 'creating'} currency`;
-        this.appSettingService.showError(errorMessage + ': ' + (err.error?.message || err.message || ''));
+        let errorMessage = `Error ${this.isEditMode ? 'updating' : 'creating'} currency`;
+        if (err.status === 400 && err.error.message.includes('already exists')) {
+          this.appSettingService.showError(err.error.message);
+        } else {
+          this.appSettingService.showError('Failed to create currency. Please try again.');
+        }      
       }
     });
   }
   
   resetForm() {
     if (this.isEditMode) {
-      this.getCurrencyById(this.currencyId);
+      this.getCurrencyById(this.currencyID);
     } else {
       this.currencyForm.reset({
         currencyName: '',
         currencyCode: '',
         currencyUnit: '',
         currencySubUnit: '',
-        symbol: '',
+        Symbol: '',
         currencyFirstName: '',
         currencyLastName: '',
         currencyRatio: 1,

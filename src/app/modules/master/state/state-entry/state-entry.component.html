@@ -19,15 +19,9 @@
       <!-- Top buttons -->
       <div class="col-12">
         <div class="d-flex align-items-center gap-2 mb-3">
-          <button type="submit" [disabled]="loading" class="btn btn-primary">
-            <span *ngIf="!loading">
-              <i-feather name="save" class="feather-sm me-1"></i-feather>
-              {{ isEditMode ? 'Update' : 'Create' }}
-            </span>
-            <span *ngIf="loading">
-              <i-feather name="loader" class="feather-sm spin me-1"></i-feather>
-              Processing...
-            </span>
+          <button type="submit" class="btn btn-primary">
+            <i-feather name="save" class="feather-sm me-1"></i-feather>
+            {{ isEditMode ? 'Update' : 'Create' }}
           </button>
           <button type="button" class="btn btn-sm btn-info" (click)="resetForm()">
             <i-feather name="rotate-ccw" class="feather-sm me-1"></i-feather> Reset
@@ -57,7 +51,7 @@
                   <label for="stateName" class="input-label">State Name <span class="text-danger">*</span></label>
                   <!-- Validation messages -->
                   <div *ngIf="stateForm.get('stateName')?.touched && stateForm.get('stateName')?.errors" class="invalid-feedback d-block">
-                    <span *ngIf="stateForm.get('stateName')?.hasError('required')">Only alphabetic characters and spaces are allowed in the name</span>
+                    <span *ngIf="stateForm.get('stateName')?.hasError('required')">State name is required</span>
                     <span *ngIf="stateForm.get('stateName')?.hasError('invalidAlphaSpace')">
                       Only alphabetic characters and spaces are allowed
                     </span>
@@ -82,18 +76,17 @@
                   <label for="stateCode" class="input-label">State Code <span class="text-danger">*</span></label>
                   <div *ngIf="stateForm.get('stateCode')?.touched && stateForm.get('stateCode')?.errors" class="invalid-feedback">
                     <span *ngIf="stateForm.get('stateCode')?.hasError('required')">Code is required</span>
-                    <span *ngIf="stateForm.get('stateCode')?.hasError('minlength') || 
-                                 stateForm.get('stateCode')?.hasError('maxlength')">
-                     Invalid state code, max length should be 2 characters.
+                    <span *ngIf="stateForm.get('stateCode')?.hasError('maxlength')">
+                      State code must be exactly 2 characters
                     </span>
                     <span *ngIf="stateForm.get('stateCode')?.hasError('invalidAlpha')">
                       Only alphabetic characters are allowed (A-Z, a-z)
                     </span>
                   </div>
                 </div>
-              </aside><!-- Country -->
+              </aside>
 
-              
+              <!-- Country -->
               <aside class="col-md-6">
                 <div class="custom-form-group custom-form-group-select">
                   <ng-select

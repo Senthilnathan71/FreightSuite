@@ -3,11 +3,11 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
-import { NgSelectModule } from '@ng-select/ng-select';
 import { MasterService } from '../../master.service';
 import { State } from 'src/app/modules/crm-mobile/Interfaces/state.interface';
 import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface';
-import { FormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -15,7 +15,6 @@ import { Subject } from 'rxjs';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     ReactiveFormsModule,
     FeatherModule,
     NgSelectModule
@@ -24,51 +23,26 @@ import { Subject } from 'rxjs';
   styleUrls: ['./state-entry.component.scss']
 })
 export class StateEntryComponent implements OnInit {
-onCountryChange(event: any) {
-throw new Error('Method not implemented.');
-}
   stateForm: FormGroup;
-  countries: Country[] = [];
-  statusOptions = [
-    { id: 'A', name: 'Active' },
-    { id: 'I', name: 'Inactive' }
-  ];
   isEditMode = false;
   btnDisable = false;
   stateId: number;
   loading = false;
-  notifyService: any;
-countryOptions: readonly any[];
-countryInput$: Subject<string>;
+  countries: Country[] = [];
+  
+  statusOptions = [
+    { id: 'A', name: 'Active' },
+    { id: 'I', name: 'Inactive' }
+  ];
 
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private appSettingService: AppSettingsService
   ) {
-    this.stateForm = this.fb.group({
-      stateName: ['', [
-        Validators.required,
-        Validators.maxLength(100),
-        this.alphaSpaceValidator()
-      ]],
-      stateCode: ['', [
-        Validators.required,
-        Validators.maxLength(2),
-        this.alphaValidator()
-      ]],
-      CountryMasterSid: [null, Validators.required],
-      region: [''],
-      status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
-      Remarks: ['']
-    });
-
-    this.stateForm.get('stateCode')?.valueChanges.subscribe(val => {
-      if (val) {
-        this.stateForm.get('stateCode')?.setValue(val.toUpperCase(), { emitEvent: false });
-      }
-    });
+    this.initForm();
   }
 
   ngOnInit(): void {
@@ -77,8 +51,25 @@ countryInput$: Subject<string>;
       if (params['id']) {
         this.stateId = +params['id'];
         this.isEditMode = true;
-        this.stateForm.get('status')?.enable();
         this.getStateById(this.stateId);
+      }
+    });
+  }
+
+  initForm() {
+    this.stateForm = this.fb.group({stateName: ['', [Validators.required,Validators.maxLength(100),
+        this.alphaSpaceValidator()
+      ]],
+      stateCode: ['', [Validators.required,Validators.maxLength(2),this.alphaValidator()]],
+      CountryMasterSid: ['', Validators.required],
+      region: [''],
+      status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
+      Remarks: ['']
+    });
+
+    this.stateForm.get('stateCode')?.valueChanges.subscribe(val => {
+      if (val) {
+        this.stateForm.get('stateCode')?.setValue(val.toUpperCase(), { emitEvent: false });
       }
     });
   }
@@ -123,28 +114,30 @@ countryInput$: Subject<string>;
       error: (err) => {
         console.error('Error loading countries:', err);
         this.loading = false;
+        this.appSettingService.showError('Failed to load countries');
       }
     });
   }
 
   getStateById(id: number) {
     this.loading = true;
+    this.stateForm.reset();
     this.masterService.getStateById(id).subscribe({
       next: (state: State) => {
         this.stateForm.patchValue({
           stateName: state.stateName,
           stateCode: state.stateCode,
           CountryMasterSid: state.CountryMasterSid,
-          region: state.region,
+          region: state.region || '',
           status: state.status,
-          Remarks: state.Remarks 
+          Remarks: state.Remarks || ''
         });
         this.loading = false;
       },
       error: (err) => {
         console.error('Error loading state:', err);
         this.loading = false;
-        alert('Failed to load state data');
+        this.appSettingService.showError('Failed to load state data');
       }
     });
   }
@@ -154,47 +147,58 @@ countryInput$: Subject<string>;
       this.markFormGroupTouched(this.stateForm);
       return;
     }
-
+  
     this.btnDisable = true;
     this.loading = true;
-    const payload = this.stateForm.value;
-
+    
+    const payload = {
+      ...this.stateForm.value,
+      CountryMasterSid: Number(this.stateForm.value.CountryMasterSid),
+      // Ensure status is included for create mode too
+      status: this.isEditMode ? this.stateForm.value.status : 'A'
+    };
+  
     const operation = this.isEditMode 
-      ? this.masterService.updateStateById(this.stateId, payload)
+      ? this.masterService.editState(this.stateId, payload)
       : this.masterService.createState(payload);
-
+  
     operation.subscribe({
-      next: (resp) => {
-        this.loading = false;
-        this.btnDisable = false;
-        const message = this.isEditMode 
-          ? 'State updated successfully!' 
-          : 'State created successfully!';
-        
-        if (this.notifyService?.showSuccess) {
-          this.notifyService.showSuccess(message);
-        } else {
-          alert(message);
-        }
-        
-        const highlightId = this.isEditMode ? this.stateId : resp.data?.StateMasterSid;
-        this.router.navigate(['/master/state/list'], {
-          queryParams: { highlight: highlightId }
-        });
+      next: (resp: any) => {
+        // Handle both response structures (direct data or wrapped response)
+        const success = resp.data ? resp.data : resp;
+        this.handleSuccess(success);
       },
       error: (err) => {
-        console.error(err);
-        this.loading = false;
-        this.btnDisable = false;
-        const errorMessage = `Error ${this.isEditMode ? 'updating' : 'creating'} state`;
-        
-        if (this.notifyService?.showError) {
-          this.notifyService.showError(errorMessage + ': ' + (err.error?.message || ''));
-        } else {
-          alert(errorMessage);
-        }
+        this.handleError(err);
       }
     });
+  }
+  
+  private handleSuccess(response: any) {
+    this.loading = false;
+    this.btnDisable = false;
+    const message = this.isEditMode 
+      ? 'State updated successfully!' 
+      : 'State created successfully!';
+    
+    this.appSettingService.showSuccess(message);
+    this.router.navigate(['/master/state/list']);
+  }
+  
+  private handleError(err: any) {
+    console.error(err);
+    this.loading = false;
+    this.btnDisable = false;
+    
+    let errorMessage = `Error ${this.isEditMode ? 'updating' : 'creating'} state`;
+    
+    if (err.error?.message) {
+      errorMessage = err.error.message;
+    } else if (err.status === 400) {
+      errorMessage = 'Validation error - please check your inputs';
+    }
+    
+    this.appSettingService.showError(errorMessage);
   }
 
   resetForm() {
@@ -204,7 +208,7 @@ countryInput$: Subject<string>;
       this.stateForm.reset({
         stateName: '',
         stateCode: '',
-        CountryMasterSid: null,
+        CountryMasterSid: '',
         region: '',
         status: 'A',
         Remarks: ''
@@ -213,7 +217,7 @@ countryInput$: Subject<string>;
   }
 
   goBack() {
-    this.router.navigate(['/master/state/list']);
+    this.router.navigate(['master/state/list']);
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {

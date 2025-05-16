@@ -1,20 +1,12 @@
 export interface Currency {
-  subUnit: any;
-  unit: any;
-  countryMasterSid: any;
-  remarks: string;
-  symbol: any;
-  currencySubUnit: any;
-  currencyUnit: any;
-  Remarks: any;
   CurrencyMasterSid: number;
   currencyName: string;
   currencyCode: string;
   currencyID: string;
-  CurrencyUnit: string | null; // Rupee
-  CurrencySubUnit: string | null; // Paise
-  ShortCode: string | null; // Rs
-  Symbol: string | null; // symb
+  CurrencyUnit: string | null;
+  CurrencySubUnit: string | null;
+  ShortCode: string | null;
+  Symbol: string | null;
   currencyFirstName: string;
   currencyLastName: string;
   currencyRatio: number;
@@ -25,9 +17,8 @@ export interface Currency {
   updatedOn: Date;
   deletedAt: Date | null;
   updatedBy: string | null;
-  status: 'A' | 'I'; // Assuming status can be 'A' (Active) or 'I' (Inactive)
+  status: 'A' | 'I';
   CountryMasterSid: number;
   LoginSid: number | null;
-  
+  Remarks?: string | null;
 }
-

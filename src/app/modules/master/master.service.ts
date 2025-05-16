@@ -9,8 +9,6 @@ import { Unit } from '../crm-mobile/Interfaces/unit.interface';
 import { Uom } from '../crm-mobile/Interfaces/uom.interface';
 import { City } from '../crm-mobile/Interfaces/city.interface';
 import { Currency } from '../crm-mobile/Interfaces/currency.interface';
-// import { Currency } from '../crm-mobile/Interfaces/currency.interface';
-
 @Injectable({
   providedIn: 'root'
 })
@@ -131,15 +129,16 @@ export class MasterService {
   }
 
   // state-master
+
   getAllState() {
-    return this.http.get('state').pipe(
+    return this.http.get<State>('state').pipe(
       map((resp: any) => {
         let response = resp;
         return response;
       })
     )
   }
-  searchStateList(payload) {
+  searchState(payload) {
     return this.http.post("state/search-list", payload).pipe(
       map((res: any) => {
         return res.data;
@@ -164,7 +163,7 @@ export class MasterService {
     )
   }
 
-  updateStateById(id: number, payload: any) {
+  editState(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`state/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp.data;
@@ -173,7 +172,7 @@ export class MasterService {
     )
   }
 
-  deleteStateById(id: number) {
+  softDeleteState(id: number) {
     return this.http.delete<{ data: any }>(`state/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
@@ -352,7 +351,7 @@ export class MasterService {
   }
   // //currency-master
   
-getAllCurrency() {
+  getAllCurrencys() {
   return this.http.get<Currency>('currency').pipe(
     map((resp: any) => {
       let response = resp;
@@ -386,7 +385,7 @@ createCurrency(payload: any) {
   )
 }
 
-updateCurrencyById(id: number, payload: any) {
+editCurrency(id: number, payload: any) {
   return this.http.patch<{ data: any }>(`currency/update/${id}`, payload).pipe(
     map((resp) => {
       let response = resp.data;
@@ -395,7 +394,7 @@ updateCurrencyById(id: number, payload: any) {
   )
 }
 
-deleteCurrencyById(id: number) {
+softDelete(id: number) {
   return this.http.delete<{ data: any }>(`currency/delete/${id}`).pipe(
     map((resp) => {
       let response = resp.data;

@@ -8,12 +8,7 @@
                 <i-feather name="rotate-ccw" class="feather-sm me-1"></i-feather> Reset
             </button>
             <button type="submit" class="btn btn-sm btn-info" [disabled]="loading || btnDisable || currencyForm.invalid" (click)="onSubmit()">
-                <span *ngIf="!loading">
-                    <i-feather name="save" class="feather-sm me-1"></i-feather> Save
-                </span>
-                <span *ngIf="loading">
-                    <i-feather name="loader" class="feather-sm spin me-1"></i-feather> Saving...
-                </span>
+                <i-feather name="save" class="feather-sm me-1"></i-feather> Save
             </button>
         </div>
     </div>
@@ -52,6 +47,29 @@
                                 </div>
                             </div>
                         </aside>
+                        <!-- Add this field with other form controls -->
+<aside class="col-md-4">
+    <div class="custom-form-group">
+      <input type="text" id="currencyID" formControlName="currencyID"
+        class="custom-input-field sm"
+        [class.is-invalid]="currencyForm.get('currencyID')?.invalid && 
+                           (currencyForm.get('currencyID')?.touched || 
+                           currencyForm.get('currencyID')?.dirty)">
+      <label for="currencyID" class="input-label">Currency ID <span
+          class="text-danger fw-bold">*</span></label>
+      <div *ngIf="currencyForm.get('currencyID')?.invalid && 
+                 (currencyForm.get('currencyID')?.touched || 
+                  currencyForm.get('currencyID')?.dirty)" 
+           class="invalid-feedback d-block">
+        <span *ngIf="currencyForm.get('currencyID')?.hasError('required')">
+          Currency ID is required
+        </span>
+        <span *ngIf="currencyForm.get('currencyID')?.hasError('maxlength')">
+          Maximum 1 character
+        </span>
+      </div>
+    </div>
+  </aside>
   
                         <!-- Country -->
                         <aside class="col-md-4">

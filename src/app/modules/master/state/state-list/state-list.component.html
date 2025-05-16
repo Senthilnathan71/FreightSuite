@@ -1,11 +1,11 @@
 <div class="row">
     <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <div class="col-12">
-                <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
-                    <form class="d-flex align-items-center gap-2">
-                        <div class="form-outline col">
-                            <select [(ngModel)]="searchType" name="searchType" class="form-select">
+            <div class="col-8 mx-auto">
+                    <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
+                        <form class="d-flex align-items-center gap-2">
+                            <div class="form-outline col">
+                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
                                 <option value="stateName">State Name</option>
                                 <option value="stateCode">State Code</option>
                                 <option value="countryName">Country Name</option>
@@ -24,12 +24,14 @@
                             Search
                         </button>
                         <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateState()">
-                            <i class="mdi mdi-plus"></i> Add
+                            <i class="mdi mdi-plus"></i> Create
                         </button>
                         <button type="button" class="btn btn-secondary btn-sm">
+                            <!-- <i class="mdi mdi-plus"></i> -->
                             report
                         </button>
-                        <button type="button" class="btn btn-secondary btn-sm" (click)="resetSearch()">
+                        <button type="button" class="btn btn-secondary btn-sm">
+                            <!-- <i class="mdi mdi-plus"></i> -->
                             Reset
                         </button>
                     </form>
@@ -58,7 +60,7 @@
                             <div class="text-truncate">{{item.stateCode}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item.countryName}}</div>
+                            <div class="text-truncate">{{item.countryMaster?.countryName}}</div>
                         </td>
                         <td>
                             <div class="text-truncate">

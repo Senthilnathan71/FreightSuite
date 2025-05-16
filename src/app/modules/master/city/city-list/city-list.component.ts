@@ -1,25 +1,24 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MasterService } from '../../master.service';
-import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { MasterService } from '../../master.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-city-list',
   standalone: true,
   imports: [
-    CommonModule,
-    FeatherModule,
-    FormsModule,
-    NgbPaginationModule,
+    CommonModule, 
+    FeatherModule, 
+    FormsModule, 
     RouterModule,
-    MatDialogModule
+    NgbPaginationModule
   ],
   templateUrl: './city-list.component.html',
   styleUrl: './city-list.component.scss'
@@ -30,86 +29,57 @@ export class CityListComponent {
   results: any[] = [];
   cityList: any[] = [];
   searchPerformed = false;
-  loading: boolean = false;
-  errorMessage: string = '';
   countryList: any[] = [];
   stateList: any[] = [];
 
   // pagination
   page = 1;
-  pageSize = 10;
-  totalLengthOfCollection: number = 0;
+  pageSize = 5;
+  totalLengthOfCollection: number;
 
   constructor(
-    private masterService: MasterService,
+    private masterService: MasterService, 
     private router: Router,
-    private dialog: MatDialog,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService, 
+    private dialog: MatDialog
   ) { }
 
   ngOnInit() {
-    this.loadCity();
+    this.loadCountryAndStateData();
   }
 
-  loadCity() {
-    this.loading = true;
-    this.masterService.getAllCity().subscribe({
-      next: (resp: any) => {
-        this.results = resp.data || resp;
-        this.updatePaginatedData();
-        this.totalLengthOfCollection = this.results.length;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading cities:', err);
-        this.appSettingService.showError('Failed to load cities');
-        this.loading = false;
-      }
+  loadCountryAndStateData() {
+    forkJoin({
+      countries: this.masterService.getAllCountry(),
+      states: this.masterService.getAllState()
+    }).subscribe(({ countries, states }) => {
+      this.countryList = countries.data;
+      this.stateList = states.data;
     });
   }
 
   search() {
-    if (!this.filterValue.trim()) {
-      this.loadCity();
-      this.searchPerformed = false;
-      return;
-    }
-
-    this.loading = true;
-    this.page = 1; // Reset to first page when searching
-    
     const payload = {
       searchType: this.searchType,
-      filterValue: this.filterValue
-    };
-
-    // If searching by status, convert the display text to status code
-    if (this.searchType === 'status') {
-      payload.filterValue = this.filterValue === 'Active' ? 'A' : 'I';
+      filterValue: this.searchType === 'status' 
+        ? this.filterValue === 'Active' ? 'A' : 'I' 
+        : this.filterValue,
     }
-
-    this.masterService.searchCityList(payload).subscribe({
-      next: (res: any) => {
-        this.results = res.data || res;
-        this.searchPerformed = true;
-        this.updatePaginatedData();
-        this.totalLengthOfCollection = this.results.length;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error searching cities:', err);
-        this.appSettingService.showError('Failed to search cities');
-        this.loading = false;
-      }
+    
+    this.masterService.searchCityList(payload).subscribe((res: any) => {
+      this.results = res.map(city => {
+        const country = this.countryList.find(c => c.CountryMasterSid === city.CountryMasterSid);
+        const state = this.stateList.find(s => s.StateMasterSid === city.StateMasterSid);
+        return {
+          ...city,
+          countryName: country ? country.countryName : '',
+          stateName: state ? state.stateName : ''
+        };
+      });
+      this.searchPerformed = true;
+      this.updatePaginatedData();
+      this.totalLengthOfCollection = this.results.length || 0;
     });
-  }
-
-  resetSearch() {
-    this.searchType = 'cityName';
-    this.filterValue = '';
-    this.searchPerformed = false;
-    this.page = 1;
-    this.loadCity();
   }
 
   updatePaginatedData(): void {
@@ -118,22 +88,17 @@ export class CityListComponent {
     this.cityList = this.results.slice(startIndex, endIndex);
   }
 
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
+
   deleteCity(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
-
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        this.loading = true;
-        this.masterService.deleteCityById(id).subscribe({
-          next: (resp: any) => {
-            this.appSettingService.showSuccess("City deleted successfully!");
-            this.loadCity();
-          },
-          error: (err) => {
-            console.error('Error deleting city:', err);
-            this.appSettingService.showError("Failed to delete city");
-            this.loading = false;
-          }
+        this.masterService.deleteCityById(id).subscribe((resp: any) => {
+          this.appSettingService.showSuccess("Deleted!");
+          this.search(); // Refresh the list after deletion
         });
       }
     });
@@ -143,11 +108,9 @@ export class CityListComponent {
     this.router.navigate(['master/city/entry']);
   }
 
-  getStatusText(status: string): string {
-    return status === 'A' ? 'Active' : 'Inactive';
-  }
-
-  trackByIndex(index: number, item: any): number {
-    return index;
+  resetPage() {
+    this.cityList = [];
+    this.totalLengthOfCollection = 0;
+    this.searchPerformed = false;
   }
 }
