@@ -64,6 +64,13 @@ export const MasterRoutes: Routes = [
       {
         path: '',
         component: OrganizationListComponent,
+        data: {
+          title: "Organization",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Organization" },
+          ],
+        },
       },
       {
         path: "city/list",

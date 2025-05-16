@@ -42,4 +42,8 @@ export class BreadcrumbComponent {
         this.pageInfo = event;
       });
   }
+
+  goBack(){
+    history.back()
+  }
 }

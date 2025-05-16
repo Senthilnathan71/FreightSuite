@@ -167,8 +167,7 @@
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="RegistrationNo"
-                                        [disabled]="!customerForm.get('KYCSpecified')?.value">
+                                        formControlName="RegistrationNo">
                                     <label for="text-input" class="input-label">Registration No</label>
 
                                 </div>
@@ -177,8 +176,7 @@
 
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
-                                    <select formControlName="CompanyType"
-                                        [disabled]="!customerForm.get('KYCSpecified')?.value" class="form-select">
+                                    <select formControlName="CompanyType" class="form-select">
                                         <option value="" disabled selected>Select Company Type</option>
                                         <option *ngFor="let option of companyList" [value]="option.name">
                                             {{option.name}}</option>
@@ -200,8 +198,7 @@
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="PanType" placeholder="" class="custom-input-field sm"
-                                        formControlName="PanType"
-                                        [disabled]="!customerForm.get('PanAvailable')?.value" />
+                                        formControlName="PanType" />
                                     <label for="PanType" class="input-label">PAN/VAT</label>
                                 </div>
                             </aside>
@@ -209,8 +206,7 @@
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="PanName" placeholder="" class="custom-input-field sm"
-                                        formControlName="PanName"
-                                        [disabled]="!customerForm.get('PanAvailable')?.value" />
+                                        formControlName="PanName" />
                                     <label for="PanName" class="input-label">Name as per PAN</label>
                                 </div>
                             </aside>
@@ -256,6 +252,237 @@
                 </div>
             </div>
         </div>
+        <ng-template #customerType>
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline ">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" formControlName="forwarder" id="forwarder"
+                                            class="form-check-input sm">
+                                        <label for="forwarder" class="form-check-label sm">Forwarder</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline ">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" formControlName="airline" id="airline"
+                                            class="form-check-input sm">
+                                        <label for="airline" class="form-check-label sm">Airline</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="checkbox" id="text-input" class="form-check-input sm"
+                                        formControlName="airlineName">
+                                    <label for="text-input" class="form-check-label sm">Airline Name </label>
+
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline ">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="shipper" class="form-check-input sm"
+                                            formControlName="shipper">
+                                        <label for="shipper" class="form-check-label sm">Shipper</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline ">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="airlineAgent" formControlName="airlineAgent"
+                                            class="form-check-input sm">
+                                        <label for="airlineAgent" class="form-check-label sm">Airline Agent</label>
+                                    </div>
+                                </div>
+                            </aside>
+
+                            <aside class="col-md-4 d-flex align-items-start">
+                                <div class="form-check form-check-inline p-0">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" formControlName="seacto" id="seacto"
+                                            class="form-check-input sm">
+                                        <label for="seacto" class="form-check-label sm">Sea CTO</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline ">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" formControlName="overseasAgent" id="oeverseasAgent"
+                                            class="form-check-input sm">
+                                        <label for="oeverseasAgent" class="form-check-label sm">Overseas Agent</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline ">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" formControlName="consignee" id="consignee"
+                                            class="form-check-input sm">
+                                        <label for="consignee" class="form-check-label sm">Consignee</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="checkbox" id="text-input" placeholder="" class="form-check-input sm"
+                                        formControlName="SCACcode">
+                                    <label for="text-input" class="form-check-label sm">SCAC Code</label>
+
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline ">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input formControlName="shippingLine" type="checkbox" id="shippingLine"
+                                            class="form-check-input sm">
+                                        <label for="shippingLine" class="form-check-label sm">Shipping Line</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline ">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="broker" class="form-check-input sm"
+                                            formControlName="broker">
+                                        <label for="broker" class="form-check-label sm">Broker</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline p-0">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="unpackCFS" class="form-check-input sm"
+                                            formControlName="unpackCFS">
+                                        <label for="unpackCFS" class="form-check-label sm">Unpack CFS</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="shippingLineAgent" class="form-check-input sm"
+                                            formControlName="shippingLineAgent">
+                                        <label for="shippingLineAgent" class="form-check-label sm">Shippingline
+                                            Agent</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline ">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="transportClient" class="form-check-input sm"
+                                            formControlName="transportClient">
+                                        <label for="transportClient" class="form-check-label sm">Transport
+                                            Client</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline p-0">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="localTransporter" class="form-check-input sm"
+                                            formControlName="localTransporter">
+                                        <label for="localTransporter" class="form-check-label sm">Local
+                                            Transporter</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" formControlName="Coloader" id="Coloader"
+                                            class="form-check-input sm">
+                                        <label for="Coloader" class="form-check-label sm">Co-Loader</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline ">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input formControlName="containerTerminal" type="checkbox"
+                                            id="containerTerminal" class="form-check-input sm">
+                                        <label for="containerTerminal" class="form-check-label sm">Container
+                                            Terminal</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline p-0">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="ownGroupCompany" class="form-check-input sm"
+                                            formControlName="ownGroupCompany">
+                                        <label for="ownGroupCompany" class="form-check-label sm">Own Group
+                                            Company</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="NVOCC" class="form-check-input sm"
+                                            formControlName="NVOCC">
+                                        <label for="NVOCC" class="form-check-label sm">NVOCC</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline ">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="Yard" class="form-check-input sm"
+                                            formControlName="Yard">
+                                        <label for="Yard" class="form-check-label sm">Yard</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline p-0">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="Transporter" class="form-check-input sm"
+                                            formControlName="Transporter">
+                                        <label for="Transporter" class="form-check-label sm">Transporter</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="airCTO" class="form-check-input sm"
+                                            formControlName="airCTO">
+                                        <label for="airCTO" class="form-check-label sm">Air CTO</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline ">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="packCFS" class="form-check-input sm"
+                                            formControlName="packCFS">
+                                        <label for="packCFS" class="form-check-label sm">Pack CFS</label>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline p-0">
+                                    <div class="form-check d-flex align-items-center">
+                                        <input type="checkbox" id="Warehouse" class="form-check-input sm"
+                                            formControlName="Warehouse">
+                                        <label for="Warehouse" class="form-check-label sm">Warehouse</label>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </ng-template>
     </form>
 
     <div class="col-md-12 mt-3">
@@ -424,12 +651,12 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group custom-form-group-select">
                                     <ng-select id="registered" formControlName="CustBranchRegistered"
-                                        [items]="modeOfRegistered" bindLabel="name" bindValue="name">
+                                        [items]="modeOfRegistered" bindLabel="name" bindValue="id">
                                     </ng-select>
                                     <label for="registered" class="input-label">Registered</label>
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
+                            <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select id="status" formControlName="status" [items]="modeOfStatus"
                                         bindLabel="name" bindValue="name">
@@ -449,7 +676,7 @@
 
                                 </div>
                             </aside>
-                            <aside class="col-md-4">
+                            <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="gstIn" placeholder="" class="custom-input-field sm"
                                         formControlName="CustBranchGSTIN">
@@ -515,7 +742,7 @@
                                             </li>
                                             <li [ngbNavItem]="5">
                                                 <button ngbNavLink><button class="btn btn-info p-0 me-2"
-                                                        (click)="openModal(content5)">
+                                                        (click)="openBranchLoginModal(content5)">
                                                         <i-feather name="plus-circle"
                                                             class="feather-sm "></i-feather></button>eLogin</button>
                                                 <ng-template ngbNavContent>
@@ -845,284 +1072,66 @@
         <h4 class="modal-title">eLogin</h4>
         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
-    <div class="modal-body">
-        <div class="col-md-12">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="row">
+    <form [formGroup]="customerBranchLoginForm">
+        <div class="modal-body">
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
 
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="City">
-                                <label for="text-input" class="input-label">Branch <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchName">
-                                <label for="text-input" class="input-label">Name<span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchType">
-                                <label for="text-input" class="input-label">email<span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchCode">
-                                <label for="text-input" class="input-label">Password <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchCode">
-                                <label for="text-input" class="input-label">Status <span
-                                        class="text-danger">*</span></label>
-                            </div>
-                        </aside>
-
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="CustomerName" placeholder="" class="custom-input-field sm"
+                                        formControlName="CustomerName">
+                                    <label for="CustomerName" class="input-label">Branch <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="BranchName" placeholder="" class="custom-input-field sm"
+                                        formControlName="BranchName">
+                                    <label for="BranchName" class="input-label">Branch <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="LoginName" placeholder="" class="custom-input-field sm"
+                                        formControlName="LoginName">
+                                    <label for="LoginName" class="input-label">Name<span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="LoginEmail" placeholder="" class="custom-input-field sm"
+                                        formControlName="LoginEmail">
+                                    <label for="LoginEmail" class="input-label">email<span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="LoginPassword" placeholder="" class="custom-input-field sm"
+                                        formControlName="LoginPassword">
+                                    <label for="LoginPassword" class="input-label">Password <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-</ng-template>
-
-<ng-template #customerType>
-    <div class="col-md-12">
-        <div class="card h-100">
-            <div class="card-body p-0">
-                <div class="row">
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" formControlName="forwarder" id="forwarder"
-                                    class="form-check-input sm">
-                                <label for="forwarder" class="form-check-label sm">Forwarder</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" formControlName="airline" id="airline"
-                                    class="form-check-input sm">
-                                <label for="airline" class="form-check-label sm">Airline</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="checkbox" id="text-input" class="form-check-input sm"
-                                formControlName="airlineName">
-                            <label for="text-input" class="form-check-label sm">Airline Name </label>
-
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="shipper" class="form-check-input sm"
-                                    formControlName="shipper">
-                                <label for="shipper" class="form-check-label sm">Shipper</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="airlineAgent" formControlName="airlineAgent"
-                                    class="form-check-input sm">
-                                <label for="airlineAgent" class="form-check-label sm">Airline Agent</label>
-                            </div>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-4 d-flex align-items-start">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" formControlName="seacto" id="seacto" class="form-check-input sm">
-                                <label for="seacto" class="form-check-label sm">Sea CTO</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" formControlName="overseasAgent" id="oeverseasAgent"
-                                    class="form-check-input sm">
-                                <label for="oeverseasAgent" class="form-check-label sm">Overseas Agent</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" formControlName="consignee" id="consignee"
-                                    class="form-check-input sm">
-                                <label for="consignee" class="form-check-label sm">Consignee</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="checkbox" id="text-input" placeholder="" class="form-check-input sm"
-                                formControlName="SCACcode">
-                            <label for="text-input" class="form-check-label sm">SCAC Code</label>
-
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input formControlName="shippingLine" type="checkbox" id="shippingLine"
-                                    class="form-check-input sm">
-                                <label for="shippingLine" class="form-check-label sm">Shipping Line</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="broker" class="form-check-input sm" formControlName="broker">
-                                <label for="broker" class="form-check-label sm">Broker</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="unpackCFS" class="form-check-input sm"
-                                    formControlName="unpackCFS">
-                                <label for="unpackCFS" class="form-check-label sm">Unpack CFS</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="shippingLineAgent" class="form-check-input sm"
-                                    formControlName="shippingLineAgent">
-                                <label for="shippingLineAgent" class="form-check-label sm">Shippingline
-                                    Agent</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="transportClient" class="form-check-input sm"
-                                    formControlName="transportClient">
-                                <label for="transportClient" class="form-check-label sm">Transport Client</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="localTransporter" class="form-check-input sm"
-                                    formControlName="localTransporter">
-                                <label for="localTransporter" class="form-check-label sm">Local Transporter</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" formControlName="Coloader" id="Coloader"
-                                    class="form-check-input sm">
-                                <label for="Coloader" class="form-check-label sm">Co-Loader</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input formControlName="containerTerminal" type="checkbox" id="containerTerminal"
-                                    class="form-check-input sm">
-                                <label for="containerTerminal" class="form-check-label sm">Container
-                                    Terminal</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="ownGroupCompany" class="form-check-input sm"
-                                    formControlName="ownGroupCompany">
-                                <label for="ownGroupCompany" class="form-check-label sm">Own Group Company</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="NVOCC" class="form-check-input sm" formControlName="NVOCC">
-                                <label for="NVOCC" class="form-check-label sm">NVOCC</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="Yard" class="form-check-input sm" formControlName="Yard">
-                                <label for="Yard" class="form-check-label sm">Yard</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="Transporter" class="form-check-input sm"
-                                    formControlName="Transporter">
-                                <label for="Transporter" class="form-check-label sm">Transporter</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="airCTO" class="form-check-input sm" formControlName="airCTO">
-                                <label for="airCTO" class="form-check-label sm">Air CTO</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline ">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="packCFS" class="form-check-input sm"
-                                    formControlName="packCFS">
-                                <label for="packCFS" class="form-check-label sm">Pack CFS</label>
-                            </div>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="Warehouse" class="form-check-input sm"
-                                    formControlName="Warehouse">
-                                <label for="Warehouse" class="form-check-label sm">Warehouse</label>
-                            </div>
-                        </div>
-                    </aside>
-                </div>
-            </div>
+        <div>
+            <button class="btn btn-sm btn-info" (click)="customerBranchLoginSubmit()">Submit</button>
         </div>
-    </div>
+    </form>
 
 </ng-template>
+
+
 
 <ng-template #statusUpadte>
     <div class="row">
@@ -1242,7 +1251,7 @@
             </table>
         </div>
         <div>
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfBranch"
                 [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
             </ngb-pagination>
         </div>
@@ -1304,7 +1313,7 @@
             </table>
         </div>
         <div>
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfBranchContact"
                 [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedContactData()">
             </ngb-pagination>
         </div>
@@ -1331,12 +1340,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let item of customerEmailData;let i = index; trackBy: trackByIndex">
+                    <tr *ngFor="let item of customerBranchEmailData;let i = index; trackBy: trackByIndex">
                         <td>
-                            <div class="text-truncate">{{item.CustomerBranchSid}}</div>
+                            <div class="text-truncate">{{ getBranchName(item.CustomerBranchSid) }}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item.DepartmentMasterSid}}</div>
+                            <div class="text-truncate">{{getDepartmentName(item.DepartmentMasterSid)}}</div>
                         </td>
                         <td>
                             <div class="text-truncate">{{item.Toemail}}</div>
@@ -1364,7 +1373,7 @@
             </table>
         </div>
         <div>
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfBranchEmail"
                 [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedEmailData()">
             </ngb-pagination>
         </div>
@@ -1504,54 +1513,54 @@
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">Customer</th>
                         <th class="bg-transparent text-light" scope="col">Branch</th>
                         <th class="bg-transparent text-light" scope="col">Name</th>
                         <th class="bg-transparent text-light" scope="col">email</th>
-                        <!-- <th class="bg-transparent text-light" scope="col">Password</th> -->
+                        <th class="bg-transparent text-light" scope="col">Password</th>
                         <th class="bg-transparent text-light" scope="col">Status</th>
-
+                        <th class="bg-transparent text-light" scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
+                    <tr *ngFor="let item of customerBranchLoginData;let i = index; trackBy: trackByIndex">
                         <td>
-                            <div class="text-truncate">Oman Rials</div>
+                            <div class="text-truncate">{{ customerName }}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">OMR</div>
+                            <div class="text-truncate">{{ getBranchName(item.CustomerBranchSid) }}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">RO</div>
+                            <div class="text-truncate">{{item.LoginName}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Rial</div>
+                            <div class="text-truncate">{{item.LoginEmail}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item.LoginPassword}}</div>
                         </td>
-                        <!-- <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td> -->
+                        <td>
+                            <div class="text-truncate">{{item.status==='A'?"Active":"Invalid"}}</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="text-info mx-2" class="link mx-2 ps-3"
+                                    (click)="openBranchLoginModal(content5, item)">
+                                    <i-feather class="feather-sm" name="eye"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start"
+                                    (click)="deleteCustomerBranchLogin(item.CustomerLoginSid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
+                        </td>
                     </tr>
-                    }
+
                 </tbody>
             </table>
         </div>
         <div>
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfBranchLogin"
                 [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedLoginData()">
             </ngb-pagination>
         </div>
