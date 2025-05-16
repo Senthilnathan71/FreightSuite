@@ -1,130 +1,206 @@
 import { Component, OnInit } from '@angular/core';
-import { 
-  FormControl, 
-  FormGroup, 
-  ReactiveFormsModule, 
-  Validators 
-} from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { Commodity, CommodityForm } from 'src/app/modules/crm-mobile/Interfaces/commodity.interface';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 
 @Component({
   selector: 'app-commodity-entry',
   standalone: true,
-  imports: [FeatherModule, ReactiveFormsModule, NgSelectModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FeatherModule,
+    NgSelectModule
+  ],
   templateUrl: './commodity-entry.component.html',
-  styleUrl: './commodity-entry.component.scss'
+  styleUrls: ['./commodity-entry.component.scss']
 })
 export class CommodityEntryComponent implements OnInit {
-  inputForm: FormGroup;
-  isEditMode: boolean = false;
-  CommodityMasterSid: number;
-  btnDisable: boolean = false;
-  
+  commodityForm: FormGroup;
+  isEditMode = false;
+  commodityId: number;
+  loading = false;
+  btnDisable = false;
+
   statusOptions = [
     { id: 'A', name: 'Active' },
     { id: 'I', name: 'Inactive' }
   ];
 
-  commodityTypes = [
-    { id: 'General', name: 'General' },
-    { id: 'Haz', name: 'Hazardous' },
-    { id: 'Reefer', name: 'Reefer' }
+  commodityAttributes = [
+    { id: 'Timber', name: 'Timber' },
+    { id: 'Flamable', name: 'Flamable' },
+    { id: 'Perishable', name: 'Perishable' },
+    { id: 'Haz', name: 'Haz' },
+    { id: 'ContainerVentRequired', name: 'Container Vent Required' }
   ];
 
   constructor(
-    private currentRoute: ActivatedRoute,
+    private fb: FormBuilder,
     private masterService: MasterService,
+    private route: ActivatedRoute,
+    private router: Router,
     private appSettingService: AppSettingsService,
-    private route: Router
-  ) {}
-
-  ngOnInit(): void {
+    private modalService: NgbModal
+  ) {
     this.initForm();
-    this.currentRoute.paramMap.subscribe(params => {
-      const param = params.get('id');
-      if (param) {
-        this.CommodityMasterSid = +param;
-        if (!isNaN(this.CommodityMasterSid)) {
-          this.isEditMode = true;
-          this.loadCommodityById(this.CommodityMasterSid);
-        }
+  }
+
+  ngOnInit() {
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.commodityId = +params['id'];
+        this.isEditMode = true;
+        this.loadCommodity(this.commodityId);
+        this.commodityForm.get('status')?.enable();
       }
     });
   }
 
   initForm() {
-    this.inputForm = new FormGroup({CommodityCode: new FormControl('', [Validators.required,Validators.maxLength(10)]),
-      CommodityName: new FormControl('', [Validators.required,Validators.maxLength(50)]),
-      CommodityNameLL: new FormControl('', [Validators.maxLength(50)]),
-      UOMSid: new FormControl(null),
-      HSSACCode: new FormControl(null),
-      CommodityType: new FormControl(null),
-      ImcoName: new FormControl('', [Validators.maxLength(25)]),
-      UNNo: new FormControl('', [Validators.maxLength(10)]),
-      PackingGroup: new FormControl('', [Validators.maxLength(10)]),
-      FlashPoint: new FormControl('', [Validators.maxLength(5)]),
-      status: new FormControl('A', Validators.required),
-      Remarks: new FormControl('', [Validators.maxLength(300)])
+    this.commodityForm = this.fb.group({
+      CommodityName: ['', [Validators.required, Validators.maxLength(50)]],
+      CommodityCode: ['', [Validators.required, Validators.maxLength(10)]],
+      CommodityNameLL: ['', [Validators.maxLength(50)]],
+      CommodityType: ['', Validators.required],
+      UOMSid: [null],
+      ImcoName: ['', [Validators.maxLength(10)]],
+      UNNo: ['', [Validators.maxLength(10)]],
+      PackingGroup: ['', [Validators.maxLength(10)]],
+      HSSACCode: [null],
+      FlashPoint: ['', [Validators.maxLength(5)]],
+      status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
+      Remarks: ['', [Validators.maxLength(300)]],
+      // Add attribute controls
+      Timber: [false],
+      Flamable: [false],
+      Perishable: [false],
+      Haz: [false],
+      ContainerVentRequired: [false]
     });
   }
 
-  loadCommodityById(CommodityMasterSid: number) {
-    this.masterService.getCommodityById(CommodityMasterSid).subscribe(
-      (resp: Commodity) => {
-        this.inputForm.patchValue({
-          ...resp,
-          status: resp.status
+  loadCommodity(id: number) {
+    this.loading = true;
+    this.masterService.getCommodityById(id).subscribe({
+      next: (commodity) => {
+        this.commodityForm.patchValue({
+          ...commodity,
+          UOMSid: commodity.UOMSid ? commodity.UOMSid.toString() : null,
+          // Patch attribute values
+          Timber: commodity.Timber || false,
+          Flamable: commodity.Flamable || false,
+          Perishable: commodity.Perishable || false,
+          Haz: commodity.Haz || false,
+          ContainerVentRequired: commodity.ContainerVentRequired || false
         });
+        this.loading = false;
       },
-      (error) => {
-        this.appSettingService.showError('Error loading commodity data');
-        this.route.navigate(['master/commodity/list']);
+      error: (err) => {
+        console.error(err);
+        this.loading = false;
+        this.appSettingService.showError('Failed to load commodity data');
       }
-    );
+    });
   }
 
-  saveCommodity() {
-    if (this.inputForm.invalid) {
-      this.inputForm.markAllAsTouched();
-      this.appSettingService.showError('Please fill all required fields correctly');
+  onSubmit() {
+    if (this.commodityForm.invalid) {
+      this.commodityForm.markAllAsTouched();
       return;
     }
-
+  
     this.btnDisable = true;
-    const formValue = this.inputForm.value;
-    const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
+    this.loading = true;
+    const formValue = this.commodityForm.value;
     
-    const payload: CommodityForm = {
+    const payload = {
       ...formValue,
-      createdBy: this.isEditMode ? undefined : userEmail,
-      updatedBy: this.isEditMode ? userEmail : undefined
+      HSSACCode: formValue.HSSACCode ? Number(formValue.HSSACCode) : null,
+      UOMSid: formValue.UOMSid ? Number(formValue.UOMSid) : null,
+      status: this.isEditMode ? formValue.status : 'A'
     };
-
-    const operation$ = this.isEditMode
-      ? this.masterService.updateCommodityById(this.CommodityMasterSid, payload)
-      : this.masterService.createCommodity(payload);
-
-    operation$.subscribe({
-      next: (resp) => {
+  
+    const operation = this.isEditMode
+      ? this.masterService.updateCommodityById(this.commodityId, payload)
+      : this.masterService.createNewCommodity(payload);
+  
+    operation.subscribe({
+      next: (resp: any) => {
+        this.loading = false;
         this.btnDisable = false;
-        const action = this.isEditMode ? 'updated' : 'created';
-        this.appSettingService.showSuccess(`Commodity ${action} successfully!`);
-        this.route.navigate(['master/commodity/list']);
+        const message = this.isEditMode 
+          ? 'Commodity updated successfully!' 
+          : 'Commodity created successfully!';
+        
+        this.appSettingService.showSuccess(message);
+        this.router.navigate(['/master/commodity/list']);
       },
-      error: (error) => {
-        this.btnDisable = false;
-        this.appSettingService.showError(error.error?.message || 
-          `Error ${this.isEditMode ? 'updating' : 'creating'} commodity`);
+      error: (err) => {
+        this.handleError(err);
       }
     });
+  }
+  
+  private handleError(err: any) {
+    console.error(err);
+    this.loading = false;
+    this.btnDisable = false;
+    
+    let errorMessage = `Error ${this.isEditMode ? 'updating' : 'creating'} commodity`;
+    
+    if (err.error?.message) {
+      errorMessage = err.error.message;
+    } else if (err.status === 400) {
+      errorMessage = 'Validation error - please check your inputs';
+    }
+    
+    this.appSettingService.showError(errorMessage);
+  }
+
+  resetForm() {
+    if (this.isEditMode) {
+      this.loadCommodity(this.commodityId);
+    } else {
+      this.commodityForm.reset({
+        CommodityName: '',
+        CommodityCode: '',
+        CommodityNameLL: '',
+        CommodityType: '',
+        UOMSid: null,
+        ImcoName: '',
+        UNNo: '',
+        PackingGroup: '',
+        HSSACCode: null,
+        FlashPoint: '',
+        status: 'A',
+        Remarks: '',
+        Timber: false,
+        Flamable: false,
+        Perishable: false,
+        Haz: false,
+        ContainerVentRequired: false
+      });
+    }
   }
 
   goBack() {
-    this.route.navigate(['master/commodity/list']);
+    if (this.commodityForm.dirty) {
+      const modalRef = this.modalService.open(DeleteWarningComponent);
+      modalRef.componentInstance.message = 'You have unsaved changes. Are you sure you want to leave?';
+      modalRef.result.then((result) => {
+        if (result === true) {
+          this.router.navigate(['/master/commodity/list']);
+        }
+      }).catch(() => {});
+    } else {
+      this.router.navigate(['/master/commodity/list']);
+    }
   }
 }

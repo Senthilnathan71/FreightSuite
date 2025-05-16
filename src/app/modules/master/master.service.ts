@@ -762,7 +762,7 @@ export class MasterService {
     );
   }
 
- createCommodity(payload: any) {
+  createNewCommodity(payload: any) {
   return this.http.post<{ data: Commodity }>('commodity/create', payload).pipe(
     map((res) => res.data)
   );
