@@ -10,6 +10,7 @@ import { Uom } from '../crm-mobile/Interfaces/uom.interface';
 import { City } from '../crm-mobile/Interfaces/city.interface';
 import { Zone } from '../crm-mobile/Interfaces/zone.interface';
 import { PackageType } from '../crm-mobile/Interfaces/packageType.interface';
+import { Division } from '../crm-mobile/Interfaces/division.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -532,6 +533,52 @@ export class MasterService {
 
   deletePackageById(id: number) {
     return this.http.delete<{ data: any }>(`package-type/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  // Division-master
+
+  getAllDivisions() {
+    return this.http.get<{ data: Division[] }>('division').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getDivisionById(id: number) {
+    return this.http.get<{ data: Division }>(`division/divisionId/${id}`).pipe(
+      map((resp)=> {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createNewDivision(payload: any) {
+    return this.http.post('division/add',payload).pipe(
+      map((re: any) => {
+        return resizeBy;
+      })
+    );
+  }
+
+  updateDivisionById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`division/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  deleteDivisionById(id: number) {
+    return this.http.delete<{ data: any }>(`division/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;

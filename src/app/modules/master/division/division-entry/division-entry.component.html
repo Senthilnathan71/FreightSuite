@@ -1,56 +1,98 @@
 <div class="row py-3">
-    <div class="col-12">
-        <div class="d-flex align-items-center gap-2 mb-3">
-            <button class="btn btn-sm btn-light-secondary ms-auto">Edit</button>
-            <button class="btn btn-sm btn-info">Update</button>
-        </div>
+  <div class="col-12">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <button class="btn btn-sm btn-info" (click)="onSubmit()">
+        <i-feather name="save" class="feather-sm me-1"></i-feather> Save
+      </button>
+      <button class="btn btn-sm btn-secondary" (click)="reset()">
+        <i-feather name="rotate-ccw" class="feather-sm me-1"></i-feather> Reset
+      </button>
+      <button class="btn btn-sm btn-light ms-auto" (click)="goBack()">
+        <i-feather name="arrow-left" class="feather-sm me-1"></i-feather> Back
+      </button>
     </div>
-    <div class="col-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row">
-                    <aside class="col-md-12">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Name">
-                            <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-12">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Code">
-                            <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-12">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Address">
-                            <label for="text-input" class="input-label">Address </label>
+  </div>
 
-                        </div>
-                    </aside>
-                    <aside class="col-md-12">
-                        <div class="custom-form-group">
-                            <textarea id="" placeholder="" rows="1" class="input-field sm"
-                                formControlName="Remarks"></textarea>
-                            <label for="text-input" class="input-label">Remarks </label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-12">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
-                               
-                            </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>  
+  <div class="col-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <form [formGroup]="divisionForm">
+          <div class="row">
+            <aside class="col-md-12 mb-3">
+              <div class="custom-form-group">
+                <input
+                  type="text"
+                  id="name-input"
+                  class="custom-input-field sm"
+                  formControlName="Name"
+                  placeholder="Enter Division Name"
+                />
+                <label for="name-input" class="input-label">
+                  Division Name <span class="text-danger">*</span>
+                </label>
+              </div>
+            </aside>
 
+            <aside class="col-md-12 mb-3">
+              <div class="custom-form-group">
+                <input
+                  type="text"
+                  id="code-input"
+                  class="custom-input-field sm"
+                  formControlName="Code"
+                  placeholder="Enter Division Code"
+                />
+                <label for="code-input" class="input-label">
+                  Division Code <span class="text-danger">*</span>
+                </label>
+              </div>
+            </aside>
 
+            <aside class="col-md-12 mb-3">
+              <div class="custom-form-group">
+                <input
+                  type="text"
+                  id="address-input"
+                  class="custom-input-field sm"
+                  formControlName="Address"
+                  placeholder="Enter Address"
+                />
+                <label for="address-input" class="input-label">Address</label>
+              </div>
+            </aside>
 
-                </div>
-            </div>
-        </div>
+            <aside class="col-md-12 mb-3">
+              <div class="custom-form-group">
+                <textarea
+                  id="remarks-input"
+                  class="custom-input-field sm"
+                  formControlName="Remarks"
+                  rows="2"
+                  placeholder="Enter Remarks"
+                ></textarea>
+                <label for="remarks-input" class="input-label">Remarks</label>
+              </div>
+            </aside>
+
+            <aside class="col-md-12 mb-3">
+              <div class="custom-form-group custom-form-group-select">
+                <ng-select
+                  id="status-select"
+                  formControlName="Status"
+                  [items]="modeOfStatus"
+                  bindLabel="name"
+                  bindValue="name"
+                  placeholder="Select Status"
+                >
+                </ng-select>
+                <label for="status-select" class="input-label">
+                  Status <span class="text-danger">*</span>
+                </label>
+              </div>
+            </aside>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
