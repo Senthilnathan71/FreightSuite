@@ -799,6 +799,8 @@ export class MasterService {
 
   createTariff(payload) {
     return this.http.post<{ data: any }>('tariff/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
         return response;
       })
     )
