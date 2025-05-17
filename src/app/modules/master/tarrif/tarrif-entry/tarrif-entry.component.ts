@@ -5,6 +5,8 @@ import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 
 @Component({
   selector: 'app-tarrif-entry',
@@ -12,7 +14,9 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
   imports: [
     FeatherModule,
     NgbTooltip,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    OnlyNumbersDirective,
+    OnlyTextDirective
   ],
   templateUrl: './tarrif-entry.component.html',
   styleUrl: './tarrif-entry.component.scss'
@@ -22,7 +26,6 @@ export class TarrifEntryComponent implements OnInit {
   inputForm!: FormGroup;
   isEditMode: boolean;
   TariffHeaderSid: number;
-  Status = "A";
 
   constructor(
     private masterServ: MasterService,
@@ -59,7 +62,7 @@ export class TarrifEntryComponent implements OnInit {
       StuffingAt: ['', [Validators.required, Validators.maxLength(10)]],
       IncoTerms: ['', [Validators.required, Validators.maxLength(10)]],
       Remarks: ['', [Validators.required, Validators.maxLength(100)]],
-      status: ['', [Validators.required, Validators.maxLength(1)]],
+      status: ['Active'],
       //Not in form also its compulsory
       // DepartmentName: [''],
       EffectiveDate: new Date(),
@@ -68,22 +71,18 @@ export class TarrifEntryComponent implements OnInit {
     })
   }
 
-  StatusMap = {
-    A: 'Active',
-    I: 'Invalid',
-    B: 'Block'
-  }
+
 
   loadTariff(TariffHeaderSid) {
     this.masterServ.getTariffById(TariffHeaderSid).subscribe(
       (tariffData) => {
-        this.Status = tariffData.status;
-        console.log(tariffData);
-        const formattedStatus = this.StatusMap[this.Status] || '';
         this.inputForm.patchValue({
           ...tariffData,
-          status: formattedStatus
+          status: tariffData.status === 'A' ? 'Active' : "Invalid"
         })
+      },
+      (error) => {
+        this.appSettingServ.showError('Error Loading Tariff ', error);
       }
     )
   }
@@ -99,42 +98,14 @@ export class TarrifEntryComponent implements OnInit {
       this.appSettingServ.showWarning('Please fill all required fields correctly');
       return;
     } else {
-      let createdBy = this.appSettingServ.userSettingSource.value['userEmail'];
-      let updatedBy = this.appSettingServ.userSettingSource.value['userEmail'];
       const formValue = this.inputForm.value;
-
-      const payload = (this.isEditMode) ? {
-        ...formValue,
-        POOSid: Number(formValue.POOSid),
-        POLSid: Number(formValue.POLSid),
-        PODSid: Number(formValue.PODSid),
-        FDCSid: Number(formValue.FDCSid),
-        ViaPortSid: Number(formValue.ViaPortSid),
-        AgentSid: Number(formValue.AgentSid),
-        Carrier: Number(formValue.Carrier),
-        updatedBy,
-        status: this.Status === "A" ? "A" : "I"
-      } : {
-        ...formValue,
-        POOSid: Number(formValue.POOSid),
-        POLSid: Number(formValue.POLSid),
-        PODSid: Number(formValue.PODSid),
-        FDCSid: Number(formValue.FDCSid),
-        ViaPortSid: Number(formValue.ViaPortSid),
-        AgentSid: Number(formValue.AgentSid),
-        Carrier: Number(formValue.Carrier),
-        createdBy,
-        status: formValue.status === "A" ? "A" : "I"
-      }
-
-      console.log('payload', payload);
+      const payload = this.coerceIntoRequiredFormat(formValue);
 
       if (this.isEditMode) {
         this.masterServ.updateTariffById(this.TariffHeaderSid, payload).subscribe(
           (resp: any) => {
-            console.log(resp.message);
             if (resp.status) {
-              this.appSettingServ.showSuccess(resp.message);
+              this.appSettingServ.showSuccess('Tariff Updated Successfully');
               this.route.navigate(['master/tarrif/list']);
             } else {
               this.appSettingServ.showError(resp.message);
@@ -149,7 +120,7 @@ export class TarrifEntryComponent implements OnInit {
           (resp: any) => {
             console.log(resp);
             if (resp.status) {
-              this.appSettingServ.showSuccess(resp.message);
+              this.appSettingServ.showSuccess('Tariff Created Successfully');
               this.route.navigate(['master/tarrif/list']);
             } else {
               this.appSettingServ.showError(resp.message);
@@ -160,6 +131,34 @@ export class TarrifEntryComponent implements OnInit {
           }
         )
       }
+    }
+  }
+
+  coerceIntoRequiredFormat(formValue) {
+    let createdBy = this.appSettingServ.userSettingSource.value['userEmail'];
+    let updatedBy = this.appSettingServ.userSettingSource.value['userEmail'];
+    return (this.isEditMode) ? {
+      ...formValue,
+      POOSid: Number(formValue.POOSid),
+      POLSid: Number(formValue.POLSid),
+      PODSid: Number(formValue.PODSid),
+      FDCSid: Number(formValue.FDCSid),
+      ViaPortSid: Number(formValue.ViaPortSid),
+      AgentSid: Number(formValue.AgentSid),
+      Carrier: Number(formValue.Carrier),
+      updatedBy,
+      status: formValue.status === "Active" ? "A" : "I"
+    } : {
+      ...formValue,
+      POOSid: Number(formValue.POOSid),
+      POLSid: Number(formValue.POLSid),
+      PODSid: Number(formValue.PODSid),
+      FDCSid: Number(formValue.FDCSid),
+      ViaPortSid: Number(formValue.ViaPortSid),
+      AgentSid: Number(formValue.AgentSid),
+      Carrier: Number(formValue.Carrier),
+      createdBy,
+      status: formValue.status === "Active" ? "A" : "I"
     }
   }
 

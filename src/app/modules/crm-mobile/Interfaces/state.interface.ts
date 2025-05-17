@@ -2,6 +2,7 @@ export interface State {
     data: any;
     StateMasterSid: number,
     CountryMasterSid: number,
+    ZoneMasterSid?: number,
     stateCode: string,
     stateGSTCode: string,
     stateName: string,
@@ -17,5 +18,5 @@ export interface State {
     countryMaster: {
         countryName: string;
     }
-    
+
 }

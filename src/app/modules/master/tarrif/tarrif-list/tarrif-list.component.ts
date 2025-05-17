@@ -32,7 +32,7 @@ export class TarrifListComponent implements OnInit {
 
   // pagination values
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   totalNumberOfCollection: number;
 
 
@@ -46,9 +46,10 @@ export class TarrifListComponent implements OnInit {
   ngOnInit() { }
 
   search() {
+    const intFields = ['Carrier', 'AgentSid'];
     const payload = {
       searchType: this.searchType,
-      filterValue: this.filterValue
+      filterValue: intFields.includes(this.searchType) ? Number(this.filterValue) : this.filterValue
     }
     this.masterServ.searchTariff(payload).subscribe(
       (res) => {

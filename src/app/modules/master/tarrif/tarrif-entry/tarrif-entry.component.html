@@ -4,8 +4,8 @@
             <button class="btn btn-sm btn-light-secondary ms-auto" (click)="navigateBack()">
                 <i-feather name="corner-up-left" class="feather-sm me-1"></i-feather> Back
             </button>
-            <button class="btn btn-sm btn-info" (click)="onSave()">
-                <i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> Save
+            <button class="btn btn-sm btn-info" (click)="onSave()" [disabled]="inputForm.invalid">
+                <i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> {{isEditMode ?'Update':'Save'}}
             </button>
         </div>
     </div>
@@ -18,129 +18,268 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Dept Name <span
+                            <label for="text-input" class="input-label" [onlyText]="">Dept Name <span
                                     class="text-danger">*</span></label>
                         </div>
+                        <!-- 
+                        @if(inputForm.get('DepartmentName')?.touched && inputForm.get('DepartmentName')?.errors){
+                            <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                                @if(inputForm.get('DepartmentName')?.hasError('required')){
+                                <small>This is required</small>
+                                } @else if(inputForm.get('DepartmentName')?.hasError('maxlength')) {
+                                <small>Max 5 characters</small>
+                                }
+                            </div>
+                        }-->
+
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="POOSid" id="text-input" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">POO <span class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('POOSid')?.touched && inputForm.get('POOSid')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('POOSid')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('POOSid')?.hasError('onlyNumbers')) {
+                            <small>Only digit are allowed</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="POLSid" id="text-input" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('POLSid')?.touched && inputForm.get('POLSid')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('POLSid')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('POLSid')?.hasError('onlyNumbers')) {
+                            <small>Only digit are allowed</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="PODSid" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('PODSid')?.touched && inputForm.get('PODSid')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('PODSid')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('PODSid')?.hasError('onlyNumbers')) {
+                            <small>Only digit are allowed</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="FDCSid" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">FDC <span class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('FDCSid')?.touched && inputForm.get('FDCSid')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('FDCSid')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('FDCSid')?.hasError('onlyNumbers')) {
+                            <small>Only digit are allowed</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="ViaPortSid" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">Via Port <span
                                     class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('ViaPortSid')?.touched && inputForm.get('ViaPortSid')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('ViaPortSid')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('ViaPortSid')?.hasError('onlyNumbers')) {
+                            <small>Only digit are allowed</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="POLTerminal" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyText]="5">
                             <label for="text-input" class="input-label">POL Terminal <span
                                     class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('POLTerminal')?.touched && inputForm.get('POLTerminal')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('POLTerminal')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('POLTerminal')?.hasError('maxlength')) {
+                            <small>Max 5 characters</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="PODTerminal" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyText]="5">
                             <label for="text-input" class="input-label">POD Terminal <span
                                     class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('PODTerminal')?.touched && inputForm.get('PODTerminal')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('PODTerminal')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('PODTerminal')?.hasError('maxlength')) {
+                            <small>Max 5 characters</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="Carrier" id="text-input" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">Carrier <span
                                     class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('Carrier')?.touched && inputForm.get('Carrier')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('Carrier')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('Carrier')?.hasError('onlyNumbers')) {
+                            <small>Only digit are allowed</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="CargoType" id="text-input" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyText]="10">
                             <label for="text-input" class="input-label">Cargo Type <span
                                     class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('CargoType')?.touched && inputForm.get('CargoType')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('CargoType')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('CargoType')?.hasError('maxlength')) {
+                            <small>Max 10 characters</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="ServiceLevel" id="text-input" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyText]="10">
                             <label for="text-input" class="input-label">Service Level <span
                                     class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('ServiceLevel')?.touched && inputForm.get('ServiceLevel')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('ServiceLevel')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('ServiceLevel')?.hasError('maxlength')) {
+                            <small>Max 10 characters</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="AgentSid" id="text-input" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">Agent <span class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('AgentSid')?.touched && inputForm.get('AgentSid')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('AgentSid')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('AgentSid')?.hasError('onlyNumbers')) {
+                            <small>Only digit are allowed</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="StuffingAt" id="text-input" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyText]="10">
                             <label for="text-input" class="input-label">Stuffing At <span
                                     class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('StuffingAt')?.touched && inputForm.get('StuffingAt')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('StuffingAt')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('StuffingAt')?.hasError('maxlength')) {
+                            <small>Max 10 characters</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="IncoTerms" id="text-input" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyText]="10">
                             <label for="text-input" class="input-label">Inco Terms <span
                                     class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('IncoTerms')?.touched && inputForm.get('IncoTerms')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('IncoTerms')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('IncoTerms')?.hasError('maxlength')) {
+                            <small>Max 10 characters</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="Remarks" id="text-input" placeholder=""
-                                class="custom-input-field sm">
+                                class="custom-input-field sm" [onlyText]="100">
                             <label for="text-input" class="input-label">Remarks <span
                                     class="text-danger">*</span></label>
                         </div>
+                        @if(inputForm.get('Remarks')?.touched && inputForm.get('Remarks')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(inputForm.get('Remarks')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(inputForm.get('Remarks')?.hasError('maxlength')) {
+                            <small>Max 100 characters</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <!-- <input type="text" formControlName="status" id="text-input" placeholder=""
-                                class="custom-input-field sm"> -->
-                            <select formControlName="status" name="status" class="form-select" [(ngModel)]="Status">
-                                <option value="" [disabled]="!isEditMode">Status</option>
-                                <option value="A">Active</option>
-                                <option value="I" [disabled]="!isEditMode">Invalid</option>
-                                <option value="B" [disabled]="!isEditMode">Block</option>
+                            <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"> -->
+                            @if(isEditMode){
+                            <select name="status" class="form-select" formControlName="status" id="text-input">
+                                <option value="Active">Active</option>
+                                <option value="Invalid">Invalid</option>
+                                <option value="Block">Block</option>
                             </select>
-                            <label for="text-input" class="input-label">Status <span
-                                    class="text-danger">*</span></label>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
+                                id="text-input" readonly>
+                            }
+                            <label for="text-input" class="input-label">Status<span class="text-danger">*</span></label>
                         </div>
                     </aside>
                 </div>

@@ -564,7 +564,18 @@ export const MasterRoutes: Routes = [
         path: "branch/entry",
         component: BranchEntryComponent,
         data: {
-          title: "Branch",
+          title: "Create Branch",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Branch" },
+          ],
+        },
+      },
+      {
+        path: "branch/entry/:id",
+        component: BranchEntryComponent,
+        data: {
+          title: "Edit Branch",
           urls: [
             { title: "Master", url: "/master" },
             { title: "Branch" },

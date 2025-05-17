@@ -1,121 +1,268 @@
-<div class="row">
+<div class="row" [formGroup]="vesselForm">
     <div class="col-12">
         <div class="d-flex align-items-center gap-2 mb-3">
-            <button class="btn btn-sm btn-light-secondary ms-auto"><i-feather name="edit-3"
-                    class="feather-sm me-1"></i-feather> Edit</button>
-            <button class="btn btn-sm btn-info"><i-feather name="upload-cloud" class="feather-sm me-1"></i-feather>
-                Save</button>
+            <button class="btn btn-sm btn-light-secondary ms-auto" (click)="navigateBack()"><i-feather
+                    name="corner-up-left" class="feather-sm me-1"></i-feather> Back</button>
+            <button class="btn btn-sm btn-info" (click)="onSave()" [disabled]="vesselForm.invalid"><i-feather
+                    name="upload-cloud" class="feather-sm me-1"></i-feather>
+                {{isEditMode ?'Update':'Save'}}</button>
         </div>
     </div>
-    <div class="col-6">
+    <div class="col-12">
         <div class="card h-100">
             <div class="card-body">
                 <div class="row">
                     <h6 class="card-title mb-0">Vessel Information</h6>
 
-                    <aside class="col-md-12">
+                    <aside class="col-md-5">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <input type="text" id="text-input" formControlName="VesselName" placeholder=""
+                                class="custom-input-field sm" [onlyText]="100">
                             <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
                         </div>
+                        @if(vesselForm.get('VesselName')?.touched && vesselForm.get('VesselName')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(vesselForm.get('VesselName')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(vesselForm.get('VesselName')?.hasError('maxlength')) {
+                            <small>Max 100 characters</small>
+                            }
+                        </div>
+                        }
                     </aside>
 
-                    <aside class="col-md-4">
+                    <aside class="col-md-1">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <input type="text" id="text-input" formControlName="VesselShortCode" placeholder=""
+                                class="custom-input-field sm" [onlyText]="5">
                             <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
                         </div>
+                        @if(vesselForm.get('VesselShortCode')?.touched && vesselForm.get('VesselShortCode')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(vesselForm.get('VesselShortCode')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(vesselForm.get('VesselShortCode')?.hasError('maxlength')) {
+                            <small>Max 5 characters</small>
+                            }
+                        </div>
+                        }
                     </aside>
 
-                    <aside class="col-md-4">
+                    <aside class="col-md-2">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Vessel Type <span
+                            <input type="text" id="text-input" formControlName="IMOCode" placeholder=""
+                                class="custom-input-field sm" [onlyText]="10">
+                            <label for="text-input" class="input-label">IMO Code <span
                                     class="text-danger">*</span></label>
                         </div>
+                        @if(vesselForm.get('IMOCode')?.touched && vesselForm.get('IMOCode')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(vesselForm.get('IMOCode')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(vesselForm.get('IMOCode')?.hasError('maxlength')) {
+                            <small>Max 10 characters</small>
+                            }
+                        </div>
+                        }
+                    </aside>
+                    <aside class="col-md-2">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" formControlName="CallSignIn" placeholder=""
+                                class="custom-input-field sm" [onlyText]="10">
+                            <label for="text-input" class="input-label">Call Sign In <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                        @if(vesselForm.get('CallSignIn')?.touched && vesselForm.get('CallSignIn')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(vesselForm.get('CallSignIn')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(vesselForm.get('CallSignIn')?.hasError('maxlength')) {
+                            <small>Max 10 characters</small>
+                            }
+                        </div>
+                        }
+                    </aside>
+                    <aside class="col-md-2">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" formControlName="YearofBuilt" placeholder=""
+                                class="custom-input-field sm" [onlyNumbers]="4">
+                            <label for="text-input" class="input-label">Year of Built <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                        @if(vesselForm.get('YearofBuilt')?.touched && vesselForm.get('YearofBuilt')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(vesselForm.get('YearofBuilt')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(vesselForm.get('YearofBuilt')?.hasError('onlyNumbers')) {
+                            <small>Only digit are allowed</small>
+                            } @else if(vesselForm.get('YearofBuilt')?.hasError('maxlength')){
+                            <small>Max 4 digits</small>
+                            }
+                        </div>
+                        }
+                    </aside>
+                    <aside class="col-md-2">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" formControlName="MMSINo" placeholder=""
+                                class="custom-input-field sm" [onlyNumbers]="">
+                            <label for="text-input" class="input-label">MMSI No<span
+                                    class="text-danger">*</span></label>
+                        </div>
+                        @if(vesselForm.get('MMSINo')?.touched && vesselForm.get('MMSINo')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(vesselForm.get('MMSINo')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(vesselForm.get('MMSINo')?.hasError('onlyNumbers')) {
+                            <small>Only digit are allowed</small>
+                            }
+                        </div>
+                        }
+                    </aside>
+                    <aside class="col-md-2">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" formControlName="GRT" placeholder=""
+                                class="custom-input-field sm" [onlyNumbers]="">
+                            <label for="text-input" class="input-label">GRT <span class="text-danger">*</span></label>
+                        </div>
+                        @if(vesselForm.get('GRT')?.touched && vesselForm.get('GRT')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(vesselForm.get('GRT')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(vesselForm.get('GRT')?.hasError('onlyNumbers')) {
+                            <small>Only digit are allowed</small>
+                            }
+                        </div>
+                        }
+                    </aside>
+                    <aside class="col-md-2">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" formControlName="NRT" placeholder=""
+                                class="custom-input-field sm" [onlyNumbers]="">
+                            <label for="text-input" class="input-label">NRT <span class="text-danger">*</span></label>
+                        </div>
+                        @if(vesselForm.get('NRT')?.touched && vesselForm.get('NRT')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(vesselForm.get('NRT')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(vesselForm.get('NRT')?.hasError('onlyNumbers')) {
+                            <small>Only digit are allowed</small>
+                            }
+                        </div>
+                        }
+                    </aside>
+
+                    <aside class="col-md-2">
+                        <div class="custom-form-group">
+                            <!-- <input type="text" id="text-input" formControlName="VesselType" placeholder=""
+                                class="custom-input-field sm"> -->
+                            <select name="vesselType" id="" class="form-select" formControlName="VesselType"
+                                [onlyText]="10">
+                                <option value="">Vessel Type</option>
+                                @for(each of vesselTypes;track $index){
+                                <option value="each">{{each}}</option>
+                                }
+                            </select>
+                            <label for="text-input" class="input-label">Vessel Type<span
+                                    class="text-danger">*</span></label>
+                        </div>
+                        @if(vesselForm.get('VesselType')?.touched && vesselForm.get('VesselType')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(vesselForm.get('VesselType')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(vesselForm.get('VesselType')?.hasError('maxlength')) {
+                            <small>Max 10 characters</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Country <span
+                            <input type="text" id="text-input" formControlName="VesselOperator" placeholder=""
+                                class="custom-input-field sm" [onlyText]="100">
+                            <label for="text-input" class="input-label">Vessel Operator<span
                                     class="text-danger">*</span></label>
                         </div>
+                        @if(vesselForm.get('VesselOperator')?.touched && vesselForm.get('VesselOperator')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(vesselForm.get('VesselOperator')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(vesselForm.get('VesselOperator')?.hasError('maxlength')) {
+                            <small>Max 100 characters</small>
+                            }
+                        </div>
+                        }
+                    </aside>
+                    <aside class="col-md-2">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" formControlName="LengthinMtr" placeholder=""
+                                class="custom-input-field sm" [onlyNumbers]="">
+                            <label for="text-input" class="input-label">Length in Mtr<span
+                                    class="text-danger">*</span></label>
+                        </div>
+                        @if(vesselForm.get('LengthinMtr')?.touched && vesselForm.get('LengthinMtr')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(vesselForm.get('LengthinMtr')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(vesselForm.get('LengthinMtr')?.hasError('onlyNumbers')) {
+                            <small>Only digit are allowed</small>
+                            }
+                        </div>
+                        }
+                    </aside>
+                    <aside class="col-md-2">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" formControlName="BreadthinMtr" placeholder=""
+                                class="custom-input-field sm" [onlyNumbers]="">
+                            <label for="text-input" class="input-label">Breadth in Mtr<span
+                                    class="text-danger">*</span></label>
+                        </div>
+                        @if(vesselForm.get('BreadthinMtr')?.touched && vesselForm.get('BreadthinMtr')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(vesselForm.get('BreadthinMtr')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(vesselForm.get('BreadthinMtr')?.hasError('onlyNumbers')) {
+                            <small>Only digit are allowed</small>
+                            }
+                        </div>
+                        }
                     </aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">carrier Code <span
+                            <input type="text" id="text-input" formControlName="Remarks" placeholder=""
+                                class="custom-input-field sm" [onlyText]="200">
+                            <label for="text-input" class="input-label">Remarks<span
                                     class="text-danger">*</span></label>
                         </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Lloyds No <span
-                                    class="text-danger">*</span></label>
+                        @if(vesselForm.get('Remarks')?.touched && vesselForm.get('Remarks')?.errors){
+                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
+                            @if(vesselForm.get('Remarks')?.hasError('required')){
+                            <small>This is required</small>
+                            } @else if(vesselForm.get('Remarks')?.hasError('maxlength')) {
+                            <small>Max 200 characters</small>
+                            }
                         </div>
+                        }
                     </aside>
-                    <aside class="col-md-12">
+                    <aside class="col-md-2">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Marrine URL <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row">
-                    
-                    <h6 class="card-title mb-0">Vessel Information 2</h6>
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Vessel ID <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Net register Ton<span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Year on Construction<span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"> -->
+                            @if(isEditMode){
+                            <select name="status" class="form-select" formControlName="status" id="text-input">
+                                <option value="Active">Active</option>
+                                <option value="Invalid">Invalid</option>
+                                <option value="Block">Block</option>
+                            </select>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
+                                id="text-input" readonly>
+                            }
                             <label for="text-input" class="input-label">Status<span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Ship Call No<span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Ship Call Code<span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <div class="custom-form-group">
-                        <textarea id="" placeholder="" rows="1" class="input-field sm"></textarea>
-                        <label for="text-input" class="input-label">Remarks </label>
-                    </div>
+
                 </div>
             </div>
         </div>
     </div>
+
 </div>
