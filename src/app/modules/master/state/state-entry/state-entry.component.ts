@@ -8,7 +8,6 @@ import { State } from 'src/app/modules/crm-mobile/Interfaces/state.interface';
 import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-state-entry',
@@ -27,7 +26,6 @@ export class StateEntryComponent implements OnInit {
   isEditMode = false;
   btnDisable = false;
   stateId: number;
-  loading = false;
   countries: Country[] = [];
   
   statusOptions = [
@@ -57,10 +55,9 @@ export class StateEntryComponent implements OnInit {
   }
 
   initForm() {
-    this.stateForm = this.fb.group({stateName: ['', [Validators.required,Validators.maxLength(100),
-        this.alphaSpaceValidator()
-      ]],
-      stateCode: ['', [Validators.required,Validators.maxLength(2),this.alphaValidator()]],
+    this.stateForm = this.fb.group({
+      stateName: ['', [Validators.required, Validators.maxLength(100), this.alphaSpaceValidator()]],
+      stateCode: ['', [Validators.required, Validators.maxLength(2), this.alphaValidator()]],
       CountryMasterSid: ['', Validators.required],
       region: [''],
       status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
@@ -105,22 +102,18 @@ export class StateEntryComponent implements OnInit {
   }
 
   loadCountries() {
-    this.loading = true;
     this.masterService.getAllCountry().subscribe({
       next: (resp: any) => {
         this.countries = resp.data || resp;
-        this.loading = false;
       },
       error: (err) => {
         console.error('Error loading countries:', err);
-        this.loading = false;
         this.appSettingService.showError('Failed to load countries');
       }
     });
   }
 
   getStateById(id: number) {
-    this.loading = true;
     this.stateForm.reset();
     this.masterService.getStateById(id).subscribe({
       next: (state: State) => {
@@ -132,11 +125,9 @@ export class StateEntryComponent implements OnInit {
           status: state.status,
           Remarks: state.Remarks || ''
         });
-        this.loading = false;
       },
       error: (err) => {
         console.error('Error loading state:', err);
-        this.loading = false;
         this.appSettingService.showError('Failed to load state data');
       }
     });
@@ -149,12 +140,10 @@ export class StateEntryComponent implements OnInit {
     }
   
     this.btnDisable = true;
-    this.loading = true;
     
     const payload = {
       ...this.stateForm.value,
       CountryMasterSid: Number(this.stateForm.value.CountryMasterSid),
-      // Ensure status is included for create mode too
       status: this.isEditMode ? this.stateForm.value.status : 'A'
     };
   
@@ -164,7 +153,6 @@ export class StateEntryComponent implements OnInit {
   
     operation.subscribe({
       next: (resp: any) => {
-        // Handle both response structures (direct data or wrapped response)
         const success = resp.data ? resp.data : resp;
         this.handleSuccess(success);
       },
@@ -175,7 +163,6 @@ export class StateEntryComponent implements OnInit {
   }
   
   private handleSuccess(response: any) {
-    this.loading = false;
     this.btnDisable = false;
     const message = this.isEditMode 
       ? 'State updated successfully!' 
@@ -187,7 +174,6 @@ export class StateEntryComponent implements OnInit {
   
   private handleError(err: any) {
     console.error(err);
-    this.loading = false;
     this.btnDisable = false;
     
     let errorMessage = `Error ${this.isEditMode ? 'updating' : 'creating'} state`;

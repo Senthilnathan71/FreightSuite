@@ -46,7 +46,10 @@
                     <tr class="bg-info">
                         <th class="bg-transparent text-light" scope="col">State Name</th>
                         <th class="bg-transparent text-light" scope="col">State Code</th>
+                        <!-- <th class="bg-transparent text-light" scope="col">State GST Code</th> -->
+                        <th class="bg-transparent text-light" scope="col">Region</th>
                         <th class="bg-transparent text-light" scope="col">Country</th>
+                        <th class="bg-transparent text-light" scope="col">Remarks</th>
                         <th class="bg-transparent text-light" scope="col">Status</th>
                         <th class="bg-transparent text-light" scope="col">Action</th>
                     </tr>
@@ -59,8 +62,17 @@
                         <td>
                             <div class="text-truncate">{{item.stateCode}}</div>
                         </td>
+                        <!-- <td>
+                            <div class="text-truncate">{{item.stateGSTCode}}</div>
+                        </td> -->
+                        <td>
+                            <div class="text-truncate">{{item.region}}</div>
+                        </td>
                         <td>
                             <div class="text-truncate">{{item.countryMaster?.countryName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.Remarks}}</div>
                         </td>
                         <td>
                             <div class="text-truncate">

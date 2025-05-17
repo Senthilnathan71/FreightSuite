@@ -22,11 +22,11 @@ import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interfa
   styleUrls: ['./currency-entry.component.scss']
 })
 export class CurrencyEntryComponent implements OnInit {
-countryOptions: readonly any[];
-
-goBack() {
-  this.router.navigate(['master/currency/list']);
-}
+  countryOptions: readonly any[];
+  
+  goBack() {
+    this.router.navigate(['master/currency/list']);
+  }
 
   currencyForm: FormGroup;
   isEditMode = false;
@@ -39,7 +39,6 @@ goBack() {
     { id: 'A', name: 'Active' },
     { id: 'I', name: 'Inactive' }
   ];
-  
 
   constructor(
     private fb: FormBuilder,
@@ -64,22 +63,61 @@ goBack() {
 
   initForm() {
     this.currencyForm = this.fb.group({
-      currencyName: ['', [Validators.required, Validators.maxLength(100)]],
-      currencyCode: ['', [Validators.required, Validators.maxLength(3)]],
-      currencyID: ['', [Validators.required, Validators.maxLength(1)]],
-      currencyUnit: ['', [Validators.required, Validators.maxLength(50)]],
-      currencySubUnit: ['', [Validators.required, Validators.maxLength(50)]],
-      symbol: ['', [Validators.required, Validators.maxLength(5)]],
-      currencyFirstName: ['', [Validators.maxLength(50)]],
-      currencyLastName: ['', [Validators.maxLength(50)]],
-      currencyRatio: [1, [Validators.required, Validators.min(0)]],
-      amountDecimal: [2, [Validators.required, Validators.min(0), Validators.max(8)]],
-      exchangeDecimal: [4, [Validators.required, Validators.min(0), Validators.max(8)]],
+      currencyName: ['', [
+        Validators.required, 
+        Validators.maxLength(100),
+        Validators.pattern(/^[a-zA-Z\s]*$/) // Alphabets and spaces only
+      ]],
+      currencyCode: ['', [
+        Validators.required, 
+        Validators.maxLength(3),
+        Validators.pattern(/^[A-Z]{3}$/) // Exactly 3 uppercase letters
+      ]],
+      currencyID: ['', [
+        Validators.required, 
+        Validators.maxLength(1),
+        Validators.pattern(/^[A-Z0-9]$/) // Single alphanumeric character
+      ]],
+      currencyUnit: ['', [
+        Validators.required, 
+        Validators.maxLength(50)
+      ]],
+      currencySubUnit: ['', [
+        Validators.maxLength(50) // Made optional since it wasn't marked as required in UI
+      ]],
+      symbol: ['', [
+        Validators.required, 
+        Validators.maxLength(5)
+      ]],
+      currencyFirstName: ['', [
+        Validators.maxLength(50)
+      ]],
+      currencyLastName: ['', [
+        Validators.maxLength(50)
+      ]],
+      currencyRatio: [1, [
+        Validators.required,
+        Validators.min(1), // Minimum value 1 (positive integer)
+        Validators.pattern(/^[1-9]\d*$/) // Positive integers only
+      ]],
+      amountDecimal: [2, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(8), // Max 8 decimal places
+        Validators.pattern(/^\d+$/) // Integers only
+      ]],
+      exchangeDecimal: [4, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(8), // Max 8 decimal places
+        Validators.pattern(/^\d+$/) // Integers only
+      ]],
       status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
       CountryMasterSid: ['', Validators.required],
       remarks: ['']
     });
 
+    // Auto-uppercase currency code
     this.currencyForm.get('currencyCode')?.valueChanges.subscribe(val => {
       if (val) {
         this.currencyForm.get('currencyCode')?.setValue(val.toUpperCase(), { emitEvent: false });
@@ -87,6 +125,7 @@ goBack() {
     });
   }
 
+  // Rest of the component remains the same...
   loadCountries() {
     this.loading = true;
     this.masterService.getAllCountry().subscribe({

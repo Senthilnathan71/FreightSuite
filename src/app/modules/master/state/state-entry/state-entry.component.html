@@ -1,40 +1,26 @@
 <div class="container-fluid">
-  <!-- Breadcrumb -->
-  <div class="row">
-    <div class="col-12">
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a routerLink="/master">Master</a></li>
-          <li class="breadcrumb-item active" aria-current="page">
-            {{ isEditMode ? 'State Edit' : 'State Add' }}
-          </li>
-        </ol>
-      </nav>
-    </div>
-  </div>
-
   <!-- Form -->
   <form [formGroup]="stateForm" (ngSubmit)="onSubmit()">
     <div class="row">
       <!-- Top buttons -->
       <div class="col-12">
         <div class="d-flex align-items-center gap-2 mb-3">
-          <button type="submit" class="btn btn-primary">
-            <i-feather name="save" class="feather-sm me-1"></i-feather>
+          <button type="submit" class="btn btn-sm btn-info">
             {{ isEditMode ? 'Update' : 'Create' }}
           </button>
           <button type="button" class="btn btn-sm btn-info" (click)="resetForm()">
-            <i-feather name="rotate-ccw" class="feather-sm me-1"></i-feather> Reset
+            Reset
           </button>
+            <button type="button" class="btn btn-sm btn-info" (click)="goBack()">
+              Back
+            </button>
         </div>
       </div>
+
 
       <!-- Left card section -->
       <div class="col-md-6">
         <div class="card h-100">
-          <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Basic Info</h5>
-          </div>
           <div class="card-body">
             <div class="row">
 
@@ -146,12 +132,7 @@
                 </div>
               </aside>
 
-              <!-- Action Buttons -->
-              <aside class="col-md-12 d-flex justify-content-end mt-3">
-                <button type="button" class="btn btn-secondary btn-sm" (click)="goBack()">
-                  <i-feather name="arrow-left" class="feather-sm me-1"></i-feather> Back
-                </button>
-              </aside>
+
 
             </div>
           </div>
