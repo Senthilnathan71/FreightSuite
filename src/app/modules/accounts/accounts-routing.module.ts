@@ -58,8 +58,8 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
-         {
-        path: "approval/approval",
+      {
+        path: "approval",
         component: ApprovalComponent,
         data: {
           title: "Approval",

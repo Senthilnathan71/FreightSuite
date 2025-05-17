@@ -928,5 +928,60 @@ export class MasterService {
     )
   }
 
+  //company-master
+  searchCompanyList(payload) {
+    return this.http.post("company/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    )
+  }
+
+
+  getAllCompanys() {
+    return this.http.get('company').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+  getCompanyById(id: number) {
+    return this.http.get<{ data: Uom }>(`company/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createCompany(payload: any) {
+    return this.http.post('company/create', payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    );
+  }
+
+  updateCompanyById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`company/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  deleteCompanyById(id: number) {
+    return this.http.delete<{ data: any }>(`company/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
 
 }
