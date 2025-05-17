@@ -1,104 +1,97 @@
-import { Component, OnInit } from '@angular/core';
-import { FeatherModule } from 'angular-feather';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import { Router, RouterModule } from '@angular/router';
-import { AppService } from 'src/app/service/app.service';
-import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
-import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { Port } from 'src/app/modules/crm-mobile/Interfaces/port.interface';
-import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { AppService } from 'src/app/service/app.service';
+
 @Component({
-  selector: 'app-post-master-list',
+  selector: 'app-port-master-list',
   standalone: true,
   imports: [
-    CommonModule,
-    FeatherModule,
-    NgbPaginationModule,
-    FormsModule,
+    CommonModule, 
+    FeatherModule, 
+    FormsModule, 
+    NgbPaginationModule, 
     RouterModule,
-    MatDialogModule,
-    MatButtonModule
+    MatDialogModule
   ],
   templateUrl: './post-master-list.component.html',
   styleUrl: './post-master-list.component.scss'
 })
-export class PostMasterListComponent implements OnInit {
-  ports: Port[] = [];
-  errorMessage: string = '';
+export class PostMasterListComponent {
+  searchType = 'PortName';
+  filterValue = '';
+  results: any[] = [];
+  portList: any[] = [];
+  searchPerformed = false;
+
+  // pagination
   page = 1;
   pageSize = 5;
-  totalLengthOfCollection: number;
-  searchText: string = '';
-  filteredPorts: Port[] = [];
-  isMobile: boolean = false;
-  constructor(private masterService: MasterService, private route: Router, private appService: AppService, private dialog: MatDialog, private appSettingService: AppSettingsService) { }
+  totalLengthOfCollection: number = 0;
 
-  ngOnInit(): void {
-    this.loadPorts();
-    this.isMobile = this.appService.getDevice();
-  }
-  createNew() {
-    this.route.navigate(['master/port-master/view'])
-  }
+  constructor(
+    private masterService: MasterService, 
+    private router: Router,
+    private dialog: MatDialog,
+    private appSettingService: AppSettingsService
+  ) { }
 
+  ngOnInit() { }
 
-  loadPorts(): void {
-    this.masterService.getAllPorts().subscribe(
-      (resp: Port[]) => {
-        this.ports = resp['data'];
-        console.log(this.ports);
-        this.filteredPorts = [...this.ports];
-        this.totalLengthOfCollection = this.ports.length || 0;
-      },
-      (error) => {
-        this.errorMessage = error.message;
-        console.error('Error loading ports:', error);
-      }
-    );
-  }
-
-  searchPorts(): void {
-    const searchQuery = this.searchText?.toLowerCase().trim(); // Trim spaces and handle null/undefined
-
-    if (!searchQuery) {
-      this.filteredPorts = [...this.ports];
-    } else {
-      this.filteredPorts = this.ports.filter((port) => {
-        return (
-          port.PortName?.toLowerCase().includes(searchQuery) ||
-          port.PortCode?.toLowerCase().includes(searchQuery) ||
-          port.PortType?.toLowerCase().includes(searchQuery) ||
-          String(port.TerminalCode).toLowerCase().includes(searchQuery) ||
-          String((port.countryMaster) ? port.countryMaster.countryName : port.countryMaster).toLowerCase().includes(searchQuery) ||
-          String((port.sectorMaster) ? port.sectorMaster.sectorName : port.sectorMaster).toLowerCase().includes(searchQuery) ||
-          (port.status === 'A' ? 'Active' : 'Cancelled').toLowerCase().includes(searchQuery)
-        );
-      });
+  search() {
+    const payload = {
+      searchType: this.searchType,
+      filterValue: this.searchType === 'status' 
+        ? this.filterValue === 'Active' ? 'A' : 'I' 
+        : this.filterValue,
     }
+    this.masterService.searchPortList(payload).subscribe((res: any) => {
+      this.results = res;
+      this.searchPerformed = true;
+      this.updatePaginatedData();
+      this.totalLengthOfCollection = this.results.length || 0;
+    });
   }
 
+  updatePaginatedData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.portList = this.results.slice(startIndex, endIndex);
+  }
+
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
 
   deletePort(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
-
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         this.masterService.deletePortById(id).subscribe((resp: any) => {
-
           this.appSettingService.showSuccess("Deleted!");
-          console.log(resp);
-          // if(resp.status){
-          this.loadPorts();
-
-          // }
-
+          this.router.navigate(['master/port-master/list']);
         });
       }
     });
   }
+  
+  navigateToCreatePort() {
+    this.router.navigate(['master/port-master/view']);
+  }
 
+  resetPage() {
+    this.portList = [];
+    this.totalLengthOfCollection = 0;
+  }
+
+  getStatusText(status: string): string {
+    return status === 'A' ? 'Active' : 'Cancelled';
+  }
 }

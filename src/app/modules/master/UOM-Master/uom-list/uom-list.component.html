@@ -5,29 +5,30 @@
                 <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
                     <form class="d-flex align-items-center gap-2">
                         <div class="form-outline col">
-                            <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
-                                (input)="searchUom()" autocomplete="off" placeholder="Search">
-                            <i class="fas fa-search ms-3"></i>
+                            <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                                <option value="UOMName">UOM Name</option>
+                                <option value="UOMCode">UOM Code</option>
+                                <option value="status">Status</option>
+                            </select>
                         </div>
                         <div class="form-outline col">
-                            <input name="filterValue" type="text" class="form-control" placeholder="Enter filter value">
+                            <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
+                                placeholder="Enter filter value">
                             <i
                                 class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
                         </div>
 
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="search()">
                             <i class="fas fa-search"></i>
                             Search
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="createNew()">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="navigateToCreateUom()">
                             <i class="mdi mdi-plus"></i> Create
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
-                            <!-- <i class="mdi mdi-plus"></i> -->
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="report()">
                             Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
-                            <!-- <i class="mdi mdi-plus"></i> -->
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="resetPage()">
                             Reset
                         </button>
                     </form>
@@ -35,66 +36,45 @@
             </div>
         </div>
     </div>
-    <!-- <div class="col-12">
-        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <form action="" class="d-flex align-items-center gap-2">
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
-                        (input)="searchUom()" autocomplete="off" placeholder="Search">
-                    <i class="fas fa-search ms-3"></i>
-                </div>
-                <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
-                    <i class="mdi mdi-plus"></i> Add
-                </button>
-            </form>
-        </div>
-    </div> -->
-    <div class="col-12">
-        <div class="card">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">UOM Name</th>
-                            <th class="bg-transparent text-light" scope="col">UOM Code</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
-                            <th class="bg-transparent text-light" scope="col">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let uom of filteredUom">
-                            <td>
-                                <div class="text-truncate">{{ uom.UOMName}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{ uom.UOMCode}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{ uom.status === 'A' ? 'Active' : 'Cancelled' }}</div>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <a class="text-info mx-2" class="link mx-2 ps-3 "
-                                        [routerLink]="['/master/uom-master/view/', uom.UOMMasterSid]">
-                                        <i-feather class="feather-sm" name="eye"></i-feather>
-                                    </a>
-                                    <a class="text-danger mx-2 ps-3 border-start" (click)="deleteUom(uom.UOMMasterSid)">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+</div>
 
-            <div class="card-body">
-                <!-- #region Pagination -->
-                <ngb-pagination class="d-flex justify-content-end
-                " [collectionSize]="totalLengthOfCollection" [pageSize]="pageSize" [(page)]="page"></ngb-pagination>
-                <!-- #endregion -->
-            </div>
-
-        </div>
+<div class="col-12" *ngIf="totalLengthOfCollection > 0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle no-wrap table-bordered">
+            <thead>
+                <tr class="bg-info">
+                    <th class="bg-transparent text-light" scope="col">UOM Code</th>
+                    <th class="bg-transparent text-light" scope="col">UOM Name</th>
+                    <th class="bg-transparent text-light" scope="col">Status</th>
+                    <th class="bg-transparent text-light" scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of uomList; let i = index; trackBy: trackByIndex">
+                    <td>{{item.UOMCode}}</td>
+                    <td>{{item.UOMName}}</td>
+                    <td>{{getStatusText(item.status)}}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <a class="text-info mx-2" [routerLink]="['/master/uom-master/view/', item.UOMMasterSid]">
+                                <i-feather class="feather-sm" name="eye"></i-feather>
+                            </a>
+                            <a class="text-danger mx-2 ps-3 border-start" (click)="deleteUom(item.UOMMasterSid)">
+                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
+    <div>
+        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+            [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+        </ngb-pagination>
+    </div>
+</div>
+
+<div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
+    <div class="alert alert-info text-center">No records found</div>
 </div>

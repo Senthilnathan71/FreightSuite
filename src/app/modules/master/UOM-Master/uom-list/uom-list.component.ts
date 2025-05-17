@@ -1,14 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { FeatherModule } from 'angular-feather';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import { Router, RouterModule } from '@angular/router';
-import { AppService } from 'src/app/service/app.service';
-import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { Router, RouterModule } from '@angular/router';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { Uom } from 'src/app/modules/crm-mobile/Interfaces/uom.interface';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from '../../master.service';
 
@@ -18,82 +15,89 @@ import { MasterService } from '../../master.service';
   imports: [
     CommonModule,
     FeatherModule,
-    NgbPaginationModule,
     FormsModule,
-    RouterModule,
-    MatDialogModule,
-    MatButtonModule
+    NgbPaginationModule,
+    RouterModule
   ],
   templateUrl: './uom-list.component.html',
   styleUrl: './uom-list.component.scss'
 })
 export class UOMListComponent {
-  uom: Uom[] = [];
-  errorMessage: string = '';
+  searchType = 'UOMName';
+  filterValue = '';
+  results: any[] = [];
+  uomList: any[] = [];
+  searchPerformed = false;
+
+  // pagination
   page = 1;
   pageSize = 5;
   totalLengthOfCollection: number;
-  searchText: string = '';
-  filteredUom: Uom[] = [];
-  isMobile: boolean = false;
-  constructor(private masterService: MasterService, private route: Router, private appService: AppService, private dialog: MatDialog, private appSettingService: AppSettingsService) { }
 
-  ngOnInit(): void {
-    this.loadUom();
-    this.isMobile = this.appService.getDevice();
-  }
+  constructor(
+    private masterService: MasterService, 
+    private router: Router,
+    private appSettingService: AppSettingsService, 
+    private dialog: MatDialog
+  ) { }
 
-  createNew() {
-    this.route.navigate(['master/uom-master/view'])
-  }
+  ngOnInit() { }
 
-  loadUom(): void {
-    this.masterService.getAllUom().subscribe(
-      (resp: Uom[]) => {
-        this.uom = resp['data'];
-        console.log(this.uom);
-        this.filteredUom = [...this.uom];
-        this.totalLengthOfCollection = this.uom.length || 0;
-      },
-      (error) => {
-        this.errorMessage = error.message;
-        console.error('Error loading uom:', error);
-      }
-    );
-  }
-
-  searchUom(): void {
-    const searchQuery = this.searchText?.toLowerCase().trim(); // Trim spaces and handle null/undefined
-
-    if (!searchQuery) {
-      this.filteredUom = [...this.uom];
-    } else {
-      this.filteredUom = this.uom.filter((uom) => {
-        return (
-          uom.UOMName?.toLowerCase().includes(searchQuery) ||
-          uom.UOMCode?.toLowerCase().includes(searchQuery) ||
-          (uom.status === 'A' ? 'Active' : 'Cancelled').toLowerCase().includes(searchQuery)
-        );
-      });
+  search() {
+    const payload = {
+      searchType: this.searchType,
+      filterValue: this.searchType === 'status' 
+        ? this.filterValue === 'Active' ? 'A' : 'I' 
+        : this.filterValue,
     }
+    this.masterService.searchUomList(payload).subscribe((res: any) => {
+      this.results = res;
+      this.searchPerformed = true;
+      this.updatePaginatedData();
+      this.totalLengthOfCollection = this.results.length || 0;
+    });
+  }
+
+  updatePaginatedData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.uomList = this.results.slice(startIndex, endIndex);
+  }
+
+  trackByIndex(index: number, item: any): number {
+    return index;
   }
 
   deleteUom(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
-
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         this.masterService.deleteUomById(id).subscribe((resp: any) => {
-
           this.appSettingService.showSuccess("Deleted!");
-          console.log(resp);
-          // if(resp.status){
-          this.loadUom();
-
-          // }
-
+          this.search(); // Refresh the list after deletion
         });
       }
     });
+  }
+
+  navigateToCreateUom() {
+    this.router.navigate(['master/uom-master/view'])
+  }
+
+  resetPage() {
+    this.uomList = [];
+    this.totalLengthOfCollection = 0;
+    this.searchPerformed = false;
+    this.filterValue = '';
+    this.searchType = 'UOMName';
+    this.page = 1;
+  }
+
+  report() { 
+    // Implement report functionality if needed
+  }
+
+  getStatusText(status: string): string {
+    return status === 'A' ? 'Active' : 'Inactive';
   }
 }
