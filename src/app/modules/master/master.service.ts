@@ -145,7 +145,7 @@ export class MasterService {
       map((res: any) => {
         return res.data;
       })
-    )
+    );
   }
 
 
@@ -582,6 +582,14 @@ export class MasterService {
       map((resp) => {
         let response = resp.data;
         return response;
+      })
+    );
+  }
+
+  searchDivisionList(payload) {
+    return this.http.post("division/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
       })
     );
   }
