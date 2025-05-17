@@ -25,14 +25,14 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 })
 export class VesselListComponent {
   searchType = 'VesselName';
-  filterValue = '';
+  filterValue: any;
   results: any[] = [];
   vesselList: any[] = []
   searchPerformed = false;
 
   // pagination
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   totalLengthOfCollection: number;
 
   constructor(private masterService: MasterService, private router: Router,
@@ -41,9 +41,13 @@ export class VesselListComponent {
   ngOnInit() { }
 
   search() {
+    const intSearch = [
+      'YearofBuilt',
+      'NRT'
+    ]
     const payload = {
       searchType: this.searchType,
-      filterValue: this.filterValue,
+      filterValue: intSearch.includes(this.searchType) ? Number(this.filterValue) : this.filterValue,
     }
     this.masterService.searchVesselList(payload).subscribe((res: any) => {
       this.results = res;
@@ -69,7 +73,10 @@ export class VesselListComponent {
       if (result === true) {
         this.masterService.deleteVesselById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
-          this.router.navigate(['master/vessel/list'])
+          // this.router.navigate(['master/vessel/list'])
+          this.search();
+        }, (error) => {
+          this.appSettingService.showError("Error Deleting Vessel", error);
         });
       }
     });

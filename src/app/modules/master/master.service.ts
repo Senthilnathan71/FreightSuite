@@ -10,6 +10,8 @@ import { Uom } from '../crm-mobile/Interfaces/uom.interface';
 import { City } from '../crm-mobile/Interfaces/city.interface';
 import { Zone } from '../crm-mobile/Interfaces/zone.interface';
 import { PackageType } from '../crm-mobile/Interfaces/packageType.interface';
+import { Vessel } from '../crm-mobile/Interfaces/vessel.interface';
+import { Branch } from '../crm-mobile/Interfaces/branch.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -35,6 +37,33 @@ export class MasterService {
         return response;
       })
     );
+  }
+
+  createVessel(payload: Vessel) {
+    return this.http.post<{ data: Vessel }>(`vessel/create`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  loadVesselById(VesselMasterSid: number) {
+    return this.http.get<{ data: Vessel }>(`vessel/fetch/${VesselMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  updateVesselById(VesselMasterSid: number, payload) {
+    return this.http.patch<{ data: Vessel }>(`vessel/update/${VesselMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
   }
 
   //organization-master or customer-master
@@ -770,6 +799,72 @@ export class MasterService {
 
   createTariff(payload) {
     return this.http.post<{ data: any }>('tariff/create', payload).pipe(
+        return response;
+      })
+    )
+  }
+
+  // Branch Master
+
+  searchBranch(payload) {
+    return this.http.post<{ data: any }>(`branch/search-list`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  deleteBranchById(BranchMasterSid: number) {
+    return this.http.delete<{ data: Branch }>(`branch/delete/${BranchMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  loadBranchById(BranchMasterSid: number) {
+    return this.http.get<{ data: Branch }>(`branch/fetch/${BranchMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  createBranch(payload) {
+    return this.http.post<{ data: Branch }>(`branch/create`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateBranchById(BranchMasterSid: number, payload) {
+    return this.http.patch<{ data: Branch }>(`branch/update/${BranchMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // Company Master
+  getAllCompanies() {
+    return this.http.get<{ data: any }>('company').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  // Currency Master
+
+  getAllCurrencies() {
+    return this.http.get<{ data: any }>('currency').pipe(
       map((resp) => {
         let response = resp.data;
         return response;

@@ -7,7 +7,7 @@
                     <form class="d-flex align-items-center gap-2">
                         <div class="form-outline col">
                             <select [(ngModel)]="searchType" name="searchType" class="form-select">
-                                <option value="DepartmentName">Department Name</option>
+                                <option value="DepartmentName">Department Name (won't work)</option>
                                 <option value="POLTerminal">POL</option>
                                 <option value="PODTerminal">POD</option>
                                 <option value="Carrier">Carrier</option>
@@ -52,6 +52,7 @@
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">Action</th>
                         <th class="bg-transparent text-light" scope="col">Dept</th>
                         <th class="bg-transparent text-light" scope="col">POL</th>
                         <th class="bg-transparent text-light" scope="col">POD</th>
@@ -59,25 +60,11 @@
                         <th class="bg-transparent text-light" scope="col">Agent</th>
                         <th class="bg-transparent text-light" scope="col">Effective Date</th>
                         <th class="bg-transparent text-light" scope="col">Status</th>
-                        <th class="bg-transparent text-light" scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-
-                    @for (tariff of tariffList; track $index) {
+                    @for (tariff of tariffList; let i = $index;track trackByIndex) {
                     <tr>
-                        <td class="text-danger">Action Required</td>
-                        <td>{{tariff.POLTerminal}}</td>
-                        <td>{{tariff.PODTerminal}}</td>
-                        <td>{{tariff.Carrier}}</td>
-                        <td class="text-danger">Agent with id : {{tariff.AgentSid}}</td>
-                        <td>{{tariff.EffectiveDate | date}}</td>
-                        <td>
-                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                {{tariff.status === "A" ?"Active":"Invalid"}}
-                            </div>
-                        </td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <a class="text-info mx-2"
@@ -89,6 +76,26 @@
                                 </a>
                             </div>
                         </td>
+                        <td class="text-danger">Action Required</td>
+                        <td>{{tariff.POLTerminal}}</td>
+                        <td>{{tariff.PODTerminal}}</td>
+                        <td>{{tariff.Carrier}}</td>
+                        <td class="text-danger">Agent with id : {{tariff.AgentSid}}</td>
+                        <td>{{tariff.EffectiveDate | date}}</td>
+                        <td>
+                            @if(tariff.status === "A"){
+                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                Active
+                            </div>
+                            } @else {
+                            <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                Invalid
+                            </div>
+                            }
+                        </td>
+
                     </tr>
                     }
 
