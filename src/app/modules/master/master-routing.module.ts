@@ -715,6 +715,17 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: "commodity/entry/:id",
+        component: CommodityEntryComponent,
+        data: {
+          title: "Edit City",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Commodity" },
+          ],
+        },
+      },
+      {
         path: "package-type/list",
         component: PackageTypeListComponent,
         data: {
