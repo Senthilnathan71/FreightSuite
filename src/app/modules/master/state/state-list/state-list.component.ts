@@ -14,10 +14,10 @@ import { Subject } from 'rxjs';
   selector: 'app-state-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    FeatherModule, 
-    FormsModule, 
-    NgbPaginationModule, 
+    CommonModule,
+    FeatherModule,
+    FormsModule,
+    NgbPaginationModule,
     RouterModule
   ],
   templateUrl: './state-list.component.html',
@@ -31,7 +31,7 @@ export class StateListComponent {
   searchPerformed = false;
   loading: boolean = false;
   countryOptions: any[] = [];
-countryInput$ = new Subject<string>();
+  countryInput$ = new Subject<string>();
 
   // pagination
   page = 1;
@@ -50,11 +50,11 @@ countryInput$ = new Subject<string>();
   search() {
     const payload = {
       searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-            ? this.filterValue === 'Active' ? 'A' : 'I' 
-            : this.filterValue,
-        }
-    
+      filterValue: this.searchType === 'status'
+        ? this.filterValue === 'Active' ? 'A' : 'I'
+        : this.filterValue,
+    }
+
     this.masterService.searchState(payload).subscribe((res: any) => {
       this.results = res;
       this.searchPerformed = true;
