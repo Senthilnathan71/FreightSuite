@@ -142,7 +142,7 @@ export const MasterRoutes: Routes = [
         path: "currency/list",
         component: CurrencyListComponent,
         data: {
-          title: "Currency",
+          title: "Currency- List",
           urls: [
             { title: "Master", url: "/master" },
             { title: "Currency" },
@@ -153,10 +153,21 @@ export const MasterRoutes: Routes = [
         path: "currency/entry",
         component: CurrencyEntryComponent,
         data: {
-          title: "Add Currency",
+          title: "Currency - Add",
           urls: [
             { title: "Master", url: "/master" },
-            { title: "Currency" },
+            { title: "Add Currency" },
+          ],
+        },
+      },
+      {
+        path: "currency/entry/:id",
+        component: CurrencyEntryComponent,
+        data: {
+          title: "Currency - Edit",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Edit Currency" },
           ],
         },
       },

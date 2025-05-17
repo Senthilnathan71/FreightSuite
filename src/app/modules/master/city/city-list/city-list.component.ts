@@ -1,48 +1,73 @@
-import { Component } from '@angular/core';
-import { FeatherModule } from 'angular-feather';
-import { MasterService } from '../../master.service';
-import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { MatDialog } from '@angular/material/dialog';
+import { Router, RouterModule } from '@angular/router';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { MasterService } from '../../master.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-city-list',
   standalone: true,
   imports: [
-    FeatherModule,
-    CommonModule,
+    CommonModule, 
+    FeatherModule, 
+    FormsModule, 
     RouterModule,
-    FormsModule,
-    MatDialogModule
+    NgbPaginationModule
   ],
   templateUrl: './city-list.component.html',
   styleUrl: './city-list.component.scss'
 })
 export class CityListComponent {
-  cities: any
-  searchText: string = ''
-  filterCityList: any[] = []
-  totalLengthofCollection: number = 0
-  countryList: any
-  stateList: any
-  constructor(private masterService: MasterService, private router: Router, private dialog: MatDialog, private appSettingService: AppSettingsService) { }
+  searchType = 'cityName';
+  filterValue = '';
+  results: any[] = [];
+  cityList: any[] = [];
+  searchPerformed = false;
+  countryList: any[] = [];
+  stateList: any[] = [];
+
+  // pagination
+  page = 1;
+  pageSize = 5;
+  totalLengthOfCollection: number;
+
+  constructor(
+    private masterService: MasterService, 
+    private router: Router,
+    private appSettingService: AppSettingsService, 
+    private dialog: MatDialog
+  ) { }
+
   ngOnInit() {
-    this.loadCity()
+    this.loadCountryAndStateData();
   }
 
-  loadCity() {
+  loadCountryAndStateData() {
     forkJoin({
       countries: this.masterService.getAllCountry(),
-      states: this.masterService.getAllState(),
-      city: this.masterService.getAllCity()
-    }).subscribe(({ countries, states, city }) => {
-      this.countryList = countries.data;  // assuming res.data format
+      states: this.masterService.getAllState()
+    }).subscribe(({ countries, states }) => {
+      this.countryList = countries.data;
       this.stateList = states.data;
-      this.cities = city.map(city => {
+    });
+  }
+
+  search() {
+    const payload = {
+      searchType: this.searchType,
+      filterValue: this.searchType === 'status' 
+        ? this.filterValue === 'Active' ? 'A' : 'I' 
+        : this.filterValue,
+    }
+    
+    this.masterService.searchCityList(payload).subscribe((res: any) => {
+      this.results = res.map(city => {
         const country = this.countryList.find(c => c.CountryMasterSid === city.CountryMasterSid);
         const state = this.stateList.find(s => s.StateMasterSid === city.StateMasterSid);
         return {
@@ -51,50 +76,41 @@ export class CityListComponent {
           stateName: state ? state.stateName : ''
         };
       });
+      this.searchPerformed = true;
+      this.updatePaginatedData();
+      this.totalLengthOfCollection = this.results.length || 0;
     });
   }
-  deleteCountry(id: number) {
-    const dialogRef = this.dialog.open(DeleteWarningComponent);
 
+  updatePaginatedData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.cityList = this.results.slice(startIndex, endIndex);
+  }
+
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
+
+  deleteCity(id: number) {
+    const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        this.masterService.deleteCountryById(id).subscribe((resp: any) => {
-
+        this.masterService.deleteCityById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
-          console.log(resp);
-          // if(resp.status){  
-          // }
-          this.loadCity()
+          this.search(); // Refresh the list after deletion
         });
       }
     });
   }
 
-
-
-  // searchDepartmentsData() {
-  //   const searchQuery = this.searchText.toLowerCase().trim()
-  //   if (!searchQuery) {
-  //     this.cities = []
-  //     this.filterCityList = []
-  //     this.totalLengthofCollection = 0
-  //   } else {
-  //     this.loadDepartments(searchQuery)
-  //   }
-  // }
-
-  // applySearch(searchQuery: string): void {
-  //   this.filterCityList = this.cities.filter((city) => {
-  //     return (
-  //       city.cityCode?.toLowerCase().includes(searchQuery) ||
-  //       city.cityName?.toLowerCase().includes(searchQuery)
-  //     )
-  //   })
-  //   this.totalLengthofCollection = this.filterCityList.length || 0
-  // }
-
   navigateToCreateCity() {
-    this.router.navigate(['master/city/entry'])
+    this.router.navigate(['master/city/entry']);
   }
 
+  resetPage() {
+    this.cityList = [];
+    this.totalLengthOfCollection = 0;
+    this.searchPerformed = false;
+  }
 }

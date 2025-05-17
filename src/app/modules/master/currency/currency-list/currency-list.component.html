@@ -1,15 +1,43 @@
 <div class="row">
     <!-- <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <form action="" class="d-flex align-items-center gap-2">
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5"  name="search"  autocomplete="off" placeholder="Search">
-                    <i class="fas fa-search ms-3"></i>
+            <div class="col-8 mx-auto">
+                <div class="rounded-3 p-2 bg-body-tertiary mb-2" data-bs-theme="light">
+                    <form class="d-flex align-items-center gap-2">
+                        <div class="form-outline col">
+                            <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                                <option value="currencyName">Currency Name</option>
+                                <option value="currencyCode">Currency Code</option>
+                                <option value="symbol">Symbol</option>
+                                <option value="unit">Unit</option>
+                                <option value="subUnit">Sub Unit</option>
+                                <option value="status">Status</option>
+                                <option value="countryName">Country Name</option>
+                            </select>
+                        </div>
+                        <div class="form-outline col">
+                            <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
+                                placeholder="Enter filter value">
+                            <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                        </div>
+
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="search()">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" 
+                                (click)="navigateToCreateCurrency()">
+                            <i class="mdi mdi-plus"></i> Create
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="report()">
+                            Report
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="resetPage()">
+                            Reset
+                        </button>
+                    </form>
                 </div>
-                <button type="button" class="btn btn-info btn-sm" >
-                    <i class="mdi mdi-plus"></i> Add
-                </button>
-            </form>
+            </div>
         </div>
     </div> -->
      <div class="col-12">
@@ -55,52 +83,65 @@
             </div>
         </div>
     </div>
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Currency Name</th>
-                        <th class="bg-transparent text-light" scope="col">Currency Code</th>
-                        <th class="bg-transparent text-light" scope="col">Symbol</th>
-                        <th class="bg-transparent text-light" scope="col">Unit</th>
-                        <th class="bg-transparent text-light" scope="col">Sub Unit</th>
-                        <th class="bg-transparent text-light" scope="col">Sub Unit In</th>
-                        <th class="bg-transparent text-light" scope="col">Round off</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                        <tr>
-                            <td>
-                                <div class="text-truncate">Oman Rials</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">RO</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">1000</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">3</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Active</div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+</div>
+
+<div class="col-12" *ngIf="totalLengthOfCollection > 0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle no-wrap table-bordered">
+            <thead>
+                <tr class="bg-info">
+                    <th class="bg-transparent text-light" scope="col">Currency Name</th>
+                    <th class="bg-transparent text-light" scope="col">Currency Code</th>
+                    <th class="bg-transparent text-light" scope="col">Symbol</th>
+                    <th class="bg-transparent text-light" scope="col">Unit</th>
+                    <th class="bg-transparent text-light" scope="col">Sub Unit</th>
+                    <th class="bg-transparent text-light" scope="col">Status</th>
+                    <th class="bg-transparent text-light" scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of currencyList; let i = index; trackBy: trackByIndex">
+                    <td>
+                        <div class="text-truncate">{{item.currencyName}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{item.currencyCode}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{item.Symbol || '-'}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{item.CurrencySubUnit || '-'}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{item.CurrencyUnit || '-'}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{getStatusText(item.status)}}</div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <a class="text-info mx-2" [routerLink]="['/master/currency/entry/', item.CurrencyMasterSid]">
+                                <i-feather class="feather-sm" name="eye"></i-feather>
+                            </a>
+                            <a class="text-danger mx-2 ps-3 border-start" 
+                               (click)="deleteCurrency(item.CurrencyMasterSid)">
+                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
+    <div>
+        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+            [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+        </ngb-pagination>
+    </div>
+</div>
+
+<!-- No records found -->
+<div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
+    <div>No records found</div>
 </div>

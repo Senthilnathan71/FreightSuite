@@ -1,15 +1,42 @@
 <div class="row">
     <!-- <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <form action="" class="d-flex align-items-center gap-2">
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5" name="search" placeholder="Search">
-                    <i class="fas fa-search ms-3"></i>
+            <div class="col-8 mx-auto">
+                    <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
+                        <form class="d-flex align-items-center gap-2">
+                            <div class="form-outline col">
+                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                                <option value="stateName">State Name</option>
+                                <option value="stateCode">State Code</option>
+                                <option value="countryName">Country Name</option>
+                                <option value="status">Status</option>
+                            </select>
+                        </div>
+                        <div class="form-outline col">
+                            <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
+                                placeholder="Enter filter value">
+                            <i
+                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                        </div>
+
+                        <button type="button" class="btn btn-info btn-sm" (click)="search()">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateState()">
+                            <i class="mdi mdi-plus"></i> Create
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm">
+                            <!-- <i class="mdi mdi-plus"></i> -->
+                            report
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm">
+                            <!-- <i class="mdi mdi-plus"></i> -->
+                            Reset
+                        </button>
+                    </form>
                 </div>
-                <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateState()">
-                    <i class="mdi mdi-plus"></i> Add
-                </button>
-            </form>
+            </div>
         </div>
     </div> -->
 
@@ -50,33 +77,44 @@
             </div>
         </div>
     </div>
-    <div class="col-12">
+    <div class="col-12" *ngIf="totalLengthOfCollection > 0">
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
                         <th class="bg-transparent text-light" scope="col">State Name</th>
                         <th class="bg-transparent text-light" scope="col">State Code</th>
+                        <!-- <th class="bg-transparent text-light" scope="col">State GST Code</th> -->
+                        <th class="bg-transparent text-light" scope="col">Region</th>
                         <th class="bg-transparent text-light" scope="col">Country</th>
+                        <th class="bg-transparent text-light" scope="col">Remarks</th>
                         <th class="bg-transparent text-light" scope="col">Status</th>
                         <th class="bg-transparent text-light" scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of states; track $index) {
-                    <tr>
+                    <tr *ngFor="let item of stateList; let i = index; trackBy: trackByIndex">
                         <td>
                             <div class="text-truncate">{{item.stateName}}</div>
                         </td>
                         <td>
                             <div class="text-truncate">{{item.stateCode}}</div>
                         </td>
+                        <!-- <td>
+                            <div class="text-truncate">{{item.stateGSTCode}}</div>
+                        </td> -->
                         <td>
-                            <div class="text-truncate">{{item.countryName}}</div>
+                            <div class="text-truncate">{{item.region}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.countryMaster?.countryName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.Remarks}}</div>
                         </td>
                         <td>
                             <div class="text-truncate">
-                                {{ item.status === 'A' ? 'Active' : 'Cancelled' }}
+                                {{ getStatusText(item.status) }}
                             </div>
                         </td>
                         <td>
@@ -92,9 +130,18 @@
                             </div>
                         </td>
                     </tr>
-                    }
                 </tbody>
             </table>
         </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+            </ngb-pagination>
+        </div>
+    </div>
+
+    <!-- No records found -->
+    <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
+        <div>No records found</div>
     </div>
 </div>

@@ -11,6 +11,7 @@ import { City } from '../crm-mobile/Interfaces/city.interface';
 import { Zone } from '../crm-mobile/Interfaces/zone.interface';
 import { PackageType } from '../crm-mobile/Interfaces/packageType.interface';
 
+import { Currency } from '../crm-mobile/Interfaces/currency.interface';
 @Injectable({
   providedIn: 'root',
 })
@@ -431,13 +432,21 @@ export class MasterService {
   }
 
   // state-master
+
   getAllState() {
-    return this.http.get('state').pipe(
+    return this.http.get<State>('state').pipe(
       map((resp: any) => {
         let response = resp;
         return response;
       })
     );
+  }
+  searchState(payload) {
+    return this.http.post("state/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    )
   }
 
   getStateById(id: number) {
@@ -457,7 +466,7 @@ export class MasterService {
     )
   }
 
-  updateStateById(id: number, payload: any) {
+  editState(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`state/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp.data;
@@ -466,7 +475,7 @@ export class MasterService {
     )
   }
 
-  deleteStateById(id: number) {
+  softDeleteState(id: number) {
     return this.http.delete<{ data: any }>(`state/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
@@ -596,6 +605,13 @@ export class MasterService {
         return response;
       })
     );
+  }
+  searchCityList(payload) {
+    return this.http.post("city/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    )
   }
 
   getCityById(id: number) {
@@ -770,6 +786,59 @@ export class MasterService {
 
   createTariff(payload) {
     return this.http.post<{ data: any }>('tariff/create', payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+  // //currency-master
+
+  getAllCurrencys() {
+    return this.http.get<Currency>('currency').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchCurrencyList(payload) {
+    return this.http.post("currency/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    )
+  }
+
+  getCurrencyById(id: number) {
+    return this.http.get<{ data: Currency }>(`currency/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  createCurrency(payload: any) {
+    return this.http.post("currency/create", payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    )
+  }
+
+  editCurrency(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`currency/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  softDelete(id: number) {
+    return this.http.delete<{ data: any }>(`currency/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;

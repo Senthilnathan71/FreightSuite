@@ -8,7 +8,7 @@ export interface State {
     LoginSid: number,
     createdBy: string,
     updatedBy: string,
-    status: string,
+    status: 'A' | 'I';
     createdOn: string,
     updatedOn: string,
     Remarks: string,
