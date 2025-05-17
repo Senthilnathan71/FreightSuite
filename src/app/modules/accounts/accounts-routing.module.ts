@@ -4,6 +4,7 @@ import { CurrencyExchangeListComponent } from './currency-exchange/currency-exch
 import { CurrencyExchangeEntryComponent } from './currency-exchange/currency-exchange-entry/currency-exchange-entry.component';
 import { TaxGroupListComponent } from './tax-group/tax-group-list/tax-group-list.component';
 import { TaxGroupComponent } from './tax-group/tax-group.component';
+import { ApprovalComponent } from './approval/approval/approval.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -54,6 +55,17 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Tax Group" },
+          ],
+        },
+      },
+         {
+        path: "approval/approval",
+        component: ApprovalComponent,
+        data: {
+          title: "Approval",
+          urls: [
+            { title: "Approval", url: "/approval" },
+            { title: "Approval" },
           ],
         },
       },
