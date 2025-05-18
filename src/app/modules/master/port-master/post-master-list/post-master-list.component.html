@@ -81,19 +81,21 @@
                         </div> -->
 
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-search"></i>
+                            <i class="fas fa-search me-1"></i>
                             Search
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"(click)="createNew()"
                            >
-                            <i class="mdi mdi-plus"></i> Create
+                            <i class="fas fa-plus me-1" [class.me-1]="!isMobile"></i>  @if (!isMobile) {
+                    Create
+                    }
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <!-- <i class="mdi mdi-plus"></i> -->
+                            <i class="fas fa-file-alt me-1"></i>
                             Report
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" >
-                            <!-- <i class="mdi mdi-plus"></i> -->
+                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
                     </form>
@@ -134,7 +136,7 @@
 <!-- DESKTOP CODE -->
 <ng-template #desktopTemplate>
     <div class="desktop-view">
-        <div class="row">
+        <div class="row bg-white py-2 rounded shadow-sm">
 
             <div class="col-12">
                 <!-- #region filter and add new -->

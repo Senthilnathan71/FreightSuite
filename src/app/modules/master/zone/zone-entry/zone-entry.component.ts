@@ -90,4 +90,7 @@ export class ZoneEntryComponent implements OnInit {
       }
     }
   }
+     goBack() {
+    history.back()
+  }
 }

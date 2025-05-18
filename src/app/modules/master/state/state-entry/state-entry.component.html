@@ -1,6 +1,6 @@
 <div class="container-fluid">
   <!-- Breadcrumb -->
-  <div class="row">
+  <!-- <div class="row">
     <div class="col-12">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -11,53 +11,94 @@
         </ol>
       </nav>
     </div>
+  </div> -->
+
+
+  <div class="col-12">
+    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+      <div class="col-md-4 pb-2">
+        <h4 class="page-title mb-0">Add State</h4>
+      </div>
+      <div class="col-md-8 pb-2">
+        <div
+          class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+            <i class="fas fa-chevron-left me-1"></i>
+            Back
+          </button>
+          <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80"><i-feather name="edit-3"
+              class="feather-sm me-1"></i-feather> Edit</button>
+          <button *ngIf="isEditMode" type="submit" [disabled]="loading"
+            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+            <span>
+              <i-feather name="save" class="feather-sm me-1"></i-feather>
+              Update
+            </span>
+          </button>
+          <button *ngIf="!isEditMode" type="submit" [disabled]="loading"
+            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+            <span>
+              <i-feather name="save" class="feather-sm me-1"></i-feather>
+              Create
+            </span>
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="resetForm()">
+            <i class="fas fa-sync-alt me-1"></i>
+            Reset
+          </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+            <i class="fas fa-save me-1"></i>
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
+  <!-- <div class="col-12">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <button type="submit" [disabled]="loading" class="btn btn-primary">
+        <span *ngIf="!loading">
+          <i-feather name="save" class="feather-sm me-1"></i-feather>
+          {{ isEditMode ? 'Update' : 'Create' }}
+        </span>
+      </button>
+      <button type="button" class="btn btn-sm btn-info" (click)="resetForm()">
+        <i-feather name="rotate-ccw" class="feather-sm me-1"></i-feather> Reset
+      </button>
+    </div>
+  </div> -->
 
   <!-- Form -->
   <form [formGroup]="stateForm" (ngSubmit)="onSubmit()">
     <div class="row">
       <!-- Top buttons -->
-      <div class="col-12">
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <button type="submit" [disabled]="loading" class="btn btn-primary">
-            <span *ngIf="!loading">
-              <i-feather name="save" class="feather-sm me-1"></i-feather>
-              {{ isEditMode ? 'Update' : 'Create' }}
-            </span>
-            <span *ngIf="loading">
-              <i-feather name="loader" class="feather-sm spin me-1"></i-feather>
-              Processing...
-            </span>
-          </button>
-          <button type="button" class="btn btn-sm btn-info" (click)="resetForm()">
-            <i-feather name="rotate-ccw" class="feather-sm me-1"></i-feather> Reset
-          </button>
-        </div>
-      </div>
+
 
       <!-- Left card section -->
       <div class="col-md-6">
         <div class="card h-100">
-          <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Basic Info</h5>
-          </div>
+
+
           <div class="card-body">
             <div class="row">
-
+              <h6 class="card-title mb-2">Basic Info</h6>
               <!-- Name -->
               <aside class="col-md-12">
                 <div class="custom-form-group">
-                  <input
-                    type="text"
-                    id="stateName"
-                    formControlName="stateName"
-                    class="custom-input-field sm"
-                    (keypress)="onKeyPress($event, 'stateName')"
-                    [class.is-invalid]="stateForm.get('stateName')?.invalid && stateForm.get('stateName')?.touched"/>
-                  <label for="stateName" class="input-label">State Name <span class="text-danger">*</span></label>
+                  <input type="text" id="text-input" formControlName="stateName" placeholder=""
+                    class="custom-input-field sm" (keypress)="onKeyPress($event, 'stateName')"
+                    [class.is-invalid]="stateForm.get('stateName')?.invalid && stateForm.get('stateName')?.touched" />
+                  <label for="text-input" class="input-label">
+                    State Name <span class="text-danger">*</span>
+                  </label>
+
                   <!-- Validation messages -->
-                  <div *ngIf="stateForm.get('stateName')?.touched && stateForm.get('stateName')?.errors" class="invalid-feedback d-block">
-                    <span *ngIf="stateForm.get('stateName')?.hasError('required')">Only alphabetic characters and spaces are allowed in the name</span>
+                  <div *ngIf="stateForm.get('stateName')?.touched && stateForm.get('stateName')?.errors"
+                    class="invalid-feedback d-block">
+                    <span *ngIf="stateForm.get('stateName')?.hasError('required')">
+                      State name is required
+                    </span>
                     <span *ngIf="stateForm.get('stateName')?.hasError('invalidAlphaSpace')">
                       Only alphabetic characters and spaces are allowed
                     </span>
@@ -68,23 +109,22 @@
                 </div>
               </aside>
 
+
               <!-- Code -->
               <aside class="col-md-6">
                 <div class="custom-form-group">
-                  <input
-                    type="text"
-                    id="stateCode"
-                    formControlName="stateCode"
-                    class="custom-input-field sm"
-                    (keypress)="onKeyPress($event, 'stateCode')"
-                    [class.is-invalid]="stateForm.get('stateCode')?.invalid && stateForm.get('stateCode')?.touched"
-                  />
-                  <label for="stateCode" class="input-label">State Code <span class="text-danger">*</span></label>
-                  <div *ngIf="stateForm.get('stateCode')?.touched && stateForm.get('stateCode')?.errors" class="invalid-feedback">
+                  <input type="text" id="stateCode" formControlName="stateCode" placeholder=""
+                    class="custom-input-field sm" (keypress)="onKeyPress($event, 'stateCode')"
+                    [class.is-invalid]="stateForm.get('stateCode')?.invalid && stateForm.get('stateCode')?.touched" />
+                  <label for="stateCode" class="input-label">
+                    State Code <span class="text-danger">*</span>
+                  </label>
+                  <div *ngIf="stateForm.get('stateCode')?.touched && stateForm.get('stateCode')?.errors"
+                    class="invalid-feedback">
                     <span *ngIf="stateForm.get('stateCode')?.hasError('required')">Code is required</span>
-                    <span *ngIf="stateForm.get('stateCode')?.hasError('minlength') || 
-                                 stateForm.get('stateCode')?.hasError('maxlength')">
-                     Invalid state code length (2 digits only)
+                    <span
+                      *ngIf="stateForm.get('stateCode')?.hasError('minlength') || stateForm.get('stateCode')?.hasError('maxlength')">
+                      Invalid state code length (2 digits only)
                     </span>
                     <span *ngIf="stateForm.get('stateCode')?.hasError('invalidAlpha')">
                       Only alphabetic characters are allowed (A-Z, a-z)
@@ -96,15 +136,12 @@
               <!-- Country -->
               <aside class="col-md-6">
                 <div class="custom-form-group custom-form-group-select">
-                  <ng-select
-                    [items]="countries"
-                    bindLabel="countryName"
-                    bindValue="CountryMasterSid"
+                  <ng-select [items]="countries" bindLabel="countryName" bindValue="CountryMasterSid"
                     formControlName="CountryMasterSid"
-                    [class.is-invalid]="stateForm.get('CountryMasterSid')?.invalid && stateForm.get('CountryMasterSid')?.touched"
-                  ></ng-select>
+                    [class.is-invalid]="stateForm.get('CountryMasterSid')?.invalid && stateForm.get('CountryMasterSid')?.touched"></ng-select>
                   <label class="input-label">Country <span class="text-danger">*</span></label>
-                  <div *ngIf="stateForm.get('CountryMasterSid')?.invalid && stateForm.get('CountryMasterSid')?.touched" class="invalid-feedback">
+                  <div *ngIf="stateForm.get('CountryMasterSid')?.invalid && stateForm.get('CountryMasterSid')?.touched"
+                    class="invalid-feedback">
                     Country is required
                   </div>
                 </div>
@@ -113,12 +150,8 @@
               <!-- Region -->
               <aside class="col-md-6">
                 <div class="custom-form-group">
-                  <input
-                    type="text"
-                    id="region"
-                    formControlName="region"
-                    class="custom-input-field sm"
-                  />
+                  <input type="text" id="region" formControlName="region" placeholder=""
+                    class="custom-input-field sm" />
                   <label for="region" class="input-label">Region</label>
                 </div>
               </aside>
@@ -126,17 +159,13 @@
               <!-- Status -->
               <aside class="col-md-6">
                 <div *ngIf="!isEditMode" class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" value="Active" readonly>
+                  <input type="text" class="custom-input-field sm" value="Active" readonly placeholder="" />
                   <label class="input-label">Status</label>
                 </div>
-                
+
                 <div *ngIf="isEditMode" class="custom-form-group custom-form-group-select">
-                  <ng-select
-                    [items]="statusOptions"
-                    bindLabel="name"
-                    bindValue="id"
-                    formControlName="status"
-                  ></ng-select>
+                  <ng-select [items]="statusOptions" bindLabel="name" bindValue="id"
+                    formControlName="status"></ng-select>
                   <label class="input-label">Status</label>
                 </div>
               </aside>
@@ -144,21 +173,17 @@
               <!-- Remarks -->
               <aside class="col-md-12">
                 <div class="custom-form-group">
-                  <textarea
-                    rows="1"
-                    class="input-field sm"
-                    formControlName="Remarks"
-                  ></textarea>
+                  <textarea rows="1" class="custom-input-field sm" formControlName="Remarks" placeholder=""></textarea>
                   <label class="input-label">Remarks</label>
                 </div>
               </aside>
 
               <!-- Action Buttons -->
-              <aside class="col-md-12 d-flex justify-content-end mt-3">
+              <!-- <aside class="col-md-12 d-flex justify-content-end mt-3">
                 <button type="button" class="btn btn-secondary btn-sm" (click)="goBack()">
                   <i-feather name="arrow-left" class="feather-sm me-1"></i-feather> Back
                 </button>
-              </aside>
+              </aside> -->
 
             </div>
           </div>

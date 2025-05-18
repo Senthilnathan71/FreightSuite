@@ -1,12 +1,9 @@
-<form [formGroup]="uomForm"> 
+<form [formGroup]="uomForm">
 
     <div class="row">
-        <div class="col-12">
-            
-            <ng-container *ngTemplateOutlet="uomform"></ng-container>
-        </div>
 
-        <div class="col-12">
+
+        <!-- <div class="col-12">
             <div class="">
                 <div class="d-flex align-items-center justify-content-start gap-2">
 
@@ -25,9 +22,41 @@
                     </button>
                 </div>
             </div>
+        </div> -->
+        <div class="col-12">
+             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">Add UOM Master</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="goBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="reset()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+                        [disabled]=" btnDisable">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+                </div>
+            </div>
         </div>
+        </div>
+       
     </div>
 
+    <div class="col-12">
+
+        <ng-container *ngTemplateOutlet="uomform"></ng-container>
+    </div>
     <ng-template #uomform>
         <div class="row">
             <div class="col-12">
@@ -37,88 +66,121 @@
                             <h6 class="card-title mb-0">Basic Information</h6>
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " formControlName="UOMName" />
-                                    <label for="text-input" class="input-label">UOM Name <span class="text-danger">*</span></label>
+                                    <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
+                                        formControlName="UOMName" />
+                                    <label for="text-input" class="input-label">UOM Name <span
+                                            class="text-danger">*</span></label>
                                     <div *ngIf="uomForm.get('UOMName')?.touched && uomForm.get('UOMName')?.invalid">
-                                        <p *ngIf="uomForm.get('UOMName')?.errors?.['required']" class="error-message">UOM Name is required.</p>
-                                        <p *ngIf="uomForm.get('UOMName')?.errors?.['maxlength']" class="error-message">UOM Name characters must be maximum 20 characters long.</p>
-                                  </div> 
+                                        <p *ngIf="uomForm.get('UOMName')?.errors?.['required']" class="error-message">
+                                            UOM Name is required.</p>
+                                        <p *ngIf="uomForm.get('UOMName')?.errors?.['maxlength']" class="error-message">
+                                            UOM Name characters must be maximum 20 characters long.</p>
+                                    </div>
                                 </div>
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " formControlName="UOMCode" />
-                                    <label for="text-input" class="input-label">UOM Code <span class="text-danger">*</span></label>
+                                    <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
+                                        formControlName="UOMCode" />
+                                    <label for="text-input" class="input-label">UOM Code <span
+                                            class="text-danger">*</span></label>
                                     <div *ngIf="uomForm.get('UOMCode')?.touched && uomForm.get('UOMCode')?.invalid">
-                                        <p *ngIf="uomForm.get('UOMCode')?.errors?.['required']" class="error-message">UOM Code is required.</p>
-                                        <p *ngIf="uomForm.get('UOMCode')?.errors?.['maxlength']" class="error-message">UOM Code characters must be maximum 3 characters long.</p>
-                                  </div> 
+                                        <p *ngIf="uomForm.get('UOMCode')?.errors?.['required']" class="error-message">
+                                            UOM Code is required.</p>
+                                        <p *ngIf="uomForm.get('UOMCode')?.errors?.['maxlength']" class="error-message">
+                                            UOM Code characters must be maximum 3 characters long.</p>
+                                    </div>
                                 </div>
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select">
-                                    
-                                    <ng-select formControlName="UOMType" [items]="shipmenttypes" bindLabel="name" bindValue="name">
-                                               
+
+                                    <ng-select formControlName="UOMType" [items]="shipmenttypes" bindLabel="name"
+                                        bindValue="name">
+
                                     </ng-select>
 
-                                    <label for="text-input" class="input-label">UOM Type <span class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">UOM Type <span
+                                            class="text-danger">*</span></label>
                                     <div *ngIf="uomForm.get('UOMType')?.touched && uomForm.get('UOMType')?.invalid">
-                                        <p *ngIf="uomForm.get('UOMType')?.errors?.['required']" class="error-message">UOM Type is required.</p>
-                                  </div> 
+                                        <p *ngIf="uomForm.get('UOMType')?.errors?.['required']" class="error-message">
+                                            UOM Type is required.</p>
+                                    </div>
                                 </div>
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select">
-                                    
-                                    <ng-select formControlName="ShipmentType" [items]="shipmenttypes" bindLabel="name" bindValue="name">
-                                               
+
+                                    <ng-select formControlName="ShipmentType" [items]="shipmenttypes" bindLabel="name"
+                                        bindValue="name">
+
                                     </ng-select>
 
-                                    <label for="text-input" class="input-label">Shipment Type <span class="text-danger">*</span></label>
-                                    <div *ngIf="uomForm.get('ShipmentType')?.touched && uomForm.get('ShipmentType')?.invalid">
-                                        <p *ngIf="uomForm.get('ShipmentType')?.errors?.['required']" class="error-message">Shipment Type is required.</p>
-                                  </div> 
+                                    <label for="text-input" class="input-label">Shipment Type <span
+                                            class="text-danger">*</span></label>
+                                    <div
+                                        *ngIf="uomForm.get('ShipmentType')?.touched && uomForm.get('ShipmentType')?.invalid">
+                                        <p *ngIf="uomForm.get('ShipmentType')?.errors?.['required']"
+                                            class="error-message">Shipment Type is required.</p>
+                                    </div>
                                 </div>
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" class="custom-input-field sm" placeholder=" " formControlName="EdiCode" />
-                                    <label for="text-input" class="input-label">EDI Code <span class="text-danger">*</span></label>
+                                    <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
+                                        formControlName="EdiCode" />
+                                    <label for="text-input" class="input-label">EDI Code <span
+                                            class="text-danger">*</span></label>
                                     <div *ngIf="uomForm.get('EdiCode')?.touched && uomForm.get('EdiCode')?.invalid">
-                                        <p *ngIf="uomForm.get('EdiCode')?.errors?.['required']" class="error-message">EDI Code is required.</p>
-                                        <p *ngIf="uomForm.get('EdiCode')?.errors?.['maxlength']" class="error-message">EDI Code characters must be maximum 3 characters long.</p>
-                                  </div> 
+                                        <p *ngIf="uomForm.get('EdiCode')?.errors?.['required']" class="error-message">
+                                            EDI Code is required.</p>
+                                        <p *ngIf="uomForm.get('EdiCode')?.errors?.['maxlength']" class="error-message">
+                                            EDI Code characters must be maximum 3 characters long.</p>
+                                    </div>
                                 </div>
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
-                                    <input type="number" id="text-input" class="custom-input-field sm" placeholder=" " formControlName="CostPerUnitPrice"/>
-                                    <label for="text-input" class="input-label">Cost Per Unit Price <span class="text-danger">*</span></label>
-                                    <div *ngIf="uomForm.get('CostPerUnitPrice')?.touched && uomForm.get('CostPerUnitPrice')?.invalid">
-                                        <p *ngIf="uomForm.get('CostPerUnitPrice')?.errors?.['required']" class="error-message">Unit Price is required.</p>
-                                        <p *ngIf="uomForm.get('CostPerUnitPrice')?.errors?.['maxlength']" class="error-message">Unit Price characters must be maximum 10 characters long.</p>
-                                  </div> 
+                                    <input type="number" id="text-input" class="custom-input-field sm" placeholder=" "
+                                        formControlName="CostPerUnitPrice" />
+                                    <label for="text-input" class="input-label">Cost Per Unit Price <span
+                                            class="text-danger">*</span></label>
+                                    <div
+                                        *ngIf="uomForm.get('CostPerUnitPrice')?.touched && uomForm.get('CostPerUnitPrice')?.invalid">
+                                        <p *ngIf="uomForm.get('CostPerUnitPrice')?.errors?.['required']"
+                                            class="error-message">Unit Price is required.</p>
+                                        <p *ngIf="uomForm.get('CostPerUnitPrice')?.errors?.['maxlength']"
+                                            class="error-message">Unit Price characters must be maximum 10 characters
+                                            long.</p>
+                                    </div>
                                 </div>
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
-                                    <input type="number" id="text-input" class="custom-input-field sm " placeholder=" " formControlName="SlabFrom"/>
-                                    <label for="text-input" class="input-label">Slab From <span class="text-danger">*</span></label>
+                                    <input type="number" id="text-input" class="custom-input-field sm " placeholder=" "
+                                        formControlName="SlabFrom" />
+                                    <label for="text-input" class="input-label">Slab From <span
+                                            class="text-danger">*</span></label>
                                     <div *ngIf="uomForm.get('SlabFrom')?.touched && uomForm.get('SlabFrom')?.invalid">
-                                        <p *ngIf="uomForm.get('SlabFrom')?.errors?.['required']" class="error-message">Slab From is required.</p>
-                                        <p *ngIf="uomForm.get('SlabFrom')?.errors?.['maxlength']" class="error-message">Slab From characters must be maximum 4 characters long.</p>
-                                  </div> 
+                                        <p *ngIf="uomForm.get('SlabFrom')?.errors?.['required']" class="error-message">
+                                            Slab From is required.</p>
+                                        <p *ngIf="uomForm.get('SlabFrom')?.errors?.['maxlength']" class="error-message">
+                                            Slab From characters must be maximum 4 characters long.</p>
+                                    </div>
                                 </div>
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
-                                    <input type="number" id="text-input" class="custom-input-field sm" placeholder=" " formControlName="SlabTo" />
-                                    <label for="text-input" class="input-label">Slab To <span class="text-danger">*</span></label>
+                                    <input type="number" id="text-input" class="custom-input-field sm" placeholder=" "
+                                        formControlName="SlabTo" />
+                                    <label for="text-input" class="input-label">Slab To <span
+                                            class="text-danger">*</span></label>
                                     <div *ngIf="uomForm.get('SlabTo')?.touched && uomForm.get('SlabTo')?.invalid">
-                                        <p *ngIf="uomForm.get('SlabTo')?.errors?.['required']" class="error-message">Slab To is required.</p>
-                                        <p *ngIf="uomForm.get('SlabTo')?.errors?.['maxlength']" class="error-message">Slab To characters must be maximum 4 characters long.</p>
-                                  </div> 
+                                        <p *ngIf="uomForm.get('SlabTo')?.errors?.['required']" class="error-message">
+                                            Slab To is required.</p>
+                                        <p *ngIf="uomForm.get('SlabTo')?.errors?.['maxlength']" class="error-message">
+                                            Slab To characters must be maximum 4 characters long.</p>
+                                    </div>
                                 </div>
                             </aside>
                             <aside class="col-md-4 mt-2">
@@ -127,7 +189,7 @@
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" formControlName="DimensionReq">
                                         <label class="form-check-label">
-                                            Dimension Require 
+                                            Dimension Require
                                         </label>
                                     </div>
                                 </div>
@@ -138,9 +200,9 @@
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" formControlName="WeightReq">
                                         <label class="form-check-label">
-                                            Weight Require 
+                                            Weight Require
                                         </label>
-                                        
+
                                     </div>
                                 </div>
                             </aside>
@@ -150,19 +212,21 @@
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" formControlName="VolumeReq">
                                         <label class="form-check-label">
-                                            Volume Require 
+                                            Volume Require
                                         </label>
-                                         
+
                                     </div>
                                 </div>
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
-                                    <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1" formControlName="Remarks"></textarea>
+                                    <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1"
+                                        formControlName="Remarks"></textarea>
                                     <label for="text-input" class="input-label">Remarks</label>
                                     <div *ngIf="uomForm.get('Remarks')?.touched && uomForm.get('Remarks')?.invalid">
-                                        <p *ngIf="uomForm.get('Remarks')?.errors?.['maxlength']" class="error-message">Code characters must be maximum 300 characters long.</p>
-                                  </div>
+                                        <p *ngIf="uomForm.get('Remarks')?.errors?.['maxlength']" class="error-message">
+                                            Code characters must be maximum 300 characters long.</p>
+                                    </div>
                                 </div>
                             </aside>
                         </section>
@@ -172,4 +236,3 @@
         </div>
     </ng-template>
 </form>
-

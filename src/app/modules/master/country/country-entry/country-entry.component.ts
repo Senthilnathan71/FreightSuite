@@ -99,7 +99,7 @@ export class CountryEntryComponent {
   }
 
   goBack() {
-    this.router.navigate(['crm/country/list'])
+    this.router.navigate(['master/country/list'])
   }
 
   // Handle Form Submission
