@@ -1,7 +1,7 @@
-<form [formGroup]="unitForm"> 
+<form [formGroup]="unitForm">
     <div class="row">
         <div class="col-12">
-            
+
             <ng-container *ngTemplateOutlet="unitform"></ng-container>
         </div>
 
@@ -29,44 +29,87 @@
 
     <ng-template #unitform>
         <div class="row">
-    
+
             <div class="col-6">
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="row">
                             <aside class="col-md-12">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="unitName" >
-                                    <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="unitName" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Name <span
+                                            class="text-danger">*</span></label>
+                                    @if(unitForm.get('unitName')?.touched && unitForm.get('unitName')?.invalid){
+                                    <div class="error-message">
+                                        @if(unitForm.get('unitName')?.hasError('required')){
+                                        <span>Unit Name is required</span>
+                                        } @else if(unitForm.get('unitName')?.hasError('maxlength')){
+                                        <span>Max 100 Characters</span>
+                                        }
+                                    </div>
+                                    }
                                 </div>
                             </aside>
-        
+
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="unitCode" >
-                                    <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="unitCode" [textWithNumbers]="4">
+                                    <label for="text-input" class="input-label">Code <span
+                                            class="text-danger">*</span></label>
+                                    @if(unitForm.get('unitCode')?.touched && unitForm.get('unitCode')?.invalid){
+                                    <div class="error-message">
+                                        @if(unitForm.get('unitCode')?.hasError('required')){
+                                        <span>Unit Code is required</span>
+                                        } @else if(unitForm.get('unitCode')?.hasError('maxlength')){
+                                        <span>Max 4 Characters</span>
+                                        }
+                                    </div>
+                                    }
                                 </div>
                             </aside>
-        
+
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="containerType">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="containerType" [textWithNumbers]="20">
                                     <label for="text-input" class="input-label">container Type <span
                                             class="text-danger">*</span></label>
+                                    @if(unitForm.get('containerType')?.touched &&
+                                    unitForm.get('containerType')?.invalid){
+                                    <div class="error-message">
+                                        @if(unitForm.get('containerType')?.hasError('required')){
+                                        <span>Container Type is required</span>
+                                        } @else if(unitForm.get('containerType')?.hasError('maxlength')){
+                                        <span>Max 20 Characters</span>
+                                        }
+                                    </div>
+                                    }
                                 </div>
                             </aside>
                             <aside class="col-md-12">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Remarks">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="Remarks" [textWithNumbers]="100">
                                     <label for="text-input" class="input-label">Remarks <span
                                             class="text-danger">*</span></label>
+                                    @if(unitForm.get('Remarks')?.touched && unitForm.get('Remarks')?.invalid){
+                                    <div class="error-message">
+                                        @if(unitForm.get('Remarks')?.hasError('required')){
+                                        <span>Remarks is required</span>
+                                        } @else if(unitForm.get('Remarks')?.hasError('maxlength')){
+                                        <span>Max 100 Characters</span>
+                                        }
+                                    </div>
+                                    }
                                 </div>
                             </aside>
                         </div>
                     </div>
                 </div>
             </div>
-        
+
             <div class="col-6">
                 <div class="card h-100">
                     <div class="card-body">
@@ -74,26 +117,37 @@
                             <div class="col-12 d-flex flex-wrap gap-3 mb-3 border-bottom">
                                 <label class="form-check-label ms-2">Job Type <span class="text-danger">*</span></label>
                                 <label *ngFor="let option of jobType">
-                                    <input
-                                      type="radio"
-                                      [value]="option.id"
-                                      formControlName="jobType"
-                                      name="jobType"
-                                    />
+                                    <input type="radio" [value]="option.id" formControlName="jobType" name="jobType" />
                                     {{ option.name }}
-                                  </label>
+                                </label>
+                                @if(unitForm.get('jobType')?.touched && unitForm.get('jobType')?.invalid){
+                                <div class="error-message">
+                                    @if(unitForm.get('jobType')?.hasError('required')){
+                                    <span>Job Type is required</span>
+                                    } @else if(unitForm.get('jobType')?.hasError('maxlength')){
+                                    <span>Max 10 Characters</span>
+                                    }
+                                </div>
+                                }
                             </div>
                             <div class="col-12  d-flex flex-wrap gap-3">
-                                <label class="form-check-label ms-2">Measurement Type <span class="text-danger">*</span></label>
+                                <label class="form-check-label ms-2">Measurement Type <span
+                                        class="text-danger">*</span></label>
                                 <label *ngFor="let option of measurementType">
-                                    <input
-                                      type="radio"
-                                      [value]="option.id"
-                                      formControlName="measurementType"
-                                      name="measurementType"
-                                    />
+                                    <input type="radio" [value]="option.id" formControlName="measurementType"
+                                        name="measurementType" />
                                     {{ option.name }}
-                                  </label>
+                                </label>
+                                @if(unitForm.get('measurementType')?.touched &&
+                                unitForm.get('measurementType')?.invalid){
+                                <div class="error-message">
+                                    @if(unitForm.get('measurementType')?.hasError('required')){
+                                    <span>Measurement Type is required</span>
+                                    } @else if(unitForm.get('measurementType')?.hasError('maxlength')){
+                                    <span>Max 10 Characters</span>
+                                    }
+                                </div>
+                                }
                             </div>
                         </div>
                     </div>
@@ -103,4 +157,3 @@
     </ng-template>
 
 </form>
-

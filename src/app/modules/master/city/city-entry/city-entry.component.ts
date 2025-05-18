@@ -6,6 +6,8 @@ import { City } from 'src/app/modules/crm-mobile/Interfaces/city.interface';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
   selector: 'app-city-entry',
@@ -15,6 +17,8 @@ import { ActivatedRoute, Router } from '@angular/router';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    OnlyTextDirective,
+    TextWithNumbersDirective
   ],
   templateUrl: './city-entry.component.html',
   styleUrl: './city-entry.component.scss'
@@ -77,7 +81,7 @@ export class CityEntryComponent {
       cityCode: ['', [Validators.required]],
       StateMasterSid: ['', [Validators.required]],
       CountryMasterSid: ['', [Validators.required]], // Dropdown
-      status: ['']
+      status: ['Active']
     });
   }
 
@@ -97,7 +101,7 @@ export class CityEntryComponent {
         StateMasterSid: Number(formValue.StateMasterSid),
         CountryMasterSid: Number(formValue.CountryMasterSid),
         ...updatedBy,
-        status: this.status === "A" ? "A" : "C"
+        status: this.status === "Active" ? "A" : "C"
       } : {
         ...formValue,
         StateMasterSid: Number(formValue.StateMasterSid),
@@ -163,15 +167,11 @@ export class CityEntryComponent {
   loadLeadData(leadId: number) {
     this.masterService.getCityById(leadId).subscribe(
       (leadData) => {
-        this.status = leadData.status
-        console.log(leadData)
-        // Convert API status (A/IA) to display status (Active/Inactive)
-        const formattedStatus = this.statusMap[leadData.status] || '';
         this.cityForm.patchValue({
           ...leadData,
           CountryMasterSid: leadData.CountryMasterSid,  // assign ID
           StateMasterSid: leadData.StateMasterSid,      // assign ID
-          status: formattedStatus
+          status: leadData.status === 'A' ? 'Active' : 'Invalid'
         },
         );
       },

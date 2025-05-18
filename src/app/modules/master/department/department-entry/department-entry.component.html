@@ -4,8 +4,8 @@
             <button class="btn btn-sm btn-light-secondary ms-auto" (click)="goBack()">
                 <i-feather name="edit-3" class="feather-sm me-1"></i-feather> back
             </button>
-            <button class="btn btn-sm btn-info" (click)="onSubmit()">
-                <i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> Save
+            <button class="btn btn-sm btn-info" (click)="onSubmit()" [disabled]="departmentForm.invalid">
+                <i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> {{isEditMode ? 'Update' :'Save' }}
             </button>
         </div>
     </div>
@@ -19,51 +19,143 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" formControlName="departmentName" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm" [onlyText]="20">
                                 <label for="text-input" class="input-label">Dept Name <span
                                         class="text-danger fw-bold">*</span></label>
+                                <div class="error-message">
+                                    @if(departmentForm.get('departmentName')?.touched &&
+                                    departmentForm.get('departmentName')?.invalid){
+
+                                    @if(departmentForm.get('departmentName')?.hasError('required')){
+                                    <span>Department Name is required</span>
+                                    }
+
+                                    @else if(departmentForm.get('departmentName')?.hasError('numberNotAllowed')){
+                                    <span>Only Alphabets are Allowed</span>
+                                    }
+
+                                    @else if(departmentForm.get('departmentName')?.hasError('maxlength')){
+                                    <span>Max 20 characters</span>
+                                    }
+                                    }
+                                </div>
                             </div>
+
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" formControlName="departmentCode" id="text-input" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm" [onlyText]="5">
 
                                 <label for="text-input" class="input-label">Dept Code <span
                                         class="text-danger fw-bold">*</span></label>
+                                <div class="error-message">
+                                    @if(departmentForm.get('departmentCode')?.touched &&
+                                    departmentForm.get('departmentCode')?.invalid){
+
+                                    @if(departmentForm.get('departmentCode')?.hasError('required')){
+                                    <span>Department Code is required</span>
+                                    }
+
+                                    @else if(departmentForm.get('departmentCode')?.hasError('numberNotAllowed')){
+                                    <span>Only Alphabets are Allowed</span>
+                                    }
+
+                                    @else if(departmentForm.get('departmentCode')?.hasError('maxlength')){
+                                    <span>Max 5 characters</span>
+                                    }
+                                    }
+                                </div>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" formControlName="departmentType" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm" [onlyText]="10">
                                 <label for="text-input" class="input-label">Dept Type <span
                                         class="text-danger fw-bold">*</span></label>
+                                <div class="error-message">
+                                    @if(departmentForm.get('departmentType')?.touched &&
+                                    departmentForm.get('departmentType')?.invalid){
+
+                                    @if(departmentForm.get('departmentType')?.hasError('required')){
+                                    <span>Department Type is required</span>
+                                    }
+
+                                    @else if(departmentForm.get('departmentType')?.hasError('numberNotAllowed')){
+                                    <span>Only Alphabets are Allowed</span>
+                                    }
+
+                                    @else if(departmentForm.get('departmentType')?.hasError('maxlength')){
+                                    <span>Max 10 characters</span>
+                                    }
+                                    }
+                                </div>
                             </div>
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" formControlName="ExportImport" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm" [onlyText]="6">
                                 <label for="text-input" class="input-label">Exp/Imp <span
                                         class="text-danger fw-bold">*</span></label>
+                                <div class="error-message">
+                                    @if(departmentForm.get('ExportImport')?.touched &&
+                                    departmentForm.get('ExportImport')?.invalid){
+
+                                    @if(departmentForm.get('ExportImport')?.hasError('required')){
+                                    <span>Export/Import is required</span>
+                                    }
+
+                                    @else if(departmentForm.get('ExportImport')?.hasError('numberNotAllowed')){
+                                    <span>Only Alphabets are Allowed</span>
+                                    }
+
+                                    @else if(departmentForm.get('ExportImport')?.hasError('maxlength')){
+                                    <span>Max 6 characters</span>
+                                    }
+                                    }
+                                </div>
                             </div>
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" formControlName="FCLLCL" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm" [onlyText]="6">
                                 <label for="text-input" class="input-label">FCL/LCL <span
                                         class="text-danger fw-bold">*</span></label>
+                                <div class="error-message">
+                                    @if(departmentForm.get('FCLLCL')?.touched &&
+                                    departmentForm.get('FCLLCL')?.invalid){
+
+                                    @if(departmentForm.get('FCLLCL')?.hasError('required')){
+                                    <span>FCL/LCL is required</span>
+                                    }
+
+                                    @else if(departmentForm.get('FCLLCL')?.hasError('numberNotAllowed')){
+                                    <span>Only Alphabets are Allowed</span>
+                                    }
+
+                                    @else if(departmentForm.get('FCLLCL')?.hasError('maxlength')){
+                                    <span>Max 6 characters</span>
+                                    }
+                                    }
+                                </div>
                             </div>
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <select formControlName="Status" class="form-select">
-                                    <option value="">Status</option>
-                                    <option *ngFor="let option of statusList" [value]="option">{{ option }}</option>
+                                @if(isEditMode){
+                                <select name="status" class="form-select" formControlName="Status" id="text-input">
+                                    <option value="Active">Active</option>
+                                    <option value="Invalid">Invalid</option>
+                                    <option value="Block">Block</option>
                                 </select>
+                                } @else {
+                                <input type="text" name="Status" class="custom-input-field sm" formControlName="Status"
+                                    id="text-input" readonly>
+                                }
                                 <label for="text-input" class="input-label">
                                     Status <span class="text-danger fw-bold">*</span>
                                 </label>

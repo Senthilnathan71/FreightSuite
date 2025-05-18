@@ -99,7 +99,7 @@ export class CountryEntryComponent {
   }
 
   goBack() {
-    this.router.navigate(['crm/country/list'])
+    this.router.navigate(['master/country/list'])
   }
 
   // Handle Form Submission
@@ -124,7 +124,7 @@ export class CountryEntryComponent {
             console.log(resp.message);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['crm/country/list']);
+              this.router.navigate(['master/country/list']);
 
             } else {
               this.appSettingService.showError(resp.message);
@@ -143,7 +143,7 @@ export class CountryEntryComponent {
             console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['crm/country/list']);
+              this.router.navigate(['master/country/list']);
 
             } else {
               this.appSettingService.showError(resp.message);

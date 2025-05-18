@@ -1,33 +1,44 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
   selector: 'app-zone-entry',
   standalone: true,
-  imports: [FeatherModule, ReactiveFormsModule],
+  imports: [
+    FeatherModule,
+    NgbTooltip,
+    ReactiveFormsModule,
+    OnlyNumbersDirective,
+    OnlyTextDirective,
+    TextWithNumbersDirective
+  ],
   templateUrl: './zone-entry.component.html',
   styleUrl: './zone-entry.component.scss',
 })
 export class ZoneEntryComponent implements OnInit {
-  inputForm: FormGroup;
-  zoneMasterSId: number;
+
+  inputForm!: FormGroup;
   isEditMode: boolean;
+  zoneMasterSId: number;
+
   constructor(
-    private currentRoute: ActivatedRoute,
-    private masterService: MasterService,
-    private route: Router
-  ) {}
+    private masterServ: MasterService,
+    private appSettingServ: AppSettingsService,
+    private currRoute: ActivatedRoute,
+    private route: Router,
+    private fb: FormBuilder
+  ) { }
   ngOnInit(): void {
     this.initForm();
-    this.currentRoute.paramMap.subscribe((params) => {
+    this.currRoute.paramMap.subscribe((params) => {
       this.zoneMasterSId = Number(params.get('id'));
       if (this.zoneMasterSId) {
         this.isEditMode = true;
@@ -37,57 +48,84 @@ export class ZoneEntryComponent implements OnInit {
   }
 
   initForm() {
-    this.inputForm = new FormGroup({
-      ZoneName: new FormControl('', [
-        Validators.required,
-        Validators.maxLength(100),
-      ]),
-      ZoneCode: new FormControl('', [
-        Validators.required,
-        Validators.maxLength(2),
-      ]),
-      status: new FormControl('A', [Validators.maxLength(1)]),
-    });
+    this.inputForm = this.fb.group({
+      ZoneName: ['', [Validators.required, Validators.maxLength(100)]],
+      ZoneCode: ['', [Validators.required, Validators.maxLength(2)]],
+      status: ['Active']
+    })
   }
 
   loadZoneById(zoneMasterSId: number) {
-    this.masterService.getZoneById(zoneMasterSId).subscribe(
+    this.masterServ.getZoneById(zoneMasterSId).subscribe(
       (resp) => {
-        this.inputForm.patchValue(resp);
+        this.inputForm.patchValue({
+          ...resp,
+          status: resp.status === 'A' ? 'Active' : 'Invalid'
+        });
       },
       (error) => {
-        console.error('Error loading Zone ', error);
+        this.appSettingServ.showError('Error Loading Zone ', error);
       }
     );
+  }
+
+  navigateBack() {
+    history.back();
   }
 
   saveZone() {
     if (this.inputForm.invalid) {
       this.inputForm.markAllAsTouched(); // Force validation messages to show
       this.inputForm.updateValueAndValidity(); // Ensure validation is refreshed
+      this.appSettingServ.showWarning('Please fill all required fields correctly');
       return;
     } else {
+      const formValue = this.inputForm.value;
+      const payload = this.coerceIntoRequiredFormat(formValue);
+
       if (this.isEditMode) {
-        this.masterService
-          .updateZoneById(this.zoneMasterSId, this.inputForm.value)
-          .subscribe(
-            (resp) => {
-              this.route.navigateByUrl('master/zone/list');
-            },
-            (error) => {
-              console.error('Error Occured on Zone Updation', error.message);
+        this.masterServ.updateZoneById(this.zoneMasterSId, payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.appSettingServ.showSuccess('Zone Updated Successfully');
+              this.route.navigate(['master/zone/list']);
+            } else {
+              this.appSettingServ.showError(resp.message);
             }
-          );
-      } else {
-        this.masterService.createZone(this.inputForm.value).subscribe(
-          (resp) => {
-            this.route.navigate(['master/zone/list']);
           },
           (error) => {
-            console.error('Error Occured on Zone Creation', error.message);
+            console.error('Error loading Zone : ', error);
           }
-        );
+        )
+      } else {
+        this.masterServ.createZone(payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.appSettingServ.showSuccess('Zone Created Successfully');
+              this.route.navigate(['master/zone/list']);
+            } else {
+              this.appSettingServ.showError(resp.message);
+            }
+          },
+          (error) => {
+            console.error('Error loading Zone : ', error);
+          }
+        )
       }
+    }
+  }
+
+  coerceIntoRequiredFormat(formValue) {
+    let createdBy = this.appSettingServ.userSettingSource.value['userEmail'];
+    let updatedBy = this.appSettingServ.userSettingSource.value['userEmail'];
+    return (this.isEditMode) ? {
+      ...formValue,
+      updatedBy,
+      status: formValue.status === "Active" ? "A" : "I"
+    } : {
+      ...formValue,
+      createdBy,
+      status: formValue.status === "Active" ? "A" : "I"
     }
   }
 }

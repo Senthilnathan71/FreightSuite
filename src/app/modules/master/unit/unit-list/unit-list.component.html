@@ -11,7 +11,6 @@
                                 <option value="jobType">Job Type</option>
                                 <option value="containerType">Container Type</option>
                                 <option value="measurementType">Measurement Type</option>
-                                <option value="remarks">Remarks</option>
                                 <option value="status">Status</option>
                             </select>
                         </div>
@@ -30,6 +29,9 @@
                             (click)="navigateToCreateUnit()">
                             <i class="mdi mdi-plus"></i> Create
                         </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
+                            Report
+                        </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="resetPage()">
                             Reset
                         </button>
@@ -45,6 +47,7 @@
         <table class="table table-hover align-middle no-wrap table-bordered">
             <thead>
                 <tr class="bg-info">
+                    <th class="bg-transparent text-light" scope="col">Action</th>
                     <th class="bg-transparent text-light" scope="col">Unit Name</th>
                     <th class="bg-transparent text-light" scope="col">Unit Code</th>
                     <th class="bg-transparent text-light" scope="col">Job Type</th>
@@ -52,11 +55,20 @@
                     <th class="bg-transparent text-light" scope="col">Measurement Type</th>
                     <th class="bg-transparent text-light" scope="col">Remarks</th>
                     <th class="bg-transparent text-light" scope="col">Status</th>
-                    <th class="bg-transparent text-light" scope="col">Action</th>
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let item of unitList; let i = index; trackBy: trackByIndex">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <a class="text-info mx-2" [routerLink]="['/master/unit/entry/', item.UnitMasterSid]">
+                                <i-feather class="feather-sm" name="eye"></i-feather>
+                            </a>
+                            <a class="text-danger mx-2 ps-3 border-start" (click)="deleteUnit(item.UnitMasterSid)">
+                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                            </a>
+                        </div>
+                    </td>
                     <td>
                         <div class="text-truncate">{{item.unitName}}</div>
                     </td>
@@ -75,18 +87,17 @@
                     <td>
                         <div class="text-truncate">{{item.remarks}}</div>
                     </td>
-                    <td>
-                        <div class="text-truncate">{{getStatusText(item.status)}}</div>
-                    </td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <a class="text-info mx-2" [routerLink]="['/master/unit/entry/', item.UnitMasterSid]">
-                                <i-feather class="feather-sm" name="eye"></i-feather>
-                            </a>
-                            <a class="text-danger mx-2 ps-3 border-start" (click)="deleteUnit(item.UnitMasterSid)">
-                                <i-feather name="trash-2" class="feather-sm"></i-feather>
-                            </a>
+                    <td>@if(item.status === "A"){
+                        <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                            <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                            Active
                         </div>
+                        } @else {
+                        <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                            <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                            Invalid
+                        </div>
+                        }
                     </td>
                 </tr>
             </tbody>

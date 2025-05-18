@@ -25,7 +25,7 @@ export class DepartmentListComponent {
 
   // pagination
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   totalLengthOfCollection: number;
 
   constructor(private masterService: MasterService, private router: Router,
@@ -46,7 +46,7 @@ export class DepartmentListComponent {
     });
   }
 
-  
+
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
@@ -64,6 +64,7 @@ export class DepartmentListComponent {
         this.masterService.deleteDepartmentById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           this.router.navigate(['master/department/list'])
+          this.search();
         });
       }
     });

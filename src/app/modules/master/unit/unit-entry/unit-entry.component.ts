@@ -7,6 +7,8 @@ import { RouterModule } from '@angular/router';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
   selector: 'app-unit-entry',
@@ -18,6 +20,8 @@ import { MasterService } from '../../master.service';
     NgSelectModule,
     FormsModule,
     ReactiveFormsModule,
+    OnlyTextDirective,
+    TextWithNumbersDirective
   ],
   templateUrl: './unit-entry.component.html',
   styleUrl: './unit-entry.component.scss'

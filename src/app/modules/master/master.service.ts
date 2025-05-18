@@ -747,6 +747,15 @@ export class MasterService {
     );
   }
 
+  searchZone(payload){
+    return this.http.post<{data:Zone[]}>('zone/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
   // Package Type Master
 
   getAllPackageTypes() {

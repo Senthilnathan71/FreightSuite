@@ -14,10 +14,10 @@ import { AppService } from 'src/app/service/app.service';
   selector: 'app-unit-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    FeatherModule, 
-    FormsModule, 
-    NgbPaginationModule, 
+    CommonModule,
+    FeatherModule,
+    FormsModule,
+    NgbPaginationModule,
     RouterModule,
     MatDialogModule
   ],
@@ -33,11 +33,11 @@ export class UnitListComponent {
 
   // pagination
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   totalLengthOfCollection: number = 0;
 
   constructor(
-    private masterService: MasterService, 
+    private masterService: MasterService,
     private router: Router,
     private dialog: MatDialog,
     private appSettingService: AppSettingsService
@@ -48,8 +48,8 @@ export class UnitListComponent {
   search() {
     const payload = {
       searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'I' 
+      filterValue: this.searchType === 'status'
+        ? this.filterValue === 'Active' ? 'A' : 'I'
         : this.filterValue,
     }
     this.masterService.searchUnitList(payload).subscribe((res: any) => {

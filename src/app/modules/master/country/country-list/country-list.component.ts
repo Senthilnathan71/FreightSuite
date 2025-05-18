@@ -43,7 +43,7 @@ export class CountryListComponent {
     this.isMobile = this.appService.getDevice();
   }
   createNew() {
-    this.route.navigate(['crm/country/entry'])
+    this.route.navigate(['master/country/entry'])
   }
 
   loadCountry() {

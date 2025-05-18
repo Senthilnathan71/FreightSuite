@@ -14,38 +14,39 @@
                 <div class="row">
                     <h6 class="card-title mb-0">Vessel Information</h6>
 
-                    <aside class="col-md-5">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="VesselName" placeholder=""
                                 class="custom-input-field sm" [onlyText]="100">
                             <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
-                        </div>
-                        @if(vesselForm.get('VesselName')?.touched && vesselForm.get('VesselName')?.errors){
-                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
-                            @if(vesselForm.get('VesselName')?.hasError('required')){
-                            <small>This is required</small>
-                            } @else if(vesselForm.get('VesselName')?.hasError('maxlength')) {
-                            <small>Max 100 characters</small>
+                            @if(vesselForm.get('VesselName')?.touched && vesselForm.get('VesselName')?.errors){
+                            <div class="error-message">
+                                @if(vesselForm.get('VesselName')?.hasError('required')){
+                                <span>Vessel Name is required</span>
+                                } @else if(vesselForm.get('VesselName')?.hasError('maxlength')) {
+                                <span>Max 100 characters</span>
+                                }
+                            </div>
                             }
                         </div>
-                        }
                     </aside>
 
-                    <aside class="col-md-1">
+                    <aside class="col-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="VesselShortCode" placeholder=""
                                 class="custom-input-field sm" [onlyText]="5">
                             <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
-                        </div>
-                        @if(vesselForm.get('VesselShortCode')?.touched && vesselForm.get('VesselShortCode')?.errors){
-                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
-                            @if(vesselForm.get('VesselShortCode')?.hasError('required')){
-                            <small>This is required</small>
-                            } @else if(vesselForm.get('VesselShortCode')?.hasError('maxlength')) {
-                            <small>Max 5 characters</small>
+                            @if(vesselForm.get('VesselShortCode')?.touched &&
+                            vesselForm.get('VesselShortCode')?.errors){
+                            <div class="error-message">
+                                @if(vesselForm.get('VesselShortCode')?.hasError('required')){
+                                <span>VesselCode is required</span>
+                                } @else if(vesselForm.get('VesselShortCode')?.hasError('maxlength')) {
+                                <span>Max 5 characters</span>
+                                }
+                            </div>
                             }
                         </div>
-                        }
                     </aside>
 
                     <aside class="col-md-2">
@@ -54,16 +55,16 @@
                                 class="custom-input-field sm" [onlyText]="10">
                             <label for="text-input" class="input-label">IMO Code <span
                                     class="text-danger">*</span></label>
-                        </div>
-                        @if(vesselForm.get('IMOCode')?.touched && vesselForm.get('IMOCode')?.errors){
-                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
-                            @if(vesselForm.get('IMOCode')?.hasError('required')){
-                            <small>This is required</small>
-                            } @else if(vesselForm.get('IMOCode')?.hasError('maxlength')) {
-                            <small>Max 10 characters</small>
+                            @if(vesselForm.get('IMOCode')?.touched && vesselForm.get('IMOCode')?.errors){
+                            <div class="error-message">
+                                @if(vesselForm.get('IMOCode')?.hasError('required')){
+                                <span>IMO code is required</span>
+                                } @else if(vesselForm.get('IMOCode')?.hasError('maxlength')) {
+                                <span>Max 10 characters</span>
+                                }
+                            </div>
                             }
                         </div>
-                        }
                     </aside>
                     <aside class="col-md-2">
                         <div class="custom-form-group">
@@ -71,16 +72,16 @@
                                 class="custom-input-field sm" [onlyText]="10">
                             <label for="text-input" class="input-label">Call Sign In <span
                                     class="text-danger">*</span></label>
-                        </div>
-                        @if(vesselForm.get('CallSignIn')?.touched && vesselForm.get('CallSignIn')?.errors){
-                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
-                            @if(vesselForm.get('CallSignIn')?.hasError('required')){
-                            <small>This is required</small>
-                            } @else if(vesselForm.get('CallSignIn')?.hasError('maxlength')) {
-                            <small>Max 10 characters</small>
+                            @if(vesselForm.get('CallSignIn')?.touched && vesselForm.get('CallSignIn')?.errors){
+                            <div class="error-message">
+                                @if(vesselForm.get('CallSignIn')?.hasError('required')){
+                                <span>Call Sign In is required</span>
+                                } @else if(vesselForm.get('CallSignIn')?.hasError('maxlength')) {
+                                <span>Max 10 characters</span>
+                                }
+                            </div>
                             }
                         </div>
-                        }
                     </aside>
                     <aside class="col-md-2">
                         <div class="custom-form-group">
@@ -88,18 +89,18 @@
                                 class="custom-input-field sm" [onlyNumbers]="4">
                             <label for="text-input" class="input-label">Year of Built <span
                                     class="text-danger">*</span></label>
-                        </div>
-                        @if(vesselForm.get('YearofBuilt')?.touched && vesselForm.get('YearofBuilt')?.errors){
-                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
-                            @if(vesselForm.get('YearofBuilt')?.hasError('required')){
-                            <small>This is required</small>
-                            } @else if(vesselForm.get('YearofBuilt')?.hasError('onlyNumbers')) {
-                            <small>Only digit are allowed</small>
-                            } @else if(vesselForm.get('YearofBuilt')?.hasError('maxlength')){
-                            <small>Max 4 digits</small>
+                            @if(vesselForm.get('YearofBuilt')?.touched && vesselForm.get('YearofBuilt')?.errors){
+                            <div class="error-message">
+                                @if(vesselForm.get('YearofBuilt')?.hasError('required')){
+                                <span>Year of built is required</span>
+                                } @else if(vesselForm.get('YearofBuilt')?.hasError('onlyNumbers')) {
+                                <span>Only digit are allowed</span>
+                                } @else if(vesselForm.get('YearofBuilt')?.hasError('maxlength')){
+                                <span>Max 4 digits</span>
+                                }
+                            </div>
                             }
                         </div>
-                        }
                     </aside>
                     <aside class="col-md-2">
                         <div class="custom-form-group">
@@ -107,48 +108,48 @@
                                 class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">MMSI No<span
                                     class="text-danger">*</span></label>
-                        </div>
-                        @if(vesselForm.get('MMSINo')?.touched && vesselForm.get('MMSINo')?.errors){
-                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
-                            @if(vesselForm.get('MMSINo')?.hasError('required')){
-                            <small>This is required</small>
-                            } @else if(vesselForm.get('MMSINo')?.hasError('onlyNumbers')) {
-                            <small>Only digit are allowed</small>
+                            @if(vesselForm.get('MMSINo')?.touched && vesselForm.get('MMSINo')?.errors){
+                            <div class="error-message">
+                                @if(vesselForm.get('MMSINo')?.hasError('required')){
+                                <span>MMSI no is required</span>
+                                } @else if(vesselForm.get('MMSINo')?.hasError('onlyNumbers')) {
+                                <span>Only digit are allowed</span>
+                                }
+                            </div>
                             }
                         </div>
-                        }
                     </aside>
                     <aside class="col-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="GRT" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">GRT <span class="text-danger">*</span></label>
-                        </div>
-                        @if(vesselForm.get('GRT')?.touched && vesselForm.get('GRT')?.errors){
-                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
-                            @if(vesselForm.get('GRT')?.hasError('required')){
-                            <small>This is required</small>
-                            } @else if(vesselForm.get('GRT')?.hasError('onlyNumbers')) {
-                            <small>Only digit are allowed</small>
+                            @if(vesselForm.get('GRT')?.touched && vesselForm.get('GRT')?.errors){
+                            <div class="error-message">
+                                @if(vesselForm.get('GRT')?.hasError('required')){
+                                <span>GRT is required</span>
+                                } @else if(vesselForm.get('GRT')?.hasError('onlyNumbers')) {
+                                <span>Only digit are allowed</span>
+                                }
+                            </div>
                             }
                         </div>
-                        }
                     </aside>
                     <aside class="col-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="NRT" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">NRT <span class="text-danger">*</span></label>
-                        </div>
-                        @if(vesselForm.get('NRT')?.touched && vesselForm.get('NRT')?.errors){
-                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
-                            @if(vesselForm.get('NRT')?.hasError('required')){
-                            <small>This is required</small>
-                            } @else if(vesselForm.get('NRT')?.hasError('onlyNumbers')) {
-                            <small>Only digit are allowed</small>
+                            @if(vesselForm.get('NRT')?.touched && vesselForm.get('NRT')?.errors){
+                            <div class="error-message">
+                                @if(vesselForm.get('NRT')?.hasError('required')){
+                                <span>NRT is required</span>
+                                } @else if(vesselForm.get('NRT')?.hasError('onlyNumbers')) {
+                                <span>Only digit are allowed</span>
+                                }
+                            </div>
                             }
                         </div>
-                        }
                     </aside>
 
                     <aside class="col-md-2">
@@ -164,16 +165,19 @@
                             </select>
                             <label for="text-input" class="input-label">Vessel Type<span
                                     class="text-danger">*</span></label>
-                        </div>
-                        @if(vesselForm.get('VesselType')?.touched && vesselForm.get('VesselType')?.errors){
-                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
-                            @if(vesselForm.get('VesselType')?.hasError('required')){
-                            <small>This is required</small>
-                            } @else if(vesselForm.get('VesselType')?.hasError('maxlength')) {
-                            <small>Max 10 characters</small>
+                            @if(vesselForm.get('VesselType')?.touched && vesselForm.get('VesselType')?.errors){
+                            <div class="error-message">
+                                @if(vesselForm.get('VesselType')?.hasError('required')){
+                                <span>Vessel Type is required</span>
+                                } @else if(vesselForm.get('VesselType')?.hasError('numberNotAllowed')) {
+                                <span>Only alphabets are allowed</span>
+                                }
+                                @else if(vesselForm.get('VesselType')?.hasError('maxlength')) {
+                                <span>Max 10 characters</span>
+                                }
+                            </div>
                             }
                         </div>
-                        }
                     </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
@@ -181,16 +185,19 @@
                                 class="custom-input-field sm" [onlyText]="100">
                             <label for="text-input" class="input-label">Vessel Operator<span
                                     class="text-danger">*</span></label>
-                        </div>
-                        @if(vesselForm.get('VesselOperator')?.touched && vesselForm.get('VesselOperator')?.errors){
-                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
-                            @if(vesselForm.get('VesselOperator')?.hasError('required')){
-                            <small>This is required</small>
-                            } @else if(vesselForm.get('VesselOperator')?.hasError('maxlength')) {
-                            <small>Max 100 characters</small>
+                            @if(vesselForm.get('VesselOperator')?.touched && vesselForm.get('VesselOperator')?.errors){
+                            <div class="error-message">
+                                @if(vesselForm.get('VesselOperator')?.hasError('required')){
+                                <span>Vessel Operator is required</span>
+                                } @else if(vesselForm.get('VesselOperator')?.hasError('numberNotAllowed')) {
+                                <span>Only alphabets are allowed</span>
+                                }
+                                @else if(vesselForm.get('VesselOperator')?.hasError('maxlength')) {
+                                <span>Max 100 characters</span>
+                                }
+                            </div>
                             }
                         </div>
-                        }
                     </aside>
                     <aside class="col-md-2">
                         <div class="custom-form-group">
@@ -198,16 +205,16 @@
                                 class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">Length in Mtr<span
                                     class="text-danger">*</span></label>
-                        </div>
-                        @if(vesselForm.get('LengthinMtr')?.touched && vesselForm.get('LengthinMtr')?.errors){
-                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
-                            @if(vesselForm.get('LengthinMtr')?.hasError('required')){
-                            <small>This is required</small>
-                            } @else if(vesselForm.get('LengthinMtr')?.hasError('onlyNumbers')) {
-                            <small>Only digit are allowed</small>
+                            @if(vesselForm.get('LengthinMtr')?.touched && vesselForm.get('LengthinMtr')?.errors){
+                            <div class="error-message">
+                                @if(vesselForm.get('LengthinMtr')?.hasError('required')){
+                                <span>Length is required</span>
+                                } @else if(vesselForm.get('LengthinMtr')?.hasError('onlyNumbers')) {
+                                <span>Only digit are allowed</span>
+                                }
+                            </div>
                             }
                         </div>
-                        }
                     </aside>
                     <aside class="col-md-2">
                         <div class="custom-form-group">
@@ -215,33 +222,33 @@
                                 class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">Breadth in Mtr<span
                                     class="text-danger">*</span></label>
-                        </div>
-                        @if(vesselForm.get('BreadthinMtr')?.touched && vesselForm.get('BreadthinMtr')?.errors){
-                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
-                            @if(vesselForm.get('BreadthinMtr')?.hasError('required')){
-                            <small>This is required</small>
-                            } @else if(vesselForm.get('BreadthinMtr')?.hasError('onlyNumbers')) {
-                            <small>Only digit are allowed</small>
+                            @if(vesselForm.get('BreadthinMtr')?.touched && vesselForm.get('BreadthinMtr')?.errors){
+                            <div class="error-message">
+                                @if(vesselForm.get('BreadthinMtr')?.hasError('required')){
+                                <span>Breadth is required</span>
+                                } @else if(vesselForm.get('BreadthinMtr')?.hasError('onlyNumbers')) {
+                                <span>Only digit are allowed</span>
+                                }
+                            </div>
                             }
                         </div>
-                        }
                     </aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="Remarks" placeholder=""
-                                class="custom-input-field sm" [onlyText]="200">
+                                class="custom-input-field sm" [textWithNumbers]="200">
                             <label for="text-input" class="input-label">Remarks<span
                                     class="text-danger">*</span></label>
-                        </div>
-                        @if(vesselForm.get('Remarks')?.touched && vesselForm.get('Remarks')?.errors){
-                        <div class="position-relative text-danger" style="top: -10px;left:10px;">
-                            @if(vesselForm.get('Remarks')?.hasError('required')){
-                            <small>This is required</small>
-                            } @else if(vesselForm.get('Remarks')?.hasError('maxlength')) {
-                            <small>Max 200 characters</small>
+                            @if(vesselForm.get('Remarks')?.touched && vesselForm.get('Remarks')?.errors){
+                            <div class="error-message">
+                                @if(vesselForm.get('Remarks')?.hasError('required')){
+                                <span>Remarks is required</span>
+                                } @else if(vesselForm.get('Remarks')?.hasError('maxlength')) {
+                                <span>Max 200 characters</span>
+                                }
+                            </div>
                             }
                         </div>
-                        }
                     </aside>
                     <aside class="col-md-2">
                         <div class="custom-form-group">
