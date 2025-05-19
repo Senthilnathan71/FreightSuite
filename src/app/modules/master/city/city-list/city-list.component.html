@@ -46,9 +46,17 @@
                         <form
                             class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="form-outline col-12 col-md px-0">
-                                <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
+                                <!-- <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
                                    autocomplete="off" placeholder="Search">
-                                <i class="fas fa-search ms-3"></i>
+                                <i class="fas fa-search ms-3"></i> -->
+                                 <select [(ngModel)]="searchText" name="searchType" class="form-select">
+                                    <option value="departmentName">Department Name</option>
+                                    <option value="departmentCode">Department Code</option>
+                                    <option value="departmentType">Department Type</option>
+                                    <option value="ExportImport">Export/Import</option>
+                                    <option value="FCLLCL">FCLLCL</option>
+                                    <option value="status">Status</option>
+                                </select>
                             </div>
                             <div class="form-outline col-12 col-md px-0">
                                 <input name="filterValue" type="text" class="form-control"
