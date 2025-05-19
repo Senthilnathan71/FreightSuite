@@ -1,223 +1,190 @@
-<div class="row py-3" [formGroup]="containertypeForm">
+<div class="row">
     <div class="col-12">
         <div class="d-flex align-items-center gap-2 mb-3">
-            <!-- Edit / Update Button -->
-            <button class="btn btn-sm btn-light-secondary ms-auto" *ngIf="isEditMode" (click)="goBack()">Back</button>
             <button class="btn btn-sm btn-info" (click)="onSubmit()">
-                {{ ContainerTypeMasterSid ? 'Update' : 'Create' }}
+                <i-feather name="upload-cloud" class="feather-sm me-1"></i-feather>Save
             </button>
         </div>
     </div>
-
-    <div class="col-md-6">
-        <div class="card h-100">
+    <form [formGroup]="containertypeForm">
+    <div class="col-12">
+        <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <!-- Container Name -->
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="container-name" placeholder="" class="custom-input-field sm"
-                                   formControlName="containerName" />
-                            <label for="container-name" class="input-label">Name <span class="text-danger">*</span></label>
-                            <div *ngIf="containertypeForm.get('containerName').invalid && containertypeForm.get('containerName').touched" class="text-danger">
-                                Container Name is required.
-                            </div>
+                            <input formControlName="containerName" type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Container Name <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
-                    <!-- Container Code -->
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="container-code" placeholder="" class="custom-input-field sm"
-                                   formControlName="containerCode" />
-                            <label for="container-code" class="input-label">Code <span class="text-danger">*</span></label>
-                            <div *ngIf="containertypeForm.get('containerCode').invalid && containertypeForm.get('containerCode').touched" class="text-danger">
-                                Container Code is required.
-                            </div>
+                            <input formControlName="containerCode" type="number" placeholder="" class="custom-input-field sm">
+                            <label for="containerCode" class="input-label">Conatiner Code <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
-                    <!-- Gross Weight -->
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="gross-weight" placeholder="" class="custom-input-field sm"
-                                   formControlName="grossWeight" />
-                            <label for="gross-weight" class="input-label">Gross Weight</label>
+                            <input formControlName="grossWeight" type="number" placeholder="" class="custom-input-field sm">
+                            <label for="grossWeight" class="input-label">Gross Weight <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
-                    <!-- Tare Weight -->
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="tare-weight" placeholder="" class="custom-input-field sm"
-                                   formControlName="tareWeight" />
-                            <label for="tare-weight" class="input-label">Tare Weight</label>
+                            <input formControlName="tareWeight" type="number" placeholder="" class="custom-input-field sm">
+                            <label for="tareWeight" class="input-label">Tare Weight <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
-
-                    <!-- Max Volume -->
-                    <aside class="col-md-6">
+                    
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="max-volume" placeholder="" class="custom-input-field sm"
-                                   formControlName="maxVolume" />
-                            <label for="max-volume" class="input-label">Max Volume</label>
+                            <input formControlName="maxVolume" type="number" placeholder="" class="custom-input-field sm">
+                            <label for="maxVolume" class="input-label"> Max Volume <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
                     <!-- Shipping Mode -->
-                    <aside class="col-md-6">
+                    
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="shipping-mode" placeholder="" class="custom-input-field sm"
-                                   formControlName="shippingMode" />
-                            <label for="shipping-mode" class="input-label">Shipping Mode</label>
+                            <input formControlName="shippingMode" type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Shipping Mode <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
                     <!-- IATA Rate Class -->
-                    <aside class="col-md-6">
+                    
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="iata-rate-class" placeholder="" class="custom-input-field sm"
-                                   formControlName="iataRateClass" />
-                            <label for="iata-rate-class" class="input-label">IATA Rate Class</label>
+                            <input formControlName="iataRateClass" type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">IATA Rate Class<span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
                     <!-- Handling Rate Class -->
-                    <aside class="col-md-6">
+                    
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="handling-rate-class" placeholder="" class="custom-input-field sm"
-                                   formControlName="handlingRateClass" />
-                            <label for="handling-rate-class" class="input-label">Handling Rate Class</label>
+                            <input formControlName="handlingRateClass" type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Handling Rate Class <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
                     <!-- Freight Rate Class -->
-                    <aside class="col-md-6">
+                    
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="freight-rate-class" placeholder="" class="custom-input-field sm"
-                                   formControlName="freightRateClass" />
-                            <label for="freight-rate-class" class="input-label">Freight Rate Class</label>
+                            <input formControlName="freightRateClass" type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Freight Rate Class <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
                     <!-- Testing -->
-                    <aside class="col-md-12">
+                    
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="testing" placeholder="" class="custom-input-field sm"
-                                   formControlName="testing" />
-                            <label for="testing" class="input-label">Testing</label>
+                            <input formControlName="testing" type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label"> Testing <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row">
                     <!-- Length -->
-                    <aside class="col-md-6">
+
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="length" placeholder="" class="custom-input-field sm"
-                                   formControlName="length" />
-                            <label for="length" class="input-label">Length</label>
+                            <input formControlName="length" type="number" placeholder="" class="custom-input-field sm">
+                            <label for="length" class="input-label"> Length <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
                     <!-- Width -->
-                    <aside class="col-md-6">
+                     
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="width" placeholder="" class="custom-input-field sm"
-                                   formControlName="width" />
-                            <label for="width" class="input-label">Width</label>
+                            <input formControlName="width" type="number" placeholder="" class="custom-input-field sm">
+                            <label for="width" class="input-label"> Width <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
                     <!-- Height -->
-                    <aside class="col-md-6">
+
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="height" placeholder="" class="custom-input-field sm"
-                                   formControlName="height" />
-                            <label for="height" class="input-label">Height</label>
+                            <input formControlName="height" type="number" placeholder="" class="custom-input-field sm">
+                            <label for="height" class="input-label"> Height <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
-                    <!-- Port Type (Status Dropdown) -->
-                    <aside class="col-md-6">
+                    <!-- Port Type -->
+                     
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <ng-select formControlName="portType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
-                            </ng-select>
-                            <label for="portType" class="input-label">Port Type</label>
+                            <input formControlName="portType" type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Port Type <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
-
+                    
                     <!-- Storage Class -->
-                    <aside class="col-md-6">
+
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="storage-class" placeholder="" class="custom-input-field sm"
-                                   formControlName="storageClass" />
-                            <label for="storage-class" class="input-label">Storage Class</label>
+                            <input formControlName="storageClass" type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Storage Class <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
                     <!-- Cargo Class -->
-                    <aside class="col-md-6">
+
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="cargo-class" placeholder="" class="custom-input-field sm"
-                                   formControlName="cargoClass" />
-                            <label for="cargo-class" class="input-label">Cargo Class</label>
+                            <input formControlName="cargoClass" type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Cargo Class <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
                     <!-- US Container Code -->
-                    <aside class="col-md-6">
+
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="us-container-code" placeholder="" class="custom-input-field sm"
-                                   formControlName="usContainerCode" />
-                            <label for="us-container-code" class="input-label">US Container Code</label>
+                            <input formControlName="usContainerCode" type="number" placeholder="" class="custom-input-field sm">
+                            <label for="usContainerCode" class="input-label"> US Container Code <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
                     <!-- US Container Type -->
-                    <aside class="col-md-6">
+
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="us-container-type" placeholder="" class="custom-input-field sm"
-                                   formControlName="usContainerType" />
-                            <label for="us-container-type" class="input-label">US Container Type</label>
+                            <input formControlName="usContainerType" type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">US Container Type <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
                     <!-- ISO Code -->
-                    <aside class="col-md-6">
+
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="iso-code" placeholder="" class="custom-input-field sm"
-                                   formControlName="isoCode" />
-                            <label for="iso-code" class="input-label">ISO Code</label>
+                            <input formControlName="isoCode" type="number" placeholder="" class="custom-input-field sm">
+                            <label for="isoCode" class="input-label"> ISO Code <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
 
                     <!-- No of TEU -->
-                    <aside class="col-md-6">
+
+                     <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="no-of-teu" placeholder="" class="custom-input-field sm"
-                                   formControlName="noOfTEU" />
-                            <label for="no-of-teu" class="input-label">No of TEU</label>
+                            <input formControlName="noOfTEU" type="number" placeholder="" class="custom-input-field sm">
+                            <label for="noOfTEU" class="input-label"> No of TEU <span class="text-danger fw-bold">*</span></label>
                         </div>
                     </aside>
-                </div>
 
-                <!-- Checkbox Options -->
-                <div class="col-12 mt-2">
-                    <div class="form-check form-check-inline px-0 ps-2" *ngFor="let checkbox of checkboxes">
-                        <div class="form-check">
-                            <input type="checkbox" [id]="checkbox.id" class="form-check-input" />
-                            <label [for]="checkbox.id" class="form-check-label">{{ checkbox.label }}</label>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
+    </form>
 </div>
+
