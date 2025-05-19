@@ -1,20 +1,18 @@
 <div class="row py-3">
     <div class="col-12">
         <div class="d-flex align-items-center gap-2 mb-3">
-          <button type="submit" class="btn btn-sm btn-light-secondary" (click)="goBack()">
-            <i-feather name="corner-up-left" class="feather-sm me-1"></i-feather> Back
-        </button>
+            <button type="submit" class="btn btn-sm btn-light-secondary" (click)="goBack()">
+                <i-feather name="corner-up-left" class="feather-sm me-1"></i-feather> Back
+            </button>
             <button type="button" class="btn btn-sm btn-light-secondary ms-auto" (click)="resetForm()">
-    Reset
-</button>
-            <button type="submit" class="btn btn-sm btn-info" 
-                    [disabled]="commodityForm.invalid" 
-                    (click)="onSubmit()">
+                Reset
+            </button>
+            <button type="submit" class="btn btn-sm btn-info" [disabled]="commodityForm.invalid" (click)="onSubmit()">
                 {{ isEditMode ? 'Update' : 'Save' }}
             </button>
         </div>
     </div>
-    
+
     <div class="col-md-6">
         <div class="card h-100">
             <div class="card-body">
@@ -22,15 +20,17 @@
                     <div class="row">
                         <aside class="col-md-12">
                             <div class="custom-form-group">
-                                <input type="text" id="commodityName" formControlName="CommodityName" class="custom-input-field sm"
+                                <input type="text" id="commodityName" formControlName="CommodityName"
+                                    class="custom-input-field sm"
                                     [class.is-invalid]="commodityForm.get('CommodityName')?.invalid && 
                                     (commodityForm.get('CommodityName')?.touched || commodityForm.get('CommodityName')?.dirty)">
-                                <label for="commodityName" class="input-label"> Commodity Name <span class="text-danger">*</span></label>
+                                <label for="commodityName" class="input-label"> Commodity Name <span
+                                        class="text-danger">*</span></label>
                                 <div *ngIf="commodityForm.get('CommodityName')?.invalid && 
                                            (commodityForm.get('CommodityName')?.touched || 
-                                           commodityForm.get('CommodityName')?.dirty)" 
-                                     class="invalid-feedback d-block">
-                                     <span *ngIf="commodityForm.get('CommodityName')?.hasError('pattern')">
+                                           commodityForm.get('CommodityName')?.dirty)"
+                                    class="invalid-feedback d-block">
+                                    <span *ngIf="commodityForm.get('CommodityName')?.hasError('pattern')">
                                         Please enter a valid Commodity Name (letters only).
                                     </span>
                                     <span *ngIf="commodityForm.get('CommodityName')?.hasError('maxlength')">
@@ -39,20 +39,22 @@
                                 </div>
                             </div>
                         </aside>
-                        
+
                         <aside class="col-md-12">
                             <div class="custom-form-group">
-                                <input type="text" id="commodityCode" formControlName="CommodityCode" class="custom-input-field sm"
+                                <input type="text" id="commodityCode" formControlName="CommodityCode"
+                                    class="custom-input-field sm"
                                     [class.is-invalid]="commodityForm.get('CommodityCode')?.invalid && 
                                     (commodityForm.get('CommodityCode')?.touched || commodityForm.get('CommodityCode')?.dirty)">
-                                <label for="commodityCode" class="input-label">Commodity Code <span class="text-danger">*</span></label>
+                                <label for="commodityCode" class="input-label">Commodity Code <span
+                                        class="text-danger">*</span></label>
                                 <div *ngIf="commodityForm.get('CommodityCode')?.invalid && 
                                            (commodityForm.get('CommodityCode')?.touched || 
-                                           commodityForm.get('CommodityCode')?.dirty)" 
-                                     class="invalid-feedback d-block">
+                                           commodityForm.get('CommodityCode')?.dirty)"
+                                    class="invalid-feedback d-block">
                                     <span *ngIf="commodityForm.get('CommodityCode')?.hasError('required')">
                                         Commodity Code is required
-                                    </span> 
+                                    </span>
                                     <span *ngIf="commodityForm.get('CommodityCode')?.hasError('pattern')">
                                         Commodity Code must be 6-12 characters (letters and numbers).\
                                     </span>
@@ -62,24 +64,24 @@
                                 </div>
                             </div>
                         </aside>
-                        
+
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="number" id="hssacCode" formControlName="HSSACCode" class="custom-input-field sm"
+                                <input type="number" id="hssacCode" formControlName="HSSACCode"
+                                    class="custom-input-field sm"
                                     [class.is-invalid]="commodityForm.get('HSSACCode')?.invalid && 
                                     (commodityForm.get('HSSACCode')?.touched || commodityForm.get('HSSACCode')?.dirty)">
                                 <label for="hssacCode" class="input-label">HS Code</label>
                                 <div *ngIf="commodityForm.get('HSSACCode')?.invalid && 
                                            (commodityForm.get('HSSACCode')?.touched || 
-                                           commodityForm.get('HSSACCode')?.dirty)" 
-                                     class="invalid-feedback d-block">
+                                           commodityForm.get('HSSACCode')?.dirty)" class="invalid-feedback d-block">
                                     <span *ngIf="commodityForm.get('HSSACCode')?.hasError('pattern')">
                                         Only numbers are allowed
                                     </span>
                                 </div>
                             </div>
                         </aside>
-                        
+
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="number" id="uomSid" formControlName="UOMSid" class="custom-input-field sm"
@@ -88,45 +90,38 @@
                                 <label for="uomSid" class="input-label">Unit</label>
                                 <div *ngIf="commodityForm.get('UOMSid')?.invalid && 
                                            (commodityForm.get('UOMSid')?.touched || 
-                                           commodityForm.get('UOMSid')?.dirty)" 
-                                     class="invalid-feedback d-block">
+                                           commodityForm.get('UOMSid')?.dirty)" class="invalid-feedback d-block">
                                     <span *ngIf="commodityForm.get('UOMSid')?.hasError('pattern')">
                                         Only numbers are allowed
                                     </span>
                                 </div>
                             </div>
                         </aside>
-                        
+
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                              <!-- Replace select with input -->
-                              <input 
-                                type="text" 
-                                id="commodityType" 
-                                formControlName="CommodityType" 
-                                class="custom-input-field sm"
-                                [class.is-invalid]="commodityForm.get('CommodityType')?.invalid && 
-                                (commodityForm.get('CommodityType')?.touched || commodityForm.get('CommodityType')?.dirty)"
-                              >
-                              <label for="commodityType" class="input-label">Commodity Type <span class="text-danger">*</span></label>
-                              <div 
-                                *ngIf="commodityForm.get('CommodityType')?.invalid && 
+                                <!-- Replace select with input -->
+                                <input type="text" id="commodityType" formControlName="CommodityType"
+                                    class="custom-input-field sm"
+                                    [class.is-invalid]="commodityForm.get('CommodityType')?.invalid && 
+                                (commodityForm.get('CommodityType')?.touched || commodityForm.get('CommodityType')?.dirty)">
+                                <label for="commodityType" class="input-label">Commodity Type <span
+                                        class="text-danger">*</span></label>
+                                <div *ngIf="commodityForm.get('CommodityType')?.invalid && 
                                        (commodityForm.get('CommodityType')?.touched || 
-                                       commodityForm.get('CommodityType')?.dirty)" 
-                                class="invalid-feedback d-block"
-                              >
-                                <span *ngIf="commodityForm.get('CommodityType')?.hasError('required')">
-                                  Commodity Type is required
-                                </span>
-                              </div>
+                                       commodityForm.get('CommodityType')?.dirty)" class="invalid-feedback d-block">
+                                    <span *ngIf="commodityForm.get('CommodityType')?.hasError('required')">
+                                        Commodity Type is required
+                                    </span>
+                                </div>
                             </div>
-                          </aside>                    
-                        </div>
+                        </aside>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-6">
         <div class="card h-100">
             <div class="card-body">
@@ -139,7 +134,7 @@
                             <label for="minTemp" class="input-label">Min Temp</label>
                         </div>
                     </aside>
-                    
+
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="number" id="maxTemp" formControlName="MaxTemp" class="custom-input-field sm"
@@ -148,32 +143,31 @@
                             <label for="maxTemp" class="input-label">Max Temp</label>
                         </div>
                     </aside>
-                    
+
                     <aside class="col-md-4">
-                      <div class="custom-form-group">
-                        <ng-container *ngIf="!isEditMode; else statusSelect">
-                          <input type="text" class="custom-input-field sm" value="Active" readonly>
-                          <label class="input-label">Status</label>
-                        </ng-container>
-                        <ng-template #statusSelect>
-                          <select formControlName="status" class="custom-input-field sm"
-                              [class.is-invalid]="commodityForm.get('status')?.invalid && 
+                        <div class="custom-form-group">
+                            <ng-container *ngIf="!isEditMode; else statusSelect">
+                                <input type="text" class="custom-input-field sm" value="Active" readonly>
+                                <label class="input-label">Status</label>
+                            </ng-container>
+                            <ng-template #statusSelect>
+                                <select formControlName="status" class="custom-input-field sm" [class.is-invalid]="commodityForm.get('status')?.invalid && 
                               (commodityForm.get('status')?.touched || commodityForm.get('status')?.dirty)">
-                            <option *ngFor="let status of statusOptions" [value]="status.id">{{status.name}}</option>
-                          </select>
-                          <label class="input-label">Status <span class="text-danger">*</span></label>
-                          <div *ngIf="commodityForm.get('status')?.invalid && 
+                                    <option *ngFor="let status of statusOptions" [value]="status.id">{{status.name}}
+                                    </option>
+                                </select>
+                                <label class="input-label">Status <span class="text-danger">*</span></label>
+                                <div *ngIf="commodityForm.get('status')?.invalid && 
                                      (commodityForm.get('status')?.touched || 
-                                     commodityForm.get('status')?.dirty)" 
-                               class="invalid-feedback d-block">
-                            <span *ngIf="commodityForm.get('status')?.hasError('required')">
-                                Status is required
-                            </span>
-                          </div>
-                        </ng-template>
-                      </div>
+                                     commodityForm.get('status')?.dirty)" class="invalid-feedback d-block">
+                                    <span *ngIf="commodityForm.get('status')?.hasError('required')">
+                                        Status is required
+                                    </span>
+                                </div>
+                            </ng-template>
+                        </div>
                     </aside>
-                    
+
                     <aside class="col-md-12 pt-2">
                         <div class="custom-form-group">
                             <textarea id="remarks" formControlName="Remarks" rows="3" class="input-field sm"
@@ -186,7 +180,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-12">
         <div class="card mt-3">
             <div class="card-body">

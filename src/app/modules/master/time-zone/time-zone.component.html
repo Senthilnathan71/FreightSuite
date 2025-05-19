@@ -1,8 +1,29 @@
 <div class="row py-3">
     <div class="col-12">
-        <div class="d-flex align-items-center gap-2 mb-3">
-            <button class="btn btn-sm btn-light-secondary ms-auto">Edit</button>
-            <button class="btn btn-sm btn-info">Update</button>
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">Add Time Zone</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80">
+                        <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     <div class="col-md-12">
@@ -24,14 +45,15 @@
                             <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                     <aside class="col-md-3">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="OfficeUTC">
-                            <label for="text-input" class="input-label">Office UTC <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">Office UTC <span
+                                    class="text-danger">*</span></label>
                         </div>
                     </aside>
-                   
+
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
@@ -41,7 +63,7 @@
                             <label for="" class="input-label">Status <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                      <aside class="col-md-3 pt-2">
+                    <aside class="col-md-3 pt-2">
                         <div class="custom-form-group">
                             <textarea id="" placeholder="" rows="1" class="input-field sm"
                                 formControlName="Remarks"></textarea>
@@ -52,6 +74,6 @@
             </div>
         </div>
     </div>
-   
+
 
 </div>

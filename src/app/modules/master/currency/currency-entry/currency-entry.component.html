@@ -1,18 +1,19 @@
 <div class="row">
     <div class="col-12">
-    <div class="d-flex align-items-center gap-2 mb-3">
-        <button type="submit" class="btn btn-sm btn-light-secondary" (click)="goBack()">
-            <i-feather name="corner-up-left" class="feather-sm me-1"></i-feather> Back
-        </button>
-        <button type="button" class="btn btn-sm btn-light-secondary ms-auto" (click)="resetForm()">
-            <i-feather name="rotate-ccw" class="feather-sm me-1"></i-feather> Reset
-        </button>
-        <button type="submit" class="btn btn-sm btn-info" [disabled]="loading || btnDisable || currencyForm.invalid" (click)="onSubmit()">
-            <i-feather name="save" class="feather-sm me-1"></i-feather> Save
-        </button>
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <button type="submit" class="btn btn-sm btn-light-secondary" (click)="goBack()">
+                <i-feather name="corner-up-left" class="feather-sm me-1"></i-feather> Back
+            </button>
+            <button type="button" class="btn btn-sm btn-light-secondary ms-auto" (click)="resetForm()">
+                <i-feather name="rotate-ccw" class="feather-sm me-1"></i-feather> Reset
+            </button>
+            <button type="submit" class="btn btn-sm btn-info" [disabled]="loading || btnDisable || currencyForm.invalid"
+                (click)="onSubmit()">
+                <i-feather name="save" class="feather-sm me-1"></i-feather> Save
+            </button>
+        </div>
     </div>
-</div>
-  
+
     <div class="col-12">
         <div class="card">
             <div class="card-body">
@@ -26,14 +27,18 @@
                                     [class.is-invalid]="currencyForm.get('currencyName')?.invalid && (currencyForm.get('currencyName')?.touched || currencyForm.get('currencyName')?.dirty)">
                                 <label for="currencyName" class="input-label">Currency Name <span
                                         class="text-danger fw-bold">*</span></label>
-                                <div *ngIf="currencyForm.get('currencyName')?.invalid && (currencyForm.get('currencyName')?.touched || currencyForm.get('currencyName')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('currencyName')?.hasError('required')">Currency Name is required</span>
-                                    <span *ngIf="currencyForm.get('currencyName')?.hasError('maxlength')">Maximum 100 characters</span>
-                                    <span *ngIf="currencyForm.get('currencyName')?.hasError('pattern')">Only alphabetic characters and spaces allowed</span>
+                                <div *ngIf="currencyForm.get('currencyName')?.invalid && (currencyForm.get('currencyName')?.touched || currencyForm.get('currencyName')?.dirty)"
+                                    class="invalid-feedback d-block">
+                                    <span *ngIf="currencyForm.get('currencyName')?.hasError('required')">Currency Name
+                                        is required</span>
+                                    <span *ngIf="currencyForm.get('currencyName')?.hasError('maxlength')">Maximum 100
+                                        characters</span>
+                                    <span *ngIf="currencyForm.get('currencyName')?.hasError('pattern')">Only alphabetic
+                                        characters and spaces allowed</span>
                                 </div>
                             </div>
                         </aside>
-  
+
                         <!-- Currency Code -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -42,10 +47,14 @@
                                     [class.is-invalid]="currencyForm.get('currencyCode')?.invalid && (currencyForm.get('currencyCode')?.touched || currencyForm.get('currencyCode')?.dirty)">
                                 <label for="currencyCode" class="input-label">Currency Code <span
                                         class="text-danger fw-bold">*</span></label>
-                                <div *ngIf="currencyForm.get('currencyCode')?.invalid && (currencyForm.get('currencyCode')?.touched || currencyForm.get('currencyCode')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('currencyCode')?.hasError('required')">Currency Code is required</span>
-                                    <span *ngIf="currencyForm.get('currencyCode')?.hasError('maxlength')">Maximum 3 characters</span>
-                                    <span *ngIf="currencyForm.get('currencyCode')?.hasError('pattern')">Must be 3 uppercase letters</span>
+                                <div *ngIf="currencyForm.get('currencyCode')?.invalid && (currencyForm.get('currencyCode')?.touched || currencyForm.get('currencyCode')?.dirty)"
+                                    class="invalid-feedback d-block">
+                                    <span *ngIf="currencyForm.get('currencyCode')?.hasError('required')">Currency Code
+                                        is required</span>
+                                    <span *ngIf="currencyForm.get('currencyCode')?.hasError('maxlength')">Maximum 3
+                                        characters</span>
+                                    <span *ngIf="currencyForm.get('currencyCode')?.hasError('pattern')">Must be 3
+                                        uppercase letters</span>
                                 </div>
                             </div>
                         </aside>
@@ -54,16 +63,14 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="currencyID" formControlName="currencyID"
-                                    class="custom-input-field sm"
-                                    [class.is-invalid]="currencyForm.get('currencyID')?.invalid && 
+                                    class="custom-input-field sm" [class.is-invalid]="currencyForm.get('currencyID')?.invalid && 
                                     (currencyForm.get('currencyID')?.touched || 
                                     currencyForm.get('currencyID')?.dirty)">
                                 <label for="currencyID" class="input-label">Currency ID <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div *ngIf="currencyForm.get('currencyID')?.invalid && 
                                     (currencyForm.get('currencyID')?.touched || 
-                                    currencyForm.get('currencyID')?.dirty)" 
-                                    class="invalid-feedback d-block">
+                                    currencyForm.get('currencyID')?.dirty)" class="invalid-feedback d-block">
                                     <span *ngIf="currencyForm.get('currencyID')?.hasError('required')">
                                         Currency ID is required
                                     </span>
@@ -76,25 +83,22 @@
                                 </div>
                             </div>
                         </aside>
-  
+
                         <!-- Country -->
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select
-                                  [items]="countries"
-                                  bindLabel="countryName"
-                                  bindValue="CountryMasterSid"
-                                  formControlName="CountryMasterSid"
-                                  [class.is-invalid]="currencyForm.get('CountryMasterSid')?.invalid && (currencyForm.get('CountryMasterSid')?.touched || currencyForm.get('CountryMasterSid')?.dirty)"
-                                  placeholder="Select country"
-                                ></ng-select>
+                                <ng-select [items]="countries" bindLabel="countryName" bindValue="CountryMasterSid"
+                                    formControlName="CountryMasterSid"
+                                    [class.is-invalid]="currencyForm.get('CountryMasterSid')?.invalid && (currencyForm.get('CountryMasterSid')?.touched || currencyForm.get('CountryMasterSid')?.dirty)"
+                                    placeholder="Select country"></ng-select>
                                 <label class="input-label">Country <span class="text-danger">*</span></label>
-                                <div *ngIf="currencyForm.get('CountryMasterSid')?.invalid && (currencyForm.get('CountryMasterSid')?.touched || currencyForm.get('CountryMasterSid')?.dirty)" class="invalid-feedback">
+                                <div *ngIf="currencyForm.get('CountryMasterSid')?.invalid && (currencyForm.get('CountryMasterSid')?.touched || currencyForm.get('CountryMasterSid')?.dirty)"
+                                    class="invalid-feedback">
                                     Country is required
                                 </div>
                             </div>
                         </aside>
-  
+
                         <!-- Currency Unit -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -103,13 +107,16 @@
                                     [class.is-invalid]="currencyForm.get('currencyUnit')?.invalid && (currencyForm.get('currencyUnit')?.touched || currencyForm.get('currencyUnit')?.dirty)">
                                 <label for="currencyUnit" class="input-label">Currency Unit <span
                                         class="text-danger fw-bold">*</span></label>
-                                <div *ngIf="currencyForm.get('currencyUnit')?.invalid && (currencyForm.get('currencyUnit')?.touched || currencyForm.get('currencyUnit')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('currencyUnit')?.hasError('required')">Currency Unit is required</span>
-                                    <span *ngIf="currencyForm.get('currencyUnit')?.hasError('maxlength')">Maximum 50 characters</span>
+                                <div *ngIf="currencyForm.get('currencyUnit')?.invalid && (currencyForm.get('currencyUnit')?.touched || currencyForm.get('currencyUnit')?.dirty)"
+                                    class="invalid-feedback d-block">
+                                    <span *ngIf="currencyForm.get('currencyUnit')?.hasError('required')">Currency Unit
+                                        is required</span>
+                                    <span *ngIf="currencyForm.get('currencyUnit')?.hasError('maxlength')">Maximum 50
+                                        characters</span>
                                 </div>
                             </div>
                         </aside>
-  
+
                         <!-- Currency Sub Unit -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -117,27 +124,31 @@
                                     class="custom-input-field sm"
                                     [class.is-invalid]="currencyForm.get('currencySubUnit')?.invalid && (currencyForm.get('currencySubUnit')?.touched || currencyForm.get('currencySubUnit')?.dirty)">
                                 <label for="currencySubUnit" class="input-label">Currency Sub Unit</label>
-                                <div *ngIf="currencyForm.get('currencySubUnit')?.invalid && (currencyForm.get('currencySubUnit')?.touched || currencyForm.get('currencySubUnit')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('currencySubUnit')?.hasError('maxlength')">Maximum 50 characters</span>
+                                <div *ngIf="currencyForm.get('currencySubUnit')?.invalid && (currencyForm.get('currencySubUnit')?.touched || currencyForm.get('currencySubUnit')?.dirty)"
+                                    class="invalid-feedback d-block">
+                                    <span *ngIf="currencyForm.get('currencySubUnit')?.hasError('maxlength')">Maximum 50
+                                        characters</span>
                                 </div>
                             </div>
                         </aside>
-  
+
                         <!-- Symbol -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="text" id="symbol" formControlName="symbol"
-                                    class="custom-input-field sm"
+                                <input type="text" id="symbol" formControlName="symbol" class="custom-input-field sm"
                                     [class.is-invalid]="currencyForm.get('symbol')?.invalid && (currencyForm.get('symbol')?.touched || currencyForm.get('symbol')?.dirty)">
                                 <label for="symbol" class="input-label">Symbol <span
                                         class="text-danger fw-bold">*</span></label>
-                                <div *ngIf="currencyForm.get('symbol')?.invalid && (currencyForm.get('symbol')?.touched || currencyForm.get('symbol')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('symbol')?.hasError('required')">Symbol is required</span>
-                                    <span *ngIf="currencyForm.get('symbol')?.hasError('maxlength')">Maximum 5 characters</span>
+                                <div *ngIf="currencyForm.get('symbol')?.invalid && (currencyForm.get('symbol')?.touched || currencyForm.get('symbol')?.dirty)"
+                                    class="invalid-feedback d-block">
+                                    <span *ngIf="currencyForm.get('symbol')?.hasError('required')">Symbol is
+                                        required</span>
+                                    <span *ngIf="currencyForm.get('symbol')?.hasError('maxlength')">Maximum 5
+                                        characters</span>
                                 </div>
                             </div>
                         </aside>
-  
+
                         <!-- Currency First Name -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -145,12 +156,14 @@
                                     class="custom-input-field sm"
                                     [class.is-invalid]="currencyForm.get('currencyFirstName')?.invalid && (currencyForm.get('currencyFirstName')?.touched || currencyForm.get('currencyFirstName')?.dirty)">
                                 <label for="currencyFirstName" class="input-label">Currency First Name</label>
-                                <div *ngIf="currencyForm.get('currencyFirstName')?.invalid && (currencyForm.get('currencyFirstName')?.touched || currencyForm.get('currencyFirstName')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('currencyFirstName')?.hasError('maxlength')">Maximum 50 characters allowed</span>
+                                <div *ngIf="currencyForm.get('currencyFirstName')?.invalid && (currencyForm.get('currencyFirstName')?.touched || currencyForm.get('currencyFirstName')?.dirty)"
+                                    class="invalid-feedback d-block">
+                                    <span *ngIf="currencyForm.get('currencyFirstName')?.hasError('maxlength')">Maximum
+                                        50 characters allowed</span>
                                 </div>
                             </div>
                         </aside>
-                        
+
                         <!-- Currency Last Name -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -158,12 +171,14 @@
                                     class="custom-input-field sm"
                                     [class.is-invalid]="currencyForm.get('currencyLastName')?.invalid && (currencyForm.get('currencyLastName')?.touched || currencyForm.get('currencyLastName')?.dirty)">
                                 <label for="currencyLastName" class="input-label">Currency Last Name</label>
-                                <div *ngIf="currencyForm.get('currencyLastName')?.invalid && (currencyForm.get('currencyLastName')?.touched || currencyForm.get('currencyLastName')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('currencyLastName')?.hasError('maxlength')">Maximum 50 characters allowed</span>
+                                <div *ngIf="currencyForm.get('currencyLastName')?.invalid && (currencyForm.get('currencyLastName')?.touched || currencyForm.get('currencyLastName')?.dirty)"
+                                    class="invalid-feedback d-block">
+                                    <span *ngIf="currencyForm.get('currencyLastName')?.hasError('maxlength')">Maximum 50
+                                        characters allowed</span>
                                 </div>
                             </div>
                         </aside>
-  
+
                         <!-- Currency Ratio -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -172,14 +187,18 @@
                                     [class.is-invalid]="currencyForm.get('currencyRatio')?.invalid && (currencyForm.get('currencyRatio')?.touched || currencyForm.get('currencyRatio')?.dirty)">
                                 <label for="currencyRatio" class="input-label">Currency Ratio <span
                                         class="text-danger fw-bold">*</span></label>
-                                <div *ngIf="currencyForm.get('currencyRatio')?.invalid && (currencyForm.get('currencyRatio')?.touched || currencyForm.get('currencyRatio')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('currencyRatio')?.hasError('required')">Required</span>
-                                    <span *ngIf="currencyForm.get('currencyRatio')?.hasError('min')">Must be at least 1</span>
-                                    <span *ngIf="currencyForm.get('currencyRatio')?.hasError('pattern')">Must be a whole number</span>
+                                <div *ngIf="currencyForm.get('currencyRatio')?.invalid && (currencyForm.get('currencyRatio')?.touched || currencyForm.get('currencyRatio')?.dirty)"
+                                    class="invalid-feedback d-block">
+                                    <span
+                                        *ngIf="currencyForm.get('currencyRatio')?.hasError('required')">Required</span>
+                                    <span *ngIf="currencyForm.get('currencyRatio')?.hasError('min')">Must be at least
+                                        1</span>
+                                    <span *ngIf="currencyForm.get('currencyRatio')?.hasError('pattern')">Must be a whole
+                                        number</span>
                                 </div>
                             </div>
                         </aside>
-  
+
                         <!-- Amount Decimal -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -188,15 +207,18 @@
                                     [class.is-invalid]="currencyForm.get('amountDecimal')?.invalid && (currencyForm.get('amountDecimal')?.touched || currencyForm.get('amountDecimal')?.dirty)">
                                 <label for="amountDecimal" class="input-label">Amount Decimal <span
                                         class="text-danger fw-bold">*</span></label>
-                                <div *ngIf="currencyForm.get('amountDecimal')?.invalid && (currencyForm.get('amountDecimal')?.touched || currencyForm.get('amountDecimal')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('amountDecimal')?.hasError('required')">Required</span>
+                                <div *ngIf="currencyForm.get('amountDecimal')?.invalid && (currencyForm.get('amountDecimal')?.touched || currencyForm.get('amountDecimal')?.dirty)"
+                                    class="invalid-feedback d-block">
+                                    <span
+                                        *ngIf="currencyForm.get('amountDecimal')?.hasError('required')">Required</span>
                                     <span *ngIf="currencyForm.get('amountDecimal')?.hasError('min')">Minimum 0</span>
                                     <span *ngIf="currencyForm.get('amountDecimal')?.hasError('max')">Maximum 8</span>
-                                    <span *ngIf="currencyForm.get('amountDecimal')?.hasError('pattern')">Must be a whole number</span>
+                                    <span *ngIf="currencyForm.get('amountDecimal')?.hasError('pattern')">Must be a whole
+                                        number</span>
                                 </div>
                             </div>
                         </aside>
-  
+
                         <!-- Exchange Decimal -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -205,24 +227,29 @@
                                     [class.is-invalid]="currencyForm.get('exchangeDecimal')?.invalid && (currencyForm.get('exchangeDecimal')?.touched || currencyForm.get('exchangeDecimal')?.dirty)">
                                 <label for="exchangeDecimal" class="input-label">Exchange Decimal <span
                                         class="text-danger fw-bold">*</span></label>
-                                <div *ngIf="currencyForm.get('exchangeDecimal')?.invalid && (currencyForm.get('exchangeDecimal')?.touched || currencyForm.get('exchangeDecimal')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="currencyForm.get('exchangeDecimal')?.hasError('required')">Required</span>
+                                <div *ngIf="currencyForm.get('exchangeDecimal')?.invalid && (currencyForm.get('exchangeDecimal')?.touched || currencyForm.get('exchangeDecimal')?.dirty)"
+                                    class="invalid-feedback d-block">
+                                    <span
+                                        *ngIf="currencyForm.get('exchangeDecimal')?.hasError('required')">Required</span>
                                     <span *ngIf="currencyForm.get('exchangeDecimal')?.hasError('min')">Minimum 0</span>
                                     <span *ngIf="currencyForm.get('exchangeDecimal')?.hasError('max')">Maximum 8</span>
-                                    <span *ngIf="currencyForm.get('exchangeDecimal')?.hasError('pattern')">Must be a whole number</span>
+                                    <span *ngIf="currencyForm.get('exchangeDecimal')?.hasError('pattern')">Must be a
+                                        whole number</span>
                                 </div>
                             </div>
                         </aside>
-  
+
                         <!-- Status -->
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <select formControlName="status" class="custom-input-field sm"
                                     [class.is-invalid]="currencyForm.get('status')?.invalid && (currencyForm.get('status')?.touched || currencyForm.get('status')?.dirty)">
-                                    <option *ngFor="let status of statusOptions" [value]="status.id">{{status.name}}</option>
+                                    <option *ngFor="let status of statusOptions" [value]="status.id">{{status.name}}
+                                    </option>
                                 </select>
                                 <label class="input-label">Status <span class="text-danger fw-bold">*</span></label>
-                                <div *ngIf="currencyForm.get('status')?.invalid && (currencyForm.get('status')?.touched || currencyForm.get('status')?.dirty)" class="invalid-feedback d-block">
+                                <div *ngIf="currencyForm.get('status')?.invalid && (currencyForm.get('status')?.touched || currencyForm.get('status')?.dirty)"
+                                    class="invalid-feedback d-block">
                                     <span *ngIf="currencyForm.get('status')?.hasError('required')">Required</span>
                                 </div>
                             </div>

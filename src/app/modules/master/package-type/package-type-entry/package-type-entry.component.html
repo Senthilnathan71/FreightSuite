@@ -9,7 +9,7 @@
       </button>
     </div>
   </div>
-  <div class="col-md-12"  [formGroup]="inputForm">
+  <div class="col-md-12" [formGroup]="inputForm">
     <div class="card h-100">
       <div class="card-body">
         <div class="row">
@@ -19,44 +19,44 @@
                 formControlName="PackageName" [textWithNumbers]="100" />
               <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
               @if(inputForm.get('PackageName')?.touched && inputForm.get('PackageName')?.invalid){
-                <div class="error-message">
-                  @if(inputForm.get('PackageName')?.hasError('required')){
-                    <span>Package Name is required</span>
-                  } @else if(inputForm.get('PackageName')?.hasError('maxlength')){
-                    <span>Max 100 Characters</span>
-                  }
-                </div>
+              <div class="error-message">
+                @if(inputForm.get('PackageName')?.hasError('required')){
+                <span>Package Name is required</span>
+                } @else if(inputForm.get('PackageName')?.hasError('maxlength')){
+                <span>Max 100 Characters</span>
+                }
+              </div>
               }
             </div>
           </aside>
           <aside class="col-md-4">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                formControlName="PackageCode" [textWithNumbers]="3"/>
+                formControlName="PackageCode" [textWithNumbers]="3" />
               <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
               @if(inputForm.get('PackageCode')?.touched && inputForm.get('PackageCode')?.invalid){
-                <div class="error-message">
-                  @if(inputForm.get('PackageCode')?.hasError('required')){
-                    <span>Package Code is required</span>
-                  } @else if(inputForm.get('PackageCode')?.hasError('maxlength')){
-                    <span>Max 3 Characters</span>
-                  }
-                </div>
+              <div class="error-message">
+                @if(inputForm.get('PackageCode')?.hasError('required')){
+                <span>Package Code is required</span>
+                } @else if(inputForm.get('PackageCode')?.hasError('maxlength')){
+                <span>Max 3 Characters</span>
+                }
+              </div>
               }
             </div>
           </aside>
           <aside class="col-md-4">
             <div class="custom-form-group">
               @if(isEditMode){
-                            <select name="status" class="form-select" formControlName="status" id="text-input">
-                                <option value="Active">Active</option>
-                                <option value="Invalid">Invalid</option>
-                                <option value="Block">Block</option>
-                            </select>
-                            } @else {
-                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
-                                id="text-input" readonly>
-                            }
+              <select name="status" class="form-select" formControlName="status" id="text-input">
+                <option value="Active">Active</option>
+                <option value="Invalid">Invalid</option>
+                <option value="Block">Block</option>
+              </select>
+              } @else {
+              <input type="text" name="status" class="custom-input-field sm" formControlName="status" id="text-input"
+                readonly>
+              }
               <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
             </div>
           </aside>

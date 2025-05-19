@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { FeatherModule } from 'angular-feather';
 
 @Component({
   selector: 'app-division-entry',
   standalone: true,
-  imports: [NgSelectModule],
+  imports: [NgSelectModule,FeatherModule],
   templateUrl: './division-entry.component.html',
   styleUrl: './division-entry.component.scss'
 })

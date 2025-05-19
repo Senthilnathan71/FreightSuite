@@ -75,7 +75,7 @@ export class CommodityEntryComponent implements OnInit {
   initForm() {
     this.commodityForm = this.fb.group({
       CommodityName: ['', [
-        Validators.required, 
+        Validators.required,
         Validators.maxLength(100),
         Validators.pattern(/^[a-zA-Z\s]+$/) // Only alphabets and spaces allowed
       ]],
@@ -88,7 +88,7 @@ export class CommodityEntryComponent implements OnInit {
       PackingGroup: ['', [Validators.maxLength(10)]],
       HSSACCode: [null],
       FlashPoint: ['', [Validators.maxLength(5)]],
-      status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
+      status: [{ value: 'A', disabled: !this.isEditMode }, Validators.required],
       Remarks: ['', [Validators.maxLength(300)]],
       Timber: [false],
       Flamable: [false],
@@ -123,26 +123,26 @@ export class CommodityEntryComponent implements OnInit {
       this.commodityForm.markAllAsTouched();
       return;
     }
-    
+
     const formValue = this.commodityForm.value;
-    
+
     const payload = {
       ...formValue,
       HSSACCode: formValue.HSSACCode ? Number(formValue.HSSACCode) : null,
       UOMSid: formValue.UOMSid ? Number(formValue.UOMSid) : null,
       status: this.isEditMode ? formValue.status : 'A'
     };
-  
+
     const operation = this.isEditMode
       ? this.masterService.updateCommodityById(this.commodityId, payload)
       : this.masterService.createNewCommodity(payload);
-  
+
     operation.subscribe({
       next: (resp: any) => {
-        const message = this.isEditMode 
-          ? 'Commodity updated successfully!' 
+        const message = this.isEditMode
+          ? 'Commodity updated successfully!'
           : 'Commodity created successfully!';
-        
+
         this.appSettingService.showSuccess(message);
         this.router.navigate(['/master/commodity/list']);
       },
@@ -151,17 +151,17 @@ export class CommodityEntryComponent implements OnInit {
       }
     });
   }
-  
+
   private handleError(err: any) {
     console.error(err);
     let errorMessage = `Error ${this.isEditMode ? 'updating' : 'creating'} commodity`;
-    
+
     if (err.error?.message) {
       errorMessage = err.error.message;
     } else if (err.status === 400) {
       errorMessage = 'Validation error - please check your inputs';
     }
-    
+
     this.appSettingService.showError(errorMessage);
   }
 
@@ -199,7 +199,7 @@ export class CommodityEntryComponent implements OnInit {
         if (result === true) {
           this.router.navigate(['/master/commodity/list']);
         }
-      }).catch(() => {});
+      }).catch(() => { });
     } else {
       this.router.navigate(['/master/commodity/list']);
     }

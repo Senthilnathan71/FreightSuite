@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { FeatherModule } from 'angular-feather';
 
 @Component({
   selector: 'app-menu-entry',
   standalone: true,
-  imports: [NgSelectModule],
+  imports: [NgSelectModule,FeatherModule],
   templateUrl: './menu-entry.component.html',
   styleUrl: './menu-entry.component.scss'
 })

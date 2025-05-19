@@ -13,11 +13,12 @@ import { Branch } from 'src/app/modules/crm-mobile/Interfaces/branch.interface';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
 	selector: 'app-branch-entry',
 	standalone: true,
-	imports: [ReactiveFormsModule, CommonModule, FormsModule, FeatherModule, OnlyNumbersDirective, OnlyTextDirective, TextWithNumbersDirective],
+	imports: [ReactiveFormsModule, NgSelectModule, CommonModule, FormsModule, FeatherModule, OnlyNumbersDirective, OnlyTextDirective, TextWithNumbersDirective],
 	templateUrl: './branch-entry.component.html',
 	styleUrl: './branch-entry.component.scss'
 })

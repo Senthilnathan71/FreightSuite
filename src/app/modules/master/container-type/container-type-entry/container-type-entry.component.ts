@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { FeatherModule } from 'angular-feather';
 
 @Component({
   selector: 'app-container-type-entry',
   standalone: true,
-  imports: [NgSelectModule],
+  imports: [NgSelectModule,FeatherModule],
   templateUrl: './container-type-entry.component.html',
   styleUrl: './container-type-entry.component.scss'
 })

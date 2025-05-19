@@ -9,14 +9,15 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from '../../master.service';
 
+
 @Component({
   selector: 'app-currency-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    FeatherModule, 
-    FormsModule, 
-    NgbPaginationModule, 
+    CommonModule,
+    FeatherModule,
+    FormsModule,
+    NgbPaginationModule,
     RouterModule
   ],
   templateUrl: './currency-list.component.html',
@@ -31,13 +32,13 @@ export class CurrencyListComponent {
 
   // pagination
   page = 1;
-  pageSize = 10 ;
+  pageSize = 10;
   totalLengthOfCollection: number;
 
   constructor(
-    private masterService: MasterService, 
+    private masterService: MasterService,
     private router: Router,
-    private appSettingService: AppSettingsService, 
+    private appSettingService: AppSettingsService,
     private dialog: MatDialog
   ) { }
 
@@ -46,8 +47,8 @@ export class CurrencyListComponent {
   search() {
     const payload = {
       searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'I' 
+      filterValue: this.searchType === 'status'
+        ? this.filterValue === 'Active' ? 'A' : 'I'
         : this.filterValue,
     }
     this.masterService.searchCurrencyList(payload).subscribe((res: any) => {
@@ -90,8 +91,8 @@ export class CurrencyListComponent {
     this.searchPerformed = false;
     this.filterValue = '';
   }
- 
-report() { }
+
+  report() { }
 
   getStatusText(status: string): string {
     return status === 'A' ? 'Active' : 'Inactive';

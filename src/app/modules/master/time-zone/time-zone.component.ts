@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { FeatherModule } from 'angular-feather';
 
 @Component({
   selector: 'app-time-zone',
   standalone: true,
-  imports: [NgSelectModule],
+  imports: [NgSelectModule,FeatherModule],
   templateUrl: './time-zone.component.html',
   styleUrl: './time-zone.component.scss'
 })

@@ -1,121 +1,135 @@
 <div class="row">
-
     <div class="col-12">
-        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <div class="col-8 mx-auto">
-                <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
-                    <form class="d-flex align-items-center gap-2">
-                        <div class="form-outline col">
-                            <select name="searchType" class="form-select" [(ngModel)]="searchType">
-                                <option value="branchName">Branch Name</option>
-                                <option value="branchCode">Branch Code</option>
-                                <option value="taxRegistrationNo">Tax Registration No</option>
-                                <option value="CISN">CISN</option>
-                                <option value="addressLine1">Address Line 1</option>
-                                <option value="webSite">Website</option>
-                                <option value="phoneNumber">Phone Number</option>
-                                <option value="email">Email</option>
-                                <option value="status">Status</option>
-                            </select>
-                        </div>
-                        <div class="form-outline col">
-                            <input name="filterValue" type="text" class="form-control" placeholder="Enter filter value"
-                                [(ngModel)]="filterValue">
-                            <i
-                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                        </div>
-
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="onSearch()">
-                            <i class="fas fa-search"></i>
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">Branch</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div class="" data-bs-theme="light">
+                    <form
+                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="onSearch()">
+                            <i class="fas fa-search me-1"></i>
                             Search
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="navigateToCreate()">
-                            <i class="mdi mdi-plus"></i> Create
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-plus me-1"></i> Create
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="report()">
-                            <!-- <i class="mdi mdi-plus"></i> -->
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-file-alt me-1"></i>
                             Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="reset()">
-                            <!-- <i class="mdi mdi-plus"></i> -->
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
                     </form>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="col-12" *ngIf="totalAmountOfCollection > 0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Name</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Organization Name</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
-                        <th class="bg-transparent text-light" scope="col">Sea Port</th>
-                        <th class="bg-transparent text-light" scope="col">Air Port</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of branchList;let i=$index; track trackByIndex) {
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <a class="text-info mx-2" class="link mx-2 ps-3 "
-                                    [routerLink]="['/master/branch/entry/', item.BranchMasterSid]">
-                                    <i-feather class="feather-sm" name="eye"></i-feather>
-                                </a>
-                                <a class="text-danger mx-2 ps-3 border-start"
-                                    (click)="deleteBranch(item.BranchMasterSid)">
-                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                </a>
+            <div class="col-md-12  border-top">
+                <div class="row mx-0 py-2">
+                    <div class="col-md-8 mx-auto px-0">
+                        <form
+                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                            <div class="form-outline col-12 col-md px-0">
+                                <select name="searchType" class="form-select" [(ngModel)]="searchType">
+                                    <option value="branchName">Branch Name</option>
+                                    <option value="branchCode">Branch Code</option>
+                                    <option value="taxRegistrationNo">Tax Registration No</option>
+                                    <option value="CISN">CISN</option>
+                                    <option value="addressLine1">Address Line 1</option>
+                                    <option value="webSite">Website</option>
+                                    <option value="phoneNumber">Phone Number</option>
+                                    <option value="email">Email</option>
+                                    <option value="status">Status</option>
+                                </select>
                             </div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.branchName}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.branchCode}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.company.companyName}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.cityMaster.cityName}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate text-danger">Baizas</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate text-danger">Baizas</div>
-                        </td>
-                        <td>
-                            <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1"
-                                *ngIf="item.status==='A'">
-                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                Active</span>
-                            <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1"
-                                *ngIf="item.status!=='A'">
-                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                Invalid</span>
-                        </td>
+                            <div class="form-outline col-12 col-md px-0">
+                                <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
+                                    placeholder="Enter filter value">
+                                <i
+                                    class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    </tr>
-                    }
-                </tbody>
-            </table>
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Name</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Organization Name</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Sea Port</th>
+                            <th class="bg-transparent text-light" scope="col">Air Port</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr *ngFor="let item of branchList; let i = index; trackBy: trackByIndex">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <a class="text-info mx-2" class="link mx-2 ps-3 "
+                                        [routerLink]="['/master/branch/entry/', item.BranchMasterSid]">
+                                        <i-feather class="feather-sm" name="eye"></i-feather>
+                                    </a>
+                                    <a class="text-danger mx-2 ps-3 border-start"
+                                        (click)="deleteBranch(item.BranchMasterSid)">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </a>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.branchName}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.branchCode}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.company.companyName}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.cityMaster.cityName}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate text-danger">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate text-danger">Baizas</div>
+                            </td>
+                            <td>
+                                <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1"
+                                    *ngIf="item.status==='A'">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active</span>
+                                <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1"
+                                    *ngIf="item.status!=='A'">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Invalid</span>
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalAmountOfCollection"
+                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()">
+                </ngb-pagination>
+            </div>
         </div>
-        <div>
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalAmountOfCollection"
-                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()">
-            </ngb-pagination>
+        <div class="col-12" *ngIf="totalAmountOfCollection === 0">
+            <div>No records found</div>
         </div>
     </div>
-    <div class="col-12" *ngIf="totalAmountOfCollection === 0">
-        <div>No records found</div>
-    </div>
-</div>

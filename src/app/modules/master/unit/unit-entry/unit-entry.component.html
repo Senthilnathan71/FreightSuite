@@ -1,11 +1,40 @@
 <form [formGroup]="unitForm">
     <div class="row">
+
+
+        <div class="col-12">
+            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+                <div class="col-md-4 pb-2">
+                    <h4 class="page-title mb-0">Add Unit</h4>
+                </div>
+                <div class="col-md-8 pb-2">
+                    <div
+                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="goBack()">
+                            <i class="fas fa-chevron-left me-1"></i>
+                            Back
+                        </button>
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="reset()">
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Reset
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="onSubmit()" [disabled]=" btnDisable">
+                            <i class="fas fa-save me-1"></i>
+                            Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="col-12">
 
             <ng-container *ngTemplateOutlet="unitform"></ng-container>
         </div>
 
-        <div class="col-12">
+        <!-- <div class="col-12">
             <div class="">
                 <div class="d-flex align-items-center justify-content-start gap-2">
 
@@ -24,13 +53,12 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
 
     <ng-template #unitform>
         <div class="row">
-
-            <div class="col-6">
+            <div class="col-md-6">
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="row">
@@ -109,51 +137,49 @@
                     </div>
                 </div>
             </div>
-
-            <div class="col-6">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-12 d-flex flex-wrap gap-3 mb-3 border-bottom">
-                                <label class="form-check-label ms-2">Job Type <span class="text-danger">*</span></label>
-                                <label *ngFor="let option of jobType">
-                                    <input type="radio" [value]="option.id" formControlName="jobType" name="jobType" />
-                                    {{ option.name }}
-                                </label>
-                                @if(unitForm.get('jobType')?.touched && unitForm.get('jobType')?.invalid){
-                                <div class="error-message">
-                                    @if(unitForm.get('jobType')?.hasError('required')){
-                                    <span>Job Type is required</span>
-                                    } @else if(unitForm.get('jobType')?.hasError('maxlength')){
-                                    <span>Max 10 Characters</span>
-                                    }
-                                </div>
+            <div class="col-md-6 mt-md-0 mt-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 d-flex flex-wrap gap-3 mb-3 border-bottom">
+                            <label class="form-check-label ms-2">Job Type <span class="text-danger">*</span></label>
+                            <label *ngFor="let option of jobType">
+                                <input type="radio" [value]="option.id" formControlName="jobType" name="jobType" />
+                                {{ option.name }}
+                            </label>
+                            @if(unitForm.get('jobType')?.touched && unitForm.get('jobType')?.invalid){
+                            <div class="error-message">
+                                @if(unitForm.get('jobType')?.hasError('required')){
+                                <span>Job Type is required</span>
+                                } @else if(unitForm.get('jobType')?.hasError('maxlength')){
+                                <span>Max 10 Characters</span>
                                 }
                             </div>
-                            <div class="col-12  d-flex flex-wrap gap-3">
-                                <label class="form-check-label ms-2">Measurement Type <span
-                                        class="text-danger">*</span></label>
-                                <label *ngFor="let option of measurementType">
-                                    <input type="radio" [value]="option.id" formControlName="measurementType"
-                                        name="measurementType" />
-                                    {{ option.name }}
-                                </label>
-                                @if(unitForm.get('measurementType')?.touched &&
-                                unitForm.get('measurementType')?.invalid){
-                                <div class="error-message">
-                                    @if(unitForm.get('measurementType')?.hasError('required')){
-                                    <span>Measurement Type is required</span>
-                                    } @else if(unitForm.get('measurementType')?.hasError('maxlength')){
-                                    <span>Max 10 Characters</span>
-                                    }
-                                </div>
+                            }
+                        </div>
+                        <div class="col-12  d-flex flex-wrap gap-3">
+                            <label class="form-check-label ms-2">Measurement Type <span
+                                    class="text-danger">*</span></label>
+                            <label *ngFor="let option of measurementType">
+                                <input type="radio" [value]="option.id" formControlName="measurementType"
+                                    name="measurementType" />
+                                {{ option.name }}
+                            </label>
+                            @if(unitForm.get('measurementType')?.touched &&
+                            unitForm.get('measurementType')?.invalid){
+                            <div class="error-message">
+                                @if(unitForm.get('measurementType')?.hasError('required')){
+                                <span>Measurement Type is required</span>
+                                } @else if(unitForm.get('measurementType')?.hasError('maxlength')){
+                                <span>Max 10 Characters</span>
                                 }
                             </div>
+                            }
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
     </ng-template>
 
 </form>

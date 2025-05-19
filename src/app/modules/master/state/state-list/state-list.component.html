@@ -1,43 +1,75 @@
 <div class="row">
-    <div class="col-12">
+    <!-- <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <div class="col-8 mx-auto">
-                <div class="rounded-3 p-2 bg-body-tertiary mb-2" data-bs-theme="light">
-                    <form class="d-flex align-items-center gap-2">
-                        <div class="form-outline col">
-                            <select [(ngModel)]="searchType" name="searchType" class="form-select">
-                                <option value="stateName">State Name</option>
-                                <option value="stateCode">State Code</option>
-                                <option value="stateGSTCode">GST Code</option>
-                                <option value="region">Country</option>
-                                <option value="zone">Zone</option> <!-- Keep this -->
-                                <option value="status">Status</option>
-                            </select>
-                        </div>
-                        <div class="form-outline col">
-                            <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
-                                placeholder="Enter filter value">
-                            <i
-                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                        </div>
-
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="search()">
-                            <i class="fas fa-search"></i>
+            <form action="" class="d-flex align-items-center gap-2">
+                <div class="form-outline col">
+                    <input type="search" class="form-control ps-5" name="search" placeholder="Search">
+                    <i class="fas fa-search ms-3"></i>
+                </div>
+                <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateState()">
+                    <i class="mdi mdi-plus"></i> Add
+                </button>
+            </form>
+        </div>
+    </div> -->
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">State</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div class="" data-bs-theme="light">
+                    <form
+                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-search me-1"></i>
                             Search
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80"
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="navigateToCreateState()">
-                            <i class="mdi mdi-plus"></i> Create
+                            <i class="fas fa-plus me-1"></i> Create
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="resetPage()">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-file-alt me-1"></i>
+                            Report
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
                     </form>
                 </div>
             </div>
+            <div class="col-md-12  border-top">
+                <div class="row mx-0 py-2">
+                    <div class="col-md-8 mx-auto px-0">
+                        <form
+                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                            <div class="form-outline col-12 col-md px-0">
+                                <!-- <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
+                                    autocomplete="off" placeholder="Search">
+                                <i class="fas fa-search ms-3"></i> -->
+                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                                    <option value="stateName">State Name</option>
+                                    <option value="stateCode">State Code</option>
+                                    <option value="stateGSTCode">GST Code</option>
+                                    <option value="region">Country</option>
+                                    <option value="zone">Zone</option> <!-- Keep this -->
+                                    <option value="status">Status</option>
+                                </select>
+                            </div>
+                            <div class="form-outline col-12 col-md px-0">
+                                <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
+                                    placeholder="Enter filter value">
+                                <i
+                                    class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
     <div class="col-12" *ngIf="totalLengthOfCollection > 0">
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered">
@@ -79,9 +111,9 @@
                             <div class="text-truncate">{{item.countryName}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item.zoneName  || '-'}}</div>
+                            <div class="text-truncate">{{item.zoneName || '-'}}</div>
                         </td>
-                       
+
                         <td>
                             <div class="text-truncate">
                                 {{ getStatusText(item.status) }}
@@ -96,10 +128,10 @@
                 [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
             </ngb-pagination>
         </div>
-    </div>
 
+
+    </div>
     <!-- No records found -->
     <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
         <div class="alert alert-info">No records found</div>
     </div>
-</div>

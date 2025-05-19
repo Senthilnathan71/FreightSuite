@@ -1,11 +1,39 @@
 <form [formGroup]="countryForm"> 
     <div class="row">
+
+         <div class="col-12">
+             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">Add Country</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="goBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="reset()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+                        [disabled]=" btnDisable">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+        </div>
         <div class="col-12">
             
             <ng-container *ngTemplateOutlet="countryform"></ng-container>
         </div>
 
-        <div class="col-12">
+        <!-- <div class="col-12">
             <div class="">
                 <div class="d-flex align-items-center justify-content-start gap-2">
 
@@ -24,13 +52,11 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
 
     <ng-template #countryform>
         <div class="row">
-    
-
             <div class="col-md-6">
                 <div class="card h-100">
                     <div class="card-body">
@@ -100,10 +126,10 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 mt-md-0 mt-3">
                 <div class="card h-100">
                     <div class="card-body">
-                        <div class="row">
+                        <div class="row ">
                             <h6 class="card-title mb-0">Basic Info 2</h6>
                             <aside class="col-md-3">
                                 <div class="custom-form-group">
