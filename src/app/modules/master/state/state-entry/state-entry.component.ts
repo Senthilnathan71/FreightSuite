@@ -28,8 +28,13 @@ export class StateEntryComponent implements OnInit {
   btnDisable = false;
   stateId: number;
   countries: Country[] = [];
-  Zones: Zone[] = [];
+  zones: Zone[] = []; 
   
+  statusMap: { [key: string]: string } = {
+    A: 'Active',
+    I: 'Inactive'
+  };
+
   statusOptions = [
     { id: 'A', name: 'Active' },
     { id: 'I', name: 'Inactive' }
@@ -47,7 +52,7 @@ export class StateEntryComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCountries();
-    this.loadzones();
+    this.loadZones(); 
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.stateId = +params['id'];
@@ -63,7 +68,7 @@ export class StateEntryComponent implements OnInit {
       stateCode: ['', [Validators.required, Validators.maxLength(2), this.alphaValidator()]],
       stateGSTCode: ['', [Validators.required, Validators.maxLength(2), Validators.pattern('^[0-9]*$')]],
       CountryMasterSid: ['', Validators.required],
-      // ZoneMasterSid: [''],
+      ZoneMasterSid: ['', Validators.required], // Made required like in city component
       region: [''],
       status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
       Remarks: ['']
@@ -123,30 +128,33 @@ export class StateEntryComponent implements OnInit {
     });
   }
 
-  loadzones() {
+  loadZones() {
     this.masterService.getAllZones().subscribe({
-      next: (resp: any) => {
-        this.Zones = resp.data || resp;
-      },
-      error: (err) => {
-        console.error('Error loading Zones:', err);
-        this.appSettingService.showError('Failed to load Zones');
-      }
+        next: (resp: any) => {
+            this.zones = resp.data || resp;
+        },
+        error: (err) => {
+            console.error('Error loading zones:', err);
+            this.appSettingService.showError('Failed to load zones');
+        }
     });
-  }
+}
 
   getStateById(id: number) {
     this.stateForm.reset();
     this.masterService.getStateById(id).subscribe({
       next: (state: State) => {
+        // Convert API status (A/I) to display status (Active/Inactive)
+        const formattedStatus = this.statusMap[state.status] || 'A';
+        
         this.stateForm.patchValue({
           stateName: state.stateName,
           stateCode: state.stateCode,
           stateGSTCode: state.stateGSTCode,
           CountryMasterSid: state.CountryMasterSid,
-          // ZoneMasterSid: state.ZoneMasterSid || '',
+          ZoneMasterSid: state.ZoneMasterSid, // Added ZoneMasterSid patching
           region: state.region || '',
-          status: state.status,
+          status: formattedStatus,
           Remarks: state.Remarks || ''
         });
       },
@@ -160,16 +168,22 @@ export class StateEntryComponent implements OnInit {
   onSubmit() {
     if (this.stateForm.invalid) {
       this.markFormGroupTouched(this.stateForm);
+      this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
     }
   
     this.btnDisable = true;
     
+    const formValue = this.stateForm.value;
+    const createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
+    const updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
+    
     const payload = {
-      ...this.stateForm.value,
-      CountryMasterSid: Number(this.stateForm.value.CountryMasterSid),
-      // ZoneMasterSid: Number(this.stateForm.value.ZoneMasterSid),
-      status: this.isEditMode ? this.stateForm.value.status : 'A'
+      ...formValue,
+      CountryMasterSid: Number(formValue.CountryMasterSid),
+      ZoneMasterSid: Number(formValue.ZoneMasterSid), // Added ZoneMasterSid conversion
+      status: this.isEditMode ? formValue.status : 'A',
+      ...(this.isEditMode ? updatedBy : createdBy)
     };
   
     const operation = this.isEditMode 
@@ -178,38 +192,24 @@ export class StateEntryComponent implements OnInit {
   
     operation.subscribe({
       next: (resp: any) => {
-        const success = resp.data ? resp.data : resp;
-        this.handleSuccess(success);
+        this.btnDisable = false;
+        const message = resp.message || 
+          (this.isEditMode ? 'State updated successfully!' : 'State created successfully!');
+        
+        if (resp.status) {
+          this.appSettingService.showSuccess(message);
+          this.router.navigate(['/master/state/list']);
+        } else {
+          this.appSettingService.showError(resp.message || 'Operation failed');
+        }
       },
       error: (err) => {
-        this.handleError(err);
+        this.btnDisable = false;
+        const errorMessage = err.error?.message || 
+          `Error ${this.isEditMode ? 'updating' : 'creating'} state`;
+        this.appSettingService.showError(errorMessage);
       }
     });
-  }
-  
-  private handleSuccess(response: any) {
-    this.btnDisable = false;
-    const message = this.isEditMode 
-      ? 'State updated successfully!' 
-      : 'State created successfully!';
-    
-    this.appSettingService.showSuccess(message);
-    this.router.navigate(['/master/state/list']);
-  }
-  
-  private handleError(err: any) {
-    console.error(err);
-    this.btnDisable = false;
-    
-    let errorMessage = `Error ${this.isEditMode ? 'updating' : 'creating'} state`;
-    
-    if (err.error?.message) {
-      errorMessage = err.error.message;
-    } else if (err.status === 400) {
-      errorMessage = 'Validation error - please check your inputs';
-    }
-    
-    this.appSettingService.showError(errorMessage);
   }
 
   resetForm() {
@@ -221,7 +221,7 @@ export class StateEntryComponent implements OnInit {
         stateCode: '',
         stateGSTCode: '',
         CountryMasterSid: '',
-        ZoneMasterSid: '',
+        ZoneMasterSid: '', // Added ZoneMasterSid reset
         region: '',
         status: 'A',
         Remarks: ''

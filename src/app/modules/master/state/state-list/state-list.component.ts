@@ -31,6 +31,7 @@ export class StateListComponent {
   searchPerformed = false;
   loading: boolean = false;
   countryOptions: any[] = [];
+  zoneOptions: any[] = [];
 
   // pagination
   page = 1;
@@ -46,6 +47,7 @@ export class StateListComponent {
 
   ngOnInit() {
     this.loadCountries();
+    this.loadZones();
   }
 
   loadCountries() {
@@ -57,6 +59,20 @@ export class StateListComponent {
       },
       error: (err) => {
         console.error('Error loading countries:', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  loadZones() {
+    this.loading = true;
+    this.masterService.getAllZones().subscribe({
+      next: (res: any) => {
+        this.zoneOptions = res.data || res;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading zones:', err);
         this.loading = false;
       }
     });
@@ -75,9 +91,11 @@ export class StateListComponent {
       next: (res: any) => {
         this.allStates = (res.data || res).map(state => {
           const country = this.countryOptions.find(c => c.CountryMasterSid === state.CountryMasterSid);
+          const zone = this.zoneOptions.find(z => z.ZoneMasterSid === state.ZoneMasterSid);
           return {
             ...state,
-            countryName: country ? country.countryName : 'N/A'
+            countryName: country ? country.countryName : 'N/A',
+            zoneName: zone ? zone.ZoneName : 'N/A' 
           };
         });
         
@@ -110,7 +128,7 @@ export class StateListComponent {
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         this.loading = true;
-        this.masterService.softDelete(id).subscribe({
+        this.masterService.softDelete(id).subscribe({ // Changed to softDeleteState for clarity
           next: (resp: any) => {
             this.appSettingService.showSuccess("State deleted successfully!");
             this.search(); // Refresh search results

@@ -14,9 +14,13 @@ export interface State {
     updatedOn: string,
     Remarks: string,
     region: string,
-    zone: number,
+    
     countryMaster: {
         countryName: string;
     }
+    zoneMaster: {
+        zone: number,
+    }
+
 
 }
