@@ -117,10 +117,23 @@ export class CurrencyEntryComponent implements OnInit {
       remarks: ['']
     });
 
-    // Auto-uppercase currency code
+     // Auto-uppercase and enforce 3 characters for currency code
     this.currencyForm.get('currencyCode')?.valueChanges.subscribe(val => {
       if (val) {
-        this.currencyForm.get('currencyCode')?.setValue(val.toUpperCase(), { emitEvent: false });
+        const upperVal = val.toUpperCase().replace(/[^A-Z]/g, '').substring(0, 3);
+        if (upperVal !== val) {
+          this.currencyForm.get('currencyCode')?.setValue(upperVal, { emitEvent: false });
+        }
+      }
+    });
+
+    // Prevent non-alphabet characters and spaces for currency name
+    this.currencyForm.get('currencyName')?.valueChanges.subscribe(val => {
+      if (val) {
+        const cleanVal = val.replace(/[^a-zA-Z\s]/g, '');
+        if (cleanVal !== val) {
+          this.currencyForm.get('currencyName')?.setValue(cleanVal, { emitEvent: false });
+        }
       }
     });
   }

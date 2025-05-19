@@ -5,7 +5,8 @@
       <!-- Top buttons -->
       <div class="col-12">
         <div class="d-flex align-items-center gap-2 mb-3">
-          <button type="submit" class="btn btn-sm btn-info">
+          <button type="submit" class="btn btn-sm btn-info" [disabled]="btnDisable || stateForm.invalid" (click)="onSubmit()">
+          <!-- <button type="submit" class="btn btn-sm btn-info"> -->
             {{ isEditMode ? 'Update' : 'Create' }}
           </button>
           <button type="button" class="btn btn-sm btn-info" (click)="resetForm()">
@@ -71,6 +72,29 @@
                   </div>
                 </div>
               </aside>
+              <!-- GST Code -->
+              <aside class="col-md-6">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    id="stateGSTCode"
+                    formControlName="stateGSTCode"
+                    class="custom-input-field sm"
+                    (keypress)="onKeyPress($event, 'stateGSTCode')"
+                    [class.is-invalid]="stateForm.get('stateGSTCode')?.invalid && stateForm.get('stateGSTCode')?.touched"
+                  />
+                  <label for="stateGSTCode" class="input-label">State GST Code <span class="text-danger">*</span></label>
+                  <div *ngIf="stateForm.get('stateGSTCode')?.touched && stateForm.get('stateGSTCode')?.errors" class="invalid-feedback">
+                    <span *ngIf="stateForm.get('stateGSTCode')?.hasError('required')">GST Code is required</span>
+                    <span *ngIf="stateForm.get('stateGSTCode')?.hasError('maxlength')">
+                      State GST Code must be exactly 2 digits
+                    </span>
+                    <span *ngIf="stateForm.get('stateGSTCode')?.hasError('pattern')">
+                      Only numeric values are allowed
+                    </span>
+                  </div>
+                </div>
+              </aside>
 
               <!-- Country -->
               <aside class="col-md-6">
@@ -88,7 +112,19 @@
                   </div>
                 </div>
               </aside>
-
+              <!-- Zone -->
+              <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                  <ng-select
+                    [items]="Zones"
+                    bindLabel="zone"
+                    bindValue="ZoneMasterSid"
+                    formControlName="ZoneMasterSid"
+                    [class.is-invalid]="stateForm.get('ZoneMasterSid')?.invalid && stateForm.get('ZoneMasterSid')?.touched"
+                  ></ng-select>
+                  <label class="input-label">Zone <span class="text-danger"></span></label>
+                </div>
+              </aside>
               <!-- Region -->
               <aside class="col-md-6">
                 <div class="custom-form-group">
@@ -131,8 +167,6 @@
                   <label class="input-label">Remarks</label>
                 </div>
               </aside>
-
-
 
             </div>
           </div>

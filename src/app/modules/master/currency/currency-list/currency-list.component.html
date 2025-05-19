@@ -1,5 +1,5 @@
 <div class="row">
-    <!-- <div class="col-12">
+    <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
             <div class="col-8 mx-auto">
                 <div class="rounded-3 p-2 bg-body-tertiary mb-2" data-bs-theme="light">
@@ -39,49 +39,6 @@
                 </div>
             </div>
         </div>
-    </div> -->
-     <div class="col-12">
-        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <div class="col-8 mx-auto">
-                <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
-                    <form class="d-flex align-items-center gap-2">
-                        <div class="form-outline col">
-                            <select  name="searchType" class="form-select">
-                                <option value="departmentName">Department Name</option>
-                                <option value="departmentCode">Department Code</option>
-                                <option value="departmentType">Department Type</option>
-                                <option value="ExportImport">Export/Import</option>
-                                <option value="FCLLCL">FCLLCL</option>
-                                <option value="status">Status</option>
-                            </select>
-                        </div>
-                        <div class="form-outline col">
-                            <input  name="filterValue" type="text" class="form-control"
-                                placeholder="Enter filter value">
-                            <i
-                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                        </div>
-
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" >
-                            <i class="fas fa-search"></i>
-                            Search
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80"
-                           >
-                            <i class="mdi mdi-plus"></i> Create
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" >
-                            <!-- <i class="mdi mdi-plus"></i> -->
-                            Report
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" >
-                            <!-- <i class="mdi mdi-plus"></i> -->
-                            Reset
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -90,17 +47,29 @@
         <table class="table table-hover align-middle no-wrap table-bordered">
             <thead>
                 <tr class="bg-info">
+                    <th class="bg-transparent text-light" scope="col">Action</th>
                     <th class="bg-transparent text-light" scope="col">Currency Name</th>
                     <th class="bg-transparent text-light" scope="col">Currency Code</th>
                     <th class="bg-transparent text-light" scope="col">Symbol</th>
                     <th class="bg-transparent text-light" scope="col">Unit</th>
                     <th class="bg-transparent text-light" scope="col">Sub Unit</th>
                     <th class="bg-transparent text-light" scope="col">Status</th>
-                    <th class="bg-transparent text-light" scope="col">Action</th>
+                    
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let item of currencyList; let i = index; trackBy: trackByIndex">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <a class="text-info mx-2" [routerLink]="['/master/currency/entry/', item.CurrencyMasterSid]">
+                                <i-feather class="feather-sm" name="eye"></i-feather>
+                            </a>
+                            <a class="text-danger mx-2 ps-3 border-start" 
+                               (click)="deleteCurrency(item.CurrencyMasterSid)">
+                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                            </a>
+                        </div>
+                    </td>
                     <td>
                         <div class="text-truncate">{{item.currencyName}}</div>
                     </td>
@@ -119,17 +88,7 @@
                     <td>
                         <div class="text-truncate">{{getStatusText(item.status)}}</div>
                     </td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <a class="text-info mx-2" [routerLink]="['/master/currency/entry/', item.CurrencyMasterSid]">
-                                <i-feather class="feather-sm" name="eye"></i-feather>
-                            </a>
-                            <a class="text-danger mx-2 ps-3 border-start" 
-                               (click)="deleteCurrency(item.CurrencyMasterSid)">
-                                <i-feather name="trash-2" class="feather-sm"></i-feather>
-                            </a>
-                        </div>
-                    </td>
+                    
                 </tr>
             </tbody>
         </table>

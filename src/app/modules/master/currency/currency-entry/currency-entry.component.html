@@ -1,17 +1,17 @@
 <div class="row">
     <div class="col-12">
-        <div class="d-flex align-items-center gap-2 mb-3">
-            <button class="button" (click)="goBack()">
-              &larr; Back
-            </button>
-            <button type="button" class="btn btn-sm btn-light-secondary ms-auto" (click)="resetForm()">
-                <i-feather name="rotate-ccw" class="feather-sm me-1"></i-feather> Reset
-            </button>
-            <button type="submit" class="btn btn-sm btn-info" [disabled]="loading || btnDisable || currencyForm.invalid" (click)="onSubmit()">
-                <i-feather name="save" class="feather-sm me-1"></i-feather> Save
-            </button>
-        </div>
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <button type="submit" class="btn btn-sm btn-light-secondary" (click)="goBack()">
+            <i-feather name="corner-up-left" class="feather-sm me-1"></i-feather> Back
+        </button>
+        <button type="button" class="btn btn-sm btn-light-secondary ms-auto" (click)="resetForm()">
+            <i-feather name="rotate-ccw" class="feather-sm me-1"></i-feather> Reset
+        </button>
+        <button type="submit" class="btn btn-sm btn-info" [disabled]="loading || btnDisable || currencyForm.invalid" (click)="onSubmit()">
+            <i-feather name="save" class="feather-sm me-1"></i-feather> Save
+        </button>
     </div>
+</div>
   
     <div class="col-12">
         <div class="card">

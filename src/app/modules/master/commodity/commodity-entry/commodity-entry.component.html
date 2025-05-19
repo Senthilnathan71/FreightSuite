@@ -1,16 +1,15 @@
 <div class="row py-3">
     <div class="col-12">
         <div class="d-flex align-items-center gap-2 mb-3">
-            <button class="button" (click)="goBack()">
-              &larr; Back
-            </button>
-            <button type="button" class="btn btn-sm btn-light-secondary ms-auto" (click)="commodityForm.reset()">
-                <i-feather name="rotate-ccw" class="feather-sm me-1"></i-feather> Reset
-            </button>
+          <button type="submit" class="btn btn-sm btn-light-secondary" (click)="goBack()">
+            <i-feather name="corner-up-left" class="feather-sm me-1"></i-feather> Back
+        </button>
+            <button type="button" class="btn btn-sm btn-light-secondary ms-auto" (click)="resetForm()">
+    Reset
+</button>
             <button type="submit" class="btn btn-sm btn-info" 
-                    [disabled]="loading || commodityForm.invalid" 
+                    [disabled]="commodityForm.invalid" 
                     (click)="onSubmit()">
-                <i-feather name="save" class="feather-sm me-1"></i-feather> 
                 {{ isEditMode ? 'Update' : 'Save' }}
             </button>
         </div>
@@ -26,16 +25,16 @@
                                 <input type="text" id="commodityName" formControlName="CommodityName" class="custom-input-field sm"
                                     [class.is-invalid]="commodityForm.get('CommodityName')?.invalid && 
                                     (commodityForm.get('CommodityName')?.touched || commodityForm.get('CommodityName')?.dirty)">
-                                <label for="commodityName" class="input-label">Name <span class="text-danger">*</span></label>
+                                <label for="commodityName" class="input-label"> Commodity Name <span class="text-danger">*</span></label>
                                 <div *ngIf="commodityForm.get('CommodityName')?.invalid && 
                                            (commodityForm.get('CommodityName')?.touched || 
                                            commodityForm.get('CommodityName')?.dirty)" 
                                      class="invalid-feedback d-block">
-                                    <span *ngIf="commodityForm.get('CommodityName')?.hasError('required')">
-                                        Name is required
+                                     <span *ngIf="commodityForm.get('CommodityName')?.hasError('pattern')">
+                                        Please enter a valid Commodity Name (letters only).
                                     </span>
                                     <span *ngIf="commodityForm.get('CommodityName')?.hasError('maxlength')">
-                                        Maximum 50 characters
+                                        Maximum 50 characters allowed.
                                     </span>
                                 </div>
                             </div>
@@ -46,16 +45,19 @@
                                 <input type="text" id="commodityCode" formControlName="CommodityCode" class="custom-input-field sm"
                                     [class.is-invalid]="commodityForm.get('CommodityCode')?.invalid && 
                                     (commodityForm.get('CommodityCode')?.touched || commodityForm.get('CommodityCode')?.dirty)">
-                                <label for="commodityCode" class="input-label">Code <span class="text-danger">*</span></label>
+                                <label for="commodityCode" class="input-label">Commodity Code <span class="text-danger">*</span></label>
                                 <div *ngIf="commodityForm.get('CommodityCode')?.invalid && 
                                            (commodityForm.get('CommodityCode')?.touched || 
                                            commodityForm.get('CommodityCode')?.dirty)" 
                                      class="invalid-feedback d-block">
                                     <span *ngIf="commodityForm.get('CommodityCode')?.hasError('required')">
-                                        Code is required
+                                        Commodity Code is required
+                                    </span> 
+                                    <span *ngIf="commodityForm.get('CommodityCode')?.hasError('pattern')">
+                                        Commodity Code must be 6-12 characters (letters and numbers).\
                                     </span>
                                     <span *ngIf="commodityForm.get('CommodityCode')?.hasError('maxlength')">
-                                        Maximum 10 characters
+                                        Maximum 10 characters allowed.
                                     </span>
                                 </div>
                             </div>

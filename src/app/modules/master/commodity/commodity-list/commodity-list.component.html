@@ -42,16 +42,29 @@
         <table class="table table-hover align-middle no-wrap table-bordered">
             <thead>
                 <tr class="bg-info">
+                    <th class="bg-transparent text-light" scope="col">Action</th>
                     <th class="bg-transparent text-light" scope="col">Commodity Name</th>
                     <th class="bg-transparent text-light" scope="col">Commodity Code</th>
                     <th class="bg-transparent text-light" scope="col">Type</th>
                     <th class="bg-transparent text-light" scope="col">HS Code</th>
                     <th class="bg-transparent text-light" scope="col">Status</th>
-                    <th class="bg-transparent text-light" scope="col">Action</th>
+                    
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let item of commodityList; let i = index">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <a class="text-info mx-2"
+                                [routerLink]="['/master/commodity/entry/', item.CommodityMasterSid]">
+                                <i-feather class="feather-sm" name="eye"></i-feather>
+                            </a>
+                            <a class="text-danger mx-2 ps-3 border-start"
+                                (click)="deleteCommodityById(item.CommodityMasterSid)">
+                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                            </a>
+                        </div>
+                    </td>
                     <td>
                         <div class="text-truncate">{{item.CommodityName}}</div>
                     </td>
@@ -74,18 +87,7 @@
                             {{ item.status === 'A' ? 'Active' : 'Inactive' }}
                         </span>
                     </td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <a class="text-info mx-2"
-                                [routerLink]="['/master/commodity/entry/', item.CommodityMasterSid]">
-                                <i-feather class="feather-sm" name="eye"></i-feather>
-                            </a>
-                            <a class="text-danger mx-2 ps-3 border-start"
-                                (click)="deleteCommodityById(item.CommodityMasterSid)">
-                                <i-feather name="trash-2" class="feather-sm"></i-feather>
-                            </a>
-                        </div>
-                    </td>
+                    
                 </tr>
             </tbody>
         </table>

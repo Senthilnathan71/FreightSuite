@@ -8,7 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MasterService } from '../../master.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { Subject } from 'rxjs';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-state-list',
@@ -26,17 +26,16 @@ import { Subject } from 'rxjs';
 export class StateListComponent {
   searchType = 'stateName';
   filterValue = '';
-  results: any[] = [];
   stateList: any[] = [];
+  allStates: any[] = [];
   searchPerformed = false;
   loading: boolean = false;
   countryOptions: any[] = [];
-  countryInput$ = new Subject<string>();
 
   // pagination
   page = 1;
-  pageSize = 5;
-  totalLengthOfCollection: number;
+  pageSize = 10;
+  totalLengthOfCollection: number = 0;
 
   constructor(
     private masterService: MasterService,
@@ -45,41 +44,81 @@ export class StateListComponent {
     private appSettingService: AppSettingsService
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.loadCountries();
+  }
+
+  loadCountries() {
+    this.loading = true;
+    this.masterService.getAllCountry().subscribe({
+      next: (res: any) => {
+        this.countryOptions = res.data || res;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading countries:', err);
+        this.loading = false;
+      }
+    });
+  }
 
   search() {
+    this.loading = true;
     const payload = {
       searchType: this.searchType,
-      filterValue: this.searchType === 'status'
+      filterValue: this.searchType === 'status' 
         ? this.filterValue === 'Active' ? 'A' : 'I'
-        : this.filterValue,
-    }
+        : this.filterValue
+    };
 
-    this.masterService.searchState(payload).subscribe((res: any) => {
-      this.results = res;
-      this.searchPerformed = true;
-      this.updatePaginatedData();
-      this.totalLengthOfCollection = this.results.length || 0;
+    this.masterService.searchState(payload).subscribe({
+      next: (res: any) => {
+        this.allStates = (res.data || res).map(state => {
+          const country = this.countryOptions.find(c => c.CountryMasterSid === state.CountryMasterSid);
+          return {
+            ...state,
+            countryName: country ? country.countryName : 'N/A'
+          };
+        });
+        
+        this.stateList = [...this.allStates];
+        this.totalLengthOfCollection = this.stateList.length;
+        this.searchPerformed = true;
+        this.page = 1;
+        this.updatePaginatedData();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Search error:', err);
+        this.loading = false;
+      }
     });
   }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.stateList = this.results.slice(startIndex, endIndex);
+    this.stateList = this.allStates.slice(startIndex, endIndex);
   }
 
-  trackByIndex(index: number, item: any): number {
-    return index;
+  trackByStateId(index: number, item: any): number {
+    return item.StateMasterSid;
   }
 
   deleteState(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        this.masterService.softDeleteState(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess("Deleted!");
-          this.search(); // Refresh the current search results
+        this.loading = true;
+        this.masterService.softDelete(id).subscribe({
+          next: (resp: any) => {
+            this.appSettingService.showSuccess("State deleted successfully!");
+            this.search(); // Refresh search results
+          },
+          error: (err) => {
+            console.error('Delete error:', err);
+            this.loading = false;
+          }
         });
       }
     });
@@ -90,16 +129,12 @@ export class StateListComponent {
   }
 
   resetPage() {
-    this.stateList = [];
-    this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
     this.filterValue = '';
     this.searchType = 'stateName';
     this.page = 1;
-  }
-
-  report() {
-    // Implement report functionality
+    this.searchPerformed = false;
+    this.stateList = [];
+    this.totalLengthOfCollection = 0;
   }
 
   getStatusClass(status: string): string {

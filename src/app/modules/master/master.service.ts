@@ -19,6 +19,9 @@ import { Currency } from '../crm-mobile/Interfaces/currency.interface';
   providedIn: 'root',
 })
 export class MasterService {
+  searchCountries(term: string): any {
+    throw new Error('Method not implemented.');
+  }
   constructor(private http: HttpClient) { }
 
 
@@ -520,7 +523,7 @@ export class MasterService {
     )
   }
 
-  softDeleteState(id: number) {
+  softDelete(id: number) {
     return this.http.delete<{ data: any }>(`state/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
@@ -919,7 +922,7 @@ export class MasterService {
     );
   }
 
-  softDelete(id: number) {
+  softDeleteCurrency(id: number) {
     return this.http.delete<{ data: any }>(`currency/delete/${id}`).pipe(
     );
   }

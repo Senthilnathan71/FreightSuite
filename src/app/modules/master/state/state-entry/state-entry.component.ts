@@ -8,6 +8,7 @@ import { State } from 'src/app/modules/crm-mobile/Interfaces/state.interface';
 import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
 
 @Component({
   selector: 'app-state-entry',
@@ -27,6 +28,7 @@ export class StateEntryComponent implements OnInit {
   btnDisable = false;
   stateId: number;
   countries: Country[] = [];
+  Zones: Zone[] = [];
   
   statusOptions = [
     { id: 'A', name: 'Active' },
@@ -45,6 +47,7 @@ export class StateEntryComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCountries();
+    this.loadzones();
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.stateId = +params['id'];
@@ -58,7 +61,9 @@ export class StateEntryComponent implements OnInit {
     this.stateForm = this.fb.group({
       stateName: ['', [Validators.required, Validators.maxLength(100), this.alphaSpaceValidator()]],
       stateCode: ['', [Validators.required, Validators.maxLength(2), this.alphaValidator()]],
+      stateGSTCode: ['', [Validators.required, Validators.maxLength(2), Validators.pattern('^[0-9]*$')]],
       CountryMasterSid: ['', Validators.required],
+      // ZoneMasterSid: [''],
       region: [''],
       status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
       Remarks: ['']
@@ -98,6 +103,11 @@ export class StateEntryComponent implements OnInit {
       if (!pattern.test(event.key)) {
         event.preventDefault();
       }
+    } else if (field === 'stateGSTCode') {
+      const pattern = /[0-9]/;
+      if (!pattern.test(event.key)) {
+        event.preventDefault();
+      }
     }
   }
 
@@ -113,6 +123,18 @@ export class StateEntryComponent implements OnInit {
     });
   }
 
+  loadzones() {
+    this.masterService.getAllZones().subscribe({
+      next: (resp: any) => {
+        this.Zones = resp.data || resp;
+      },
+      error: (err) => {
+        console.error('Error loading Zones:', err);
+        this.appSettingService.showError('Failed to load Zones');
+      }
+    });
+  }
+
   getStateById(id: number) {
     this.stateForm.reset();
     this.masterService.getStateById(id).subscribe({
@@ -120,7 +142,9 @@ export class StateEntryComponent implements OnInit {
         this.stateForm.patchValue({
           stateName: state.stateName,
           stateCode: state.stateCode,
+          stateGSTCode: state.stateGSTCode,
           CountryMasterSid: state.CountryMasterSid,
+          // ZoneMasterSid: state.ZoneMasterSid || '',
           region: state.region || '',
           status: state.status,
           Remarks: state.Remarks || ''
@@ -144,6 +168,7 @@ export class StateEntryComponent implements OnInit {
     const payload = {
       ...this.stateForm.value,
       CountryMasterSid: Number(this.stateForm.value.CountryMasterSid),
+      // ZoneMasterSid: Number(this.stateForm.value.ZoneMasterSid),
       status: this.isEditMode ? this.stateForm.value.status : 'A'
     };
   
@@ -194,7 +219,9 @@ export class StateEntryComponent implements OnInit {
       this.stateForm.reset({
         stateName: '',
         stateCode: '',
+        stateGSTCode: '',
         CountryMasterSid: '',
+        ZoneMasterSid: '',
         region: '',
         status: 'A',
         Remarks: ''

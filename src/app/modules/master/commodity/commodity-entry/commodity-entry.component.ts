@@ -25,8 +25,6 @@ export class CommodityEntryComponent implements OnInit {
   commodityForm: FormGroup;
   isEditMode = false;
   commodityId: number;
-  loading = false;
-  btnDisable = false;
 
   statusOptions = [
     { id: 'A', name: 'Active' },
@@ -61,12 +59,27 @@ export class CommodityEntryComponent implements OnInit {
         this.commodityForm.get('status')?.enable();
       }
     });
+
+    // Add input filtering for CommodityName
+    this.commodityForm.get('CommodityName')?.valueChanges.subscribe(value => {
+      if (value) {
+        // Remove any non-alphabetic characters and extra spaces
+        const filteredValue = value.replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trim();
+        if (filteredValue !== value) {
+          this.commodityForm.get('CommodityName')?.setValue(filteredValue, { emitEvent: false });
+        }
+      }
+    });
   }
 
   initForm() {
     this.commodityForm = this.fb.group({
-      CommodityName: ['', [Validators.required, Validators.maxLength(50)]],
-      CommodityCode: ['', [Validators.required, Validators.maxLength(10)]],
+      CommodityName: ['', [
+        Validators.required, 
+        Validators.maxLength(100),
+        Validators.pattern(/^[a-zA-Z\s]+$/) // Only alphabets and spaces allowed
+      ]],
+      CommodityCode: ['', [Validators.required, Validators.maxLength(10), Validators.pattern(/^[a-zA-Z0-9]{6,12}$/)]],
       CommodityNameLL: ['', [Validators.maxLength(50)]],
       CommodityType: ['', Validators.required],
       UOMSid: [null],
@@ -77,7 +90,6 @@ export class CommodityEntryComponent implements OnInit {
       FlashPoint: ['', [Validators.maxLength(5)]],
       status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
       Remarks: ['', [Validators.maxLength(300)]],
-      // Add attribute controls
       Timber: [false],
       Flamable: [false],
       Perishable: [false],
@@ -87,24 +99,20 @@ export class CommodityEntryComponent implements OnInit {
   }
 
   loadCommodity(id: number) {
-    this.loading = true;
     this.masterService.getCommodityById(id).subscribe({
       next: (commodity) => {
         this.commodityForm.patchValue({
           ...commodity,
           UOMSid: commodity.UOMSid ? commodity.UOMSid.toString() : null,
-          // Patch attribute values
           Timber: commodity.Timber || false,
           Flamable: commodity.Flamable || false,
           Perishable: commodity.Perishable || false,
           Haz: commodity.Haz || false,
           ContainerVentRequired: commodity.ContainerVentRequired || false
         });
-        this.loading = false;
       },
       error: (err) => {
         console.error(err);
-        this.loading = false;
         this.appSettingService.showError('Failed to load commodity data');
       }
     });
@@ -115,9 +123,7 @@ export class CommodityEntryComponent implements OnInit {
       this.commodityForm.markAllAsTouched();
       return;
     }
-  
-    this.btnDisable = true;
-    this.loading = true;
+    
     const formValue = this.commodityForm.value;
     
     const payload = {
@@ -133,8 +139,6 @@ export class CommodityEntryComponent implements OnInit {
   
     operation.subscribe({
       next: (resp: any) => {
-        this.loading = false;
-        this.btnDisable = false;
         const message = this.isEditMode 
           ? 'Commodity updated successfully!' 
           : 'Commodity created successfully!';
@@ -150,9 +154,6 @@ export class CommodityEntryComponent implements OnInit {
   
   private handleError(err: any) {
     console.error(err);
-    this.loading = false;
-    this.btnDisable = false;
-    
     let errorMessage = `Error ${this.isEditMode ? 'updating' : 'creating'} commodity`;
     
     if (err.error?.message) {

@@ -51,10 +51,20 @@ export class CityListComponent {
   loadCountryAndStateData() {
     forkJoin({
       countries: this.masterService.getAllCountry(),
-      states: this.masterService.getAllState()
-    }).subscribe(({ countries, states }) => {
-      this.countryList = countries.data;
+      states: this.masterService.getAllState(),
+      city: this.masterService.getAllCity()
+    }).subscribe(({ countries, states, city }) => {
+      this.countryList = countries.data;  // assuming res.data format
       this.stateList = states.data;
+      this.cityList = city.map(city => {
+        const country = this.countryList.find(c => c.CountryMasterSid === city.CountryMasterSid);
+        const state = this.stateList.find(s => s.StateMasterSid === city.StateMasterSid);
+        return {
+          ...city,
+          countryName: country ? country.countryName : '',
+          stateName: state ? state.stateName : ''
+        };
+      });
     });
   }
 
