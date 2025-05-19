@@ -47,7 +47,7 @@ export class PostMasterListComponent implements OnInit {
     private router: Router,
     private dialog: MatDialog,
     private appSettingService: AppSettingsService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadMasterData();
@@ -84,12 +84,12 @@ export class PostMasterListComponent implements OnInit {
       const items = Array.isArray(res) ? res : res.data || [];
       this.results = items.map((port: any) => {
         const country = this.countryOptions.find(c => c.CountryMasterSid === port.CountryMasterSid);
-        const sector  = this.sectorOptions.find(s => s.SectorMasterSid === port.SectorMasterSid);
+        const sector = this.sectorOptions.find(s => s.SectorMasterSid === port.SectorMasterSid);
 
         return {
           ...port,
           countryName: country?.countryName || '—',
-          sectorName: sector?.sectorName   || '—',
+          sectorName: sector?.sectorName || '—',
           statusText: port.status === 'A' ? 'Active' : 'Cancelled'
         };
       });
@@ -135,4 +135,5 @@ export class PostMasterListComponent implements OnInit {
     this.portList = [];
     this.totalLengthOfCollection = 0;
   }
+  report() { }
 }

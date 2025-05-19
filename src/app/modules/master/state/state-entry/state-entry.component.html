@@ -1,0 +1,176 @@
+<div class="container-fluid">
+  <!-- Form -->
+  <form [formGroup]="stateForm" (ngSubmit)="onSubmit()">
+    <div class="row">
+      <!-- Top buttons -->
+      <div class="col-12">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <button type="submit" class="btn btn-sm btn-info" [disabled]="btnDisable || stateForm.invalid" (click)="onSubmit()">
+          <!-- <button type="submit" class="btn btn-sm btn-info"> -->
+            {{ isEditMode ? 'Update' : 'Create' }}
+          </button>
+          <button type="button" class="btn btn-sm btn-info" (click)="resetForm()">
+            Reset
+          </button>
+            <button type="button" class="btn btn-sm btn-info" (click)="goBack()">
+              Back
+            </button>
+        </div>
+      </div>
+
+
+      <!-- Left card section -->
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="row">
+
+              <!-- Name -->
+              <aside class="col-md-12">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    id="stateName"
+                    formControlName="stateName"
+                    class="custom-input-field sm"
+                    (keypress)="onKeyPress($event, 'stateName')"
+                    [class.is-invalid]="stateForm.get('stateName')?.invalid && stateForm.get('stateName')?.touched"/>
+                  <label for="stateName" class="input-label">State Name <span class="text-danger">*</span></label>
+                  <!-- Validation messages -->
+                  <div *ngIf="stateForm.get('stateName')?.touched && stateForm.get('stateName')?.errors" class="invalid-feedback d-block">
+                    <span *ngIf="stateForm.get('stateName')?.hasError('required')">State name is required</span>
+                    <span *ngIf="stateForm.get('stateName')?.hasError('invalidAlphaSpace')">
+                      Only alphabetic characters and spaces are allowed
+                    </span>
+                    <span *ngIf="stateForm.get('stateName')?.hasError('maxlength')">
+                      Maximum 100 characters allowed
+                    </span>
+                  </div>
+                </div>
+              </aside>
+
+              <!-- Code -->
+              <aside class="col-md-6">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    id="stateCode"
+                    formControlName="stateCode"
+                    class="custom-input-field sm"
+                    (keypress)="onKeyPress($event, 'stateCode')"
+                    [class.is-invalid]="stateForm.get('stateCode')?.invalid && stateForm.get('stateCode')?.touched"
+                  />
+                  <label for="stateCode" class="input-label">State Code <span class="text-danger">*</span></label>
+                  <div *ngIf="stateForm.get('stateCode')?.touched && stateForm.get('stateCode')?.errors" class="invalid-feedback">
+                    <span *ngIf="stateForm.get('stateCode')?.hasError('required')">Code is required</span>
+                    <span *ngIf="stateForm.get('stateCode')?.hasError('maxlength')">
+                      State code must be exactly 2 characters
+                    </span>
+                    <span *ngIf="stateForm.get('stateCode')?.hasError('invalidAlpha')">
+                      Only alphabetic characters are allowed (A-Z, a-z)
+                    </span>
+                  </div>
+                </div>
+              </aside>
+              <!-- GST Code -->
+              <aside class="col-md-6">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    id="stateGSTCode"
+                    formControlName="stateGSTCode"
+                    class="custom-input-field sm"
+                    (keypress)="onKeyPress($event, 'stateGSTCode')"
+                    [class.is-invalid]="stateForm.get('stateGSTCode')?.invalid && stateForm.get('stateGSTCode')?.touched"
+                  />
+                  <label for="stateGSTCode" class="input-label">State GST Code <span class="text-danger">*</span></label>
+                  <div *ngIf="stateForm.get('stateGSTCode')?.touched && stateForm.get('stateGSTCode')?.errors" class="invalid-feedback">
+                    <span *ngIf="stateForm.get('stateGSTCode')?.hasError('required')">GST Code is required</span>
+                    <span *ngIf="stateForm.get('stateGSTCode')?.hasError('maxlength')">
+                      State GST Code must be exactly 2 digits
+                    </span>
+                    <span *ngIf="stateForm.get('stateGSTCode')?.hasError('pattern')">
+                      Only numeric values are allowed
+                    </span>
+                  </div>
+                </div>
+              </aside>
+
+              <!-- Country -->
+              <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                  <ng-select
+                    [items]="countries"
+                    bindLabel="countryName"
+                    bindValue="CountryMasterSid"
+                    formControlName="CountryMasterSid"
+                    [class.is-invalid]="stateForm.get('CountryMasterSid')?.invalid && stateForm.get('CountryMasterSid')?.touched"
+                  ></ng-select>
+                  <label class="input-label">Country <span class="text-danger">*</span></label>
+                  <div *ngIf="stateForm.get('CountryMasterSid')?.invalid && stateForm.get('CountryMasterSid')?.touched" class="invalid-feedback">
+                    Country is required
+                  </div>
+                </div>
+              </aside>
+              <aside class="col-md-4">
+    <div class="custom-form-group">
+        <select formControlName="ZoneMasterSid" class="form-select">
+            <option value="" disabled selected>Select Zone</option>
+            <option *ngFor="let option of zones" [value]="option.ZoneMasterSid">
+                {{ option.ZoneName  }}
+            </option>
+        </select>
+        <label for="text-input" class="input-label">Zone <span class="text-danger fw-bold">*</span></label>
+    </div>
+</aside>
+
+              <!-- Region -->
+              <aside class="col-md-6">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    id="region"
+                    formControlName="region"
+                    class="custom-input-field sm"
+                  />
+                  <label for="region" class="input-label">Region</label>
+                </div>
+              </aside>
+
+              <!-- Status -->
+              <aside class="col-md-6">
+                <div *ngIf="!isEditMode" class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" value="Active" readonly>
+                  <label class="input-label">Status</label>
+                </div>
+                
+                <div *ngIf="isEditMode" class="custom-form-group custom-form-group-select">
+                  <ng-select
+                    [items]="statusOptions"
+                    bindLabel="name"
+                    bindValue="id"
+                    formControlName="status"
+                  ></ng-select>
+                  <label class="input-label">Status</label>
+                </div>
+              </aside>
+
+              <!-- Remarks -->
+              <aside class="col-md-12">
+                <div class="custom-form-group">
+                  <textarea
+                    rows="1"
+                    class="input-field sm"
+                    formControlName="Remarks"
+                  ></textarea>
+                  <label class="input-label">Remarks</label>
+                </div>
+              </aside>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
