@@ -9,7 +9,7 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card h-100">
+        <div class="card">
             <div class="card-body">
                 <div class="row">
                     <aside class="col-md-8">
@@ -18,29 +18,35 @@
                                 formControlName="branchName" [onlyText]="100">
                             <label for="text-input" class="input-label">Branch Name <span
                                     class="text-danger">*</span></label>
-                        </div>
-                        <div *ngIf="branchForm.get('branchName')?.touched && branchForm.get('branchName')?.errors"
-                            class="position-relative text-danger" style="top: -10px;left:10px;">
-                            <small *ngIf="branchForm.get('branchName')?.hasError('required')">It is
-                                required</small>
-                            <small *ngIf=" branchForm.get('branchName')?.hasError('maxlength')">Maximum 100
-                                characters
-                                allowed</small>
+                            @if(branchForm.get('branchName')?.touched && branchForm.get('branchName')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('branchName')?.hasError('required')){
+                                <span>Branch Name is required</span>
+                                } @else if(branchForm.get('branchName')?.hasError('numberNotAllowed')){
+                                <span>Only Alphabets are allowed</span>
+                                }
+                                @else if(branchForm.get('branchName')?.hasError('maxlength')){
+                                <span>Max 100 characters</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="branchCode" [onlyText]="10">
+                                formControlName="branchCode" [textWithNumbers]="10">
                             <label for="text-input" class="input-label">Branch Code <span
                                     class="text-danger">*</span></label>
-                        </div>
-                        <div *ngIf="branchForm.get('branchCode')?.touched && branchForm.get('branchCode')?.errors"
-                            class="position-relative text-danger" style="top: -10px;left:10px;">
-                            <small *ngIf="branchForm.get('branchCode')?.hasError('required')" class="mb-5">It is
-                                required</small>
-                            <small *ngIf="branchForm.get('branchCode')?.hasError('maxlength')">Max 10
-                                characters</small>
+                            @if(branchForm.get('branchCode')?.touched && branchForm.get('branchCode')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('branchCode')?.hasError('required')){
+                                <span>Branch Code is required</span>
+                                } @else if(branchForm.get('branchCode')?.hasError('maxlength')){
+                                <span>Max 10 characters</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-12">
@@ -53,67 +59,77 @@
                             </select>
                             <label for="text-input" class="input-label">Company <span
                                     class="text-danger">*</span></label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('CompanyMasterSid')?.touched && branchForm.get('CompanyMasterSid')?.errors"
-                            class="position-relative text-danger" style="top: -10px;left:10px;">
-                            <small *ngIf="branchForm.get('CompanyMasterSid')?.hasError('required')">It is
-                                required</small>
+                            @if(branchForm.get('CompanyMasterSid')?.touched &&
+                            branchForm.get('CompanyMasterSid')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('CompanyMasterSid')?.hasError('required')){
+                                <span>Company is required</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="taxRegistrationNo" [onlyText]="50">
+                                formControlName="taxRegistrationNo" [textWithNumbers]="50">
                             <label for="text-input" class="input-label">Tax Registration No</label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('taxRegistrationNo')?.touched && branchForm.get('taxRegistrationNo')?.errors"
-                            class="position-relative text-danger" style="top: -10px;left:10px;">
-                            <small *ngIf="branchForm.get('taxRegistrationNo')?.hasError('maxlength')">Max 50
-                                characters</small>
+                            @if(branchForm.get('taxRegistrationNo')?.touched &&
+                            branchForm.get('taxRegistrationNo')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('taxRegistrationNo')?.hasError('maxlength')){
+                                <span>Max 50 characters</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="CISN" [onlyText]="50">
+                                formControlName="CISN" [textWithNumbers]="50">
                             <label for="text-input" class="input-label">CISN</label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('CISN')?.touched && branchForm.get('CISN')?.errors"
-                            class="position-relative text-danger" style="top: -10px;left:10px;">
-                            <small *ngIf="branchForm.get('CISN')?.hasError('maxlength')">Max 50
-                                characters</small>
+                            @if(branchForm.get('CISN')?.touched &&
+                            branchForm.get('CISN')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('CISN')?.hasError('maxlength')){
+                                <span>Max 50 characters</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-12">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="addressLine1" [onlyText]="500">
+                                formControlName="addressLine1" [textWithNumbers]="500">
                             <label for="text-input" class="input-label">Address 1 <span
                                     class="text-danger">*</span></label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('addressLine1')?.touched && branchForm.get('addressLine1')?.errors"
-                            class="position-relative text-danger" style="top: -10px;left:10px;">
-                            <small *ngIf="branchForm.get('addressLine1')?.hasError('required')">It is
-                                required</small>
-                            <small *ngIf="branchForm.get('addressLine1')?.hasError('maxlength')">Max 500
-                                characters</small>
+                            @if(branchForm.get('addressLine1')?.touched &&
+                            branchForm.get('addressLine1')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('addressLine1')?.hasError('required')){
+                                <span>Address Line 1 is required</span>
+                                } @else if(branchForm.get('addressLine1')?.hasError('maxlength')){
+                                <span>Max 500 characters</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-12">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="addressLine2" [onlyText]="500">
+                                formControlName="addressLine2" [textWithNumbers]="500">
                             <label for="text-input" class="input-label">Address 2 </label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('addressLine2')?.touched && branchForm.get('addressLine2')?.errors"
-                            class="position-relative text-danger" style="top: -10px;left:10px;">
-                            <small *ngIf="branchForm.get('addressLine2')?.hasError('maxlength')">Max 500
-                                characters</small>
+                            @if(branchForm.get('addressLine2')?.touched &&
+                            branchForm.get('addressLine2')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('addressLine2')?.hasError('maxlength')){
+                                <span>Max 500 characters</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
 
@@ -135,12 +151,14 @@
                                 </option>
                             </select>
                             <label for="text-input" class="input-label">City <span class="text-danger">*</span></label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('CityMasterSid')?.touched && branchForm.get('CityMasterSid')?.errors"
-                            class="position-relative text-danger" style="top: -10px;left:10px;">
-                            <small *ngIf="branchForm.get('CityMasterSid')?.hasError('required')">It is
-                                required</small>
+                            @if(branchForm.get('CityMasterSid')?.touched &&
+                            branchForm.get('CityMasterSid')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('CityMasterSid')?.hasError('required')){
+                                <span>City is required</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-6">
@@ -152,12 +170,14 @@
                                 </option>
                             </select>
                             <label for="text-input" class="input-label">State <span class="text-danger">*</span></label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('StateMasterSid')?.touched && branchForm.get('StateMasterSid')?.errors"
-                            class="position-relative text-danger" style="top: -10px;left:10px;">
-                            <small *ngIf="branchForm.get('StateMasterSid')?.hasError('required')">It is
-                                required</small>
+                            @if(branchForm.get('StateMasterSid')?.touched &&
+                            branchForm.get('StateMasterSid')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('StateMasterSid')?.hasError('required')){
+                                <span>State is required</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-6">
@@ -170,12 +190,14 @@
                             </select>
                             <label for="text-input" class="input-label">Country <span
                                     class="text-danger">*</span></label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('CountryMasterSid')?.touched && branchForm.get('CountryMasterSid')?.errors"
-                            class="position-relative text-danger" style="top: -10px;left:10px;">
-                            <small *ngIf="branchForm.get('CountryMasterSid')?.hasError('required')">It is
-                                required</small>
+                            @if(branchForm.get('CountryMasterSid')?.touched &&
+                            branchForm.get('CountryMasterSid')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('CountryMasterSid')?.hasError('required')){
+                                <span>Country is required</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-6">
@@ -184,25 +206,34 @@
                                 formControlName="postalCode" [onlyNumbers]="10">
                             <label for="text-input" class="input-label">Postal Code <span
                                     class="text-danger">*</span></label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('postalCode')?.touched && branchForm.get('postalCode')?.errors"
-                            class="position-relative text-danger" style="top: -10px;left:10px;">
-                            <small *ngIf="branchForm.get('postalCode')?.hasError('required')">This is required</small>
-                            <small *ngIf="branchForm.get('postalCode')?.hasError('maxlength')">Max 10 digits</small>
+                            @if(branchForm.get('postalCode')?.touched &&
+                            branchForm.get('postalCode')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('postalCode')?.hasError('required')){
+                                <span>Postal Code is required</span>
+                                } @else if(branchForm.get('postalCode')?.hasError('onlyNumbers')){
+                                <span>Only digits are allowed</span>
+                                }
+                                @else if(branchForm.get('postalCode')?.hasError('maxlength')){
+                                <span>Max 10 digits</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-12">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="webSite" [onlyText]="100">
+                                formControlName="webSite" [textWithNumbers]="100">
                             <label for="text-input" class="input-label">Website</label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('webSite')?.touched && branchForm.get('webSite')?.errors"
-                            class="position-relative text-danger" style="top: -10px;left:10px;">
-                            <small *ngIf="branchForm.get('webSite')?.hasError('maxlength')">Max 100
-                                Characters</small>
+                            @if(branchForm.get('webSite')?.touched &&
+                            branchForm.get('webSite')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('webSite')?.hasError('maxlength')){
+                                <span>Max 100 Characters</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-12">
@@ -210,31 +241,32 @@
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="phoneNumber" [onlyNumbers]="20">
                             <label for="text-input" class="input-label">Phone Number</label>
-                            <div *ngIf="branchForm.get('phoneNumber')?.touched && branchForm.get('phoneNumber')?.errors"
-                                class="invalid-feedback d-block">
-                                <small *ngIf="branchForm.get('phoneNumber')?.hasError('onlyNumbers')">Only digits are
-                                    allowed</small>
-                                <small *ngIf="branchForm.get('phoneNumber')?.hasError('maxlength')">Maximum 20 digits
-                                    allowed</small>
+                            @if(branchForm.get('phoneNumber')?.touched &&
+                            branchForm.get('phoneNumber')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('phoneNumber')?.hasError('onlyNumbers')){
+                                <span>Only digits are allowed</span>
+                                }
+                                @else if(branchForm.get('phoneNumber')?.hasError('maxlength')){
+                                <span>Max 20 digits</span>
+                                }
                             </div>
-
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-12">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="email" [onlyText]="100">
+                                formControlName="email">
                             <label for="text-input" class="input-label">Email </label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('email')?.touched && branchForm.get('email')?.errors"
-                            class="invalid-feedback d-block">
-                            <small *ngIf="branchForm.get('email')?.errors?.['email']">
-                                Invalid email format
-                            </small>
-                            <small *ngIf="branchForm.get('email')?.errors?.['maxlength']">
-                                Email must be at most 100 characters
-                            </small>
+                            @if(branchForm.get('email')?.touched &&
+                            branchForm.get('email')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('email')?.errors?.['email']){
+                                <span>Invalid Email Format</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                 </div>
@@ -255,36 +287,44 @@
                             </select>
                             <label for="text-input" class="input-label">Currency <span
                                     class="text-danger">*</span></label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('CurrencyMasterSid')?.touched && branchForm.get('CurrencyMasterSid')?.errors"
-                            class="position-relative text-danger" style="top: -10px;left:10px;">
-                            <small *ngIf="branchForm.get('CurrencyMasterSid')?.hasError('required')">It is
-                                required</small>
+                            @if(branchForm.get('CurrencyMasterSid')?.touched &&
+                            branchForm.get('CurrencyMasterSid')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('CurrencyMasterSid')?.hasError('required')){
+                                <span>Currency is required</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="timeZone" [onlyText]="6">
+                                formControlName="timeZone" [textWithNumbers]="6">
                             <label for="text-input" class="input-label">Time Zone </label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('timeZone')?.touched && branchForm.get('timeZone')?.errors"
-                            class="invalid-feedback d-block">
-                            <small *ngIf="branchForm.get('timeZone')?.hasError('maxlength')">Max 6 Characters</small>
+                            @if(branchForm.get('timeZone')?.touched &&
+                            branchForm.get('timeZone')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('timeZone')?.hasError('maxlength')){
+                                <span>Max 6 Characters</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-12">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="remarks" [onlyText]="500">
+                                formControlName="remarks" [textWithNumbers]="500">
                             <label for="text-input" class="input-label">Remarks </label>
-
-                        </div>
-                        <div *ngIf="branchForm.get('remarks')?.touched && branchForm.get('remarks')?.errors"
-                            class="invalid-feedback d-block">
-                            <small *ngIf="branchForm.get('remarks')?.hasError('maxlength')">Max 500 Characters</small>
+                            @if(branchForm.get('remarks')?.touched &&
+                            branchForm.get('remarks')?.invalid){
+                            <div class="error-message">
+                                @if(branchForm.get('remarks')?.hasError('maxlength')){
+                                <span>Max 500 Characters</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-12">

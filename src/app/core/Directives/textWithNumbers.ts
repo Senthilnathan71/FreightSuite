@@ -3,35 +3,25 @@ import { NgControl } from '@angular/forms';
 
 @Directive({
     standalone: true,
-    selector: '[onlyText]'
+    selector: '[textWithNumbers]'
 })
-export class OnlyTextDirective {
-    @Input() onlyText: number | undefined; // Max length
+export class TextWithNumbersDirective {
+    @Input() textWithNumbers: number | undefined; // Max length
 
     constructor(private el: ElementRef, @Optional() private control: NgControl) { }
 
     @HostListener('keydown', ['$event'])
     onKeyDown(event: KeyboardEvent) {
-        const allowedKeys = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab', 'Delete', ' '];
+        const allowedKeys = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab', 'Delete'];
 
         // Allow navigation keys and space (space allowed inside)
         if (allowedKeys.includes(event.key)) return;
 
-        // Block numeric characters (0-9)
-        if (/^[0-9]$/.test(event.key)) {
-            event.preventDefault();
-            this.setValidationError('numberNotAllowed');
-            return;
-        }
+        // Allow all other characters - no blocking
 
-        // Allow only letters (a-z, A-Z)
-        if (!/^[a-zA-Z]$/.test(event.key)) {
-            event.preventDefault();
-            return;
-        }
-
+        // But check max length to block input if needed
         const currentValue: string = this.el.nativeElement.value;
-        const maxLength = this.onlyText ?? Infinity;
+        const maxLength = this.textWithNumbers ?? Infinity;
 
         this.clearErrors();
 
@@ -53,14 +43,13 @@ export class OnlyTextDirective {
     }
 
     private validateAndCorrect() {
-        const maxLength = this.onlyText ?? Infinity;
+        const maxLength = this.textWithNumbers ?? Infinity;
         let value: string = this.el.nativeElement.value;
 
-        // Remove any non-letters (including numbers and symbols), but allow space
-        value = value.replace(/[^a-zA-Z\s]/g, '');
+        // Remove leading spaces
+        value = value.replace(/^\s+/, '');
 
-        // Trim leading and trailing spaces
-        value = value.trimStart();
+        // Trim trailing spaces
 
         // Enforce max length
         if (value.length > maxLength) {
@@ -89,7 +78,7 @@ export class OnlyTextDirective {
         if (this.control?.control) {
             const errors = { ...(this.control.control.errors || {}) };
             delete errors['maxlength'];
-            delete errors['numberNotAllowed'];
+            // You can delete other error keys if you add more
             if (Object.keys(errors).length === 0) {
                 this.control.control.setErrors(null);
             } else {

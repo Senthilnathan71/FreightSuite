@@ -1,99 +1,65 @@
-<div class="row py-3" [formGroup]="inputForm">
+<div class="row py-3">
   <div class="col-12">
     <div class="d-flex align-items-center gap-2 mb-3">
-      <!-- <button class="btn btn-sm btn-light-secondary ms-auto">Edit</button> -->
-      <button class="btn btn-sm btn-info" (click)="savePackageType()">
-        {{ packageMasterSid ? "Update" : "Create" }}
+      <button class="btn btn-sm btn-light-secondary ms-auto" (click)="navigateBack()">
+        <i-feather name="corner-up-left" class="feather-sm me-1"></i-feather> Back
+      </button>
+      <button class="btn btn-sm btn-info" (click)="savePackageType()" [disabled]="inputForm.invalid">
+        <i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> {{isEditMode ?'Update':'Save'}}
       </button>
     </div>
   </div>
-  <div class="col-md-6">
+  <div class="col-md-12"  [formGroup]="inputForm">
     <div class="card h-100">
       <div class="card-body">
         <div class="row">
-          <!-- <h6 class="card-title mb-0">Basic Info</h6> -->
-          <aside class="col-md-6">
-            <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                formControlName="PackageName" />
-              <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
-            </div>
-          </aside>
-          <aside class="col-md-6">
-            <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                formControlName="PackageCode" />
-              <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
-            </div>
-          </aside>
-          <!-- <aside class="col-md-8">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="HsCode">
-                            <label for="text-input" class="input-label">Arabic Name <span
-                                    class="text-danger">*</span></label>
-
-                        </div>
-                    </aside> -->
           <aside class="col-md-4">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                formControlName="status" />
+                formControlName="PackageName" [textWithNumbers]="100" />
+              <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
+              @if(inputForm.get('PackageName')?.touched && inputForm.get('PackageName')?.invalid){
+                <div class="error-message">
+                  @if(inputForm.get('PackageName')?.hasError('required')){
+                    <span>Package Name is required</span>
+                  } @else if(inputForm.get('PackageName')?.hasError('maxlength')){
+                    <span>Max 100 Characters</span>
+                  }
+                </div>
+              }
+            </div>
+          </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="PackageCode" [textWithNumbers]="3"/>
+              <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
+              @if(inputForm.get('PackageCode')?.touched && inputForm.get('PackageCode')?.invalid){
+                <div class="error-message">
+                  @if(inputForm.get('PackageCode')?.hasError('required')){
+                    <span>Package Code is required</span>
+                  } @else if(inputForm.get('PackageCode')?.hasError('maxlength')){
+                    <span>Max 3 Characters</span>
+                  }
+                </div>
+              }
+            </div>
+          </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              @if(isEditMode){
+                            <select name="status" class="form-select" formControlName="status" id="text-input">
+                                <option value="Active">Active</option>
+                                <option value="Invalid">Invalid</option>
+                                <option value="Block">Block</option>
+                            </select>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
+                                id="text-input" readonly>
+                            }
               <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
             </div>
           </aside>
-          <!-- <aside class="col-md-12 pt-2">
-                        <div class="custom-form-group">
-                            <textarea id="" placeholder="" rows="" class="input-field sm"
-                                formControlName="Remarks"></textarea>
-                            <label for="text-input" class="input-label">Remarks </label>
-                        </div>
-                    </aside> -->
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6">
-    <div class="card h-100">
-      <div class="card-body">
-        <div class="row">
-          <!-- <h6 class="card-title mb-0">Basic Info 2</h6> -->
-          <!-- <aside class="col-md-12">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="MinTemp">
-                            <label for="text-input" class="input-label">Malaysia EDI <span
-                                    class="text-danger">*</span></label>
-
-                        </div>
-                    </aside>
-                    <aside class="col-md-12">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Max Temp">
-                            <label for="text-input" class="input-label">India EDI <span
-                                    class="text-danger">*</span></label>
-
-                        </div>
-                    </aside>
-                    <aside class="col-md-12">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Status">
-                            <label for="text-input" class="input-label">Srilanka EDI <span
-                                    class="text-danger">*</span></label>
-
-                        </div>
-                    </aside>
-                    <aside class="col-md-12">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Status">
-                            <label for="text-input" class="input-label">UAE EDI <span
-                                    class="text-danger">*</span></label>
-
-                        </div>
-                    </aside> -->
         </div>
       </div>
     </div>

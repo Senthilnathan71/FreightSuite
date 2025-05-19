@@ -34,7 +34,7 @@ export class CityListComponent {
 
   // pagination
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   totalLengthOfCollection: number;
 
   constructor(

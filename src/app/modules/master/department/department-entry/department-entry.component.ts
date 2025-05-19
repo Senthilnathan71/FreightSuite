@@ -5,6 +5,9 @@ import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 
 @Component({
   selector: 'app-department-entry',
@@ -14,6 +17,9 @@ import { CommonModule } from '@angular/common';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    OnlyNumbersDirective,
+    OnlyTextDirective,
+    TextWithNumbersDirective,
   ],
   templateUrl: './department-entry.component.html',
   styleUrl: './department-entry.component.scss'
@@ -28,7 +34,6 @@ export class DepartmentEntryComponent {
   countryList: any
   stateList: any
   statusList = ["Active", "Invalid", "Block"]
-  Status: any
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -59,7 +64,7 @@ export class DepartmentEntryComponent {
       departmentType: ['', [Validators.required]],
       ExportImport: ['', [Validators.required]],
       FCLLCL: ['', [Validators.required]],
-      Status: ['']
+      Status: ['Active']
     });
   }
 
@@ -77,11 +82,11 @@ export class DepartmentEntryComponent {
       const payload = (this.isEditMode) ? {
         ...formValue,
         ...updatedBy,
-        Status: this.Status === "A" ? "A" : "I"
+        Status: formValue.Status === "Active" ? "A" : "I"
       } : {
         ...formValue,
         ...createdBy,
-        Status: formValue.Status === "Active" ? "A" : "C"
+        Status: formValue.Status === "Active" ? "A" : "I"
       };
 
 
@@ -141,13 +146,9 @@ export class DepartmentEntryComponent {
   loadDepartmentData(deptId: number) {
     this.masterService.getDepartmentById(deptId).subscribe(
       (deptData: any) => {
-        this.Status = deptData.Status
-        console.log(deptData)
-        // Convert API status (A/IA) to display status (Active/Inactive)
-        const formattedStatus = this.statusMap[deptData.Status] || '';
         this.departmentForm.patchValue({
           ...deptData,
-          Status: formattedStatus
+          Status: deptData.Status === 'A' ? 'Active' : 'Invalid'
         },
         );
       },

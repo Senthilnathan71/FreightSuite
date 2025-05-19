@@ -8,6 +8,7 @@ import { Vessel } from 'src/app/modules/crm-mobile/Interfaces/vessel.interface';
 import { CommonModule } from '@angular/common';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
     selector: 'app-vessel-entry',
@@ -17,7 +18,8 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
         ReactiveFormsModule,
         CommonModule,
         OnlyNumbersDirective,
-        OnlyTextDirective
+        OnlyTextDirective,
+        TextWithNumbersDirective
     ],
     templateUrl: './vessel-entry.component.html',
     styleUrl: './vessel-entry.component.scss'

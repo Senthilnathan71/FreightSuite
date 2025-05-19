@@ -12,11 +12,12 @@ import { FeatherModule } from 'angular-feather';
 import { Branch } from 'src/app/modules/crm-mobile/Interfaces/branch.interface';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
 	selector: 'app-branch-entry',
 	standalone: true,
-	imports: [ReactiveFormsModule, CommonModule, FormsModule, FeatherModule, OnlyNumbersDirective, OnlyTextDirective],
+	imports: [ReactiveFormsModule, CommonModule, FormsModule, FeatherModule, OnlyNumbersDirective, OnlyTextDirective, TextWithNumbersDirective],
 	templateUrl: './branch-entry.component.html',
 	styleUrl: './branch-entry.component.scss'
 })

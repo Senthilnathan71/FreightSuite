@@ -21,28 +21,31 @@
         <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
           <form class="d-flex align-items-center gap-2">
             <div class="form-outline col">
-              <input type="search" class="form-control ps-5" name="search" autocomplete="off" placeholder="Search"
-                [(ngModel)]="searchText" (input)="loadZoneWithQuery()" />
-              <i class="fas fa-search ms-3"></i>
+              <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                <i class="fas fa-search ms-3"></i>
+                <option value="ZoneName">Zone Name</option>
+                <option value="ZoneCode">Zone Code</option>
+                <option value="status">Status</option>
+              </select>
             </div>
             <div class="form-outline col">
-              <input  name="filterValue" type="text" class="form-control"
-                placeholder="Enter filter value">
+              <input name="filterValue" type="text" class="form-control" placeholder="Enter filter value"
+                [(ngModel)]="filterValue">
               <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
             </div>
 
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="search()">
               <i class="fas fa-search"></i>
               Search
             </button>
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="navigateToCreate()">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="navigateToCreateZone()">
               <i class="mdi mdi-plus"></i> Create
             </button>
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80" >
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="report()">
               <!-- <i class="mdi mdi-plus"></i> -->
               Report
             </button>
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80" >
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="reset()">
               <!-- <i class="mdi mdi-plus"></i> -->
               Reset
             </button>
@@ -53,51 +56,69 @@
   </div>
   <!-- #endregion -->
 
-  <div class="col-12">
-    <div class="card">
-      <!-- #region lead view -->
-      <div class="table-responsive">
-        <table class="table table-hover align-middle no-wrap table-bordered">
-          <thead>
-            <tr class="bg-info">
-              <th class="bg-transparent text-light" scope="col">Name</th>
-              <th class="bg-transparent text-light" scope="col">Code</th>
-              <!-- <th class="bg-transparent text-light" scope="col">
+  <div class="col-12" *ngIf="totalNumberOfCollection > 0">
+    <!-- #region lead view -->
+    <div class="table-responsive">
+      <table class="table table-hover align-middle no-wrap table-bordered">
+        <thead>
+          <tr class="bg-info">
+            <th class="bg-transparent text-light" scope="col">Action</th>
+            <th class="bg-transparent text-light" scope="col">Name</th>
+            <th class="bg-transparent text-light" scope="col">Code</th>
+            <!-- <th class="bg-transparent text-light" scope="col">
                 Country Name
               </th>
               <th class="bg-transparent text-light" scope="col">Remarks</th> -->
-              <th class="bg-transparent text-light" scope="col">Status</th>
-              <th class="bg-transparent text-light" scope="col">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (zone of filteredZones; track zone.ZoneMasterSid) {
+            <th class="bg-transparent text-light" scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (zone of zoneList; track zone.ZoneMasterSid) {
 
-            <tr>
-              <td>{{ zone.ZoneName }}</td>
-              <td>{{ zone.ZoneCode }}</td>
-              <td>{{ zone.status === "A" ? "Active" : "Cancelled" }}</td>
-              <!-- <td>N/A</td> -->
-              <!-- <td>N/A</td> -->
+          <tr>
+            <td>
+              <a [routerLink]="['/master/zone/entry/', zone.ZoneMasterSid]" class="text-dark mx-2">
+                <i-feather name="eye" class="feather-sm"></i-feather>
+              </a>
+              <a class="text-danger mx-2 ps-3 border-start" (click)="deleteZone(zone.ZoneMasterSid)">
+                <i-feather name="trash-2" class="feather-sm"></i-feather>
+              </a>
+            </td>
+            <td>{{ zone.ZoneName }}</td>
+            <td>{{ zone.ZoneCode }}</td>
+            <td>@if(zone.status === "A"){
+              <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                Active
+              </div>
+              } @else {
+              <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                Invalid
+              </div>
+              }
+            </td>
+            <!-- <td>N/A</td> -->
+            <!-- <td>N/A</td> -->
 
-              <td>
-                <a [routerLink]="['/master/zone/entry/', zone.ZoneMasterSid]" class="text-dark mx-2">
-                  <i-feather name="edit-3" class="feather-sm"></i-feather>
-                </a>
-                <a class="text-danger mx-2 ps-3 border-start" (click)="deleteZone(zone.ZoneMasterSid)">
-                  <i-feather name="trash-2" class="feather-sm"></i-feather>
-                </a>
-              </td>
-            </tr>
-            } @empty {
-            <tr class="col">
-              No records Found
-            </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      <!-- #endregion -->
+
+          </tr>
+          } @empty {
+          <tr class="col">
+            No records Found
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
+    <!-- #endregion -->
+    <div>
+      <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalNumberOfCollection"
+        [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()">
+      </ngb-pagination>
+    </div>
+  </div>
+  <div class="col-12" *ngIf="totalNumberOfCollection === 0">
+    <div>No records found</div>
   </div>
 </div>

@@ -16,13 +16,8 @@
               </select>
             </div>
             <div class="form-outline col">
-              <input
-                [(ngModel)]="filterValue"
-                name="filterValue"
-                type="text"
-                class="form-control"
-                placeholder="Enter filter value"
-              />
+              <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
+                placeholder="Enter filter value" />
               <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
             </div>
 
@@ -47,29 +42,49 @@
     <table class="table table-hover align-middle no-wrap table-bordered">
       <thead>
         <tr class="bg-info">
-          <th class="bg-transparent text-light">Port Name</th>
-          <th class="bg-transparent text-light">Port Code</th>
-          <th class="bg-transparent text-light">Country</th>
-          <th class="bg-transparent text-light">Sector</th>
-          <th class="bg-transparent text-light">Port Type</th>
-          <th class="bg-transparent text-light">Terminal</th>
-          <th class="bg-transparent text-light">Status</th>
-          <th class="bg-transparent text-light">Actions</th>
+          <th class="bg-transparent text-light" scope="col">Actions</th>
+          <th class="bg-transparent text-light" scope="col">Port Name</th>
+          <th class="bg-transparent text-light" scope="col">Port Code</th>
+          <th class="bg-transparent text-light" scope="col">Country</th>
+          <th class="bg-transparent text-light" scope="col">Sector</th>
+          <th class="bg-transparent text-light" scope="col">Port Type</th>
+          <th class="bg-transparent text-light" scope="col">Terminal</th>
+          <th class="bg-transparent text-light" scope="col">Status</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let item of portList; let i = index; trackBy: trackByIndex">
-          <td><div class="text-truncate">{{ item.PortName }}</div></td>
-          <td><div class="text-truncate">{{ item.PortCode }}</div></td>
           <td>
-                        <div class="text-truncate">{{item.countryMaster?.countryName || ''}}</div>
-                    </td>
-                    <td>
-                        <div class="text-truncate">{{item.sectorMaster?.sectorName || ''}}</div>
-                    </td>
-          <td><div class="text-truncate">{{ item.PortType }}</div></td>
-          <td><div class="text-truncate">{{ item.TerminalCode }}</div></td>
-          <td><div class="text-truncate">{{ item.statusText }}</div></td>
+            <div class="d-flex align-items-center">
+              <a class="text-info mx-2" [routerLink]="['/master/port-master/view/', item.PortMasterSid]">
+                <i-feather class="feather-sm" name="eye"></i-feather>
+              </a>
+              <a class="text-danger mx-2 ps-3 border-start" (click)="deletePort(item.PortMasterSid)">
+                <i-feather name="trash-2" class="feather-sm"></i-feather>
+              </a>
+            </div>
+          </td>
+          <td>
+            <div class="text-truncate">{{item.PortName}}</div>
+          </td>
+          <td>
+            <div class="text-truncate">{{item.PortCode}}</div>
+          </td>
+          <td>
+            <div class="text-truncate">{{item.countryMaster?.countryName || ''}}</div>
+          </td>
+          <td>
+            <div class="text-truncate">{{item.sectorMaster?.sectorName || ''}}</div>
+          </td>
+          <td>
+            <div class="text-truncate">{{ item.PortType }}</div>
+          </td>
+          <td>
+            <div class="text-truncate">{{ item.TerminalCode }}</div>
+          </td>
+          <td>
+            <div class="text-truncate">{{ item.statusText }}</div>
+          </td>
           <td>
             <div class="d-flex align-items-center">
               <a class="text-info mx-2" [routerLink]="['/master/port-master/view/', item.PortMasterSid]">
@@ -85,13 +100,12 @@
     </table>
   </div>
 
-  <ngb-pagination
-    class="d-flex justify-content-end"
-    [collectionSize]="totalLengthOfCollection"
-    [pageSize]="pageSize"
-    [(page)]="page"
-    (pageChange)="updatePaginatedData()">
-  </ngb-pagination>
+
+  <div>
+    <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection" [pageSize]="pageSize"
+      [(page)]="page" (pageChange)="updatePaginatedData()">
+    </ngb-pagination>
+  </div>
 </div>
 
 <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">

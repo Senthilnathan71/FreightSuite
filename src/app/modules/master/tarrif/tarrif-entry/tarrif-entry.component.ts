@@ -7,6 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
   selector: 'app-tarrif-entry',
@@ -16,7 +17,8 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
     NgbTooltip,
     ReactiveFormsModule,
     OnlyNumbersDirective,
-    OnlyTextDirective
+    OnlyTextDirective,
+    TextWithNumbersDirective
   ],
   templateUrl: './tarrif-entry.component.html',
   styleUrl: './tarrif-entry.component.scss'
@@ -118,7 +120,6 @@ export class TarrifEntryComponent implements OnInit {
       } else {
         this.masterServ.createTariff(payload).subscribe(
           (resp: any) => {
-            console.log(resp);
             if (resp.status) {
               this.appSettingServ.showSuccess('Tariff Created Successfully');
               this.route.navigate(['master/tarrif/list']);

@@ -5,64 +5,83 @@ import { MasterService } from '../../master.service';
 import { MatDialog } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 @Component({
   selector: 'app-zone-list',
   standalone: true,
-  imports: [FeatherModule, FormsModule, RouterLink],
+  imports: [FeatherModule, FormsModule, RouterModule, CommonModule, NgbPaginationModule, OnlyTextDirective],
   templateUrl: './zone-list.component.html',
   styleUrl: './zone-list.component.scss',
 })
-export class ZoneListComponent implements OnInit {
-  allZones: Zone[];
-  filteredZones: Zone[];
-  searchText: string = '';
+export class ZoneListComponent {
+  results: Zone[];
+  zoneList: Zone[];
+  searchType: string = 'ZoneName';
+  filterValue: any;
+  searchText: ''
+
+  // pagination values
+  page = 1;
+  pageSize = 10;
+  totalNumberOfCollection: number;
 
   constructor(
-    private masterService: MasterService,
+    private masterServ: MasterService,
     private matdig: MatDialog,
-    private route: Router
-  ) {}
+    private appSettingServ: AppSettingsService,
+    private router: Router
+  ) { }
 
-  ngOnInit() {
-    this.loadAllZones();
-  }
-
-  navigateToCreate() {
-    this.route.navigateByUrl('master/zone/entry');
-  }
-
-  loadAllZones() {
-    this.masterService.getAllZones().subscribe((res: Zone[]) => {
-      this.allZones = res;
-      this.filteredZones = res;
-    });
-  }
-
-  loadZoneWithQuery() {
-    const query = this.searchText.toLowerCase().trim();
-    if (!query) {
-      this.filteredZones = [...this.allZones];
-    } else {
-      this.filteredZones = this.allZones.filter((zone: Zone) => {
-        return (
-          zone.ZoneCode?.toLowerCase().includes(query) ||
-          zone.ZoneName?.toLowerCase().includes(query)
-        );
-      });
+  search() {
+    const intFields = [''];
+    const payload = {
+      searchType: this.searchType,
+      filterValue: intFields.includes(this.searchType) ? Number(this.filterValue) : this.filterValue
     }
+    this.masterServ.searchZone(payload).subscribe(
+      (res) => {
+        this.results = res;
+        this.updatePaginationData();
+        this.totalNumberOfCollection = this.results.length || 0;
+      }
+    )
+  }
+
+  updatePaginationData() {
+    let start = (this.page - 1) * this.pageSize;
+    let end = start + this.pageSize;
+    this.zoneList = this.results.slice(start, end)
+  }
+
+  trackByIndex(index: number, item: any): number {
+    return index;
   }
 
   async deleteZone(zoneMasterSId: number) {
     const dialogRef = this.matdig.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe((res) => {
       if (res) {
-        this.masterService.deleteZone(zoneMasterSId).subscribe((res) => {
-          console.log(`Deleted ${JSON.stringify(res)}`);
-          this.loadAllZones();
+        this.masterServ.deleteZone(zoneMasterSId).subscribe((res) => {
+          this.appSettingServ.showSuccess("Deleted!");
+          this.search();
         });
       }
     });
+  }
+
+  navigateToCreateZone() {
+    this.router.navigate(['master/zone/entry']);
+  }
+
+  report() { }
+
+  reset() {
+    this.zoneList = [];
+    this.totalNumberOfCollection = 0;
   }
 }

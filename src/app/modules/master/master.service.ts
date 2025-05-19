@@ -750,6 +750,15 @@ export class MasterService {
     );
   }
 
+  searchZone(payload){
+    return this.http.post<{data:Zone[]}>('zone/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
   // Package Type Master
 
   getAllPackageTypes() {
@@ -799,6 +808,15 @@ export class MasterService {
         return response;
       })
     );
+  }
+
+  searchPackageType(payload){
+    return this.http.post<{data:any}>('package-type/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
   }
 
   // Tariff Master
