@@ -51,8 +51,8 @@ export class DivisionEntryComponent {
   // Initialize the Form
   initForm() {
     this.divisionForm = this.fb.group({
-      Name: ['', [Validators.required]],
-      Code: ['', [Validators.required]],
+      divisionName: ['', [Validators.required]],
+      divisionCode: ['', [Validators.required]],
       Address: ['', [Validators.required]],
       Remarks: ['', [Validators.required]],
       Status: ['']
