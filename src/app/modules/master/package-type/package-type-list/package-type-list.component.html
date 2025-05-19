@@ -1,66 +1,35 @@
 <div class="row">
-  <!-- <div class="col-12">
-    <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
-      <form class="d-flex align-items-center gap-2">
-        <div class="form-outline col">
-          <input type="search" class="form-control ps-5" name="search" [(ngModel)]="filterType"
-            placeholder="Search Type" />
-          <i class="fas fa-search ms-3"></i>
-        </div>
-        <div class="form-outline col">
-          <input type="search" class="form-control ps-5" name="search" [(ngModel)]="filterText" (input)="onSearch()"
-            placeholder="Enter Name" />
-          <i class="fas fa-search ms-3"></i>
-        </div>
-        <button type="button" class="btn btn-info btn-sm">
-          <i class="fas fa-search"></i>
-          Search
-        </button>
-        <button type="button" class="btn btn-secondary btn-sm" (click)="navigateToEntry()">
-          <i class="mdi mdi-plus"></i>
-          Create
-        </button>
-        <button type="button" class="btn btn-secondary btn-sm">
-          
-          report
-        </button>
-        <button type="button" class="btn btn-secondary btn-sm">
-         
-          Reset
-        </button>
-      </form>
-    </div>
-  </div> -->
-
-
   <div class="col-12">
     <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
       <div class="col-8 mx-auto">
         <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
           <form class="d-flex align-items-center gap-2">
             <div class="form-outline col">
-              <input type="search" class="form-control ps-5" name="search" [(ngModel)]="filterType"
-                placeholder="Search Type" />
-              <i class="fas fa-search ms-3"></i>
+              <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                <i class="fas fa-search ms-3"></i>
+                <option value="PackageName">Package Name</option>
+                <option value="PackageCode">Package Code</option>
+                <option value="status">Status</option>
+              </select>
             </div>
             <div class="form-outline col">
-              <input type="search" class="form-control ps-5" name="search" [(ngModel)]="filterText" (input)="onSearch()"
-                placeholder="Enter Name" />
-              <i class="fas fa-search ms-3"></i>
+              <input name="filterValue" type="text" class="form-control" placeholder="Enter filter value"
+                [(ngModel)]="filterValue">
+              <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
             </div>
 
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="onSearch()">
               <i class="fas fa-search"></i>
               Search
             </button>
             <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="navigateToEntry()">
               <i class="mdi mdi-plus"></i> Create
             </button>
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="report">
               <!-- <i class="mdi mdi-plus"></i> -->
               Report
             </button>
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="reset">
               <!-- <i class="mdi mdi-plus"></i> -->
               Reset
             </button>
@@ -70,22 +39,34 @@
     </div>
   </div>
 
-  <div class="col-12">
+  <div class="col-12" *ngIf="totalNumberOfCollection > 0">
     <div class="table-responsive">
       <table class="table table-hover align-middle no-wrap table-bordered">
         <thead>
           <tr class="bg-info">
+            <th class="bg-transparent text-light" scope="col">Action</th>
             <th class="bg-transparent text-light" scope="col">Name</th>
             <th class="bg-transparent text-light" scope="col">Code</th>
             <!-- <th class="bg-transparent text-light" scope="col">Remarks</th> -->
             <th class="bg-transparent text-light" scope="col">Status</th>
-            <th class="bg-transparent text-light" scope="col">Action</th>
           </tr>
         </thead>
         <tbody>
-          @for (package of filteredPackageTypes; track
+          @for (package of packageList; track
           package.PackageTypeMasterSid) {
           <tr>
+            <td>
+              <a class="text-dark mx-2" [routerLink]="[
+                  '/master/package-type/entry',
+                  package.PackageTypeMasterSid
+                ]">
+                <i-feather name="eye" class="feather-sm"></i-feather>
+              </a>
+              <a class="text-danger mx-2 ps-3 border-start"
+                (click)="deletePackageTypeById(package.PackageTypeMasterSid)">
+                <i-feather name="trash-2" class="feather-sm"></i-feather>
+              </a>
+            </td>
             <td>
               <div class="text-truncate">{{ package.PackageName }}</div>
             </td>
@@ -93,31 +74,33 @@
               <div class="text-truncate">{{ package.PackageCode }}</div>
             </td>
             <td>
-              <div class="text-truncate">{{ package.status }}</div>
+              <div class="text-truncate">@if(package.status === "A"){
+              <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                Active
+              </div>
+              } @else {
+              <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                Invalid
+              </div>
+              }</div>
             </td>
             <!-- <td>
               <div class="text-truncate">Rial</div>
             </td> -->
-            <td>
-              <a class="text-dark mx-2" [routerLink]="[
-                  '/master/package-type/entry',
-                  package.PackageTypeMasterSid
-                ]">
-                <i-feather name="edit-3" class="feather-sm"></i-feather>
-              </a>
-              <a class="text-danger mx-2 ps-3 border-start"
-                (click)="deletePackageTypeById(package.PackageTypeMasterSid)">
-                <i-feather name="trash-2" class="feather-sm"></i-feather>
-              </a>
-            </td>
-          </tr>
-          } @empty {
-          <tr>
-            No records found
           </tr>
           }
         </tbody>
       </table>
     </div>
+    <div>
+      <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalNumberOfCollection"
+        [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()">
+      </ngb-pagination>
+    </div>
+  </div>
+   <div class="col-12" *ngIf="totalNumberOfCollection === 0">
+    <div>No records found</div>
   </div>
 </div>

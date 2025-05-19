@@ -1,29 +1,38 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
+import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
   selector: 'app-package-type-entry',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [
+    FeatherModule,
+    ReactiveFormsModule,
+    OnlyNumbersDirective,
+    OnlyTextDirective,
+    TextWithNumbersDirective
+  ],
   templateUrl: './package-type-entry.component.html',
   styleUrl: './package-type-entry.component.scss',
 })
 export class PackageTypeEntryComponent implements OnInit {
-  inputForm: FormGroup;
+  inputForm!: FormGroup;
   packageMasterSid: number;
   isEditMode: boolean;
 
   constructor(
     private masterService: MasterService,
     private currentUrl: ActivatedRoute,
-    private route: Router
+    private route: Router,
+    private appSettingServ: AppSettingsService,
+    private fb: FormBuilder
   ) { }
   ngOnInit(): void {
     this.initForm();
@@ -37,24 +46,21 @@ export class PackageTypeEntryComponent implements OnInit {
   }
 
   initForm() {
-    this.inputForm = new FormGroup({
-      CompanyMasterSid: new FormControl(2), // CompanyMasterId isnt in form
-      PackageName: new FormControl('', [
-        Validators.required,
-        Validators.maxLength(100),
-      ]),
-      PackageCode: new FormControl('', [
-        Validators.required,
-        Validators.maxLength(3),
-      ]),
-      status: new FormControl('A'),
+    this.inputForm = this.fb.group({
+      PackageName : ['',[Validators.required,Validators.maxLength(100)]],
+      PackageCode : ['',[Validators.required,Validators.maxLength(3)]],
+      status:['Active'],
+      CompanyMasterSid:[2]
     });
   }
 
   loadPackageType(packageMasterSid: number) {
     this.masterService.getPackageTypeById(packageMasterSid).subscribe(
       (resp) => {
-        this.inputForm.patchValue(resp);
+        this.inputForm.patchValue({
+          ...resp,
+          status: resp.status === 'A' ? 'Active' : 'Invalid'
+        });
       },
       (error) => {
         console.error('Error loading Package Type ', error);
@@ -62,18 +68,26 @@ export class PackageTypeEntryComponent implements OnInit {
     );
   }
 
+  navigateBack() {
+    history.back();
+  }
+
   savePackageType() {
     if (this.inputForm.invalid) {
       this.inputForm.markAllAsTouched(); // Force validation messages to show
       this.inputForm.updateValueAndValidity(); // Ensure validation is refreshed
+      this.appSettingServ.showWarning('Please fill all required fields correctly');
       return;
     } else {
+      const formValue = this.inputForm.value;
+      const payload = this.coerceIntoRequiredFormat(formValue);
       if (this.isEditMode) {
         this.masterService
-          .updatePackageTypeById(this.packageMasterSid, this.inputForm.value)
+          .updatePackageTypeById(this.packageMasterSid,payload)
           .subscribe(
             (resp) => {
-              this.route.navigateByUrl('master/package-type/list');
+              this.appSettingServ.showSuccess('Package Type Updated Successfully');
+              this.route.navigate(['master/package-type/list']);
             },
             (error) => {
               console.error(
@@ -83,8 +97,9 @@ export class PackageTypeEntryComponent implements OnInit {
             }
           );
       } else {
-        this.masterService.createNewPackageType(this.inputForm.value).subscribe(
+        this.masterService.createNewPackageType(payload).subscribe(
           (resp) => {
+            this.appSettingServ.showSuccess('Package Type Created Successfully');
             this.route.navigate(['master/package-type/list']);
           },
           (error) => {
@@ -95,6 +110,19 @@ export class PackageTypeEntryComponent implements OnInit {
           }
         );
       }
+    }
+  }
+  coerceIntoRequiredFormat(formValue) {
+    let createdBy = this.appSettingServ.userSettingSource.value['userEmail'];
+    let updatedBy = this.appSettingServ.userSettingSource.value['userEmail'];
+    return (this.isEditMode) ? {
+      ...formValue,
+      updatedBy,
+      status: formValue.status === "Active" ? "A" : "I"
+    } : {
+      ...formValue,
+      createdBy,
+      status: formValue.status === "Active" ? "A" : "I"
     }
   }
 }

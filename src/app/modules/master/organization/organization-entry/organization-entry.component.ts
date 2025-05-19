@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, TemplateRef, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -8,6 +8,9 @@ import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { City } from 'src/app/modules/crm-mobile/Interfaces/city.interface';
 import { MasterService } from '../../master.service';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
   selector: 'app-organization-entry',
@@ -15,7 +18,7 @@ import { MasterService } from '../../master.service';
   imports: [NgbNavModule, CommonModule, NgSelectModule, FeatherModule,
     FormsModule,
     NgbPaginationModule,
-    ReactiveFormsModule, NgbModalModule,
+    ReactiveFormsModule, NgbModalModule, OnlyTextDirective, OnlyNumbersDirective, TextWithNumbersDirective
   ],
   templateUrl: './organization-entry.component.html',
   styleUrl: './organization-entry.component.scss'
@@ -349,16 +352,16 @@ export class OrganizationEntryComponent {
   initCustomerBranchForm() {
     this.customerBranchForm = this.fb.group({
       CustomerMasterSid: [''],
-      CustBranchCity: [''],
-      CustBranchState: [''],
+      CustBranchCity: ['',[Validators.required]],
+      CustBranchState: ['',[Validators.required]],
       CustBranchName: ['', [Validators.required]],
-      CustBranchZipPostCode: ['', [Validators.required]],
-      CustBranchPhone: ['', [Validators.required]],
-      CustBranchEmail: ['', [Validators.required]],
+      CustBranchZipPostCode: [''],
+      CustBranchPhone: [''],
+      CustBranchEmail: ['', [Validators.required,Validators.email]],
       CustBranchAddress: ['', [Validators.required]],
       CustBranchRegistered: ['Y', [Validators.required]], // default value if applicable
-      CustBranchGSTtype: ['', [Validators.required]],
-      CustBranchGSTIN: ['', [Validators.required]],
+      CustBranchGSTtype: [''],
+      CustBranchGSTIN: [''],
       status: ['']
     })
 
@@ -371,8 +374,8 @@ export class OrganizationEntryComponent {
       CustomerBranchSid: [''],
       ContactType: ['', [Validators.required]],
       ContactName: ['', [Validators.required]],
-      MobileNo: ['', [Validators.required]],
-      Email: ['', [Validators.required]],
+      MobileNo: [''],
+      Email: ['', [Validators.required,Validators.email]],
     })
   }
 
@@ -380,10 +383,10 @@ export class OrganizationEntryComponent {
   initCustomerBranchEmailForm() {
     this.customerBranchEmailForm = this.fb.group({
       CustomerBranchSid: [''],
-      DepartmentMasterSid: [''],
+      DepartmentMasterSid: ['',[Validators.required]],
       BranchName: [{ value: this.customerBranchName || '', disabled: true }],
-      Toemail: ['', [Validators.required]],
-      CCemail: ['', [Validators.required]],
+      Toemail: ['', [Validators.required,Validators.email]],
+      CCemail: ['', [Validators.email]],
     })
   }
 
@@ -394,8 +397,8 @@ export class OrganizationEntryComponent {
       CustomerName: [{ value: this.customerName || '', disabled: true }],
       BranchName: [{ value: this.customerBranchName || '', disabled: true }],
       LoginName: ['', [Validators.required]],
-      LoginEmail: ['', [Validators.required]],
-      LoginPassword: ['', [Validators.required]],
+      LoginEmail: ['', [Validators.required,Validators.email]],
+      LoginPassword: ['', [Validators.required,Validators.maxLength(50),this.passwordValidator]],
     })
   }
 
@@ -1089,4 +1092,27 @@ export class OrganizationEntryComponent {
   goBack() {
     history.back()
   }
+
+  passwordValidator(formControl): ValidationErrors | null {
+  const password = formControl.value || '';
+
+  if (password.length < 8) {
+    return { passwordError: 'Password must be at least 8 characters long.' };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { passwordError: 'Must contain at least one uppercase letter.' };
+  }
+  if (!/[a-z]/.test(password)) {
+    return { passwordError: 'Must contain at least one lowercase letter.' };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { passwordError: 'Must contain at least one number.' };
+  }
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    return { passwordError: 'Must contain at least one special character.' };
+  }
+
+  return null;
+}
+
 }

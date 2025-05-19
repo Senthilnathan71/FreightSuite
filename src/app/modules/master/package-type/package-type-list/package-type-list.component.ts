@@ -2,118 +2,85 @@ import { Component, OnInit } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { PackageType } from 'src/app/modules/crm-mobile/Interfaces/packageType.interface';
 import { MasterService } from '../../master.service';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CommonModule } from '@angular/common';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 
 @Component({
   selector: 'app-package-type-list',
   standalone: true,
-  imports: [FeatherModule, FormsModule, RouterLink],
+  imports: [FeatherModule, FormsModule, RouterModule, CommonModule, NgbPaginationModule, OnlyTextDirective],
   templateUrl: './package-type-list.component.html',
   styleUrl: './package-type-list.component.scss',
 })
-export class PackageTypeListComponent implements OnInit {
-  allPackageTypes: PackageType[];
-  filteredPackageTypes: PackageType[];
-  allSearchTypes: string[] = ['name', 'code', 'status'];
-  filterType: string;
-  filterText: string;
+export class PackageTypeListComponent{
+  results: any;
+  packageList: any;
+  searchType: string = 'PackageName';
+  filterValue: any;
+  searchText: ''
+  
+    // pagination values
+  page = 1;
+  pageSize = 10;
+  totalNumberOfCollection: number;
+
   constructor(
     private masterService: MasterService,
     private route: Router,
-    private dialog: MatDialog
+    private matdig: MatDialog,
+    private appSettingServ: AppSettingsService,
   ) { }
-  ngOnInit(): void {
-    this.loadAllPackageTypes();
-  }
 
   navigateToEntry() {
     this.route.navigate(['master/package-type/entry']);
   }
 
   onSearch() {
-    // Type we choose
-    let modifiedFilterType = this.filterType.toLowerCase().trim();
-
-    // Text that we enter
-    let modifiedFilterText = this.filterText.toLowerCase().trim();
-
-    // Case 1:  Invalid filter type
-
-    if (!this.allSearchTypes.includes(modifiedFilterType)) {
-      // Invalid Filter Type with no Query
-      if (!modifiedFilterText) {
-        this.filteredPackageTypes = [...this.allPackageTypes];
-      }
-
-      // Invalid filter type with search Query
-      else {
-        this.filteredPackageTypes = this.allPackageTypes.filter(
-          (packageType: PackageType) => {
-            return (
-              packageType.PackageCode.includes(modifiedFilterText) ||
-              packageType.PackageName.includes(modifiedFilterText) ||
-              packageType.status.includes(modifiedFilterText)
-            );
-          }
-        );
-      }
+    const intFields = [''];
+    const payload = {
+      searchType: this.searchType,
+      filterValue: intFields.includes(this.searchType) ? Number(this.filterValue) : this.filterValue
     }
-
-    // Valid Search Type
-    else {
-      // Valid Search Type without Filter Text
-      if (!modifiedFilterText) {
-        this.filteredPackageTypes = [...this.allPackageTypes];
-      } else {
-        let index = this.allSearchTypes.indexOf(modifiedFilterType);
-        this.filteredPackageTypes = this.allPackageTypes.filter(
-          (packageType: PackageType) => {
-            if (index === 0)
-              return packageType.PackageName.toLowerCase().includes(
-                modifiedFilterText
-              );
-            else if (index === 1)
-              return packageType.PackageCode.toLowerCase().includes(
-                modifiedFilterText
-              );
-            else if (index === 2)
-              return packageType.status
-                .toLowerCase()
-                .includes(modifiedFilterText);
-            else {
-              return (this.filteredPackageTypes = []);
-            }
-          }
-        );
+    this.masterService.searchPackageType(payload).subscribe(
+      (res) => {
+        this.results = res;
+        this.updatePaginationData();
+        this.totalNumberOfCollection = this.results.length || 0;
       }
-    }
+    )
   }
 
-  async loadAllPackageTypes() {
-    (await this.masterService.getAllPackageTypes()).subscribe(
-      (resp) => {
-        this.allPackageTypes = resp;
-        this.filteredPackageTypes = resp;
-      },
-      (error) => {
-        console.error(`PackageType Create failed :`, error);
-      }
-    );
+  updatePaginationData() {
+    let start = (this.page - 1) * this.pageSize;
+    let end = start + this.pageSize;
+    this.packageList = this.results.slice(start, end)
   }
+
 
   // delete Package Type
 
-  async deletePackageTypeById(id: number) {
-    const dialogRef = this.dialog.open(DeleteWarningComponent);
+  async deletePackageTypeById(packageMasterSid: number) {
+    const dialogRef = this.matdig.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(async (res) => {
       if (res) {
-        (await this.masterService.deletePackageById(id)).subscribe((res) => {
-          this.loadAllPackageTypes();
+        this.masterService.deletePackageById(packageMasterSid).subscribe((res) => {
+          this.appSettingServ.showSuccess("Deleted!");
+          this.onSearch();
         });
       }
     });
+  }
+
+  report() { }
+
+  reset() {
+    this.packageList = [];
+    this.totalNumberOfCollection = 0;
   }
 }

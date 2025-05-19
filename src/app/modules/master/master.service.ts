@@ -807,6 +807,15 @@ export class MasterService {
     );
   }
 
+  searchPackageType(payload){
+    return this.http.post<{data:any}>('package-type/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
   // Tariff Master
 
   searchTariff(payload: any) {
