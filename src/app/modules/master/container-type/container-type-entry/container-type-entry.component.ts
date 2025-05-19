@@ -64,9 +64,17 @@ export class ContainerTypeEntryComponent {
   
   initForm() {
     this.containertypeForm = this.fb.group({
-      ContainerName: ['',[Validators.required, Validators.maxLength(100)]],
-      ContainerCode: ['',[Validators.required, Validators.maxLength(10)]],
-      status: ['Active', Validators.required]
+      containerName: ['',[Validators.required]],
+      containerCode: ['',[Validators.required]],
+      grossWeight: ['',[Validators.required]],
+      tareWeight: ['',[Validators.required]],
+      maxVolume: ['',[Validators.required]],
+      shippingMode: ['',[Validators.required]],
+      iataRateClass: ['',[Validators.required]],
+      handlingRateClass: ['',[Validators.required]],
+      freightRateClass: ['',[Validators.required]],
+      
+      status: ['', Validators.required]
     });
   }
 
