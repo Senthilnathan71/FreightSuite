@@ -1,5 +1,28 @@
 <div class="row py-3">
+
   <div class="col-12">
+    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+      <div class="col-md-4 pb-2">
+        <h4 class="page-title mb-0">Add Package Type</h4>
+      </div>
+      <div class="col-md-8 pb-2">
+        <div
+          class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="navigateBack()">
+            <i class="fas fa-chevron-left me-1"></i>
+            Back
+          </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="savePackageType()"
+            [disabled]="inputForm.invalid">
+            <i class="fas fa-save me-1"></i>
+            {{isEditMode ?'Update':'Save'}}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- <div class="col-12">
     <div class="d-flex align-items-center gap-2 mb-3">
       <button class="btn btn-sm btn-light-secondary ms-auto" (click)="navigateBack()">
         <i-feather name="corner-up-left" class="feather-sm me-1"></i-feather> Back
@@ -8,7 +31,7 @@
         <i-feather name="upload-cloud" class="feather-sm me-1"></i-feather> {{isEditMode ?'Update':'Save'}}
       </button>
     </div>
-  </div>
+  </div> -->
   <div class="col-md-12" [formGroup]="inputForm">
     <div class="card h-100">
       <div class="card-body">

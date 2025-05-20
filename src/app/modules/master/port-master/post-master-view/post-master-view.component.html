@@ -72,7 +72,7 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
                                         formControlName="PortName" />
-                                    <label for="text-input" class="input-label">Name *</label>
+                                    <label for="text-input" class="input-label">Name <span class="text-danger fw-semibold">*</span></label>
                                     <div *ngIf="portForm.get('PortName')?.touched && portForm.get('PortName')?.invalid">
                                         <p *ngIf="portForm.get('PortName')?.errors?.['required']" class="error-message">
                                             Name is required.</p>
@@ -86,7 +86,7 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" class="custom-input-field sm "
                                         formControlName="PortCode" placeholder=" " />
-                                    <label for="text-input" class="input-label">Code *</label>
+                                    <label for="text-input" class="input-label">Code <span class="text-danger fw-semibold">*</span></label>
                                     <div *ngIf="portForm.get('PortCode')?.touched && portForm.get('PortCode')?.invalid">
                                         <p *ngIf="portForm.get('PortCode')?.errors?.['required']" class="error-message">
                                             Code is required.</p>
@@ -107,7 +107,7 @@
                                         bindLabel="countryName" bindValue="CountryMasterSid">
 
                                     </ng-select>
-                                    <label for="text-input" class="input-label">Country *</label>
+                                    <label for="text-input" class="input-label">Country <span class="text-danger fw-semibold">*</span></label>
                                     <div
                                         *ngIf="portForm.get('CountryMasterSid')?.touched && portForm.get('CountryMasterSid')?.invalid">
                                         <p *ngIf="portForm.get('CountryMasterSid')?.errors?.['required']"
@@ -145,7 +145,7 @@
                                         bindLabel="sectorName" bindValue="SectorMasterSid">
 
                                     </ng-select>
-                                    <label for="text-input" class="input-label">Sector *</label>
+                                    <label for="text-input" class="input-label">Sector <span class="text-danger fw-semibold">*</span></label>
                                     <div
                                         *ngIf="portForm.get('SectorMasterSid')?.touched && portForm.get('SectorMasterSid')?.invalid">
                                         <p *ngIf="portForm.get('SectorMasterSid')?.errors?.['required']"
