@@ -1032,6 +1032,15 @@ export class MasterService {
     )
   }
 
+
+  searchContainerType(payload: any) {
+    return this.http.post<{ data: any }>(`container-type/search-list`, payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    )
+  }
+
   getContainerTypeById(id: number) {
     return this.http.get<{ data: ContainerType }>(`containerType/containerTypeId/${id}`).pipe(
       map((resp) => {

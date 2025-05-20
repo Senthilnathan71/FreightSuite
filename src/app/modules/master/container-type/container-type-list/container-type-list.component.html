@@ -1,7 +1,62 @@
 <div class="row py-3">
-    <div class="col-12 d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">Container Type Master</h5>
-        <button class="btn btn-sm btn-primary" (click)="addNew()">Add Container Type</button>
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">Company</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div class="" data-bs-theme="light">
+                    <form
+                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="search()">
+                            <i class="fas fa-search me-1"></i>
+                            Search
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="navigateToCreateContainerType()">
+                            <i class="fas fa-plus me-1"></i> Create
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="report()">
+                            <i class="fas fa-file-alt me-1"></i>
+                            Report
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="resetPage()">
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Reset
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-12  border-top">
+                <div class="row mx-0 py-2">
+                    <div class="col-md-8 mx-auto px-0">
+                        <form
+                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                            <div class="form-outline col-12 col-md px-0">
+                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                                    <option value="ContainerName">Container Name</option>
+                                    <option value="ContainerCode">Container Code</option>
+                                    <option value="GrossWeight">Gross Weight</option>
+                                    <option value="TareWeight">Tare Weight</option>
+                                    <option value="MaxVolume">Max Volume</option>
+                                    <option value="GrossWeight">Gross Weight</option>
+                                    <option value="status">Status</option>
+                                </select>
+                            </div>
+                            <div class="form-outline col-12 col-md px-0">
+                                <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
+                                    placeholder="Enter filter value">
+                                <i
+                                    class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="col-12">
@@ -11,7 +66,7 @@
                     <table class="table table-bordered table-hover">
                         <thead class="table-light">
                             <tr>
-                                <th>Sno</th>
+                                <th>Actions</th>
                                 <th>Name</th>
                                 <th>Code</th>
                                 <th>Gross Weight</th>
@@ -21,12 +76,22 @@
                                 <th>IATA Rate</th>
                                 <th>Handling Rate</th>
                                 <th>Freight Rate</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let item of containerTypeList; let i = index">
-                                <td>{{ i + 1 }}</td>
+                            <tr *ngFor="let item of containerList; let i = index">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <a class="text-info mx-2" class="link mx-2 ps-3"
+                                            [routerLink]="['/master/container-type/entry/', item.ContainerTypeMasterSid]">
+                                            <i-feather class="feather-sm" name="eye"></i-feather>
+                                        </a>
+                                        <a class="text-danger mx-2 ps-3 border-start"
+                                            (click)="deleteContainerType(item.ContainerTypeMasterSid)">
+                                            <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                        </a>
+                                    </div>
+                                </td>
                                 <td>{{ item.containerName }}</td>
                                 <td>{{ item.containerCode }}</td>
                                 <td>{{ item.grossWeight }}</td>
@@ -36,22 +101,20 @@
                                 <td>{{ item.iataRateClass }}</td>
                                 <td>{{ item.handlingRateClass }}</td>
                                 <td>{{ item.freightRateClass }}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-info me-1" (click)="editContainer(item)">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" (click)="deleteContainer(item)">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr *ngIf="!containerTypeList?.length">
-                                <td colspan="11" class="text-center">No data found.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+            </ngb-pagination>
+        </div>
+    </div>
+    <!-- No records found -->
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0">
+        <div>No records found</div>
     </div>
 </div>

@@ -1,5 +1,5 @@
 <div class="row">
-  <div class="col-12">
+  <!-- <div class="col-12">
     <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
       <div class="col-8 mx-auto">
         <div class="rounded-3 p-2 bg-body-tertiary mb-2" data-bs-theme="light">
@@ -35,6 +35,58 @@
         </div>
       </div>
     </div>
+  </div> -->
+
+  <div class="col-12">
+    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+      <div class="col-md-4 pb-2">
+        <h4 class="page-title mb-0">Company</h4>
+      </div>
+      <div class="col-md-8 pb-2">
+        <div class="" data-bs-theme="light">
+          <form
+            class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="search()">
+              <i class="fas fa-search me-1"></i>
+              Search
+            </button>
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+              (click)="navigateToCreateDivision()">
+              <i class="fas fa-plus me-1"></i> Create
+            </button>
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()">
+              <i class="fas fa-file-alt me-1"></i>
+              Report
+            </button>
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()">
+              <i class="fas fa-sync-alt me-1"></i>
+              Reset
+            </button>
+          </form>
+        </div>
+      </div>
+      <div class="col-md-12  border-top">
+        <div class="row mx-0 py-2">
+          <div class="col-md-8 mx-auto px-0">
+            <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+              <div class="form-outline col-12 col-md px-0">
+                <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                  <option value="divisionName">Division Name</option>
+                  <option value="divisionCode">Division Code</option>
+                  <option value="address">Address</option>
+                  <option value="status">Status</option>
+                </select>
+              </div>
+              <div class="form-outline col-12 col-md px-0">
+                <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
+                  placeholder="Enter filter value">
+                <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="col-12" *ngIf="totalLengthOfCollection > 0">
@@ -42,15 +94,26 @@
       <table class="table table-hover align-middle no-wrap table-bordered">
         <thead>
           <tr class="bg-info">
+            <th class="bg-transparent text-light" scope="col">Action</th>
             <th class="bg-transparent text-light" scope="col">Name</th>
             <th class="bg-transparent text-light" scope="col">Code</th>
             <th class="bg-transparent text-light" scope="col">Address</th>
             <th class="bg-transparent text-light" scope="col">Status</th>
-            <th class="bg-transparent text-light" scope="col">Action</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of divisionList; let i = index; trackBy: trackByIndex">
+            <td>
+              <div class="d-flex align-items-center">
+                <a class="text-info mx-2" class="link mx-2 ps-3"
+                  [routerLink]="['/master/division/entry/', item.DivisionMasterSid]">
+                  <i-feather class="feather-sm" name="eye"></i-feather>
+                </a>
+                <a class="text-danger mx-2 ps-3 border-start" (click)="deleteDivision(item.DivisionMasterSid)">
+                  <i-feather name="trash-2" class="feather-sm"></i-feather>
+                </a>
+              </div>
+            </td>
             <td>
               <div class="text-truncate">{{ item.divisionName }}</div>
             </td>
@@ -62,17 +125,6 @@
             </td>
             <td>
               <div class="text-truncate">{{item.Status === 'A'? "Active":"Invalid"}}</div>
-            </td>
-            <td>
-              <div class="d-flex align-items-center">
-                <a class="text-info mx-2" class="link mx-2 ps-3"
-                  [routerLink]="['/master/division/entry/', item.DivisionMasterSid]">
-                  <i-feather class="feather-sm" name="eye"></i-feather>
-                </a>
-                <a class="text-danger mx-2 ps-3 border-start" (click)="deleteDivision(item.DivisionMasterSid)">
-                  <i-feather name="trash-2" class="feather-sm"></i-feather>
-                </a>
-              </div>
             </td>
           </tr>
         </tbody>

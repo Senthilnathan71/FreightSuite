@@ -8,6 +8,7 @@ import { MasterService } from '../../master.service';
 import { forkJoin } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-container-type-list',
@@ -17,51 +18,77 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
     RouterModule,
     FormsModule,
     FeatherModule,
-    MatDialogModule
+    MatDialogModule,
+    NgbPaginationModule
   ],
   templateUrl: './container-type-list.component.html',
   styleUrl: './container-type-list.component.scss'
 })
 export class ContainerTypeListComponent {
-  containerTypeList: any[] = [];
-  searchText: string = '';
+  searchType = 'divisionName';
+  filterValue = '';
+  results: any[] = [];
+  containerList: any[] = [];
+  searchPerformed = false;
+
+  // Pagination 
+  page = 1;
+  pageSize = 5;
+  totalLengthOfCollection = 0;
 
   constructor(
     private masterService: MasterService,
     private router: Router,
-    private dialog: MatDialog,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private dialog: MatDialog
   ) { }
 
-  ngOnInit() {
-    this.loadContainerTypes();
-  }
+  ngOnInit() { }
 
-  loadContainerTypes() {
-    this.masterService.getAllContainerType().subscribe((res: any) => {
-      this.containerTypeList = res.data || [];
+  search() {
+    const payload = {
+      searchType: this.searchType,
+      filterValue: this.filterValue
+    }
+
+    this.masterService.searchContainerType(payload).subscribe((res: any) => {
+      this.results = res;
+      this.searchPerformed = true;
+      this.updatePaginatedData();
+      this.totalLengthOfCollection = this.results.length || 0;
     });
   }
 
-  addNew() {
-    this.router.navigate(['master/container-type/entry']);
+  updatePaginatedData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.containerList = this.results.slice(startIndex, endIndex);
   }
 
-  editContainer(container: any) {
-    this.router.navigate(['master/container-type/entry'], {
-      queryParams: { id: container.ContainerTypeMasterSid }
-    });
+  trackByIndex(index: number, item: any): number {
+    return index;
   }
 
-  deleteContainer(container: any) {
+  deleteContainerType(id) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        this.masterService.deleteContainerTypeById(container.ContainerTypeMasterSid).subscribe(() => {
+        this.masterService.deleteContainerTypeById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
-          this.loadContainerTypes();
+          this.router.navigate(['master/container-type/list'])
         });
       }
     });
   }
+
+  navigateToCreateContainerType() {
+    this.router.navigate(['master/container-type/entry']);
+  }
+
+  resetPage(): void {
+    this.containerList = [];
+    this.totalLengthOfCollection = 0;
+  }
+
+  report() { }
 }
