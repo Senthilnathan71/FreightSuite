@@ -14,6 +14,7 @@ import { Commodity } from '../crm-mobile/Interfaces/commodity.interface';
 import { Vessel } from '../crm-mobile/Interfaces/vessel.interface';
 import { Branch } from '../crm-mobile/Interfaces/branch.interface';
 import { ContainerType } from '../crm-mobile/Interfaces/container-type.interface';
+import { Division } from '../crm-mobile/Interfaces/division.interface';
 
 import { Currency } from '../crm-mobile/Interfaces/currency.interface';
 @Injectable({
@@ -370,7 +371,7 @@ export class MasterService {
       map((res: any) => {
         return res.data;
       })
-    )
+    );
   }
 
 
@@ -933,8 +934,6 @@ export class MasterService {
     )
   }
 
-
-
   getCompanyById(id: number) {
     return this.http.get<{ data: Uom }>(`company/fetch/${id}`).pipe(
       map((resp) => {
@@ -971,7 +970,6 @@ export class MasterService {
   }
 
   // Currency Master
-
   getAllCurrencies() {
     return this.http.get<{ data: any }>('currency').pipe(
       map((resp) => {
@@ -1025,7 +1023,6 @@ export class MasterService {
     )
   }
   //container-type-master
-
   getAllContainerType() {
     return this.http.get<ContainerType>('ConatinerType').pipe(
       map((resp: any) => {
@@ -1035,9 +1032,6 @@ export class MasterService {
     )
   }
 
-
-
-
   getContainerTypeById(id: number) {
     return this.http.get<{ data: ContainerType }>(`containerType/containerTypeId/${id}`).pipe(
       map((resp) => {
@@ -1046,12 +1040,6 @@ export class MasterService {
       })
     )
   }
-
-
-
-
-
-
   createNewContainerType(payload: any) {
     return this.http.post("containerType/add", payload).pipe(
       map((res: any) => {
@@ -1078,8 +1066,6 @@ export class MasterService {
   }
 
   //Commodity-master
-
-
   getAllCommodity() {
     return this.http.get<Commodity>('commodity').pipe(
       map((resp: any) => {
@@ -1088,14 +1074,11 @@ export class MasterService {
       })
     );
   }
-
   createNewCommodity(payload: any) {
     return this.http.post<{ data: Commodity }>('commodity/create', payload).pipe(
       map((res) => res.data)
     );
   }
-
-
 
 
   updateCommodityById(id: number, payload: any) {
@@ -1107,16 +1090,15 @@ export class MasterService {
   }
 
 
-
   deleteCommodityById(id: number) {
     return this.http.delete<{ data: any }>(`commodity/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
       })
-
-    )
+    );
   }
+
 
   getCommodityById(id: number) {
     return this.http.get<{ data: Commodity }>(`commodity/fetch/${id}`).pipe(
@@ -1135,7 +1117,58 @@ export class MasterService {
     )
   }
 
+  // Division-master
+  getAllDivisions() {
+    return this.http.get<{ data: Division[] }>('division').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
 
 
+  getDivisionById(id: number) {
+    return this.http.get<{ data: Division }>(`division/divisionId/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
 
+  createNewDivision(payload: any) {
+    return this.http.post('division/add', payload).pipe(
+      map((re: any) => {
+        return resizeBy;
+      })
+    );
+  }
+
+  updateDivisionById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`division/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+
+    )
+  }
+
+  deleteDivisionById(id: number) {
+    return this.http.delete<{ data: any }>(`division/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  searchDivisionList(payload) {
+    return this.http.post("division/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    );
+  }
 }
