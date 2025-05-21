@@ -53,6 +53,11 @@ import { TimeZoneComponent } from './time-zone/time-zone.component';
 import { TimeZoneListComponent } from './time-zone/time-zone-list/time-zone-list.component';
 import { IncoComponent } from './inco/inco.component';
 import { IncoListComponent } from './inco/inco-list/inco-list.component';
+import { ChargeListComponent } from './charge/charge-list/charge-list.component';
+import { ChargeEntryComponent } from './charge/charge-entry/charge-entry.component';
+import { TermsConditionListComponent } from './terms-condition/terms-condition-list/terms-condition-list.component';
+import { TermsConditionEntryComponent } from './terms-condition/terms-condition-entry/terms-condition-entry.component';
+import { HSSACComponent } from './HS-SAC/hs-sac/hs-sac.component';
 
 
 
@@ -833,6 +838,61 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: "Master", url: "/master" },
             { title: "Time Zone" },
+          ],
+        },
+      },
+      {
+        path: "charge/list",
+        component: ChargeListComponent,
+        data: {
+          title: "Charge",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Charge" },
+          ],
+        },
+      },
+      {
+        path: "charge/entry",
+        component: ChargeEntryComponent,
+        data: {
+          title: "Charge",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Charge" },
+          ],
+        },
+      },
+       {
+        path: "terms-condition/list",
+        component: TermsConditionListComponent,
+        data: {
+          title: "Terms and Condition",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Terms and Condition" },
+          ],
+        },
+      },
+      {
+        path: "terms-condition/entry",
+        component: TermsConditionEntryComponent,
+        data: {
+          title: "Terms and Condition",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Terms and Condition" },
+          ],
+        },
+      },
+        {
+        path: "hs-sac",
+        component: HSSACComponent,
+        data: {
+          title: "HS-SAC",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "HS-SAC" },
           ],
         },
       },

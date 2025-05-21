@@ -281,6 +281,36 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
+      {
+        path: '/master/charge/list',
+        title: 'Charge',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+       {
+        path: '/master/terms-condition/list',
+        title: 'Terms and Condition',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+       {
+        path: '/master/hs-sac',
+        title: 'HS-SAC',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
     ]
   },
 

@@ -118,7 +118,12 @@
                         </td>
                         <td>{{item.UOMName}}</td>
                         <td>{{item.UOMCode}}</td>
-                        <td>{{getStatusText(item.status)}}</td>
+                        <td>
+                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                {{getStatusText(item.status)}}
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
