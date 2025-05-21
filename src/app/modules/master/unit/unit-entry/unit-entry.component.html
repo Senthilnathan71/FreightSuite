@@ -137,43 +137,50 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 mt-md-0 mt-3">
+            <div class="col-md-6 mt-md-3 mt-3">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-12 d-flex flex-wrap gap-3 mb-3 border-bottom">
-                            <label class="form-check-label ms-2">Job Type <span class="text-danger">*</span></label>
-                            <label *ngFor="let option of jobType">
-                                <input type="radio" [value]="option.id" formControlName="jobType" name="jobType" />
-                                {{ option.name }}
-                            </label>
-                            @if(unitForm.get('jobType')?.touched && unitForm.get('jobType')?.invalid){
-                            <div class="error-message">
-                                @if(unitForm.get('jobType')?.hasError('required')){
-                                <span>Job Type is required</span>
-                                } @else if(unitForm.get('jobType')?.hasError('maxlength')){
-                                <span>Max 10 Characters</span>
-                                }
-                            </div>
-                            }
-                        </div>
-                        <div class="col-12  d-flex flex-wrap gap-3">
-                            <label class="form-check-label ms-2">Measurement Type <span
+                        <div class="col-12   border-bottom">
+                            <label class="form-check-label ms-2 my-3">Job Type <span
                                     class="text-danger">*</span></label>
-                            <label *ngFor="let option of measurementType">
-                                <input type="radio" [value]="option.id" formControlName="measurementType"
-                                    name="measurementType" />
-                                {{ option.name }}
-                            </label>
-                            @if(unitForm.get('measurementType')?.touched &&
-                            unitForm.get('measurementType')?.invalid){
-                            <div class="error-message">
-                                @if(unitForm.get('measurementType')?.hasError('required')){
-                                <span>Measurement Type is required</span>
-                                } @else if(unitForm.get('measurementType')?.hasError('maxlength')){
-                                <span>Max 10 Characters</span>
+                            <div class="col-md-12 d-flex flex-wrap gap-3 mb-3 align-items-center ms-4">
+                                <label *ngFor="let option of jobType">
+                                    <input type="radio" [value]="option.id" formControlName="jobType" name="jobType" />
+                                    {{ option.name }}
+                                </label>
+                                @if(unitForm.get('jobType')?.touched && unitForm.get('jobType')?.invalid){
+                                <div class="error-message">
+                                    @if(unitForm.get('jobType')?.hasError('required')){
+                                    <span>Job Type is required</span>
+                                    } @else if(unitForm.get('jobType')?.hasError('maxlength')){
+                                    <span>Max 10 Characters</span>
+                                    }
+                                </div>
                                 }
                             </div>
-                            }
+
+                        </div>
+                        <div class="col-12 ">
+                            <label class="form-check-label ms-2 my-3">Measurement Type <span
+                                    class="text-danger">*</span></label>
+                            <div class="col-md-12 d-flex flex-wrap gap-3 ms-4">
+                                <label *ngFor="let option of measurementType">
+                                    <input type="radio" [value]="option.id" formControlName="measurementType"
+                                        name="measurementType" />
+                                    {{ option.name }}
+                                </label>
+                                @if(unitForm.get('measurementType')?.touched &&
+                                unitForm.get('measurementType')?.invalid){
+                                <div class="error-message">
+                                    @if(unitForm.get('measurementType')?.hasError('required')){
+                                    <span>Measurement Type is required</span>
+                                    } @else if(unitForm.get('measurementType')?.hasError('maxlength')){
+                                    <span>Max 10 Characters</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+
                         </div>
                     </div>
                 </div>
