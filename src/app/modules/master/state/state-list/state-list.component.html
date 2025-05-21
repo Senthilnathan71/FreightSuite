@@ -21,7 +21,7 @@
                 <div class="" data-bs-theme="light">
                     <form
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="search()">
                             <i class="fas fa-search me-1"></i>
                             Search
                         </button>
@@ -33,7 +33,7 @@
                             <i class="fas fa-file-alt me-1"></i>
                             Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
@@ -115,9 +115,17 @@
                         </td>
 
                         <td>
-                            <div class="text-truncate">
-                                {{ getStatusText(item.status) }}
+                            @if(item.status === "A"){
+                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                Active
                             </div>
+                            } @else {
+                            <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                Invalid
+                            </div>
+                            }
                         </td>
                     </tr>
                 </tbody>

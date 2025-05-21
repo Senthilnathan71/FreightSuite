@@ -51,11 +51,11 @@ export class DivisionEntryComponent {
   // Initialize the Form
   initForm() {
     this.divisionForm = this.fb.group({
-      divisionName: ['', [Validators.required]],
-      divisionCode: ['', [Validators.required]],
-      Address: ['', [Validators.required]],
+      DivisionName: ['', [Validators.required]],
+      DivisionCode: ['', [Validators.required]],
+      // Address: ['', [Validators.required]],
       Remarks: ['', [Validators.required]],
-      Status: ['']
+      status: ['']
     });
   }
 
@@ -73,11 +73,11 @@ export class DivisionEntryComponent {
       const payload = (this.isEditMode) ? {
         ...formValue,
         ...updatedBy,
-        Status: this.Status === "A" ? "A" : "I"
+        status: this.Status === "A" ? "A" : "I"
       } : {
         ...formValue,
         ...createdBy,
-        Status: this.Status === "Active" ? "A" : "C"
+        status: this.Status === "Active" ? "A" : "C"
       };
 
       console.log('payload', payload);

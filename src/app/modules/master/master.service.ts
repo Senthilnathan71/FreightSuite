@@ -1024,7 +1024,7 @@ export class MasterService {
   }
   //container-type-master
   getAllContainerType() {
-    return this.http.get<ContainerType>('ConatinerType').pipe(
+    return this.http.get<ContainerType>('container-type').pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -1042,7 +1042,7 @@ export class MasterService {
   }
 
   getContainerTypeById(id: number) {
-    return this.http.get<{ data: ContainerType }>(`containerType/containerTypeId/${id}`).pipe(
+    return this.http.get<{ data: ContainerType }>(`container-type/containerTypeId/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1050,7 +1050,7 @@ export class MasterService {
     )
   }
   createNewContainerType(payload: any) {
-    return this.http.post("containerType/add", payload).pipe(
+    return this.http.post("container-type/add", payload).pipe(
       map((res: any) => {
         return res;
       })
@@ -1058,7 +1058,7 @@ export class MasterService {
   }
 
   updateContainerTypeById(id: number, payload: any) {
-    return this.http.patch<{ data: any }>(`containerType/update/${id}`, payload).pipe(
+    return this.http.patch<{ data: any }>(`container-type/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1066,7 +1066,7 @@ export class MasterService {
     )
   }
   deleteContainerTypeById(id: number) {
-    return this.http.delete<{ data: any }>(`containerType/delete/${id}`).pipe(
+    return this.http.delete<{ data: any }>(`container-type/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1138,7 +1138,7 @@ export class MasterService {
 
 
   getDivisionById(id: number) {
-    return this.http.get<{ data: Division }>(`division/divisionId/${id}`).pipe(
+    return this.http.get<{ data: Division }>(`division/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;

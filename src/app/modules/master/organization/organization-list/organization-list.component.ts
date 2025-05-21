@@ -73,4 +73,9 @@ export class OrganizationListComponent {
   navigateToCreateOrganization() {
     this.router.navigate(['master/organization/entry'])
   }
+
+  reset(){
+    this.organizationList=[];
+    this.totalLengthOfCollection=0;
+  }
 }

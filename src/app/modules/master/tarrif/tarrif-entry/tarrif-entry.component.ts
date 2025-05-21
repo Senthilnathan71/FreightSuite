@@ -163,4 +163,7 @@ export class TarrifEntryComponent implements OnInit {
     }
   }
 
+  resetForm(){
+    this.inputForm.reset();
+  }
 }

@@ -619,7 +619,18 @@ export const MasterRoutes: Routes = [
         path: "division/entry",
         component: DivisionEntryComponent,
         data: {
-          title: "Division",
+          title: "Add Division",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "division" },
+          ],
+        },
+      },
+      {
+        path: "division/entry/:id",
+        component: DivisionEntryComponent,
+        data: {
+          title: "Edit Division",
           urls: [
             { title: "Master", url: "/master" },
             { title: "division" },
@@ -641,7 +652,18 @@ export const MasterRoutes: Routes = [
         path: "container-type/entry",
         component: ContainerTypeEntryComponent,
         data: {
-          title: "Container Type",
+          title: "Add Container Type",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Container Type" },
+          ],
+        },
+      },
+      {
+        path: "container-type/entry/:id",
+        component: ContainerTypeEntryComponent,
+        data: {
+          title: "Edit Container Type",
           urls: [
             { title: "Master", url: "/master" },
             { title: "Container Type" },

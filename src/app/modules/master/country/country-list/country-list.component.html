@@ -23,7 +23,7 @@
                 <div class="" data-bs-theme="light">
                     <form
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchCountry()">
                             <i class="fas fa-search me-1"></i>
                             Search
                         </button>
@@ -112,6 +112,7 @@
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
                             <th class="bg-transparent text-light" scope="col">Name</th>
                             <th class="bg-transparent text-light" scope="col">Code</th>
                             <th class="bg-transparent text-light" scope="col">Dailing Code</th>
@@ -120,11 +121,23 @@
                             <th class="bg-transparent text-light" scope="col">AWB Curr.</th>
                             <th class="bg-transparent text-light" scope="col">Remarks</th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
-                            <th class="bg-transparent text-light" scope="col">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let country of filteredCountry">
+                            <td>
+                                @if(country.status === "A"){
+                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                Active
+                            </div>
+                            } @else {
+                            <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                Invalid
+                            </div>
+                            }
+                            </td>
                             <td>
                                 {{ country.countryName}}
                             </td>
@@ -148,15 +161,9 @@
                                 {{ country.Remarks}}
                             </td>
                             <td>
-                                <span
-                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    {{ country.status === 'A' ? 'Active' : 'Cancelled' }}</span>
-                            </td>
-                            <td>
                                 <div class="d-flex align-items-center">
                                     <a class="text-info mx-2" class="link mx-2 ps-3 "
-                                        [routerLink]="['/crm/country/entry/', country.CountryMasterSid]">
+                                        [routerLink]="['/master/country/entry/', country.CountryMasterSid]">
                                         <i-feather class="feather-sm" name="eye"></i-feather>
                                     </a>
                                     <a class="text-danger mx-2 ps-3 border-start"

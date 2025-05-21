@@ -40,7 +40,7 @@
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
       <div class="col-md-4 pb-2">
-        <h4 class="page-title mb-0">Company</h4>
+        <h4 class="page-title mb-0">Division</h4>
       </div>
       <div class="col-md-8 pb-2">
         <div class="" data-bs-theme="light">
@@ -71,8 +71,8 @@
             <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
               <div class="form-outline col-12 col-md px-0">
                 <select [(ngModel)]="searchType" name="searchType" class="form-select">
-                  <option value="divisionName">Division Name</option>
-                  <option value="divisionCode">Division Code</option>
+                  <option value="DivisionName">Division Name</option>
+                  <option value="DivisionCode">Division Code</option>
                   <option value="address">Address</option>
                   <option value="status">Status</option>
                 </select>
@@ -115,16 +115,26 @@
               </div>
             </td>
             <td>
-              <div class="text-truncate">{{ item.divisionName }}</div>
+              <div class="text-truncate">{{ item.DivisionName }}</div>
             </td>
             <td>
-              <div class="text-truncate">{{ item.divisionCode }}</div>
+              <div class="text-truncate">{{ item.DivisionCode }}</div>
             </td>
             <td>
               <div class="text-truncate">{{ item.address || '-' }}</div>
             </td>
             <td>
-              <div class="text-truncate">{{item.Status === 'A'? "Active":"Invalid"}}</div>
+              @if(item.status === "A"){
+                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                  <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                      Active
+                </div>
+                } @else {
+                    <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                        <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                            Invalid
+                    </div>
+              }
             </td>
           </tr>
         </tbody>

@@ -18,7 +18,7 @@ import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interfa
   styleUrl: './division-list.component.scss'
 })
 export class DivisionListComponent implements OnInit {
-  searchType = 'divisionName'; 
+  searchType = 'DivisionName'; 
   filterValue = '';
   results: any[] = [];
   divisionList: any[] = [];

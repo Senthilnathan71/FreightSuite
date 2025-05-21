@@ -44,7 +44,7 @@
           <div class="row">
             <aside class="col-md-4">
               <div class="custom-form-group">
-                <input type="text" id="text-input" formControlName="divisionName" placeholder=""
+                <input type="text" id="text-input" formControlName="DivisionName" placeholder=""
                   class="custom-input-field sm">
                 <label for="text-input" class="input-label">Division Name <span
                     class="text-danger fw-bold">*</span></label>
@@ -52,7 +52,7 @@
             </aside>
             <aside class="col-md-4">
               <div class="custom-form-group">
-                <input type="text" formControlName="divisionCode" id="text-input" placeholder=""
+                <input type="text" formControlName="DivisionCode" id="text-input" placeholder=""
                   class="custom-input-field sm">
                 <label for="text-input" class="input-label">Division Code <span
                     class="text-danger fw-bold">*</span></label>
@@ -75,7 +75,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <select formControlName="Status" class="form-select">
-                  <option value="">Status</option>
+                  <option value="">status</option>
                   <option *ngFor="let option of statusList" [value]="option">{{ option }}</option>
                 </select>
                 <label for="text-input" class="input-label">Status <span class="text-danger fw-bold">*</span></label>
