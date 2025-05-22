@@ -1,5 +1,6 @@
 export interface Sector {
     SectorMasterSid: number,
+    sectorCode: String,
     sectorName: string,
     LoginSid: string,
     createdBy: string,
