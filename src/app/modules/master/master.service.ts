@@ -21,6 +21,9 @@ import { Currency } from '../crm-mobile/Interfaces/currency.interface';
   providedIn: 'root',
 })
 export class MasterService {
+  editSector(sectorId: number, payload: any) {
+    throw new Error('Method not implemented.');
+  }
   searchCountries(term: string): any {
     throw new Error('Method not implemented.');
   }
@@ -1180,4 +1183,59 @@ export class MasterService {
       })
     );
   }
+  //sector-master//
+
+
+  getSectorById(id: number) {
+    return this.http.get<{ data: Sector }>(`sector/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createSector(payload: any) {
+    return this.http.post('sector/create', payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    );
+  }
+
+  updateSector(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`sector/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getAllSectors() {
+    return this.http.get('sector').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  deleteSector(id: number) {
+    return this.http.delete<{ data: any }>(`sector/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  searchSectors(payload) {
+    return this.http.post('sector/search-list', payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    );
+  }
+
 }

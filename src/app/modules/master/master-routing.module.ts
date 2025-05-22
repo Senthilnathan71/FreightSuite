@@ -467,6 +467,19 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+            path: "sector/entry/:id",
+            component: SectorEntryComponent,
+            data: {
+              title: "Sector edit",
+              urls: [
+                { title: "Master", url: "/master" },
+                { title: "Sector Edit" },
+              ],
+            },
+          }
+        ]
+      },
+      {
         path: "menu/list",
         component: MenuListComponent,
         data: {
@@ -897,6 +910,7 @@ export const MasterRoutes: Routes = [
         },
       },
     ]
-  }
+  
 
-];
+
+
