@@ -37,6 +37,17 @@ export const AccountRoutes: Routes = [
         },
       },
       {
+        path: "currency-exchange/entry/:id",
+        component: CurrencyExchangeEntryComponent,
+        data: {
+          title: "Edit Currency Exchange",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Currency Exchange" },
+          ],
+        },
+      },
+      {
         path: "tax-group/list",
         component: TaxGroupListComponent,
         data: {

@@ -1,103 +1,153 @@
 <div class="row">
-      <div class="col-12">
-             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Add Currency Exchange</h4>
-            </div>
-            <div class="col-md-8 pb-2">
-                <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        >
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                      <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80">
-                        <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        >
-                        <i class="fas fa-sync-alt me-1"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                        >
-                        <i class="fas fa-save me-1"></i>
-                        Save
-                    </button>
-                </div>
-            </div>
+  <div class="col-12">
+    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+      <div class="col-md-4 pb-2">
+        <h4 class="page-title mb-0">{{ isEditMode ? 'Edit' : 'Add' }} Currency Exchange</h4>
+      </div>
+      <div class="col-md-8 pb-2">
+        <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                  (click)="goBack()">
+            <i class="fas fa-chevron-left me-1"></i>
+            Back
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                  (click)="reset()">
+            <i class="fas fa-sync-alt me-1"></i>
+            Reset
+          </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                  (click)="onSubmit()" [disabled]="loading || currencyExchangeForm.invalid">
+            <i class="fas fa-save me-1"></i>
+            {{ loading ? 'Saving...' : 'Save' }}
+          </button>
         </div>
-        </div>
-    
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-
-                <div class="row">
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Effective From <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">From Currency <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">To Currency <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Sell Rate <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Buy Rate <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Bank Name <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <textarea placeholder="" class="custom-textarea-field sm" maxlength="100"></textarea>
-                            <label for="remarks" class="input-label">
-                                Remarks <span class="text-danger fw-bold">*</span>
-                            </label>
-                        </div>
-                    </aside>
-
-
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Status <span
-                                    class="text-danger fw-bold">*</span></label>
-                        </div>
-                    </aside>
-
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+  </div>
+  
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <form [formGroup]="currencyExchangeForm">
+          <div class="row">
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="date" id="EffectiveFrom" formControlName="EffectiveFrom" class="custom-input-field sm">
+                <label for="EffectiveFrom" class="input-label">Effective From <span class="text-danger fw-bold">*</span></label>
+                <div *ngIf="currencyExchangeForm.get('EffectiveFrom').touched && currencyExchangeForm.get('EffectiveFrom').errors" class="text-danger">
+                  <div *ngIf="currencyExchangeForm.get('EffectiveFrom').errors['required']">Effective From is required</div>
+                </div>
+              </div>
+            </aside>
+            
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="FromCurrency" formControlName="FromCurrency" class="custom-input-field sm" maxlength="3" uppercase>
+                <label for="FromCurrency" class="input-label">From Currency <span class="text-danger fw-bold">*</span></label>
+                <div *ngIf="currencyExchangeForm.get('FromCurrency').touched && currencyExchangeForm.get('FromCurrency').errors" class="text-danger">
+                  <div *ngIf="currencyExchangeForm.get('FromCurrency').errors['required']">From Currency is required</div>
+                  <div *ngIf="currencyExchangeForm.get('FromCurrency').errors['maxlength']">Max length is 3 characters</div>
+                  <div *ngIf="currencyExchangeForm.get('FromCurrency').errors['pattern']">Must be 3 uppercase letters</div>
+                </div>
+              </div>
+            </aside>
+            
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="ToCurrency" formControlName="ToCurrency" class="custom-input-field sm" maxlength="3" uppercase>
+                <label for="ToCurrency" class="input-label">To Currency <span class="text-danger fw-bold">*</span></label>
+                <div *ngIf="currencyExchangeForm.get('ToCurrency').touched && currencyExchangeForm.get('ToCurrency').errors" class="text-danger">
+                  <div *ngIf="currencyExchangeForm.get('ToCurrency').errors['required']">To Currency is required</div>
+                  <div *ngIf="currencyExchangeForm.get('ToCurrency').errors['maxlength']">Max length is 3 characters</div>
+                  <div *ngIf="currencyExchangeForm.get('ToCurrency').errors['pattern']">Must be 3 uppercase letters</div>
+                </div>
+              </div>
+            </aside>
+            
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="number" step="0.00001" id="SellRate" formControlName="SellRate" class="custom-input-field sm">
+                <label for="SellRate" class="input-label">Sell Rate <span class="text-danger fw-bold">*</span></label>
+                <div *ngIf="currencyExchangeForm.get('SellRate').touched && currencyExchangeForm.get('SellRate').errors" class="text-danger">
+                  <div *ngIf="currencyExchangeForm.get('SellRate').errors['required']">Sell Rate is required</div>
+                  <div *ngIf="currencyExchangeForm.get('SellRate').errors['pattern']">Enter a valid decimal number (max 5 decimal places)</div>
+                </div>
+              </div>
+            </aside>
+            
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="number" step="0.00001" id="BuyRate" formControlName="BuyRate" class="custom-input-field sm">
+                <label for="BuyRate" class="input-label">Buy Rate <span class="text-danger fw-bold">*</span></label>
+                <div *ngIf="currencyExchangeForm.get('BuyRate').touched && currencyExchangeForm.get('BuyRate').errors" class="text-danger">
+                  <div *ngIf="currencyExchangeForm.get('BuyRate').errors['required']">Buy Rate is required</div>
+                  <div *ngIf="currencyExchangeForm.get('BuyRate').errors['pattern']">Enter a valid decimal number (max 5 decimal places)</div>
+                </div>
+              </div>
+            </aside>
+            
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="BankName" formControlName="BankName" class="custom-input-field sm">
+                <label for="BankName" class="input-label">Bank Name <span class="text-danger fw-bold">*</span></label>
+                <div *ngIf="currencyExchangeForm.get('BankName').touched && currencyExchangeForm.get('BankName').errors" class="text-danger">
+                  <div *ngIf="currencyExchangeForm.get('BankName').errors['required']">Bank Name is required</div>
+                </div>
+              </div>
+            </aside>
+            
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <select id="CompanyMasterSid" formControlName="CompanyMasterSid" class="custom-input-field sm" [disabled]="loading">
+                  <option [value]="null" disabled>Select Company</option>
+                  <option *ngFor="let company of companyMasterList" [value]="company.CompanyMasterSid">
+                    {{company.CompanyName}}
+                  </option>
+                </select>
+                <label for="CompanyMasterSid" class="input-label">Company <span class="text-danger fw-bold">*</span></label>
+                <div *ngIf="currencyExchangeForm.get('CompanyMasterSid').touched && currencyExchangeForm.get('CompanyMasterSid').errors" class="text-danger">
+                  <div *ngIf="currencyExchangeForm.get('CompanyMasterSid').errors['required']">Company is required</div>
+                </div>
+              </div>
+            </aside>
+            
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <select id="BranchMasterSid" formControlName="BranchMasterSid" class="custom-input-field sm" [disabled]="loading || !currencyExchangeForm.get('CompanyMasterSid').value">
+                  <option [value]="null" disabled>Select Branch</option>
+                  <option *ngFor="let branch of branchMasterList" [value]="branch.BranchMasterSid">
+                    {{branch.BranchName}}
+                  </option>
+                </select>
+                <label for="BranchMasterSid" class="input-label">Branch <span class="text-danger fw-bold">*</span></label>
+                <div *ngIf="currencyExchangeForm.get('BranchMasterSid').touched && currencyExchangeForm.get('BranchMasterSid').errors" class="text-danger">
+                  <div *ngIf="currencyExchangeForm.get('BranchMasterSid').errors['required']">Branch is required</div>
+                </div>
+              </div>
+            </aside>
+            
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <textarea id="Remarks" formControlName="Remarks" class="custom-textarea-field sm" maxlength="100"></textarea>
+                <label for="Remarks" class="input-label">Remarks</label>
+              </div>
+            </aside>
+            
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <select id="status" formControlName="status" class="custom-input-field sm">
+                  <option *ngFor="let status of statusList" [value]="status">{{status}}</option>
+                </select>
+                <label for="status" class="input-label">Status <span class="text-danger fw-bold">*</span></label>
+                <div *ngIf="currencyExchangeForm.get('status').touched && currencyExchangeForm.get('status').errors" class="text-danger">
+                  <div *ngIf="currencyExchangeForm.get('status').errors['required']">Status is required</div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
