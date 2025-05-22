@@ -55,75 +55,78 @@
     </div>
   </div>
 
-  <div class="col-12" *ngIf="totalLengthOfCollection > 0">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle no-wrap table-bordered">
-        <thead>
-          <tr class="bg-info">
-            <th class="bg-transparent text-light" scope="col">Actions</th>
-            <th class="bg-transparent text-light" scope="col">Port Name</th>
-            <th class="bg-transparent text-light" scope="col">Port Code</th>
-            <th class="bg-transparent text-light" scope="col">Country</th>
-            <th class="bg-transparent text-light" scope="col">Sector</th>
-            <th class="bg-transparent text-light" scope="col">Port Type</th>
-            <th class="bg-transparent text-light" scope="col">Terminal</th>
-            <th class="bg-transparent text-light" scope="col">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of portList; let i = index; trackBy: trackByIndex">
-            <td>
-              <div class="d-flex align-items-center">
-                <a class="text-info mx-2" [routerLink]="['/master/port-master/view/', item.PortMasterSid]">
-                  <i-feather class="feather-sm" name="eye"></i-feather>
-                </a>
-                <a class="text-danger mx-2 ps-3 border-start" (click)="deletePort(item.PortMasterSid)">
-                  <i-feather name="trash-2" class="feather-sm"></i-feather>
-                </a>
-              </div>
-            </td>
-            <td>
-              <div class="text-truncate">{{item.PortName}}</div>
-            </td>
-            <td>
-              <div class="text-truncate">{{item.PortCode}}</div>
-            </td>
-            <td>
-              <div class="text-truncate">{{item.countryMaster?.countryName || ''}}</div>
-            </td>
-            <td>
-              <div class="text-truncate">{{item.sectorMaster?.sectorName || ''}}</div>
-            </td>
-            <td>
-              <div class="text-truncate">{{item.PortType}}</div>
-            </td>
-            <td>
-              <div class="text-truncate">{{item.TerminalCode}}</div>
-            </td>
-            <td>
-              @if(item.status === "A"){
-              <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                Active
-              </div>
-              } @else {
-              <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                Invalid
-              </div>
-              }
-            </td>
+  <div class="row  bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+    <div class="col-12 p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle no-wrap table-bordered">
+          <thead>
+            <tr class="bg-info">
+              <th class="bg-transparent text-light" scope="col">Actions</th>
+              <th class="bg-transparent text-light" scope="col">Port Name</th>
+              <th class="bg-transparent text-light" scope="col">Port Code</th>
+              <th class="bg-transparent text-light" scope="col">Country</th>
+              <th class="bg-transparent text-light" scope="col">Sector</th>
+              <th class="bg-transparent text-light" scope="col">Port Type</th>
+              <th class="bg-transparent text-light" scope="col">Terminal</th>
+              <th class="bg-transparent text-light" scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of portList; let i = index; trackBy: trackByIndex">
+              <td>
+                <div class="d-flex align-items-center">
+                  <a class="text-info mx-2" [routerLink]="['/master/port-master/view/', item.PortMasterSid]">
+                    <i-feather class="feather-sm" name="eye"></i-feather>
+                  </a>
+                  <a class="text-danger mx-2 ps-3 border-start" (click)="deletePort(item.PortMasterSid)">
+                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                  </a>
+                </div>
+              </td>
+              <td>
+                <div class="text-truncate">{{item.PortName}}</div>
+              </td>
+              <td>
+                <div class="text-truncate">{{item.PortCode}}</div>
+              </td>
+              <td>
+                <div class="text-truncate">{{item.countryMaster?.countryName || ''}}</div>
+              </td>
+              <td>
+                <div class="text-truncate">{{item.sectorMaster?.sectorName || ''}}</div>
+              </td>
+              <td>
+                <div class="text-truncate">{{item.PortType}}</div>
+              </td>
+              <td>
+                <div class="text-truncate">{{item.TerminalCode}}</div>
+              </td>
+              <td>
+                @if(item.status === "A"){
+                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                  <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                  Active
+                </div>
+                } @else {
+                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                  <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                  Invalid
+                </div>
+                }
+              </td>
 
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div>
-      <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-        [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
-      </ngb-pagination>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+          [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+        </ngb-pagination>
+      </div>
     </div>
   </div>
+
 
   <!-- No records found -->
   <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
