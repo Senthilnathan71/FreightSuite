@@ -542,7 +542,18 @@ export const MasterRoutes: Routes = [
         path: "company/entry",
         component: CompanyEntryComponent,
         data: {
-          title: "Company",
+          title: "Add Company",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Company" },
+          ],
+        },
+      },
+      {
+        path: "company/entry/:id",
+        component: CompanyEntryComponent,
+        data: {
+          title: "Edit Company",
           urls: [
             { title: "Master", url: "/master" },
             { title: "Company" },

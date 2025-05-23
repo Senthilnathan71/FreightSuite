@@ -1,38 +1,27 @@
-
 <div class="row py-3">
 
-
-    <!-- <div class="col-12">
-        <div class="d-flex align-items-center gap-2 mb-3">
-            <button class="btn btn-sm btn-light-secondary ms-auto">Edit</button>
-            <button class="btn btn-sm btn-info">Update</button>
-        </div>
-    </div> -->
       <div class="col-12">
              <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Add Company</h4>
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Company' :'Add Company'}}</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()"
                         >
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                      <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80">
-                        <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetCompanyForm()"
                         >
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                        >
+                       [disabled]="companyForm.invalid" (click)="submitCompanyForm()">
                         <i class="fas fa-save me-1"></i>
-                        Save
+                        {{isEditMode ? 'Update' : 'Create'}}
                     </button>
                 </div>
             </div>
@@ -42,381 +31,1034 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
-                    <li [ngbNavItem]="1">
-                        <button ngbNavLink>Company</button>
-                        <ng-template ngbNavContent>
-                            <ng-container *ngTemplateOutlet="company"></ng-container>
-                        </ng-template>
-                    </li>
-                    <li [ngbNavItem]="2">
-                        <button ngbNavLink> 
-                            <i-feather name="file-text" class="feather-sm"></i-feather>
-                        Logo</button>
-                        <ng-template ngbNavContent>
-                            <ng-container *ngTemplateOutlet="Logo"></ng-container>
-                        </ng-template>
-                    </li>
-                    <li [ngbNavItem]="3">
-                        <button ngbNavLink><i-feather name="settings" class="feather-sm"></i-feather> eDocs Setup</button>
-                        <ng-template ngbNavContent>
-                            <ng-container *ngTemplateOutlet="eDocssetup"></ng-container>
-                        </ng-template>
-                    </li>
-                </ul>
-    
-                <section [ngbNavOutlet]="nav" class="mt-2 p-2"></section>
+                <ng-container *ngTemplateOutlet="companyTemplate"></ng-container>
             </div>
         </div>
     </div>
 </div>
 
 
+                                    <!-- COMPANY ENTRY FORM  -->
 
-<ng-template #company>
+<ng-template #companyTemplate>
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-12">
             <div class="card h-100">
-                <div class="card-body">
+                <div class="card-body" [formGroup]="companyForm">
                     <div class="row">
-                        <aside class="col-md-8">
+
+                                            <!-- COMPANY NAME -->
+
+                        <aside class="col-md-4 col-lg-2">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="CompanyName" >
-                                <label for="text-input" class="input-label">Company Name <span class="text-danger">*</span></label>    
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="companyName" [onlyText]="100">
+                                <label for="text-input" class="input-label">Company Name <span class="text-danger">*</span></label>
+
+                                <!--  Validation -->
+                                @if(companyForm.get('companyName')?.touched && companyForm.get('companyName')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('companyName')?.hasError('required')){
+                                            <span>Company Name is required</span>
+                                        } @else if(companyForm.get('companyName')?.hasError('numberNotAllowed')){
+                                            <span>Only Alphabets are allowed</span>
+                                        } @else if(companyForm.get('companyName')?.hasError('maxlength')){
+                                            <span>Max 100 Characters</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
-                        <aside class="col-md-4">
+
+                                                    <!-- COMPANY CODE -->
+
+                        <aside class="col-md-3 col-lg-2">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Code" >
-                                <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="companyCode" [textWithNumbers]="10">
+                                <label for="text-input" class="input-label">Company Code <span class="text-danger">*</span></label>
+
+                                <!--  Validation -->
+                                @if(companyForm.get('companyCode')?.touched && companyForm.get('companyCode')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('companyCode')?.hasError('required')){
+                                            <span>Company Code is required</span>
+                                        } @else if(companyForm.get('companyCode')?.hasError('maxlength')){
+                                            <span>Max 10 Characters</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
-                        <aside class="col-md-12">
+                        
+                                                    <!-- ADDRESS LINE 1 -->
+
+                        <aside class="col-md-5 col-lg-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="organization" >
-                                <label for="text-input" class="input-label">Organization </label>
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="addressLine1" [textWithNumbers]="500">
+                                <label for="text-input" class="input-label">Address Line 1 <span class="text-danger">*</span></label>
                                 
+                                <!--  Validation -->
+                                @if(companyForm.get('addressLine1')?.touched && companyForm.get('addressLine1')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('addressLine1')?.hasError('required')){
+                                            <span>Address Line 1 is required</span>
+                                        } @else if(companyForm.get('addressLine1')?.hasError('maxlength')){
+                                            <span>Max 500 Characters</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="address1" >
-                                <label for="text-input" class="input-label">Address1</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="address2" >
-                                <label for="text-input" class="input-label">Address2</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="address3" >
-                                <label for="text-input" class="input-label">Address3</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="city" >
-                                <label for="text-input" class="input-label">City</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="state" >
-                                <label for="text-input" class="input-label">State</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="postCode" >
-                                <label for="text-input" class="input-label">Post Code</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="phone" >
-                                <label for="text-input" class="input-label">Phone</label>
-                               
-                            </div>
-                           
-                        </aside>
-                       
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="email" id="text-input" placeholder="" class="custom-input-field sm" formControlName="email" >
-                                <label for="text-input" class="input-label">Email</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="fax" >
-                                <label for="text-input" class="input-label">Fax</label>
-                               
-                            </div>
-                        </aside>
-                       
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100 ">
-                <div class="card-body">
-                    <div class="row">
                         
-                        <aside class="col-md-12">
+                                                <!-- ADDRESS LINE 2 -->
+
+                        <aside class="col-md-5 col-lg-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="registrationno1" >
-                                <label for="text-input" class="input-label">Registration No1</label>
-                               
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="addressLine2" [textWithNumbers]="500">
+                                <label for="text-input" class="input-label">Address Line 2</label>
+
+                                <!--  Validation -->
+                                @if(companyForm.get('addressLine2')?.touched && companyForm.get('addressLine2')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('addressLine2')?.hasError('maxlength')){
+                                            <span>Max 500 Characters</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
-                        <aside class="col-md-12">
+                        
+                                            <!-- POSTAL CODE -->
+                                            
+                        <aside class="col-md-3 col-lg-2">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="registrationno2" >
-                                <label for="text-input" class="input-label">Registration No2</label>
-                               
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="postal_code" [onlyNumbers]="10">
+                                <label for="text-input" class="input-label">Postal Code <span class="text-danger">*</span></label>
+
+                                <!--  Validation -->
+                                @if(companyForm.get('postal_code')?.touched && companyForm.get('postal_code')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('postal_code')?.hasError('required')){
+                                            <span>Postal Code is required</span>
+                                        }
+                                        @else if(companyForm.get('postal_code')?.hasError('onlyNumbers')){
+                                            <span>Only Digits are allowed</span>
+                                        }
+                                        @else if(companyForm.get('postal_code')?.hasError('maxlength')){
+                                            <span>Max 10 Characters</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
-                        <aside class="col-md-12">
+                        
+                                                                    <!-- CITY -->
+                        
+                        <aside class="col-md-4 col-lg-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="registrationno3" >
-                                <label for="text-input" class="input-label">Registration No3</label>
-                               
+                                <select formControlName="CityMasterSid" class="form-select">
+                                    <option value="">Select City</option>
+                                    <option *ngFor="let city of cityResults" [value]="city.CityMasterSid">{{city.cityName}}</option>
+                                </select>
+                                <label for="text-input" class="input-label">City <span class="text-danger">*</span></label>
+                        
+                                <!--  Validation -->
+                                @if(companyForm.get('CityMasterSid')?.touched && companyForm.get('CityMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('CityMasterSid')?.hasError('required')){
+                                            <span>City is required</span>
+                                        }
+                                    </div>
+                               }
+                               </div>
+                        </aside>
+                        
+                                                        <!-- STATE -->
+                        
+                        <aside class="col-md-4 col-lg-3">
+                            <div class="custom-form-group">
+                                <select formControlName="StateMasterSid" class="form-select">
+                                    <option value="">Select State</option>
+                                    <option *ngFor="let state of stateResults" [value]="state.StateMasterSid">{{state.stateName}}</option>
+                                </select>
+                                <label for="text-input" class="input-label">State <span class="text-danger">*</span></label>
+                        
+                                <!--  Validation -->
+                                @if(companyForm.get('StateMasterSid')?.touched && companyForm.get('StateMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('StateMasterSid')?.hasError('required')){
+                                            <span>State is required</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
-                        <aside class="col-md-12">
+                        
+                                                        <!-- COUNTRY -->
+                        
+                        <aside class="col-md-4 col-lg-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="VATno" >
-                                <label for="text-input" class="input-label">VAT No </label>
-                               
+                                <select formControlName="CountryMasterSid" class="form-select">
+                                    <option value="">Select Country</option>
+                                    <option *ngFor="let country of countryResults" [value]="country.CountryMasterSid">{{country.countryName}}</option>
+                                </select>
+                                <label for="text-input" class="input-label">Country <span class="text-danger">*</span></label>
+                        
+                                <!--  Validation -->
+                                @if(companyForm.get('CountryMasterSid')?.touched && companyForm.get('CountryMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('CountryMasterSid')?.hasError('required')){
+                                            <span>Country is required</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
-                        <aside class="col-md-12">
+                        
+                                                        <!-- CURRENCY -->
+                        
+                        <aside class="col-md-4 col-lg-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="servicetaxno" >
-                                <label for="text-input" class="input-label">Service Tax No </label>
-                               
+                                <select formControlName="CurrencyMasterSid" class="form-select">
+                                    <option value="">Select Currency</option>
+                                    <option *ngFor="let currency of currencyResults" [value]="currency.CurrencyMasterSid">{{currency.currencyName}}</option>
+                                </select>
+                                <label for="text-input" class="input-label">Currency <span class="text-danger">*</span></label>
+                        
+                                <!--  Validation -->
+                                @if(companyForm.get('CurrencyMasterSid')?.touched && companyForm.get('CurrencyMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('CurrencyMasterSid')?.hasError('required')){
+                                            <span>Currency is required</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
-                        <aside class="col-md-12">
+                        
+                                                        <!-- WEBSITE -->
+                        
+                        <aside class="col-md-4 col-lg-2">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="GSTno" >
-                                <label for="text-input" class="input-label">GST No</label>
-                               
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="webSite" [textWithNumbers]="100">
+                                <label for="text-input" class="input-label">Website </label>
+                        
+                                <!--  Validation -->
+                                @if(companyForm.get('webSite')?.touched && companyForm.get('webSite')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('webSite')?.hasError('maxlength')){
+                                            <span>Max 100 Characters</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
-                        <aside class="col-md-12">
+                        
+                                                        <!-- PHONE NUMBER -->
+                        
+                        <aside class="col-md-4 col-lg-2">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="localLanguage" >
-                                <label for="text-input" class="input-label">Local Language </label>
-                               
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="phoneNumber" [onlyNumbers]="20">
+                                <label for="text-input" class="input-label">Phone Number </label>
+                        
+                                <!--  Validation -->
+                                @if(companyForm.get('phoneNumber')?.touched && companyForm.get('phoneNumber')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('phoneNumber')?.hasError('onlyNumbers')){
+                                            <span>Only Digits are allowed</span>
+                                        }
+                                        @else if(companyForm.get('phoneNumber')?.hasError('maxlength')){
+                                            <span>Max 20 Characters</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
-                        <aside class="col-md-12">
+                        
+                                                        <!-- EMAIL -->
+                        
+                        <aside class="col-md-4 col-lg-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="country" >
-                                <label for="text-input" class="input-label">Country </label>
-                               
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="email">
+                                <label for="text-input" class="input-label">Email </label>
+                        
+                                <!--  Validation -->
+                                @if(companyForm.get('email')?.touched && companyForm.get('email')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('email')?.hasError('email')){
+                                            <span>Invalid Email Format</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
-                        <aside class="col-md-12">
+                        
+                                                        <!-- isHO? -->
+                        
+                        <aside class="col-md-3 col-lg-2">
+                            <div class="form-check form-check-inline mt-3">
+                                    <input type="checkbox" id="Cash" formControlName="isHo" class="form-check-input"
+                                        name="HO" value="Cash" />
+                                    <label for="Cash" class="form-check-label">Head Office <span class="text-danger">*</span></label>
+                                </div>
+                        </aside>
+
+                        
+                                                        <!-- PAN -->
+                        
+                        <!-- <aside class="col-md-4 col-lg-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="remarks" >
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="PAN" [textWithNumbers]="20">
+                                <label for="text-input" class="input-label">PAN </label>
+                        
+                                @if(companyForm.get('PAN')?.touched && companyForm.get('PAN')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('PAN')?.hasError('maxlength')){
+                                            <span>Max 20 Characters</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </aside> -->
+
+                                                        <!-- STATUS -->
+
+                        <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            @if(isEditMode){
+                            <select name="status" class="form-select" formControlName="status" id="text-input">
+                                <option value="Active">Active</option>
+                                <option value="Invalid">Invalid</option>
+                                <option value="Block">Block</option>
+                            </select>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
+                                id="text-input" readonly>
+                            }
+                            <label for="text-input" class="input-label">Status<span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                        
+                                                        <!-- REMARKS -->
+                        
+                        <aside class="col-md-6 col-lg-5">
+                            <div class="custom-form-group">
+                                <textarea id="" placeholder="" rows="1" class="input-field sm"
+                                        formControlName="remarks" [textWithNumbers]="500"></textarea>
                                 <label for="text-input" class="input-label">Remarks </label>
-                               
+                        
+                                <!--  Validation -->
+                                @if(companyForm.get('remarks')?.touched && companyForm.get('remarks')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('remarks')?.hasError('maxlength')){
+                                            <span>Max 500 Characters</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
-                        
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="row">
-                        
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="timedifference" >
-                                <label for="text-input" class="input-label">Time Difference</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="currency" >
-                                <label for="text-input" class="input-label">Currency</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="exchargeRateDisplay" >
-                                <label for="text-input" class="input-label">Excharge Rate Display</label>
-                               
-                            </div>
-                        </aside>   
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="decimal" >
-                                <label for="text-input" class="input-label">Decimal </label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="currentYear" >
-                                <label for="text-input" class="input-label">Current Year</label>
-                               
-                            </div>
-                        </aside>
-                       
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="noofPeriod" >
-                                <label for="text-input" class="input-label">No of Period</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="currentPeriod" >
-                                <label for="text-input" class="input-label"> Current Period</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="periodWeenkendDay" >
-                                <label for="text-input" class="input-label">Period Weekend Day </label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="website" >
-                                <label for="text-input" class="input-label">Website</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-12">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
-                                   
-                                </ng-select>
-                                <label for="" class="input-label">Status <span class="text-danger">*</span></label>
-                            </div>
-                        </aside>
-                     
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <ng-container *ngTemplateOutlet="branchListTemplate"></ng-container>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-   
 </ng-template>
 
-<ng-template #Logo>
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card h-100 ">
-                <div class="card-body">
-                    <div class="row">
-                        
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="file" id="text-input" placeholder="" class="custom-input-field sm" formControlName="file" >
-                        
+                                    <!-- BRANCH ENTRY -->
+<ng-template #branchEntryContent let-modal>
+    <div [formGroup]="branchForm">
+        <div class="modal-header">
+            <h4 class="modal-title" id="modal-basic-title">{{isModalEditMode ? 'Edit Branch' : 'Add Branch'}}</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="closeBranchForm()"></button>
+	    </div>
+
+        <div class="modal-body">
+            <div class="col-md-12 mt-md-0 mt-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <aside class="col-md-8">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchName" [onlyText]="100">
+                                    <label for="text-input" class="input-label">Branch Name <span
+                                            class="text-danger">*</span></label>
+                                    @if(branchForm.get('branchName')?.touched && branchForm.get('branchName')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchName')?.hasError('required')){
+                                        <span>Branch Name is required</span>
+                                        } @else if(branchForm.get('branchName')?.hasError('numberNotAllowed')){
+                                        <span>Only Alphabets are allowed</span>
+                                        }
+                                        @else if(branchForm.get('branchName')?.hasError('maxlength')){
+                                        <span>Max 100 characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchCode" [textWithNumbers]="10">
+                                    <label for="text-input" class="input-label">Branch Code <span
+                                            class="text-danger">*</span></label>
+                                    @if(branchForm.get('branchCode')?.touched && branchForm.get('branchCode')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchCode')?.hasError('required')){
+                                        <span>Branch Code is required</span>
+                                        } @else if(branchForm.get('branchCode')?.hasError('maxlength')){
+                                        <span>Max 10 characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <!-- @if(isModalEditMode){
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+                                    <input type="text" name="status" class="custom-input-field sm" 
+                                        id="text-input" [value]="fetchCompanyNameById(this.CompanyMasterSid)" readonly>
+                                    <label for="text-input" class="input-label">Company <span
+                                            class="text-danger">*</span></label>
+                                    @if(branchForm.get('CompanyMasterSid')?.touched &&
+                                    branchForm.get('CompanyMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchCompanyMasterSid')?.hasError('required')){
+                                        <span>Company is required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            } -->
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="branchTaxRegistrationNo" [textWithNumbers]="50">
+                                    <label for="text-input" class="input-label">Tax Registration No</label>
+                                    @if(branchForm.get('branchTaxRegistrationNo')?.touched &&
+                                    branchForm.get('branchTaxRegistrationNo')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchTaxRegistrationNo')?.hasError('maxlength')){
+                                        <span>Max 50 characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchCISN" [textWithNumbers]="50">
+                                    <label for="text-input" class="input-label">CISN</label>
+                                    @if(branchForm.get('branchCISN')?.touched &&
+                                    branchForm.get('branchCISN')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchCISN')?.hasError('maxlength')){
+                                        <span>Max 50 characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchAddressLine1" [textWithNumbers]="500">
+                                    <label for="text-input" class="input-label">Address 1 <span
+                                            class="text-danger">*</span></label>
+                                    @if(branchForm.get('branchAddressLine1')?.touched &&
+                                    branchForm.get('branchAddressLine1')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchAddressLine1')?.hasError('required')){
+                                        <span>Address Line 1 is required</span>
+                                        } @else if(branchForm.get('branchAddressLine1')?.hasError('maxlength')){
+                                        <span>Max 500 characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchAddressLine2" [textWithNumbers]="500">
+                                    <label for="text-input" class="input-label">Address 2 </label>
+                                    @if(branchForm.get('branchAddressLine2')?.touched &&
+                                    branchForm.get('branchAddressLine2')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchAddressLine2')?.hasError('maxlength')){
+                                        <span>Max 500 characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12 mt-md-0 mt-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <select id="text-input" class="form-select" formControlName="branchCityMasterSid">
+                                        <option value="">Select City</option>
+                                        <option *ngFor="let city of cityResults" [value]="city.CityMasterSid">
+                                        {{city.cityCode}} - {{ city.cityName }}
+                                        </option>
+                                    </select>
+                                    <label for="text-input" class="input-label">City <span class="text-danger">*</span></label>
+                                    @if(branchForm.get('branchCityMasterSid')?.touched &&
+                                    branchForm.get('branchCityMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchCityMasterSid')?.hasError('required')){
+                                        <span>City is required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <select id="text-input" class="form-select" formControlName="branchStateMasterSid">
+                                        <option value="">Select State</option>
+                                        <option *ngFor="let state of stateResults" [value]="state.StateMasterSid">
+                                            {{state.stateCode}}-{{ state.stateName }}
+                                        </option>
+                                    </select>
+                                    <label for="text-input" class="input-label">State <span class="text-danger">*</span></label>
+                                    @if(branchForm.get('branchStateMasterSid')?.touched &&
+                                    branchForm.get('branchStateMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchStateMasterSid')?.hasError('required')){
+                                        <span>State is required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <select id="text-input" class="form-select" formControlName="branchCountryMasterSid">
+                                        <option value="">Select Country</option>
+                                        <option *ngFor="let country of countryResults" [value]="country.CountryMasterSid">
+                                            {{country.countryCode}}-{{ country.countryName }}
+                                        </option>
+                                    </select>
+                                    <label for="text-input" class="input-label">Country <span
+                                            class="text-danger">*</span></label>
+                                    @if(branchForm.get('branchCountryMasterSid')?.touched &&
+                                    branchForm.get('branchCountryMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchCountryMasterSid')?.hasError('required')){
+                                        <span>Country is required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchPostalCode" [onlyNumbers]="10">
+                                    <label for="text-input" class="input-label">Postal Code <span
+                                            class="text-danger">*</span></label>
+                                    @if(branchForm.get('branchPostalCode')?.touched &&
+                                    branchForm.get('branchPostalCode')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchPostalCode')?.hasError('required')){
+                                        <span>Postal Code is required</span>
+                                        } @else if(branchForm.get('branchPostalCode')?.hasError('onlyNumbers')){
+                                        <span>Only digits are allowed</span>
+                                        }
+                                        @else if(branchForm.get('branchPostalCode')?.hasError('maxlength')){
+                                        <span>Max 10 digits</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchWebSite" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Website</label>
+                                    @if(branchForm.get('branchWebSite')?.touched &&
+                                    branchForm.get('branchWebSite')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchWebSite')?.hasError('maxlength')){
+                                        <span>Max 100 Characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchPhoneNumber" [onlyNumbers]="20">
+                                    <label for="text-input" class="input-label">Phone Number</label>
+                                    @if(branchForm.get('branchPhoneNumber')?.touched &&
+                                    branchForm.get('branchPhoneNumber')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchPhoneNumber')?.hasError('onlyNumbers')){
+                                        <span>Only digits are allowed</span>
+                                        }
+                                        @else if(branchForm.get('branchPhoneNumber')?.hasError('maxlength')){
+                                        <span>Max 20 digits</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchEmail">
+                                    <label for="text-input" class="input-label">Email </label>
+                                    @if(branchForm.get('branchEmail')?.touched &&
+                                    branchForm.get('branchEmail')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchEmail')?.errors?.['email']){
+                                        <span>Invalid Email Format</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12 mt-md-0 mt-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <select id="text-input" class="form-select" formControlName="branchCurrencyMasterSid">
+                                        <option value="">Currency</option>
+                                        @for(currency of currencyResults;track $index){
+                                        <option [value]="currency.CurrencyMasterSid">{{currency.currencyName}}</option>
+                                        }
+                                    </select>
+                                    <label for="text-input" class="input-label">Currency <span
+                                            class="text-danger">*</span></label>
+                                    @if(branchForm.get('branchCurrencyMasterSid')?.touched &&
+                                    branchForm.get('branchCurrencyMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchCurrencyMasterSid')?.hasError('required')){
+                                        <span>Currency is required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchTimeZone" [textWithNumbers]="6">
+                                    <label for="text-input" class="input-label">Time Zone </label>
+                                    @if(branchForm.get('branchTimeZone')?.touched &&
+                                    branchForm.get('branchTimeZone')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchTimeZone')?.hasError('maxlength')){
+                                        <span>Max 6 Characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchRemarks" [textWithNumbers]="500">
+                                    <label for="text-input" class="input-label">Remarks </label>
+                                    @if(branchForm.get('branchRemarks')?.touched &&
+                                    branchForm.get('branchRemarks')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchRemarks')?.hasError('maxlength')){
+                                        <span>Max 500 Characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+                                    <input type="file" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchCompanyLogo">
+                                    <label for="text-input" class="input-label">Company Logo</label>
+
+                                </div>
+                            </aside>
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+                                    <input type="file" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchReportLogo">
+                                    <label for="text-input" class="input-label">Report Logo </label>
+
+                                </div>
+                            </aside>
+                            <aside class="col-md-12">
+                                <div class="custom-form-group">
+
+                                    @if(isEditMode){
+                                    <select name="status" class="form-select" formControlName="branchStatus" id="text-input">
+                                        <option value="Active">Active</option>
+                                        <option value="Invalid">Invalid</option>
+                                        <option value="Block">Block</option>
+                                    </select>
+                                    } @else {
+                                    <input type="text" name="status" class="custom-input-field sm" formControlName="branchStatus"
+                                        id="text-input" readonly>
+                                    }
+                                    <label for="text-input" class="input-label">Status <span
+                                            class="text-danger">*</span></label>
+
+                                </div>
+                            </aside>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="modal-footer">
+		<button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" [disabled]="branchForm.invalid" (click)="submitBranchForm()">
+            <i class="fas fa-save me-1"></i>
+            {{isModalEditMode ? 'Update' : 'Create'}}
+        </button>
+	</div>
+    <div class="card">
+        <div class="card-body">
+            <ng-container *ngTemplateOutlet='branchBankListTemplate'></ng-container>
+        </div>
+    </div>
+    </div>              
+</ng-template>
+                                    <!-- BRANCH LIST -->
+<ng-template #branchListTemplate>
+    <div>
+        <ul ngbNav #nav1="ngbNav" [(activeId)]="active" class="nav-tabs">
+                <li [ngbNavItem]="1">
+                    <button  ngbNavLink >
+                        <button class="btn btn-info p-0 me-2" (click)="openBranchEntryModal(branchEntryContent)">
+                        <i-feather name="plus-circle" class="feather-sm "></i-feather>
+                        </button>
+                        Branch
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="table-responsive">
+                    <table class="table table-hover align-middle no-wrap table-bordered">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="bg-transparent text-light" scope="col">Action</th>
+                                <th class="bg-transparent text-light" scope="col">Name</th>
+                                <th class="bg-transparent text-light" scope="col">Code</th>
+                                <th class="bg-transparent text-light" scope="col">Company Name</th>
+                                <th class="bg-transparent text-light" scope="col">City</th>
+                                <th class="bg-transparent text-light" scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let branch of branchList; let i = index">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <a class="text-info mx-2" class="link mx-2 ps-3 " (click)="openBranchEntryModal(branchEntryContent,branch)">
+                                            <i-feather class="feather-sm" name="eye"></i-feather>
+                                        </a>
+                                        <a class="text-danger mx-2 ps-3 border-start" (click)="deleteBranch(branch.BranchMasterSid)"
+                                            >
+                                            <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{branch.branchName}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{branch.branchCode}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{branch.company.companyName}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{branch.cityMaster.cityName}}</div>
+                                </td>
+                                <td>
+                                    @if(branch.status ==='A'){
+                                    <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                        Active</span>
+                                    } @else {
+                                        <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                        Invalid</span>
+                                    }
+                                    </td>     
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+        </div>
+    </ng-template>
+    
+                                    <!-- BRANCH BANK LIST -->
+<ng-template #branchBankListTemplate>
+        <div>
+            <ul ngbNav #nav2="ngbNav" [(activeId)]="active2" class="nav-tabs">
+                <li [ngbNavItem]="1">
+                    <button  ngbNavLink >
+                        <button class="btn btn-info p-0 me-2" (click)="openBranchBankModal(bankEntryContent)">
+                            <i-feather name="plus-circle" class="feather-sm "></i-feather>
+                        </button>
+                        Bank
+                    </button>
+                </li>
+            </ul>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                        <th class="bg-transparent text-light" scope="col">Bank Name</th>
+                        <th class="bg-transparent text-light" scope="col">Address</th>
+                        <th class="bg-transparent text-light" scope="col">IFSC</th>
+                        <th class="bg-transparent text-light" scope="col">Bank A/C No</th>
+                        <th class="bg-transparent text-light" scope="col">Bank A/C Name</th>
+                        <th class="bg-transparent text-light" scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let bank of branchBankList ; track $index">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="text-info mx-2" class="link mx-2 ps-3 " (click)="openBranchBankModal(bankEntryContent,bank)">
+                                    <i-feather class="feather-sm" name="eye"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start" (click)="deleteBranchBankById(bank.BranchBankSid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
                             </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="file" id="text-input" placeholder="" class="custom-input-field sm" formControlName="file" >
-                        
-                            </div>
-                        </aside>
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Width" >
-                                <label for="text-input" class="input-label">Width</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Height" >
-                                <label for="text-input" class="input-label">Height</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-4 d-flex align-items-center">
-                            <div class="form-check form-check-inline ">
-                                <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" id="additioalLogoRequired" class="form-check-input sm">
-                                    <label for="additioalLogoRequired" class="form-check-label sm">Additional Logo Required? </label>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{bank.BankName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{bank.BankAddress}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{bank.IFSCCode}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">**** **** **** {{bank.BankAccountNo.substring(bank.BankAccountNo.length-4)}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{bank.BeneficiaryName}}</div>
+                        </td>
+                        <td>
+                            <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1" *ngIf="bank.status ==='A'">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active
+                            </span>
+                            <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1" *ngIf="bank.status !=='A'">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Invalid
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</ng-template>
+
+                                <!-- BRANCH BANK ENTRY -->
+
+<ng-template #bankEntryContent let-modal>
+    <div>
+        <div>
+            <div class="modal-header">
+                    <h4 class="modal-title" id="modal-basic-title">{{isBankModalEdit ? 'Edit Bank' : 'Add Bank'}}</h4>
+                        <button type="button" class="btn-close" aria-label="Close" (click)="closeBranchBankForm()"></button>
+            </div>
+            <div  [formGroup]="branchBankForm">
+                    <div class="modal-body">
+                            <div class="col-md-12 mt-md-0 mt-3" >
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <aside class="col-md-8">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                                        formControlName="BankName" [onlyText]="100">
+                                                    <label for="text-input" class="input-label">Bank Name <span
+                                                            class="text-danger">*</span></label>
+                                                    @if(branchBankForm.get('BankName')?.touched && branchBankForm.get('BankName')?.invalid){
+                                                    <div class="error-message">
+                                                        @if(branchBankForm.get('BankName')?.hasError('required')){
+                                                        <span>Branch Name is required</span>
+                                                        } @else if(branchBankForm.get('BankName')?.hasError('numberNotAllowed')){
+                                                        <span>Only Alphabets are allowed</span>
+                                                        }
+                                                        @else if(branchBankForm.get('BankName')?.hasError('maxlength')){
+                                                        <span>Max 100 characters</span>
+                                                        }
+                                                    </div>
+                                                    }
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                                        formControlName="BankCode" [textWithNumbers]="50">
+                                                    <label for="text-input" class="input-label">Bank Code <span
+                                                            class="text-danger">*</span></label>
+                                                    @if(branchBankForm.get('BankCode')?.touched && branchBankForm.get('BankCode')?.invalid){
+                                                    <div class="error-message">
+                                                        @if(branchBankForm.get('BankCode')?.hasError('required')){
+                                                        <span>Branch Code is required</span>
+                                                        } @else if(branchBankForm.get('BankCode')?.hasError('maxlength')){
+                                                        <span>Max 50 characters</span>
+                                                        }
+                                                    </div>
+                                                    }
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-6">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="BankAddress" [textWithNumbers]="500">
+                                                    <label for="text-input" class="input-label">Bank Address</label>
+                                                    @if(branchBankForm.get('BankAddress')?.touched &&
+                                                    branchBankForm.get('BankAddress')?.invalid){
+                                                    <div class="error-message">
+                                                        @if(branchBankForm.get('BankAddress')?.hasError('maxlength')){
+                                                        <span>Max 500 characters</span>
+                                                        }
+                                                    </div>
+                                                    }
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-6">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                                        formControlName="IFSCCode" [textWithNumbers]="20">
+                                                    <label for="text-input" class="input-label">IFSC Code <span class="text-danger">*</span></label>
+                                                    @if(branchBankForm.get('IFSCCode')?.touched &&
+                                                    branchBankForm.get('IFSCCode')?.invalid){
+                                                    <div class="error-message">
+                                                        @if(branchBankForm.get('IFSCCode')?.hasError('required')){
+                                                            <span>IFSC Code is required</span>
+                                                        }
+                                                        @else if(branchBankForm.get('IFSCCode')?.hasError('maxlength')){
+                                                        <span>Max 50 characters</span>
+                                                        }
+                                                    </div>
+                                                    }
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-12">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                                        formControlName="BankAccountNo" [onlyNumbers]="50">
+                                                    <label for="text-input" class="input-label">Bank Account No <span
+                                                            class="text-danger">*</span></label>
+                                                    @if(branchBankForm.get('BankAccountNo')?.touched &&
+                                                    branchBankForm.get('BankAccountNo')?.invalid){
+                                                    <div class="error-message">
+                                                        @if(branchBankForm.get('BankAccountNo')?.hasError('required')){
+                                                        <span>Bank Account Number is required</span>
+                                                        } @else if(branchBankForm.get('BankAccountNo')?.hasError('onlyNumbers')){
+                                                        <span>Only Digits are allowed</span>
+                                                        }
+                                                        @else if(branchBankForm.get('BankAccountNo')?.hasError('maxlength')){
+                                                        <span>Max 50 characters</span>
+                                                        }
+                                                    </div>
+                                                    }
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-12">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                                        formControlName="BeneficiaryName" [onlyText]="100">
+                                                    <label for="text-input" class="input-label">Beneficiary Name <span class="text-danger">*</span></label>
+                                                    @if(branchBankForm.get('BeneficiaryName')?.touched &&
+                                                    branchBankForm.get('BeneficiaryName')?.invalid){
+                                                    <div class="error-message">
+                                                        @if(branchBankForm.get('BeneficiaryName')?.hasError('required')){
+                                                        <span>Beneficiary Name is required</span>
+                                                        } @else if(branchBankForm.get('BeneficiaryName')?.hasError('numberNotAllowed')){
+                                                        <span>Only Alphabets are allowed</span>
+                                                        }
+                                                        @else if(branchBankForm.get('BeneficiaryName')?.hasError('maxlength')){
+                                                        <span>Max 100 characters</span>
+                                                        }
+                                                    </div>
+                                                    }
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-12">
+                                                <div class="custom-form-group">
+
+                                                    @if(isEditMode){
+                                                    <select name="status" class="form-select" formControlName="status" id="text-input">
+                                                        <option value="Active">Active</option>
+                                                        <option value="Invalid">Invalid</option>
+                                                        <option value="Block">Block</option>
+                                                    </select>
+                                                    } @else {
+                                                    <input type="text" name="status" class="custom-input-field sm" formControlName="status"
+                                                        id="text-input" readonly>
+                                                    }
+                                                    <label for="text-input" class="input-label">Status <span
+                                                            class="text-danger">*</span></label>
+
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-6 col-lg-5">
+                                            <div class="custom-form-group">
+                                                <textarea id="" placeholder="" rows="1" class="input-field sm"
+                                                        formControlName="Remarks" [textWithNumbers]="300"></textarea>
+                                                <label for="text-input" class="input-label">Remarks </label>
+                                        
+                                                <!--  Validation -->
+                                                @if(branchBankForm.get('Remarks')?.touched && branchBankForm.get('Remarks')?.invalid){
+                                                    <div class="error-message">
+                                                        @if(branchBankForm.get('Remarks')?.hasError('maxlength')){
+                                                            <span>Max 300 Characters</span>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                            </aside>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </aside>
-                      
-                        
-                    </div>
-                </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submitBranchBankForm()">
+                                <i class="fas fa-save me-1" ></i>
+                                    {{isBankModalEdit ? 'Update' : 'Create'}}
+                            </button>
+                        </div>
             </div>
         </div>
     </div>
 </ng-template>
-
-<ng-template #eDocssetup>
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="row">
-                        <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="width" >
-                                <label for="text-input" class="input-label">Width </label>
-                                
-                            </div>
-                        </aside>
-                        <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="password" >
-                                <label for="text-input" class="input-label">Password</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="SMTPIP" >
-                                <label for="text-input" class="input-label">SMTP IP</label>
-                               
-                            </div>
-                        </aside>
-                        <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="SMTPPort" >
-                                <label for="text-input" class="input-label">SMTP Port</label>
-                               
-                            </div>
-                        </aside>
-                       
-                       
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</ng-template>
-

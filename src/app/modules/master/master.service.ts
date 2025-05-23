@@ -879,6 +879,15 @@ export class MasterService {
     )
   }
 
+  getAllBranches(){
+    return this.http.get<{data:any}>('branch').pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
   deleteBranchById(BranchMasterSid: number) {
     return this.http.delete<{ data: Branch }>(`branch/delete/${BranchMasterSid}`).pipe(
       map((resp) => {
@@ -935,7 +944,7 @@ export class MasterService {
   }
 
   getCompanyById(id: number) {
-    return this.http.get<{ data: Uom }>(`company/fetch/${id}`).pipe(
+    return this.http.get<{ data: any }>(`company/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1180,4 +1189,59 @@ export class MasterService {
       })
     );
   }
+
+  // Branch Bank
+  createBranchBank(payload){
+    return this.http.post<{data:any}>('branch-bank/create',payload).pipe(
+      map((resp)=>{
+        let response= resp.data;
+        return response;
+      })
+    )
+  }
+  getAllBranchBanks(){
+    return this.http.get<{data:any}>('branch-bank').pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+  
+  getBranchBankById(BranchBankSid:number){
+    return this.http.get<{data:any}>(`branch-bank/fetch/${BranchBankSid}`).pipe(
+      map((resp)=>{
+        let response =resp.data;
+        return response;
+      })
+    )
+  }
+
+  updateBranchBankById(BranchBankSid:number,payload){
+    return this.http.patch<{data:any}>(`branch-bank/update/${BranchBankSid}`,payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteBranchBankById(BranchBankSid:number){
+    return this.http.delete<{data:any}>(`branch-bank/delete/${BranchBankSid}`).pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  searchBranchBankById(payload){
+    return this.http.post<{data:any}>('branch-bank/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
 }
