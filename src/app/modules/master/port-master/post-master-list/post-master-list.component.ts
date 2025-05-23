@@ -73,10 +73,7 @@ export class PostMasterListComponent implements OnInit {
           : this.searchType === 'sectorName'
             ? 'SectorMasterSid'
             : this.searchType,
-      filterValue:
-        this.searchType === 'status'
-          ? this.filterValue === 'Active' ? 'A' : 'I'
-          : this.filterValue
+      filterValue:this.filterValue
     };
 
     this.masterService.searchPortList(payload).subscribe(res => {

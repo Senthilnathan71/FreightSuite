@@ -26,7 +26,7 @@ export class DivisionListComponent implements OnInit {
 
   // Pagination 
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   totalLengthOfCollection = 0;
 
   constructor(
@@ -39,6 +39,7 @@ export class DivisionListComponent implements OnInit {
   ngOnInit() {}
 
   search() {
+    this.searchPerformed=true;
     const payload = {
       searchType: this.searchType,
       filterValue: this.filterValue
@@ -68,7 +69,7 @@ export class DivisionListComponent implements OnInit {
       if (result === true) {
         this.masterService.deleteDivisionById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
-          this.router.navigate(['master/division/list'])
+          this.search();
         });
       }
     });

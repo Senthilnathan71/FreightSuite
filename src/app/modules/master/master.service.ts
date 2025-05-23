@@ -21,11 +21,9 @@ import { Currency } from '../crm-mobile/Interfaces/currency.interface';
   providedIn: 'root',
 })
 export class MasterService {
-  searchCountries(term: string): any {
-    throw new Error('Method not implemented.');
-  }
   constructor(private http: HttpClient) { }
-
+  
+  
 
 
   //vessel-master
@@ -617,7 +615,14 @@ export class MasterService {
       })
     );
   }
-
+  searchCountries(data): any {
+    return this.http.post<{data:any}>('country/search-list',data).pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
   getCountryById(id: number) {
     return this.http.get<{ data: Country }>(`country/${id}`).pipe(
       map((resp) => {
@@ -1156,7 +1161,7 @@ export class MasterService {
   }
 
   createNewDivision(payload: any) {
-    return this.http.post('division/add', payload).pipe(
+    return this.http.post('division/create', payload).pipe(
       map((re: any) => {
         return resizeBy;
       })

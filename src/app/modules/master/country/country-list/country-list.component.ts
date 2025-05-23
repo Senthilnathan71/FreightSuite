@@ -31,56 +31,38 @@ export class CountryListComponent {
   countries: Country[] = [];
   errorMessage: string = '';
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   totalLengthOfCollection: number;
-  searchText: string = '';
+  searchType = 'countryName'
+  filterValue: string = '';
   filteredCountry: Country[] = [];
   isMobile: boolean = false;
   constructor(private masterService: MasterService, private route: Router, private appService: AppService, private dialog: MatDialog, private appSettingService: AppSettingsService) { }
 
   ngOnInit(): void {
-    this.loadCountry();
     this.isMobile = this.appService.getDevice();
   }
   createNew() {
     this.route.navigate(['master/country/entry'])
   }
 
-  loadCountry() {
-    this.masterService.getAllCountry().subscribe(
-      (resp: Country[]) => {
-        this.countries = resp['data'];
-        console.log(this.countries);
-        this.filteredCountry = [...this.countries];
-        this.totalLengthOfCollection = this.countries.length || 0;
-      },
-      (error) => {
-        this.errorMessage = error.message;
-        console.error('Error loading ports:', error);
-      }
-    );
-  }
 
-
-  searchCountry(): void {
-    const searchQuery = this.searchText?.toLowerCase().trim(); // Trim spaces and handle null/undefined
-
-    if (!searchQuery) {
-      this.filteredCountry = [...this.countries];
-    } else {
-      this.filteredCountry = this.countries.filter((country) => {
-        return (
-          country.countryName?.toLowerCase().includes(searchQuery) ||
-          country.countryCode?.toLowerCase().includes(searchQuery) ||
-          country.dialingCode?.toLowerCase().includes(searchQuery) ||
-          country.ISO3DigitCode?.toLowerCase().includes(searchQuery) ||
-          country.UNM49Code?.toLowerCase().includes(searchQuery) ||
-          country.AWBCurrencyCode?.toLowerCase().includes(searchQuery) ||
-          country.Remarks?.toLowerCase().includes(searchQuery) ||
-          (country.status === 'A' ? 'Active' : 'Cancelled').toLowerCase().includes(searchQuery)
-        );
-      });
+  search() {
+    const payload = {
+      searchType: this.searchType,
+      filterValue: this.filterValue,
     }
+    this.masterService.searchCountries(payload).subscribe((res: any) => {
+      this.countries = res;
+      this.updatePaginatedData();
+      this.totalLengthOfCollection = this.countries.length || 0;
+    });
+  }
+  updatePaginatedData() {
+    
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.filteredCountry = this.countries.slice(startIndex, endIndex);
   }
 
   deleteCountry(id: number) {
@@ -92,14 +74,14 @@ export class CountryListComponent {
 
           this.appSettingService.showSuccess("Deleted!");
           console.log(resp);
-          // if(resp.status){
-          this.loadCountry();
-
-          // }
+          this.search();
 
         });
       }
     });
   }
-
+  reset(){
+    this.filteredCountry = [];
+    this.totalLengthOfCollection = 0
+  }
 }

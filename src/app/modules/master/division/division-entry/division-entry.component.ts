@@ -5,8 +5,10 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interface';
-import { param } from 'jquery';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+
 
 @Component({
   selector: 'app-division-entry',
@@ -16,6 +18,9 @@ import { param } from 'jquery';
     FormsModule,
     ReactiveFormsModule,
     FeatherModule,
+    TextWithNumbersDirective,
+    OnlyTextDirective,
+    OnlyNumbersDirective
   ],
   templateUrl: './division-entry.component.html',
   styleUrls: ['./division-entry.component.scss']
@@ -26,6 +31,7 @@ export class DivisionEntryComponent {
   DivisionMasterSid: number;
   errorMessage: string = '';
   btnDisable: boolean = false;
+  companyList :any;
   statusList = ["Active", "Invalid", "Block"]
   Status: any
 
@@ -39,6 +45,7 @@ export class DivisionEntryComponent {
 
   ngOnInit(): void {
     this.initForm();
+    this.loadAllCompanies();
     this.route.paramMap.subscribe(params => {
       this.DivisionMasterSid = +params.get('id');
       if (this.DivisionMasterSid) {
@@ -54,8 +61,9 @@ export class DivisionEntryComponent {
       DivisionName: ['', [Validators.required]],
       DivisionCode: ['', [Validators.required]],
       // Address: ['', [Validators.required]],
-      Remarks: ['', [Validators.required]],
-      status: ['']
+      CompanyMasterSid:['',[Validators.required]],
+      Remarks: [''],
+      status: ['Active']
     });
   }
 
@@ -73,11 +81,13 @@ export class DivisionEntryComponent {
       const payload = (this.isEditMode) ? {
         ...formValue,
         ...updatedBy,
-        status: this.Status === "A" ? "A" : "I"
+        CompanyMasterSid:parseInt(formValue.CompanyMasterSid),
+        status: formValue.status === "Active" ? "A" : "I"
       } : {
         ...formValue,
         ...createdBy,
-        status: this.Status === "Active" ? "A" : "C"
+        CompanyMasterSid:parseInt(formValue.CompanyMasterSid),
+        status: formValue.status === "Active" ? "A" : "C"
       };
 
       console.log('payload', payload);
@@ -88,7 +98,7 @@ export class DivisionEntryComponent {
 
             console.log(resp.message);
             if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
+              this.appSettingService.showSuccess("Division Updated Successfully");
               this.router.navigate(['master/division/list']);
             } else {
               this.appSettingService.showError(resp.message);
@@ -102,14 +112,8 @@ export class DivisionEntryComponent {
       } else {
         this.masterService.createNewDivision(payload).subscribe(
           (resp: any) => {
-
-            console.log(resp);
-            if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
+              this.appSettingService.showSuccess("Division Created Successfully");
               this.router.navigate(['master/division/list']);
-            } else {
-              this.appSettingService.showError(resp.message);
-            }
           },
           (error) => {
             this.errorMessage = error.message;
@@ -130,12 +134,9 @@ export class DivisionEntryComponent {
   loadDivisionData(divisionId: number) {
     this.masterService.getDivisionById(divisionId).subscribe(
       (divisionData: any) => {
-        this.Status = divisionData.Status
-        console.log(divisionData)
-        const formattedStatus = this.statusMap[divisionData.Status] || '';
         this.divisionForm.patchValue({
           ...divisionData,
-          Status: formattedStatus
+          status:divisionData.status === 'A' ? 'Active':'Invalid' 
         },
         );
       },
@@ -143,6 +144,17 @@ export class DivisionEntryComponent {
         this.appSettingService.showError('Error loading division data.');
       }
     );
+  }
+
+  loadAllCompanies(){
+    this.masterService.getAllCompanies().subscribe(
+      (resp)=>{
+        this.companyList =resp
+      },
+      (error)=>{
+        console.error('Error Loading Companies',error);
+      }
+    )
   }
 
   reset() {
