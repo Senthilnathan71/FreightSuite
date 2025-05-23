@@ -6,7 +6,6 @@ import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interface';
-import { param } from 'jquery';
 
 @Component({
   selector: 'app-division-entry',
@@ -26,8 +25,7 @@ export class DivisionEntryComponent {
   DivisionMasterSid: number;
   errorMessage: string = '';
   btnDisable: boolean = false;
-  statusList = ["Active", "Invalid", "Block"]
-  Status: any
+  statusList = ["Active", "Inactive"]
 
   constructor(
     private fb: FormBuilder,
@@ -40,7 +38,7 @@ export class DivisionEntryComponent {
   ngOnInit(): void {
     this.initForm();
     this.route.paramMap.subscribe(params => {
-      this.DivisionMasterSid = +params.get('id');
+      this.DivisionMasterSid = +params.get('DivisionMasterSid');
       if (this.DivisionMasterSid) {
         this.isEditMode = true;
         this.loadDivisionData(this.DivisionMasterSid);
@@ -53,9 +51,9 @@ export class DivisionEntryComponent {
     this.divisionForm = this.fb.group({
       divisionName: ['', [Validators.required]],
       divisionCode: ['', [Validators.required]],
-      Address: ['', [Validators.required]],
-      Remarks: ['', [Validators.required]],
-      Status: ['']
+      address: ['', [Validators.required]],
+      remarks: ['', [Validators.required]],
+      status: ['Active']
     });
   }
 
@@ -73,11 +71,11 @@ export class DivisionEntryComponent {
       const payload = (this.isEditMode) ? {
         ...formValue,
         ...updatedBy,
-        Status: this.Status === "A" ? "A" : "I"
+        status: formValue.status === "Active" ? "A" : "I"
       } : {
         ...formValue,
         ...createdBy,
-        Status: this.Status === "Active" ? "A" : "C"
+        status: formValue.status === "Active" ? "A" : "I"
       };
 
       console.log('payload', payload);
@@ -122,20 +120,16 @@ export class DivisionEntryComponent {
 
   statusMap: { [key: string]: string } = {
     A: 'Active',
-    I: 'Invalid',
-    B: 'Block'
+    IA: 'Inactive',
   };
 
   // Fetch division data and patch the form
   loadDivisionData(divisionId: number) {
     this.masterService.getDivisionById(divisionId).subscribe(
-      (divisionData: any) => {
-        this.Status = divisionData.Status
-        console.log(divisionData)
-        const formattedStatus = this.statusMap[divisionData.Status] || '';
+      (divisionData) => {
         this.divisionForm.patchValue({
           ...divisionData,
-          Status: formattedStatus
+          status: divisionData.status ==='A' ? 'Active' : 'Inactive'
         },
         );
       },

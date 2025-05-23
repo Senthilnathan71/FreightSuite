@@ -13,11 +13,16 @@ import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interfa
 @Component({
   selector: 'app-division-list',
   standalone: true,
-  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule],
+  imports: [
+    CommonModule, 
+    FeatherModule, 
+    FormsModule, 
+    NgbPaginationModule, 
+    RouterModule],
   templateUrl: './division-list.component.html',
   styleUrl: './division-list.component.scss'
 })
-export class DivisionListComponent implements OnInit {
+export class DivisionListComponent {
   searchType = 'divisionName'; 
   filterValue = '';
   results: any[] = [];

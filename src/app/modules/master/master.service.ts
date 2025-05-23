@@ -1027,7 +1027,7 @@ export class MasterService {
   }
   //container-type-master
   getAllContainerType() {
-    return this.http.get<ContainerType>('ConatinerType').pipe(
+    return this.http.get<ContainerType>('container-type').pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -1045,7 +1045,7 @@ export class MasterService {
   }
 
   getContainerTypeById(id: number) {
-    return this.http.get<{ data: ContainerType }>(`containerType/containerTypeId/${id}`).pipe(
+    return this.http.get<{ data: ContainerType }>(`container-type/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1053,7 +1053,7 @@ export class MasterService {
     )
   }
   createNewContainerType(payload: any) {
-    return this.http.post("containerType/add", payload).pipe(
+    return this.http.post("container-type/create", payload).pipe(
       map((res: any) => {
         return res;
       })
@@ -1061,7 +1061,7 @@ export class MasterService {
   }
 
   updateContainerTypeById(id: number, payload: any) {
-    return this.http.patch<{ data: any }>(`containerType/update/${id}`, payload).pipe(
+    return this.http.patch<{ data: any }>(`container-type/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1069,7 +1069,7 @@ export class MasterService {
     )
   }
   deleteContainerTypeById(id: number) {
-    return this.http.delete<{ data: any }>(`containerType/delete/${id}`).pipe(
+    return this.http.delete<{ data: any }>(`container-type/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1140,8 +1140,8 @@ export class MasterService {
   }
 
 
-  getDivisionById(id: number) {
-    return this.http.get<{ data: Division }>(`division/divisionId/${id}`).pipe(
+  getDivisionById(DivisionMasterSid: number) {
+    return this.http.get<{ data: Division }>(`division/fetch/${DivisionMasterSid}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1150,15 +1150,15 @@ export class MasterService {
   }
 
   createNewDivision(payload: any) {
-    return this.http.post('division/add', payload).pipe(
+    return this.http.post('division/create', payload).pipe(
       map((re: any) => {
         return resizeBy;
       })
     );
   }
 
-  updateDivisionById(id: number, payload: any) {
-    return this.http.patch<{ data: any }>(`division/update/${id}`, payload).pipe(
+  updateDivisionById(DivisionMasterSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`division/update/${DivisionMasterSid}`, payload).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1167,8 +1167,8 @@ export class MasterService {
     )
   }
 
-  deleteDivisionById(id: number) {
-    return this.http.delete<{ data: any }>(`division/delete/${id}`).pipe(
+  deleteDivisionById(DivisionMasterSid: number) {
+    return this.http.delete<{ data: any }>(`division/delete/${DivisionMasterSid}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;

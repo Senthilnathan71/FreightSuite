@@ -60,21 +60,21 @@
             </aside>
             <aside class="col-md-4">
               <div class="custom-form-group">
-                <input type="textarea" formControlName="Address" id="text-input" placeholder=""
+                <input type="textarea" formControlName="address" id="text-input" placeholder=""
                   class="custom-input-field sm">
                 <label for="text-input" class="input-label">Address <span class="text-danger fw-bold">*</span></label>
               </div>
             </aside>
             <aside class="col-md-4">
               <div class="custom-form-group">
-                <input type="textarea" formControlName="Remarks" id="text-input" placeholder=""
+                <input type="textarea" formControlName="remarks" id="text-input" placeholder=""
                   class="custom-input-field sm">
                 <label for="text-input" class="input-label">Remarks <span class="text-danger fw-bold">*</span></label>
               </div>
             </aside>
             <aside class="col-md-4">
               <div class="custom-form-group">
-                <select formControlName="Status" class="form-select">
+                <select formControlName="status" class="form-select">
                   <option value="">Status</option>
                   <option *ngFor="let option of statusList" [value]="option">{{ option }}</option>
                 </select>
