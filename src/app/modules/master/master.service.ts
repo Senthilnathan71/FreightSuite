@@ -21,16 +21,7 @@ import { Currency } from '../crm-mobile/Interfaces/currency.interface';
   providedIn: 'root',
 })
 export class MasterService {
-  editSector(sectorId: number, payload: any) {
-    throw new Error('Method not implemented.');
-  }
-  searchCountries(term: string): any {
-    throw new Error('Method not implemented.');
-  }
   constructor(private http: HttpClient) { }
-
-
-
   //vessel-master
   searchVesselList(payload) {
     return this.http.post("vessel/search-list", payload).pipe(
@@ -620,7 +611,14 @@ export class MasterService {
       })
     );
   }
-
+  searchCountries(data): any {
+    return this.http.post<{ data: any }>('country/search-list', data).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
   getCountryById(id: number) {
     return this.http.get<{ data: Country }>(`country/${id}`).pipe(
       map((resp) => {
@@ -882,6 +880,15 @@ export class MasterService {
     )
   }
 
+  getAllBranches() {
+    return this.http.get<{ data: any }>('branch').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
   deleteBranchById(BranchMasterSid: number) {
     return this.http.delete<{ data: Branch }>(`branch/delete/${BranchMasterSid}`).pipe(
       map((resp) => {
@@ -938,7 +945,7 @@ export class MasterService {
   }
 
   getCompanyById(id: number) {
-    return this.http.get<{ data: Uom }>(`company/fetch/${id}`).pipe(
+    return this.http.get<{ data: any }>(`company/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1027,7 +1034,7 @@ export class MasterService {
   }
   //container-type-master
   getAllContainerType() {
-    return this.http.get<ContainerType>('ConatinerType').pipe(
+    return this.http.get<ContainerType>('container-type').pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -1045,7 +1052,7 @@ export class MasterService {
   }
 
   getContainerTypeById(id: number) {
-    return this.http.get<{ data: ContainerType }>(`containerType/containerTypeId/${id}`).pipe(
+    return this.http.get<{ data: ContainerType }>(`container-type/containerTypeId/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1053,7 +1060,7 @@ export class MasterService {
     )
   }
   createNewContainerType(payload: any) {
-    return this.http.post("containerType/add", payload).pipe(
+    return this.http.post("container-type/add", payload).pipe(
       map((res: any) => {
         return res;
       })
@@ -1061,7 +1068,7 @@ export class MasterService {
   }
 
   updateContainerTypeById(id: number, payload: any) {
-    return this.http.patch<{ data: any }>(`containerType/update/${id}`, payload).pipe(
+    return this.http.patch<{ data: any }>(`container-type/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1069,7 +1076,7 @@ export class MasterService {
     )
   }
   deleteContainerTypeById(id: number) {
-    return this.http.delete<{ data: any }>(`containerType/delete/${id}`).pipe(
+    return this.http.delete<{ data: any }>(`container-type/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1141,7 +1148,7 @@ export class MasterService {
 
 
   getDivisionById(id: number) {
-    return this.http.get<{ data: Division }>(`division/divisionId/${id}`).pipe(
+    return this.http.get<{ data: Division }>(`division/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1150,7 +1157,7 @@ export class MasterService {
   }
 
   createNewDivision(payload: any) {
-    return this.http.post('division/add', payload).pipe(
+    return this.http.post('division/create', payload).pipe(
       map((re: any) => {
         return resizeBy;
       })
@@ -1183,8 +1190,10 @@ export class MasterService {
       })
     );
   }
-  //sector-master//
 
+
+
+  //sector-master//
 
   getSectorById(id: number) {
     return this.http.get<{ data: Sector }>(`sector/fetch/${id}`).pipe(
@@ -1236,6 +1245,60 @@ export class MasterService {
         return res.data;
       })
     );
+  }
+  // Branch Bank
+  createBranchBank(payload) {
+    return this.http.post<{ data: any }>('branch-bank/create', payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+  getAllBranchBanks() {
+    return this.http.get<{ data: any }>('branch-bank').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  getBranchBankById(BranchBankSid: number) {
+    return this.http.get<{ data: any }>(`branch-bank/fetch/${BranchBankSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  updateBranchBankById(BranchBankSid: number, payload) {
+    return this.http.patch<{ data: any }>(`branch-bank/update/${BranchBankSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteBranchBankById(BranchBankSid: number) {
+    return this.http.delete<{ data: any }>(`branch-bank/delete/${BranchBankSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  searchBranchBankById(payload) {
+    return this.http.post<{ data: any }>('branch-bank/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+
   }
 
 }

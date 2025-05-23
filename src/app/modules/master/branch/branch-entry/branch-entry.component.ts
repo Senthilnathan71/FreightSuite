@@ -186,4 +186,7 @@ export class BranchEntryComponent implements OnInit {
 	navigateBack() {
 		history.back();
 	}
+	resetForm(){
+		this.branchForm.reset();
+	}
 }

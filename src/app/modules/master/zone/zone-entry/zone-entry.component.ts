@@ -128,4 +128,8 @@ export class ZoneEntryComponent implements OnInit {
       status: formValue.status === "Active" ? "A" : "I"
     }
   }
+
+  resetForm(){
+    this.inputForm.reset();
+  }
 }

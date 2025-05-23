@@ -124,7 +124,7 @@ export class UOMViewComponent {
             console.log(resp.message);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['crm/uom-master/list']);
+              this.router.navigate(['master/uom-master/list']);
 
             } else {
               this.appSettingService.showError(resp.message);
@@ -143,7 +143,7 @@ export class UOMViewComponent {
             console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['crm/uom-master/list']);
+              this.router.navigate(['master/uom-master/list']);
 
             } else {
               this.appSettingService.showError(resp.message);

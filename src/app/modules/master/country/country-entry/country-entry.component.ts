@@ -66,7 +66,8 @@ export class CountryEntryComponent {
       AWBCurrencyCode: new FormControl('', [Validators.required, Validators.maxLength(10)]),
       AWBCurrencyName: new FormControl('', [Validators.required, Validators.maxLength(100)]),
       region: new FormControl('', [Validators.required, Validators.maxLength(100)]),
-      Remarks: new FormControl('', [Validators.maxLength(100)])
+      Remarks: new FormControl('', [Validators.maxLength(100)]),
+      status: new FormControl('A', [Validators.maxLength(100)])
     });
 
     this.route.paramMap.subscribe(params => {
@@ -123,7 +124,7 @@ export class CountryEntryComponent {
 
             console.log(resp.message);
             if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
+              this.appSettingService.showSuccess("Country Updated");
               this.router.navigate(['master/country/list']);
 
             } else {
@@ -142,7 +143,7 @@ export class CountryEntryComponent {
 
             console.log(resp);
             if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
+              this.appSettingService.showSuccess("Country Created");
               this.router.navigate(['master/country/list']);
 
             } else {

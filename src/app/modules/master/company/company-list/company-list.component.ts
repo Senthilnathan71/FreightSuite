@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
@@ -11,7 +11,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
 @Component({
   selector: 'app-company-list',
   standalone: true,
-  imports: [FeatherModule, FormsModule, CommonModule],
+  imports: [FeatherModule, FormsModule, CommonModule,RouterModule],
   templateUrl: './company-list.component.html',
   styleUrl: './company-list.component.scss',
 })
@@ -24,7 +24,7 @@ export class CompanyListComponent {
 
   // pagination
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   totalLengthOfCollection: number;
 
   constructor(private masterService: MasterService, private router: Router,
@@ -62,7 +62,7 @@ export class CompanyListComponent {
       if (result === true) {
         this.masterService.deleteCompanyById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
-          this.router.navigate(['master/company/list'])
+          this.search();
         });
       }
     });

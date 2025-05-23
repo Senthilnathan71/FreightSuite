@@ -13,14 +13,14 @@
                             <i class="fas fa-search me-1"></i>
                             Search
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToCreateDepartment()">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                             <i class="fas fa-file-alt me-1"></i>
                             Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
@@ -34,17 +34,14 @@
                             class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="form-outline col-12 col-md px-0">
                                 <select name="searchType" class="form-select" [(ngModel)]="searchType">
-                                    <option value="departmentName">Department Name</option>
-                                    <option value="departmentCode">Department Code</option>
-                                    <option value="departmentType">Department Type</option>
-                                    <option value="ExportImport">Export/Import</option>
-                                    <option value="FCLLCL">FCLLCL</option>
+                                    <option value="companyName">Company Name</option>
+                                    <option value="companyCode">Company Code</option>
                                     <option value="status">Status</option>
                                 </select>
                             </div>
                             <div class="form-outline col-12 col-md px-0">
                                 <input name="filterValue" type="text" class="form-control"
-                                    placeholder="Enter filter value">
+                                    placeholder="Enter filter value" [(ngModel)]="filterValue">
                                 <i
                                     class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
                             </div>
@@ -54,7 +51,7 @@
             </div>
         </div>
     </div>
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
@@ -63,42 +60,55 @@
                             <th class="bg-transparent text-light" scope="col">Action</th>
                             <th class="bg-transparent text-light" scope="col">Company Name</th>
                             <th class="bg-transparent text-light" scope="col">Company Code</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">State</th>
                             <th class="bg-transparent text-light" scope="col">Country</th>
-                            <th class="bg-transparent text-light" scope="col">Country Year</th>
-                            <th class="bg-transparent text-light" scope="col">Remarks</th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
                         </tr>
                     </thead>
                     <tbody>
-
+                        @for(company of companyList;track $index){
                         <tr>
                             <td>
-                                <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
+                                <div class="d-flex align-items-center">
+                                    <a class="text-info mx-2" class="link mx-2 ps-3 "
+                                        [routerLink]="['/master/company/entry/', company.CompanyMasterSid]">
+                                        <i-feather class="feather-sm" name="eye"></i-feather>
+                                    </a>
+                                    <a class="text-danger mx-2 ps-3 border-start"
+                                        (click)="deleteCompany(company.CompanyMasterSid)">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </a>
+                                </div>
                             </td>
                             <td>
-                                <div class="text-truncate">OMS</div>
+                                <div class="text-truncate">{{company.companyName}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">RO</div>
+                                <div class="text-truncate">{{company.companyCode}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">Rial</div>
+                                <div class="text-truncate">{{company.cityMaster.cityName}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">Baizas</div>
+                                <div class="text-truncate">{{company.stateMaster.stateName}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">Baizas</div>
+                                <div class="text-truncate">{{company.countryMaster.countryName}}</div>
                             </td>
                             <td>
-                                <span
-                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1"
+                                    *ngIf="company.status==='A'">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
                                     Active</span>
+                                <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1"
+                                    *ngIf="company.status!=='A'">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Invalid</span>
                             </td>
 
                         </tr>
-
+                    }
                     </tbody>
                 </table>
             </div>

@@ -46,9 +46,7 @@ export class UOMListComponent {
   search() {
     const payload = {
       searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'I' 
-        : this.filterValue,
+      filterValue:this.filterValue,
     }
     this.masterService.searchUomList(payload).subscribe((res: any) => {
       this.results = res;

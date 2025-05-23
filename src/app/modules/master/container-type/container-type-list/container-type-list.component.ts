@@ -25,7 +25,7 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
   styleUrl: './container-type-list.component.scss'
 })
 export class ContainerTypeListComponent {
-  searchType = 'divisionName';
+  searchType = 'ContainerName';
   filterValue = '';
   results: any[] = [];
   containerList: any[] = [];

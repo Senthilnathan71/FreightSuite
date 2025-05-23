@@ -406,380 +406,381 @@ export const MasterRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Sector Edit' }],
         },
       },
+      {
+        path: 'menu/list',
+        component: MenuListComponent,
+        data: {
+          title: 'Menu List',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Menu' }],
+        },
+      },
+      {
+        path: 'menu/entry',
+        component: MenuEntryComponent,
+        data: {
+          title: 'Menu Entry',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Menu' }],
+        },
+      },
+      {
+        path: 'report/list',
+        component: ReportListComponent,
+        data: {
+          title: 'Report',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Report' }],
+        },
+      },
+      {
+        path: 'report/entry',
+        component: ReportEntryComponent,
+        data: {
+          title: 'Report',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Report' }],
+        },
+      },
+      {
+        path: 'region/list',
+        component: RegionListComponent,
+        data: {
+          title: 'Region',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Region' }],
+        },
+      },
+      {
+        path: 'region/entry',
+        component: RegionEntryComponent,
+        data: {
+          title: 'Region',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Region' }],
+        },
+      },
+      {
+        path: 'company/list',
+        component: CompanyListComponent,
+        data: {
+          title: 'Company',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Company' }],
+        },
+      },
+      {
+        path: 'company/entry',
+        component: CompanyEntryComponent,
+        data: {
+          title: 'Company',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Company' }],
+        },
+      },
+      {
+        path: 'branch/list',
+        component: BranchListComponent,
+        data: {
+          title: 'Branch',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Branch' }],
+        },
+      },
+      {
+        path: 'branch/entry',
+        component: BranchEntryComponent,
+        data: {
+          title: 'Create Branch',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Branch' }],
+        },
+      },
+      {
+        path: 'branch/entry/:id',
+        component: BranchEntryComponent,
+        data: {
+          title: 'Edit Branch',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Branch' }],
+        },
+      },
+      {
+        path: 'airline/list',
+        component: AirlineListComponent,
+        data: {
+          title: 'Airline',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Airline' }],
+        },
+      },
+      {
+        path: 'airline/entry',
+        component: AirlineEntryComponent,
+        data: {
+          title: 'Airline',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Airline' }],
+        },
+      },
+      {
+        path: 'division/list',
+        component: DivisionListComponent,
+        data: {
+          title: 'Division',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Division' }],
+        },
+      },
+      {
+        path: 'division/entry',
+        component: DivisionEntryComponent,
+        data: {
+          title: 'Division',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'division' }],
+        },
+      },
+      {
+        path: 'container-type/list',
+        component: ContainerTypeListComponent,
+        data: {
+          title: 'Container Type',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Container Type' }],
+        },
+      },
+      {
+        path: 'container-type/entry',
+        component: ContainerTypeEntryComponent,
+        data: {
+          title: 'Container Type',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Container Type' }],
+        },
+      },
+      {
+        path: 'milestone/list',
+        component: MilestoneListComponent,
+        data: {
+          title: 'Milestone',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Milestone' }],
+        },
+      },
+      {
+        path: 'milestone/entry',
+        component: MilestoneEntryComponent,
+        data: {
+          title: 'Container Type',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Milestone' }],
+        },
+      },
+      {
+        path: 'organization/list',
+        component: OrganizationListComponent,
+        data: {
+          title: 'Organization',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Organization' }],
+        },
+      },
+      {
+        path: 'organization/entry',
+        component: OrganizationEntryComponent,
+        data: {
+          title: 'Organization',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Organization' }],
+        },
+      },
+      {
+        path: 'organization/entry/:id',
+        component: OrganizationEntryComponent,
+        data: {
+          title: 'Organization',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Organization' }],
+        },
+      },
+      {
+        path: 'commodity/list',
+        component: CommodityListComponent,
+        data: {
+          title: 'Commodity',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Commodity' }],
+        },
+      },
+      {
+        path: 'commodity/entry',
+        component: CommodityEntryComponent,
+        data: {
+          title: 'Commodity',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Commodity' }],
+        },
+      },
+      {
+        path: 'commodity/entry/:id',
+        component: CommodityEntryComponent,
+        data: {
+          title: 'Edit City',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Commodity' }],
+        },
+      },
+      {
+        path: 'package-type/list',
+        component: PackageTypeListComponent,
+        data: {
+          title: 'Package Type',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Package Type' }],
+        },
+      },
+      {
+        path: 'package-type/entry',
+        component: PackageTypeEntryComponent,
+        data: {
+          title: 'Package Type',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Package Type' }],
+        },
+      },
+      {
+        path: 'package-type/entry/:id',
+        component: PackageTypeEntryComponent,
+        data: {
+          title: 'Package Type',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Package Type' }],
+        },
+      },
+
+      {
+        path: 'service-level/list',
+        component: ServiceLevelListComponent,
+        data: {
+          title: 'Service Level',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Service Level' }],
+        },
+      },
+      {
+        path: 'service-level/entry',
+        component: ServiceLevelComponent,
+        data: {
+          title: 'Service Level',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Service Level' }],
+        },
+      },
+      {
+        path: 'inco/list',
+        component: IncoListComponent,
+        data: {
+          title: 'Inco',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Inco' }],
+        },
+      },
+      {
+        path: 'inco/entry',
+        component: IncoComponent,
+        data: {
+          title: 'Inco',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Inco' }],
+        },
+      },
+      {
+        path: 'time-zone/list',
+        component: TimeZoneListComponent,
+        data: {
+          title: 'Time Zone',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Time Zone' }],
+        },
+      },
+      {
+        path: 'time-zone/entry',
+        component: TimeZoneComponent,
+        data: {
+          title: 'Time Zone',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Time Zone' }],
+        },
+      },
+      {
+        path: 'charge/list',
+        component: ChargeListComponent,
+        data: {
+          title: 'Charge',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Charge' }],
+        },
+      },
+      {
+        path: 'charge/entry',
+        component: ChargeEntryComponent,
+        data: {
+          title: 'Charge',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Charge' }],
+        },
+      },
+      {
+        path: 'terms-condition/list',
+        component: TermsConditionListComponent,
+        data: {
+          title: 'Terms and Condition',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Terms and Condition' },
+          ],
+        },
+      },
+      {
+        path: 'terms-condition/entry',
+        component: TermsConditionEntryComponent,
+        data: {
+          title: 'Terms and Condition',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Terms and Condition' },
+          ],
+        },
+      },
+      {
+        path: 'hs-sac',
+        component: HSSACComponent,
+        data: {
+          title: 'HS-SAC',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'HS-SAC' }],
+        },
+      },
+      {
+        path: 'module',
+        component: ModuleComponent,
+        data: {
+          title: 'Module',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Module' }],
+        },
+      },
+      {
+        path: 'role',
+        component: RoleComponent,
+        data: {
+          title: 'Role',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Role' }],
+        },
+      },
+      {
+        path: 'rolemenu',
+        component: RolemenuComponent,
+        data: {
+          title: 'Role Menu',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Role Menu' }],
+        },
+      },
+
+      {
+        path: 'chargegroup',
+        component: ChargegroupComponent,
+        data: {
+          title: 'Charge Group',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Charge Group' }],
+        },
+      },
+      {
+        path: 'tds-set/list',
+        component: TdsSetListComponent,
+        data: {
+          title: 'TDS Set',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'TDS Set' },
+          ],
+        },
+      },
+      {
+        path: 'tds-set/entry',
+        component: TdsSetEntryComponent,
+        data: {
+          title: 'TDS Set',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'TDS Set' },
+          ],
+        },
+      },
     ],
   },
-  {
-    path: 'menu/list',
-    component: MenuListComponent,
-    data: {
-      title: 'Menu List',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Menu' }],
-    },
-  },
-  {
-    path: 'menu/entry',
-    component: MenuEntryComponent,
-    data: {
-      title: 'Menu Entry',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Menu' }],
-    },
-  },
-  {
-    path: 'report/list',
-    component: ReportListComponent,
-    data: {
-      title: 'Report',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Report' }],
-    },
-  },
-  {
-    path: 'report/entry',
-    component: ReportEntryComponent,
-    data: {
-      title: 'Report',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Report' }],
-    },
-  },
-  {
-    path: 'region/list',
-    component: RegionListComponent,
-    data: {
-      title: 'Region',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Region' }],
-    },
-  },
-  {
-    path: 'region/entry',
-    component: RegionEntryComponent,
-    data: {
-      title: 'Region',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Region' }],
-    },
-  },
-  {
-    path: 'company/list',
-    component: CompanyListComponent,
-    data: {
-      title: 'Company',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Company' }],
-    },
-  },
-  {
-    path: 'company/entry',
-    component: CompanyEntryComponent,
-    data: {
-      title: 'Company',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Company' }],
-    },
-  },
-  {
-    path: 'branch/list',
-    component: BranchListComponent,
-    data: {
-      title: 'Branch',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Branch' }],
-    },
-  },
-  {
-    path: 'branch/entry',
-    component: BranchEntryComponent,
-    data: {
-      title: 'Create Branch',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Branch' }],
-    },
-  },
-  {
-    path: 'branch/entry/:id',
-    component: BranchEntryComponent,
-    data: {
-      title: 'Edit Branch',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Branch' }],
-    },
-  },
-  {
-    path: 'airline/list',
-    component: AirlineListComponent,
-    data: {
-      title: 'Airline',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Airline' }],
-    },
-  },
-  {
-    path: 'airline/entry',
-    component: AirlineEntryComponent,
-    data: {
-      title: 'Airline',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Airline' }],
-    },
-  },
-  {
-    path: 'division/list',
-    component: DivisionListComponent,
-    data: {
-      title: 'Division',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Division' }],
-    },
-  },
-  {
-    path: 'division/entry',
-    component: DivisionEntryComponent,
-    data: {
-      title: 'Division',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'division' }],
-    },
-  },
-  {
-    path: 'container-type/list',
-    component: ContainerTypeListComponent,
-    data: {
-      title: 'Container Type',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Container Type' }],
-    },
-  },
-  {
-    path: 'container-type/entry',
-    component: ContainerTypeEntryComponent,
-    data: {
-      title: 'Container Type',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Container Type' }],
-    },
-  },
-  {
-    path: 'milestone/list',
-    component: MilestoneListComponent,
-    data: {
-      title: 'Milestone',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Milestone' }],
-    },
-  },
-  {
-    path: 'milestone/entry',
-    component: MilestoneEntryComponent,
-    data: {
-      title: 'Container Type',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Milestone' }],
-    },
-  },
-  {
-    path: 'organization/list',
-    component: OrganizationListComponent,
-    data: {
-      title: 'Organization',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Organization' }],
-    },
-  },
-  {
-    path: 'organization/entry',
-    component: OrganizationEntryComponent,
-    data: {
-      title: 'Organization',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Organization' }],
-    },
-  },
-  {
-    path: 'organization/entry/:id',
-    component: OrganizationEntryComponent,
-    data: {
-      title: 'Organization',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Organization' }],
-    },
-  },
-  {
-    path: 'commodity/list',
-    component: CommodityListComponent,
-    data: {
-      title: 'Commodity',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Commodity' }],
-    },
-  },
-  {
-    path: 'commodity/entry',
-    component: CommodityEntryComponent,
-    data: {
-      title: 'Commodity',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Commodity' }],
-    },
-  },
-  {
-    path: 'commodity/entry/:id',
-    component: CommodityEntryComponent,
-    data: {
-      title: 'Edit City',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Commodity' }],
-    },
-  },
-  {
-    path: 'package-type/list',
-    component: PackageTypeListComponent,
-    data: {
-      title: 'Package Type',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Package Type' }],
-    },
-  },
-  {
-    path: 'package-type/entry',
-    component: PackageTypeEntryComponent,
-    data: {
-      title: 'Package Type',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Package Type' }],
-    },
-  },
-  {
-    path: 'package-type/entry/:id',
-    component: PackageTypeEntryComponent,
-    data: {
-      title: 'Package Type',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Package Type' }],
-    },
-  },
 
-  {
-    path: 'service-level/list',
-    component: ServiceLevelListComponent,
-    data: {
-      title: 'Service Level',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Service Level' }],
-    },
-  },
-  {
-    path: 'service-level/entry',
-    component: ServiceLevelComponent,
-    data: {
-      title: 'Service Level',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Service Level' }],
-    },
-  },
-  {
-    path: 'inco/list',
-    component: IncoListComponent,
-    data: {
-      title: 'Inco',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Inco' }],
-    },
-  },
-  {
-    path: 'inco/entry',
-    component: IncoComponent,
-    data: {
-      title: 'Inco',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Inco' }],
-    },
-  },
-  {
-    path: 'time-zone/list',
-    component: TimeZoneListComponent,
-    data: {
-      title: 'Time Zone',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Time Zone' }],
-    },
-  },
-  {
-    path: 'time-zone/entry',
-    component: TimeZoneComponent,
-    data: {
-      title: 'Time Zone',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Time Zone' }],
-    },
-  },
-  {
-    path: 'charge/list',
-    component: ChargeListComponent,
-    data: {
-      title: 'Charge',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Charge' }],
-    },
-  },
-  {
-    path: 'charge/entry',
-    component: ChargeEntryComponent,
-    data: {
-      title: 'Charge',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Charge' }],
-    },
-  },
-  {
-    path: 'terms-condition/list',
-    component: TermsConditionListComponent,
-    data: {
-      title: 'Terms and Condition',
-      urls: [
-        { title: 'Master', url: '/master' },
-        { title: 'Terms and Condition' },
-      ],
-    },
-  },
-  {
-    path: 'terms-condition/entry',
-    component: TermsConditionEntryComponent,
-    data: {
-      title: 'Terms and Condition',
-      urls: [
-        { title: 'Master', url: '/master' },
-        { title: 'Terms and Condition' },
-      ],
-    },
-  },
-  {
-    path: 'hs-sac',
-    component: HSSACComponent,
-    data: {
-      title: 'HS-SAC',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'HS-SAC' }],
-    },
-  },
-  {
-    path: 'module',
-    component: ModuleComponent,
-    data: {
-      title: 'Module',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Module' }],
-    },
-  },
-  {
-    path: 'role',
-    component: RoleComponent,
-    data: {
-      title: 'Role',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Role' }],
-    },
-  },
-  {
-    path: 'rolemenu',
-    component: RolemenuComponent,
-    data: {
-      title: 'Role Menu',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Role Menu' }],
-    },
-  },
-
-  {
-    path: 'chargegroup',
-    component: ChargegroupComponent,
-    data: {
-      title: 'Charge Group',
-      urls: [{ title: 'Master', url: '/master' }, { title: 'Charge Group' }],
-    },
-  },
-   {
-    path: 'tds-set/list',
-    component: TdsSetListComponent,
-    data: {
-      title: 'TDS Set',
-      urls: [
-        { title: 'Master', url: '/master' },
-        { title: 'TDS Set' },
-      ],
-    },
-  },
-  {
-    path: 'tds-set/entry',
-    component: TdsSetEntryComponent,
-    data: {
-      title: 'TDS Set',
-      urls: [
-        { title: 'Master', url: '/master' },
-        { title: 'TDS Set' },
-      ],
-    },
-  },
 ];
