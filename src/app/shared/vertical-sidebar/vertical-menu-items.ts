@@ -311,6 +311,56 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
+       {
+        path: '/master/module',
+        title: 'Module',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+       {
+        path: '/master/role',
+        title: 'Role',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+        {
+        path: '/master/rolemenu',
+        title: 'Role Menu',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+       {
+        path: '/master/chargegroup',
+        title: 'Charge Group',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+       {
+        path: '/master/tds-set/list',
+        title: 'TDS Set',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
     ]
   },
 
