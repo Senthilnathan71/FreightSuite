@@ -13,12 +13,17 @@ import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interfa
 @Component({
   selector: 'app-division-list',
   standalone: true,
-  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule],
+  imports: [
+    CommonModule,
+    FeatherModule,
+    FormsModule,
+    NgbPaginationModule,
+    RouterModule],
   templateUrl: './division-list.component.html',
   styleUrl: './division-list.component.scss'
 })
 export class DivisionListComponent implements OnInit {
-  searchType = 'DivisionName'; 
+  searchType = 'DivisionName';
   filterValue = '';
   results: any[] = [];
   divisionList: any[] = [];
@@ -34,12 +39,12 @@ export class DivisionListComponent implements OnInit {
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog
-  ) {}
+  ) { }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   search() {
-    this.searchPerformed=true;
+    this.searchPerformed = true;
     const payload = {
       searchType: this.searchType,
       filterValue: this.filterValue
@@ -84,6 +89,6 @@ export class DivisionListComponent implements OnInit {
     this.totalLengthOfCollection = 0;
   }
 
-  report() {  }
+  report() { }
 
 }

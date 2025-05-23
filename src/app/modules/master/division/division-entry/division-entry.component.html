@@ -48,18 +48,18 @@
                   class="custom-input-field sm" [onlyText]="50">
                 <label for="text-input" class="input-label">Division Name <span
                     class="text-danger fw-bold">*</span></label>
-                  @if(divisionForm.get('DivisionName')?.touched && divisionForm.get('DivisionName')?.invalid){
-                  <div class="error-message">
-                    @if(divisionForm.get('DivisionName')?.hasError('required')){
-                    <span>Division Name is required</span>
-                    } @else if(divisionForm.get('DivisionName')?.hasError('numberNotAllowed')){
-                    <span>Only Alphabets are allowed</span>
-                    }
-                    @else if(divisionForm.get('DivisionName')?.hasError('maxlength')){
-                    <span>Max 50 characters</span>
-                    }
-                  </div>
+                @if(divisionForm.get('DivisionName')?.touched && divisionForm.get('DivisionName')?.invalid){
+                <div class="error-message">
+                  @if(divisionForm.get('DivisionName')?.hasError('required')){
+                  <span>Division Name is required</span>
+                  } @else if(divisionForm.get('DivisionName')?.hasError('numberNotAllowed')){
+                  <span>Only Alphabets are allowed</span>
                   }
+                  @else if(divisionForm.get('DivisionName')?.hasError('maxlength')){
+                  <span>Max 50 characters</span>
+                  }
+                </div>
+                }
               </div>
             </aside>
             <aside class="col-md-4">
@@ -69,60 +69,60 @@
                 <label for="text-input" class="input-label">Division Code <span
                     class="text-danger fw-bold">*</span></label>
                 @if(divisionForm.get('DivisionCode')?.touched && divisionForm.get('DivisionCode')?.invalid){
-                  <div class="error-message">
-                    @if(divisionForm.get('DivisionCode')?.hasError('required')){
-                    <span>Division Code is required</span>
-                    }
-                    @else if(divisionForm.get('DivisionCode')?.hasError('maxlength')){
-                    <span>Max 3 characters</span>
-                    }
-                  </div>
+                <div class="error-message">
+                  @if(divisionForm.get('DivisionCode')?.hasError('required')){
+                  <span>Division Code is required</span>
                   }
+                  @else if(divisionForm.get('DivisionCode')?.hasError('maxlength')){
+                  <span>Max 3 characters</span>
+                  }
+                </div>
+                }
               </div>
             </aside>
-          <aside class="col-md-4">
-            <div class="custom-form-group">
-              <select id="text-input" class="form-select" formControlName="CompanyMasterSid">
-                <option value="">Select Company</option>
-                @for(company of companyList;track $index){
-                <option [value]="company.CompanyMasterSid">{{company.companyName}}</option>
-                }
-              </select>
-              <label for="text-input" class="input-label">Company <span class="text-danger">*</span></label>
-              @if(divisionForm.get('CompanyMasterSid')?.touched &&
-              divisionForm.get('CompanyMasterSid')?.invalid){
-              <div class="error-message">
-                @if(divisionForm.get('CompanyMasterSid')?.hasError('required')){
-                <span>Company is required</span>
-                }
-              </div>
-              }
-            </div>
-          </aside>
             <aside class="col-md-4">
               <div class="custom-form-group">
-                <input type="textarea" formControlName="Address" id="text-input" placeholder=""
+                <select id="text-input" class="form-select" formControlName="CompanyMasterSid">
+                  <option value="">Select Company</option>
+                  @for(company of companyList;track $index){
+                  <option [value]="company.CompanyMasterSid">{{company.companyName}}</option>
+                  }
+                </select>
+                <label for="text-input" class="input-label">Company <span class="text-danger">*</span></label>
+                @if(divisionForm.get('CompanyMasterSid')?.touched &&
+                divisionForm.get('CompanyMasterSid')?.invalid){
+                <div class="error-message">
+                  @if(divisionForm.get('CompanyMasterSid')?.hasError('required')){
+                  <span>Company is required</span>
+                  }
+                </div>
+                }
+              </div>
+            </aside>
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="textarea" formControlName="address" id="text-input" placeholder=""
                   class="custom-input-field sm">
                 <label for="text-input" class="input-label">Address</label>
               </div>
             </aside>
             <aside class="col-md-4">
               <div class="custom-form-group">
-                <input type="textarea" formControlName="Remarks" id="text-input" placeholder=""
+                <input type="textarea" formControlName="remarks" id="text-input" placeholder=""
                   class="custom-input-field sm" [textWithNumbers]="100">
                 <label for="text-input" class="input-label">Remarks</label>
               </div>
             </aside>
             @if(divisionForm.get('Remarks')?.touched && divisionForm.get('Remarks')?.invalid){
-                  <div class="error-message">
-                    @if(divisionForm.get('Remarks')?.hasError('required')){
-                    <span>Division Name is required</span>
-                    }
-                    @else if(divisionForm.get('Remarks')?.hasError('maxlength')){
-                    <span>Max 100 characters</span>
-                    }
-                  </div>
-                  }
+            <div class="error-message">
+              @if(divisionForm.get('Remarks')?.hasError('required')){
+              <span>Division Name is required</span>
+              }
+              @else if(divisionForm.get('Remarks')?.hasError('maxlength')){
+              <span>Max 100 characters</span>
+              }
+            </div>
+            }
             <aside class="col-md-4">
               <div class="custom-form-group">
                 @if(isEditMode){
@@ -132,12 +132,13 @@
                   <option value="Block">Block</option>
                 </select>
                 } @else {
-                <input type="text" name="status" class="custom-input-field sm" formControlName="status" id="text-input" readonly>
+                <input type="text" name="status" class="custom-input-field sm" formControlName="status" id="text-input"
+                  readonly>
                 }
                 <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
-              
+
               </div>
-              </aside>
+            </aside>
           </div>
         </div>
       </div>

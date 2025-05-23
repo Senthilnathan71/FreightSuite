@@ -9,6 +9,7 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 
+import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interface';
 
 @Component({
   selector: 'app-division-entry',
@@ -31,7 +32,7 @@ export class DivisionEntryComponent {
   DivisionMasterSid: number;
   errorMessage: string = '';
   btnDisable: boolean = false;
-  companyList :any;
+  companyList: any;
   statusList = ["Active", "Invalid", "Block"]
   Status: any
 
@@ -47,7 +48,7 @@ export class DivisionEntryComponent {
     this.initForm();
     this.loadAllCompanies();
     this.route.paramMap.subscribe(params => {
-      this.DivisionMasterSid = +params.get('id');
+      this.DivisionMasterSid = +params.get('DivisionMasterSid');
       if (this.DivisionMasterSid) {
         this.isEditMode = true;
         this.loadDivisionData(this.DivisionMasterSid);
@@ -58,11 +59,12 @@ export class DivisionEntryComponent {
   // Initialize the Form
   initForm() {
     this.divisionForm = this.fb.group({
+
       DivisionName: ['', [Validators.required]],
       DivisionCode: ['', [Validators.required]],
-      // Address: ['', [Validators.required]],
-      CompanyMasterSid:['',[Validators.required]],
-      Remarks: [''],
+      CompanyMasterSid: ['', [Validators.required]],
+      address: ['', [Validators.required]],
+      remarks: ['', [Validators.required]],
       status: ['Active']
     });
   }
@@ -81,12 +83,12 @@ export class DivisionEntryComponent {
       const payload = (this.isEditMode) ? {
         ...formValue,
         ...updatedBy,
-        CompanyMasterSid:parseInt(formValue.CompanyMasterSid),
+        CompanyMasterSid: parseInt(formValue.CompanyMasterSid),
         status: formValue.status === "Active" ? "A" : "I"
       } : {
         ...formValue,
         ...createdBy,
-        CompanyMasterSid:parseInt(formValue.CompanyMasterSid),
+        CompanyMasterSid: parseInt(formValue.CompanyMasterSid),
         status: formValue.status === "Active" ? "A" : "C"
       };
 
@@ -112,8 +114,8 @@ export class DivisionEntryComponent {
       } else {
         this.masterService.createNewDivision(payload).subscribe(
           (resp: any) => {
-              this.appSettingService.showSuccess("Division Created Successfully");
-              this.router.navigate(['master/division/list']);
+            this.appSettingService.showSuccess("Division Created Successfully");
+            this.router.navigate(['master/division/list']);
           },
           (error) => {
             this.errorMessage = error.message;
@@ -126,8 +128,7 @@ export class DivisionEntryComponent {
 
   statusMap: { [key: string]: string } = {
     A: 'Active',
-    I: 'Invalid',
-    B: 'Block'
+    IA: 'Inactive',
   };
 
   // Fetch division data and patch the form
@@ -136,7 +137,7 @@ export class DivisionEntryComponent {
       (divisionData: any) => {
         this.divisionForm.patchValue({
           ...divisionData,
-          status:divisionData.status === 'A' ? 'Active':'Invalid' 
+          status: divisionData.status === 'A' ? 'Active' : 'Invalid'
         },
         );
       },
@@ -146,13 +147,13 @@ export class DivisionEntryComponent {
     );
   }
 
-  loadAllCompanies(){
+  loadAllCompanies() {
     this.masterService.getAllCompanies().subscribe(
-      (resp)=>{
-        this.companyList =resp
+      (resp) => {
+        this.companyList = resp
       },
-      (error)=>{
-        console.error('Error Loading Companies',error);
+      (error) => {
+        console.error('Error Loading Companies', error);
       }
     )
   }

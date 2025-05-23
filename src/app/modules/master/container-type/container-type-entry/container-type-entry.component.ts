@@ -31,11 +31,10 @@ export class ContainerTypeEntryComponent implements OnInit {
   ContainerTypeMasterSid: number;
 
   modeOfStatus = [
-    { id: 'Active', name: 'Active' },
-    { id: 'Inactive', name: 'Inactive' }
+    { id: 'A', name: 'Active' },
+    { id: 'C', name: 'Inactive' }
   ];
 
-  status: any;
 
   constructor(
     private fb: FormBuilder,
@@ -113,20 +112,18 @@ export class ContainerTypeEntryComponent implements OnInit {
       ? {
         ...formValue,
         updatedBy: userEmail,
-        status: this.status === 'A' ? 'A' : 'C'
+        status: formValue.status 
       }
       : {
         ...formValue,
         createdBy: userEmail,
-        status: formValue.status === 'Active' ? 'A' : 'C'
+        status: formValue.status 
       };
-
-    console.log('payload', payload);
 
     if (this.isEditMode) {
       this.masterService.updateContainerTypeById(this.ContainerTypeMasterSid, payload).subscribe(
         (resp: any) => {
-          if (resp.status) {
+          if (resp.status !== false) {
             this.appSettingService.showSuccess(resp.message);
             this.router.navigate(['master/container-type/list']);
           } else {
@@ -141,8 +138,8 @@ export class ContainerTypeEntryComponent implements OnInit {
     } else {
       this.masterService.createNewContainerType(payload).subscribe(
         (resp: any) => {
-          if (resp.status) {
-            this.appSettingService.showSuccess(resp.message);
+          if (resp.status !== false) {
+            this.appSettingService.showSuccess('Container Type created successfully');
             this.router.navigate(['master/container-type/list']);
           } else {
             this.appSettingService.showError(resp.message);
@@ -165,11 +162,8 @@ export class ContainerTypeEntryComponent implements OnInit {
   loadContainerData(id: number) {
     this.masterService.getContainerTypeById(id).subscribe(
       (data) => {
-        this.status = data.status;
-        const formattedStatus = this.statusMap[data.status] || '';
         this.containertypeForm.patchValue({
           ...data,
-          status: formattedStatus
         });
       },
       (error) => {
