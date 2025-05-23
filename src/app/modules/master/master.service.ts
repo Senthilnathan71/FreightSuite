@@ -17,6 +17,7 @@ import { ContainerType } from '../crm-mobile/Interfaces/container-type.interface
 import { Division } from '../crm-mobile/Interfaces/division.interface';
 
 import { Currency } from '../crm-mobile/Interfaces/currency.interface';
+import { Charge } from '../crm-mobile/Interfaces/charge.interface';
 @Injectable({
   providedIn: 'root',
 })
@@ -1232,6 +1233,68 @@ export class MasterService {
 
   searchSectors(payload) {
     return this.http.post('sector/search-list', payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    );
+  }
+
+  //charge-master//
+
+  getChargeById(ChargeMasterSid: number) {
+    return this.http.get<{ data: Charge }>(`charge/fetch/${ChargeMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createCharge(payload: any) {
+    return this.http.post(`charge/create`, payload).pipe(
+      map((res: any) => {
+        return res;
+      })
+    );
+  }
+
+  updateChargeById(ChargeMasterSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`charge/update/${ChargeMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getAllCharges() {
+    return this.http.get('charge').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+  getAllChargeGroups() {
+    return this.http.get<{ data: any }>('charge/charge-group').pipe(
+        map((resp) => {
+            let response = resp.data;
+            return response;
+        })
+    );
+}
+
+  deleteChargeById(id: number) {
+    return this.http.delete<{ data: any }>(`charge/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  searchChargeList(payload) {
+    return this.http.post("charge/search-list", payload).pipe(
       map((res: any) => {
         return res.data;
       })

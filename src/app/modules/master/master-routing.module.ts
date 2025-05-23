@@ -876,6 +876,17 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
+      {
+        path: "charge/entry/:id",
+        component: ChargeEntryComponent,
+        data: {
+          title: "Edit Charge",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Charge" },
+          ],
+        },
+      },
        {
         path: "terms-condition/list",
         component: TermsConditionListComponent,
