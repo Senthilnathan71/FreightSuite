@@ -63,20 +63,5 @@ export class AccountsService {
       })
     );
   }
-  getCompanies() {
-    return this.http.get<any[]>('company').pipe(
-        map((res: any) => {
-        let response = res.data;
-        return response;
-      })
-    )
-  }
-  getBranches() {
-    return this.http.get<any[]>('branch').pipe(
-        map((res: any) =>{
-        let response = res.data;
-        return response;
-      })
-    );
-  }
+  
 }
