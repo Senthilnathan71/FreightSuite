@@ -17,11 +17,15 @@
                             (click)="navigateToCreateUnit()">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="report()"
+                            [disabled]="!searchPerformed || totalLengthOfCollection === 0">
                             <i class="fas fa-file-alt me-1"></i>
                             Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="resetPage()"
+                            [disabled]="!searchPerformed">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
@@ -73,7 +77,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let item of unitList; let i = index; trackBy: trackByIndex">
+                    <tr *ngFor="let item of unitList; let i = index; trackBy: trackByUnitId">
                         <td>
                             <div class="d-flex align-items-center">
                                 <a class="text-info mx-2" [routerLink]="['/master/unit/entry/', item.UnitMasterSid]">
@@ -129,7 +133,6 @@
 
     <!-- No records found -->
     <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
-        <div class="alert alert-info">No records found</div>
-
+        <div class="alert alert-info text-center">No records found</div>
     </div>
 </div>

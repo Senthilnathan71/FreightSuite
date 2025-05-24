@@ -162,4 +162,7 @@ export class StateListComponent {
   getStatusText(status: string): string {
     return status === 'A' ? 'Active' : 'Inactive';
   }
+  report(){
+    
+  }
 }

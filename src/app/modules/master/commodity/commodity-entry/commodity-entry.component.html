@@ -83,7 +83,7 @@
                                         Commodity Code is required
                                     </span>
                                     <span *ngIf="commodityForm.get('CommodityCode')?.hasError('pattern')">
-                                        Commodity Code must be 6-12 characters (letters and numbers).\
+                                        Commodity Code must be 5-12 characters (letters and numbers).\
                                     </span>
                                     <span *ngIf="commodityForm.get('CommodityCode')?.hasError('maxlength')">
                                         Maximum 10 characters allowed.
@@ -125,24 +125,25 @@
                             </div>
                         </aside>
 
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <!-- Replace select with input -->
-                                <input type="text" id="commodityType" formControlName="CommodityType"
-                                    class="custom-input-field sm"
-                                    [class.is-invalid]="commodityForm.get('CommodityType')?.invalid && 
-                                (commodityForm.get('CommodityType')?.touched || commodityForm.get('CommodityType')?.dirty)">
-                                <label for="commodityType" class="input-label">Commodity Type <span
-                                        class="text-danger">*</span></label>
-                                <div *ngIf="commodityForm.get('CommodityType')?.invalid && 
-                                       (commodityForm.get('CommodityType')?.touched || 
-                                       commodityForm.get('CommodityType')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="commodityForm.get('CommodityType')?.hasError('required')">
-                                        Commodity Type is required
-                                    </span>
-                                </div>
-                            </div>
-                        </aside>
+                       <aside class="col-md-4">
+  <div class="custom-form-group">
+    <input type="text" id="commodityType" formControlName="CommodityType"
+           class="custom-input-field sm"
+           [class.is-invalid]="commodityForm.get('CommodityType')?.invalid && 
+           (commodityForm.get('CommodityType')?.touched || commodityForm.get('CommodityType')?.dirty)">
+    <label for="commodityType" class="input-label">Commodity Type <span class="text-danger">*</span></label>
+    <div *ngIf="commodityForm.get('CommodityType')?.invalid && 
+           (commodityForm.get('CommodityType')?.touched || 
+           commodityForm.get('CommodityType')?.dirty)" class="invalid-feedback d-block">
+      <span *ngIf="commodityForm.get('CommodityType')?.hasError('required')">
+        Commodity Type is required
+      </span>
+      <span *ngIf="commodityForm.get('CommodityType')?.hasError('maxlength')">
+        Commodity Type cannot exceed 100 characters
+      </span>
+    </div>
+  </div>
+</aside>
                     </div>
                 </form>
             </div>

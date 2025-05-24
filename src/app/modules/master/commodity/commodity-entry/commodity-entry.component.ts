@@ -57,6 +57,7 @@ export class CommodityEntryComponent implements OnInit {
         this.isEditMode = true;
         this.loadCommodity(this.commodityId);
         this.commodityForm.get('status')?.enable();
+        
       }
     });
 
@@ -76,25 +77,28 @@ export class CommodityEntryComponent implements OnInit {
     this.commodityForm = this.fb.group({
       CommodityName: ['', [
         Validators.required,
-        Validators.maxLength(100),
+        Validators.maxLength(50),
         Validators.pattern(/^[a-zA-Z\s]+$/) // Only alphabets and spaces allowed
       ]],
-      CommodityCode: ['', [Validators.required, Validators.maxLength(10), Validators.pattern(/^[a-zA-Z0-9]{6,12}$/)]],
+      CommodityCode: ['', [Validators.required, Validators.maxLength(10), Validators.pattern(/^[a-zA-Z0-9]{5,12}$/)]],
       CommodityNameLL: ['', [Validators.maxLength(50)]],
-      CommodityType: ['', Validators.required],
-      UOMSid: [null],
+      CommodityType: ['', [
+      Validators.required,
+      Validators.maxLength(100)  
+    ]],
+      // UOMSid: [null],
       ImcoName: ['', [Validators.maxLength(10)]],
       UNNo: ['', [Validators.maxLength(10)]],
       PackingGroup: ['', [Validators.maxLength(10)]],
-      HSSACCode: [null],
+      // HSSACCode: [null],
       FlashPoint: ['', [Validators.maxLength(5)]],
       status: [{ value: 'A', disabled: !this.isEditMode }, Validators.required],
-      Remarks: ['', [Validators.maxLength(300)]],
-      Timber: [false],
-      Flamable: [false],
-      Perishable: [false],
-      Haz: [false],
-      ContainerVentRequired: [false]
+      Remarks: ['', [Validators.maxLength(200)]],
+      // Timber: [false],
+      // Flamable: [false],
+      // Perishable: [false],
+      // Haz: [false],
+      // ContainerVentRequired: [false]
     });
   }
 
@@ -174,34 +178,24 @@ export class CommodityEntryComponent implements OnInit {
         CommodityCode: '',
         CommodityNameLL: '',
         CommodityType: '',
-        UOMSid: null,
+        // UOMSid: null,
         ImcoName: '',
         UNNo: '',
         PackingGroup: '',
-        HSSACCode: null,
+        // HSSACCode: null,
         FlashPoint: '',
         status: 'A',
         Remarks: '',
-        Timber: false,
-        Flamable: false,
-        Perishable: false,
-        Haz: false,
-        ContainerVentRequired: false
+        // Timber: false,
+        // Flamable: false,
+        // Perishable: false,
+        // Haz: false,
+        // ContainerVentRequired: false
       });
     }
   }
 
   goBack() {
-    if (this.commodityForm.dirty) {
-      const modalRef = this.modalService.open(DeleteWarningComponent);
-      modalRef.componentInstance.message = 'You have unsaved changes. Are you sure you want to leave?';
-      modalRef.result.then((result) => {
-        if (result === true) {
-          this.router.navigate(['/master/commodity/list']);
-        }
-      }).catch(() => { });
-    } else {
-      this.router.navigate(['/master/commodity/list']);
-    }
+    this.router.navigate(['/master/commodity/list']);
   }
 }

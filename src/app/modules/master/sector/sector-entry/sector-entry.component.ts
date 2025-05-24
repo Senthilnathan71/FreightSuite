@@ -97,6 +97,7 @@ export class SectorEntryComponent implements OnInit {
           status: sector.status || 'A',
           // remarks: sector.remarks || ''
         });
+        this.sectorForm.get('status')?.enable();
       },
       error: (err) => {
         console.error('Error loading sector:', err);

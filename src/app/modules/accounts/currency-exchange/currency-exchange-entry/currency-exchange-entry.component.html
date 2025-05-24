@@ -16,11 +16,11 @@
             <i class="fas fa-sync-alt me-1"></i>
             Reset
           </button>
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                  (click)="onSubmit()" [disabled]="loading || currencyExchangeForm.invalid">
-            <i class="fas fa-save me-1"></i>
-            {{ loading ? 'Saving...' : 'Save' }}
-          </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        [disabled]="currencyExchangeForm.invalid" (click)="onSubmit()">
+                        <i class="fas fa-save me-1"></i>
+                        {{ isEditMode ? 'Update' : 'Save' }}
+                    </button>
         </div>
       </div>
     </div>
@@ -96,37 +96,6 @@
                 </div>
               </div>
             </aside>
-            
-            <aside class="col-md-4">
-              <div class="custom-form-group">
-                <select id="CompanyMasterSid" formControlName="CompanyMasterSid" class="custom-input-field sm" [disabled]="loading">
-                  <option [value]="null" disabled>Select Company</option>
-                  <option *ngFor="let company of companyMasterList" [value]="company.CompanyMasterSid">
-                    {{company.CompanyName}}
-                  </option>
-                </select>
-                <label for="CompanyMasterSid" class="input-label">Company <span class="text-danger fw-bold">*</span></label>
-                <div *ngIf="currencyExchangeForm.get('CompanyMasterSid').touched && currencyExchangeForm.get('CompanyMasterSid').errors" class="text-danger">
-                  <div *ngIf="currencyExchangeForm.get('CompanyMasterSid').errors['required']">Company is required</div>
-                </div>
-              </div>
-            </aside>
-            
-            <aside class="col-md-4">
-              <div class="custom-form-group">
-                <select id="BranchMasterSid" formControlName="BranchMasterSid" class="custom-input-field sm" [disabled]="loading || !currencyExchangeForm.get('CompanyMasterSid').value">
-                  <option [value]="null" disabled>Select Branch</option>
-                  <option *ngFor="let branch of branchMasterList" [value]="branch.BranchMasterSid">
-                    {{branch.BranchName}}
-                  </option>
-                </select>
-                <label for="BranchMasterSid" class="input-label">Branch <span class="text-danger fw-bold">*</span></label>
-                <div *ngIf="currencyExchangeForm.get('BranchMasterSid').touched && currencyExchangeForm.get('BranchMasterSid').errors" class="text-danger">
-                  <div *ngIf="currencyExchangeForm.get('BranchMasterSid').errors['required']">Branch is required</div>
-                </div>
-              </div>
-            </aside>
-            
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <textarea id="Remarks" formControlName="Remarks" class="custom-textarea-field sm" maxlength="100"></textarea>

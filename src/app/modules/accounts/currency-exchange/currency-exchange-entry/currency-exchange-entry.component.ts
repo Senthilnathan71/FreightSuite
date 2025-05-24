@@ -23,9 +23,9 @@ export class CurrencyExchangeEntryComponent implements OnInit {
   isEditMode = false;
   CurrencyExchangeSid: number | null = null;
   statusList = ["Active", "Inactive"];
+  companies: any[] = [];
+  branches: any[] = [];
   loading = false;
-  companyMasterList: any[] = [];
-  branchMasterList: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -37,8 +37,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
+    this.loadCompaniesAndBranches();
     this.checkEditMode();
-    this.loadCompanies();
   }
 
   initForm() {
@@ -64,65 +64,56 @@ export class CurrencyExchangeEntryComponent implements OnInit {
       ]],
       BankName: ['', [Validators.required]],
       Remarks: [''],
-      status: ['Active', [Validators.required]],
-      CompanyMasterSid: [null, [Validators.required]],
-      BranchMasterSid: [null, [Validators.required]]
+      status: [{value: 'Active', disabled: true}, [Validators.required]],
+      CompanyMasterSid: ['', [Validators.required]],
+      BranchMasterSid: ['', [Validators.required]]
     });
 
-    // Load branches when company changes
-    this.currencyExchangeForm.get('CompanyMasterSid')?.valueChanges.subscribe(companyId => {
-      if (companyId) {
-        this.loadBranchesForCompany(companyId);
-      } else {
-        this.branchMasterList = [];
-        this.currencyExchangeForm.patchValue({ BranchMasterSid: null });
+    // Automatically convert currency inputs to uppercase
+    this.currencyExchangeForm.get('FromCurrency')?.valueChanges.subscribe(val => {
+      if (val) {
+        this.currencyExchangeForm.get('FromCurrency')?.setValue(val.toUpperCase(), {emitEvent: false});
+      }
+    });
+
+    this.currencyExchangeForm.get('ToCurrency')?.valueChanges.subscribe(val => {
+      if (val) {
+        this.currencyExchangeForm.get('ToCurrency')?.setValue(val.toUpperCase(), {emitEvent: false});
       }
     });
   }
 
-  loadCompanies() {
+  loadCompaniesAndBranches() {
     this.loading = true;
-    this.accountService.getAllCompanies().subscribe({
+    this.accountService.getCompanies().subscribe({
       next: (companies) => {
-        this.companyMasterList = companies;
-        this.loading = false;
-        
-        // If in edit mode, branches will be loaded with the data
-        if (!this.isEditMode && this.companyMasterList.length > 0) {
-          const defaultCompany = this.companyMasterList[0].CompanyMasterSid;
-          this.currencyExchangeForm.patchValue({ CompanyMasterSid: defaultCompany });
-          this.loadBranchesForCompany(defaultCompany);
-        }
-      },
-      error: (err) => {
-        this.loading = false;
-        this.appSettingService.showError('Failed to load companies');
-        console.error(err);
-      }
-    });
-  }
-
-  loadBranchesForCompany(companyId: number) {
-    this.loading = true;
-    this.accountService.getAllCustomerBranches().subscribe({
-      next: (branches: any[]) => {
-        // Filter branches for the selected company
-        this.branchMasterList = branches.filter(branch => 
-          branch.CompanyMasterSid === companyId
-        );
-        this.loading = false;
-        
-        // If in edit mode, don't reset the branch selection
-        if (!this.isEditMode && this.branchMasterList.length > 0) {
-          this.currencyExchangeForm.patchValue({ 
-            BranchMasterSid: this.branchMasterList[0].BranchMasterSid 
+        this.companies = companies;
+        if (this.companies.length > 0) {
+          this.currencyExchangeForm.patchValue({
+            CompanyMasterSid: this.companies[0].CompanyMasterSid
           });
         }
       },
       error: (err) => {
-        this.loading = false;
-        this.appSettingService.showError('Failed to load branches');
+        this.appSettingService.showError('Failed to load companies.');
         console.error(err);
+      }
+    });
+
+    this.accountService.getBranches().subscribe({
+      next: (branches) => {
+        this.branches = branches;
+        if (this.branches.length > 0) {
+          this.currencyExchangeForm.patchValue({
+            BranchMasterSid: this.branches[0].BranchMasterSid
+          });
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        this.appSettingService.showError('Failed to load branches.');
+        console.error(err);
+        this.loading = false;
       }
     });
   }
@@ -133,6 +124,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
       this.isEditMode = true;
       this.CurrencyExchangeSid = +id;
       this.loadCurrencyExchangeData(this.CurrencyExchangeSid);
+      // Enable status control in edit mode
+      this.currencyExchangeForm.get('status')?.enable();
     }
   }
 
@@ -144,23 +137,10 @@ export class CurrencyExchangeEntryComponent implements OnInit {
           new Date(data.EffectiveFrom).toISOString().split('T')[0] : '';
         
         this.currencyExchangeForm.patchValue({
+          ...data,
           EffectiveFrom: effectiveFrom,
-          FromCurrency: data.FromCurrency,
-          ToCurrency: data.ToCurrency,
-          SellRate: data.SellRate,
-          BuyRate: data.BuyRate,
-          BankName: data.BankName,
-          Remarks: data.Remarks,
-          status: data.status === 'A' ? 'Active' : 'Inactive',
-          CompanyMasterSid: data.CompanyMasterSid,
-          BranchMasterSid: data.BranchMasterSid
+          status: data.status === 'A' ? 'Active' : 'Inactive'
         });
-        
-        // Load branches for the company in edit mode
-        if (data.CompanyMasterSid) {
-          this.loadBranchesForCompany(data.CompanyMasterSid);
-        }
-        
         this.loading = false;
       },
       error: (err) => {
@@ -179,24 +159,19 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     }
 
     this.loading = true;
-    const formValue = this.currencyExchangeForm.value;
+    const formValue = this.currencyExchangeForm.getRawValue(); // Use getRawValue to get disabled control values
     
     const payload = {
+      ...formValue,
       EffectiveFrom: new Date(formValue.EffectiveFrom).toISOString(),
-      FromCurrency: formValue.FromCurrency,
-      ToCurrency: formValue.ToCurrency,
       SellRate: parseFloat(formValue.SellRate),
       BuyRate: parseFloat(formValue.BuyRate),
-      BankName: formValue.BankName,
-      Remarks: formValue.Remarks,
       status: formValue.status === "Active" ? "A" : "I",
-      CompanyMasterSid: formValue.CompanyMasterSid,
-      BranchMasterSid: formValue.BranchMasterSid,
-      createdBy: this.appSettingService.userSettingSource.value['userEmail'],
-      updatedBy: this.appSettingService.userSettingSource.value['userEmail']
+      createdBy: this.appSettingService.userSettingSource.value['userEmail']
     };
 
     if (this.isEditMode && this.CurrencyExchangeSid) {
+      payload.updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
       this.accountService.updateCurrencyExchangeById(this.CurrencyExchangeSid, payload).subscribe({
         next: (resp) => {
           this.handleSuccess(resp, 'Currency Exchange updated successfully!');
@@ -219,26 +194,34 @@ export class CurrencyExchangeEntryComponent implements OnInit {
 
   handleSuccess(resp: any, successMsg: string) {
     this.loading = false;
-    this.appSettingService.showSuccess(successMsg);
-    this.router.navigate(['accounts/currency-exchange/list']);
+    if (resp.status) {
+      this.appSettingService.showSuccess(successMsg);
+      this.router.navigate(['accounts/currency-exchange/list']);
+    } else {
+      this.appSettingService.showError(resp.message || 'Operation failed');
+    }
   }
 
   handleError(err: any) {
     this.loading = false;
     console.error('Error:', err);
     this.appSettingService.showError(
-      err.error?.message || 
       err.message || 
-      'Failed to perform operation. Please try again.'
+      err.error?.message || 
+      'Failed to perform operation'
     );
   }
 
   reset() {
     this.currencyExchangeForm.reset({
       status: 'Active',
-      CompanyMasterSid: this.companyMasterList.length > 0 ? this.companyMasterList[0].CompanyMasterSid : null,
-      BranchMasterSid: this.branchMasterList.length > 0 ? this.branchMasterList[0].BranchMasterSid : null
+      CompanyMasterSid: this.companies.length > 0 ? this.companies[0].CompanyMasterSid : '',
+      BranchMasterSid: this.branches.length > 0 ? this.branches[0].BranchMasterSid : ''
     });
+    // Disable status again if not in edit mode
+    if (!this.isEditMode) {
+      this.currencyExchangeForm.get('status')?.disable();
+    }
   }
 
   goBack() {

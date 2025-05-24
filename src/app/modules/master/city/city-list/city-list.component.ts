@@ -123,4 +123,7 @@ export class CityListComponent {
     this.totalLengthOfCollection = 0;
     this.searchPerformed = false;
   }
+  report(){
+    
+  }
 }

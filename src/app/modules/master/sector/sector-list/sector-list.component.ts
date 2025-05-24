@@ -19,14 +19,15 @@ import { MasterService } from 'src/app/modules/master/master.service';
 export class SectorListComponent {
   searchType = 'sectorName';
   filterValue = '';
-  results: any[] = [];
   sectorList: any[] = [];
+  allSectors: any[] = [];
   searchPerformed = false;
+  loading: boolean = false;
 
   // pagination
   page = 1;
   pageSize = 10;
-  totalLengthOfCollection: number;
+  totalLengthOfCollection: number = 0;
 
   constructor(
     private masterService: MasterService, 
@@ -38,35 +39,55 @@ export class SectorListComponent {
   ngOnInit() { }
 
   search() {
+    this.loading = true;
     const payload = {
       searchType: this.searchType,
-      filterValue: this.filterValue,
-    }
-    this.masterService.searchSectors(payload).subscribe((res: any) => {
-      this.results = res;
-      this.searchPerformed = true;
-      this.updatePaginatedData();
-      this.totalLengthOfCollection = this.results.length || 0;
+      filterValue: this.searchType === 'status' 
+        ? this.filterValue === 'Active' ? 'A' : 'I'
+        : this.filterValue
+    };
+
+    this.masterService.searchSectors(payload).subscribe({
+      next: (res: any) => {
+        this.allSectors = res.data || res;
+        this.sectorList = [...this.allSectors];
+        this.totalLengthOfCollection = this.sectorList.length;
+        this.searchPerformed = true;
+        this.page = 1;
+        this.updatePaginatedData();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Search error:', err);
+        this.loading = false;
+      }
     });
   }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.sectorList = this.results.slice(startIndex, endIndex);
+    this.sectorList = this.allSectors.slice(startIndex, endIndex);
   }
 
-  trackByIndex(index: number, item: any): number {
-    return index;
+  trackBySectorId(index: number, item: any): number {
+    return item.SectorMasterSid || index;
   }
 
   deleteSector(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        this.masterService.deleteSector(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess("Deleted!");
-          this.search();
+        this.loading = true;
+        this.masterService.deleteSector(id).subscribe({
+          next: (resp: any) => {
+            this.appSettingService.showSuccess("Sector deleted successfully!");
+            this.search(); // Refresh search results
+          },
+          error: (err) => {
+            console.error('Delete error:', err);
+            this.loading = false;
+          }
         });
       }
     });
@@ -81,10 +102,20 @@ export class SectorListComponent {
   }
 
   resetPage() {
-    this.sectorList = [];
-    this.totalLengthOfCollection = 0;
     this.filterValue = '';
     this.searchType = 'sectorName';
+    this.page = 1;
+    this.searchPerformed = false;
+    this.sectorList = [];
+    this.totalLengthOfCollection = 0;
+  }
+
+  getStatusClass(status: string): string {
+    return status === 'A' ? 'badge bg-success' : 'badge bg-danger';
+  }
+
+  getStatusText(status: string): string {
+    return status === 'A' ? 'Active' : 'Inactive';
   }
 
   report() { }

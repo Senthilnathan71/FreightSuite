@@ -12,14 +12,19 @@
                             <i class="fas fa-search me-1"></i>
                             Search
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToCreateSector()">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="navigateToCreateSector()">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="report()"
+                            [disabled]="!searchPerformed || totalLengthOfCollection === 0">
                             <i class="fas fa-file-alt me-1"></i>
                             Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="resetPage()"
+                            [disabled]="!searchPerformed">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
@@ -64,7 +69,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of sectorList; trackBy: trackByIndex">
+                        <tr *ngFor="let item of sectorList; trackBy: trackBySectorId">
                             <td>
                                 <div class="d-flex align-items-center">
                                     <a class="text-info mx-2" (click)="navigateToEditSector(item.SectorMasterSid)">
@@ -108,9 +113,9 @@
             </div>
         </div>
     </div>
-    <!-- No records found -->
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
-        <div>No records found</div>
-    </div>
+   
 
 </div>
+ <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
+        <div class="alert alert-info text-center">No records found</div>
+    </div>

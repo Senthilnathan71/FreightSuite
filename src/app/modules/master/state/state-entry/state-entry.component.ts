@@ -58,6 +58,8 @@ export class StateEntryComponent implements OnInit {
         this.stateId = +params['id'];
         this.isEditMode = true;
         this.getStateById(this.stateId);
+        // Enable status control when in edit mode
+        this.stateForm.get('status')?.enable();
       }
     });
   }
@@ -66,17 +68,27 @@ export class StateEntryComponent implements OnInit {
     this.stateForm = this.fb.group({
       stateName: ['', [Validators.required, Validators.maxLength(100), this.alphaSpaceValidator()]],
       stateCode: ['', [Validators.required, Validators.maxLength(2), this.alphaValidator()]],
-      stateGSTCode: ['', [Validators.required, Validators.maxLength(2), Validators.pattern('^[0-9]*$')]],
+      stateGSTCode: ['', [Validators.required, Validators.maxLength(2), Validators.pattern('^[0-9]*$'), this.trimSpaceValidator()]],
       CountryMasterSid: ['', Validators.required],
-      ZoneMasterSid: ['', Validators.required], // Made required like in city component
+      ZoneMasterSid: ['', Validators.required],
       region: [''],
-      status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
+      status: [{value: 'A', disabled: true}, Validators.required],
       Remarks: ['']
     });
 
     this.stateForm.get('stateCode')?.valueChanges.subscribe(val => {
       if (val) {
         this.stateForm.get('stateCode')?.setValue(val.toUpperCase(), { emitEvent: false });
+      }
+    });
+
+    this.stateForm.get('stateGSTCode')?.valueChanges.subscribe(val => {
+      if (val) {
+        // Remove any spaces from GST code
+        const trimmedVal = val.replace(/\s/g, '');
+        if (val !== trimmedVal) {
+          this.stateForm.get('stateGSTCode')?.setValue(trimmedVal, { emitEvent: false });
+        }
       }
     });
   }
@@ -94,6 +106,14 @@ export class StateEntryComponent implements OnInit {
       if (!control.value) return null;
       const valid = /^[A-Za-z\s]+$/.test(control.value);
       return valid ? null : { invalidAlphaSpace: true };
+    };
+  }
+
+  private trimSpaceValidator(): ValidatorFn {
+    return (control: AbstractControl): {[key: string]: any} | null => {
+      if (!control.value) return null;
+      const hasSpaces = /\s/.test(control.value);
+      return hasSpaces ? { hasSpaces: true } : null;
     };
   }
 
@@ -130,33 +150,32 @@ export class StateEntryComponent implements OnInit {
 
   loadZones() {
     this.masterService.getAllZones().subscribe({
-        next: (resp: any) => {
-            this.zones = resp.data || resp;
-        },
-        error: (err) => {
-            console.error('Error loading zones:', err);
-            this.appSettingService.showError('Failed to load zones');
-        }
+      next: (resp: any) => {
+        this.zones = resp.data || resp;
+      },
+      error: (err) => {
+        console.error('Error loading zones:', err);
+        this.appSettingService.showError('Failed to load zones');
+      }
     });
-}
+  }
 
   getStateById(id: number) {
     this.stateForm.reset();
     this.masterService.getStateById(id).subscribe({
       next: (state: State) => {
-        // Convert API status (A/I) to display status (Active/Inactive)
-        const formattedStatus = this.statusMap[state.status] || 'A';
-        
         this.stateForm.patchValue({
           stateName: state.stateName,
           stateCode: state.stateCode,
           stateGSTCode: state.stateGSTCode,
           CountryMasterSid: state.CountryMasterSid,
-          ZoneMasterSid: state.ZoneMasterSid, // Added ZoneMasterSid patching
+          ZoneMasterSid: state.ZoneMasterSid,
           region: state.region || '',
-          status: formattedStatus,
+          status: state.status || 'A',
           Remarks: state.Remarks || ''
         });
+        // Enable status control when in edit mode
+        this.stateForm.get('status')?.enable();
       },
       error: (err) => {
         console.error('Error loading state:', err);
@@ -181,7 +200,7 @@ export class StateEntryComponent implements OnInit {
     const payload = {
       ...formValue,
       CountryMasterSid: Number(formValue.CountryMasterSid),
-      ZoneMasterSid: Number(formValue.ZoneMasterSid), // Added ZoneMasterSid conversion
+      ZoneMasterSid: Number(formValue.ZoneMasterSid),
       status: this.isEditMode ? formValue.status : 'A',
       ...(this.isEditMode ? updatedBy : createdBy)
     };
@@ -221,11 +240,13 @@ export class StateEntryComponent implements OnInit {
         stateCode: '',
         stateGSTCode: '',
         CountryMasterSid: '',
-        ZoneMasterSid: '', // Added ZoneMasterSid reset
+        ZoneMasterSid: '',
         region: '',
         status: 'A',
         Remarks: ''
       });
+      // Disable status control when not in edit mode
+      this.stateForm.get('status')?.disable();
     }
   }
 

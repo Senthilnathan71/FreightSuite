@@ -25,10 +25,10 @@ import { AccountsService } from '../../accounts.service';
 export class CurrencyExchangeListComponent {
   searchType = 'FromCurrency';
   filterValue = '';
-  results: any[] = [];
-  loading: boolean = false;
-  currencyExchangeList: any[] = [];
+  allResults: any[] = []; // Store all results for pagination
+  currencyExchangeList: any[] = []; // Store paginated results
   searchPerformed = false;
+  loading: boolean = false;
 
   // pagination
   page = 1;
@@ -43,54 +43,64 @@ export class CurrencyExchangeListComponent {
   ) { }
 
   ngOnInit() {
-    this.loadCurrencyExchangeData();
+    // Initial load if needed
+    // this.loadCurrencyExchangeData();
   }
 
-  loadCurrencyExchangeData() {
-    this.accountService.getAllCurrencyExchange().subscribe((res: any) => {
-      this.currencyExchangeList = res;
-      this.totalLengthOfCollection = this.currencyExchangeList.length;
+  search() {
+
+    this.loading = true;
+    const payload = {
+      searchType: this.searchType,
+      filterValue: this.searchType === 'status' 
+        ? this.filterValue === 'Active' ? 'A' : 'I'
+        : this.filterValue
+    };
+    
+    this.accountService.searchCurrencyExchangeList(payload).subscribe({
+      next: (res: any) => {
+        this.allResults = res.data || res || [];
+        this.totalLengthOfCollection = this.allResults.length;
+        this.searchPerformed = true;
+        this.page = 1; // Reset to first page on new search
+        this.updatePaginatedData();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Search error:', err);
+        this.allResults = [];
+        this.currencyExchangeList = [];
+        this.totalLengthOfCollection = 0;
+        this.searchPerformed = true;
+        this.loading = false;
+      }
     });
   }
-
-  // Fix the search payload to match backend expectations
-search() {
-  this.loading = true;
-  const payload = {
-    searchType: this.searchType,
-    filterValue: this.searchType === 'status' 
-      ? this.filterValue === 'Active' ? 'A' : 'I'
-      : this.filterValue
-  };
-  
-  this.accountService.searchCurrencyExchangeList(payload).subscribe((res: any) => {
-    this.results = res;
-    this.searchPerformed = true;
-    this.updatePaginatedData();
-    this.totalLengthOfCollection = this.results.length || 0;
-    this.loading = false;
-  }, () => {
-    this.loading = false;
-  });
-}
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.currencyExchangeList = this.results.slice(startIndex, endIndex);
+    this.currencyExchangeList = this.allResults.slice(startIndex, endIndex);
   }
 
-  trackByIndex(index: number, item: any): number {
-    return index;
+  trackByExchangeId(index: number, item: any): number {
+    return item.ExchangeRateSid; // Assuming there's an ID field
   }
 
   deleteCurrencyExchange(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        this.accountService.deleteCurrencyExchangeById(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess("Deleted!");
-          this.search(); // Refresh the list after deletion
+        this.loading = true;
+        this.accountService.deleteCurrencyExchangeById(id).subscribe({
+          next: (resp: any) => {
+            this.appSettingService.showSuccess("Currency exchange deleted successfully!");
+            this.search(); // Refresh search results
+          },
+          error: (err) => {
+            console.error('Delete error:', err);
+            this.loading = false;
+          }
         });
       }
     });
@@ -101,13 +111,23 @@ search() {
   }
 
   resetPage() {
+    this.filterValue = '';
+    this.searchType = 'FromCurrency';
+    this.page = 1;
+    this.searchPerformed = false;
+    this.allResults = [];
     this.currencyExchangeList = [];
     this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
   }
 
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  getStatusClass(status: string): string {
+    return status === 'A' ? 'badge bg-success' : 'badge bg-danger';
+  }
+
+  getStatusText(status: string): string {
+    return status === 'A' ? 'Active' : 'Inactive';
+  }
+  report(){
+
   }
 }

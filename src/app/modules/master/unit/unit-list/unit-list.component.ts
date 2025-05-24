@@ -4,11 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
-import { MasterService } from '../../master.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { AppService } from 'src/app/service/app.service';
+import { MasterService } from '../../master.service';
 
 @Component({
   selector: 'app-unit-list',
@@ -27,9 +26,10 @@ import { AppService } from 'src/app/service/app.service';
 export class UnitListComponent {
   searchType = 'unitName';
   filterValue = '';
-  results: any[] = [];
   unitList: any[] = [];
+  allUnits: any[] = [];
   searchPerformed = false;
+  loading: boolean = false;
 
   // pagination
   page = 1;
@@ -46,37 +46,78 @@ export class UnitListComponent {
   ngOnInit() { }
 
   search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status'
-        ? this.filterValue === 'Active' ? 'A' : 'I'
-        : this.filterValue,
+    this.loading = true;
+    
+    // If search term is empty, get all units
+    if (!this.filterValue.trim()) {
+      this.masterService.getAllUnits().subscribe({
+        next: (res: any) => {
+          this.handleSearchResponse(res);
+        },
+        error: (err) => {
+          this.handleSearchError(err);
+        }
+      });
+    } else {
+      // If search term exists, perform filtered search
+      const payload = {
+        searchType: this.searchType,
+        filterValue: this.searchType === 'status' 
+          ? this.filterValue === 'Active' ? 'A' : 'I'
+          : this.filterValue
+      };
+
+      this.masterService.searchUnitList(payload).subscribe({
+        next: (res: any) => {
+          this.handleSearchResponse(res);
+        },
+        error: (err) => {
+          this.handleSearchError(err);
+        }
+      });
     }
-    this.masterService.searchUnitList(payload).subscribe((res: any) => {
-      this.results = res;
-      this.searchPerformed = true;
-      this.updatePaginatedData();
-      this.totalLengthOfCollection = this.results.length || 0;
-    });
+  }
+
+  private handleSearchResponse(res: any) {
+    this.allUnits = res.data || res;
+    this.unitList = [...this.allUnits];
+    this.totalLengthOfCollection = this.unitList.length;
+    this.searchPerformed = true;
+    this.page = 1;
+    this.updatePaginatedData();
+    this.loading = false;
+  }
+
+  private handleSearchError(err: any) {
+    console.error('Search error:', err);
+    this.appSettingService.showError('Failed to load units');
+    this.loading = false;
   }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.unitList = this.results.slice(startIndex, endIndex);
+    this.unitList = this.allUnits.slice(startIndex, endIndex);
   }
 
-  trackByIndex(index: number, item: any): number {
-    return index;
+  trackByUnitId(index: number, item: any): number {
+    return item.UnitMasterSid;
   }
 
   deleteUnit(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        this.masterService.deleteUnitById(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess("Deleted!");
-          this.router.navigate(['master/unit/list']);
+        this.loading = true;
+        this.masterService.deleteUnitById(id).subscribe({
+          next: (resp: any) => {
+            this.appSettingService.showSuccess("Unit deleted successfully!");
+            this.search(); // Refresh the list
+          },
+          error: (err) => {
+            console.error('Delete error:', err);
+            this.loading = false;
+          }
         });
       }
     });
@@ -87,11 +128,19 @@ export class UnitListComponent {
   }
 
   resetPage() {
+    this.filterValue = '';
+    this.searchType = 'unitName';
+    this.page = 1;
+    this.searchPerformed = false;
     this.unitList = [];
+    this.allUnits = [];
     this.totalLengthOfCollection = 0;
   }
 
   getStatusText(status: string): string {
     return status === 'A' ? 'Active' : 'Inactive';
+  }
+  report(){
+    
   }
 }

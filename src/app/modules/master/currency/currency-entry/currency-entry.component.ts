@@ -69,14 +69,15 @@ export class CurrencyEntryComponent implements OnInit {
         Validators.pattern(/^[a-zA-Z\s]*$/) // Alphabets and spaces only
       ]],
       currencyCode: ['', [
-        Validators.required, 
+        Validators.required,
         Validators.maxLength(3),
         Validators.pattern(/^[A-Z]{3}$/) // Exactly 3 uppercase letters
       ]],
       currencyID: ['', [
-        Validators.required, 
-        Validators.maxLength(1),
-        Validators.pattern(/^[A-Z0-9]$/) // Single alphanumeric character
+        Validators.required,
+        Validators.minLength(1),  
+        Validators.maxLength(3),
+        Validators.pattern(/^[A-Za-z0-9]{1,3}$/) // Single alphanumeric character
       ]],
       currencyUnit: ['', [
         Validators.required, 
@@ -158,6 +159,10 @@ export class CurrencyEntryComponent implements OnInit {
     this.currencyForm.reset();
     this.masterService.getCurrencyById(id).subscribe({
       next: (currency: Currency) => {
+        if (this.isEditMode) {
+        this.currencyForm.get('status')?.enable();
+      }
+      
         this.currencyForm.patchValue({
           currencyName: currency.currencyName,
           currencyCode: currency.currencyCode,

@@ -120,4 +120,7 @@ export class CommodityListComponent {
   trackByFn(index: number, item: any): number {
     return item.CommodityMasterSid;
   }
+  report(){
+    
+  }
 }
