@@ -120,16 +120,17 @@
                                     </div>
                                 </aside>
                                 <aside class="col-md-6">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="TaxType">
-                                        <label for="text-input" class="input-label">Tax Type <span
-                                                class="text-danger">*</span></label>
-                                    </div>
-                                </aside>
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select formControlName="status" [items]="modeOfTaxType" bindLabel="name"
+                                        bindValue="name">
+
+                                    </ng-select>
+                                    <label for="" class="input-label">Tax Type <span class="text-danger">*</span></label>
+                                </div>
+                            </aside>
                                 <aside class="col-md-6">
                                     <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        <input type="date" id="text-input" placeholder="" class="custom-input-field sm"
                                             formControlName="TaxRate">
                                         <label for="text-input" class="input-label">Effective Form <span
                                                 class="text-danger">*</span></label>
