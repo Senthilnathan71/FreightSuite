@@ -33,7 +33,7 @@
                     <div class="row">
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="containerName" type="text" id="text-input" placeholder=""
+                                <input formControlName="ContainerName" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label">Container Name <span
                                         class="text-danger fw-bold">*</span></label>
@@ -42,16 +42,46 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="containerCode" type="number" placeholder=""
+                                <input formControlName="ContainerCode" type="number" placeholder=""
                                     class="custom-input-field sm">
-                                <label for="containerCode" class="input-label">Conatiner Code <span
+                                <label for="containerCode" class="input-label">Container Code <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+
+
+                        <!-- ISO Code -->
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input formControlName="ContainerIsoCode" type="number" placeholder=""
+                                    class="custom-input-field sm">
+                                <label for="isoCode" class="input-label"> ISO Code <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="grossWeight" type="number" placeholder=""
+                                <input formControlName="ContainerSize" type="number" placeholder=""
+                                    class="custom-input-field sm">
+                                <label for="containerCode" class="input-label">Container Size <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input formControlName="ContainerCategory" type="text" id="text-input" placeholder=""
+                                    class="custom-input-field sm">
+                                <label for="text-input" class="input-label">Container Category <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input formControlName="GrossWeight" type="number" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="grossWeight" class="input-label">Gross Weight <span
                                         class="text-danger fw-bold">*</span></label>
@@ -60,7 +90,7 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="tareWeight" type="number" placeholder=""
+                                <input formControlName="TareWeight" type="number" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="tareWeight" class="input-label">Tare Weight <span
                                         class="text-danger fw-bold">*</span></label>
@@ -69,7 +99,7 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="maxVolume" type="number" placeholder=""
+                                <input formControlName="MaxVolume" type="number" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="maxVolume" class="input-label"> Max Volume <span
                                         class="text-danger fw-bold">*</span></label>
@@ -77,7 +107,7 @@
                         </aside>
 
                         <!-- Shipping Mode -->
-
+                        <!-- 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="shippingMode" type="text" id="text-input" placeholder=""
@@ -85,57 +115,57 @@
                                 <label for="text-input" class="input-label">Shipping Mode <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
-                        </aside>
+                        </aside> -->
 
                         <!-- IATA Rate Class -->
 
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="iataRateClass" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label">IATA Rate Class<span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
-                        </aside>
+                        </aside> -->
 
                         <!-- Handling Rate Class -->
 
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="handlingRateClass" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label">Handling Rate Class <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
-                        </aside>
+                        </aside> -->
 
                         <!-- Freight Rate Class -->
 
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="freightRateClass" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label">Freight Rate Class <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
-                        </aside>
+                        </aside> -->
 
                         <!-- Testing -->
 
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="testing" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label"> Testing <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
-                        </aside>
+                        </aside> -->
 
                         <!-- Length -->
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="length" type="number" placeholder=""
+                                <input formControlName="Length" type="number" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="length" class="input-label"> Length <span
                                         class="text-danger fw-bold">*</span></label>
@@ -146,7 +176,7 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="width" type="number" placeholder=""
+                                <input formControlName="Width" type="number" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="width" class="input-label"> Width <span
                                         class="text-danger fw-bold">*</span></label>
@@ -157,7 +187,7 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="height" type="number" placeholder=""
+                                <input formControlName="Height" type="number" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="height" class="input-label"> Height <span
                                         class="text-danger fw-bold">*</span></label>
@@ -166,77 +196,77 @@
 
                         <!-- Port Type -->
 
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="portType" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label">Port Type <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
-                        </aside>
+                        </aside> -->
 
                         <!-- Storage Class -->
 
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="storageClass" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label">Storage Class <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
-                        </aside>
+                        </aside> -->
 
                         <!-- Cargo Class -->
 
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="cargoClass" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label">Cargo Class <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
-                        </aside>
+                        </aside> -->
 
                         <!-- US Container Code -->
 
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="usContainerCode" type="number" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="usContainerCode" class="input-label"> US Container Code <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
-                        </aside>
+                        </aside> -->
 
                         <!-- US Container Type -->
 
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="usContainerType" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label">US Container Type <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
-                        </aside>
+                        </aside> -->
 
-                        <!-- ISO Code -->
 
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input formControlName="isoCode" type="number" placeholder=""
-                                    class="custom-input-field sm">
-                                <label for="isoCode" class="input-label"> ISO Code <span
-                                        class="text-danger fw-bold">*</span></label>
-                            </div>
-                        </aside>
 
                         <!-- No of TEU -->
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="noOfTEU" type="number" placeholder=""
+                                <input formControlName="NoOfTEU" type="number" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="noOfTEU" class="input-label"> No of TEU <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input formControlName="status" type="text" id="text-input" placeholder=""
+                                    class="custom-input-field sm">
+                                <label for="text-input" class="input-label">Status <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
                         </aside>

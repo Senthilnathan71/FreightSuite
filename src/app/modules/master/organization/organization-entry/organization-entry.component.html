@@ -37,12 +37,12 @@
     <form [formGroup]="customerForm">
         <div class="row">
 
-            <div class="col-md-6 ">
+            <div class="col-md-12 ">
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="row">
 
-                            <aside class="col-md-8">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="CustomerName" [onlyText]="100">
@@ -63,7 +63,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-4">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="CustomerShortCode" [textWithNumbers]="50">
@@ -82,7 +82,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="CustomerAliasName" [textWithNumbers]="100">
@@ -102,7 +102,7 @@
                                 </div>
                             </aside>
 
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="GroupName" [textWithNumbers]="20">
@@ -120,7 +120,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="CustomerAddress1" [textWithNumbers]="300">
@@ -139,7 +139,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="CustomerAddress2">
@@ -158,7 +158,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="LocalLanguage" [onlyText]="100">
@@ -198,7 +198,7 @@
 
 
 
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <select formControlName="CountryMasterSid" class="form-select">
                                         <option value="" disabled selected>Select UNO</option>
@@ -217,7 +217,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="Website" [textWithNumbers]="50">
@@ -233,6 +233,64 @@
                                     </div>
                                     }
                                 </div>
+                            </aside>
+                            <aside class="col-md-3">
+<div class="custom-form-group custom-form-group-select">
+  <ng-select
+    [(ngModel)]="selectedStatus"
+    name="status"
+    [items]="modeOfCustomerType"
+    bindLabel="name"
+    bindValue="name"
+    [multiple]="true"
+    [closeOnSelect]="false"
+    [searchable]="true"
+    placeholder="Select Customer Type"
+    (clear)="onClearSelection()"
+  >
+    <ng-template ng-option-tmp let-item="item">
+      <div class="form-check d-flex align-items-center">
+        <input
+          type="checkbox"
+          class="form-check-input sm"
+          [checked]="isSelected(item)"
+          (change)="toggleSelection(item)"
+          id="checkbox-{{ item.name }}"
+        />
+        <label class="form-check-label sm" [for]="'checkbox-' + item.name">
+          {{ item.name }}
+        </label>
+      </div>
+    </ng-template>
+  </ng-select>
+
+  <label class="input-label">
+    Customer Type <span class="text-danger">*</span>
+  </label>
+</div>
+
+
+
+
+
+
+                                <!-- <div class="custom-form-group">
+                                    <select formControlName="CountryMasterSid" class="form-select">
+                                        <option value="" disabled selected>Select UNO</option>
+                                        <option *ngFor="let option of countryList" [value]="option.CountryMasterSid">
+                                            {{option.countryName}} - {{option.countryCode}}</option>
+                                    </select>
+                                    <label for="text-input" class="input-label">Customer Type <span
+                                            class="text-danger">*</span></label>
+                                    @if(customerForm.get('CountryMasterSid')?.touched &&
+                                    customerForm.get('CountryMasterSid')?.invalid ){
+                                    <div class="error-message">
+                                        @if(customerForm.get('CountryMasterSid')?.hasError('required')){
+                                        <span>Country is required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div> -->
                             </aside>
                             <aside class="col-md-3">
                                 <div class="form-check form-check-inline mt-3">
@@ -352,7 +410,7 @@
                 </div>
             </div>
 
-            <div class="col-md-6 ">
+            <!-- <div class="col-md-6 ">
                 <div class="card h-100">
                     <div class="card-body">
                         <ul ngbNav #nav1="ngbNav" [(activeId)]="active1" class="nav-tabs">
@@ -362,7 +420,7 @@
                                     <ng-container *ngTemplateOutlet="customerType"></ng-container>
                                 </ng-template>
                             </li>
-                            <!-- <li [ngbNavItem]="2">
+                            <li [ngbNavItem]="2">
                         <button ngbNavLink>Status Update</button>
                         <ng-template ngbNavContent>
                             <ng-container *ngTemplateOutlet="statusUpadte"></ng-container>
@@ -379,13 +437,13 @@
                         <ng-template ngbNavContent>
                             <ng-container *ngTemplateOutlet="markupPercentage"></ng-container>
                         </ng-template>
-                    </li> -->
+                    </li>
                         </ul>
 
                         <section [ngbNavOutlet]="nav1" class="mt-2 p-2"></section>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
         <ng-template #customerType>
             <div class="col-md-12">
@@ -634,6 +692,15 @@
                             <ng-container *ngTemplateOutlet="branch"></ng-container>
                         </ng-template>
                     </li>
+                      <li [ngbNavItem]="3">
+                                                <button ngbNavLink> <button class="btn btn-info p-0 me-2"
+                                                        (click)="openModal(content3)">
+                                                        <i-feather name="plus-circle"
+                                                            class="feather-sm "></i-feather></button>Milestoe</button>
+                                                <ng-template ngbNavContent>
+                                                    <ng-container *ngTemplateOutlet="TabMilestone"></ng-container>
+                                                </ng-template>
+                                            </li>
 
                     <!-- <li [ngbNavItem]="2">
                         <button ngbNavLink>
@@ -711,6 +778,69 @@
     </div>
 
 </div>
+<ng-template #content3 let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title">Milestone</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="col-md-12">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row">
+
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="City">
+                                <label for="text-input" class="input-label">Milestone <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="BranchName">
+                                <label for="text-input" class="input-label">Update by <span
+                                        class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="BranchType">
+                                <label for="text-input" class="input-label">Update Id <span
+                                        class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="BranchCode">
+                                <label for="text-input" class="input-label">Effective Form <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="BranchCode">
+                                <label for="text-input" class="input-label">Status <span
+                                        class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+
+
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</ng-template>
 
 
 
@@ -950,7 +1080,7 @@
                                                     <ng-container *ngTemplateOutlet="Email"></ng-container>
                                                 </ng-template>
                                             </li>
-                                            <li [ngbNavItem]="3">
+                                            <!-- <li [ngbNavItem]="3">
                                                 <button ngbNavLink> <button class="btn btn-info p-0 me-2"
                                                         (click)="openModal(content3)">
                                                         <i-feather name="plus-circle"
@@ -968,7 +1098,7 @@
                                                 <ng-template ngbNavContent>
                                                     <ng-container *ngTemplateOutlet="TabMovementTerms"></ng-container>
                                                 </ng-template>
-                                            </li>
+                                            </li> -->
                                             <li [ngbNavItem]="5">
                                                 <button ngbNavLink><button class="btn btn-info p-0 me-2"
                                                         (click)="openBranchLoginModal(content5)">
@@ -1245,7 +1375,7 @@
 
 </ng-template>
 
-<ng-template #content3 let-modal>
+<!-- <ng-template #content3 let-modal>
     <div class="modal-header">
         <h4 class="modal-title">Milestone</h4>
         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
@@ -1307,9 +1437,9 @@
         </div>
     </div>
 
-</ng-template>
+</ng-template> -->
 
-<ng-template #content4 let-modal>
+<!-- <ng-template #content4 let-modal>
     <div class="modal-header">
         <h4 class="modal-title">Movement Terms</h4>
         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
@@ -1336,38 +1466,14 @@
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
-                        <!-- <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="BranchType">
-                                    <label for="text-input" class="input-label">Update Id <span
-                                            class="text-danger">*</span></label>
-                                </div>
-                            </aside>
-                            <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="BranchCode">
-                                    <label for="text-input" class="input-label">Effective Form <span
-                                            class="text-danger"></span></label>
-                                </div>
-                            </aside>
-                             <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="BranchCode">
-                                    <label for="text-input" class="input-label">Status <span
-                                            class="text-danger">*</span></label>
-                                </div>
-                            </aside> -->
-
+                       
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-</ng-template>
+</ng-template> -->
 
 <ng-template #content5 let-modal>
     <div class="modal-header">
