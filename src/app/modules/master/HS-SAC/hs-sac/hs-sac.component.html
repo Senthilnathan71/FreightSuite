@@ -43,9 +43,9 @@
                             <i class="fas fa-search me-1"></i>
                             Search
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-plus me-1"></i> Create
-                        </button>
+                        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="button" (click)="openModal(content)"> <i
+                                class="fas fa-plus me-1"></i> Create </button>
+
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                             <i class="fas fa-file-alt me-1"></i>
                             Report
@@ -84,6 +84,75 @@
             </div>
         </div>
     </div>
+    <ng-template #content let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">HS-SAC</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <form>
+                <div class="col-md-12">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="row">
+                                <aside class="col-md-6">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="HS/SACCode">
+                                        <label for="text-input" class="input-label">HS/SAC Code <span
+                                                class="text-danger">*</span></label>
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="ServiceName">
+                                        <label for="text-input" class="input-label">Service Name <span
+                                                class="text-danger">*</span></label>
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="TaxRate">
+                                        <label for="text-input" class="input-label">Tax Rate <span
+                                                class="text-danger">*</span></label>
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="TaxType">
+                                        <label for="text-input" class="input-label">Tax Type <span
+                                                class="text-danger">*</span></label>
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="TaxRate">
+                                        <label for="text-input" class="input-label">Effective Form <span
+                                                class="text-danger">*</span></label>
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="Remarks">
+                                        <label for="text-input" class="input-label">Remarks <span
+                                                class="text-danger">*</span></label>
+                                    </div>
+                                </aside>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div>
+        </div>
+    </ng-template>
     <!-- <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
             <div class="col-8 mx-auto">
@@ -156,16 +225,16 @@
                             <td>
                                 <div class="text-truncate">RO</div>
                             </td>
-                             <td>
+                            <td>
                                 <div class="text-truncate">RO</div>
                             </td>
-                             <td>
+                            <td>
                                 <div class="text-truncate">RO</div>
                             </td>
-                             <td>
+                            <td>
                                 <div class="text-truncate">RO</div>
                             </td>
-                             <td>
+                            <td>
                                 <div class="text-truncate">RO</div>
                             </td>
                             <td>
