@@ -234,8 +234,47 @@
                                     }
                                 </div>
                             </aside>
-                              <aside class="col-md-3">
-                                <div class="custom-form-group">
+                            <aside class="col-md-3">
+<div class="custom-form-group custom-form-group-select">
+  <ng-select
+    [(ngModel)]="selectedStatus"
+    name="status"
+    [items]="modeOfCustomerType"
+    bindLabel="name"
+    bindValue="name"
+    [multiple]="true"
+    [closeOnSelect]="false"
+    [searchable]="true"
+    placeholder="Select Customer Type"
+    (clear)="onClearSelection()"
+  >
+    <ng-template ng-option-tmp let-item="item">
+      <div class="form-check d-flex align-items-center">
+        <input
+          type="checkbox"
+          class="form-check-input sm"
+          [checked]="isSelected(item)"
+          (change)="toggleSelection(item)"
+          id="checkbox-{{ item.name }}"
+        />
+        <label class="form-check-label sm" [for]="'checkbox-' + item.name">
+          {{ item.name }}
+        </label>
+      </div>
+    </ng-template>
+  </ng-select>
+
+  <label class="input-label">
+    Customer Type <span class="text-danger">*</span>
+  </label>
+</div>
+
+
+
+
+
+
+                                <!-- <div class="custom-form-group">
                                     <select formControlName="CountryMasterSid" class="form-select">
                                         <option value="" disabled selected>Select UNO</option>
                                         <option *ngFor="let option of countryList" [value]="option.CountryMasterSid">
@@ -251,7 +290,7 @@
                                         }
                                     </div>
                                     }
-                                </div>
+                                </div> -->
                             </aside>
                             <aside class="col-md-3">
                                 <div class="form-check form-check-inline mt-3">
