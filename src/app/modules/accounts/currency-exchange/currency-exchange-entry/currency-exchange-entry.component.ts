@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { AccountsService } from '../../accounts.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
   selector: 'app-currency-exchange-entry',
@@ -32,7 +33,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     private accountService: AccountsService,
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private masterService: MasterService
   ) { }
 
   ngOnInit(): void {
@@ -64,7 +66,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
       ]],
       BankName: ['', [Validators.required]],
       Remarks: [''],
-      status: [{value: 'Active', disabled: true}, [Validators.required]],
+      status: [{ value: 'Active', disabled: true }, [Validators.required]],
       CompanyMasterSid: ['', [Validators.required]],
       BranchMasterSid: ['', [Validators.required]]
     });
@@ -72,20 +74,20 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     // Automatically convert currency inputs to uppercase
     this.currencyExchangeForm.get('FromCurrency')?.valueChanges.subscribe(val => {
       if (val) {
-        this.currencyExchangeForm.get('FromCurrency')?.setValue(val.toUpperCase(), {emitEvent: false});
+        this.currencyExchangeForm.get('FromCurrency')?.setValue(val.toUpperCase(), { emitEvent: false });
       }
     });
 
     this.currencyExchangeForm.get('ToCurrency')?.valueChanges.subscribe(val => {
       if (val) {
-        this.currencyExchangeForm.get('ToCurrency')?.setValue(val.toUpperCase(), {emitEvent: false});
+        this.currencyExchangeForm.get('ToCurrency')?.setValue(val.toUpperCase(), { emitEvent: false });
       }
     });
   }
 
   loadCompaniesAndBranches() {
     this.loading = true;
-    this.accountService.getCompanies().subscribe({
+    this.masterService.getAllCompanies().subscribe({
       next: (companies) => {
         this.companies = companies;
         if (this.companies.length > 0) {
@@ -100,7 +102,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
       }
     });
 
-    this.accountService.getBranches().subscribe({
+    this.masterService.getAllBranches().subscribe({
       next: (branches) => {
         this.branches = branches;
         if (this.branches.length > 0) {
@@ -133,9 +135,9 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     this.loading = true;
     this.accountService.getCurrencyExchangeById(id).subscribe({
       next: (data) => {
-        const effectiveFrom = data.EffectiveFrom ? 
+        const effectiveFrom = data.EffectiveFrom ?
           new Date(data.EffectiveFrom).toISOString().split('T')[0] : '';
-        
+
         this.currencyExchangeForm.patchValue({
           ...data,
           EffectiveFrom: effectiveFrom,
@@ -160,7 +162,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
 
     this.loading = true;
     const formValue = this.currencyExchangeForm.getRawValue(); // Use getRawValue to get disabled control values
-    
+
     const payload = {
       ...formValue,
       EffectiveFrom: new Date(formValue.EffectiveFrom).toISOString(),
@@ -206,8 +208,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     this.loading = false;
     console.error('Error:', err);
     this.appSettingService.showError(
-      err.message || 
-      err.error?.message || 
+      err.message ||
+      err.error?.message ||
       'Failed to perform operation'
     );
   }
