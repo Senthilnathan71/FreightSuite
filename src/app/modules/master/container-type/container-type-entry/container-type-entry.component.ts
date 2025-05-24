@@ -73,26 +73,27 @@ export class ContainerTypeEntryComponent implements OnInit {
 
   initForm() {
     this.containertypeForm = this.fb.group({
-      containerName: ['', [Validators.required]],
-      containerCode: ['', [Validators.required]],
-      grossWeight: ['', [Validators.required]],
-      tareWeight: ['', [Validators.required]],
-      maxVolume: ['', [Validators.required]],
-      shippingMode: ['', [Validators.required]],
-      iataRateClass: ['', [Validators.required]],
-      handlingRateClass: ['', [Validators.required]],
-      freightRateClass: ['', [Validators.required]],
-      testing: ['', [Validators.required]],
-      length: ['', [Validators.required]],
-      width: ['', [Validators.required]],
-      height: ['', [Validators.required]],
-      portType: ['', [Validators.required]],
-      storageClass: ['', [Validators.required]],
-      cargoClass: ['', [Validators.required]],
-      usContainerCode: ['', [Validators.required]],
-      usContainerType: ['', [Validators.required]],
-      isoCode: ['', [Validators.required]],
-      noOfTEU: ['', [Validators.required]],
+      ContainerName: ['', [Validators.required]],
+      ContainerCode: ['', [Validators.required]],
+      GrossWeight: ['', [Validators.required]],
+      TareWeight: ['', [Validators.required]],
+      MaxVolume: ['', [Validators.required]],
+      ContainerCategory: ['', [Validators.required]],
+      // shippingMode: ['', [Validators.required]],
+      // iataRateClass: ['', [Validators.required]],
+      // handlingRateClass: ['', [Validators.required]],
+      // freightRateClass: ['', [Validators.required]],
+      // testing: ['', [Validators.required]],
+      Length: ['', [Validators.required]],
+      Width: ['', [Validators.required]],
+      Height: ['', [Validators.required]],
+      // portType: ['', [Validators.required]],
+      // storageClass: ['', [Validators.required]],
+      // cargoClass: ['', [Validators.required]],
+      // usContainerCode: ['', [Validators.required]],
+      // usContainerType: ['', [Validators.required]],
+      ContainerIsoCode: ['', [Validators.required]],
+      NoOfTEU: ['', [Validators.required]],
       status: ['']
     });
   }
@@ -112,12 +113,12 @@ export class ContainerTypeEntryComponent implements OnInit {
       ? {
         ...formValue,
         updatedBy: userEmail,
-        status: formValue.status 
+        status: formValue.status
       }
       : {
         ...formValue,
         createdBy: userEmail,
-        status: formValue.status 
+        status: formValue.status
       };
 
     if (this.isEditMode) {
