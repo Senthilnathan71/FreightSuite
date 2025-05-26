@@ -312,7 +312,7 @@ export const ROUTES: RouteInfo[] = [
         submenu: []
       },
        {
-        path: '/master/module',
+        path: '/master/module/list',
         title: 'Module',
         icon: 'fas fa-dot-circle',
         class: '',
@@ -322,7 +322,7 @@ export const ROUTES: RouteInfo[] = [
         submenu: []
       },
        {
-        path: '/master/role',
+        path: '/master/role/list',
         title: 'Role',
         icon: 'fas fa-dot-circle',
         class: '',

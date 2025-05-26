@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { NgbModal, NgbModalModule, NgbModalRef, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAlertModule, NgbModal, NgbModalModule, NgbModalRef, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
@@ -23,6 +23,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 	imports: [
 		NgbNavModule,
 		NgbModalModule,
+		NgbAlertModule,
 		CommonModule,
 		NgSelectModule,
 		FeatherModule,
@@ -51,6 +52,10 @@ export class CompanyEntryComponent implements OnInit {
 	isEditMode: boolean;
 	isModalEditMode: boolean;
 	isBankModalEdit: boolean;
+	setErrorMessage:boolean;
+	setBranchErrorMessage:boolean;
+	branchListLength : number;
+	branchBankLength:number;
 	modalRef: NgbModalRef;
 
 	companyForm!: FormGroup;
@@ -174,6 +179,10 @@ export class CompanyEntryComponent implements OnInit {
 
 
 	openBranchEntryModal(content: TemplateRef<any>, data?: any) {
+		if(!this.CompanyMasterSid){
+			this.setErrorMessage=true;
+			return;
+		}
 		this.initBranchForm();
 		if (data) {
 			this.isModalEditMode = true;
@@ -214,6 +223,10 @@ export class CompanyEntryComponent implements OnInit {
 	}
 
 	openBranchBankModal(content: TemplateRef<any>, data?: any) {
+		if(!this.BranchMasterSid){
+			this.setBranchErrorMessage = true;
+			return;
+		}
 		this.initBranchBankForm();
 		if (data) {
 			this.isBankModalEdit = true;
@@ -312,7 +325,6 @@ export class CompanyEntryComponent implements OnInit {
 			let createdBy = this.appSettingService.userSettingSource.value['userEmail'];
 			let updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
 			const formValue = this.branchForm.value;
-			console.log(this.CompanyMasterSid)
 			const payload = {
 				branchName: formValue.branchName,
 				branchCode: formValue.branchCode,
@@ -425,7 +437,6 @@ export class CompanyEntryComponent implements OnInit {
 
 
 	loadCompanyData() {
-		console.log('Loading Company Data');
 		this.masterService.getCompanyById(this.CompanyMasterSid).subscribe(
 			(resp) => {
 				this.companyForm.patchValue({
@@ -433,7 +444,6 @@ export class CompanyEntryComponent implements OnInit {
 					isHo: resp.isHo === 'Y' ? true : false,
 					status: resp.status === 'A' ? 'Active' : 'Invalid'
 				})
-				console.log('Got Company ', resp)
 			},
 			(error) => {
 				this.appSettingService.showWarning('Error Loading Company');
@@ -458,22 +468,21 @@ export class CompanyEntryComponent implements OnInit {
 	}
 
 	loadBranches() {
-		console.log('Loading Branch Data');
 		this.masterService.getAllBranches().subscribe(
 			(branches: any) => {
 				this.branchList = branches.filter(branch => branch.CompanyMasterSid === this.CompanyMasterSid)
-				console.log(this.branchList)
-			});
+				this.branchListLength = this.branchList.length;
+			}
+		);
 	}
 
 	loadBranchBanks() {
-		console.log('Loading Branch Bank')
 		this.masterService.getAllBranchBanks().subscribe((banks) => {
 			this.branchBankList = banks.filter((bank: { BranchMasterSid: number; }) => bank.BranchMasterSid === this.BranchMasterSid)
 			this.branchBankList.forEach(bank => {
 				bank.status = bank.status === 'A' ? 'Active' : 'Invalid';
 			})
-			console.log('Branch Bank Data', this.branchBankList)
+			this.branchBankLength = this.branchBankList.length;
 		});
 	}
 
@@ -540,12 +549,14 @@ export class CompanyEntryComponent implements OnInit {
 
 	closeBranchBankForm() {
 		this.branchBankForm.reset();
+		this.setErrorMessage = false;
 		this.isBankModalEdit = false;
 		this.modalRef.close()
 	}
 	closeBranchForm() {
 		this.branchForm.reset();
 		this.isModalEditMode = false;
+		this.setBranchErrorMessage=false;
 		this.modalService.dismissAll()
 	}
 

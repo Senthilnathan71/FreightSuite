@@ -195,8 +195,8 @@
             <!-- #endregion -->
         </div>
         <div>
-                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection" [pageSize]="pageSize"
+                    [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true" [ellipses]="false" [maxSize]="5">
                 </ngb-pagination>
             </div>
     </div>

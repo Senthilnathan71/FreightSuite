@@ -25,10 +25,11 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 })
 export class TarrifListComponent implements OnInit {
 
-  searchType: string = "DepartmentName";
+  searchType: string = "POLTerminal";
   filterValue: string;
   results: Tariff[];
-  tariffList: Tariff[];
+  tariffList: any[];
+  searchPerformed : boolean;
 
   // pagination values
   page = 1;
@@ -43,7 +44,8 @@ export class TarrifListComponent implements OnInit {
     private router: Router
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+   }
 
   search() {
     const intFields = ['Carrier', 'AgentSid'];
@@ -53,7 +55,8 @@ export class TarrifListComponent implements OnInit {
     }
     this.masterServ.searchTariff(payload).subscribe(
       (res) => {
-        this.results = res;
+        this.results = res.data;
+        this.searchPerformed = true;
         this.updatePaginationData();
         this.totalNumberOfCollection = this.results.length || 0;
       }
@@ -92,6 +95,7 @@ export class TarrifListComponent implements OnInit {
 
   reset() {
     this.tariffList = [];
+    this.searchPerformed = false;
     this.totalNumberOfCollection = 0;
   }
 

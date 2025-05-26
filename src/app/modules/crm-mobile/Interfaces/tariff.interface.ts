@@ -24,4 +24,8 @@ export interface Tariff {
     createdBy?: string,
     updatedBy?: string,
     IsSlabApplicable?: string
+    customerCarrier ?:object,
+    customerAgent ?:object,
+    departmentMaster ?:object
+
 }
