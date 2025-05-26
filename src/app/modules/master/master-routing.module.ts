@@ -58,12 +58,14 @@ import { ChargeEntryComponent } from './charge/charge-entry/charge-entry.compone
 import { TermsConditionListComponent } from './terms-condition/terms-condition-list/terms-condition-list.component';
 import { TermsConditionEntryComponent } from './terms-condition/terms-condition-entry/terms-condition-entry.component';
 import { HSSACComponent } from './HS-SAC/hs-sac/hs-sac.component';
-import { ModuleComponent } from './module/module/module.component';
-import { RoleComponent } from './role/role/role.component';
+import { ModuleComponent } from './module/module-list/module.component';
+import { RoleComponent } from './role/role-list/role.component';
 import { ChargegroupComponent } from './chargeGroup/chargegroup/chargegroup.component';
 import { RolemenuComponent } from './rolemenu/rolemenu/rolemenu.component';
 import { TdsSetListComponent } from './TDS-Set/tds-set-list/tds-set-list.component';
 import { TdsSetEntryComponent } from './TDS-Set/tds-set-entry/tds-set-entry.component';
+import { ModuleEntryComponent } from './module/module-entry/module-entry.component';
+import { RoleEntryComponent } from './role/role-entry/role-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -471,6 +473,14 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: 'company/entry/:id',
+        component: CompanyEntryComponent,
+        data: {
+          title: 'Edit Company',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Company' }],
+        },
+      },
+      {
         path: 'branch/list',
         component: BranchListComponent,
         data: {
@@ -726,7 +736,7 @@ export const MasterRoutes: Routes = [
         },
       },
       {
-        path: 'module',
+        path: 'module/list',
         component: ModuleComponent,
         data: {
           title: 'Module',
@@ -734,8 +744,40 @@ export const MasterRoutes: Routes = [
         },
       },
       {
-        path: 'role',
+        path: 'module/entry',
+        component: ModuleEntryComponent,
+        data: {
+          title: 'Add Module Module',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Module' }],
+        },
+      },
+      {
+        path: 'module/entry/:id',
+        component: ModuleEntryComponent,
+        data: {
+          title: 'Edit Module Module',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Module' }],
+        },
+      },
+      {
+        path: 'role/list',
         component: RoleComponent,
+        data: {
+          title: 'Role',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Role' }],
+        },
+      },
+      {
+        path: 'role/entry',
+        component: RoleEntryComponent,
+        data: {
+          title: 'Role',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Role' }],
+        },
+      },
+      {
+        path: 'role/entry/:id',
+        component: RoleEntryComponent,
         data: {
           title: 'Role',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Role' }],

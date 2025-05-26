@@ -35,6 +35,13 @@
             </div>
         </div>
     </div>
+    <div class="col-12 mt-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <ng-container *ngTemplateOutlet="navTemplate"></ng-container>
+            </div>
+        </div>
+    </div>
 </div>
 
 
@@ -43,7 +50,7 @@
 <ng-template #companyTemplate>
     <div class="row">
         <div class="col-md-12">
-            <div class="card h-100">
+            <div class="card">
                 <div class="card-body" [formGroup]="companyForm">
                     <div class="row">
 
@@ -358,16 +365,43 @@
                         </aside>
                     </div>
                     
-                    <div class="card">
-                        <div class="card-body">
-                            <ng-container *ngTemplateOutlet="branchListTemplate"></ng-container>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </ng-template>
+
+
+                                    <!-- BRANCH NAVIGATION -->
+<ng-template #navTemplate>
+    <div>
+        <div class="row">
+            <ul ngbNav #nav1="ngbNav" [(activeId)]="active" class="nav-tabs">
+                <li [ngbNavItem]="1">
+                    <button ngbNavLink (click)="openBranchEntryModal(branchEntryContent)">
+                        <button class="btn btn-info p-0 me-2">
+                            <i-feather name="plus-circle" class="feather-sm "></i-feather>
+                        </button>
+                        Branch
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="row">
+            <div *ngIf="setErrorMessage">
+                <ngb-alert [dismissible]="false" class="mt-3" type="info">
+                    Create new Company to add Tariff Details
+                </ngb-alert>
+            </div>
+            @if(branchListLength){
+            <div *ngIf="branchList">
+                <ng-container *ngTemplateOutlet="branchListTemplate"></ng-container>
+            </div>
+            }
+        </div>
+    </div>
+</ng-template>
+
 
                                     <!-- BRANCH ENTRY -->
 <ng-template #branchEntryContent let-modal>
@@ -509,13 +543,13 @@
                     <div class="card-body">
                         <div class="row">
                             <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <select id="text-input" class="form-select" formControlName="branchCityMasterSid">
-                                        <option value="">Select City</option>
-                                        <option *ngFor="let city of cityResults" [value]="city.CityMasterSid">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select id="text-input" class="ng-select" formControlName="branchCityMasterSid">
+                                        <ng-option value="">Select City</ng-option>
+                                        <ng-option *ngFor="let city of cityResults" [value]="city.CityMasterSid">
                                         {{city.cityCode}} - {{ city.cityName }}
-                                        </option>
-                                    </select>
+                                        </ng-option>
+                                    </ng-select>
                                     <label for="text-input" class="input-label">City <span class="text-danger">*</span></label>
                                     @if(branchForm.get('branchCityMasterSid')?.touched &&
                                     branchForm.get('branchCityMasterSid')?.invalid){
@@ -528,13 +562,13 @@
                                 </div>
                             </aside>
                             <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <select id="text-input" class="form-select" formControlName="branchStateMasterSid">
-                                        <option value="">Select State</option>
-                                        <option *ngFor="let state of stateResults" [value]="state.StateMasterSid">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select id="text-input" class="ng-select" formControlName="branchStateMasterSid">
+                                        <ng-option value="">Select State</ng-option>
+                                        <ng-option *ngFor="let state of stateResults" [value]="state.StateMasterSid">
                                             {{state.stateCode}}-{{ state.stateName }}
-                                        </option>
-                                    </select>
+                                        </ng-option>
+                                    </ng-select>
                                     <label for="text-input" class="input-label">State <span class="text-danger">*</span></label>
                                     @if(branchForm.get('branchStateMasterSid')?.touched &&
                                     branchForm.get('branchStateMasterSid')?.invalid){
@@ -547,13 +581,13 @@
                                 </div>
                             </aside>
                             <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <select id="text-input" class="form-select" formControlName="branchCountryMasterSid">
-                                        <option value="">Select Country</option>
-                                        <option *ngFor="let country of countryResults" [value]="country.CountryMasterSid">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select id="text-input" class="ng-select" formControlName="branchCountryMasterSid">
+                                        <ng-option value="">Select Country</ng-option>
+                                        <ng-option *ngFor="let country of countryResults" [value]="country.CountryMasterSid">
                                             {{country.countryCode}}-{{ country.countryName }}
-                                        </option>
-                                    </select>
+                                        </ng-option>
+                                    </ng-select>
                                     <label for="text-input" class="input-label">Country <span
                                             class="text-danger">*</span></label>
                                     @if(branchForm.get('branchCountryMasterSid')?.touched &&
@@ -645,13 +679,13 @@
                     <div class="card-body">
                         <div class="row">
                             <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <select id="text-input" class="form-select" formControlName="branchCurrencyMasterSid">
-                                        <option value="">Currency</option>
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select id="text-input" class="ng-select" formControlName="branchCurrencyMasterSid">
+                                        <ng-option value="">Currency</ng-option>
                                         @for(currency of currencyResults;track $index){
-                                        <option [value]="currency.CurrencyMasterSid">{{currency.currencyName}}</option>
+                                        <ng-option [value]="currency.CurrencyMasterSid">{{currency.currencyName}}</ng-option>
                                         }
-                                    </select>
+                                    </ng-select>
                                     <label for="text-input" class="input-label">Currency <span
                                             class="text-danger">*</span></label>
                                     @if(branchForm.get('branchCurrencyMasterSid')?.touched &&
@@ -711,14 +745,14 @@
                                 </div>
                             </aside>
                             <aside class="col-md-12">
-                                <div class="custom-form-group">
+                                <div class="custom-form-group custom-form-group-select">
 
-                                    @if(isEditMode){
-                                    <select name="status" class="form-select" formControlName="branchStatus" id="text-input">
-                                        <option value="Active">Active</option>
-                                        <option value="Invalid">Invalid</option>
-                                        <option value="Block">Block</option>
-                                    </select>
+                                    @if(isModalEditMode){
+                                    <ng-select name="status" class="ng-select" formControlName="branchStatus" id="text-input">
+                                        <ng-option value="Active">Active</ng-option>
+                                        <ng-option value="Invalid">Invalid</ng-option>
+                                        <ng-option value="Block">Block</ng-option>
+                                    </ng-select>
                                     } @else {
                                     <input type="text" name="status" class="custom-input-field sm" formControlName="branchStatus"
                                         id="text-input" readonly>
@@ -744,86 +778,77 @@
 	</div>
     <div class="card">
         <div class="card-body">
-            <ng-container *ngTemplateOutlet='branchBankListTemplate'></ng-container>
+            <ng-container *ngTemplateOutlet='nav2Template'></ng-container>
         </div>
     </div>
     </div>              
 </ng-template>
+            
                                     <!-- BRANCH LIST -->
 <ng-template #branchListTemplate>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle no-wrap table-bordered">
+            <thead>
+                <tr class="bg-info">
+                    <th class="bg-transparent text-light" scope="col">Action</th>
+                    <th class="bg-transparent text-light" scope="col">Name</th>
+                    <th class="bg-transparent text-light" scope="col">Code</th>
+                    <th class="bg-transparent text-light" scope="col">Company Name</th>
+                    <th class="bg-transparent text-light" scope="col">City</th>
+                    <th class="bg-transparent text-light" scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let branch of branchList; let i = index">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <a class="text-info mx-2" class="link mx-2 ps-3 "
+                                (click)="openBranchEntryModal(branchEntryContent,branch)">
+                                <i-feather class="feather-sm" name="eye"></i-feather>
+                            </a>
+                            <a class="text-danger mx-2 ps-3 border-start" (click)="deleteBranch(branch.BranchMasterSid)">
+                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                            </a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{branch.branchName}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{branch.branchCode}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{branch.company.companyName}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{branch.cityMaster.cityName}}</div>
+                    </td>
+                    <td>
+                        @if(branch.status ==='A'){
+                        <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                            <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                            Active</span>
+                        } @else {
+                        <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                            <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                            Invalid</span>
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</ng-template>
+  
+
+                                    <!-- BRANCH BANK NAVIGATION -->
+                                  
+<ng-template #nav2Template>
     <div>
-        <ul ngbNav #nav1="ngbNav" [(activeId)]="active" class="nav-tabs">
-                <li [ngbNavItem]="1">
-                    <button  ngbNavLink >
-                        <button class="btn btn-info p-0 me-2" (click)="openBranchEntryModal(branchEntryContent)">
-                        <i-feather name="plus-circle" class="feather-sm "></i-feather>
-                        </button>
-                        Branch
-                    </button>
-                </li>
-            </ul>
-            
-            <div class="table-responsive">
-                    <table class="table table-hover align-middle no-wrap table-bordered">
-                        <thead>
-                            <tr class="bg-info">
-                                <th class="bg-transparent text-light" scope="col">Action</th>
-                                <th class="bg-transparent text-light" scope="col">Name</th>
-                                <th class="bg-transparent text-light" scope="col">Code</th>
-                                <th class="bg-transparent text-light" scope="col">Company Name</th>
-                                <th class="bg-transparent text-light" scope="col">City</th>
-                                <th class="bg-transparent text-light" scope="col">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let branch of branchList; let i = index">
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a class="text-info mx-2" class="link mx-2 ps-3 " (click)="openBranchEntryModal(branchEntryContent,branch)">
-                                            <i-feather class="feather-sm" name="eye"></i-feather>
-                                        </a>
-                                        <a class="text-danger mx-2 ps-3 border-start" (click)="deleteBranch(branch.BranchMasterSid)"
-                                            >
-                                            <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="text-truncate">{{branch.branchName}}</div>
-                                </td>
-                                <td>
-                                    <div class="text-truncate">{{branch.branchCode}}</div>
-                                </td>
-                                <td>
-                                    <div class="text-truncate">{{branch.company.companyName}}</div>
-                                </td>
-                                <td>
-                                    <div class="text-truncate">{{branch.cityMaster.cityName}}</div>
-                                </td>
-                                <td>
-                                    @if(branch.status ==='A'){
-                                    <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                        Active</span>
-                                    } @else {
-                                        <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                        <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                        Invalid</span>
-                                    }
-                                    </td>     
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-        </div>
-    </ng-template>
-    
-                                    <!-- BRANCH BANK LIST -->
-<ng-template #branchBankListTemplate>
-        <div>
+        <div class="row">
             <ul ngbNav #nav2="ngbNav" [(activeId)]="active2" class="nav-tabs">
                 <li [ngbNavItem]="1">
-                    <button  ngbNavLink >
+                    <button ngbNavLink>
                         <button class="btn btn-info p-0 me-2" (click)="openBranchBankModal(bankEntryContent)">
                             <i-feather name="plus-circle" class="feather-sm "></i-feather>
                         </button>
@@ -831,7 +856,27 @@
                     </button>
                 </li>
             </ul>
-            <div class="table-responsive">
+        </div>
+        <div class="row">
+            <div *ngIf="setBranchErrorMessage">
+                <ngb-alert [dismissible]="false" class="mt-3" type="info">
+                    Create new Branch to add Bank Details
+                </ngb-alert>
+            </div>
+            @if(branchBankLength){
+            <div *ngIf="branchList">
+                <ng-container *ngTemplateOutlet="bankListTemplate"></ng-container>
+            </div>
+            }
+        </div>
+    </div>
+</ng-template>
+
+
+                                  <!-- BRANCH BANK LIST -->
+
+<ng-template #bankListTemplate>
+    <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
@@ -866,7 +911,7 @@
                             <div class="text-truncate">{{bank.IFSCCode}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">**** **** **** {{bank.BankAccountNo.substring(bank.BankAccountNo.length-4)}}</div>
+                            <div class="text-truncate">{{bank.BankAccountNo}}</div>
                         </td>
                         <td>
                             <div class="text-truncate">{{bank.BeneficiaryName}}</div>
@@ -885,7 +930,6 @@
                 </tbody>
             </table>
         </div>
-    </div>
 </ng-template>
 
                                 <!-- BRANCH BANK ENTRY -->
@@ -972,7 +1016,7 @@
                                                     }
                                                 </div>
                                             </aside>
-                                            <aside class="col-md-12">
+                                            <aside class="col-md-6">
                                                 <div class="custom-form-group">
                                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                                         formControlName="BankAccountNo" [onlyNumbers]="50">
@@ -993,7 +1037,7 @@
                                                     }
                                                 </div>
                                             </aside>
-                                            <aside class="col-md-12">
+                                            <aside class="col-md-6">
                                                 <div class="custom-form-group">
                                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                                         formControlName="BeneficiaryName" [onlyText]="100">
@@ -1013,10 +1057,10 @@
                                                     }
                                                 </div>
                                             </aside>
-                                            <aside class="col-md-12">
+                                            <aside class="col-md-6">
                                                 <div class="custom-form-group">
 
-                                                    @if(isEditMode){
+                                                    @if(isBankModalEdit){
                                                     <select name="status" class="form-select" formControlName="status" id="text-input">
                                                         <option value="Active">Active</option>
                                                         <option value="Invalid">Invalid</option>
@@ -1031,7 +1075,7 @@
 
                                                 </div>
                                             </aside>
-                                            <aside class="col-md-6 col-lg-5">
+                                            <aside class="col-md-6">
                                             <div class="custom-form-group">
                                                 <textarea id="" placeholder="" rows="1" class="input-field sm"
                                                         formControlName="Remarks" [textWithNumbers]="300"></textarea>

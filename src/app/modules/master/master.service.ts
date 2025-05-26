@@ -827,16 +827,18 @@ export class MasterService {
   searchTariff(payload: any) {
     return this.http.post<{ data: any }>(`tariff/search-list`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     )
   }
 
   deleteTariffById(TariffHeaderSid: number) {
-    return this.http.delete<{ data: any }>(`tariff/delete/${TariffHeaderSid}`).pipe(
+    return this.http.delete<{
+      data: any
+    }>(`tariff/delete/${TariffHeaderSid}`).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     )
@@ -845,7 +847,7 @@ export class MasterService {
   getTariffById(TariffHeaderSid: number) {
     return this.http.get<{ data: any }>(`tariff/fetch/${TariffHeaderSid}`).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     )
@@ -854,7 +856,7 @@ export class MasterService {
   updateTariffById(TariffHeaderSid: number, payload: any) {
     return this.http.patch<{ data: any }>(`tariff/update/${TariffHeaderSid}`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     )
@@ -863,6 +865,72 @@ export class MasterService {
   createTariff(payload) {
     return this.http.post<{ data: any }>('tariff/create', payload).pipe(
       map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getAllTariff(){
+    return this.http.get<{data:any[]}>('tariff').pipe(
+      map((resp)=>{
+        let response= resp;
+        return response;
+      })
+    )
+  }
+
+  // Tariff Detail
+
+  getAllTariffDetail(){
+    return this.http.get<{data:any[]}>('tariff-detail').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getTariffDetailById(TariffDetailSid:number){
+    return this.http.get<{data:any}>(`tariff-detail/fetch/${TariffDetailSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewTariffDetail(payload){
+    return this.http.post<{data:any}>(`tariff-detail/create`,payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateTariffDetailById(TariffDetailSid:number,payload){
+    return this.http.patch<{data:any}>(`tariff-detail/update/${TariffDetailSid}`,payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteTariffDetailById(TariffDetailSid:number){
+    return this.http.delete<{data:any}>(`tariff-detail/delete/${TariffDetailSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+
+  searchTariffDetails(payload){
+    return this.http.post<{data:any}>('tariff-detail/search-list',payload).pipe(
+      map((resp)=>{
         let response = resp;
         return response;
       })
@@ -1301,4 +1369,124 @@ export class MasterService {
 
   }
 
+  getAllCharges(){
+    return this.http.get<{data:any}>('charge').pipe(
+      map((resp)=>{
+        let response= resp;
+        return response;
+      })
+    )
+  }
+
+  	// MODULE MASTER
+
+	getAllModule(){
+		return this.http.get<{data:any[]}>('module').pipe(
+			map((resp)=>{
+				let response = resp;
+				return response;
+			})
+		)
+	}
+
+	getModuleById(ModuleMasterSid){
+		return this.http.get<{data:any}>(`module/fetch/${ModuleMasterSid}`).pipe(
+			map((resp)=>{
+				let response =resp;
+				return response;
+			})
+		)
+	}
+
+	createNewModule(payload){
+		return this.http.post<{data:any}>('module/create',payload).pipe(
+			map((resp)=>{
+				let response = resp;
+				return response;
+			})
+		)
+	}
+
+	updateModuleById(ModuleMasterSid:number,payload){
+		return this.http.patch<{data:any}>(`module/update/${ModuleMasterSid}`,payload).pipe(
+			map((resp)=>{
+				let response = resp;
+				return response;
+			})
+		)
+	}
+
+	deleteModuleById(ModuleMasterSid:number){
+		return this.http.delete<{data:any}>(`module/delete/${ModuleMasterSid}`).pipe(
+			map((resp)=>{
+				let response  = resp;
+				return response;
+			})
+		)
+	}
+
+  searchModule(payload){
+    return this.http.post<{data:any[]}>('module/search-list',payload).pipe(
+      map((resp)=>{
+        let response  = resp;
+        return response;
+      })
+    )
+  }
+  	// MODULE MASTER
+
+	getAllRole(){
+		return this.http.get<{data:any[]}>('role').pipe(
+			map((resp)=>{
+				let response = resp;
+				return response;
+			})
+		)
+	}
+
+	getRoleById(RoleMasterSid){
+		return this.http.get<{data:any}>(`role/fetch/${RoleMasterSid}`).pipe(
+			map((resp)=>{
+				let response =resp;
+				return response;
+			})
+		)
+	}
+
+	createNewRole(payload){
+		return this.http.post<{data:any}>('role/create',payload).pipe(
+			map((resp)=>{
+				let response = resp;
+				return response;
+			})
+		)
+	}
+
+	updateRoleById(RoleMasterSid:number,payload){
+		return this.http.patch<{data:any}>(`role/update/${RoleMasterSid}`,payload).pipe(
+			map((resp)=>{
+				let response = resp;
+				return response;
+			})
+		)
+	}
+
+	deleteRoleById(RoleMasterSid:number){
+		return this.http.delete<{data:any}>(`role/delete/${RoleMasterSid}`).pipe(
+			map((resp)=>{
+				let response  = resp;
+				return response;
+			})
+		)
+	}
+
+  searchRole(payload){
+    return this.http.post<{data:any[]}>('role/search-list',payload).pipe(
+      map((resp)=>{
+        let response  = resp;
+        return response;
+      })
+    )
+  }
+  
 }

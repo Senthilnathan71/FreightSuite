@@ -1,0 +1,101 @@
+<div class="row py-3">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Module' : 'Add Module'}}</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
+                        <i class="fas fa-save me-1"></i>
+                        {{isEditMode ? 'Update':'Save'}}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6" [formGroup]="moduleForm">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="row">
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            formControlName="ModuleName" [onlyText]="20">
+                            <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
+                            @if(moduleForm.get('ModuleName').touched && moduleForm.get('ModuleName').invalid){
+                                <div class="error-message">
+                                    @if(moduleForm.get('ModuleName').hasError('required')){
+                                        <span>Name is required</span>
+                                    } @else if(moduleForm.get('ModuleName').hasError('numberNotAllowed')){
+                                        <span>Only Alphabets are allowed</span>
+                                    } @else if(moduleForm.get('ModuleName').hasError('maxlength')){
+                                        <span>Max 20 Characters</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            formControlName="ModuleCode" [textWithNumbers]="20">
+                            <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
+                            @if(moduleForm.get('ModuleCode').touched && moduleForm.get('ModuleCode').invalid){
+                                <div class="error-message">
+                                    @if(moduleForm.get('ModuleCode').hasError('required')){
+                                        <span>Code is required</span>
+                                    } @else if(moduleForm.get('ModuleCode').hasError('maxlength')){
+                                        <span>Max 20 Characters</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-6">
+                        @if(isEditMode){
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" formControlName="status">
+                                    <ng-option value="">Select Status</ng-option>
+                                    <ng-option value="Active">Active</ng-option>
+                                    <ng-option value="Invalid">Invalid</ng-option>
+                                    <ng-option value="Block">Block</ng-option>
+                                </ng-select>
+                                <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
+                            </div>
+                        } @else {
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="status" readonly>
+                                <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
+                            </div>
+                        }
+                    </aside>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <textarea formControlName="Remarks" class="custom-input-field sm" [textWithNumbers]="300"></textarea>
+                            <label for="text-input" class="input-label">Remarks <span class="text-danger">*</span></label>
+                            @if(moduleForm.get('Remarks').touched && moduleForm.get('Remarks').invalid){
+                                <div class="error-message">
+                                    @if(moduleForm.get('Remarks').hasError('required')){
+                                        <span>Remarks is required</span>
+                                    } @else if(moduleForm.get('Remarks').hasError('maxlength')){
+                                        <span>Max 300 Characters</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
