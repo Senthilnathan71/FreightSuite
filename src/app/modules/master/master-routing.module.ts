@@ -692,7 +692,19 @@ export const MasterRoutes: Routes = [
         component: ChargeEntryComponent,
         data: {
           title: 'Charge',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Charge' }],
+          urls: [{ title: 'Master', url: '/master' },
+          { title: 'Charge' }],
+        },
+      },
+      {
+        path: "charge/entry/:id",
+        component: ChargeEntryComponent,
+        data: {
+          title: "Edit Charge",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Charge" },
+          ],
         },
       },
       {

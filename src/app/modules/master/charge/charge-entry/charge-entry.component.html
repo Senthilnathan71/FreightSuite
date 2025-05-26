@@ -1,157 +1,160 @@
-<div class="row py-3">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Add Charge</h4>
+<form [formGroup]="chargeForm">
+    <div class="row py-3">
+        <div class="col-12">
+            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+                <div class="col-md-4 pb-2">
+                    <h4 class="page-title mb-0">{{ isEditMode ? 'Edit' : 'Add' }} Charge</h4>
+                </div>
+                <div class="col-md-8 pb-2">
+                    <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+                            <i class="fas fa-chevron-left me-1"></i>
+                            Back
+                        </button>
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Reset
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="btnDisable">
+                            <i class="fas fa-save me-1"></i>
+                            Save
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-8 pb-2">
-                <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                    <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80">
-                        <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-save me-1"></i>
-                        Save
-                    </button>
+        </div>
+        
+        <div class="col-md-12">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row">
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="chargeCode" class="custom-input-field sm" placeholder=" " formControlName="chargeCode">
+                                <label for="chargeCode" class="input-label">Charge Code <span class="text-danger fw-semibold">*</span></label>
+                                <div *ngIf="chargeForm.get('chargeCode')?.touched && chargeForm.get('chargeCode')?.invalid">
+                                    <p *ngIf="chargeForm.get('chargeCode')?.errors?.['required']" class="error-message">Charge code is required.</p>
+                                    <p *ngIf="chargeForm.get('chargeCode')?.errors?.['maxlength']" class="error-message">Maximum 5 characters allowed.</p>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="chargeName" class="custom-input-field sm" placeholder=" " formControlName="chargeName">
+                                <label for="chargeName" class="input-label">Charge Name <span class="text-danger fw-semibold">*</span></label>
+                                <div *ngIf="chargeForm.get('chargeName')?.touched && chargeForm.get('chargeName')?.invalid">
+                                    <p *ngIf="chargeForm.get('chargeName')?.errors?.['required']" class="error-message">Charge name is required.</p>
+                                    <p *ngIf="chargeForm.get('chargeName')?.errors?.['maxlength']" class="error-message">Maximum 100 characters allowed.</p>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="DepartmentMasterSid" [items]="departmentOptions" bindLabel="departmentName" bindValue="DepartmentMasterSid">
+                                </ng-select>
+                                <label class="input-label">Department <span class="text-danger fw-semibold">*</span></label>
+                                <div *ngIf="chargeForm.get('DepartmentMasterSid')?.touched && chargeForm.get('DepartmentMasterSid')?.invalid">
+                                    <p *ngIf="chargeForm.get('DepartmentMasterSid')?.errors?.['required']" class="error-message">Department is required.</p>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="number" id="UOM" class="custom-input-field sm" placeholder=" " formControlName="UOM">
+                <label for="UOM" class="input-label">UOM <span class="text-danger fw-semibold">*</span></label>
+                <div *ngIf="chargeForm.get('UOM')?.touched && chargeForm.get('UOM')?.invalid">
+                  <p *ngIf="chargeForm.get('UOM')?.errors?.['required']" class="error-message">UOM is required.</p>
+                </div>
+              </div>
+            </aside>
+                       
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="ChargeGroupSid" [items]="chargeGroupOptions" bindLabel="chargeGroupName" bindValue="ChargeGroupSid">
+                                </ng-select>
+                                <label class="input-label">Charge Group <span class="text-danger fw-semibold">*</span></label>
+                                <div *ngIf="chargeForm.get('ChargeGroupSid')?.touched && chargeForm.get('ChargeGroupSid')?.invalid">
+                                    <p *ngIf="chargeForm.get('ChargeGroupSid')?.errors?.['required']" class="error-message">Charge group is required.</p>
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="CompanyMasterSid" [items]="companyOptions" bindLabel="companyName" bindValue="CompanyMasterSid">
+                                </ng-select>
+                                <label class="input-label">Company</label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="CurrencyMasterSid" [items]="currencyOptions" bindLabel="currencyName" bindValue="CurrencyMasterSid">
+                                </ng-select>
+                                <label class="input-label">Currency <span class="text-danger fw-semibold">*</span></label>
+                                <div *ngIf="chargeForm.get('CurrencyMasterSid')?.touched && chargeForm.get('CurrencyMasterSid')?.invalid">
+                                    <p *ngIf="chargeForm.get('CurrencyMasterSid')?.errors?.['required']" class="error-message">Currency is required.</p>
+                                </div>
+                            </div>
+                        </aside>
+                         <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="Status" [items]="[{id: 'A', name: 'Active'}, {id: 'I', name: 'Inactive'}]" bindLabel="name" bindValue="id">
+                                </ng-select>
+                                <label class="input-label">Status <span class="text-danger fw-semibold">*</span></label>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12 mt-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <h4>GST</h4>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="SACCode" class="custom-input-field sm" placeholder=" " formControlName="SACCode">
+                                <label for="SACCode" class="input-label">SAC Code</label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="GSTDescription" class="custom-input-field sm" placeholder=" " formControlName="GSTDescription">
+                                <label for="GSTDescription" class="input-label">Description</label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="number" id="TaxRate" class="custom-input-field sm" placeholder=" " formControlName="TaxRate">
+                                <label for="TaxRate" class="input-label">Tax Rate</label>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12 mt-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <h4>TDS</h4>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="TDSSet" class="custom-input-field sm" placeholder=" " formControlName="TDSSet">
+                                <label for="TDSSet" class="input-label">TDS Set</label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="date" id="EffectiveFrom" class="custom-input-field sm" placeholder=" " formControlName="EffectiveFrom">
+                                <label for="EffectiveFrom" class="input-label">Effective From</label>
+                            </div>
+                        </aside>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-12">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row">
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Code">
-                            <label for="text-input" class="input-label">Charge Code <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Name">
-                            <label for="text-input" class="input-label">Charge Name <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="numericCode">
-                            <label for="text-input" class="input-label">Dept <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="3letterCode">
-                            <label for="text-input" class="input-label">UOM</label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="address1">
-                            <label for="text-input" class="input-label">Currency</label>
-
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="address2">
-                            <label for="text-input" class="input-label">Charge Group</label>
-
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
-                                bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-
-
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-12 mt-3">
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
-                    <h4>GST</h4>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Code">
-                            <label for="text-input" class="input-label">SAC Code <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Code">
-                            <label for="text-input" class="input-label">Description <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Code">
-                            <label for="text-input" class="input-label">Tax Rate <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
-                    <h4>TDS</h4>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Code">
-                            <label for="text-input" class="input-label">TDS Set <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Code">
-                            <label for="text-input" class="input-label">Effective Form <span
-                                    class="text-danger">*</span></label>
-                        </div>
-                    </aside>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
+</form>
