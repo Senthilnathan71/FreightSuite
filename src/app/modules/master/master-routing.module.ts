@@ -66,6 +66,9 @@ import { TdsSetListComponent } from './TDS-Set/tds-set-list/tds-set-list.compone
 import { TdsSetEntryComponent } from './TDS-Set/tds-set-entry/tds-set-entry.component';
 import { ModuleEntryComponent } from './module/module-entry/module-entry.component';
 import { RoleEntryComponent } from './role/role-entry/role-entry.component';
+import { ImcoListComponent } from './Imco/imco-list/imco-list.component';
+import { ImcoEntryComponent } from './Imco/imco-entry/imco-entry.component';
+import { BIclauseComponent } from './BIClause/biclause/biclause.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -831,6 +834,39 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: 'Master', url: '/master' },
             { title: 'TDS Set' },
+          ],
+        },
+      },
+        {
+        path: 'Imco/list',
+        component: ImcoListComponent,
+        data: {
+          title: 'Imco',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Imco' },
+          ],
+        },
+      },
+      {
+        path: 'Imco/entry',
+        component: ImcoEntryComponent,
+        data: {
+          title: 'Imco',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Imco' },
+          ],
+        },
+      },
+       {
+        path: 'BIClause',
+        component: BIclauseComponent,
+        data: {
+          title: 'BIClause',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'BIClause' },
           ],
         },
       },

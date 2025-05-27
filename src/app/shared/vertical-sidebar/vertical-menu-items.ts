@@ -361,6 +361,26 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
+      {
+        path: '/master/Imco/list',
+        title: 'Imco',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+       {
+        path: '/master/BIClause',
+        title: 'BIClause',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
     ]
   },
 
