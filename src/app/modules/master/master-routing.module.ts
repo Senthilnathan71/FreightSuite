@@ -859,6 +859,17 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
+      {
+        path: 'Imco/entry/:id',
+        component: ImcoEntryComponent,
+        data: {
+          title: 'Imco',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Imco' },
+          ],
+        },
+      },
        {
         path: 'BIClause',
         component: BIclauseComponent,

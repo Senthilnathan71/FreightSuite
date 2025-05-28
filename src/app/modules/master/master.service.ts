@@ -1545,4 +1545,117 @@ export class MasterService {
     )
   }
 
+
+  //  IMCO
+
+  getAllIMCO() {
+    return this.http.get<{ data: any[] }>('imco').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getIMCOById(IMCOMasterSid) {
+    return this.http.get<{ data: any }>(`imco/fetch/${IMCOMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewIMCO(payload) {
+    return this.http.post<{ data: any }>('imco/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateIMCOById(IMCOMasterSid: number, payload) {
+    return this.http.patch<{ data: any }>(`imco/update/${IMCOMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteIMCOById(IMCOMasterSid: number) {
+    return this.http.delete<{ data: any }>(`imco/delete/${IMCOMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchIMCO(payload) {
+    return this.http.post<{ data: any[] }>('imco/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+
+  // Bl - Clause
+  getAllBlClause() {
+    return this.http.get<{ data: any[] }>('blclause').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getBlClauseById(BlclauseMasterSid) {
+    return this.http.get<{ data: any }>(`blclause/fetch/${BlclauseMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewBlClause(payload) {
+    return this.http.post<{ data: any }>('blclause/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateBlClauseById(BlclauseMasterSid: number, payload) {
+    return this.http.patch<{ data: any }>(`blclause/update/${BlclauseMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteBlclauseById(BlclauseMasterSid: number) {
+    return this.http.delete<{ data: any }>(`blclause/delete/${BlclauseMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchBlclause(payload) {
+    return this.http.post<{ data: any[] }>('blclause/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
 }

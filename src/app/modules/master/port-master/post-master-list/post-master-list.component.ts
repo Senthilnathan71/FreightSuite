@@ -50,19 +50,19 @@ export class PostMasterListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loadMasterData();
+    // this.loadMasterData();
   }
 
   /** Load all countries and sectors for lookup */
-  loadMasterData(): void {
-    this.masterService.getAllCountry().subscribe(countries => {
-      this.countryOptions = countries.data || countries;
-    });
+  // loadMasterData(): void {
+  //   this.masterService.getAllCountry().subscribe(countries => {
+  //     this.countryOptions = countries.data || countries;
+  //   });
 
-    this.masterService.getAllSector().subscribe(sectors => {
-      this.sectorOptions = sectors.data || sectors;
-    });
-  }
+  //   this.masterService.getAllSector().subscribe(sectors => {
+  //     this.sectorOptions = sectors.data || sectors;
+  //   });
+  // }
 
   /** Triggered when user clicks “Search” */
   search(): void {

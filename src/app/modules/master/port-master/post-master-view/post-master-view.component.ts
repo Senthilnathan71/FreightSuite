@@ -10,6 +10,10 @@ import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface
 import { State } from 'src/app/modules/crm-mobile/Interfaces/state.interface';
 import { Sector } from 'src/app/modules/crm-mobile/Interfaces/sector.interface';
 import { MasterService } from '../../master.service';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { forkJoin } from 'rxjs';
 
 
 
@@ -23,7 +27,9 @@ import { MasterService } from '../../master.service';
     NgSelectModule,
     FormsModule,
     ReactiveFormsModule,
-
+    OnlyNumbersDirective,
+    OnlyTextDirective,
+    TextWithNumbersDirective
   ],
   templateUrl: './post-master-view.component.html',
   styleUrl: './post-master-view.component.scss'
@@ -31,22 +37,18 @@ import { MasterService } from '../../master.service';
 export class PostMasterViewComponent {
   portForm!: FormGroup;
   isEditMode = false;
-  selectedState: number;
-  selectedCountry: number;
-  selectedTransport: number;
   btnDisable: boolean = false;
-  countries: Country[] = [];
-  states: State[] = [];
-  sectors: Sector[] = [];
+  countryList: Country[] = [];
+  stateList: State[] = [];
+  filteredStateList : State[];
+  regionList: Sector[] = [];
 
-  modeOfTransports = [
-    { id: 'Sea', name: 'Sea' },
-    { id: 'Air', name: 'Air' },
-    { id: 'ICD', name: 'ICD' },
-    { id: 'Terminal', name: 'Terminal' },
-    { id: 'Road', name: 'Road' },
-    { id: 'Rail', name: 'Rail' }
-  ];
+  modeOfStatus = [
+    {name : 'Active',value:'Active'},
+    {name : 'Invalid',value:'Invalid'},
+    {name : 'Block',value:'Block'}
+  ]
+
   errorMessage: any;
   idParam: number;
 
@@ -57,30 +59,9 @@ export class PostMasterViewComponent {
     this.config.appendTo = 'body';
     this.config.bindValue = 'value';
   }
-  toggleDisabled() {
-    const car2: any = this.states[1];
-    car2.disabled = !car2.disabled;
-  }
   ngOnInit() {
-    this.loadCountry();
-    this.loadSector();
-    this.portForm = new FormGroup({
-      PortName: new FormControl('', [Validators.required, Validators.maxLength(50)]),
-      PortCode: new FormControl('', [Validators.required, Validators.maxLength(5)]),
-      CountryMasterSid: new FormControl(Validators.required, []),
-      StateMasterSid: new FormControl(Validators.required, []),
-      TimeZone: new FormControl('', []),
-      SectorMasterSid: new FormControl(null, [Validators.required]),
-      TerminalCode: new FormControl('', [Validators.maxLength(10)]),
-      PortType: new FormControl(null, [Validators.maxLength(10)]),
-      ExportRestriction: new FormControl('', [Validators.maxLength(100)]),
-      ImportRestriction: new FormControl('', [Validators.maxLength(100)]),
-      SCMTPortCode: new FormControl('', [Validators.maxLength(10)]),
-      CBMRequire: new FormControl('', []),
-      EdiPortCode: new FormControl('', [Validators.maxLength(10)]),
-      Remarks: new FormControl('', [Validators.maxLength(100)]),
-    });
-
+    this.initPortForm();
+    this.loadAllFields();
     this.route.paramMap.subscribe(params => {
       this.idParam = Number(params.get('id'));
       if (this.idParam) {
@@ -88,22 +69,38 @@ export class PostMasterViewComponent {
         this.loadPort(this.idParam);
       }
     })
+  }
 
-
-    // Watch for changes in the selected country and load states accordingly
-    this.portForm.get('CountryMasterSid')?.valueChanges.subscribe(CountryMasterSid => {
-      this.loadStates(CountryMasterSid);
+  initPortForm(){
+    this.portForm =this.fb.group({
+      PortName: ['', [Validators.required, Validators.maxLength(50)]],
+      PortCode: ['', [Validators.required, Validators.maxLength(5)]],
+      CountryMasterSid: [,[Validators.required]],
+      StateMasterSid: [,],
+      TimeZone: [''],
+      SectorMasterSid: [''],
+      TerminalCode: ['', [Validators.maxLength(10)]],
+      PortType: ['Sea', [Validators.maxLength(10)]],
+      ExportRestriction: ['', [Validators.maxLength(100)]],
+      ImportRestriction: ['', [Validators.maxLength(100)]],
+      SCMTPortCode: ['', [Validators.maxLength(10)]],
+      CBMRequire: [false],
+      status : ['Active'],
+      EdiPortCode: ['', [Validators.maxLength(10)]],
+      Remarks: ['', [Validators.maxLength(100)]]
     });
-
   }
 
   loadPort(PortMasterSid): void {
     this.masterService.getPortById(PortMasterSid).subscribe(
       (resp) => {
         console.log(resp, 'portdata')
-        this.portForm.patchValue(resp);
-        this.portForm.patchValue({ CBMRequire: (resp.CBMRequire == 'Y' ? true : false) })
-        //this.states = resp['data'];  
+        this.portForm.patchValue({
+          ...resp,
+          CBMRequire: (resp.CBMRequire == 'Y' ? true : false),
+          status: resp.status === 'A' ? 'Active' : 'Invalid'
+        });
+        console.log(this.portForm.value);
       },
       (error) => {
         this.errorMessage = error.message;
@@ -112,44 +109,68 @@ export class PostMasterViewComponent {
     );
   }
 
-  loadCountry(): void {
-    this.masterService.getAllCountry().subscribe(
-      (resp: Country[]) => {
-        console.log(resp, 'Countries')
-        this.countries = resp['data'];
-      },
-      (error) => {
-        this.errorMessage = error.message;
-        console.error('Error loading leads:', error);
-      }
-    );
+  // loadCountry(): void {
+  //   this.masterService.getAllCountry().subscribe(
+  //     (resp: Country[]) => {
+  //       console.log(resp, 'Countries')
+  //       this.countries = resp['data'];
+  //     },
+  //     (error) => {
+  //       this.errorMessage = error.message;
+  //       console.error('Error loading leads:', error);
+  //     }
+  //   );
+  // }
+
+  // loadSector(): void {
+  //   this.masterService.getAllSector().subscribe(
+  //     (resp: Country[]) => {
+  //       console.log(resp, 'Sectors')
+  //       this.sectors = resp['data'];
+  //     },
+  //     (error) => {
+  //       this.errorMessage = error.message;
+  //       console.error('Error loading leads:', error);
+  //     }
+  //   );
+  // }
+
+  // loadStates(): void {
+    
+  // }
+
+  loadAllFields(){
+    forkJoin({
+      countries:this.masterService.getAllCountry(),
+      states:this.masterService.getAllState(),
+      sectors:this.masterService.getAllSectors()
+    }).subscribe(({countries,states,sectors})=>{
+      this.countryList = countries.data,
+      this.stateList = states.data,
+      this.filteredStateList = states.data,
+      this.regionList = sectors
+    })
   }
 
-  loadSector(): void {
-    this.masterService.getAllSector().subscribe(
-      (resp: Country[]) => {
-        console.log(resp, 'Sectors')
-        this.sectors = resp['data'];
-      },
-      (error) => {
-        this.errorMessage = error.message;
-        console.error('Error loading leads:', error);
-      }
-    );
+  filterStateByCountry(CountryMasterSid){
+    if(!CountryMasterSid){
+      this.filteredStateList = this.stateList;
+      return;
+    }
+    this.filteredStateList = this.stateList.filter(state=>state.CountryMasterSid === CountryMasterSid);
   }
 
-  loadStates(CountryMasterSid): void {
-    this.masterService.getAllStateByCountry(CountryMasterSid).subscribe(
-      (resp: State[]) => {
-        console.log(resp, 'States')
-        this.states = resp['data'];
-      },
-      (error) => {
-        this.errorMessage = error.message;
-        console.error('Error loading leads:', error);
-      }
-    );
+  setCountryByState(StateMasterSid){
+    if(!StateMasterSid){
+      return;
+    }
+    console.log(StateMasterSid);
+    let selectedState = this.stateList.find(state=>state.StateMasterSid);
+    this.portForm.get('StateMasterSid').setValue(StateMasterSid);
+    this.portForm.get('CountryMasterSid').setValue(selectedState.CountryMasterSid);
+    console.log('CountryCode',selectedState.CountryMasterSid)
   }
+
 
   reset() {
     this.portForm.reset();
@@ -168,15 +189,24 @@ export class PostMasterViewComponent {
       return;
     } else {
 
-      // let payload = this.portForm.value;
+       let formValue = this.portForm.value;
 
-      let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      const payload = (this.isEditMode) ? { ...this.portForm.value, ...updatedBy } : { ...this.portForm.value, ...createdBy };
+      let createdBy = this.appSettingService.userSettingSource.value['userEmail'] ;
+      let updatedBy = this.appSettingService.userSettingSource.value['userEmail'] ;
+      const payload = (this.isEditMode) ? 
+      { ...formValue,
+        status: formValue.status === 'Active' ? 'A' : 'I',
+        CBMRequire : formValue.CBMRequire ? 'Y':'N',
+        updatedBy:updatedBy
+      }
+       :
+      { 
+        ...formValue,
+        status: formValue.status === 'Active' ? 'A' : 'I',
+        CBMRequire : formValue.CBMRequire ? 'Y':'N',
+        createdBy : createdBy
+      }
 
-
-      payload.CBMRequire = (this.portForm.value.CBMRequire) ? 'Y' : 'N';
-      console.log('payload', payload);
 
       if (this.isEditMode) {
         this.masterService.updatePortById(this.idParam, payload).subscribe(
@@ -184,7 +214,7 @@ export class PostMasterViewComponent {
 
             console.log(resp);
             if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
+              this.appSettingService.showSuccess("Port Updated Successfully");
               this.router.navigate(['master/port-master/list']);
 
             } else {
@@ -203,7 +233,7 @@ export class PostMasterViewComponent {
 
             console.log(resp);
             if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
+              this.appSettingService.showSuccess("Port Created Successfully");
               this.router.navigate(['master/port-master/list']);
 
             } else {

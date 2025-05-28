@@ -2,93 +2,154 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Add Imco</h4>
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Imco' : 'Add Imco'}}</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80">
-                        <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
                         <i class="fas fa-save me-1"></i>
-                        Save
+                        {{isEditMode ? 'Update':'Save'}}
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-     <div class="col-md-12">
+     <div class="col-md-12" [formGroup]="ImcoForm">
         <div class="card h-100">
             <div class="card-body">
                 <div class="row">
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Name">
+                                formControlName="ImcoClass" [textWithNumbers]="10">
                             <label for="text-input" class="input-label">Imco Class <span
                                     class="text-danger">*</span></label>
+                            @if(ImcoForm.get('ImcoClass').touched && ImcoForm.get('ImcoClass').invalid){
+                                <div class="error-message">
+                                    @if(ImcoForm.get('ImcoClass').hasError('required')){
+                                        <span>IMCO Class is required</span>
+                                    } @else if(ImcoForm.get('ImcoClass').hasError('maxlength')){
+                                        <span>Max 10 Characters</span>
+                                    }
+                                </div>
+                            }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="displayName">
+                                formControlName="ImcoName" [onlyText]="20">
                             <label for="text-input" class="input-label">Imco Name <span
                                     class="text-danger">*</span></label>
+                            @if(ImcoForm.get('ImcoName').touched && ImcoForm.get('ImcoName').invalid){
+                                <div class="error-message">
+                                    @if(ImcoForm.get('ImcoName').hasError('required')){
+                                        <span>IMCO Name is required</span>
+                                    } @else if(ImcoForm.get('ImcoName').hasError('numberNotAllowed')){
+                                        <span>Only Alphabets allowed</span>
+                                    } 
+                                    @else if(ImcoForm.get('ImcoName').hasError('maxlength')){
+                                        <span>Max 20 Characters</span>
+                                    }
+                                </div>
+                            }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="displayName">
+                                formControlName="Description" [textWithNumbers]="100">
                             <label for="text-input" class="input-label">Description <span
                                     class="text-danger">*</span></label>
+                            @if(ImcoForm.get('Description').touched && ImcoForm.get('Description').invalid){
+                                <div class="error-message">
+                                    @if(ImcoForm.get('Description').hasError('required')){
+                                        <span>Description is required</span>
+                                    } @else if(ImcoForm.get('Description').hasError('maxlength')){
+                                        <span>Max 100 Characters</span>
+                                    }
+                                </div>
+                            }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="displayName">
-                            <label for="text-input" class="input-label">UN No <span
-                                    class="text-danger">*</span></label>
+                                formControlName="ImcoUn" [onlyNumbers]="6">
+                            <label for="text-input" class="input-label">UN No </label>
+                            @if(ImcoForm.get('ImcoUn').touched && ImcoForm.get('ImcoUn').invalid){
+                                <div class="error-message">
+                                    @if(ImcoForm.get('ImcoUn').hasError('onlyNumbers')){
+                                        <span>Only Digits allowed</span>
+                                    } 
+                                    @else if(ImcoForm.get('ImcoUn').hasError('maxlength')){
+                                        <span>Max 6 Digits</span>
+                                    }
+                                </div>
+                            }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="displayName">
-                            <label for="text-input" class="input-label">Page No <span
-                                    class="text-danger">*</span></label>
+                                formControlName="ImcoPageNo" [onlyNumbers]="4">
+                            <label for="text-input" class="input-label">Page No </label>
+                            @if(ImcoForm.get('ImcoPageNo').touched && ImcoForm.get('ImcoPageNo').invalid){
+                            <div class="error-message">
+                                @if(ImcoForm.get('ImcoPageNo').hasError('onlyNumbers')){
+                                <span>Only Digits allowed</span>
+                                }
+                                @else if(ImcoForm.get('ImcoPageNo').hasError('maxlength')){
+                                <span>Max 4 Digits</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="displayName">
-                            <label for="text-input" class="input-label">Packing Group <span
-                                    class="text-danger">*</span></label>
+                                formControlName="PackingGroup" [textWithNumbers]="10">
+                            <label for="text-input" class="input-label">Packing Group </label>
+                            @if(ImcoForm.get('PackingGroup').touched && ImcoForm.get('PackingGroup').invalid){
+                            <div class="error-message">
+                                @if(ImcoForm.get('PackingGroup').hasError('maxlength')){
+                                <span>Max 10 Digits</span>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
-                                bindValue="name">
-
+                            @if(isEditMode){
+                            <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name" bindValue="value"
+                                placeholder="Select status" class="ng-select">
                             </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
+                                id="text-input" readonly>
+                            }
+                            <label for="text-input" class="input-label">Status<span class="text-danger">*</span></label>
                         </div>
                     </aside>
-
+                    <aside class="col-md-8">
+                        <div class="custom-form-group">
+                            <textarea id="textarea-input" class="custom-input-field" placeholder="" rows="1"
+                                formControlName="Remarks"></textarea>
+                            <label for="text-input" class="input-label">Remarks</label>
+                        </div>
+                    </aside>
                 </div>
             </div>
         </div>
