@@ -14,4 +14,7 @@ export class AirlineEntryComponent {
     {id:"Active",name:"Active"},
     {id:"Inactive",name:"Inactive"},
   ]
+   navigateBack() {
+    history.back();
+  }
 }

@@ -25,7 +25,7 @@
         <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Add Post Master</h4>
+                <h4 class="page-title mb-0">Add Port Master</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -145,11 +145,11 @@
                                         bindLabel="sectorName" bindValue="SectorMasterSid">
 
                                     </ng-select>
-                                    <label for="text-input" class="input-label">Sector <span class="text-danger fw-semibold">*</span></label>
+                                    <label for="text-input" class="input-label">Region <span class="text-danger fw-semibold">*</span></label>
                                     <div
                                         *ngIf="portForm.get('SectorMasterSid')?.touched && portForm.get('SectorMasterSid')?.invalid">
                                         <p *ngIf="portForm.get('SectorMasterSid')?.errors?.['required']"
-                                            class="error-message">Sector is required.</p>
+                                            class="error-message">Region is required.</p>
                                     </div>
                                 </div>
                             </aside>
@@ -186,7 +186,7 @@
                 <div class="card h-100">
 
                     <section class="card-body">
-                        <h6 class="card-title mb-0">Compliance & Regulations</h6>
+                        <h6 class="card-title mb-0 ">Compliance & Regulations</h6>
                         <section class="row">
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
@@ -212,7 +212,7 @@
                                     </div>
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-6 my-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
                                         formControlName="SCMTPortCode" />
@@ -224,10 +224,33 @@
                                     </div>
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                             <aside class="col-md-6 my-md-3">
                                 <div class="custom-form-group">
+                                    <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
+                                        formControlName="EdiPortCode" />
+                                    <label for="text-input" class="input-label">EDI</label>
+                                    <div
+                                        *ngIf="portForm.get('EdiPortCode')?.touched && portForm.get('EdiPortCode')?.invalid">
+                                        <p *ngIf="portForm.get('EdiPortCode')?.errors?.['maxlength']"
+                                            class="error-message">characters must be maximum 10 character long.</p>
+                                    </div>
+                                </div>
+                            </aside>
+                              <aside class="col-md-6 my-md-2">
+                                <div class="custom-form-group">
+                                    <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1"
+                                        formControlName="Remarks"></textarea>
+                                    <label for="text-input" class="input-label">Remarks</label>
+                                    <div *ngIf="portForm.get('Remarks')?.touched && portForm.get('Remarks')?.invalid">
+                                        <p *ngIf="portForm.get('Remarks')?.errors?.['maxlength']" class="error-message">
+                                            characters must be maximum 100 character long.</p>
+                                    </div>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6 my-md-2">
+                                <div class="custom-form-group ">
 
-                                    <div class="form-check">
+                                    <div class="form-check pt-2">
                                         <input type="checkbox" class="form-check-input" formControlName="CBMRequire">
                                         <label class="form-check-label">
                                             CBM Require
@@ -239,34 +262,13 @@
                         </section>
                     </section>
 
-                    <section class="card-body border-top">
+                    <!-- <section class="card-body border-top">
                         <h6 class="card-title mb-0">Additional Settings</h6>
                         <section class="row">
-                            <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
-                                        formControlName="EdiPortCode" />
-                                    <label for="text-input" class="input-label">Edit Portal</label>
-                                    <div
-                                        *ngIf="portForm.get('EdiPortCode')?.touched && portForm.get('EdiPortCode')?.invalid">
-                                        <p *ngIf="portForm.get('EdiPortCode')?.errors?.['maxlength']"
-                                            class="error-message">characters must be maximum 10 character long.</p>
-                                    </div>
-                                </div>
-                            </aside>
-                            <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1"
-                                        formControlName="Remarks"></textarea>
-                                    <label for="text-input" class="input-label">Remarks</label>
-                                    <div *ngIf="portForm.get('Remarks')?.touched && portForm.get('Remarks')?.invalid">
-                                        <p *ngIf="portForm.get('Remarks')?.errors?.['maxlength']" class="error-message">
-                                            characters must be maximum 100 character long.</p>
-                                    </div>
-                                </div>
-                            </aside>
+                           
+                          
                         </section>
-                    </section>
+                    </section> -->
 
                 </div>
             </div>

@@ -9,5 +9,7 @@ import { FeatherModule } from 'angular-feather';
   styleUrl: './terms-condition-entry.component.scss'
 })
 export class TermsConditionEntryComponent {
-
+   navigateBack() {
+    history.back();
+  }
 }

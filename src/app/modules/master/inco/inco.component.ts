@@ -14,4 +14,7 @@ export class IncoComponent {
     {id:"Active",name:"Active"},
     {id:"Inactive",name:"Inactive"},
   ]
+    navigateBack() {
+    history.back();
+  }
 }

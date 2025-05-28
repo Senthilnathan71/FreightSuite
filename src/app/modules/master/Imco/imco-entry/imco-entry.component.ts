@@ -14,4 +14,7 @@ export class ImcoEntryComponent {
     {id:"Active",name:"Active"},
     {id:"Inactive",name:"Inactive"},
   ]
+   navigateBack() {
+    history.back();
+  }
 }
