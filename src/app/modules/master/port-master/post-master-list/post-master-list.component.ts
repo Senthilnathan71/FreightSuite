@@ -66,38 +66,35 @@ export class PostMasterListComponent implements OnInit {
 
   /** Triggered when user clicks “Search” */
   search(): void {
-    const payload = {
-      searchType:
-        this.searchType === 'countryName'
-          ? 'CountryMasterSid'
-          : this.searchType === 'sectorName'
-            ? 'SectorMasterSid'
-            : this.searchType,
-      filterValue:this.filterValue
-    };
+  const payload = {
+    searchType: 
+      this.searchType === 'countryName' ? 'CountryMasterSid' : 
+      this.searchType === 'sectorName' ? 'SectorMasterSid' : 
+      this.searchType,
+    filterValue: this.filterValue
+  };
 
-    this.masterService.searchPortList(payload).subscribe(res => {
-      // some APIs wrap in .data
-      const items = Array.isArray(res) ? res : res.data || [];
-      this.results = items.map((port: any) => {
-        const country = this.countryOptions.find(c => c.CountryMasterSid === port.CountryMasterSid);
-        const sector = this.sectorOptions.find(s => s.SectorMasterSid === port.SectorMasterSid);
+  this.masterService.searchPortList(payload).subscribe(res => {
+    const items = Array.isArray(res) ? res : res.data || [];
+    this.results = items.map((port: any) => {
+      // Find country and sector names from the options arrays
+      const country = this.countryOptions.find(c => c.CountryMasterSid === port.CountryMasterSid);
+      const sector = this.sectorOptions.find(s => s.SectorMasterSid === port.SectorMasterSid);
 
-        return {
-          ...port,
-          countryName: country?.countryName || '—',
-          sectorName: sector?.sectorName || '—',
-          statusText: port.status === 'A' ? 'Active' : 'Cancelled'
-        };
-      });
-
-      this.searchPerformed = true;
-      this.totalLengthOfCollection = this.results.length;
-      this.page = 1;
-      this.updatePaginatedData();
+      return {
+        ...port,
+        countryName: country?.countryName || '—',
+        sectorName: sector?.sectorName || '—',
+        statusText: port.status === 'A' ? 'Active' : 'Cancelled'
+      };
     });
-  }
 
+    this.searchPerformed = true;
+    this.totalLengthOfCollection = this.results.length;
+    this.page = 1;
+    this.updatePaginatedData();
+  });
+}
   /** Slice results for current page */
   updatePaginatedData(): void {
     const start = (this.page - 1) * this.pageSize;

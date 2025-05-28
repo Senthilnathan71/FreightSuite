@@ -34,7 +34,11 @@ export class CountryEntryComponent {
     { id: 'FCL', name: 'FCL' },
     { id: 'LCL', name: 'LCL' },
     { id: 'Air', name: 'Air' }
-  ];
+  ];  
+  statusOptions = [
+  { value: 'A', name: 'Active' },
+  { value: 'I', name: 'Inactive' }
+];
 
   measurementType = [
     { id: 'Dimension', name: 'Dimension' },

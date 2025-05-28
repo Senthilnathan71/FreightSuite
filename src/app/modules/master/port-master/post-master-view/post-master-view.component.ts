@@ -49,6 +49,10 @@ export class PostMasterViewComponent {
   ];
   errorMessage: any;
   idParam: number;
+  statusOptions = [
+  { value: 'A', name: 'Active' },
+  { value: 'I', name: 'Inactive' }
+];
 
   constructor(private config: NgSelectConfig, private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -78,6 +82,7 @@ export class PostMasterViewComponent {
       SCMTPortCode: new FormControl('', [Validators.maxLength(10)]),
       CBMRequire: new FormControl('', []),
       EdiPortCode: new FormControl('', [Validators.maxLength(10)]),
+      status: new FormControl('A', [Validators.required]),
       Remarks: new FormControl('', [Validators.maxLength(100)]),
     });
 
