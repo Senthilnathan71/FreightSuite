@@ -1,0 +1,215 @@
+<!-- <div class="round text-white d-inline-block fw-normal text-center rounded-circle align-self-center round-info mt-2 mb-2 position-fixed cursor-pointer border"
+    style="right: 1rem; bottom:1rem; z-index: 9; --bs-border-color:rgba(var(--bs-white-rgb), 0.5)"
+    (click)="open(content)">
+    <i-feather class="feather-sm" name="plus"></i-feather>
+</div> -->
+
+
+<ul ngbNav #nav="ngbNav" [(activeId)]="active" (activeIdChange)="clearFilters()" class="nav-tabs tab-custom">
+    <!-- <li [ngbNavItem]="1">
+        <button ngbNavLink class="mb-0">All</button>
+        <ng-template ngbNavContent>
+            <ng-container *ngTemplateOutlet="todoList"></ng-container>
+        </ng-template>
+    </li> -->
+    <li [ngbNavItem]="1">
+        <button ngbNavLink class="mb-0 p-1">To Meet</button>
+        <ng-template ngbNavContent>
+            <ng-container *ngTemplateOutlet="toMeet"></ng-container>
+        </ng-template>
+    </li>
+    <li [ngbNavItem]="2">
+        <button ngbNavLink class="mb-0 p-1">Not Met</button>
+        <ng-template ngbNavContent>
+            <ng-container *ngTemplateOutlet="notMet"></ng-container>
+        </ng-template>
+    </li>
+    <li [ngbNavItem]="3">
+        <button ngbNavLink class="mb-0 p-1">Never Met</button>
+        <ng-template ngbNavContent>
+            <ng-container *ngTemplateOutlet="neverMet"></ng-container>
+        </ng-template>
+    </li>
+    <li [ngbNavItem]="4">
+        <button ngbNavLink class="mb-0 p-1">In Active</button>
+        <ng-template ngbNavContent>
+            <ng-container *ngTemplateOutlet="inActive"></ng-container>
+        </ng-template>
+    </li>
+</ul>
+
+
+
+
+<div [ngbNavOutlet]="nav" class="mt-2"></div>
+
+<!-- <pre>Active: {{ active }}</pre> -->
+
+<!-- @for (todo of toDoList; track $index) {
+<ng-template #statusIndicator>
+    <i class="fas fa-circle dofi-font-11 me-1" [ngClass]="{ 
+            'text-success': todo.status === 'To Meet', 
+            'text-warning': todo.status === 'Not Meet', 
+            'text-danger': todo.status === 'Never Meet' 
+        }" ngbTooltip="{{ todo.status }}"></i>
+</ng-template>
+} -->
+
+
+<ng-template #toMeet>
+    <section class="card border">
+        <!-- Header -->
+        <div class="card-header border-bottom">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="card-title">Customer Name</div>
+                <div class="card-title">Meeting Date</div>
+            </div>
+        </div>
+        <div class="card-body px-0 feed-widget">
+            <!-- Loop for data -->
+            <ul class="list-style-none feed-body m-0 pb-4">
+                <li class="feed-item p-3 d-flex align-items-center gap-2" *ngFor="let ps of pendingSchedule">
+                    <div class="col text-capitalize text-truncate">{{ ps.preCustomerMaster.preCustomerName }}</div>
+                    <div class="col-auto"><i-feather class="feather-sm me-1" name="calendar"></i-feather> {{
+                        ps.meetingDate | date: 'dd-MMM-yyyy' }}</div>
+                </li>
+            </ul>
+        </div>
+    </section>
+</ng-template>
+
+<!-- <ng-template #todoListCompleted>
+    <div class="list-group bg-white">
+        <div class="list-group-item list-group-item-action cursor-pointer d-flex align-items-start">
+            <div class="form-check">
+                <input type="checkbox" id="toDoc1" class="form-check-input" checked>
+                <label for="toDoc1" class="form-check-label text-decoration-line-through">Follow up on outstanding
+                    payment from "BlueWave Shipping" client</label>
+            </div>
+        </div>
+    </div>
+</ng-template> -->
+
+
+<!-- <ng-template #toMeet>
+    <div class="list-group bg-white">
+        <div class="list-group-item list-group-item-action cursor-pointer d-flex align-items-start">
+            <div class="form-check">
+                <input type="checkbox" id="toDoc1" class="form-check-input" checked>
+                <label for="toDoc1" class="form-check-label">Content</label>
+            </div>
+        </div>
+    </div>
+</ng-template> -->
+<ng-template #notMet>
+    <div class="col-12">
+        <div data-bs-theme="light" class="rounded-3 p-2 bg-body-tertiary my-2 border">
+            <form novalidate="" class="d-flex align-items-center gap-2">
+                <div class="form-outline col">
+                    <input type="number" [(ngModel)]="searchDays" name="search" autocomplete="off"
+                        placeholder="Enter Days (10, 20, 30)" class="form-control">
+                </div>
+                <button type="button" class="btn btn-info btn-sm" (click)="generateNotMetList()">Generate</button>
+            </form>
+        </div>
+    </div>
+    <section class="card border" *ngIf="filteredNotMetList.length > 0">
+        <!-- Header -->
+        <div class="card-header border-bottom">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="card-title">Customer Name</div>
+                <div class="card-title">Meeting Date</div>
+            </div>
+        </div>
+        <div class="card-body p-0 feed-widget">
+            <!-- Loop for data -->
+            <ul class="list-style-none feed-body m-0 pb-4">
+                <li class="feed-item p-3 d-flex align-items-center gap-2" *ngFor="let ps of filteredNotMetList">
+                    <div class="col text-capitalize text-truncate">{{ ps.preCustomerName }}</div>
+                    <div class="col-auto"><i-feather class="feather-sm me-1" name="calendar"></i-feather> {{
+                        ps.meetingDate | date: 'dd-MMM-yyyy' }}</div>
+                </li>
+            </ul>
+        </div>
+    </section>
+</ng-template>
+
+
+
+<ng-template #neverMet>
+
+    <section class="card border">
+        <!-- Header -->
+        <div class="card-header border-bottom">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="card-title">Customer Name</div>
+                <div class="card-title">Meeting Date</div>
+            </div>
+        </div>
+        <div class="card-body p-0 feed-widget">
+            <!-- Loop for data -->
+            <ul class="list-style-none feed-body m-0 pb-4">
+                <li class="feed-item p-3 d-flex align-items-center gap-2" *ngFor="let ps of todoNeverMet">
+                    <div class="col text-capitalize text-truncate">{{ ps.preCustomerName }}</div>
+                    <div class="col-auto"><i-feather class="feather-sm me-1" name="calendar"></i-feather>
+                        {{ps.createdOn | date: 'dd-MMM-yyyy' }}</div>
+                </li>
+            </ul>
+        </div>
+    </section>
+</ng-template>
+
+
+
+
+<ng-template #inActive>
+    <section class="card border">
+        <!-- Header -->
+        <div class="card-header border-bottom">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="card-title">Customer Name</div>
+                <div class="card-title">Created On</div>
+            </div>
+        </div>
+        <div class="card-body p-0 feed-widget">
+            <!-- Loop for data -->
+            <ul class="list-style-none feed-body m-0 pb-4">
+                <li class="feed-item p-3 d-flex align-items-center gap-2" *ngFor="let ps of todoInActive">
+                    <div class="col text-capitalize text-truncate">{{ ps.preCustomerName }}</div>
+                    <div class="col-auto"><i-feather class="feather-sm me-1" name="calendar"></i-feather> {{
+                        ps.createdOn | date: 'dd-MMM-yyyy' }}</div>
+                </li>
+            </ul>
+        </div>
+    </section>
+</ng-template>
+
+
+<ng-template #content let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">Create Todo</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="mb-2">
+                    <label for="todoText" class="control-label col-form-label">Text</label>
+                    <textarea name="" id="todoText" class="form-control"></textarea>
+                </div>
+                <div class="mb-2">
+                    <label for="todoStatus" class="control-label col-form-label">Status</label>
+                    <select class="form-select" id="todoStatus">
+                        <option>To Meet</option>
+                        <option>Not Meet</option>
+                        <option>Never Meet</option>
+                        <option>In Active</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-info">Save</button>
+    </div>
+</ng-template>

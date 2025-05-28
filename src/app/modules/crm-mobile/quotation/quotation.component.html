@@ -1,0 +1,451 @@
+<div class="row">
+    <!-- #region Rate Request Form -->
+    <form [formGroup]="quotationForm">
+        <div class="col-12">
+            <!-- #region Top section -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 col-md-3">
+                            <div class="mb-2">
+                                <label for="quoteNo" class="form-label">Quote No: </label>
+                                <input type="text" class="form-control" id="quoteNo" formControlName="quoteNo">
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="mb-2">
+                                <label for="quoteDate" class="form-label">Quote Date:
+                                </label>
+                                <input type="date" id="quoteDate" formControlName="quoteDate" class="form-control" />
+                                <small *ngIf="f['quoteDate'].touched && f['quoteDate'].invalid" class="text-danger">
+                                    Quote Date is required.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <div class="mb-2">
+                                <label class="form-label">Customer</label>
+                                <select formControlName="customerName" (change)="onCustomerChange($event)"
+                                    class="form-select">
+                                    <option value="">Select</option>
+                                    <option *ngFor="let item of customers" [value]="item.CustomerMasterSid">
+                                        {{ item.CustomerName }}
+                                    </option>
+                                </select>
+                                <small *ngIf="f['customerName'].touched && f['customerName'].invalid"
+                                    class="text-danger">
+                                    Customer Name is required.
+                                </small>
+                            </div>
+                        </div>
+                        <!-- <div class="col-6 col-md-3">
+                                    <div class="mb-2">
+                                        <label for="customer" class="form-label">Dept Name</label>
+                                        <select formControlName="Segment" class="form-select"
+                                            (change)="onSegmentChange($event)">
+                                            <option value="">Select</option>
+                                            <option *ngFor="let item of departments" [value]="item.DepartmentMasterSid">
+                                                {{ item.departmentName }}
+                                            </option>
+                                        </select>
+                                        <small *ngIf="f['Segment'].touched && f['Segment'].invalid" class="text-danger">
+                                            Segment is required.
+                                        </small>
+                                    </div>
+                                </div> -->
+                        @if(QuoteHeaderSid){
+                        <div class="col-12 col-md-3">
+                            <div class="mb-2">
+                                <label for="status" class="form-label">Status</label>
+                                <select formControlName="status" class="form-select">
+                                    <option value="">Status</option>
+                                    <option *ngFor="let option of statusList" [value]="option">{{ option }}
+                                    </option>
+                                </select>
+                                <small *ngIf="f['status'].touched && f['status'].invalid" class="text-danger">
+                                    Status is required.
+                                </small>
+                            </div>
+                        </div>
+                        }
+                    </div>
+
+
+
+
+                </div>
+            </div>
+            <!-- #endregion -->
+            <div class="col-12 mb-3 d-flex align-items-center justify-content-end">
+                @if (isMobile) {
+                <button class="btn btn-info btn-sm" (click)="addRoute()" type="button"><i-feather
+                        class="feather-sm ms-2" name="plus"></i-feather> New
+                    Route</button>
+                }
+                @if (!isMobile) {
+                <button class="btn btn-info btn-sm ms-auto" type="button" (click)="addRoute()"><i-feather
+                        class="feather-sm ms-2" name="plus"></i-feather> Add
+                    Route</button>
+                <!-- (click)="addNewRoute()" -->
+                }
+            </div>
+            <div formArrayName="routes">
+                <div *ngFor="let route of routes.controls; let routeIndex = index" [formGroupName]="routeIndex">
+                    <div class="card border border-info position-relative">
+                        <div class="card-header bg-info rounded-top-1 d-flex align-items-center">
+                            <h6 class="font-bold mb-0 text-light">Route Details</h6>
+                            @if(routes.controls.length > 1){
+                            <button class="btn btn-sm waves-effect waves-light text-light"
+                                (click)="removeRoute(routeIndex,route.value.QuoteRouteSid)">
+                                <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
+                            </button>
+                            }
+                        </div>
+                        <div class="ribbon-e text-white">
+                            {{ routes.controls[routeIndex].get('segmentType')?.value }}
+                        </div>
+
+
+                        <section class="card-body p-2 requestLooper">
+                            <div class="row mb-2">
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-2">
+                                        <label for="Segment" class="form-label">Dept Name</label>
+                                        <select formControlName="Segment" class="form-select"
+                                            (change)="onSegmentChange($event,routeIndex)">
+                                            <option value="">Select</option>
+                                            <option *ngFor="let item of departments" [value]="item.DepartmentMasterSid">
+                                                {{ item.departmentName }}
+                                            </option>
+                                        </select>
+                                        <!-- <small *ngIf="f['Segment'].touched && f['Segment'].invalid" class="text-danger">
+                                                    Segment is required.
+                                                </small> -->
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label for="CarrierMasterSid" class="form-label">Carrier: </label>
+                                        <select formControlName="CarrierMasterSid" class="form-select"
+                                            (change)="onCarrierChange($event,routeIndex)">
+                                            <option value="">Select</option>
+                                            <option *ngFor="let item of carriers" [value]="item.CustomerMasterSid">
+                                                {{ item.CustomerName }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                @if(routes.controls[routeIndex].get('segmentType')?.value === 'LCL'){
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label for="cargoType" class="form-label">Cargo Type </label>
+                                        <select formControlName="cargoType" class="form-select">
+                                            <option value="">Select</option>
+                                            <option *ngFor="let item of packageTypes" [value]="item.PackageName">
+                                                {{ item.PackageName }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                }
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label class="form-label">POR</label>
+                                        <select formControlName="POR" class="form-select">
+                                            <option value="">Select</option>
+                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                                {{ item.PortCode }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label class="form-label">POL <span class="text-danger">*</span></label>
+                                        <select formControlName="POL" class="form-select">
+                                            <option value="">Select</option>
+                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                                {{ item.PortCode }}
+                                            </option>
+                                        </select>
+
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label class="form-label">POD <span class="text-danger">*</span></label>
+                                        <select formControlName="POD" class="form-select">
+                                            <option value="">Select</option>
+                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                                {{ item.PortCode }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label class="form-label">FPOD</label>
+                                        <select formControlName="FPOD" class="form-select">
+                                            <option value="">Select</option>
+                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                                {{ item.PortCode }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label for="effDate" class="form-label">Eff. Date:
+                                        </label>
+                                        <input type="date" id="effDate" formControlName="effDate" class="form-control"
+                                            [min]="minExpDate" />
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label for="expDate" class="form-label">Exp. Date:
+                                        </label>
+                                        <input type="date" id="expDate" formControlName="expDate" class="form-control"
+                                            [min]="minExpDate" />
+                                    </div>
+                                </div>
+                                @if(routes.controls[routeIndex].get('segmentType')?.value === 'FCL'){
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label for="twentyft" class="form-label">20ft: </label>
+                                        <input type="number" min="0" class="form-control" id="twentyft"
+                                            formControlName="twentyft">
+                                        <!-- <small *ngIf="f['twentyft'].touched && f['twentyft'].invalid"
+                                                            class="text-danger">
+                                                            20ft is required.
+                                                        </small> -->
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label for="fortyft" class="form-label">40ft: </label>
+                                        <input type="number" min="0" class="form-control" id="fortyft"
+                                            formControlName="fortyft">
+                                        <!-- <small *ngIf="f['fortyft'].touched && f['fortyft'].invalid" class="text-danger">
+                                                            40ft is required.
+                                                        </small> -->
+                                    </div>
+                                </div>
+
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label for="transit" class="form-label">Transit </label>
+                                        <input type="number" min="0" class="form-control" id="transit"
+                                            formControlName="transit">
+                                        <!-- <small *ngIf="f['fortyft'].touched && f['fortyft'].invalid" class="text-danger">
+                                                            40ft is required.
+                                                        </small> -->
+                                    </div>
+                                </div>
+                                }
+
+
+                                @if(QuoteHeaderSid){
+                                <div class="col-12 col-md-3">
+                                    <div class="mb-2">
+                                        <label for="routeStatus" class="form-label">Status</label>
+                                        <select formControlName="routeStatus" class="form-select">
+                                            <option value="">Status</option>
+                                            <option *ngFor="let option of statusList" [value]="option">{{
+                                                option }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                }
+                            </div>
+                            <div *ngIf="routes.controls[routeIndex].errors?.['polPodSame']" class="text-danger">
+                                POL & POD should not be the same!
+                            </div>
+                            <div *ngIf="routes.controls[routeIndex].hasError('expDateInvalid')" class="text-danger">
+                                Expiry Date must be greater than Effective Date!
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <!-- #region LCL -->
+                                    <div formArrayName="cargo" class="table-responsive">
+                                        <div>
+                                            <table class="table table-hover align-middle no-wrap table-bordered">
+                                                <thead>
+                                                    <tr class="bg-info">
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-120 dofi-max-w-120': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Charge<span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Unit <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Currency
+                                                                <span class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Per Unit
+                                                                <span class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Cost Curr
+                                                                <span class="text-danger">*</span></label>
+                                                        </td>
+
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Cost Unit
+                                                                <span class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Cost Per
+                                                                Unit
+                                                                <span class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Action</label>
+                                                        </td>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
+                                                        [formGroupName]="cargoIndex">
+                                                        <td>
+                                                            <select formControlName="charge" class="form-select">
+                                                                <option value="">Select</option>
+                                                                <option *ngFor="let item of chargeMaster"
+                                                                    [value]="item.chargeName">
+                                                                    {{ item.chargeCode }}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select formControlName="unit" class="form-select">
+                                                                <option value="">Select</option>
+                                                                <option *ngFor="let item of unitMaster"
+                                                                    [value]="item.UnitMasterSid">
+                                                                    {{ item.unitCode }}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select formControlName="currency" class="form-select">
+                                                                <option value="">Select</option>
+                                                                <option *ngFor="let item of currencyMaster"
+                                                                    [value]="item.CurrencyMasterSid">
+                                                                    {{ item.currencyCode }}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" min="0" formControlName="perUnit"
+                                                                class="form-control">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="costUnit"
+                                                                class="form-control">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="costCurrency"
+                                                                class="form-control">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" min="0" formControlName="costPerUnit"
+                                                                class="form-control">
+                                                        </td>
+                                                        <td data-label="Action">
+                                                            <section class="action-items">
+                                                                @if( routeCargo(routeIndex).controls.length
+                                                                > 1){
+                                                                <a class="text-info mx-2"
+                                                                    (click)="deleteCargo(routeIndex,cargoIndex,cargo.value.QuoteChargeSid)">
+                                                                    <i-feather name="trash-2"
+                                                                        class="feather-sm"></i-feather>
+                                                                </a>
+                                                                }
+                                                            </section>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+
+
+                                </div>
+                                <div class="col-12">
+                                    @if (isMobile) {
+                                    <div class="row mt-2">
+                                        <div class="col-6 mb-2">
+                                            <button class="btn btn-outline-info btn-sm w-100" type="button"
+                                                (click)="addCargo(routeIndex)">
+                                                <i-feather class="feather-sm ms-2" name="plus"></i-feather>
+                                                Add
+                                                Charges
+                                            </button>
+                                        </div>
+
+                                        <!-- <div class="col-6 text-center">
+                                                    <button class="btn btn-info btn-sm w-100" (click)="addRoute()"
+                                                        type="button"><i-feather class="feather-sm ms-2"
+                                                            name="plus"></i-feather> New
+                                                        Route</button>
+                                                </div> -->
+
+                                    </div>
+                                    }
+                                    @if (!isMobile) {
+                                    <div class="d-flex align-items-center justify-content-start gap-2">
+                                        <button class="btn btn-outline-info btn-sm" type="button"
+                                            (click)="addCargo(routeIndex)">
+                                            <!-- (click)="addNewRow(routeIndex)" -->
+                                            <i-feather class="feather-sm ms-2" name="plus"></i-feather> Add
+                                            Charge</button>
+                                        <!-- <button class="btn btn-info btn-sm ms-auto" type="button"
+                                                    (click)="addRoute()"><i-feather class="feather-sm ms-2"
+                                                        name="plus"></i-feather> Add Route</button> -->
+                                        <!-- (click)="addNewRoute()" -->
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                            <!-- #endregion -->
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+            <!-- #endregion -->
+
+        </div>
+
+
+        <!-- #region Quote btn -->
+        <div class="d-flex align-items-center">
+            <button class="btn btn-sm btn-outline-secondary waves-effect waves-light btn-min-width" type="button"
+                (click)="goBack()">
+                <i-feather class="feather-sm me-1" name="arrow-left"></i-feather> Back
+            </button>
+            <div class="ms-auto">
+                <button class="btn btn-outline-info btn-sm" (click)="onSubmit()">
+                    <i-feather class="feather-sm me-2" name="upload-cloud"></i-feather>Save</button>
+            </div>
+        </div>
+        <!-- #endregion -->
+    </form>
+    <!-- #endregion -->
+</div>

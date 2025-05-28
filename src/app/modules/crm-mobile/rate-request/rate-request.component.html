@@ -1,0 +1,450 @@
+<div class="row">
+    <!-- #region Rate Request Form -->
+    <form [formGroup]="rateRequestForm" (ngSubmit)="onSubmit()">
+
+
+
+        <div class="col-12">
+            <!-- #region Top section -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 col-md-3">
+                            <div class="mb-2">
+                                <label class="form-label">Customer</label>
+                                <select formControlName="customerName" (change)="onCustomerChange($event)"
+                                    class="form-select">
+                                    <option value="">Select</option>
+                                    <option *ngFor="let item of customers" [value]="item.CustomerMasterSid">
+                                        {{ item.CustomerName }}
+                                    </option>
+                                </select>
+                                <small *ngIf="f['customerName'].touched && f['customerName'].invalid"
+                                    class="text-danger">
+                                    Customer Name is required.
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="mb-2">
+                                <label for="shipmentDateExpected" class="form-label">Exp. Ship. Date
+                                    <!-- <small class=""
+                                        [ngClass]="{ 'bg-success text-white dofi-font-8 dofi-ps-1 dofi-pe-1': isMobile, 'text-success dofi-font-11': !isMobile }">
+                                        Expected
+                                    </small> -->
+                                </label>
+                                <input type="date" id="shipmentDateExpected" formControlName="shipmentDate"
+                                    class="form-control" [min]="minDate" />
+                                <small *ngIf="f['shipmentDate'].touched && f['shipmentDate'].invalid"
+                                    class="text-danger">
+                                    Shipment Date is required.
+                                </small>
+                            </div>
+                        </div>
+
+
+                        <div class="col-6 col-md-3">
+                            <div class="mb-2">
+                                <label for="customer" class="form-label">Dept Name</label>
+                                <select formControlName="Segment" class="form-select"
+                                    (change)="onSegmentChange($event)">
+                                    <option value="">Select</option>
+                                    <option *ngFor="let item of departments" [value]="item.DepartmentMasterSid">
+                                        {{ item.departmentName }}
+                                    </option>
+                                </select>
+                                <small *ngIf="f['Segment'].touched && f['Segment'].invalid" class="text-danger">
+                                    Segment is required.
+                                </small>
+                            </div>
+                        </div>
+                        @if(EnquiryHeaderSid){
+                        <div class="col-12 col-md-3">
+                            <div class="mb-2">
+                                <label for="status" class="form-label">Status</label>
+                                <select formControlName="status" class="form-select">
+                                    <option value="">Status</option>
+                                    <option *ngFor="let option of statusList" [value]="option">{{ option }}</option>
+                                </select>
+                                <small *ngIf="f['status'].touched && f['status'].invalid" class="text-danger">
+                                    Status is required.
+                                </small>
+                            </div>
+                        </div>
+                        }
+                    </div>
+
+
+
+
+                </div>
+            </div>
+            <!-- #endregion -->
+            <div class="col-12 mb-3 d-flex align-items-center justify-content-end gap-2">
+                @if (isMobile) {
+                <button class="btn btn-info btn-sm" (click)="addRoute()" type="button"><i-feather
+                        class="feather-sm ms-2" name="plus"></i-feather> New
+                    Route</button>
+                <button *ngIf="EnquiryHeaderSid" class="btn btn-info btn-sm" (click)="navigateQuotation()"
+                    type="button"><i-feather class="feather-sm ms-2" name="file-plus"></i-feather> Create
+                    Quotation</button>
+                }
+                @if (!isMobile) {
+                <button class="btn btn-info btn-sm ms-auto" type="button" (click)="addRoute()"><i-feather
+                        class="feather-sm ms-2" name="plus"></i-feather> Add
+                    Route</button>
+                <button *ngIf="EnquiryHeaderSid" class="btn btn-info btn-sm" (click)="navigateQuotation()"
+                    type="button"><i-feather class="feather-sm ms-2" name="file-plus"></i-feather> Create
+                    Quotation</button>
+                <!-- (click)="addNewRoute()" -->
+                }
+            </div>
+
+            <!-- #region Route Details -->
+            <div formArrayName="routes" *ngIf="selectedDepartment">
+                <div *ngFor="let route of routes.controls; let routeIndex = index" [formGroupName]="routeIndex">
+                    <div class="card border border-info position-relative">
+                        <div class="card-header bg-info rounded-top-1 d-flex align-items-center">
+                            <h6 class="font-bold mb-0 text-light">Route Details</h6>
+                            @if(routes.controls.length > 1){
+                            <button class="btn btn-sm waves-effect waves-light text-light"
+                                (click)="removeRoute(routeIndex)">
+                                <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
+                            </button>
+                            }
+
+                        </div>
+                        <div class="ribbon-e text-white">
+                            {{ selectedFCLLCL }}
+                        </div>
+
+                        <section class="card-body p-2 requestLooper">
+                            <div class="row mb-2">
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label class="form-label">POO</label>
+                                        <select formControlName="POO" class="form-select">
+                                            <option value="">Select</option>
+                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                                {{ item.PortCode }}
+                                            </option>
+                                        </select>
+                                        <!-- <small *ngIf="route.get('POO')?.touched && route.get('POO')?.invalid"
+                                                class="text-danger">
+                                                POO is required.
+                                            </small> -->
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label class="form-label">POL <span class="text-danger">*</span></label>
+                                        <select formControlName="POL" class="form-select">
+                                            <option value="">Select</option>
+                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                                {{ item.PortCode }}
+                                            </option>
+                                        </select>
+                                        <small *ngIf="route.get('POL')?.touched && route.get('POL')?.invalid"
+                                            class="text-danger">
+                                            POL is required.
+                                        </small>
+
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label class="form-label">POD <span class="text-danger">*</span></label>
+                                        <select formControlName="POD" class="form-select">
+                                            <option value="">Select</option>
+                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                                {{ item.PortCode }}
+                                            </option>
+                                        </select>
+                                        <small *ngIf="route.get('POD')?.touched && route.get('POD')?.invalid"
+                                            class="text-danger">
+                                            POD is required.
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label class="form-label">FPOD</label>
+                                        <select formControlName="FDC" class="form-select">
+                                            <option value="">Select</option>
+                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                                {{ item.PortCode }}
+                                            </option>
+                                        </select>
+                                        <!-- <small *ngIf="route.get('FDC')?.touched && route.get('FDC')?.invalid"
+                                                class="text-danger">
+                                                FDC is required.
+                                            </small> -->
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="routes.controls[routeIndex].errors?.['polPodSame']" class="text-danger">
+                                POL & POD should not be the same!
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <!-- #region LCL -->
+                                    @if(selectedFCLLCL ==='LCL'){
+                                    <div formArrayName="cargo" class="table-responsive">
+                                        <div>
+                                            <table class="table table-hover align-middle no-wrap table-bordered">
+                                                <thead>
+                                                    <tr class="bg-info">
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-120 dofi-max-w-120': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Cargo Type <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Product <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Qty <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Weight <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">CBM <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Action</label>
+                                                        </td>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- <tr *ngFor="let rowControl of getRows(routeIndex).controls; let rowIndex = index"
+                                                            [formGroupName]="rowIndex"> -->
+                                                    <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
+                                                        [formGroupName]="cargoIndex">
+                                                        <td>
+                                                            <select formControlName="cargoType" class="form-select">
+                                                                <option value="">Select</option>
+                                                                <option *ngFor="let item of packageTypes"
+                                                                    [value]="item.PackageName">
+                                                                    {{ item.PackageName }}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="product"
+                                                                class="form-control">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" formControlName="Qty"
+                                                                class="form-control" min="0"
+                                                                (keydown)="restrictDecimal($event)">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" min="0" formControlName="Weight"
+                                                                class="form-control">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" min="0" formControlName="cbm"
+                                                                class="form-control">
+                                                        </td>
+                                                        <td data-label="Action">
+                                                            <section class="action-items">
+                                                                @if( routeCargo(routeIndex).controls.length > 1){
+                                                                <a class="text-info mx-2"
+                                                                    (click)="deleteCargo(cargoIndex)">
+                                                                    <i-feather name="trash-2"
+                                                                        class="feather-sm"></i-feather>
+                                                                </a>
+                                                                }
+                                                            </section>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    }
+                                    <!-- #endregion -->
+
+                                    <!-- #region FCL -->
+                                    @if(selectedFCLLCL ==='FCL'){
+                                    <div formArrayName="cargo" class="table-responsive">
+                                        <div>
+                                            <table class="table table-hover align-middle no-wrap table-bordered">
+                                                <thead>
+                                                    <tr class="bg-info">
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-120 dofi-max-w-120': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Cargo Type <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Container Type <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Product <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Qty <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
+                                                            <label class="form-label mb-0">Weight <span
+                                                                    class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light"
+                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Action</label>
+                                                        </td>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+
+                                                    <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
+                                                        [formGroupName]="cargoIndex">
+                                                        <td>
+                                                            <select formControlName="cargoType" class="form-select">
+                                                                <option value="">Select</option>
+                                                                <option *ngFor="let item of packageTypes"
+                                                                    [value]="item?.PackageName">
+                                                                    {{ item?.PackageName }}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+
+                                                        <td>
+                                                            <select formControlName="contentType" class="form-select">
+                                                                <option value="">Select</option>
+                                                                <option *ngFor="let item of containerTypes"
+                                                                    [value]="item.ContainerName">
+                                                                    {{ item.ContainerName }}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="product"
+                                                                class="form-control">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="Qty"
+                                                                class="form-control">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" formControlName="Weight"
+                                                                class="form-control">
+                                                        </td>
+
+                                                        <td data-label="Action">
+                                                            <section class="action-items">
+                                                                <a class="text-info mx-2"
+                                                                    (click)="deleteCargo(cargoIndex)">
+                                                                    <i-feather name="trash-2"
+                                                                        class="feather-sm"></i-feather>
+                                                                </a>
+                                                            </section>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    }
+                                    <!-- #endregion -->
+
+                                    <!-- FCL -->
+
+                                </div>
+                                <div class="col-12">
+                                    @if (isMobile) {
+                                    <div class="row mt-2">
+                                        <div class="col-6 mb-2">
+                                            <button class="btn btn-outline-info btn-sm w-100" type="button"
+                                                (click)="addCargo(routeIndex)">
+                                                <i-feather class="feather-sm ms-2" name="plus"></i-feather> Add Cargo
+                                            </button>
+                                        </div>
+
+                                        <!-- <div class="col-6 text-center">
+                                            <button class="btn btn-info btn-sm w-100" (click)="addRoute()"
+                                                type="button"><i-feather class="feather-sm ms-2"
+                                                    name="plus"></i-feather> New
+                                                Route</button>
+                                        </div> -->
+                                        <!-- <div class="col-6 text-center">
+                                            <button
+                                                class="btn btn-sm btn-outline-secondary btn-rounded waves-effect waves-light btn-min-width w-100"
+                                                (click)="goBack()">
+                                                <i-feather class="feather-sm me-1" name="arrow-left"></i-feather> Back
+                                            </button>
+                                        </div>
+                                        <div class="col-12 text-center">
+                                            <button
+                                                class="btn btn-sm btn-outline-secondary btn-rounded waves-effect waves-light btn-min-width ms-auto"
+                                                (click)="resetForm()">
+                                                <i-feather class="feather-sm me-1" name="refresh-cw"></i-feather> Reset
+                                            </button>
+                                        </div> -->
+                                    </div>
+                                    }
+                                    @if (!isMobile) {
+                                    <div class="d-flex align-items-center justify-content-start gap-2">
+                                        <button class="btn btn-outline-info btn-sm" type="button"
+                                            (click)="addCargo(routeIndex)">
+                                            <!-- (click)="addNewRow(routeIndex)" -->
+                                            <i-feather class="feather-sm ms-2" name="plus"></i-feather> Add
+                                            Cargo</button>
+                                        <!-- <button class="btn btn-info btn-sm ms-auto" type="button"
+                                            (click)="addRoute()"><i-feather class="feather-sm ms-2"
+                                                name="plus"></i-feather> Add Route</button> -->
+                                        <!-- (click)="addNewRoute()" -->
+
+                                    </div>
+
+
+                                    }
+
+                                </div>
+                            </div>
+                            <!-- #endregion -->
+                        </section>
+                    </div>
+                </div>
+            </div>
+            <!-- #endregion -->
+
+        </div>
+
+        <!-- #region Quote btn -->
+        <div class="d-flex align-items-center">
+            <button class="btn btn-sm btn-outline-secondary waves-effect waves-light btn-min-width" type="button"
+                (click)="goBack()">
+                <i-feather class="feather-sm me-1" name="arrow-left"></i-feather> Back
+            </button>
+            <div class="ms-auto">
+                <button class="btn btn-outline-info btn-sm" type="submit">
+                    <i-feather class="feather-sm me-2" name="upload-cloud"></i-feather>Save</button>
+            </div>
+        </div>
+        <!-- #endregion -->
+    </form>
+    <!-- #endregion -->
+</div>

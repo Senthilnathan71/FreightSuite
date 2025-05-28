@@ -1,0 +1,537 @@
+<div class="card">
+  <div class="card-body">
+
+    <div class="col-12">
+      <div *ngIf="isMobile; else templatedesktop">
+        <ng-container *ngTemplateOutlet="templateMobile"></ng-container>
+      </div>
+    </div>
+
+
+    <!-- ============================================================== -->
+    <!-- Calander Area -->
+    <!-- ============================================================== -->
+    <div [ngSwitch]="view">
+      <mwl-calendar-month-view *ngSwitchCase="CalendarView.Month" [viewDate]="viewDate" [events]="events"
+        [refresh]="refresh" [activeDayIsOpen]="activeDayIsOpen" (dayClicked)="dayClicked($event.day)"
+        (eventClicked)="handleEvent('Clicked-ram', $event.event)" (eventTimesChanged)="eventTimesChanged($event)">
+      </mwl-calendar-month-view>
+      <mwl-calendar-week-view *ngSwitchCase="CalendarView.Week" [headerTemplate]="customHeaderTemplate"
+        [viewDate]="viewDate" [events]="events" [refresh]="refresh"
+        (eventClicked)="handleEvent('Clicked-ram', $event.event)" (eventTimesChanged)="eventTimesChanged($event)">
+      </mwl-calendar-week-view>
+      <mwl-calendar-day-view *ngSwitchCase="CalendarView.Day" [viewDate]="viewDate" [events]="events"
+        [refresh]="refresh" (eventClicked)="handleEvent('Clicked-ram', $event.event)"
+        (eventTimesChanged)="eventTimesChanged($event)">
+      </mwl-calendar-day-view>
+    </div>
+
+    <section class="eventDetails d-none">
+      <br />
+      <hr />
+      <!-- ============================================================== -->
+      <!-- Edit Evenets -->
+      <!-- ============================================================== -->
+      <h3>
+        Edit events
+        <button class="btn btn-info float-end" (click)="addEvent()">
+          Add new
+        </button>
+        <div class="clearfix"></div>
+      </h3>
+
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Primary color</th>
+              <th>Secondary color</th>
+              <th>Starts at</th>
+              <th>Ends at</th>
+              <th>Remove</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for(event of events; track event.title) {
+            <tr>
+              <td>
+                <input type="text" class="form-control" [(ngModel)]="event.title" (keyup)="refresh.next()" />
+              </td>
+              <td>
+                <input type="color" [(ngModel)]="event.color.primary" (change)="refresh.next()" />
+              </td>
+              <td>
+                <input type="color" [(ngModel)]="event.color.secondary" (change)="refresh.next()" />
+              </td>
+              <td>
+                <input class="form-control bg-white" type="text" mwlFlatpickr [(ngModel)]="event.start"
+                  (ngModelChange)="refresh.next()" [altInput]="true" [convertModelValue]="true" [enableTime]="true"
+                  dateFormat="Y-m-dTH:i" altFormat="F j, Y H:i" placeholder="Not set" />
+              </td>
+              <td>
+                <input class="form-control bg-white" type="text" mwlFlatpickr [(ngModel)]="event.end"
+                  (ngModelChange)="refresh.next()" [altInput]="true" [convertModelValue]="true" [enableTime]="true"
+                  dateFormat="Y-m-dTH:i" altFormat="F j, Y H:i" placeholder="Not set" />
+              </td>
+              <td>
+                <button class="btn btn-danger" (click)="deleteEvent(event)">
+                  Delete
+                </button>
+              </td>
+            </tr>
+            }
+
+          </tbody>
+        </table>
+      </div>
+      <!-- ============================================================== -->
+      <!-- Event Popup -->
+      <!-- ============================================================== -->
+      <ng-template #modalContent let-close="close">
+        <div class="modal-header">
+          <h5 class="modal-title">Event {{ modalData.action }}</h5>
+          <button type="button" class="btn-close" (click)="close()"></button>
+        </div>
+        <div class="modal-body">
+          {{ modalData.action }}
+
+          <!-- Event if Edited -->
+          @if(modalData.action === 'Edit') {
+          <div>
+            <h5>Event Title</h5>
+            <input type="text" class="form-control" [(ngModel)]="modalData.event.title" (keyup)="refresh.next()" />
+            <div class="row">
+              <div class="col-md-12">
+                <h5 class="mt-3">Event Color</h5>
+                <input type="color" [(ngModel)]="modalData.event.color.primary" (change)="refresh.next()"
+                  width="500px" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <h5 class="mt-3">Event Start</h5>
+                <input class="form-control bg-white" type="text" mwlFlatpickr [(ngModel)]="modalData.event.start"
+                  (ngModelChange)="refresh.next()" [altInput]="true" [convertModelValue]="true" [enableTime]="true"
+                  dateFormat="Y-m-dTH:i" altFormat="F j, Y H:i" placeholder="Not set" />
+              </div>
+              <div class="col-md-6">
+                <h5 class="mt-3">Event End</h5>
+                <input class="form-control bg-white" type="text" mwlFlatpickr [(ngModel)]="modalData.event.end"
+                  (ngModelChange)="refresh.next()" [altInput]="true" [convertModelValue]="true" [enableTime]="true"
+                  dateFormat="Y-m-dTH:i" altFormat="F j, Y H:i" placeholder="Not set" />
+              </div>
+              <button type="button" class="btn btn-info mt-4" (click)="close()">
+                Add Event
+              </button>
+            </div>
+          </div>
+          }
+
+        </div>
+      </ng-template>
+    </section>
+
+    <ng-template #modalContentAdd let-close="close">
+      <div class="modal-header">
+        <h5 class="modal-title">Update Meeting</h5>
+        <button type="button" class="btn-close" (click)="close()"></button>
+      </div>
+
+      <form [formGroup]="meetingForm">
+        <div class="modal-body">
+          <section class="">
+            <div class="row">
+              <div class="col-12 col-md-12">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Customer Name</label>
+                  <input type="text" formControlName="customerName" class="form-control" />
+                  <small *ngIf="f['customerName'].touched && f['customerName'].invalid" class="text-danger">
+                    Customer name is required.
+                  </small>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Meeting Type</label>
+                  <select formControlName="meetingType" class="form-select">
+                    <option value="">Select</option>
+                    <option value="Call">Call</option>
+                    <option value="Visit">Visit</option>
+                    <option value="Phone">Phone</option>
+                    <option value="eMeeting">eMeeting</option>
+                  </select>
+                  <small *ngIf="f['meetingType'].touched && f['meetingType'].invalid" class="text-danger">
+                    Meeting type is required.
+                  </small>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Meeting Date</label>
+                  <input type="datetime-local" formControlName="meetingDate" class="form-control" [min]="minDate" />
+                  <small *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="text-danger">
+                    Meeting date is required.
+                  </small>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Salesperson</label>
+                  <select formControlName="leadAssignTo" class="form-select">
+                    <option value="">Select</option>
+                    <option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
+                      {{ person.userName }}
+                    </option>
+                  </select>
+                  <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="text-danger">
+                    Salesperson is required.
+                  </small>
+                </div>
+              </div>
+              <div class="col-12 col-md-12">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Meeting Note</label>
+                  <textarea type="text" formControlName="meetingNote" class="form-control"></textarea>
+                  <small *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="text-danger">
+                    Meeting Note is required.
+                  </small>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Meeting Status</label>
+                  <select formControlName="meetingStatus" class="form-select">
+                    <option value="">Select</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="pending">In Progress</option>
+                    <option value="on hold">On Hold</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                  <small *ngIf="f['meetingStatus'].touched && f['meetingStatus'].invalid" class="text-danger">
+                    Meeting status is required.
+                  </small>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">&nbsp;</label>
+                  <div class="form-check form-switch dofi-mt-6">
+                    <input class="form-check-input" type="checkbox" role="switch" formControlName="followUp"
+                      [checked]="meetingForm.get('followUp')?.value" (change)="toggleFollowUp($event)" />
+                    <label class="form-check-label">Follow up required?</label>
+                  </div>
+                </div>
+              </div>
+              <!-- Conditionally Display Follow Up Fields in One Row -->
+              <div class="row" *ngIf="meetingForm.get('followUp')?.value">
+                <div class="col-12 col-md-6">
+                  <div class="mb-2">
+                    <label class="control-label col-form-label">Follow Up Date</label>
+                    <input type="datetime-local" formControlName="followUpDate" class="form-control" [min]="minDate" />
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="mb-2">
+                    <label class="control-label col-form-label">Follow Up Note</label>
+                    <textarea formControlName="followUpNote" class="form-control"></textarea>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+          <!-- <h5>Event Title</h5> -->
+          <!-- <input type="text" class="form-control" (keyup)="refresh.next()" required name="title" ngModel /> -->
+
+          <!-- <h5 class="mt-3">Event Color</h5>
+          <input type="color" (change)="refresh.next()" name="color" ngModel /> -->
+
+          <!-- <div class="row">
+            <div class="col-md-6">
+              <h5 class="mt-3">Event Start</h5>
+              <input class="form-control bg-white" type="text" name="startDate" ngModel mwlFlatpickr
+                (ngModelChange)="refresh.next()" [altInput]="true" [convertModelValue]="true" [enableTime]="true"
+                dateFormat="Y-m-dTH:i" altFormat="F j, Y H:i" placeholder="Not set" required />
+            </div>
+
+            <div class="col-md-6">
+              <h5 class="mt-3">Event End</h5>
+              <input class="form-control bg-white" type="text" name="endDate" ngModel mwlFlatpickr
+                (ngModelChange)="refresh.next()" [altInput]="true" [convertModelValue]="true" [enableTime]="true"
+                dateFormat="Y-m-dTH:i" altFormat="F j, Y H:i" placeholder="Not set" />
+            </div>
+
+            <button type="submit" class="btn btn-info mt-4" [disabled]="add.invalid">
+              Add Event
+            </button>
+          </div> -->
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-info btn-sm" appPreventMultiClick [disableTime]="2000" [isLoading]="btnDisable"
+            (click)="onEditMeeting()">
+            Save
+          </button>
+        </div>
+      </form>
+    </ng-template>
+
+
+
+    <ng-template #modalContentAddForm let-close="close">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Meeting</h5>
+        <button type="button" class="btn-close" (click)="close()"></button>
+      </div>
+
+      <form [formGroup]="meetingForm">
+        <div class="modal-body">
+          <section class="">
+            <div class="row">
+              <div class="col-12 col-md-12">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Customer Name <span class="text-danger">*</span></label>
+                  <!-- <input type="text" formControlName="customerName" class="form-control" /> -->
+                  <select formControlName="customerName" (change)="onCustomerChange($event)" class="form-select">
+                    <option value="">Select</option>
+                    <option *ngFor="let item of customers" [value]="item.CustomerName">
+                      {{ item.CustomerName }}
+                    </option>
+                  </select>
+                  <small *ngIf="f['customerName'].touched && f['customerName'].invalid" class="text-danger">
+                    Customer name is required.
+                  </small>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Meeting Type <span class="text-danger">*</span></label>
+                  <select formControlName="meetingType" class="form-select">
+                    <option value="">Select</option>
+                    <option value="Call">Call</option>
+                    <option value="Visit">Visit</option>
+                    <option value="Phone">Phone</option>
+                    <option value="eMeeting">eMeeting</option>
+                  </select>
+                  <small *ngIf="f['meetingType'].touched && f['meetingType'].invalid" class="text-danger">
+                    Meeting type is required.
+                  </small>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Meeting Date <span class="text-danger">*</span></label>
+                  <input type="datetime-local" formControlName="meetingDate" class="form-control" [min]="minDate" />
+                  <small *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="text-danger">
+                    Meeting date is required.
+                  </small>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Salesperson <span class="text-danger">*</span></label>
+                  <select formControlName="leadAssignTo" class="form-select">
+                    <option value="">Select</option>
+                    <option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
+                      {{ person.userName }}
+                    </option>
+                  </select>
+                  <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="text-danger">
+                    Salesperson is required.
+                  </small>
+                </div>
+              </div>
+              <div class="col-12 col-md-12">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Meeting Note <span class="text-danger">*</span></label>
+                  <textarea type="text" formControlName="meetingNote" class="form-control"></textarea>
+                  <small *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="text-danger">
+                    Meeting Note is required.
+                  </small>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">Meeting Status <span class="text-danger">*</span></label>
+                  <select formControlName="meetingStatus" class="form-select">
+                    <option value="">Select</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="pending">In Progress</option>
+                    <option value="on hold">On Hold</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                  <small *ngIf="f['meetingStatus'].touched && f['meetingStatus'].invalid" class="text-danger">
+                    Meeting status is required.
+                  </small>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="mb-2">
+                  <label class="control-label col-form-label">&nbsp;</label>
+                  <div class="form-check form-switch dofi-mt-6">
+                    <input class="form-check-input" type="checkbox" role="switch" formControlName="followUp"
+                      [checked]="meetingForm.get('followUp')?.value" (change)="toggleFollowUp($event)" />
+                    <label class="form-check-label">Follow up required?</label>
+                  </div>
+                </div>
+              </div>
+              <!-- Conditionally Display Follow Up Fields in One Row -->
+              <div class="row" *ngIf="meetingForm.get('followUp')?.value">
+                <div class="col-12 col-md-6">
+                  <div class="mb-2">
+                    <label class="control-label col-form-label">Follow Up Date</label>
+                    <input type="datetime-local" formControlName="followUpDate" class="form-control" [min]="minDate" />
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="mb-2">
+                    <label class="control-label col-form-label">Follow Up Note</label>
+                    <textarea formControlName="followUpNote" class="form-control"></textarea>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+          <!-- <h5>Event Title</h5> -->
+          <!-- <input type="text" class="form-control" (keyup)="refresh.next()" required name="title" ngModel /> -->
+
+          <!-- <h5 class="mt-3">Event Color</h5>
+          <input type="color" (change)="refresh.next()" name="color" ngModel /> -->
+
+          <!-- <div class="row">
+            <div class="col-md-6">
+              <h5 class="mt-3">Event Start</h5>
+              <input class="form-control bg-white" type="text" name="startDate" ngModel mwlFlatpickr
+                (ngModelChange)="refresh.next()" [altInput]="true" [convertModelValue]="true" [enableTime]="true"
+                dateFormat="Y-m-dTH:i" altFormat="F j, Y H:i" placeholder="Not set" required />
+            </div>
+
+            <div class="col-md-6">
+              <h5 class="mt-3">Event End</h5>
+              <input class="form-control bg-white" type="text" name="endDate" ngModel mwlFlatpickr
+                (ngModelChange)="refresh.next()" [altInput]="true" [convertModelValue]="true" [enableTime]="true"
+                dateFormat="Y-m-dTH:i" altFormat="F j, Y H:i" placeholder="Not set" />
+            </div>
+
+            <button type="submit" class="btn btn-info mt-4" [disabled]="add.invalid">
+              Add Event
+            </button>
+          </div> -->
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-info btn-sm" appPreventMultiClick [disableTime]="2000" [isLoading]="btnDisable"
+            (click)="onAddMeeting()">
+            Save
+          </button>
+        </div>
+      </form>
+    </ng-template>
+  </div>
+</div>
+
+
+<!-- #region Desktop Header -->
+<ng-template #templatedesktop>
+  <div class="row align-items-center mb-2">
+    <div class="col-md-auto text-end text-md-start">
+      <ng-container *ngTemplateOutlet="templateForDay"></ng-container>
+    </div>
+    <div class="col-md text-center mb-0">
+      <h5>{{ viewDate | calendarDate : view + "ViewTitle" : "en" }}</h5>
+    </div>
+    <div class="col-md-auto text-end">
+      <ng-container *ngTemplateOutlet="templateForMonthDateWeek"></ng-container>
+      <ng-container *ngTemplateOutlet="templateNewMeetingBtn"></ng-container>
+    </div>
+  </div>
+</ng-template>
+<!-- #endregion -->
+
+<!-- #region Mobile Header -->
+<ng-template #templateMobile>
+  <div class="row align-items-center mb-2">
+    <div class="col-6">
+      <ng-container *ngTemplateOutlet="templateForDay"></ng-container>
+    </div>
+
+    <div class="col-6 text-end">
+      <ng-container *ngTemplateOutlet="templateForMonthDateWeek"></ng-container>
+    </div>
+
+
+
+  </div>
+  <div class="row">
+    <div class="col text-start">
+      <h5 class="pt-2">{{ viewDate | calendarDate : view + "ViewTitle" : "en" }}</h5>
+    </div>
+    <div class="col-auto">
+      <ng-container *ngTemplateOutlet="templateNewMeetingBtn"></ng-container>
+    </div>
+  </div>
+</ng-template>
+<!-- #endregion -->
+
+
+<ng-template #templateForDay>
+  <div class="btn-group btn-group-sm">
+    <div class="btn btn-gray-v5" mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate"
+      (viewDateChange)="closeOpenMonthViewDay()" ngbTooltip="Previous" container="body">
+      <!-- Previous -->
+      <i-feather name="arrow-left" class="feather-sm"></i-feather>
+    </div>
+    <div class="btn btn-outline-gray-v5 text-dark" mwlCalendarToday [(viewDate)]="viewDate">
+      Next
+    </div>
+    <div class="btn btn-gray-v5" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate"
+      (viewDateChange)="closeOpenMonthViewDay()" ngbTooltip="Next" container="body">
+      <!-- Next -->
+      <i-feather name="arrow-right" class="feather-sm"></i-feather>
+    </div>
+  </div>
+</ng-template>
+
+
+<ng-template #customHeaderTemplate let-days="days">
+  <div class="cal-day-headers">
+    <div *ngFor="let day of days" class="cal-header" [ngClass]="{ 'today': isToday(day.date) }">
+      <div><b>{{ day.date | date: 'EEE' }}</b></div> <!-- Weekday (Mon, Tue, etc.) -->
+      <div>{{ day.date | date: 'd' }}</div> <!-- Only date number (16, 17) -->
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #templateForMonthDateWeek>
+  <div class="btn-group btn-group-sm">
+    <div class="btn btn-outline-info" (click)="setView(CalendarView.Month)"
+      [class.active]="view === CalendarView.Month">
+      Month
+    </div>
+    <div class="btn btn-outline-info" (click)="setView(CalendarView.Week)" [class.active]="view === CalendarView.Week">
+      Week
+    </div>
+    <div class="btn btn-outline-info" (click)="setView(CalendarView.Day)" [class.active]="view === CalendarView.Day">
+      Day
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #templateNewMeetingBtn>
+  <button class="btn btn-info btn-sm ms-2" (click)="addEvent()">
+    <i class="me-2 mdi mdi-plus"></i> New Meeting
+  </button>
+</ng-template>
+
+<!-- Custom Template for Day Cell -->
+<ng-template #customDayTemplate let-day="day">
+  <div [ngClass]="{'today-highlight': isToday(day.date)}">
+    <span>{{ day.date.getDate() }}</span>
+  </div>
+</ng-template>

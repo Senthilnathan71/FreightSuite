@@ -5,8 +5,8 @@
             <button class="btn btn-sm btn-info" (click)="onSubmit()">Submit</button>
         </div>
     </div> -->
-      <div class="col-12">
-             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
                 <h4 class="page-title mb-0">Add Organization</h4>
             </div>
@@ -18,20 +18,19 @@
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()"
-                        >
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="reset()">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
-                      >
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
                 </div>
             </div>
         </div>
-        </div>
+    </div>
 
 
     <form [formGroup]="customerForm">
@@ -235,39 +234,27 @@
                                 </div>
                             </aside>
                             <aside class="col-md-3">
-<div class="custom-form-group custom-form-group-select">
-  <ng-select
-    [(ngModel)]="selectedStatus"
-    name="status"
-    [items]="modeOfCustomerType"
-    bindLabel="name"
-    bindValue="name"
-    [multiple]="true"
-    [closeOnSelect]="false"
-    [searchable]="true"
-    placeholder="Select Customer Type"
-    (clear)="onClearSelection()"
-  >
-    <ng-template ng-option-tmp let-item="item">
-      <div class="form-check d-flex align-items-center">
-        <input
-          type="checkbox"
-          class="form-check-input sm"
-          [checked]="isSelected(item)"
-          (change)="toggleSelection(item)"
-          id="checkbox-{{ item.name }}"
-        />
-        <label class="form-check-label sm" [for]="'checkbox-' + item.name">
-          {{ item.name }}
-        </label>
-      </div>
-    </ng-template>
-  </ng-select>
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select [items]="modeOfCustomerType" bindLabel="name" bindValue="name"
+                                        [multiple]="true" [closeOnSelect]="false" [searchable]="true"
+                                        placeholder="Select Customer Type" [(ngModel)]="selectedStatus"
+                                        (change)="updateCustomerType()" name="customerTypeSelection">
+                                        <ng-template ng-option-tmp let-item="item">
+                                            <div class="form-check d-flex align-items-center">
+                                                <input type="checkbox" class="form-check-input sm"
+                                                    [checked]="isSelected(item)" (change)="toggleSelection(item)"
+                                                    id="checkbox-{{ item.name }}" />
+                                                <label class="form-check-label sm" [for]="'checkbox-' + item.name">
+                                                    {{ item.name }}
+                                                </label>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
 
-  <label class="input-label">
-    Customer Type <span class="text-danger">*</span>
-  </label>
-</div>
+                                    <label class="input-label">
+                                        Customer Type <span class="text-danger">*</span>
+                                    </label>
+                                </div>
 
 
 
@@ -445,7 +432,7 @@
                 </div>
             </div> -->
         </div>
-        <ng-template #customerType>
+        <!-- <ng-template #customerType>
             <div class="col-md-12">
                 <div class="card h-100">
                     <div class="card-body p-0">
@@ -675,7 +662,7 @@
                 </div>
             </div>
 
-        </ng-template>
+        </ng-template> -->
     </form>
 
     <div class="col-md-12 mt-3">
@@ -692,15 +679,13 @@
                             <ng-container *ngTemplateOutlet="branch"></ng-container>
                         </ng-template>
                     </li>
-                      <li [ngbNavItem]="3">
-                                                <button ngbNavLink> <button class="btn btn-info p-0 me-2"
-                                                        (click)="openModal(content3)">
-                                                        <i-feather name="plus-circle"
-                                                            class="feather-sm "></i-feather></button>Milestoe</button>
-                                                <ng-template ngbNavContent>
-                                                    <ng-container *ngTemplateOutlet="TabMilestone"></ng-container>
-                                                </ng-template>
-                                            </li>
+                    <li [ngbNavItem]="3">
+                        <button ngbNavLink> <button class="btn btn-info p-0 me-2" (click)="openModal(content3)">
+                                <i-feather name="plus-circle" class="feather-sm "></i-feather></button>Milestoe</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="TabMilestone"></ng-container>
+                        </ng-template>
+                    </li>
 
                     <!-- <li [ngbNavItem]="2">
                         <button ngbNavLink>
@@ -926,10 +911,11 @@
                                     <div class="error-message">
                                         @if(customerBranchForm.get('CustBranchZipPostCode')?.hasError('onlyNumbers')){
                                         <span>Only Digits are allowed</span>
-                                        } @else if(customerBranchForm.get('CustBranchZipPostCode')?.hasError('maxlength')){
+                                        } @else{
+                                        @if(customerBranchForm.get('CustBranchZipPostCode')?.hasError('maxlength')){
                                         <span>Max 10 Characters</span>
                                         }
-
+                                        }
                                     </div>
                                     }
                                 </div>
@@ -1189,39 +1175,44 @@
                         <div class="row">
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <select id="contactType" formControlName="ContactType" class="form-select" [onlyText]="10">
+                                    <select id="contactType" formControlName="ContactType" class="form-select"
+                                        [onlyText]="10">
                                         <option value="">Select Contact Type</option>
                                         <option *ngFor="let option of contactList" [value]="option.name">
                                             {{option.name}}</option>
                                     </select>
                                     <label for="contactType" class="input-label">Contact Type <span
                                             class="text-danger">*</span></label>
-                                    @if(customerBranchContactForm.get('ContactType')?.touched && customerBranchContactForm.get('ContactType')?.invalid){
-                                        <div class="error-message">
-                                            @if(customerBranchContactForm.get('ContactType')?.hasError('required')){
-                                                <span>Contact Type is required</span>
-                                            }
-                                        </div>
+                                    @if(customerBranchContactForm.get('ContactType')?.touched &&
+                                    customerBranchContactForm.get('ContactType')?.invalid){
+                                    <div class="error-message">
+                                        @if(customerBranchContactForm.get('ContactType')?.hasError('required')){
+                                        <span>Contact Type is required</span>
+                                        }
+                                    </div>
                                     }
                                 </div>
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder=""
-                                        class="custom-input-field sm" formControlName="ContactName" [onlyText]="50">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="ContactName" [onlyText]="50">
                                     <label for="ContactName" class="input-label">Contact Name <span
                                             class="text-danger">*</span></label>
-                                    @if(customerBranchContactForm.get('ContactName')?.touched && customerBranchContactForm.get('ContactName')?.invalid){
-                                        <div class="error-message">
-                                            @if(customerBranchContactForm.get('ContactName')?.hasError('required')){
-                                                <span>Contact Name is required</span>
-                                            }@else if(customerBranchContactForm.get('ContactName')?.hasError('numberNotAllowed')){
-                                                <span>Only Alphabets are allowed</span>
-                                            }
-                                            @else if(customerBranchContactForm.get('ContactName')?.hasError('maxlength')){
-                                                <span>Max 50 Characters</span>
-                                            }
-                                        </div>
+                                    @if(customerBranchContactForm.get('ContactName')?.touched &&
+                                    customerBranchContactForm.get('ContactName')?.invalid){
+                                    <div class="error-message">
+                                        @if(customerBranchContactForm.get('ContactName')?.hasError('required')){
+                                        <span>Contact Name is required</span>
+                                        }@else{
+                                        @if(customerBranchContactForm.get('ContactName')?.hasError('numberNotAllowed')){
+                                        <span>Only Alphabets are allowed</span>
+                                        }
+                                        @else if(customerBranchContactForm.get('ContactName')?.hasError('maxlength')){
+                                        <span>Max 50 Characters</span>
+                                        }
+                                        }
+                                    </div>
                                     }
                                 </div>
                             </aside>
@@ -1231,14 +1222,15 @@
                                         formControlName="MobileNo" [onlyNumbers]="15">
                                     <label for="MobileNo" class="input-label">Mobile No<span
                                             class="text-danger"></span></label>
-                                    @if(customerBranchContactForm.get('MobileNo')?.touched && customerBranchContactForm.get('MobileNo')?.invalid){
-                                        <div class="error-message">
-                                            @if(customerBranchContactForm.get('MobileNo')?.hasError('onlyNumbers')){
-                                                <span>Only Digits are allowed</span>
-                                            } @else if(customerBranchContactForm.get('MobileNo')?.hasError('maxlength')){
-                                                <span>Max 15 Characters</span>
-                                            }
-                                        </div>
+                                    @if(customerBranchContactForm.get('MobileNo')?.touched &&
+                                    customerBranchContactForm.get('MobileNo')?.invalid){
+                                    <div class="error-message">
+                                        @if(customerBranchContactForm.get('MobileNo')?.hasError('onlyNumbers')){
+                                        <span>Only Digits are allowed</span>
+                                        } @else if(customerBranchContactForm.get('MobileNo')?.hasError('maxlength')){
+                                        <span>Max 15 Characters</span>
+                                        }
+                                    </div>
                                     }
                                 </div>
                             </aside>
@@ -1248,15 +1240,16 @@
                                         formControlName="Email">
                                     <label for="Email" class="input-label">Email<span
                                             class="text-danger">*</span></label>
-                                    @if(customerBranchContactForm.get('Email')?.touched && customerBranchContactForm.get('Email')?.invalid){
-                                        <div class="error-message">
-                                            @if(customerBranchContactForm.get('Email')?.hasError('required')){
-                                                <span>Email is required</span>
-                                            }
-                                            @else if(customerBranchContactForm.get('Email')?.hasError('email')){
-                                                <span>Invalid email format</span>
-                                            }
-                                        </div>
+                                    @if(customerBranchContactForm.get('Email')?.touched &&
+                                    customerBranchContactForm.get('Email')?.invalid){
+                                    <div class="error-message">
+                                        @if(customerBranchContactForm.get('Email')?.hasError('required')){
+                                        <span>Email is required</span>
+                                        }
+                                        @else if(customerBranchContactForm.get('Email')?.hasError('email')){
+                                        <span>Invalid email format</span>
+                                        }
+                                    </div>
                                     }
                                 </div>
                             </aside>
@@ -1509,18 +1502,19 @@
                                         formControlName="LoginName" [onlyText]="50">
                                     <label for="LoginName" class="input-label">Name<span
                                             class="text-danger">*</span></label>
-                                    @if(customerBranchLoginForm.get('LoginName')?.touched && customerBranchLoginForm.get('LoginName')?.invalid){
-                                        <div class="error-message">
-                                            @if(customerBranchLoginForm.get('LoginName').hasError('required')){
-                                                <span>Name is required</span>
-                                            }
-                                            @else if(customerBranchLoginForm.get('LoginName').hasError('numberNotAllowed')){
-                                                <span>Only Alphabets are allowed</span>
-                                            }
-                                            @else if(customerBranchLoginForm.get('LoginName').hasError('maxlength')){
-                                                <span>Max 50 Characters</span>
-                                            }
-                                        </div>
+                                    @if(customerBranchLoginForm.get('LoginName')?.touched &&
+                                    customerBranchLoginForm.get('LoginName')?.invalid){
+                                    <div class="error-message">
+                                        @if(customerBranchLoginForm.get('LoginName').hasError('required')){
+                                        <span>Name is required</span>
+                                        }
+                                        @else if(customerBranchLoginForm.get('LoginName').hasError('numberNotAllowed')){
+                                        <span>Only Alphabets are allowed</span>
+                                        }
+                                        @else if(customerBranchLoginForm.get('LoginName').hasError('maxlength')){
+                                        <span>Max 50 Characters</span>
+                                        }
+                                    </div>
                                     }
                                 </div>
                             </aside>
@@ -1530,15 +1524,16 @@
                                         formControlName="LoginEmail">
                                     <label for="LoginEmail" class="input-label">email<span
                                             class="text-danger">*</span></label>
-                                    @if(customerBranchLoginForm.get('LoginEmail')?.touched && customerBranchLoginForm.get('LoginEmail')?.invalid){
-                                        <div class="error-message">
-                                            @if(customerBranchLoginForm.get('LoginEmail').hasError('required')){
-                                                <span>Email is required</span>
-                                            }
-                                            @else if(customerBranchLoginForm.get('LoginEmail').hasError('email')){
-                                                <span>Invalid email format</span>
-                                            }
-                                        </div>
+                                    @if(customerBranchLoginForm.get('LoginEmail')?.touched &&
+                                    customerBranchLoginForm.get('LoginEmail')?.invalid){
+                                    <div class="error-message">
+                                        @if(customerBranchLoginForm.get('LoginEmail').hasError('required')){
+                                        <span>Email is required</span>
+                                        }
+                                        @else if(customerBranchLoginForm.get('LoginEmail').hasError('email')){
+                                        <span>Invalid email format</span>
+                                        }
+                                    </div>
                                     }
                                 </div>
                             </aside>
@@ -1548,17 +1543,20 @@
                                         formControlName="LoginPassword" [textWithNumbers]="50">
                                     <label for="LoginPassword" class="input-label">Password <span
                                             class="text-danger">*</span></label>
-                                    @if(customerBranchLoginForm.get('LoginPassword')?.touched && customerBranchLoginForm.get('LoginPassword')?.invalid){
-                                        <div class="error-message">
-                                            @if(customerBranchLoginForm.get('LoginPassword').hasError('required')){
-                                                <span>Password is required</span>
-                                            }
-                                            @else if(customerBranchLoginForm.get('LoginPassword').hasError('passwordError')){
-                                                <span>{{customerBranchLoginForm.get('LoginPassword')?.errors?.['passwordError']}}</span>
-                                            }@else if(customerBranchLoginForm.get('LoginPassword').hasError('maxlength')){
-                                                <span>Max 50 Characters</span>
-                                            }
-                                        </div>
+                                    @if(customerBranchLoginForm.get('LoginPassword')?.touched &&
+                                    customerBranchLoginForm.get('LoginPassword')?.invalid){
+                                    <div class="error-message">
+                                        @if(customerBranchLoginForm.get('LoginPassword').hasError('required')){
+                                        <span>Password is required</span>
+                                        }
+                                        @else{
+                                        @if(customerBranchLoginForm.get('LoginPassword').hasError('passwordError')){
+                                        <span>{{customerBranchLoginForm.get('LoginPassword')?.errors?.['passwordError']}}</span>
+                                        }@else if(customerBranchLoginForm.get('LoginPassword').hasError('maxlength')){
+                                        <span>Max 50 Characters</span>
+                                        }
+                                        }
+                                    </div>
                                     }
                                 </div>
                             </aside>

@@ -1,0 +1,13 @@
+.quote-text-info {
+    font-weight: bold;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    background-color: #ccd5d6; /* Light blue background */
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.text-info:hover {
+    color: #0056b3; /* Darker blue text */
+    text-decoration: none;
+}

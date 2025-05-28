@@ -77,7 +77,7 @@ export class OrganizationEntryComponent {
     { id: '3', name: 'Not Applicable' },
   ];
   selectedStatus: string[] = [];
-  
+
 
   modeOfCustomerType = [
     { id: '1', name: 'Forwarder' },
@@ -107,27 +107,62 @@ export class OrganizationEntryComponent {
   ];
 
 
-isSelected(item: any): boolean {
-  return this.selectedStatus?.includes(item.name);
-}
+  // isSelected(item: any): boolean {
+  //   return this.selectedStatus?.includes(item.name);
+  // }
 
 
-toggleSelection(item: any): void {
-  const index = this.selectedStatus.indexOf(item.name);
-  if (index > -1) {
-    this.selectedStatus.splice(index, 1);
-  } else {
-    this.selectedStatus.push(item.name);
+  // toggleSelection(item: any): void {
+  //   const index = this.selectedStatus.indexOf(item.name);
+  //   if (index > -1) {
+  //     this.selectedStatus.splice(index, 1);
+  //   } else {
+  //     this.selectedStatus.push(item.name);
+  //   }
+
+
+  //   this.selectedStatus = [...this.selectedStatus];
+  // }
+
+
+
+  updateCustomerType(): void {
+    const result: any = {};
+    this.modeOfCustomerType.forEach((type) => {
+      const key = this.toCamelCase(type.name);
+      result[key] = this.selectedStatus.includes(type.name) ? 'isTrue' : 'isFalse';
+    });
+    this.customerForm.get('CustomerType')?.setValue(result, { emitEvent: false });
+  }
+
+  toggleSelection(item: any): void {
+    const index = this.selectedStatus.indexOf(item.name);
+    if (index === -1) {
+      this.selectedStatus.push(item.name);
+    } else {
+      this.selectedStatus.splice(index, 1);
+    }
+    this.updateCustomerType();
+  }
+
+  isSelected(item: any): boolean {
+    return this.selectedStatus.includes(item.name);
+  }
+
+  toCamelCase(name: string): string {
+    return name
+      .replace(/[^a-zA-Z0-9 ]/g, '')
+      .replace(/\s(.)/g, (match, group1) => group1.toUpperCase())
+      .replace(/\s/g, '')
+      .replace(/^(.)/, (match, group1) => group1.toLowerCase());
   }
 
 
-  this.selectedStatus = [...this.selectedStatus];
-}
 
+  onClearSelection(): void {
+    this.customerForm.get('CustomerType')?.setValue([]);
+  }
 
-onClearSelection(): void {
-  this.selectedStatus = [];
-}
   customerBranchData: any;
   customerBranchContactData: any;
   customerBranchEmailData: any;
@@ -334,7 +369,7 @@ onClearSelection(): void {
     private router: Router,
     private modalService: NgbModal,
     private cdRef: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.getAllCountries();
@@ -373,33 +408,8 @@ onClearSelection(): void {
       CompanyType: [{ value: '', disabled: true }],
       Remarks: ['', [Validators.required]],
       status: [''],
-      airlineName: [false],
-      forwarder: [false],
-      airline: [false],
-      shipper: [false],
-      airlineAgent: [false],
-      seacto: [false],
-      overseasAgent: [false],
-      consignee: [false],
-      SCACcode: [false],
-      shippingLine: [false],
-      broker: [false],
-      unpackCFS: [false],
-      shippingLineAgent: [false],
-      transportClient: [false],
-      localTransporter: [false],
-      Coloader: [false],
-      containerTerminal: [false],
-      ownGroupCompany: [false],
-      NVOCC: [false],
-      Yard: [false],
-      Transporter: [false],
-      airCTO: [false],
-      packCFS: [false],
-      Warehouse: [false],
-      CustomerType: [null], // final JSON value
+      CustomerType: [{}]
     });
-    this.setupCheckboxWatcher();
     this.customerForm
       .get('PanAvailable')
       ?.valueChanges.subscribe((panAvailable: boolean) => {
@@ -482,51 +492,54 @@ onClearSelection(): void {
     });
   }
 
-  setupCheckboxWatcher() {
-    const keys = [
-      'forwarder',
-      'airline',
-      'shipper',
-      'airlineAgent',
-      'seacto',
-      'overseasAgent',
-      'consignee',
-      'SCACcode',
-      'shippingLine',
-      'broker',
-      'unpackCFS',
-      'shippingLineAgent',
-      'transportClient',
-      'localTransporter',
-      'Coloader',
-      'containerTerminal',
-      'ownGroupCompany',
-      'NVOCC',
-      'Yard',
-      'Transporter',
-      'airCTO',
-      'packCFS',
-      'Warehouse',
-    ];
+  // setupCheckboxWatcher() {
+  //   const keys = [
+  //     'forwarder',
+  //     'airline',
+  //     'shipper',
+  //     'airlineAgent',
+  //     'seacto',
+  //     'overseasAgent',
+  //     'consignee',
+  //     'SCACcode',
+  //     'shippingLine',
+  //     'broker',
+  //     'unpackCFS',
+  //     'shippingLineAgent',
+  //     'transportClient',
+  //     'localTransporter',
+  //     'Coloader',
+  //     'containerTerminal',
+  //     'ownGroupCompany',
+  //     'NVOCC',
+  //     'Yard',
+  //     'Transporter',
+  //     'airCTO',
+  //     'packCFS',
+  //     'Warehouse',
+  //   ];
 
-    const updateCustomerType = () => {
-      const result: any = {};
-      keys.forEach((k) => {
-        result[k] = this.customerForm.get(k)?.value ? 'isTrue' : 'isFalse';
-      });
-      this.customerForm
-        .get('CustomerType')
-        ?.setValue(result, { emitEvent: false });
-    };
+  //   const updateCustomerType = () => {
+  //     const result: any = {};
+  //     keys.forEach((k) => {
+  //       result[k] = this.customerForm.get(k)?.value ? 'isTrue' : 'isFalse';
+  //     });
+  //     this.customerForm
+  //       .get('CustomerType')
+  //       ?.setValue(result, { emitEvent: false });
+  //   };
 
-    updateCustomerType();
+  //   updateCustomerType();
 
-    keys.forEach((key) => {
-      this.customerForm.get(key)?.valueChanges.subscribe(() => {
-        updateCustomerType();
-      });
-    });
-  }
+  //   keys.forEach((key) => {
+  //     this.customerForm.get(key)?.valueChanges.subscribe(() => {
+  //       updateCustomerType();
+  //     });
+  //   });
+  // }
+
+
+
 
   onSubmit() {
     let createdBy = {
@@ -538,49 +551,50 @@ onClearSelection(): void {
     const formValue = this.customerForm.value;
     const selectedPaymentType = this.customerForm.value.paymentType;
 
+    console.log(formValue, 'formValue')
     const payload = this.isEditMode
       ? {
-          CustomerName: formValue.CustomerName,
-          CustomerShortCode: formValue.CustomerShortCode,
-          CustomerAliasName: formValue.CustomerAliasName,
-          CustomerAddress1: formValue.CustomerAddress1,
-          CustomerAddress2: formValue.CustomerAddress2,
-          LocalLanguage: formValue.LocalLanguage,
-          PanType: formValue.PanType,
-          PanName: formValue.PanName,
-          GroupName: formValue.GroupName,
-          Website: formValue.Website,
-          Remarks: formValue.Remarks,
-          CountryMasterSid: Number(formValue.CountryMasterSid),
-          CustomerType: formValue.CustomerType,
-          CashCredit: selectedPaymentType,
-          IsMSME: formValue.IsMSME ? 'A' : 'I',
-          CompanyType: formValue.CompanyType,
-          RegistrationNo: formValue.RegistrationNo,
-          ...updatedBy,
-          status: this.status === 'A' ? 'A' : 'C',
-        }
+        CustomerName: formValue.CustomerName,
+        CustomerShortCode: formValue.CustomerShortCode,
+        CustomerAliasName: formValue.CustomerAliasName,
+        CustomerAddress1: formValue.CustomerAddress1,
+        CustomerAddress2: formValue.CustomerAddress2,
+        LocalLanguage: formValue.LocalLanguage,
+        PanType: formValue.PanType,
+        PanName: formValue.PanName,
+        GroupName: formValue.GroupName,
+        Website: formValue.Website,
+        Remarks: formValue.Remarks,
+        CountryMasterSid: Number(formValue.CountryMasterSid),
+        CustomerType: formValue.CustomerType,
+        CashCredit: selectedPaymentType,
+        IsMSME: formValue.IsMSME ? 'A' : 'I',
+        CompanyType: formValue.CompanyType,
+        RegistrationNo: formValue.RegistrationNo,
+        ...updatedBy,
+        status: this.status === 'A' ? 'A' : 'C',
+      }
       : {
-          CustomerName: formValue.CustomerName,
-          CustomerShortCode: formValue.CustomerShortCode,
-          CustomerAliasName: formValue.CustomerAliasName,
-          CustomerAddress1: formValue.CustomerAddress1,
-          CustomerAddress2: formValue.CustomerAddress2,
-          LocalLanguage: formValue.LocalLanguage,
-          PanType: formValue.PanType,
-          PanName: formValue.PanName,
-          GroupName: formValue.GroupName,
-          Website: formValue.Website,
-          Remarks: formValue.Remarks,
-          CountryMasterSid: Number(formValue.CountryMasterSid),
-          CustomerType: formValue.CustomerType,
-          CashCredit: selectedPaymentType,
-          IsMSME: formValue.IsMSME ? 'A' : 'I',
-          CompanyType: formValue.CompanyType,
-          RegistrationNo: formValue.RegistrationNo,
-          ...createdBy,
-          status: formValue.status === 'Active' ? 'A' : 'C',
-        };
+        CustomerName: formValue.CustomerName,
+        CustomerShortCode: formValue.CustomerShortCode,
+        CustomerAliasName: formValue.CustomerAliasName,
+        CustomerAddress1: formValue.CustomerAddress1,
+        CustomerAddress2: formValue.CustomerAddress2,
+        LocalLanguage: formValue.LocalLanguage,
+        PanType: formValue.PanType,
+        PanName: formValue.PanName,
+        GroupName: formValue.GroupName,
+        Website: formValue.Website,
+        Remarks: formValue.Remarks,
+        CountryMasterSid: Number(formValue.CountryMasterSid),
+        CustomerType: formValue.CustomerType,
+        CashCredit: selectedPaymentType,
+        IsMSME: formValue.IsMSME ? 'A' : 'I',
+        CompanyType: formValue.CompanyType,
+        RegistrationNo: formValue.RegistrationNo,
+        ...createdBy,
+        status: formValue.status === 'Active' ? 'A' : 'C',
+      };
 
     if (this.isEditMode) {
       this.masterService
@@ -643,21 +657,25 @@ onClearSelection(): void {
           PanAvailable:
             customerData.PanType || customerData.PanName ? true : false,
         });
-        // Patch checkbox fields from CustomerType
+        // ✅ Patch the selected checkboxes from CustomerType JSON
         const customerType = customerData.CustomerType || {};
-        Object.keys(customerType).forEach((key) => {
-          const isChecked = customerType[key] === 'isTrue';
-          if (this.customerForm.contains(key)) {
-            this.customerForm
-              .get(key)
-              ?.setValue(isChecked, { emitEvent: false });
-          }
-        });
+
+        this.selectedStatus = this.modeOfCustomerType
+          .filter((type) => customerType[this.toCamelCase(type.name)] === 'isTrue')
+          .map((type) => type.name);
+
+        // Update final CustomerType value in the form control
+        this.updateCustomerType(); // this will set the 'CustomerType' control value
+
       },
       (error) => {
         this.appSettingService.showError('Error loading customer data.');
       }
     );
+  }
+
+  toDisplayName(camelCase: string): string {
+    return camelCase.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
   }
 
   getAllCountries() {
@@ -751,35 +769,35 @@ onClearSelection(): void {
     const payload =
       this.isModalEditMode && this.customerBranchId
         ? {
-            CustomerMasterSid: this.CustomerMasterSid,
-            CityMasterSid: Number(formValue.CustBranchCity),
-            StateMasterSid: Number(formValue.CustBranchState),
-            BranchName: formValue.CustBranchBranchName,
-            Zip_PostBox: String(formValue.CustBranchZipPostCode),
-            ContactNo: String(formValue.CustBranchPhone),
-            Email: formValue.CustBranchEmail,
-            Address: formValue.CustBranchAddress,
-            Registered: formValue.CustBranchRegistered,
-            CustomerGstType: formValue.CustBranchGSTtype,
-            GSTNo: formValue.CustBranchGSTIN,
-            ...updatedBy,
-            status: formValue.status,
-          }
+          CustomerMasterSid: this.CustomerMasterSid,
+          CityMasterSid: Number(formValue.CustBranchCity),
+          StateMasterSid: Number(formValue.CustBranchState),
+          BranchName: formValue.CustBranchBranchName,
+          Zip_PostBox: String(formValue.CustBranchZipPostCode),
+          ContactNo: String(formValue.CustBranchPhone),
+          Email: formValue.CustBranchEmail,
+          Address: formValue.CustBranchAddress,
+          Registered: formValue.CustBranchRegistered,
+          CustomerGstType: formValue.CustBranchGSTtype,
+          GSTNo: formValue.CustBranchGSTIN,
+          ...updatedBy,
+          status: formValue.status,
+        }
         : {
-            CustomerMasterSid: this.CustomerMasterSid,
-            CityMasterSid: Number(formValue.CustBranchCity),
-            StateMasterSid: Number(formValue.CustBranchState),
-            BranchName: formValue.CustBranchName,
-            Zip_PostBox: String(formValue.CustBranchZipPostCode),
-            ContactNo: String(formValue.CustBranchPhone),
-            Email: formValue.CustBranchEmail,
-            Address: formValue.CustBranchAddress,
-            Registered: formValue.CustBranchRegistered,
-            CustomerGstType: formValue.CustBranchGSTtype,
-            GSTNo: formValue.CustBranchGSTIN,
-            ...createdBy,
-            status: formValue.status,
-          };
+          CustomerMasterSid: this.CustomerMasterSid,
+          CityMasterSid: Number(formValue.CustBranchCity),
+          StateMasterSid: Number(formValue.CustBranchState),
+          BranchName: formValue.CustBranchName,
+          Zip_PostBox: String(formValue.CustBranchZipPostCode),
+          ContactNo: String(formValue.CustBranchPhone),
+          Email: formValue.CustBranchEmail,
+          Address: formValue.CustBranchAddress,
+          Registered: formValue.CustBranchRegistered,
+          CustomerGstType: formValue.CustBranchGSTtype,
+          GSTNo: formValue.CustBranchGSTIN,
+          ...createdBy,
+          status: formValue.status,
+        };
 
     if (this.isModalEditMode && this.customerBranchId) {
       this.masterService
@@ -894,25 +912,25 @@ onClearSelection(): void {
     const payload =
       this.isModalEditMode && this.CusBranchContactSid
         ? {
-            CustomerMasterSid: this.CustomerMasterSid,
-            CustomerBranchSid: this.customerBranchId,
-            ContactType: formValue.ContactType,
-            MobileNo: String(formValue.MobileNo),
-            Email: formValue.Email,
-            ContactName: formValue.ContactName,
-            ...updatedBy,
-            status: formValue.status,
-          }
+          CustomerMasterSid: this.CustomerMasterSid,
+          CustomerBranchSid: this.customerBranchId,
+          ContactType: formValue.ContactType,
+          MobileNo: String(formValue.MobileNo),
+          Email: formValue.Email,
+          ContactName: formValue.ContactName,
+          ...updatedBy,
+          status: formValue.status,
+        }
         : {
-            CustomerMasterSid: this.CustomerMasterSid,
-            CustomerBranchSid: this.customerBranchId,
-            ContactType: formValue.ContactType,
-            MobileNo: String(formValue.MobileNo),
-            Email: formValue.Email,
-            ContactName: formValue.ContactName,
-            ...createdBy,
-            status: formValue.status,
-          };
+          CustomerMasterSid: this.CustomerMasterSid,
+          CustomerBranchSid: this.customerBranchId,
+          ContactType: formValue.ContactType,
+          MobileNo: String(formValue.MobileNo),
+          Email: formValue.Email,
+          ContactName: formValue.ContactName,
+          ...createdBy,
+          status: formValue.status,
+        };
 
     if (this.isModalEditMode && this.CusBranchContactSid) {
       this.masterService
@@ -994,19 +1012,19 @@ onClearSelection(): void {
     const payload =
       this.isModalEditMode && this.CustomerBrEmailSid
         ? {
-            CustomerBranchSid: Number(this.customerBranchId),
-            DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
-            Toemail: formValue.Toemail,
-            CCemail: formValue.CCemail,
-            ...updatedBy,
-          }
+          CustomerBranchSid: Number(this.customerBranchId),
+          DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
+          Toemail: formValue.Toemail,
+          CCemail: formValue.CCemail,
+          ...updatedBy,
+        }
         : {
-            CustomerBranchSid: Number(this.customerBranchId),
-            DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
-            Toemail: formValue.Toemail,
-            CCemail: formValue.CCemail,
-            ...createdBy,
-          };
+          CustomerBranchSid: Number(this.customerBranchId),
+          DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
+          Toemail: formValue.Toemail,
+          CCemail: formValue.CCemail,
+          ...createdBy,
+        };
 
     if (this.isModalEditMode && this.CustomerBrEmailSid) {
       this.masterService
@@ -1133,21 +1151,21 @@ onClearSelection(): void {
     const payload =
       this.isModalEditMode && this.CustomerLoginSid
         ? {
-            CustomerMasterSid: Number(this.CustomerMasterSid),
-            CustomerBranchSid: Number(this.customerBranchId),
-            LoginName: formValue.LoginName,
-            LoginEmail: formValue.LoginEmail,
-            LoginPassword: formValue.LoginPassword,
-            ...updatedBy,
-          }
+          CustomerMasterSid: Number(this.CustomerMasterSid),
+          CustomerBranchSid: Number(this.customerBranchId),
+          LoginName: formValue.LoginName,
+          LoginEmail: formValue.LoginEmail,
+          LoginPassword: formValue.LoginPassword,
+          ...updatedBy,
+        }
         : {
-            CustomerMasterSid: Number(this.CustomerMasterSid),
-            CustomerBranchSid: Number(this.customerBranchId),
-            LoginName: formValue.LoginName,
-            LoginEmail: formValue.LoginEmail,
-            LoginPassword: formValue.LoginPassword,
-            ...createdBy,
-          };
+          CustomerMasterSid: Number(this.CustomerMasterSid),
+          CustomerBranchSid: Number(this.customerBranchId),
+          LoginName: formValue.LoginName,
+          LoginEmail: formValue.LoginEmail,
+          LoginPassword: formValue.LoginPassword,
+          ...createdBy,
+        };
 
     if (this.isModalEditMode && this.CustomerLoginSid) {
       this.masterService

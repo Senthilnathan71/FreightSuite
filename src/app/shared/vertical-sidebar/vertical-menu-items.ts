@@ -436,6 +436,36 @@ export const ROUTES: RouteInfo[] = [
     labelClass: '',
     submenu: [
       {
+        path: '/crm/lead/list',
+        title: 'Lead',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/crm/lead-schedule-pending',
+        title: 'Lead Schedule Pending',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/crm/calendar',
+        title: 'Calender',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
         path: '/crm/rate-request/list',
         title: 'Rate Request',
         icon: 'mdi mdi-stackexchange',
@@ -456,38 +486,8 @@ export const ROUTES: RouteInfo[] = [
         submenu: []
       },
       {
-        path: '/crm/lead/list',
-        title: 'ViewComponent',
-        icon: 'mdi mdi-stackexchange',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
-      {
-        path: '/crm/calendar',
-        title: 'Calender',
-        icon: 'mdi mdi-stackexchange',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
-      {
         path: '/crm/todo',
         title: 'Todo',
-        icon: 'mdi mdi-stackexchange',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
-      {
-        path: '/crm/lead-schedule-pending',
-        title: 'Lead Schedule Pending',
         icon: 'mdi mdi-stackexchange',
         class: '',
         extralink: false,
