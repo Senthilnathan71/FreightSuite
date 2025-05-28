@@ -65,7 +65,7 @@
                             <aside class="col-md-12">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="countryName" >
-                                    <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">Name <span class="text-danger"></span></label>
                                     <div *ngIf="countryForm.get('countryName')?.touched && countryForm.get('countryName')?.invalid">
                                         <p *ngIf="countryForm.get('countryName')?.errors?.['required']" class="error-message"> Name is required.</p>
                                         <p *ngIf="countryForm.get('countryName')?.errors?.['maxlength']" class="error-message"> Name characters must be maximum 100 characters long.</p>
@@ -75,7 +75,7 @@
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="countryCode" >
-                                    <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">Code <span class="text-danger"></span></label>
                                     <div *ngIf="countryForm.get('countryCode')?.touched && countryForm.get('countryCode')?.invalid">
                                         <p *ngIf="countryForm.get('countryCode')?.errors?.['required']" class="error-message">Code is required.</p>
                                         <p *ngIf="countryForm.get('countryCode')?.errors?.['maxlength']" class="error-message">Code characters must be maximum 2 characters long.</p>
@@ -85,7 +85,7 @@
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="dialingCode" >
-                                    <label for="text-input" class="input-label">Dailing Code <span class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">Dailing Code <span class="text-danger"></span></label>
                                     <div *ngIf="countryForm.get('dialingCode')?.touched && countryForm.get('dialingCode')?.invalid">
                                         <p *ngIf="countryForm.get('dialingCode')?.errors?.['required']" class="error-message">Dailing Code is required.</p>
                                         <p *ngIf="countryForm.get('dialingCode')?.errors?.['maxlength']" class="error-message">Dailing Code characters must be maximum 10 characters long.</p>
@@ -95,7 +95,7 @@
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ISO3DigitCode" >
-                                    <label for="text-input" class="input-label">ISO 3 Digit Code <span class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">ISO 3 Digit Code <span class="text-danger"></span></label>
                                     <div *ngIf="countryForm.get('ISO3DigitCode')?.touched && countryForm.get('ISO3DigitCode')?.invalid">
                                         <p *ngIf="countryForm.get('ISO3DigitCode')?.errors?.['required']" class="error-message">ISO3 Digit Code is required.</p>
                                         <p *ngIf="countryForm.get('ISO3DigitCode')?.errors?.['maxlength']" class="error-message">ISO3 Digit Code characters must be maximum 10 characters long.</p>
@@ -105,7 +105,7 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="UNM49Code" >
-                                    <label for="text-input" class="input-label">UNM49 Code <span class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">UNM49 Code <span class="text-danger"></span></label>
                                     <div *ngIf="countryForm.get('UNM49Code')?.touched && countryForm.get('UNM49Code')?.invalid">
                                         <p *ngIf="countryForm.get('UNM49Code')?.errors?.['required']" class="error-message">UNM49 Code is required.</p>
                                         <p *ngIf="countryForm.get('UNM49Code')?.errors?.['maxlength']" class="error-message">UNM49 Code characters must be maximum 10 characters long.</p>
@@ -115,7 +115,7 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ShortName" >
-                                    <label for="text-input" class="input-label">Short Name <span class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">Short Name <span class="text-danger"></span></label>
                                     <div *ngIf="countryForm.get('ShortName')?.touched && countryForm.get('ShortName')?.invalid">
                                         <p *ngIf="countryForm.get('ShortName')?.errors?.['required']" class="error-message">Short Name is required.</p>
                                         <p *ngIf="countryForm.get('ShortName')?.errors?.['maxlength']" class="error-message">Short Name characters must be maximum 100 characters long.</p>
@@ -134,7 +134,7 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="LocalCurrencyCode" >
-                                    <label for="text-input" class="input-label">Local Currency <span class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">Local Currency <span class="text-danger"></span></label>
                                     <div *ngIf="countryForm.get('LocalCurrencyCode')?.touched && countryForm.get('LocalCurrencyCode')?.invalid">
                                         <p *ngIf="countryForm.get('LocalCurrencyCode')?.errors?.['required']" class="error-message">Local Currency is required.</p>
                                         <p *ngIf="countryForm.get('LocalCurrencyCode')?.errors?.['maxlength']" class="error-message">Local Currency characters must be maximum 10 characters long.</p>
@@ -144,7 +144,7 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="LocalCurrencyName" >
-                                    <label for="text-input" class="input-label">Currency Name <span class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">Currency Name <span class="text-danger"></span></label>
                                     <div *ngIf="countryForm.get('LocalCurrencyName')?.touched && countryForm.get('LocalCurrencyName')?.invalid">
                                         <p *ngIf="countryForm.get('LocalCurrencyName')?.errors?.['required']" class="error-message">Currency Name is required.</p>
                                         <p *ngIf="countryForm.get('LocalCurrencyName')?.errors?.['maxlength']" class="error-message">Currency Name characters must be maximum 100 characters long.</p>
@@ -154,7 +154,7 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="AWBCurrencyCode" >
-                                    <label for="text-input" class="input-label">AWB Currency <span class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">AWB Currency <span class="text-danger"></span></label>
                                     <div *ngIf="countryForm.get('AWBCurrencyCode')?.touched && countryForm.get('AWBCurrencyCode')?.invalid">
                                         <p *ngIf="countryForm.get('AWBCurrencyCode')?.errors?.['required']" class="error-message">AWB Currency is required.</p>
                                         <p *ngIf="countryForm.get('AWBCurrencyCode')?.errors?.['maxlength']" class="error-message">AWB Currency characters must be maximum 10 characters long.</p>
@@ -164,7 +164,7 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="AWBCurrencyName" >
-                                    <label for="text-input" class="input-label">Currency Name <span class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">Currency Name <span class="text-danger"></span></label>
                                     <div *ngIf="countryForm.get('AWBCurrencyName')?.touched && countryForm.get('AWBCurrencyName')?.invalid">
                                         <p *ngIf="countryForm.get('AWBCurrencyName')?.errors?.['required']" class="error-message">Currency Name is required.</p>
                                         <p *ngIf="countryForm.get('AWBCurrencyName')?.errors?.['maxlength']" class="error-message">Currency Name characters must be maximum 100 characters long.</p>
@@ -174,7 +174,7 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="region">
-                                    <label for="text-input" class="input-label">Region <span class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">Region <span class="text-danger"></span></label>
                                     <div *ngIf="countryForm.get('region')?.touched && countryForm.get('region')?.invalid">
                                         <p *ngIf="countryForm.get('region')?.errors?.['required']" class="error-message">Region is required.</p>
                                         <p *ngIf="countryForm.get('region')?.errors?.['maxlength']" class="error-message">Region characters must be maximum 100 characters long.</p>

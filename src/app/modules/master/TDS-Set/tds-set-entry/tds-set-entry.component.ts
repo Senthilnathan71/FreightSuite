@@ -14,4 +14,7 @@ export class TdsSetEntryComponent {
     {id:"Active",name:"Active"},
     {id:"Inactive",name:"Inactive"},
   ]
+   navigateBack() {
+    history.back();
+  }
 }

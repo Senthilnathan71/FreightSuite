@@ -14,4 +14,7 @@ export class RegionEntryComponent {
     {id:"Active",name:"Active"},
     {id:"Inactive",name:"Inactive"},
   ]
+    navigateBack() {
+    history.back();
+  }
 }

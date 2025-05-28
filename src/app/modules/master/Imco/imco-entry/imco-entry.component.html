@@ -7,11 +7,13 @@
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
@@ -24,7 +26,7 @@
         </div>
     </div>
 
-     <div class="col-md-12" [formGroup]="ImcoForm">
+    <div class="col-md-12" [formGroup]="ImcoForm">
         <div class="card h-100">
             <div class="card-body">
                 <div class="row">
@@ -35,13 +37,13 @@
                             <label for="text-input" class="input-label">Imco Class <span
                                     class="text-danger">*</span></label>
                             @if(ImcoForm.get('ImcoClass').touched && ImcoForm.get('ImcoClass').invalid){
-                                <div class="error-message">
-                                    @if(ImcoForm.get('ImcoClass').hasError('required')){
-                                        <span>IMCO Class is required</span>
-                                    } @else if(ImcoForm.get('ImcoClass').hasError('maxlength')){
-                                        <span>Max 10 Characters</span>
-                                    }
-                                </div>
+                            <div class="error-message">
+                                @if(ImcoForm.get('ImcoClass').hasError('required')){
+                                <span>IMCO Class is required</span>
+                                } @else if(ImcoForm.get('ImcoClass').hasError('maxlength')){
+                                <span>Max 10 Characters</span>
+                                }
+                            </div>
                             }
                         </div>
                     </aside>
@@ -52,16 +54,16 @@
                             <label for="text-input" class="input-label">Imco Name <span
                                     class="text-danger">*</span></label>
                             @if(ImcoForm.get('ImcoName').touched && ImcoForm.get('ImcoName').invalid){
-                                <div class="error-message">
-                                    @if(ImcoForm.get('ImcoName').hasError('required')){
-                                        <span>IMCO Name is required</span>
-                                    } @else if(ImcoForm.get('ImcoName').hasError('numberNotAllowed')){
-                                        <span>Only Alphabets allowed</span>
-                                    } 
-                                    @else if(ImcoForm.get('ImcoName').hasError('maxlength')){
-                                        <span>Max 20 Characters</span>
-                                    }
-                                </div>
+                            <div class="error-message">
+                                @if(ImcoForm.get('ImcoName').hasError('required')){
+                                <span>IMCO Name is required</span>
+                                } @else if(ImcoForm.get('ImcoName').hasError('numberNotAllowed')){
+                                <span>Only Alphabets allowed</span>
+                                }
+                                @else if(ImcoForm.get('ImcoName').hasError('maxlength')){
+                                <span>Max 20 Characters</span>
+                                }
+                            </div>
                             }
                         </div>
                     </aside>
@@ -72,13 +74,13 @@
                             <label for="text-input" class="input-label">Description <span
                                     class="text-danger">*</span></label>
                             @if(ImcoForm.get('Description').touched && ImcoForm.get('Description').invalid){
-                                <div class="error-message">
-                                    @if(ImcoForm.get('Description').hasError('required')){
-                                        <span>Description is required</span>
-                                    } @else if(ImcoForm.get('Description').hasError('maxlength')){
-                                        <span>Max 100 Characters</span>
-                                    }
-                                </div>
+                            <div class="error-message">
+                                @if(ImcoForm.get('Description').hasError('required')){
+                                <span>Description is required</span>
+                                } @else if(ImcoForm.get('Description').hasError('maxlength')){
+                                <span>Max 100 Characters</span>
+                                }
+                            </div>
                             }
                         </div>
                     </aside>
@@ -88,14 +90,14 @@
                                 formControlName="ImcoUn" [onlyNumbers]="6">
                             <label for="text-input" class="input-label">UN No </label>
                             @if(ImcoForm.get('ImcoUn').touched && ImcoForm.get('ImcoUn').invalid){
-                                <div class="error-message">
-                                    @if(ImcoForm.get('ImcoUn').hasError('onlyNumbers')){
-                                        <span>Only Digits allowed</span>
-                                    } 
-                                    @else if(ImcoForm.get('ImcoUn').hasError('maxlength')){
-                                        <span>Max 6 Digits</span>
-                                    }
-                                </div>
+                            <div class="error-message">
+                                @if(ImcoForm.get('ImcoUn').hasError('onlyNumbers')){
+                                <span>Only Digits allowed</span>
+                                }
+                                @else if(ImcoForm.get('ImcoUn').hasError('maxlength')){
+                                <span>Max 6 Digits</span>
+                                }
+                            </div>
                             }
                         </div>
                     </aside>
@@ -133,8 +135,8 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select">
                             @if(isEditMode){
-                            <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name" bindValue="value"
-                                placeholder="Select status" class="ng-select">
+                            <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
+                                bindValue="value" placeholder="Select status" class="ng-select">
                             </ng-select>
                             } @else {
                             <input type="text" name="status" class="custom-input-field sm" formControlName="status"
@@ -155,8 +157,8 @@
         </div>
     </div>
 
-    
-     <div class="row bg-white py-2 rounded shadow-sm mx-2 my-2">
+
+    <div class="row bg-white py-2 rounded shadow-sm mx-2 my-2">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
@@ -167,10 +169,10 @@
                             <th class="bg-transparent text-light" scope="col">Imco Name</th>
                             <th class="bg-transparent text-light" scope="col">Description</th>
                             <th class="bg-transparent text-light" scope="col">UN No</th>
-                             <th class="bg-transparent text-light" scope="col">Page No</th>
-                               <th class="bg-transparent text-light" scope="col">Packing Group</th>
-                                 <th class="bg-transparent text-light" scope="col">Status</th>
-                            
+                            <th class="bg-transparent text-light" scope="col">Page No</th>
+                            <th class="bg-transparent text-light" scope="col">Packing Group</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+
                         </tr>
                     </thead>
                     <tbody>

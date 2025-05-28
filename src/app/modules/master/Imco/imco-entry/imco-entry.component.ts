@@ -10,65 +10,65 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 @Component({
-  selector: 'app-imco-entry',
-  standalone: true,
-  imports: [FeatherModule,OnlyTextDirective,OnlyNumbersDirective,TextWithNumbersDirective,NgSelectModule,ReactiveFormsModule],
-  templateUrl: './imco-entry.component.html',
-  styleUrl: './imco-entry.component.scss'
+    selector: 'app-imco-entry',
+    standalone: true,
+    imports: [FeatherModule, OnlyTextDirective, OnlyNumbersDirective, TextWithNumbersDirective, NgSelectModule, ReactiveFormsModule],
+    templateUrl: './imco-entry.component.html',
+    styleUrl: './imco-entry.component.scss'
 })
 export class ImcoEntryComponent implements OnInit {
 
-    ImcoMasterSid : number;
-    isEditMode:boolean;
-    ImcoForm : FormGroup;
+    ImcoMasterSid: number;
+    isEditMode: boolean;
+    ImcoForm: FormGroup;
 
-    modeOfStatus =[
-        { value:'Active',name:'Active'},
-        { value:'Invalid',name:'Invalid'},
-        { value:'Block',name:'Block'},
+    modeOfStatus = [
+        { value: 'Active', name: 'Active' },
+        { value: 'Invalid', name: 'Invalid' },
+        { value: 'Block', name: 'Block' },
     ]
 
     // Pagination Variables
     page = 1;
-    pageSize= 10;
-    totalAmountofCollection :number;
+    pageSize = 10;
+    totalAmountofCollection: number;
 
     constructor(
-        private masterService:MasterService,
-        private fb:FormBuilder,
-        private route:Router,
-        private currRoute:ActivatedRoute,
-        private appSettingService:AppSettingsService,
-    ){}
+        private masterService: MasterService,
+        private fb: FormBuilder,
+        private route: Router,
+        private currRoute: ActivatedRoute,
+        private appSettingService: AppSettingsService,
+    ) { }
 
-    ngOnInit(){
+    ngOnInit() {
         this.initImcoForm();
         this.currRoute.paramMap.subscribe(
-            (param)=>{
+            (param) => {
                 this.ImcoMasterSid = +param.get('id');
-                if(this.ImcoMasterSid){
-                    this.isEditMode= true;
+                if (this.ImcoMasterSid) {
+                    this.isEditMode = true;
                     this.loadImco(this.ImcoMasterSid);
                 }
             }
         )
     }
 
-    initImcoForm(){
+    initImcoForm() {
         this.ImcoForm = this.fb.group({
-            ImcoClass:['',[Validators.required]],
-            ImcoName : ['',[Validators.required]],
-            Description : ['',[Validators.required]],
-            ImcoUn : [],
-            ImcoPageNo : [],
-            PackingGroup:[''],
-            status : ['Active',[Validators.required]],
-            Remarks : ['']
+            ImcoClass: ['', [Validators.required]],
+            ImcoName: ['', [Validators.required]],
+            Description: ['', [Validators.required]],
+            ImcoUn: [],
+            ImcoPageNo: [],
+            PackingGroup: [''],
+            status: ['Active', [Validators.required]],
+            Remarks: ['']
         })
     }
 
-    onSubmit(){
-        if(this.ImcoForm.invalid){
+    onSubmit() {
+        if (this.ImcoForm.invalid) {
             this.ImcoForm.markAllAsTouched();
             this.ImcoForm.updateValueAndValidity();
             this.appSettingService.showWarning('Please fill all the required fields')
@@ -79,38 +79,38 @@ export class ImcoEntryComponent implements OnInit {
             const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
             const payload = {
                 ...formValue,
-                status : formValue.status ==='Active' ? 'A':'I',
-                ImcoUn:parseFloat(formValue.ImcoUn),
-                ImcoPageNo:parseFloat(formValue.ImcoPageNo),
-                ...(this.isEditMode ? {updatedBy:updatedBy}: {createdBy:createdBy})
+                status: formValue.status === 'Active' ? 'A' : 'I',
+                ImcoUn: parseFloat(formValue.ImcoUn),
+                ImcoPageNo: parseFloat(formValue.ImcoPageNo),
+                ...(this.isEditMode ? { updatedBy: updatedBy } : { createdBy: createdBy })
             }
 
-            if(this.isEditMode){
-                this.masterService.updateIMCOById(this.ImcoMasterSid,payload).subscribe(
-                    (resp:any)=>{
-                        if(resp.status){
+            if (this.isEditMode) {
+                this.masterService.updateIMCOById(this.ImcoMasterSid, payload).subscribe(
+                    (resp: any) => {
+                        if (resp.status) {
                             this.appSettingService.showSuccess('Imco Updated Successfully');
                             this.route.navigate(['master/Imco/list']);
                         } else {
                             this.appSettingService.showWarning('Problem Updating Imco');
                         }
                     },
-                    (error)=>{
-                        console.error('Error Updating Imco',error);
+                    (error) => {
+                        console.error('Error Updating Imco', error);
                     }
                 )
             } else {
                 this.masterService.createNewIMCO(payload).subscribe(
-                    (resp:any)=>{
-                        if(resp.status){
+                    (resp: any) => {
+                        if (resp.status) {
                             this.appSettingService.showSuccess('New Imco Created');
                             this.route.navigate(['master/Imco/list']);
                         } else {
                             this.appSettingService.showWarning('Problem Creating Imco');
                         }
                     },
-                    (error)=>{
-                        console.error('Error Creating Imco',error);
+                    (error) => {
+                        console.error('Error Creating Imco', error);
                     }
                 )
             }
@@ -118,28 +118,28 @@ export class ImcoEntryComponent implements OnInit {
         }
     }
 
-    loadImco(ImcoMasterSid){
+    loadImco(ImcoMasterSid) {
         this.masterService.getIMCOById(ImcoMasterSid).subscribe(
-            (resp:any)=>{
-                if(resp.status){
+            (resp: any) => {
+                if (resp.status) {
                     this.ImcoForm.patchValue({
                         ...resp.data,
-                        status : resp.data.status === 'A' ? 'Active' : 'Invalid',
+                        status: resp.data.status === 'A' ? 'Active' : 'Invalid',
                     })
                 }
             },
-            (error)=>{
+            (error) => {
                 this.appSettingService.showError('Error Loading Imco');
-                console.error('Error Loading Imco',error);
+                console.error('Error Loading Imco', error);
             }
         )
     }
 
-    goBack(){
+    goBack() {
         history.back();
     }
 
-    resetForm(){
+    resetForm() {
         this.ImcoForm.reset();
     }
 

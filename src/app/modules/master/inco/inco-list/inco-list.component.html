@@ -39,11 +39,11 @@
                 <div class="" data-bs-theme="light">
                     <form
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                             <i class="fas fa-search me-1"></i>
                             Search
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        </button> -->
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateTocreateInco()">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
@@ -72,11 +72,24 @@
                                     <option value="status">Status</option>
                                 </select>
                             </div>
-                            <div class="form-outline col-12 col-md px-0">
+                            <!-- <div class="form-outline col-12 col-md px-0">
                                 <input name="filterValue" type="text" class="form-control"
                                     placeholder="Enter filter value">
                                 <i
                                     class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                            </div> -->
+                             <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
+                                <div class="form-outline flex-grow-1">
+                                    <input name="filterValue" type="text" class="form-control"
+                                        placeholder="Enter filter value">
+                                    <i
+                                        class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                                </div>
+
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                    <i class="fas fa-search me-1"></i>
+                                    Search
+                                </button>
                             </div>
                         </form>
                     </div>

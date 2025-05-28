@@ -12,40 +12,40 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 @Component({
 	selector: 'app-imco-list',
 	standalone: true,
-	imports: [FeatherModule,RouterModule,FormsModule,CommonModule,NgbPaginationModule],
+	imports: [FeatherModule, RouterModule, FormsModule, CommonModule, NgbPaginationModule],
 	templateUrl: './imco-list.component.html',
 	styleUrl: './imco-list.component.scss'
 })
 export class ImcoListComponent {
 
-	searchType:string="ImcoClass";
-	filterValue:any;
-	searchPerformed : boolean;
-	imcoList : any[];
-	searchResults : any[];
+	searchType: string = "ImcoClass";
+	filterValue: any;
+	searchPerformed: boolean;
+	imcoList: any[];
+	searchResults: any[];
 
 	// Pagination Data
 	page = 1;
 	pageSize = 10;
-	totalAmountOfCollection : number; 
+	totalAmountOfCollection: number;
 
 	constructor(
-		private masterService:MasterService,
-		private appSettingService:AppSettingsService,
-		private matdial : MatDialog,
+		private masterService: MasterService,
+		private appSettingService: AppSettingsService,
+		private matdial: MatDialog,
 		private route: Router
 	) { }
 
-	onSearch(){
+	onSearch() {
 		const payload = {
-			searchType : this.searchType,
-			filterValue : this.filterValue
+			searchType: this.searchType,
+			filterValue: this.filterValue
 		}
 		this.searchPerformed = true;
 		this.masterService.searchIMCO(payload).subscribe(
-			(resp:any)=>{
-				if(resp.status){
-					this.searchResults= resp.data;
+			(resp: any) => {
+				if (resp.status) {
+					this.searchResults = resp.data;
 					this.updatePaginationData();
 					this.totalAmountOfCollection = this.searchResults.length;
 				}
@@ -53,28 +53,28 @@ export class ImcoListComponent {
 		)
 	}
 
-	updatePaginationData(){
+	updatePaginationData() {
 		let start = (this.page - 1) * this.pageSize;
 		let end = start + this.pageSize;
-		this.imcoList = this.searchResults.slice(start,end);
+		this.imcoList = this.searchResults.slice(start, end);
 	}
 
-	deleteIMCOById(IMCOMasterSid:number){
+	deleteIMCOById(IMCOMasterSid: number) {
 		const matRef = this.matdial.open(DeleteWarningComponent);
 		matRef.afterClosed().subscribe(
-			(result)=>{
-				if(result){
+			(result) => {
+				if (result) {
 					this.masterService.deleteIMCOById(IMCOMasterSid).subscribe(
-						(resp:any)=>{
-							if(resp.status){
+						(resp: any) => {
+							if (resp.status) {
 								this.appSettingService.showSuccess('IMCO Deleted');
 								this.onSearch();
 							} else {
 								this.appSettingService.showError('Error Deleting IMCO');
 							}
 						},
-						(error)=>{
-							console.error('Error Deleting IMCO',error);
+						(error) => {
+							console.error('Error Deleting IMCO', error);
 						}
 					)
 				}
@@ -87,13 +87,13 @@ export class ImcoListComponent {
 		this.route.navigate(['master/Imco/entry']);
 	}
 
-	reset(){
+	reset() {
 		this.searchPerformed = false;
 		this.imcoList = [];
 		this.totalAmountOfCollection = 0;
 	}
 
-	report(){
+	report() {
 
 	}
 }

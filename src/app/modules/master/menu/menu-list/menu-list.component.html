@@ -30,7 +30,7 @@
             </form>
         </div>
     </div> -->
-      <div class="col-12">
+    <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col-md-4 pb-2">
                 <h4 class="page-title mb-0">Menu</h4>
@@ -39,12 +39,12 @@
                 <div class="" data-bs-theme="light">
                     <form
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                             <i class="fas fa-search me-1"></i>
                             Search
-                        </button>
+                        </button> -->
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                           >
+                            (click)="navigateTocreateMenu()">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
@@ -64,20 +64,34 @@
                         <form
                             class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="form-outline col-12 col-md px-0">
-                                 <select name="searchType" class="form-select">
-                                <option value="departmentName">Department Name</option>
-                                <option value="departmentCode">Department Code</option>
-                                <option value="departmentType">Department Type</option>
-                                <option value="ExportImport">Export/Import</option>
-                                <option value="FCLLCL">FCLLCL</option>
-                                <option value="status">Status</option>
-                            </select>
+                                <select name="searchType" class="form-select">
+                                    <option value="departmentName">Department Name</option>
+                                    <option value="departmentCode">Department Code</option>
+                                    <option value="departmentType">Department Type</option>
+                                    <option value="ExportImport">Export/Import</option>
+                                    <option value="FCLLCL">FCLLCL</option>
+                                    <option value="status">Status</option>
+                                </select>
                             </div>
-                            <div class="form-outline col-12 col-md px-0">
+                            <!-- <div class="form-outline col-12 col-md px-0">
                                 <input name="filterValue" type="text" class="form-control"
                                     placeholder="Enter filter value">
                                 <i
                                     class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                            </div> -->
+
+                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
+                                <div class="form-outline flex-grow-1">
+                                    <input name="filterValue" type="text" class="form-control"
+                                        placeholder="Enter filter value">
+                                    <i
+                                        class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                                </div>
+
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                    <i class="fas fa-search me-1"></i>
+                                    Search
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -85,7 +99,7 @@
             </div>
         </div>
     </div>
-     <!-- <div class="col-12">
+    <!-- <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
             <div class="col-8 mx-auto">
                 <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
@@ -130,21 +144,21 @@
 
     <div class="row bg-white py-2 rounded shadow-sm mx-auto">
         <div class="col-12 p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col"> Name</th>
-                        <th class="bg-transparent text-light" scope="col">Display Name</th>
-                        <th class="bg-transparent text-light" scope="col">Type</th>
-                        <th class="bg-transparent text-light" scope="col">Form Name</th>
-                        <th class="bg-transparent text-light" scope="col">Parent</th>
-               
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col"> Name</th>
+                            <th class="bg-transparent text-light" scope="col">Display Name</th>
+                            <th class="bg-transparent text-light" scope="col">Type</th>
+                            <th class="bg-transparent text-light" scope="col">Form Name</th>
+                            <th class="bg-transparent text-light" scope="col">Parent</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
                         <tr>
                             <td>
                                 <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
@@ -164,14 +178,14 @@
                             <td>
                                 <div class="text-truncate">Baizas</div>
                             </td>
-                           
-                           
+
+
                         </tr>
-                    }
-                </tbody>
-            </table>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    </div>
-    
+
 </div>
