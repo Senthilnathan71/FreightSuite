@@ -540,6 +540,17 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: "division/entry/:id",
+        component: DivisionEntryComponent,
+        data: {
+          title: "Edit Division",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "division" },
+          ],
+        },
+      },
+      {
         path: 'container-type/list',
         component: ContainerTypeListComponent,
         data: {

@@ -5,11 +5,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
-import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
-
 import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interface';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
   selector: 'app-division-entry',
@@ -19,9 +17,8 @@ import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interfa
     FormsModule,
     ReactiveFormsModule,
     FeatherModule,
-    TextWithNumbersDirective,
     OnlyTextDirective,
-    OnlyNumbersDirective
+    TextWithNumbersDirective
   ],
   templateUrl: './division-entry.component.html',
   styleUrls: ['./division-entry.component.scss']
@@ -29,12 +26,12 @@ import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interfa
 export class DivisionEntryComponent {
   divisionForm!: FormGroup;
   isEditMode = false;
+  divisions: Division[] =[];
   DivisionMasterSid: number;
   errorMessage: string = '';
   btnDisable: boolean = false;
-  companyList: any;
-  statusList = ["Active", "Invalid", "Block"]
-  Status: any
+  companyList: any
+  statusList = ["Active", "Inactive"]
 
   constructor(
     private fb: FormBuilder,
@@ -45,10 +42,11 @@ export class DivisionEntryComponent {
   ) { }
 
   ngOnInit(): void {
+    this.getAllCompanies()
+    this.loadDivision()
     this.initForm();
-    this.loadAllCompanies();
     this.route.paramMap.subscribe(params => {
-      this.DivisionMasterSid = +params.get('DivisionMasterSid');
+      this.DivisionMasterSid = +params.get('id');
       if (this.DivisionMasterSid) {
         this.isEditMode = true;
         this.loadDivisionData(this.DivisionMasterSid);
@@ -56,15 +54,27 @@ export class DivisionEntryComponent {
     });
   }
 
+  loadDivision(): void {
+    this.masterService.getAllDivisions().subscribe(
+      (resp: Division[]) => {
+        console.log(resp,'Divisions')
+        this.divisions=resp['data'];
+      },
+      (error) => {
+        this.errorMessage = error.message;
+        console.error('Error loading:',error);
+      }
+    );
+  }
+
   // Initialize the Form
   initForm() {
     this.divisionForm = this.fb.group({
-
       DivisionName: ['', [Validators.required]],
       DivisionCode: ['', [Validators.required]],
-      CompanyMasterSid: ['', [Validators.required]],
-      address: ['', [Validators.required]],
-      remarks: ['', [Validators.required]],
+      // address: ['', [Validators.required]],
+      CompanyMasterSid: ['',Validators.required],
+      Remarks: ['', [Validators.required]],
       status: ['Active']
     });
   }
@@ -82,14 +92,14 @@ export class DivisionEntryComponent {
 
       const payload = (this.isEditMode) ? {
         ...formValue,
+        CompanyMasterSid:Number(formValue.CompanyMasterSid),
         ...updatedBy,
-        CompanyMasterSid: parseInt(formValue.CompanyMasterSid),
         status: formValue.status === "Active" ? "A" : "I"
       } : {
         ...formValue,
+        CompanyMasterSid:Number(formValue.CompanyMasterSid),
         ...createdBy,
-        CompanyMasterSid: parseInt(formValue.CompanyMasterSid),
-        status: formValue.status === "Active" ? "A" : "C"
+        status: formValue.status === "Active" ? "A" : "I"
       };
 
       console.log('payload', payload);
@@ -100,7 +110,7 @@ export class DivisionEntryComponent {
 
             console.log(resp.message);
             if (resp.status) {
-              this.appSettingService.showSuccess("Division Updated Successfully");
+              this.appSettingService.showSuccess(resp.message);
               this.router.navigate(['master/division/list']);
             } else {
               this.appSettingService.showError(resp.message);
@@ -114,8 +124,14 @@ export class DivisionEntryComponent {
       } else {
         this.masterService.createNewDivision(payload).subscribe(
           (resp: any) => {
-            this.appSettingService.showSuccess("Division Created Successfully");
-            this.router.navigate(['master/division/list']);
+
+            console.log(resp);
+            if (resp.status) {
+              this.appSettingService.showSuccess(resp.message);
+              this.router.navigate(['master/division/list']);
+            } else {
+              this.appSettingService.showError(resp.message);
+            }
           },
           (error) => {
             this.errorMessage = error.message;
@@ -134,10 +150,10 @@ export class DivisionEntryComponent {
   // Fetch division data and patch the form
   loadDivisionData(divisionId: number) {
     this.masterService.getDivisionById(divisionId).subscribe(
-      (divisionData: any) => {
+      (divisionData) => {
         this.divisionForm.patchValue({
           ...divisionData,
-          status: divisionData.status === 'A' ? 'Active' : 'Invalid'
+          status: divisionData.status ==='A' ? 'Active' : 'Inactive'
         },
         );
       },
@@ -147,15 +163,10 @@ export class DivisionEntryComponent {
     );
   }
 
-  loadAllCompanies() {
-    this.masterService.getAllCompanies().subscribe(
-      (resp) => {
-        this.companyList = resp
-      },
-      (error) => {
-        console.error('Error Loading Companies', error);
-      }
-    )
+  getAllCompanies() {
+    this.masterService.getAllCompanies().subscribe((res)=> {
+      this.companyList = res.data
+    })
   }
 
   reset() {
@@ -163,6 +174,6 @@ export class DivisionEntryComponent {
   }
 
   goBack() {
-    history.back();
+    this.router.navigate(['master/division/list'])
   }
 }

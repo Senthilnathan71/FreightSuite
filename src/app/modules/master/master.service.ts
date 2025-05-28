@@ -1227,8 +1227,9 @@ export class MasterService {
 
   createNewDivision(payload: any) {
     return this.http.post('division/create', payload).pipe(
-      map((re: any) => {
-        return resizeBy;
+      map((resp: any) => {
+        let response = resp;
+        return response;
       })
     );
   }
@@ -1243,7 +1244,7 @@ export class MasterService {
     )
   }
 
-  deleteDivisionById(DivisionMasterSid: number) {
+  deleteDivision(DivisionMasterSid: number) {
     return this.http.delete<{ data: any }>(`division/delete/${DivisionMasterSid}`).pipe(
       map((resp) => {
         let response = resp.data;
