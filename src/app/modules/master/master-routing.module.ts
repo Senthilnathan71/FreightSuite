@@ -69,6 +69,8 @@ import { RoleEntryComponent } from './role/role-entry/role-entry.component';
 import { ImcoListComponent } from './Imco/imco-list/imco-list.component';
 import { ImcoEntryComponent } from './Imco/imco-entry/imco-entry.component';
 import { BIclauseComponent } from './BIClause/biclause/biclause.component';
+import { ProductListComponent } from './product/product-list/product-list.component';
+import { ProductEntryComponent } from './product/product-entry/product-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -889,6 +891,28 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: 'Master', url: '/master' },
             { title: 'BIClause' },
+          ],
+        },
+      },
+       {
+        path: 'product/list',
+        component: ProductListComponent,
+        data: {
+          title: 'Product',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Product' },
+          ],
+        },
+      },
+      {
+        path: 'product/entry',
+        component: ProductEntryComponent,
+        data: {
+          title: 'Product',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Product' },
           ],
         },
       },

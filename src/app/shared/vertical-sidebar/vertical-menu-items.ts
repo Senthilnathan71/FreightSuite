@@ -381,6 +381,16 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
+         {
+        path: '/master/product/list',
+        title: 'Product',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
     ]
   },
 
