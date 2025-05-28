@@ -32,12 +32,12 @@ export class StateEntryComponent implements OnInit {
   
   statusMap: { [key: string]: string } = {
     A: 'Active',
-    I: 'Inactive'
+    I: 'Invalid'
   };
 
   statusOptions = [
     { id: 'A', name: 'Active' },
-    { id: 'I', name: 'Inactive' }
+    { id: 'I', name: 'Invalid' }
   ];
 
   constructor(

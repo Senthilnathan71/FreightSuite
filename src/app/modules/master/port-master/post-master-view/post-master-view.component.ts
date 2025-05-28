@@ -40,17 +40,21 @@ export class PostMasterViewComponent {
   btnDisable: boolean = false;
   countryList: Country[] = [];
   stateList: State[] = [];
-  filteredStateList : State[];
+  filteredStateList: State[];
   regionList: Sector[] = [];
 
   modeOfStatus = [
-    {name : 'Active',value:'Active'},
-    {name : 'Invalid',value:'Invalid'},
-    {name : 'Block',value:'Block'}
+    { name: 'Active', value: 'Active' },
+    { name: 'Invalid', value: 'Invalid' },
+    { name: 'Block', value: 'Block' }
   ]
 
   errorMessage: any;
   idParam: number;
+  statusOptions = [
+    { value: 'A', name: 'Active' },
+    { value: 'I', name: 'Inactive' }
+  ];
 
   constructor(private config: NgSelectConfig, private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -71,11 +75,11 @@ export class PostMasterViewComponent {
     })
   }
 
-  initPortForm(){
-    this.portForm =this.fb.group({
+  initPortForm() {
+    this.portForm = this.fb.group({
       PortName: ['', [Validators.required, Validators.maxLength(50)]],
       PortCode: ['', [Validators.required, Validators.maxLength(5)]],
-      CountryMasterSid: [,[Validators.required]],
+      CountryMasterSid: [, [Validators.required]],
       StateMasterSid: [,],
       TimeZone: [''],
       SectorMasterSid: [''],
@@ -85,7 +89,7 @@ export class PostMasterViewComponent {
       ImportRestriction: ['', [Validators.maxLength(100)]],
       SCMTPortCode: ['', [Validators.maxLength(10)]],
       CBMRequire: [false],
-      status : ['Active'],
+      status: ['Active'],
       EdiPortCode: ['', [Validators.maxLength(10)]],
       Remarks: ['', [Validators.maxLength(100)]]
     });
@@ -136,39 +140,39 @@ export class PostMasterViewComponent {
   // }
 
   // loadStates(): void {
-    
+
   // }
 
-  loadAllFields(){
+  loadAllFields() {
     forkJoin({
-      countries:this.masterService.getAllCountry(),
-      states:this.masterService.getAllState(),
-      sectors:this.masterService.getAllSectors()
-    }).subscribe(({countries,states,sectors})=>{
+      countries: this.masterService.getAllCountry(),
+      states: this.masterService.getAllState(),
+      sectors: this.masterService.getAllSectors()
+    }).subscribe(({ countries, states, sectors }) => {
       this.countryList = countries.data,
-      this.stateList = states.data,
-      this.filteredStateList = states.data,
-      this.regionList = sectors
+        this.stateList = states.data,
+        this.filteredStateList = states.data,
+        this.regionList = sectors
     })
   }
 
-  filterStateByCountry(CountryMasterSid){
-    if(!CountryMasterSid){
+  filterStateByCountry(CountryMasterSid) {
+    if (!CountryMasterSid) {
       this.filteredStateList = this.stateList;
       return;
     }
-    this.filteredStateList = this.stateList.filter(state=>state.CountryMasterSid === CountryMasterSid);
+    this.filteredStateList = this.stateList.filter(state => state.CountryMasterSid === CountryMasterSid);
   }
 
-  setCountryByState(StateMasterSid){
-    if(!StateMasterSid){
+  setCountryByState(StateMasterSid) {
+    if (!StateMasterSid) {
       return;
     }
     console.log(StateMasterSid);
-    let selectedState = this.stateList.find(state=>state.StateMasterSid);
+    let selectedState = this.stateList.find(state => state.StateMasterSid);
     this.portForm.get('StateMasterSid').setValue(StateMasterSid);
     this.portForm.get('CountryMasterSid').setValue(selectedState.CountryMasterSid);
-    console.log('CountryCode',selectedState.CountryMasterSid)
+    console.log('CountryCode', selectedState.CountryMasterSid)
   }
 
 
@@ -189,23 +193,24 @@ export class PostMasterViewComponent {
       return;
     } else {
 
-       let formValue = this.portForm.value;
+      let formValue = this.portForm.value;
 
-      let createdBy = this.appSettingService.userSettingSource.value['userEmail'] ;
-      let updatedBy = this.appSettingService.userSettingSource.value['userEmail'] ;
-      const payload = (this.isEditMode) ? 
-      { ...formValue,
-        status: formValue.status === 'Active' ? 'A' : 'I',
-        CBMRequire : formValue.CBMRequire ? 'Y':'N',
-        updatedBy:updatedBy
-      }
-       :
-      { 
-        ...formValue,
-        status: formValue.status === 'Active' ? 'A' : 'I',
-        CBMRequire : formValue.CBMRequire ? 'Y':'N',
-        createdBy : createdBy
-      }
+      let createdBy = this.appSettingService.userSettingSource.value['userEmail'];
+      let updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
+      const payload = (this.isEditMode) ?
+        {
+          ...formValue,
+          status: formValue.status === 'Active' ? 'A' : 'I',
+          CBMRequire: formValue.CBMRequire ? 'Y' : 'N',
+          updatedBy: updatedBy
+        }
+        :
+        {
+          ...formValue,
+          status: formValue.status === 'Active' ? 'A' : 'I',
+          CBMRequire: formValue.CBMRequire ? 'Y' : 'N',
+          createdBy: createdBy
+        }
 
 
       if (this.isEditMode) {

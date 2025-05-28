@@ -33,7 +33,6 @@ export class UnitEntryComponent {
   selectedShipmentType: number;
   btnDisable: boolean = false;
 
-
   jobType = [
     { id: 'FCL', name: 'FCL' },
     { id: 'LCL', name: 'LCL' },
@@ -45,6 +44,11 @@ export class UnitEntryComponent {
     { id: 'Volume', name: 'Volume' },
     { id: 'Weight', name: 'Weight' },
     { id: 'Number', name: 'Number' }
+  ];
+  
+  statusOptions = [
+    { value: 'A', name: 'Active' },
+    { value: 'I', name: 'Inactive' }
   ];
 
   errorMessage: any;
@@ -59,25 +63,32 @@ export class UnitEntryComponent {
   }
 
   ngOnInit() {
+    this.initializeForm();
+    
+    this.route.paramMap.subscribe(params => {
+      this.idParam = Number(params.get('id'));
+      if (this.idParam) {
+        this.isEditMode = true;
+        this.loadUnit(this.idParam);
+        // Enable status field in edit mode
+        this.unitForm.get('status')?.enable();
+      } else {
+        // Disable status field in create mode
+        this.unitForm.get('status')?.disable();
+      }
+    });
+  }
+
+  initializeForm() {
     this.unitForm = new FormGroup({
       unitName: new FormControl('', [Validators.required, Validators.maxLength(100)]),
       unitCode: new FormControl('', [Validators.required, Validators.maxLength(4)]),
       jobType: new FormControl('FCL', [Validators.required]),
       measurementType: new FormControl('Dimension', [Validators.required]),
       containerType: new FormControl('', [Validators.required, Validators.maxLength(20)]),
+      status: new FormControl('A', [Validators.required]),
       Remarks: new FormControl('', [Validators.required, Validators.maxLength(100)])
     });
-
-    this.route.paramMap.subscribe(params => {
-      this.idParam = Number(params.get('id'));
-      if (this.idParam) {
-        this.isEditMode = true;
-        this.loadUnit(this.idParam);
-      }
-    })
-
-
-
   }
 
   loadUnit(UnitMasterSid): void {
@@ -95,43 +106,53 @@ export class UnitEntryComponent {
 
   reset() {
     this.unitForm.reset();
+    // Reset status to 'A' and disable if in create mode
+    this.unitForm.get('status')?.setValue('A');
+    if (!this.isEditMode) {
+      this.unitForm.get('status')?.disable();
+    }
   }
 
   goBack() {
     history.back()
   }
 
-  // Handle Form Submission
   onSubmit() {
     if (this.unitForm.invalid) {
-      this.unitForm.markAllAsTouched(); // Force validation messages to show
-      this.unitForm.updateValueAndValidity(); // Ensure validation is refreshed
+      this.unitForm.markAllAsTouched();
+      this.unitForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.')
       return;
     } else {
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      const payload = (this.isEditMode) ? { ...this.unitForm.value, ...updatedBy } : { ...this.unitForm.value, ...createdBy };
+      
+      // Enable status temporarily to get its value
+      const statusWasDisabled = this.unitForm.get('status')?.disabled;
+      if (statusWasDisabled) {
+        this.unitForm.get('status')?.enable();
+      }
+      
+      const payload = (this.isEditMode) 
+        ? { ...this.unitForm.value, ...updatedBy } 
+        : { ...this.unitForm.value, ...createdBy };
+      
+      // Restore disabled state if it was disabled
+      if (statusWasDisabled) {
+        this.unitForm.get('status')?.disable();
+      }
 
-
-      // payload.DimensionReq = (this.unitForm.value.DimensionReq)?'Y':'N';
-      //payload.WeightReq = (this.unitForm.value.WeightReq)?'Y':'N';
-      //payload.VolumeReq = (this.unitForm.value.VolumeReq)?'Y':'N';
       console.log('payload', payload);
 
       if (this.isEditMode) {
         this.masterService.updateUnitById(this.idParam, payload).subscribe(
           (resp: any) => {
-
-            console.log(resp.message);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.router.navigate(['master/unit/list']);
-
             } else {
               this.appSettingService.showError(resp.message);
             }
-
           },
           (error) => {
             this.errorMessage = error.message;
@@ -141,16 +162,12 @@ export class UnitEntryComponent {
       } else {
         this.masterService.createUnit(payload).subscribe(
           (resp: any) => {
-
-            console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.router.navigate(['master/unit/list']);
-
             } else {
               this.appSettingService.showError(resp.message);
             }
-
           },
           (error) => {
             this.errorMessage = error.message;
@@ -160,5 +177,4 @@ export class UnitEntryComponent {
       }
     }
   }
-
 }

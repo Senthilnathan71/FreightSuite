@@ -218,6 +218,20 @@
                                     </div>
                                 </div>
                             </aside>
+                            <!-- Add this section after the Remarks field in your form -->
+<aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select formControlName="status" [items]="statusOptions" bindLabel="name" bindValue="id"
+      [disabled]="!isEditMode">
+    </ng-select>
+    <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
+    <div *ngIf="uomForm.get('status')?.touched && uomForm.get('status')?.invalid">
+      <p *ngIf="uomForm.get('status')?.errors?.['required']" class="error-message">
+        Status is required.
+      </p>
+    </div>
+  </div>
+</aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1"

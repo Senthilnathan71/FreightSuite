@@ -116,6 +116,13 @@
                                     }
                                 </div>
                             </aside>
+                            <aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select formControlName="status" [items]="statusOptions" bindLabel="name" bindValue="value">
+    </ng-select>
+    <label for="" class="input-label">Status</label>
+  </div>
+</aside>
                             <aside class="col-md-12">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"

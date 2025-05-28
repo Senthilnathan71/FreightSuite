@@ -38,6 +38,15 @@ export class UOMViewComponent {
 
   errorMessage: any;
   idParam: number;
+  statusMap: { [key: string]: string } = {
+  A: 'Active',
+  I: 'Invalid'
+};
+
+statusOptions = [
+  { id: 'A', name: 'Active' },
+  { id: 'I', name: 'Invalid' }
+];
 
   constructor(private config: NgSelectConfig, private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -60,36 +69,46 @@ export class UOMViewComponent {
       CostPerUnitPrice: new FormControl('', [Validators.required, Validators.maxLength(10)]),
       SlabFrom: new FormControl('', [Validators.required, Validators.maxLength(4)]),
       SlabTo: new FormControl('', [Validators.required, Validators.maxLength(4)]),
+      status: new FormControl({value: 'A', disabled: !this.isEditMode}, [Validators.required]),
       Remarks: new FormControl('', [Validators.maxLength(300)])
     });
-
-    this.route.paramMap.subscribe(params => {
-      this.idParam = Number(params.get('id'));
-      if (this.idParam) {
-        this.isEditMode = true;
-        this.loadUom(this.idParam);
-      }
-    })
-
-
-
+    
+  // Enable status control when in edit mode
+  if (this.isEditMode) {
+    this.uomForm.get('status')?.enable();
   }
+
+  this.route.paramMap.subscribe(params => {
+    this.idParam = Number(params.get('id'));
+    if (this.idParam) {
+      this.isEditMode = true;
+      this.loadUom(this.idParam);
+      // Enable status control when in edit mode
+      this.uomForm.get('status')?.enable();
+    }
+  });
+}
 
   loadUom(UomMasterSid): void {
-    this.masterService.getUomById(UomMasterSid).subscribe(
-      (resp) => {
-        console.log(resp, 'uomdata')
-        this.uomForm.patchValue(resp);
-        this.uomForm.patchValue({ WeightReq: (resp.WeightReq == 'Y' ? true : false) });
-        this.uomForm.patchValue({ DimensionReq: (resp.DimensionReq == 'Y' ? true : false) });
-        this.uomForm.patchValue({ VolumeReq: (resp.VolumeReq == 'Y' ? true : false) });
-      },
-      (error) => {
-        this.errorMessage = error.message;
-        console.error('Error loading port:', error);
-      }
-    );
-  }
+  this.masterService.getUomById(UomMasterSid).subscribe(
+    (resp) => {
+      console.log(resp, 'uomdata')
+      this.uomForm.patchValue(resp);
+      this.uomForm.patchValue({ 
+        WeightReq: (resp.WeightReq == 'Y' ? true : false),
+        DimensionReq: (resp.DimensionReq == 'Y' ? true : false),
+        VolumeReq: (resp.VolumeReq == 'Y' ? true : false),
+        status: resp.status || 'A'
+      });
+      // Enable status control when in edit mode
+      this.uomForm.get('status')?.enable();
+    },
+    (error) => {
+      this.errorMessage = error.message;
+      console.error('Error loading port:', error);
+    }
+  );
+}
 
   reset() {
     this.uomForm.reset();
@@ -109,13 +128,20 @@ export class UOMViewComponent {
     } else {
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      const payload = (this.isEditMode) ? { ...this.uomForm.value, ...updatedBy } : { ...this.uomForm.value, ...createdBy };
+       const payload = (this.isEditMode) ? { 
+      ...this.uomForm.value, 
+      ...updatedBy,
+      status: this.uomForm.value.status || 'A' // Include status in payload
+    } : { 
+      ...this.uomForm.value, 
+      ...createdBy,
+      status: 'A' // Default to Active for new records
+    };
 
-
-      payload.DimensionReq = (this.uomForm.value.DimensionReq) ? 'Y' : 'N';
-      payload.WeightReq = (this.uomForm.value.WeightReq) ? 'Y' : 'N';
-      payload.VolumeReq = (this.uomForm.value.VolumeReq) ? 'Y' : 'N';
-      console.log('payload', payload);
+    payload.DimensionReq = (this.uomForm.value.DimensionReq) ? 'Y' : 'N';
+    payload.WeightReq = (this.uomForm.value.WeightReq) ? 'Y' : 'N';
+    payload.VolumeReq = (this.uomForm.value.VolumeReq) ? 'Y' : 'N';
+    console.log('payload', payload);
 
       if (this.isEditMode) {
         this.masterService.updateUomById(this.idParam, payload).subscribe(
