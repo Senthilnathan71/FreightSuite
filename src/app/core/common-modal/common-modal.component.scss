@@ -1,0 +1,25 @@
+.custom-modal {
+    padding: 20px;
+    background: white;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.close-icon {
+    font-size: 30px;
+    color: #3D7DAE;
+    cursor: pointer;
+}
+
+.modal-message {
+    font-size: 16px;
+    font-weight: 500;
+    color: black;
+    text-align: center;
+    margin-top: 10px;
+}

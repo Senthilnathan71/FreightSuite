@@ -1,0 +1,25 @@
+<!-- <div class="modal-header" [ngClass]="{'bg-danger text-dark': isError, 'bg-success text-dark': !isError}"> -->
+<!-- <h5 class="modal-title d-flex align-items-center"> -->
+<!-- <span>{{ title }}</span> -->
+<!-- </h5> -->
+<!-- <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss()"></button> -->
+<!-- </div> -->
+
+
+<div class="custom-modal">
+    <div class="modal-body text-center">
+        <!-- Close Icon -->
+        <i [ngClass]="icon" class="close-icon" (click)="activeModal.dismiss()"></i>
+
+        <!-- Message -->
+        <p class="modal-message">{{ message }}</p>
+    </div>
+</div>
+
+
+<!-- <div class="modal-footer">
+    <button type="button" class="btn" [ngClass]="{'btn-danger': isError, 'btn-success': !isError}"
+        (click)="activeModal.close()">
+        OK
+    </button>
+</div> -->

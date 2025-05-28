@@ -291,7 +291,7 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-       {
+      {
         path: '/master/terms-condition/list',
         title: 'Terms and Condition',
         icon: 'fas fa-dot-circle',
@@ -301,7 +301,7 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-       {
+      {
         path: '/master/hs-sac',
         title: 'HS-SAC',
         icon: 'fas fa-dot-circle',
@@ -311,7 +311,7 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-       {
+      {
         path: '/master/module/list',
         title: 'Module',
         icon: 'fas fa-dot-circle',
@@ -321,7 +321,7 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-       {
+      {
         path: '/master/role/list',
         title: 'Role',
         icon: 'fas fa-dot-circle',
@@ -331,7 +331,7 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-        {
+      {
         path: '/master/rolemenu',
         title: 'Role Menu',
         icon: 'fas fa-dot-circle',
@@ -341,7 +341,7 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-       {
+      {
         path: '/master/chargegroup',
         title: 'Charge Group',
         icon: 'fas fa-dot-circle',
@@ -351,7 +351,7 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-       {
+      {
         path: '/master/tds-set/list',
         title: 'TDS Set',
         icon: 'fas fa-dot-circle',
@@ -371,7 +371,7 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-       {
+      {
         path: '/master/BIClause',
         title: 'BIClause',
         icon: 'fas fa-dot-circle',
@@ -436,7 +436,7 @@ export const ROUTES: RouteInfo[] = [
     labelClass: '',
     submenu: [
       {
-        path: '/crm/rate-request/view',
+        path: '/crm/rate-request/list',
         title: 'Rate Request',
         icon: 'mdi mdi-stackexchange',
         class: '',
@@ -446,8 +446,48 @@ export const ROUTES: RouteInfo[] = [
         submenu: []
       },
       {
-        path: '/crm/quotation/view',
+        path: '/crm/quotation/list',
         title: 'Quotation',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/crm/lead/list',
+        title: 'ViewComponent',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/crm/calendar',
+        title: 'Calender',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/crm/todo',
+        title: 'Todo',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/crm/lead-schedule-pending',
+        title: 'Lead Schedule Pending',
         icon: 'mdi mdi-stackexchange',
         class: '',
         extralink: false,

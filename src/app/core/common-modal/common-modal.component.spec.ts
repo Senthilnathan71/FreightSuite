@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PackageListComponent } from './package-list.component';
+import { CommonModalComponent } from './common-modal.component';
 
-describe('PackageListComponent', () => {
-  let component: PackageListComponent;
-  let fixture: ComponentFixture<PackageListComponent>;
+describe('CommonModalComponent', () => {
+  let component: CommonModalComponent;
+  let fixture: ComponentFixture<CommonModalComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PackageListComponent]
+      imports: [CommonModalComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(PackageListComponent);
+    fixture = TestBed.createComponent(CommonModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

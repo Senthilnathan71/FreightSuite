@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './dashboard/dashboard.component';
 import { LeadComponent } from './lead/lead.component';
 import { ViewComponent } from './lead/view/view.component';
 import { RateRequestComponent } from './rate-request/rate-request.component';
@@ -12,46 +11,24 @@ import { MeetingComponent } from './lead-schedule/meeting/meeting.component';
 import { PendingComponent } from './lead-schedule/pending/pending.component';
 
 
-
-
-
-
 export const CrmMobileRoutes: Routes = [
     {
         path: '',
         children: [
-            {
-                path: '',
-                component: DashboardComponent,
-                data: {
-                    title: 'Dashboard',
-                    urls: [
-                        { title: 'CRM', url: '/crm' },
-                        { title: 'Dashboard' },
-                    ],
-                },
-            },
-            {
-                path: 'dashboard',
-                component: DashboardComponent,
-                data: {
-                    title: 'Dashboard',
-                    urls: [
-                        { title: 'CRM', url: '/crm' },
-                        { title: 'Dashboard' },
-                    ],
-                },
-            },
+
             {
                 path: 'lead/list',
                 component: ViewComponent,
                 data: {
                     title: 'Lead Generation',
-                    urls: [
-                        { title: 'CRM', url: '/crm' },
-                        { title: 'Lead', url: 'crm/lead' },
-                        { title: 'List' }
+                    backOption: [
+                        { title: 'Back', url: '/crm' },
                     ],
+                    // urls: [
+                    //     { title: 'CRM', url: '/crm' },
+                    //     { title: 'Lead', url: 'crm/lead' },
+                    //     { title: 'List' }
+                    // ],
                 },
             },
             {
@@ -59,10 +36,13 @@ export const CrmMobileRoutes: Routes = [
                 component: LeadComponent,
                 data: {
                     title: 'Lead Generation',
-                    urls: [
-                        { title: 'CRM', url: 'crm' },
-                        { title: 'Leads' },
+                    backOption: [
+                        { title: 'Back', url: '/crm/lead/list' },
                     ],
+                    // urls: [
+                    //     { title: 'CRM', url: 'crm' },
+                    //     { title: 'Leads' },
+                    // ],
                 },
             },
             {
@@ -70,10 +50,28 @@ export const CrmMobileRoutes: Routes = [
                 component: LeadComponent,
                 data: {
                     title: 'Lead Generation',
-                    urls: [
-                        { title: 'CRM', url: 'crm' },
-                        { title: 'Leads' },
+                    backOption: [
+                        { title: 'Back', url: '/crm/lead/list' },
                     ],
+                    // urls: [
+                    //     { title: 'CRM', url: 'crm' },
+                    //     { title: 'Leads' },
+                    // ],
+                },
+            },
+            {
+                path: 'rate-request/list',
+                component: RateRequestViewComponent,
+                data: {
+                    title: 'Rate Request',
+                    backOption: [
+                        { title: 'Back', url: '/crm' },
+                    ],
+                    // urls: [
+                    //     { title: 'CRM', url: '/crm' },
+                    //     { title: 'Rate Request', url: 'rate-request' },
+                    //     { title: 'View' },
+                    // ],
                 },
             },
             {
@@ -81,45 +79,71 @@ export const CrmMobileRoutes: Routes = [
                 component: RateRequestComponent,
                 data: {
                     title: 'Rate Request',
-                    urls: [
-                        { title: 'CRM', url: '/crm' },
-                        { title: 'Rate Request' },
+                    backOption: [
+                        { title: 'Back', url: '/crm/rate-request/list' },
                     ],
+                    // urls: [
+                    //     { title: 'CRM', url: '/crm' },
+                    //     { title: 'Rate Request' },
+                    // ],
+                },
+            }, {
+                path: 'rate-request/:id',
+                component: RateRequestComponent,
+                data: {
+                    title: 'Rate Request',
+                    backOption: [
+                        { title: 'Back', url: '/crm/rate-request/list' },
+                    ],
+                    // urls: [
+                    //     { title: 'CRM', url: '/crm' },
+                    //     { title: 'Rate Request' },
+                    // ],
                 },
             },
             {
-                path: 'rate-request/view',
-                component: RateRequestViewComponent,
+                path: 'quotation/list',
+                component: QuotationViewComponent,
                 data: {
-                    title: 'Rate Request',
-                    urls: [
-                        { title: 'CRM', url: '/crm' },
-                        { title: 'Rate Request', url: 'rate-request' },
-                        { title: 'View' },
+                    title: 'New Quotation',
+                    backOption: [
+                        { title: 'Back', url: '/crm' },
                     ],
+                    // urls: [
+                    //     { title: 'CRM', url: '/crm' },
+                    //     { title: 'Quotation', url: '/quotation' },
+                    //     { title: 'view' },
+                    // ],
                 },
             },
+
+
             {
                 path: 'quotation',
                 component: QuotationComponent,
                 data: {
                     title: 'Quotation',
-                    urls: [
-                        { title: 'CRM', url: '/crm' },
-                        { title: 'Quotation' },
+                    backOption: [
+                        { title: 'Back', url: '/crm/quotation/list' },
                     ],
+                    // urls: [
+                    //     { title: 'CRM', url: '/crm' },
+                    //     { title: 'Quotation' },
+                    // ],
                 },
             },
             {
-                path: 'quotation/view',
-                component: QuotationViewComponent,
+                path: 'quotation/:id',
+                component: QuotationComponent,
                 data: {
-                    title: 'New Quotation',
-                    urls: [
-                        { title: 'CRM', url: '/crm' },
-                        { title: 'Quotation', url: '/quotation' },
-                        { title: 'view' },
+                    title: 'Quotation',
+                    backOption: [
+                        { title: 'Back', url: '/crm/quotation/list' },
                     ],
+                    // urls: [
+                    //     { title: 'CRM', url: '/crm' },
+                    //     { title: 'Quotation' },
+                    // ],
                 },
             },
             {
@@ -127,21 +151,27 @@ export const CrmMobileRoutes: Routes = [
                 component: FullcalendarComponent,
                 data: {
                     title: "Calendar",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Calendar" },
+                    backOption: [
+                        { title: 'Back', url: '/crm' },
                     ],
+                    // urls: [
+                    //     { title: "CRM", url: "/crm" },
+                    //     { title: "Calendar" },
+                    // ],
                 },
             },
             {
                 path: "todo",
                 component: TodoComponent,
                 data: {
-                    title: "Todo",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Todo" },
+                    title: "To Do",
+                    backOption: [
+                        { title: 'Back', url: '/crm' },
                     ],
+                    // urls: [
+                    //     { title: "CRM", url: "/crm" },
+                    //     { title: "Todo" },
+                    // ],
                 },
             },
             {
@@ -149,10 +179,13 @@ export const CrmMobileRoutes: Routes = [
                 component: PendingComponent,
                 data: {
                     title: "Lead Schedule",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Lead Schedule (pending)" },
+                    backOption: [
+                        { title: 'Back', url: '/crm' },
                     ],
+                    // urls: [
+                    //     { title: "CRM", url: "/crm" },
+                    //     { title: "Lead Schedule (pending)" },
+                    // ],
                 },
             },
             {
@@ -160,13 +193,15 @@ export const CrmMobileRoutes: Routes = [
                 component: MeetingComponent,
                 data: {
                     title: "Lead Schedule",
-                    urls: [
-                        { title: "CRM", url: "/crm" },
-                        { title: "Lead Schedule (pending)" },
+                    backOption: [
+                        { title: 'Back', url: '/crm/lead-schedule-pending' },
                     ],
+                    // urls: [
+                    //     { title: "CRM", url: "/crm" },
+                    //     { title: "Lead Schedule (pending)" },
+                    // ],
                 },
-            }, 
-            
+            },
         ],
     },
 ];
