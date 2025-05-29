@@ -1608,7 +1608,7 @@ export class MasterService {
   getAllBlClause() {
     return this.http.get<{ data: any[] }>('blclause').pipe(
       map((resp) => {
-        let response = resp;
+       let response = resp.data;
         return response;
       })
     )
@@ -1653,7 +1653,7 @@ export class MasterService {
   searchBlclause(payload) {
     return this.http.post<{ data: any[] }>('blclause/search-list', payload).pipe(
       map((resp) => {
-        let response = resp;
+        let response = resp.data
         return response;
       })
     )

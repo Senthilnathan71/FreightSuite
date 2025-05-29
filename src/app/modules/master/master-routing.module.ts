@@ -895,16 +895,16 @@ export const MasterRoutes: Routes = [
         },
       },
        {
-        path: 'product/list',
-        component: ProductListComponent,
-        data: {
-          title: 'Product',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Product' },
-          ],
-        },
-      },
+  path: 'biclause',
+  component: BIclauseComponent,
+  data: {
+    title: 'BI Clause',
+    urls: [
+      { title: 'Master', url: '/master' },
+      { title: 'BI Clause' },
+    ],
+  },
+},
       {
         path: 'product/entry',
         component: ProductEntryComponent,
