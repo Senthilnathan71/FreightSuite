@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Add Vessel</h4>
+                <h4 class="page-title mb-0"> Vessel</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -11,6 +11,10 @@
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
+                      <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Reset
+                        </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSave()" [disabled]="vesselForm.invalid">
                         <i class="fas fa-save me-1"></i>
                          {{isEditMode ?'Update':'Save'}}
@@ -38,7 +42,7 @@
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="VesselName" placeholder=""
                                 class="custom-input-field sm" [onlyText]="100">
-                            <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">Vessel Name <span class="text-danger"></span></label>
                             @if(vesselForm.get('VesselName')?.touched && vesselForm.get('VesselName')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('VesselName')?.hasError('required')){
@@ -55,7 +59,7 @@
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="VesselShortCode" placeholder=""
                                 class="custom-input-field sm" [onlyText]="5">
-                            <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">Short Code <span class="text-danger"></span></label>
                             @if(vesselForm.get('VesselShortCode')?.touched &&
                             vesselForm.get('VesselShortCode')?.errors){
                             <div class="error-message">
@@ -74,7 +78,7 @@
                             <input type="text" id="text-input" formControlName="IMOCode" placeholder=""
                                 class="custom-input-field sm" [onlyText]="10">
                             <label for="text-input" class="input-label">IMO Code <span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(vesselForm.get('IMOCode')?.touched && vesselForm.get('IMOCode')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('IMOCode')?.hasError('required')){
@@ -91,7 +95,7 @@
                             <input type="text" id="text-input" formControlName="CallSignIn" placeholder=""
                                 class="custom-input-field sm" [onlyText]="10">
                             <label for="text-input" class="input-label">Call Sign In <span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(vesselForm.get('CallSignIn')?.touched && vesselForm.get('CallSignIn')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('CallSignIn')?.hasError('required')){
@@ -108,7 +112,7 @@
                             <input type="text" id="text-input" formControlName="YearofBuilt" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="4">
                             <label for="text-input" class="input-label">Year of Built <span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(vesselForm.get('YearofBuilt')?.touched && vesselForm.get('YearofBuilt')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('YearofBuilt')?.hasError('required')){
@@ -127,7 +131,7 @@
                             <input type="text" id="text-input" formControlName="MMSINo" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">MMSI No<span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(vesselForm.get('MMSINo')?.touched && vesselForm.get('MMSINo')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('MMSINo')?.hasError('required')){
@@ -143,7 +147,7 @@
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="GRT" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="">
-                            <label for="text-input" class="input-label">GRT <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">GRT <span class="text-danger"></span></label>
                             @if(vesselForm.get('GRT')?.touched && vesselForm.get('GRT')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('GRT')?.hasError('required')){
@@ -159,7 +163,7 @@
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="NRT" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="">
-                            <label for="text-input" class="input-label">NRT <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">NRT <span class="text-danger"></span></label>
                             @if(vesselForm.get('NRT')?.touched && vesselForm.get('NRT')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('NRT')?.hasError('required')){
@@ -184,7 +188,7 @@
                                 }
                             </select>
                             <label for="text-input" class="input-label">Vessel Type<span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(vesselForm.get('VesselType')?.touched && vesselForm.get('VesselType')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('VesselType')?.hasError('required')){
@@ -204,7 +208,7 @@
                             <input type="text" id="text-input" formControlName="VesselOperator" placeholder=""
                                 class="custom-input-field sm" [onlyText]="100">
                             <label for="text-input" class="input-label">Vessel Operator<span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(vesselForm.get('VesselOperator')?.touched && vesselForm.get('VesselOperator')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('VesselOperator')?.hasError('required')){
@@ -224,7 +228,7 @@
                             <input type="text" id="text-input" formControlName="LengthinMtr" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">Length in Mtr<span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(vesselForm.get('LengthinMtr')?.touched && vesselForm.get('LengthinMtr')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('LengthinMtr')?.hasError('required')){
@@ -241,7 +245,7 @@
                             <input type="text" id="text-input" formControlName="BreadthinMtr" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="">
                             <label for="text-input" class="input-label">Breadth in Mtr<span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(vesselForm.get('BreadthinMtr')?.touched && vesselForm.get('BreadthinMtr')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('BreadthinMtr')?.hasError('required')){
@@ -258,7 +262,7 @@
                             <input type="text" id="text-input" formControlName="Remarks" placeholder=""
                                 class="custom-input-field sm" [textWithNumbers]="200">
                             <label for="text-input" class="input-label">Remarks<span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(vesselForm.get('Remarks')?.touched && vesselForm.get('Remarks')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('Remarks')?.hasError('required')){
@@ -283,7 +287,7 @@
                             <input type="text" name="status" class="custom-input-field sm" formControlName="status"
                                 id="text-input" readonly>
                             }
-                            <label for="text-input" class="input-label">Status<span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">Status<span class="text-danger"></span></label>
                         </div>
                     </aside>
 

@@ -4,15 +4,18 @@
       <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
           <div class="col-md-4 pb-2">
-            <h4 class="page-title mb-0">{{ isEditMode ? 'Edit' : 'Add' }} Sector</h4>
+            <h4 class="page-title mb-0">{{ isEditMode ? 'Edit' : '' }} Sector</h4>
           </div>
           <div class="col-md-8 pb-2">
-            <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-              <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+            <div
+              class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+              <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                (click)="goBack()">
                 <i class="fas fa-chevron-left me-1"></i>
                 Back
               </button>
-              <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+              <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                (click)="resetForm()">
                 <i class="fas fa-sync-alt me-1"></i>
                 Reset
               </button>
@@ -26,16 +29,17 @@
         </div>
       </div>
 
-      <div class="col-md-6">
+      <div class="col-md-12">
         <div class="card h-100">
           <div class="card-body">
             <div class="row">
-              <aside class="col-md-8">
+              <aside class="col-md-6">
                 <div class="custom-form-group">
                   <input type="text" id="sectorName" formControlName="sectorName" class="custom-input-field sm"
                     [class.is-invalid]="sectorForm.get('sectorName')?.invalid && sectorForm.get('sectorName')?.touched">
                   <label for="sectorName" class="input-label">Sector Name <span class="text-danger">*</span></label>
-                  <div *ngIf="sectorForm.get('sectorName')?.touched && sectorForm.get('sectorName')?.errors" class="invalid-feedback d-block">
+                  <div *ngIf="sectorForm.get('sectorName')?.touched && sectorForm.get('sectorName')?.errors"
+                    class="invalid-feedback d-block">
                     <span *ngIf="sectorForm.get('sectorName')?.hasError('required')">Sector name is required</span>
                     <span *ngIf="sectorForm.get('sectorName')?.hasError('maxlength')">
                       Sector Name cannot exceed 50 characters
@@ -43,13 +47,14 @@
                   </div>
                 </div>
               </aside>
-              
-              <aside class="col-md-4">
+
+              <aside class="col-md-6">
                 <div class="custom-form-group">
                   <input type="text" id="sectorCode" formControlName="sectorCode" class="custom-input-field sm"
                     [class.is-invalid]="sectorForm.get('sectorCode')?.invalid && sectorForm.get('sectorCode')?.touched">
                   <label for="sectorCode" class="input-label">Sector Code <span class="text-danger">*</span></label>
-                  <div *ngIf="sectorForm.get('sectorCode')?.touched && sectorForm.get('sectorCode')?.errors" class="invalid-feedback d-block">
+                  <div *ngIf="sectorForm.get('sectorCode')?.touched && sectorForm.get('sectorCode')?.errors"
+                    class="invalid-feedback d-block">
                     <span *ngIf="sectorForm.get('sectorCode')?.hasError('required')">Sector code is required</span>
                     <span *ngIf="sectorForm.get('sectorCode')?.hasError('maxlength')">
                       Sector Code cannot exceed 10 characters
@@ -63,19 +68,33 @@
                   </div>
                 </div>
               </aside>
-              
-              <aside class="col-md-8 mt-2">
+
+              <!-- <aside class="col-md-8 mt-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="FreightMode" >
                             <label for="text-input" class="input-label">Freight Mode <span class="text-danger"></span></label>
                             
                         </div>
-                    </aside>
-              
-              <aside class="col-md-4 mt-2">
+                    </aside> -->
+              <aside class="col-md-6 mt-2">
+                <div class="custom-form-group">
+                  <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                    formControlName="FreightMode">
+                  <label for="text-input" class="input-label">Region Name <span class="text-danger"></span></label>
+
+                </div>
+              </aside>
+              <aside class="col-md-6 mt-2">
+                <div class="custom-form-group">
+                  <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                    formControlName="FreightMode">
+                  <label for="text-input" class="input-label">Region Code <span class="text-danger"></span></label>
+
+                </div>
+              </aside>
+              <aside class="col-md-6 mt-2">
                 <div class="custom-form-group custom-form-group-select">
-                  <ng-select [items]="statusOptions" bindLabel="name" bindValue="id"
-                    formControlName="status"
+                  <ng-select [items]="statusOptions" bindLabel="name" bindValue="id" formControlName="status"
                     [class.is-invalid]="sectorForm.get('status')?.invalid && sectorForm.get('status')?.touched">
                   </ng-select>
                   <label class="input-label">Status <span class="text-danger">*</span></label>
@@ -85,7 +104,7 @@
           </div>
         </div>
       </div>
-      
+      <!--       
       <div class="col-md-6 mt-md-0 mt-3">
         <div class="card h-100">
           <div class="card-body">
@@ -99,7 +118,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
   </form>
 </div>

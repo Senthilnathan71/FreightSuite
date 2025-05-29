@@ -8,7 +8,7 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Add Organization</h4>
+                <h4 class="page-title mb-0"> Organization</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -157,7 +157,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
+                            <!-- <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="LocalLanguage" [onlyText]="100">
@@ -177,7 +177,7 @@
                                     </div>
                                     }
                                 </div>
-                            </aside>
+                            </aside> -->
 
                             <!-- <aside class="col-md-6">
                             <div class="custom-form-group">
@@ -252,7 +252,7 @@
                                     </ng-select>
 
                                     <label class="input-label">
-                                        Customer Type <span class="text-danger">*</span>
+                                        Customer Type <span class="text-danger"></span>
                                     </label>
                                 </div>
 
@@ -283,7 +283,8 @@
                                 <div class="form-check form-check-inline mt-3">
                                     <input type="radio" id="Cash" formControlName="paymentType" class="form-check-input"
                                         name="paymentType" value="Cash" />
-                                    <label for="Cash" class="form-check-label">Cash</label>
+                                    <label for="Cash" class="form-check-label">Cash <span
+                                                class="text-danger">*</span></label>
                                 </div>
                             </aside>
 
@@ -291,11 +292,20 @@
                                 <div class="form-check form-check-inline mt-3">
                                     <input type="radio" id="Credit" formControlName="paymentType"
                                         class="form-check-input" name="paymentType" value="Credit" />
-                                    <label for="Credit" class="form-check-label">Credit</label>
+                                    <label for="Credit" class="form-check-label">Credit <span
+                                                class="text-danger">*</span></label>
                                 </div>
                             </aside>
 
-
+                              <aside class="col-md-3">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="">
+                                        <label for="text-input" class="input-label">Network<span
+                                                class="text-danger"></span></label>
+                                    </div>
+                                </aside>
+                        
 
 
                             <aside class="col-md-6">
@@ -779,7 +789,7 @@
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                     formControlName="City">
                                 <label for="text-input" class="input-label">Milestone <span
-                                        class="text-danger"></span></label>
+                                        class="text-danger">*</span></label>
                             </div>
                         </aside>
                         <aside class="col-md-6">
@@ -944,7 +954,7 @@
                                     <input id="email" type="text" id="text-input" placeholder=""
                                         class="custom-input-field sm" formControlName="CustBranchEmail">
                                     <label for="email" class="input-label">Email<span
-                                            class="text-danger">*</span></label>
+                                            class="text-danger"></span></label>
                                     @if(customerBranchForm.get('CustBranchEmail')?.touched &&
                                     customerBranchForm.get('CustBranchEmail')?.invalid){
                                     <div class="error-message">
@@ -965,7 +975,7 @@
                                         [items]="modeOfRegistered" bindLabel="name" bindValue="id">
                                     </ng-select>
                                     <label for="registered" class="input-label">Registered <span
-                                            class="text-danger">*</span></label>
+                                            class="text-danger"></span></label>
                                     @if(customerBranchForm.get('CustBranchRegistered')?.touched &&
                                     customerBranchForm.get('CustBranchRegistered')?.invalid){
                                     <div class="error-message">
@@ -1301,6 +1311,14 @@
                                     }
                                 </div>
                             </aside>
+                               <aside class="col-md-6">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="">
+                                        <label for="text-input" class="input-label">Menu Name <span
+                                                class="text-danger"></span></label>
+                                    </div>
+                                </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <select formControlName="DepartmentMasterSid" class="form-select">
@@ -1480,14 +1498,14 @@
                     <div class="card-body">
                         <div class="row">
 
-                            <aside class="col-md-6">
+                            <!-- <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="CustomerName" placeholder="" class="custom-input-field sm"
                                         formControlName="CustomerName">
                                     <label for="CustomerName" class="input-label">Customer <span
                                             class="text-danger">*</span></label>
                                 </div>
-                            </aside>
+                            </aside> -->
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="BranchName" placeholder="" class="custom-input-field sm"
@@ -1560,6 +1578,15 @@
                                     }
                                 </div>
                             </aside>
+                            <aside class="col-md-6">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
+                                bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
                         </div>
                     </div>
                 </div>
@@ -1772,6 +1799,7 @@
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">Menu Name</th>
                         <th class="bg-transparent text-light" scope="col">Branch</th>
                         <th class="bg-transparent text-light" scope="col">Department</th>
                         <th class="bg-transparent text-light" scope="col">To email</th>

@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Tariff' : 'Add Tariff'}}</h4>
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Tariff' : ' Tariff'}}</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -51,7 +51,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <!-- <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="CompanyMasterSid">
                                 <ng-option value="">Select Company</ng-option>
@@ -70,7 +70,7 @@
                             </div>
                             }
                         </div>
-                    </aside>
+                    </aside> -->
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="POOSid">
@@ -80,7 +80,7 @@
                                     {{port.PortCode}}</ng-option>
                                 }
                             </ng-select>
-                            <label for="text-input" class="input-label">POO <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">POO <span class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('POOSid')?.touched && tariffHeaderForm.get('POOSid')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('POOSid')?.hasError('required')){
@@ -141,7 +141,7 @@
                                     {{port.PortCode}}</ng-option>
                                 }
                             </ng-select>
-                            <label for="text-input" class="input-label">FDC <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('FDCSid')?.touched && tariffHeaderForm.get('FDCSid')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('FDCSid')?.hasError('required')){
@@ -188,6 +188,14 @@
                             }
                         </div>
                     </aside>
+                      <aside class="col-md-6">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="">
+                                        <label for="text-input" class="input-label">Via Port <span
+                                                class="text-danger"></span></label>
+                                    </div>
+                                </aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="PODTerminal" placeholder=""
@@ -205,6 +213,14 @@
                             }
                         </div>
                     </aside>
+                      <aside class="col-md-6">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="">
+                                        <label for="text-input" class="input-label">Movement Type <span
+                                                class="text-danger"></span></label>
+                                    </div>
+                                </aside>
 
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select">
@@ -217,7 +233,7 @@
                                 }
                             </ng-select>
                             <label for="text-input" class="input-label">Carrier <span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('Carrier')?.touched && tariffHeaderForm.get('Carrier')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('Carrier')?.hasError('required')){
@@ -237,7 +253,7 @@
                                 }
                                 }
                             </ng-select>
-                            <label for="text-input" class="input-label">Agent <span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">Agent <span class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('AgentSid')?.touched && tariffHeaderForm.get('AgentSid')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('AgentSid')?.hasError('required')){
@@ -257,7 +273,7 @@
         <div class="card h-100">
             <div class="card-body">
                 <div class="row">
-                    <aside class="col-md-6">
+                    <!-- <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="CargoType">
                                 <ng-option value="">Select Cargo Type</ng-option>
@@ -279,8 +295,8 @@
                             </div>
                             }
                         </div>
-                    </aside>
-                    <aside class="col-md-6">
+                    </aside> -->
+                    <aside class="col-md-12">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="ServiceLevel">
                                 <ng-option value="">Select Service Level</ng-option>
@@ -289,7 +305,7 @@
                                 }
                             </ng-select>
                             <label for="text-input" class="input-label">Service Level <span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('ServiceLevel')?.touched &&
                             tariffHeaderForm.get('ServiceLevel')?.errors){
                             <div class="error-message">
@@ -307,7 +323,7 @@
                             <input type="text" formControlName="IncoTerms" id="text-input" placeholder=""
                                 class="custom-input-field sm" [textWithNumbers]="10">
                             <label for="text-input" class="input-label">Inco Terms <span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('IncoTerms')?.touched &&
                             tariffHeaderForm.get('IncoTerms')?.errors){
                             <div class="error-message">
@@ -320,10 +336,55 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-lg-6 col-12">
+                   
+                    <!-- <aside class="col-md-6">
+                        <div class="d-flex">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                <input class="form-control mb-0" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #d="ngbDatepicker"
+                                    (click)="d.toggle()" readonly formControlName="EffectiveDate" />
+                                <label class="input-label" for="dp">Effective Date <span class="text-danger">*</span></label>
+                                @if(tariffHeaderForm.get('EffectiveDate')?.touched &&
+                                tariffHeaderForm.get('EffectiveDate')?.invalid){
+                                <div class="error-message">
+                                    @if(tariffHeaderForm.get('EffectiveDate')?.hasError('required')){
+                                    <span>Effective Date is required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                            <button class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2" (click)="d.toggle()"
+                                type="button">
+                                <i-feather name="calendar" class="feather-sm"></i-feather>
+                            </button>
+                        </div>
+                    </aside> -->
+                    <aside class="col-md-6 mt-2">
+                        <div class="custom-form-group custom-form-group-select">
+                            <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"> -->
+                            @if(isEditMode){
+                            <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
+                                <ng-option value="Active">Active</ng-option>
+                                <ng-option value="Invalid">Invalid</ng-option>
+                                <ng-option value="Block">Block</ng-option>
+                            </ng-select>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
+                                id="text-input" readonly>
+                            }
+                            <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
+                            @if(tariffHeaderForm.get('status')?.touched && tariffHeaderForm.get('status')?.errors){
+                            <div class="error-message">
+                                @if(tariffHeaderForm.get('status')?.hasError('required')){
+                                <span>Status is required</span>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </aside>
+                     <aside class="col-lg-6 col-12">
                         <div class="custom-form-group">
                             <label for="StuffingAt" class="ng-select mb-2">Stuffing At <span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             <aside class="form-check form-check-inline col-md-4 col-12 mb-1 me-0">
                                 <input type="radio" id="Dock" class="form-check-input" formControlName="StuffingAt"
                                     name="StuffingAt" value="Dock">
@@ -357,56 +418,12 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
-                        <div class="d-flex">
-                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
-                                <input class="form-control mb-0" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #d="ngbDatepicker"
-                                    (click)="d.toggle()" readonly formControlName="EffectiveDate" />
-                                <label class="input-label" for="dp">Effective Date <span class="text-danger">*</span></label>
-                                @if(tariffHeaderForm.get('EffectiveDate')?.touched &&
-                                tariffHeaderForm.get('EffectiveDate')?.invalid){
-                                <div class="error-message">
-                                    @if(tariffHeaderForm.get('EffectiveDate')?.hasError('required')){
-                                    <span>Effective Date is required</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                            <button class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2" (click)="d.toggle()"
-                                type="button">
-                                <i-feather name="calendar" class="feather-sm"></i-feather>
-                            </button>
-                        </div>
-                    </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"> -->
-                            @if(isEditMode){
-                            <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
-                                <ng-option value="Active">Active</ng-option>
-                                <ng-option value="Invalid">Invalid</ng-option>
-                                <ng-option value="Block">Block</ng-option>
-                            </ng-select>
-                            } @else {
-                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
-                                id="text-input" readonly>
-                            }
-                            <label for="text-input" class="input-label">Status<span class="text-danger">*</span></label>
-                            @if(tariffHeaderForm.get('status')?.touched && tariffHeaderForm.get('status')?.errors){
-                            <div class="error-message">
-                                @if(tariffHeaderForm.get('status')?.hasError('required')){
-                                <span>Status is required</span>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
                     <aside class="col-md-12">
                         <div class="custom-form-group">
                             <textarea type="text" formControlName="Remarks" id="text-input" placeholder=""
-                                class="custom-input-field" [textWithNumbers]="100"></textarea>
+                                class="custom-input-field" [textWithNumbers]="100" rows="1"></textarea>
                             <label for="text-input" class="input-label">Remarks <span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('Remarks')?.touched && tariffHeaderForm.get('Remarks')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('Remarks')?.hasError('required')){

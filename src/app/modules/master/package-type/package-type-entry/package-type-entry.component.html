@@ -3,7 +3,7 @@
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
       <div class="col-md-4 pb-2">
-        <h4 class="page-title mb-0">Add Package Type</h4>
+        <h4 class="page-title mb-0"> Package Type</h4>
       </div>
       <div class="col-md-8 pb-2">
         <div
@@ -12,6 +12,10 @@
             (click)="navigateBack()">
             <i class="fas fa-chevron-left me-1"></i>
             Back
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+            <i class="fas fa-sync-alt me-1"></i>
+            Reset
           </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="savePackageType()"
             [disabled]="inputForm.invalid">

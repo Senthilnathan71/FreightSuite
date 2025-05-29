@@ -135,13 +135,15 @@
                         <thead>
                             <tr class="bg-info">
                                 <th class="bg-transparent text-light" scope="col">Action</th>
-                                <th class="bg-transparent text-light" scope="col">Name</th>
-                                <th class="bg-transparent text-light" scope="col">Code</th>
-                                <th class="bg-transparent text-light" scope="col">Dailing Code</th>
+                                <th class="bg-transparent text-light" scope="col">Country Name</th>
+                                <th class="bg-transparent text-light" scope="col">Country Code</th>
+                                <!-- <th class="bg-transparent text-light" scope="col">Dailing Code</th>
                                 <th class="bg-transparent text-light" scope="col">ISO 3Digit</th>
                                 <th class="bg-transparent text-light" scope="col">UNM49 Code</th>
                                 <th class="bg-transparent text-light" scope="col">AWB Curr.</th>
-                                <th class="bg-transparent text-light" scope="col">Remarks</th>
+                                <th class="bg-transparent text-light" scope="col">Remarks</th> -->
+                                 <th class="bg-transparent text-light" scope="col">Zone</th>
+                                  <th class="bg-transparent text-light" scope="col">Currency</th>
                                 <th class="bg-transparent text-light" scope="col">Status</th>
                             </tr>
                         </thead>
@@ -172,7 +174,7 @@
                                 <td>
                                     {{ country.ISO3DigitCode}}
                                 </td>
-                                <td>
+                                <!-- <td>
                                     {{ country.UNM49Code}}
                                 </td>
                                 <td>
@@ -181,7 +183,7 @@
                                 </td>
                                 <td>
                                     {{ country.Remarks}}
-                                </td>
+                                </td> -->
                                 <td>
                                     @if(country.status === "A"){
                                     <div

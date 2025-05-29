@@ -53,6 +53,7 @@
                                 <select [(ngModel)]="searchType" name="searchType" class="form-select">
                                     <option value="currencyName">Currency Name</option>
                                     <option value="currencyCode">Currency Code</option>
+                                    
                                     <option value="symbol">Symbol</option>
                                     <option value="unit">Unit</option>
                                     <option value="subUnit">Sub Unit</option>
@@ -94,9 +95,11 @@
                             <th class="bg-transparent text-light" scope="col">Action</th>
                             <th class="bg-transparent text-light" scope="col">Currency Name</th>
                             <th class="bg-transparent text-light" scope="col">Currency Code</th>
+                             <th class="bg-transparent text-light" scope="col">Short Code</th>
                             <th class="bg-transparent text-light" scope="col">Symbol</th>
                             <th class="bg-transparent text-light" scope="col">Unit</th>
                             <th class="bg-transparent text-light" scope="col">Sub Unit</th>
+                             <th class="bg-transparent text-light" scope="col">Round Off</th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
 
                         </tr>
@@ -121,6 +124,9 @@
                             <td>
                                 <div class="text-truncate">{{item.currencyCode}}</div>
                             </td>
+                             <td>
+                                <div class="text-truncate">{{item.CurrencyUnit || '-'}}</div>
+                            </td>
                             <td>
                                 <div class="text-truncate">{{item.Symbol || '-'}}</div>
                             </td>
@@ -128,6 +134,9 @@
                                 <div class="text-truncate">{{item.CurrencySubUnit || '-'}}</div>
                             </td>
                             <td>
+                                <div class="text-truncate">{{item.CurrencyUnit || '-'}}</div>
+                            </td>
+                             <td>
                                 <div class="text-truncate">{{item.CurrencyUnit || '-'}}</div>
                             </td>
                             <td>

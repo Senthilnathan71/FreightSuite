@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Add Time Zone</h4>
+                <h4 class="page-title mb-0"> Time Zone</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -11,9 +11,9 @@
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80">
+                    <!-- <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80">
                         <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
-                    </button>
+                    </button> -->
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
@@ -31,21 +31,21 @@
             <div class="card-body">
                 <div class="row">
 
-                    <aside class="col-md-3">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="commodityName">
                             <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="commodityCode">
                             <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="OfficeUTC">
@@ -54,7 +54,7 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-3">
+                    <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
                                 bindValue="name">
@@ -63,7 +63,7 @@
                             <label for="" class="input-label">Status <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3 pt-2">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <textarea id="" placeholder="" rows="1" class="input-field sm"
                                 formControlName="Remarks"></textarea>

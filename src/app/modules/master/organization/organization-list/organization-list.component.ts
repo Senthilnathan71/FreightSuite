@@ -19,6 +19,11 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 })
 export class OrganizationListComponent {
 
+   modeOfStatus =[
+        { value:'Active',name:'Active'},
+        { value:'Invalid',name:'Invalid'},
+        { value:'Block',name:'Block'},
+    ]
   searchType = 'CustomerName';
   filterValue = '';
   results: any[] = [];

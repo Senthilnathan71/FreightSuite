@@ -103,19 +103,22 @@
     </div>
   </div>
 
-  <div class="col-12" *ngIf="totalLengthOfCollection > 0">
+  <div class="row  bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+      <div class="col-12 p-0" >
     <div class="table-responsive">
       <table class="table table-hover align-middle no-wrap table-bordered">
         <thead>
           <tr class="bg-info">
             <th class="bg-transparent text-light" scope="col">Action</th>
-            <th class="bg-transparent text-light" scope="col">Name</th>
-            <th class="bg-transparent text-light" scope="col">Code</th>
+            <th class="bg-transparent text-light" scope="col">Division Name</th>
+            <th class="bg-transparent text-light" scope="col">Division Code</th>
+             <th class="bg-transparent text-light" scope="col">Remarks</th>
             <!-- <th class="bg-transparent text-light" scope="col">Address</th> -->
             <th class="bg-transparent text-light" scope="col">Status</th>
           </tr>
         </thead>
         <tbody>
+
           <tr *ngFor="let item of divisionList; let i = index; trackBy: trackByIndex">
             <td>
               <div class="d-flex align-items-center">
@@ -132,6 +135,9 @@
               <div class="text-truncate">{{ item.DivisionName }}</div>
             </td>
             <td>
+              <div class="text-truncate">{{ item.DivisionCode }}</div>
+            </td>
+             <td>
               <div class="text-truncate">{{ item.DivisionCode }}</div>
             </td>
             <!-- <td>
@@ -160,6 +166,8 @@
       </ngb-pagination>
     </div>
   </div>
+  </div>
+
 
   <!-- No records found -->
   <div class="col-12" *ngIf="totalLengthOfCollection === 0">

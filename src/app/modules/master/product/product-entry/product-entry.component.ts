@@ -28,5 +28,8 @@ export class ProductEntryComponent {
     {id:"3",name:"Frozen"},
   ]
 
+   navigateBack() {
+    history.back();
+  }
 
 }

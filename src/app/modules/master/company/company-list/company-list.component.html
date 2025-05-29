@@ -73,9 +73,11 @@
                             <th class="bg-transparent text-light" scope="col">Action</th>
                             <th class="bg-transparent text-light" scope="col">Company Name</th>
                             <th class="bg-transparent text-light" scope="col">Company Code</th>
+                                 <th class="bg-transparent text-light" scope="col">Branch Name</th>
                             <th class="bg-transparent text-light" scope="col">City</th>
                             <th class="bg-transparent text-light" scope="col">State</th>
                             <th class="bg-transparent text-light" scope="col">Country</th>
+                            <th class="bg-transparent text-light" scope="col">Vat/GST No</th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
                         </tr>
                     </thead>
@@ -100,6 +102,9 @@
                             <td>
                                 <div class="text-truncate">{{company.companyCode}}</div>
                             </td>
+                             <td>
+                                <div class="text-truncate">{{company.countryMaster.countryName}}</div>
+                            </td>
                             <td>
                                 <div class="text-truncate">{{company.cityMaster.cityName}}</div>
                             </td>
@@ -107,6 +112,9 @@
                                 <div class="text-truncate">{{company.stateMaster.stateName}}</div>
                             </td>
                             <td>
+                                <div class="text-truncate">{{company.countryMaster.countryName}}</div>
+                            </td>
+                             <td>
                                 <div class="text-truncate">{{company.countryMaster.countryName}}</div>
                             </td>
                             <td>
