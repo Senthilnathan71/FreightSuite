@@ -34,38 +34,82 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="ContainerName" type="text" id="text-input" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm" [onlyText]="100">
                                 <label for="text-input" class="input-label">Container Name <span
                                         class="text-danger fw-bold">*</span></label>
+                            @if(containertypeForm.get('ContainerName')?.touched && containertypeForm.get('ContainerName')?.invalid){
+                                <div class="error-message">
+                                    @if(containertypeForm.get('ContainerName')?.hasError('required')){
+                                        <span>Container-Type Name is required</span>
+                                    } @else if(containertypeForm.get('ContainerName')?.hasError('maxlength')){
+                                        <span>Max 100 Characters</span>
+                                    } @else if(containertypeForm.get('ContainerName')?.hasError('numberNotAllowed')){
+                                        <span>Only Alphabets are allowed</span>
+                                    }
+                                </div>
+                            }
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="ContainerCode" type="number" placeholder=""
-                                    class="custom-input-field sm">
-                                <label for="containerCode" class="input-label">Container Code <span
+                                <input formControlName="ContainerCode" type="text" id="text-input" placeholder=""
+                                    class="custom-input-field sm" [textWithNumbers]="4">
+                                <label for="text-input" class="input-label">Container Code <span
                                         class="text-danger fw-bold">*</span></label>
+                                        @if(containertypeForm.get('ContainerCode')?.touched && containertypeForm.get('ContainerCode')?.invalid){
+                                            <div class="error-message">
+                                                @if(containertypeForm.get('ContainerCode')?.hasError('maxlength')){
+                                                    <span>Max 4 Characters</span>
+                                                }
+                                            </div>
+                                        }
                             </div>
                         </aside>
 
-
-                        <!-- ISO Code -->
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <select formControlName="CompanyMasterSid" class="form-select">
+                                    <option value="" disabled selected>Select Company</option>
+                                    <option *ngFor="let option of companyList" [value]="option.CompanyMasterSid">
+                                        {{option.companyName}}
+                                    </option>
+                                </select>
+                                <label for="text-input" class="input-label">Company <span
+                                class="text-danger fw-bold">*</span></label>
+                                @if(containertypeForm.get('CompanyMasterSid')?.touched && containertypeForm.get('CompanyMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(containertypeForm.get('CompanyMasterSid')?.hasError('required')){
+                                            <span>Company is required</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="ContainerIsoCode" type="number" placeholder=""
-                                    class="custom-input-field sm">
-                                <label for="isoCode" class="input-label"> ISO Code <span
+                                <input formControlName="ContainerIsoCode" type="text" placeholder="" id="text-input"
+                                    class="custom-input-field sm" [textWithNumbers]="4">
+                                <label for="text-input" class="input-label"> ISO Code <span
                                         class="text-danger fw-bold">*</span></label>
+                                        @if(containertypeForm.get('ContainerIsoCode')?.touched && containertypeForm.get('ContainerIsoCode')?.invalid){
+                                            <div class="error-message">
+                                                @if(containertypeForm.get('ContainerIsoCode')?.hasError('required')){
+                                                    <span>Container ISO Code is required</span>
+                                                } @else if(containertypeForm.get('ContainerIsoCode')?.hasError('maxlength')){
+                                                    <span>Max 4 Characters</span>
+                                                }
+                                            </div>
+                                        }
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="ContainerSize" type="number" placeholder=""
+                                <input type="text" formControlName="ContainerSize" id="text-input"  placeholder=""
                                     class="custom-input-field sm">
-                                <label for="containerCode" class="input-label">Container Size <span
+                                <label for="text-input" class="input-label">Container Size <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
                         </aside>
@@ -81,27 +125,27 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="GrossWeight" type="number" placeholder=""
+                                <input formControlName="GrossWeight" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
-                                <label for="grossWeight" class="input-label">Gross Weight <span
+                                <label for="text-input" class="input-label">Gross Weight <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="TareWeight" type="number" placeholder=""
+                                <input formControlName="TareWeight" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
-                                <label for="tareWeight" class="input-label">Tare Weight <span
+                                <label for="text-input" class="input-label">Tare Weight <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="MaxVolume" type="number" placeholder=""
+                                <input formControlName="MaxVolume" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
-                                <label for="maxVolume" class="input-label"> Max Volume <span
+                                <label for="text-input" class="input-label"> Max Volume <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
                         </aside>
@@ -165,9 +209,9 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="Length" type="number" placeholder=""
+                                <input formControlName="Length" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
-                                <label for="length" class="input-label"> Length <span
+                                <label for="text-input" class="input-label"> Length <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
                         </aside>
@@ -176,9 +220,9 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="Width" type="number" placeholder=""
+                                <input formControlName="Width" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
-                                <label for="width" class="input-label"> Width <span
+                                <label for="text-input" class="input-label"> Width <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
                         </aside>
@@ -187,9 +231,9 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="Height" type="number" placeholder=""
+                                <input formControlName="Height" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
-                                <label for="height" class="input-label"> Height <span
+                                <label for="text-input" class="input-label"> Height <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
                         </aside>
@@ -255,19 +299,28 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="NoOfTEU" type="number" placeholder=""
+                                <input formControlName="NoOfTeu" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm">
-                                <label for="noOfTEU" class="input-label"> No of TEU <span
+                                <label for="text-input" class="input-label"> No of TEU <span
                                         class="text-danger fw-bold">*</span></label>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="status" type="text" id="text-input" placeholder=""
-                                    class="custom-input-field sm">
-                                <label for="text-input" class="input-label">Status <span
-                                        class="text-danger fw-bold">*</span></label>
+                                <input type="textarea" formControlName="Remarks" id="text-input" placeholder=""
+                                class="custom-input-field sm">
+                                <label for="text-input" class="input-label">Remarks <span class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                               <select formControlName="status" class="form-select">
+                                <option value="">Status</option>
+                                <option *ngFor="let option of statusList" [value]="option">{{ option}}</option>
+                               </select>
+                               <label for="text-input" class="input-label">Status <span class="text-danger fw-bold">*</span></label>
                             </div>
                         </aside>
 

@@ -1,29 +1,22 @@
-export interface ContainerType {
+export interface ContainerType{
   ContainerTypeMasterSid: number;
-  containerName: string;
-  containerCode: number;
-  grossWeight: number;
-  tareWeight: number;
-  maxVolume: number;
-  shippingMode: string;
-  iataRateClass: string;
-  handlingRateClass: string;
-  freightRateClass: string;
-  testing: string;
-  length: string;
-  width: number;
-  height: number;
-  portType: string;
-  storageClass: string;
-  cargoClass: string;
-  usContainerCode: number;
-  usContainerType: string;
-  isoCode: number;
-  noOfTEU: number;
-  LoginSid: string;
-  createdBy: string;
-  updatedBy: string;
+  CompanyMasterSid: number;
+  ContainerCode: string;
+  ContainerSize: string;
+  ContainerIsoCode: string;
+  ContainerName: string;
+  ContainerCategory: string;
+  Length: number;
+  Width: number;
+  Heigth: number;
+  MaxVolume: number;
+  TareWeight: number;
+  GrossWeight: number;
+  NoOfTeu: number;
   status: string;
+  Remarks: string;
   createdOn: string;
   updatedOn: string;
+  createdBy: string;
+  updatedBy: string;
 }

@@ -18,7 +18,6 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
     RouterModule,
     FormsModule,
     FeatherModule,
-    MatDialogModule,
     NgbPaginationModule
   ],
   templateUrl: './container-type-list.component.html',
@@ -76,18 +75,20 @@ export class ContainerTypeListComponent {
         this.masterService.deleteContainerTypeById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           this.router.navigate(['master/container-type/list'])
+          this.search();
         });
       }
     });
   }
 
-  navigateToCreateContainerType() {
+  navigateToaddNewContainerType() {
     this.router.navigate(['master/container-type/entry']);
   }
 
   resetPage(): void {
     this.containerList = [];
     this.totalLengthOfCollection = 0;
+    this.searchPerformed = false;
   }
 
   report() { }
