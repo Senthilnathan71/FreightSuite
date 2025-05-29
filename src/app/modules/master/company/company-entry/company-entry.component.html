@@ -3,7 +3,7 @@
       <div class="col-12">
              <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Company' :'Add Company'}}</h4>
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Company' :' Company'}}</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -21,7 +21,7 @@
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
                        [disabled]="companyForm.invalid" (click)="submitCompanyForm()">
                         <i class="fas fa-save me-1"></i>
-                        {{isEditMode ? 'Update' : 'Create'}}
+                        {{isEditMode ? 'Update' : 'Save'}}
                     </button>
                 </div>
             </div>
@@ -56,10 +56,10 @@
 
                                             <!-- COMPANY NAME -->
 
-                        <aside class="col-md-4 col-lg-2">
+                        <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="companyName" [onlyText]="100">
-                                <label for="text-input" class="input-label">Company Name <span class="text-danger">*</span></label>
+                                <label for="text-input" class="input-label">Company Name <span class="text-danger"></span></label>
 
                                 <!--  Validation -->
                                 @if(companyForm.get('companyName')?.touched && companyForm.get('companyName')?.invalid){
@@ -78,10 +78,10 @@
 
                                                     <!-- COMPANY CODE -->
 
-                        <aside class="col-md-3 col-lg-2">
+                        <aside class="col-md-3 ">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="companyCode" [textWithNumbers]="10">
-                                <label for="text-input" class="input-label">Company Code <span class="text-danger">*</span></label>
+                                <label for="text-input" class="input-label">Company Code <span class="text-danger"></span></label>
 
                                 <!--  Validation -->
                                 @if(companyForm.get('companyCode')?.touched && companyForm.get('companyCode')?.invalid){
@@ -95,120 +95,13 @@
                                 }
                             </div>
                         </aside>
-                        
-                                                    <!-- ADDRESS LINE 1 -->
-
-                        <aside class="col-md-5 col-lg-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="addressLine1" [textWithNumbers]="500">
-                                <label for="text-input" class="input-label">Address Line 1 <span class="text-danger">*</span></label>
-                                
-                                <!--  Validation -->
-                                @if(companyForm.get('addressLine1')?.touched && companyForm.get('addressLine1')?.invalid){
-                                    <div class="error-message">
-                                        @if(companyForm.get('addressLine1')?.hasError('required')){
-                                            <span>Address Line 1 is required</span>
-                                        } @else if(companyForm.get('addressLine1')?.hasError('maxlength')){
-                                            <span>Max 500 Characters</span>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        </aside>
-                        
-                                                <!-- ADDRESS LINE 2 -->
-
-                        <aside class="col-md-5 col-lg-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="addressLine2" [textWithNumbers]="500">
-                                <label for="text-input" class="input-label">Address Line 2</label>
-
-                                <!--  Validation -->
-                                @if(companyForm.get('addressLine2')?.touched && companyForm.get('addressLine2')?.invalid){
-                                    <div class="error-message">
-                                        @if(companyForm.get('addressLine2')?.hasError('maxlength')){
-                                            <span>Max 500 Characters</span>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        </aside>
-                        
-                                            <!-- POSTAL CODE -->
-                                            
-                        <aside class="col-md-3 col-lg-2">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="postal_code" [onlyNumbers]="10">
-                                <label for="text-input" class="input-label">Postal Code <span class="text-danger">*</span></label>
-
-                                <!--  Validation -->
-                                @if(companyForm.get('postal_code')?.touched && companyForm.get('postal_code')?.invalid){
-                                    <div class="error-message">
-                                        @if(companyForm.get('postal_code')?.hasError('required')){
-                                            <span>Postal Code is required</span>
-                                        }
-                                        @else if(companyForm.get('postal_code')?.hasError('onlyNumbers')){
-                                            <span>Only Digits are allowed</span>
-                                        }
-                                        @else if(companyForm.get('postal_code')?.hasError('maxlength')){
-                                            <span>Max 10 Characters</span>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        </aside>
-                        
-                                                                    <!-- CITY -->
-                        
-                        <aside class="col-md-4 col-lg-3">
-                            <div class="custom-form-group">
-                                <select formControlName="CityMasterSid" class="form-select">
-                                    <option value="">Select City</option>
-                                    <option *ngFor="let city of cityResults" [value]="city.CityMasterSid">{{city.cityName}}</option>
-                                </select>
-                                <label for="text-input" class="input-label">City <span class="text-danger">*</span></label>
-                        
-                                <!--  Validation -->
-                                @if(companyForm.get('CityMasterSid')?.touched && companyForm.get('CityMasterSid')?.invalid){
-                                    <div class="error-message">
-                                        @if(companyForm.get('CityMasterSid')?.hasError('required')){
-                                            <span>City is required</span>
-                                        }
-                                    </div>
-                               }
-                               </div>
-                        </aside>
-                        
-                                                        <!-- STATE -->
-                        
-                        <aside class="col-md-4 col-lg-3">
-                            <div class="custom-form-group">
-                                <select formControlName="StateMasterSid" class="form-select">
-                                    <option value="">Select State</option>
-                                    <option *ngFor="let state of stateResults" [value]="state.StateMasterSid">{{state.stateName}}</option>
-                                </select>
-                                <label for="text-input" class="input-label">State <span class="text-danger">*</span></label>
-                        
-                                <!--  Validation -->
-                                @if(companyForm.get('StateMasterSid')?.touched && companyForm.get('StateMasterSid')?.invalid){
-                                    <div class="error-message">
-                                        @if(companyForm.get('StateMasterSid')?.hasError('required')){
-                                            <span>State is required</span>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        </aside>
-                        
-                                                        <!-- COUNTRY -->
-                        
-                        <aside class="col-md-4 col-lg-3">
+                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <select formControlName="CountryMasterSid" class="form-select">
                                     <option value="">Select Country</option>
                                     <option *ngFor="let country of countryResults" [value]="country.CountryMasterSid">{{country.countryName}}</option>
                                 </select>
-                                <label for="text-input" class="input-label">Country <span class="text-danger">*</span></label>
+                                <label for="text-input" class="input-label">Country <span class="text-danger"></span></label>
                         
                                 <!--  Validation -->
                                 @if(companyForm.get('CountryMasterSid')?.touched && companyForm.get('CountryMasterSid')?.invalid){
@@ -220,16 +113,13 @@
                                 }
                             </div>
                         </aside>
-                        
-                                                        <!-- CURRENCY -->
-                        
-                        <aside class="col-md-4 col-lg-3">
+                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <select formControlName="CurrencyMasterSid" class="form-select">
                                     <option value="">Select Currency</option>
                                     <option *ngFor="let currency of currencyResults" [value]="currency.CurrencyMasterSid">{{currency.currencyName}}</option>
                                 </select>
-                                <label for="text-input" class="input-label">Currency <span class="text-danger">*</span></label>
+                                <label for="text-input" class="input-label">Currency <span class="text-danger"></span></label>
                         
                                 <!--  Validation -->
                                 @if(companyForm.get('CurrencyMasterSid')?.touched && companyForm.get('CurrencyMasterSid')?.invalid){
@@ -242,9 +132,26 @@
                             </div>
                         </aside>
                         
-                                                        <!-- WEBSITE -->
-                        
-                        <aside class="col-md-4 col-lg-2">
+                                                    <!-- ADDRESS LINE 1 -->
+
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="addressLine1" [textWithNumbers]="500">
+                                <label for="text-input" class="input-label">Address  <span class="text-danger"></span></label>
+                                
+                                <!--  Validation -->
+                                @if(companyForm.get('addressLine1')?.touched && companyForm.get('addressLine1')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('addressLine1')?.hasError('required')){
+                                            <span>Address is required</span>
+                                        } @else if(companyForm.get('addressLine1')?.hasError('maxlength')){
+                                            <span>Max 500 Characters</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </aside>
+                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="webSite" [textWithNumbers]="100">
                                 <label for="text-input" class="input-label">Website </label>
@@ -259,6 +166,126 @@
                                 }
                             </div>
                         </aside>
+                         <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="email">
+                                <label for="text-input" class="input-label">Email </label>
+                        
+                                <!--  Validation -->
+                                @if(companyForm.get('email')?.touched && companyForm.get('email')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('email')?.hasError('email')){
+                                            <span>Invalid Email Format</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </aside>
+                        
+                                                <!-- ADDRESS LINE 2 -->
+
+                        <!-- <aside class="col-md-5 col-lg-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="addressLine2" [textWithNumbers]="500">
+                                <label for="text-input" class="input-label">Address Line 2</label>
+
+                              
+                                @if(companyForm.get('addressLine2')?.touched && companyForm.get('addressLine2')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('addressLine2')?.hasError('maxlength')){
+                                            <span>Max 500 Characters</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </aside> -->
+                        
+                                            <!-- POSTAL CODE -->
+                                            
+                        <!-- <aside class="col-md-3 col-lg-2">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="postal_code" [onlyNumbers]="10">
+                                <label for="text-input" class="input-label">Postal Code <span class="text-danger"></span></label>
+
+                               
+                                @if(companyForm.get('postal_code')?.touched && companyForm.get('postal_code')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('postal_code')?.hasError('required')){
+                                            <span>Postal Code is required</span>
+                                        }
+                                        @else if(companyForm.get('postal_code')?.hasError('onlyNumbers')){
+                                            <span>Only Digits are allowed</span>
+                                        }
+                                        @else if(companyForm.get('postal_code')?.hasError('maxlength')){
+                                            <span>Max 10 Characters</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </aside> -->
+                        
+                                                                    <!-- CITY -->
+                        
+                        <!-- <aside class="col-md-4 col-lg-3">
+                            <div class="custom-form-group">
+                                <select formControlName="CityMasterSid" class="form-select">
+                                    <option value="">Select City</option>
+                                    <option *ngFor="let city of cityResults" [value]="city.CityMasterSid">{{city.cityName}}</option>
+                                </select>
+                                <label for="text-input" class="input-label">City <span class="text-danger"></span></label>
+                        
+                                
+                                @if(companyForm.get('CityMasterSid')?.touched && companyForm.get('CityMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('CityMasterSid')?.hasError('required')){
+                                            <span>City is required</span>
+                                        }
+                                    </div>
+                               }
+                               </div>
+                        </aside> -->
+
+                         <aside class="col-md-3">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="">
+                                        <label for="text-input" class="input-label">PAN<span
+                                                class="text-danger">*</span></label>
+                                    </div>
+                                </aside>
+                        
+                                                        <!-- STATE -->
+<!--                         
+                        <aside class="col-md-4 col-lg-3">
+                            <div class="custom-form-group">
+                                <select formControlName="StateMasterSid" class="form-select">
+                                    <option value="">Select State</option>
+                                    <option *ngFor="let state of stateResults" [value]="state.StateMasterSid">{{state.stateName}}</option>
+                                </select>
+                                <label for="text-input" class="input-label">State <span class="text-danger"></span></label>
+                        
+                            
+                                @if(companyForm.get('StateMasterSid')?.touched && companyForm.get('StateMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(companyForm.get('StateMasterSid')?.hasError('required')){
+                                            <span>State is required</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </aside> -->
+                        
+                                                        <!-- COUNTRY -->
+                        
+                       
+                        
+                                                        <!-- CURRENCY -->
+                        
+                       
+                        
+                                                        <!-- WEBSITE -->
+                        
+                       
                         
                                                         <!-- PHONE NUMBER -->
                         
@@ -283,21 +310,7 @@
                         
                                                         <!-- EMAIL -->
                         
-                        <aside class="col-md-4 col-lg-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="email">
-                                <label for="text-input" class="input-label">Email </label>
-                        
-                                <!--  Validation -->
-                                @if(companyForm.get('email')?.touched && companyForm.get('email')?.invalid){
-                                    <div class="error-message">
-                                        @if(companyForm.get('email')?.hasError('email')){
-                                            <span>Invalid Email Format</span>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        </aside>
+                       
                         
                                                         <!-- isHO? -->
                         
@@ -305,7 +318,7 @@
                             <div class="form-check form-check-inline mt-3">
                                     <input type="checkbox" id="Cash" formControlName="isHo" class="form-check-input"
                                         name="HO" value="Cash" />
-                                    <label for="Cash" class="form-check-label">Head Office <span class="text-danger">*</span></label>
+                                    <label for="Cash" class="form-check-label">Head Office <span class="text-danger"></span></label>
                                 </div>
                         </aside>
 
@@ -341,7 +354,7 @@
                             <input type="text" name="status" class="custom-input-field sm" formControlName="status"
                                 id="text-input" readonly>
                             }
-                            <label for="text-input" class="input-label">Status<span class="text-danger">*</span></label>
+                            <label for="text-input" class="input-label">Status<span class="text-danger"></span></label>
                         </div>
                     </aside>
                         

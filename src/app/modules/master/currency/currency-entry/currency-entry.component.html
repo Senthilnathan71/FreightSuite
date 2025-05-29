@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Add Currency</h4>
+                <h4 class="page-title mb-0">Currency</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -20,7 +20,7 @@
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
                         [disabled]="loading || btnDisable || currencyForm.invalid">
                         <i class="fas fa-save me-1"></i>
-                        {{ isEditMode ? 'Update' : 'Create' }}
+                        {{ isEditMode ? 'Update' : 'Save' }}
                     </button>
                 </div>
             </div>
@@ -87,7 +87,7 @@
                         </aside>
 
                         <!-- Currency ID -->
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
     <div class="custom-form-group">
         <input type="text" id="currencyID" formControlName="currencyID"
             class="custom-input-field sm" [class.is-invalid]="currencyForm.get('currencyID')?.invalid && 
@@ -112,9 +112,10 @@
             </span>
         </div>
     </div>
-</aside>
+</aside> -->
+                      
                         <!-- Country -->
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select [items]="countries" bindLabel="countryName" bindValue="CountryMasterSid"
                                     formControlName="CountryMasterSid"
@@ -126,7 +127,7 @@
                                     Country is required
                                 </div>
                             </div>
-                        </aside>
+                        </aside> -->
 
                         <!-- Currency Unit -->
                         <aside class="col-md-4">
@@ -179,7 +180,7 @@
                         </aside>
 
                         <!-- Currency First Name -->
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="currencyFirstName" formControlName="currencyFirstName"
                                     class="custom-input-field sm"
@@ -191,10 +192,10 @@
                                         50 characters allowed</span>
                                 </div>
                             </div>
-                        </aside>
+                        </aside> -->
 
                         <!-- Currency Last Name -->
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="currencyLastName" formControlName="currencyLastName"
                                     class="custom-input-field sm"
@@ -206,10 +207,18 @@
                                         characters allowed</span>
                                 </div>
                             </div>
+                        </aside> -->
+
+                         <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="currencyLastName" formControlName=""
+                                    class="custom-input-field sm">
+                                <label for="currencyLastName" class="input-label">Short Code</label>
+                            </div>
                         </aside>
 
                         <!-- Currency Ratio -->
-                        <aside class="col-md-4">
+                        <!-- <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="number" id="currencyRatio" formControlName="currencyRatio"
                                     class="custom-input-field sm"
@@ -226,7 +235,7 @@
                                         number</span>
                                 </div>
                             </div>
-                        </aside>
+                        </aside> -->
 
                         <!-- Amount Decimal -->
                         <aside class="col-md-4">

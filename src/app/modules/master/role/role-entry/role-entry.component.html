@@ -2,16 +2,18 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Role' : 'Add Role'}}</h4>
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Role' : ' Role'}}</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
@@ -23,45 +25,47 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6" [formGroup]="roleForm">
+    <div class="col-md-12" [formGroup]="roleForm">
         <div class="card h-100">
             <div class="card-body">
                 <div class="row">
                     <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                            formControlName="UserRoleName" [onlyText]="50">
-                            <label for="text-input" class="input-label">Role Name <span class="text-danger">*</span></label>
+                                formControlName="UserRoleName" [onlyText]="50">
+                            <label for="text-input" class="input-label">Role Name <span
+                                    class="text-danger">*</span></label>
                             @if(roleForm.get('UserRoleName').touched && roleForm.get('UserRoleName').invalid){
-                                <div class="error-message">
-                                    @if(roleForm.get('UserRoleName').hasError('required')){
-                                        <span>Role Name is required</span>
-                                    } @else if(roleForm.get('UserRoleName').hasError('numberNotAllowed')){
-                                        <span>Only Alphabets are allowed</span>
-                                    } @else if(roleForm.get('UserRoleName').hasError('maxlength')){
-                                        <span>Max 50 Characters</span>
-                                    }
-                                </div>
+                            <div class="error-message">
+                                @if(roleForm.get('UserRoleName').hasError('required')){
+                                <span>Role Name is required</span>
+                                } @else if(roleForm.get('UserRoleName').hasError('numberNotAllowed')){
+                                <span>Only Alphabets are allowed</span>
+                                } @else if(roleForm.get('UserRoleName').hasError('maxlength')){
+                                <span>Max 50 Characters</span>
+                                }
+                            </div>
                             }
                         </div>
                     </aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                            formControlName="UserRoleCode" [textWithNumbers]="3">
-                            <label for="text-input" class="input-label">Role Code <span class="text-danger">*</span></label>
+                                formControlName="UserRoleCode" [textWithNumbers]="3">
+                            <label for="text-input" class="input-label">Role Code <span
+                                    class="text-danger">*</span></label>
                             @if(roleForm.get('UserRoleCode').touched && roleForm.get('UserRoleCode').invalid){
-                                <div class="error-message">
-                                    @if(roleForm.get('UserRoleCode').hasError('required')){
-                                        <span>Role Code is required</span>
-                                    } @else if(roleForm.get('UserRoleCode').hasError('maxlength')){
-                                        <span>Max 3 Characters</span>
-                                    }
-                                </div>
+                            <div class="error-message">
+                                @if(roleForm.get('UserRoleCode').hasError('required')){
+                                <span>Role Code is required</span>
+                                } @else if(roleForm.get('UserRoleCode').hasError('maxlength')){
+                                <span>Max 3 Characters</span>
+                                }
+                            </div>
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <!-- <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="CompanyMasterSid">
                                 <ng-option value="">Select Company</ng-option>
@@ -78,26 +82,37 @@
                                 </div>
                             }
                         </div>
+                    </aside> -->
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="HS/SACCode">
+                            <label for="text-input" class="input-label">Licence Type <span
+                                    class="text-danger"></span></label>
+                        </div>
                     </aside>
                     <aside class="col-md-6">
                         @if(isEditMode){
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select class="ng-select" formControlName="status">
-                                    <ng-option value="">Select Status</ng-option>
-                                    <ng-option value="Active">Active</ng-option>
-                                    <ng-option value="Invalid">Invalid</ng-option>
-                                    <ng-option value="Block">Block</ng-option>
-                                </ng-select>
-                                <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
-                            </div>
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" formControlName="status">
+                                <ng-option value="">Select Status</ng-option>
+                                <ng-option value="Active">Active</ng-option>
+                                <ng-option value="Invalid">Invalid</ng-option>
+                                <ng-option value="Block">Block</ng-option>
+                            </ng-select>
+                            <label for="text-input" class="input-label">Status <span
+                                    class="text-danger">*</span></label>
+                        </div>
                         } @else {
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="status" readonly>
-                                <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
-                            </div>
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="status" readonly>
+                            <label for="text-input" class="input-label">Status <span
+                                    class="text-danger">*</span></label>
+                        </div>
                         }
                     </aside>
-                    <aside class="col-md-12">
+                    <!-- <aside class="col-md-12">
                         <div class="custom-form-group">
                             <textarea formControlName="Remarks" class="custom-input-field sm" [textWithNumbers]="300"></textarea>
                             <label for="text-input" class="input-label">Remarks <span class="text-danger">*</span></label>
@@ -111,7 +126,7 @@
                                 </div>
                             }
                         </div>
-                    </aside>
+                    </aside> -->
                 </div>
             </div>
         </div>

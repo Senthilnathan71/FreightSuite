@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Module' : 'Add Module'}}</h4>
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Module' : ' Module'}}</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -23,7 +23,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6" [formGroup]="moduleForm">
+    <div class="col-md-12" [formGroup]="moduleForm">
         <div class="card h-100">
             <div class="card-body">
                 <div class="row">
@@ -81,7 +81,7 @@
                     </aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group">
-                            <textarea formControlName="Remarks" class="custom-input-field sm" [textWithNumbers]="300"></textarea>
+                            <textarea formControlName="Remarks" class="custom-input-field sm" [textWithNumbers]="300" rows="1"></textarea>
                             <label for="text-input" class="input-label">Remarks <span class="text-danger">*</span></label>
                             @if(moduleForm.get('Remarks').touched && moduleForm.get('Remarks').invalid){
                                 <div class="error-message">
