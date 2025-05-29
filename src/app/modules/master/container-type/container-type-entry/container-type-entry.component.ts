@@ -73,7 +73,7 @@ export class ContainerTypeEntryComponent {
 
   initForm() {
     this.containertypeForm = this.fb.group({
-      CompanyMasterSid: ['',[Validators.required]],
+      CompanyMasterSid:['',[Validators.required]],
       ContainerCode: ['',[Validators.required]],
       ContainerSize: ['',[Validators.required]],
       ContainerIsoCode: ['',[Validators.required]],
@@ -176,7 +176,7 @@ export class ContainerTypeEntryComponent {
 
   getAllCompanies() {
     this.masterService.getAllCompanies().subscribe((res) => {
-      this.companyList = res.data
+      this.companyList = res;
     })
   }
 

@@ -165,7 +165,7 @@ export class DivisionEntryComponent {
 
   getAllCompanies() {
     this.masterService.getAllCompanies().subscribe((res)=> {
-      this.companyList = res.data
+      this.companyList = res;
     })
   }
 
