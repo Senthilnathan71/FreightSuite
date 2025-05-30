@@ -347,8 +347,7 @@
                             @if(isEditMode){
                             <select name="status" class="form-select" formControlName="status" id="text-input">
                                 <option value="Active">Active</option>
-                                <option value="Invalid">Invalid</option>
-                                <option value="Block">Block</option>
+                                <option value="Suspended">Suspended</option>
                             </select>
                             } @else {
                             <input type="text" name="status" class="custom-input-field sm" formControlName="status"
@@ -763,8 +762,7 @@
                                     @if(isModalEditMode){
                                     <ng-select name="status" class="ng-select" formControlName="branchStatus" id="text-input">
                                         <ng-option value="Active">Active</ng-option>
-                                        <ng-option value="Invalid">Invalid</ng-option>
-                                        <ng-option value="Block">Block</ng-option>
+                                        <ng-option value="Suspended">Suspended</ng-option>
                                     </ng-select>
                                     } @else {
                                     <input type="text" name="status" class="custom-input-field sm" formControlName="branchStatus"
@@ -844,7 +842,7 @@
                         } @else {
                         <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1">
                             <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                            Invalid</span>
+                            Suspended</span>
                         }
                     </td>
                 </tr>
@@ -936,7 +934,7 @@
                             </span>
                             <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1" *ngIf="bank.status !=='A'">
                                     <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                    Invalid
+                                    Suspended
                             </span>
                         </td>
                     </tr>
@@ -1076,8 +1074,7 @@
                                                     @if(isBankModalEdit){
                                                     <select name="status" class="form-select" formControlName="status" id="text-input">
                                                         <option value="Active">Active</option>
-                                                        <option value="Invalid">Invalid</option>
-                                                        <option value="Block">Block</option>
+                                                        <option value="Suspended">Suspended</option>
                                                     </select>
                                                     } @else {
                                                     <input type="text" name="status" class="custom-input-field sm" formControlName="status"

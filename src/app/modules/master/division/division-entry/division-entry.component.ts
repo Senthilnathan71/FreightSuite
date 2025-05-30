@@ -31,7 +31,7 @@ export class DivisionEntryComponent {
   errorMessage: string = '';
   btnDisable: boolean = false;
   companyList: any
-  statusList = ["Active", "Inactive"]
+  statusList = ["Active", "Suspended"]
 
   constructor(
     private fb: FormBuilder,
@@ -144,7 +144,7 @@ export class DivisionEntryComponent {
 
   statusMap: { [key: string]: string } = {
     A: 'Active',
-    IA: 'Inactive',
+    S: 'Suspended',
   };
 
   // Fetch division data and patch the form
@@ -153,7 +153,7 @@ export class DivisionEntryComponent {
       (divisionData) => {
         this.divisionForm.patchValue({
           ...divisionData,
-          status: divisionData.status ==='A' ? 'Active' : 'Inactive'
+          status: divisionData.status ==='A' ? 'Active' : 'Suspended'
         },
         );
       },

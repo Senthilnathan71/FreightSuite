@@ -30,10 +30,11 @@ export class CityEntryComponent {
   errorMessage: string = '';  // To store any error messages
   btnDisable: boolean = false;
   CityMasterSid: number;
+  isViewMode = false;
 
   countryList: any
   stateList: any
-  statusList = ["Active", "In Active"]
+  statusList = ["Active"];
 
   status: any
   constructor(
@@ -55,7 +56,15 @@ export class CityEntryComponent {
       this.CityMasterSid = +params.get('id');
       if (this.CityMasterSid) {
         this.isEditMode = true;
-        this.loadLeadData(this.CityMasterSid);
+        // Check if we're in view mode (from query params)
+        this.route.queryParams.subscribe(queryParams => {
+          this.isViewMode = queryParams['mode'] === 'view';
+          this.loadLeadData(this.CityMasterSid);
+          // In edit mode, update statusList to include both options
+          this.statusList = ["Active", "Suspended"];
+          // Enable the status control in edit mode
+          this.cityForm.get('status')?.enable();
+        });
       }
     });
   }
@@ -81,7 +90,7 @@ export class CityEntryComponent {
       cityCode: ['', [Validators.required]],
       StateMasterSid: ['', [Validators.required]],
       CountryMasterSid: ['', [Validators.required]], // Dropdown
-      status: ['Active']
+      status: [{value: 'Active', disabled: true}]
     });
   }
 
@@ -94,38 +103,34 @@ export class CityEntryComponent {
     } else {
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      const formValue = this.cityForm.value;
+      const formValue = this.cityForm.getRawValue(); // Use getRawValue() to get disabled values too
 
       const payload = (this.isEditMode) ? {
         ...formValue,
         StateMasterSid: Number(formValue.StateMasterSid),
         CountryMasterSid: Number(formValue.CountryMasterSid),
         ...updatedBy,
-        status: this.status === "Active" ? "A" : "C"
+        status: formValue.status === "Active" ? "A" : "S"
       } : {
         ...formValue,
         StateMasterSid: Number(formValue.StateMasterSid),
         CountryMasterSid: Number(formValue.CountryMasterSid),
         ...createdBy,
-        status: formValue.status === "Active" ? "A" : "C"
+        status: "A" // Always Active for create mode
       };
-
 
       console.log('payload', payload);
 
       if (this.isEditMode) {
         this.masterService.updateCityById(this.CityMasterSid, payload).subscribe(
           (resp: any) => {
-
             console.log(resp.message);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.router.navigate(['master/city/list']);
-
             } else {
               this.appSettingService.showError(resp.message);
             }
-
           },
           (error) => {
             this.errorMessage = error.message;
@@ -133,19 +138,15 @@ export class CityEntryComponent {
           }
         );
       } else {
-
         this.masterService.createCity(payload).subscribe(
           (resp: any) => {
-
             console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.router.navigate(['master/city/list']);
-
             } else {
               this.appSettingService.showError(resp.message);
             }
-
           },
           (error) => {
             this.errorMessage = error.message;
@@ -159,9 +160,8 @@ export class CityEntryComponent {
   // Mapping for API status values
   statusMap: { [key: string]: string } = {
     A: 'Active',
-    IA: 'Inactive'
+    S: 'Suspended'
   };
-
 
   // Fetch lead data and patch the form
   loadLeadData(leadId: number) {
@@ -169,11 +169,10 @@ export class CityEntryComponent {
       (leadData) => {
         this.cityForm.patchValue({
           ...leadData,
-          CountryMasterSid: leadData.CountryMasterSid,  // assign ID
-          StateMasterSid: leadData.StateMasterSid,      // assign ID
-          status: leadData.status === 'A' ? 'Active' : 'Invalid'
-        },
-        );
+          CountryMasterSid: leadData.CountryMasterSid,
+          StateMasterSid: leadData.StateMasterSid,
+          status: leadData.status === 'A' ? 'Active' : 'Suspended'
+        });
       },
       (error) => {
         this.appSettingService.showError('Error loading lead data.');
@@ -195,12 +194,14 @@ export class CityEntryComponent {
 
   reset() {
     this.cityForm.reset();
+    // Reset status to Active and disable if not in edit mode
+    if (!this.isEditMode) {
+      this.cityForm.get('status')?.setValue('Active');
+      this.cityForm.get('status')?.disable();
+    }
   }
 
   goBack() {
     this.router.navigate(['master/city/list'])
   }
-
-
-
 }

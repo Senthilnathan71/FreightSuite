@@ -85,7 +85,7 @@ export class PostMasterListComponent implements OnInit {
         ...port,
         countryName: country?.countryName || '—',
         sectorName: sector?.sectorName || '—',
-        statusText: port.status === 'A' ? 'Active' : 'Cancelled'
+        statusText: port.status === 'A' ? 'Active' : 'Suspended'
       };
     });
 

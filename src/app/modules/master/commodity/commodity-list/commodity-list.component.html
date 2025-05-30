@@ -115,11 +115,11 @@
                         <td>
                             <span class="px-2 rounded-pill d-inline-flex align-items-center gap-1" [ngClass]="{
                             'bg-light-success': item.status === 'A',
-                            'bg-light-danger': item.status === 'I'
+                            'bg-light-danger': item.status === 'S'
                           }">
                                 <span class="dofi-w-4 dofi-h-4 d-inline-block rounded"
-                                    [ngClass]="{'bg-success': item.status === 'A', 'bg-danger': item.status === 'I'}"></span>
-                                {{ item.status === 'A' ? 'Active' : 'Inactive' }}
+                                    [ngClass]="{'bg-success': item.status === 'A', 'bg-danger': item.status === 'S'}"></span>
+                                {{ item.status === 'A' ? 'Active' : 'Suspended' }}
                             </span>
                         </td>
 

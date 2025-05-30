@@ -32,7 +32,7 @@ export class ContainerTypeEntryComponent implements OnInit {
 
   modeOfStatus = [
     { id: 'A', name: 'Active' },
-    { id: 'C', name: 'Inactive' }
+    { id: 'S', name: 'Suspended' }
   ];
 
 
@@ -157,7 +157,7 @@ export class ContainerTypeEntryComponent implements OnInit {
   // Mapping for API status to display
   statusMap: { [key: string]: string } = {
     A: 'Active',
-    IA: 'Inactive'
+    S: 'Suspended'
   };
 
   loadContainerData(id: number) {

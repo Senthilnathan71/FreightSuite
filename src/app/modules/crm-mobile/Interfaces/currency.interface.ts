@@ -17,7 +17,7 @@ export interface Currency {
   updatedOn: Date;
   deletedAt: Date | null;
   updatedBy: string | null;
-  status: 'A' | 'I';
+  status: 'A' | 'S';
   CountryMasterSid: number;
   LoginSid: number | null;
   Remarks?: string | null;

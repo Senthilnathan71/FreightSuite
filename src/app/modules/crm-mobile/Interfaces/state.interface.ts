@@ -9,7 +9,7 @@ export interface State {
     LoginSid: number,
     createdBy: string,
     updatedBy: string,
-    status: 'A' | 'I';
+    status: 'A' | 'S';
     createdOn: string,
     updatedOn: string,
     Remarks: string,

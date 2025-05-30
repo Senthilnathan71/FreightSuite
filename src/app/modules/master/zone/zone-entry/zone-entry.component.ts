@@ -60,7 +60,7 @@ export class ZoneEntryComponent implements OnInit {
       (resp) => {
         this.inputForm.patchValue({
           ...resp,
-          status: resp.status === 'A' ? 'Active' : 'Invalid'
+          status: resp.status === 'A' ? 'Active' : 'Suspended'
         });
       },
       (error) => {
@@ -121,11 +121,11 @@ export class ZoneEntryComponent implements OnInit {
     return (this.isEditMode) ? {
       ...formValue,
       updatedBy,
-      status: formValue.status === "Active" ? "A" : "I"
+      status: formValue.status === "Active" ? "A" : "S"
     } : {
       ...formValue,
       createdBy,
-      status: formValue.status === "Active" ? "A" : "I"
+      status: formValue.status === "Active" ? "A" : "S"
     }
   }
 

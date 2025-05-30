@@ -48,7 +48,7 @@ export class UnitEntryComponent {
   
   statusOptions = [
     { value: 'A', name: 'Active' },
-    { value: 'I', name: 'Inactive' }
+    { value: 'S', name: 'Suspended' }
   ];
 
   errorMessage: any;

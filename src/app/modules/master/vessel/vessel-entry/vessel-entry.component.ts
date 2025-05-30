@@ -80,7 +80,7 @@ export class VesselEntryComponent implements OnInit {
             (vesselData: Vessel) => {
                 this.vesselForm.patchValue({
                     ...vesselData,
-                    status: vesselData.status === 'A' ? "Active" : "Invalid"
+                    status: vesselData.status === 'A' ? "Active" : "Suspended"
                 })
             },
             (error) => {
@@ -147,7 +147,7 @@ export class VesselEntryComponent implements OnInit {
             NRT: Number(formValue.NRT),
             LengthinMtr: Number(formValue.LengthinMtr),
             BreadthinMtr: Number(formValue.BreadthinMtr),
-            status: formValue.status === 'Active' ? 'A' : 'I',
+            status: formValue.status === 'Active' ? 'A' : 'S',
             updatedBy: updatedBy
         } : {
             ...formValue,
@@ -157,7 +157,7 @@ export class VesselEntryComponent implements OnInit {
             NRT: Number(formValue.NRT),
             LengthinMtr: Number(formValue.LengthinMtr),
             BreadthinMtr: Number(formValue.BreadthinMtr),
-            status: formValue.status === 'Active' ? 'A' : 'I',
+            status: formValue.status === 'Active' ? 'A' : 'S',
             createdBy: createdBy
         }
     }

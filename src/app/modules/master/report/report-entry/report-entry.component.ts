@@ -15,7 +15,7 @@ export class ReportEntryComponent {
   active=1;
   modeOfStatus=[
     {id:"Active",name:"Active"},
-    {id:"Inactive",name:"Inactive"},
+    {id:"Suspended",name:"Suspended"},
   ]
    navigateBack() {
     history.back();

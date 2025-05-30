@@ -37,7 +37,7 @@ export class CurrencyEntryComponent implements OnInit {
   
   statusOptions = [
     { id: 'A', name: 'Active' },
-    { id: 'I', name: 'Inactive' }
+    { id: 'S', name: 'Suspended' }
   ];
 
   constructor(
@@ -73,12 +73,12 @@ export class CurrencyEntryComponent implements OnInit {
         Validators.maxLength(3),
         Validators.pattern(/^[A-Z]{3}$/) // Exactly 3 uppercase letters
       ]],
-      currencyID: ['', [
-        Validators.required,
-        Validators.minLength(1),  
-        Validators.maxLength(3),
-        Validators.pattern(/^[A-Za-z0-9]{1,3}$/) // Single alphanumeric character
-      ]],
+      // currencyID: ['', [
+      //   Validators.required,
+      //   Validators.minLength(1),  
+      //   Validators.maxLength(3),
+      //   Validators.pattern(/^[A-Za-z0-9]{1,3}$/) // Single alphanumeric character
+      // ]],
       currencyUnit: ['', [
         Validators.required, 
         Validators.maxLength(50)
@@ -90,17 +90,17 @@ export class CurrencyEntryComponent implements OnInit {
         Validators.required, 
         Validators.maxLength(5)
       ]],
-      currencyFirstName: ['', [
-        Validators.maxLength(50)
-      ]],
-      currencyLastName: ['', [
-        Validators.maxLength(50)
-      ]],
-      currencyRatio: [1, [
-        Validators.required,
-        Validators.min(1), // Minimum value 1 (positive integer)
-        Validators.pattern(/^[1-9]\d*$/) // Positive integers only
-      ]],
+      // currencyFirstName: ['', [
+      //   Validators.maxLength(50)
+      // ]],
+      // currencyLastName: ['', [
+      //   Validators.maxLength(50)
+      // ]],
+      // currencyRatio: [1, [
+      //   Validators.required,
+      //   Validators.min(1), // Minimum value 1 (positive integer)
+      //   Validators.pattern(/^[1-9]\d*$/) // Positive integers only
+      // ]],
       amountDecimal: [2, [
         Validators.required,
         Validators.min(0),
@@ -114,7 +114,7 @@ export class CurrencyEntryComponent implements OnInit {
         Validators.pattern(/^\d+$/) // Integers only
       ]],
       status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
-      CountryMasterSid: ['', Validators.required],
+      // CountryMasterSid: ['', Validators.required],
       remarks: ['']
     });
 
@@ -166,17 +166,17 @@ export class CurrencyEntryComponent implements OnInit {
         this.currencyForm.patchValue({
           currencyName: currency.currencyName,
           currencyCode: currency.currencyCode,
-          currencyID: currency.currencyID,
+          // currencyID: currency.currencyID,
           currencyUnit: currency.CurrencyUnit, 
           currencySubUnit: currency.CurrencySubUnit,
           symbol: currency.Symbol,
-          currencyFirstName: currency.currencyFirstName || '',
-          currencyLastName: currency.currencyLastName || '',
-          currencyRatio: currency.currencyRatio,
+          // currencyFirstName: currency.currencyFirstName || '',
+          // currencyLastName: currency.currencyLastName || '',
+          // currencyRatio: currency.currencyRatio,
           amountDecimal: currency.amountDecimal,
           exchangeDecimal: currency.exchangeDecimal,
           status: currency.status,
-          CountryMasterSid: currency.CountryMasterSid,
+          // CountryMasterSid: currency.CountryMasterSid,
           Remarks: currency.Remarks || ''
         });
         this.loading = false;
@@ -201,16 +201,16 @@ export class CurrencyEntryComponent implements OnInit {
     const payload = {
       currencyName: this.currencyForm.value.currencyName,
       currencyCode: this.currencyForm.value.currencyCode,
-      currencyID: this.currencyForm.value.currencyID,
+      // currencyID: this.currencyForm.value.currencyID,
       CurrencyUnit: this.currencyForm.value.currencyUnit, 
       CurrencySubUnit: this.currencyForm.value.currencySubUnit, 
       Symbol: this.currencyForm.value.symbol,
-      currencyFirstName: this.currencyForm.value.currencyFirstName,
-      currencyLastName: this.currencyForm.value.currencyLastName,
-      currencyRatio: Number(this.currencyForm.value.currencyRatio),
+      // currencyFirstName: this.currencyForm.value.currencyFirstName,
+      // currencyLastName: this.currencyForm.value.currencyLastName,
+      // currencyRatio: Number(this.currencyForm.value.currencyRatio),
       amountDecimal: Number(this.currencyForm.value.amountDecimal),
       exchangeDecimal: Number(this.currencyForm.value.exchangeDecimal),
-      CountryMasterSid: Number(this.currencyForm.value.CountryMasterSid),
+      // CountryMasterSid: Number(this.currencyForm.value.CountryMasterSid),
       status: this.currencyForm.value.status,
       Remarks: this.currencyForm.value.Remarks
     };
@@ -256,13 +256,13 @@ export class CurrencyEntryComponent implements OnInit {
         currencyUnit: '',
         currencySubUnit: '',
         Symbol: '',
-        currencyFirstName: '',
-        currencyLastName: '',
-        currencyRatio: 1,
+        // currencyFirstName: '',
+        // currencyLastName: '',
+        // currencyRatio: 1,
         amountDecimal: 2,
         exchangeDecimal: 4,
         status: 'A',
-        countryMasterSid: '',
+        // countryMasterSid: '',
         remarks: ''
       });
     }
