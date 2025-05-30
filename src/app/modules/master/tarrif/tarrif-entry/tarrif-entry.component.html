@@ -364,8 +364,7 @@
                             @if(isEditMode){
                             <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
                                 <ng-option value="Active">Active</ng-option>
-                                <ng-option value="Invalid">Invalid</ng-option>
-                                <ng-option value="Block">Block</ng-option>
+                                <ng-option value="Suspended">Suspended</ng-option>
                             </ng-select>
                             } @else {
                             <input type="text" name="status" class="custom-input-field sm" formControlName="status"
@@ -551,7 +550,7 @@
                         } @else {
                         <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
                             <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                            Invalid
+                            Suspended
                         </div>
                         }
                     </td>
@@ -880,8 +879,7 @@
                                     @if(isModalEditMode){
                                     <ng-select name="status" class="ng-select" formControlName="detailstatus" id="text-input">
                                         <ng-option value="Active">Active</ng-option>
-                                        <ng-option value="Invalid">Invalid</ng-option>
-                                        <ng-option value="Block">Block</ng-option>
+                                        <ng-option value="Suspended">Suspended</ng-option>
                                     </ng-select>
                                     } @else {
                                     <input type="text" name="status" class="custom-input-field sm"

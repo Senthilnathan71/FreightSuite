@@ -96,6 +96,6 @@ export class UOMListComponent {
   }
 
   getStatusText(status: string): string {
-    return status === 'A' ? 'Active' : 'Inactive';
+    return status === 'A' ? 'Active' : 'Suspended';
   }
 }

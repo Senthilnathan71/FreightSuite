@@ -72,7 +72,7 @@ export class CityListComponent {
     const payload = {
       searchType: this.searchType,
       filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'I' 
+        ? this.filterValue === 'Active' ? 'A' : 'S' 
         : this.filterValue,
     }
     

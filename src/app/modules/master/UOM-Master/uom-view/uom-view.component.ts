@@ -40,12 +40,12 @@ export class UOMViewComponent {
   idParam: number;
   statusMap: { [key: string]: string } = {
   A: 'Active',
-  I: 'Invalid'
+  S: 'Suspended'
 };
 
 statusOptions = [
   { id: 'A', name: 'Active' },
-  { id: 'I', name: 'Invalid' }
+  { id: 'S', name: 'Suspended' }
 ];
 
   constructor(private config: NgSelectConfig, private fb: FormBuilder,

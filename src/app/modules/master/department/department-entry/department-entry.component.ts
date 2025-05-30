@@ -33,7 +33,7 @@ export class DepartmentEntryComponent {
 
   countryList: any
   stateList: any
-  statusList = ["Active", "Invalid", "Block"]
+  statusList = ["Active", "Suspended"]
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -82,11 +82,11 @@ export class DepartmentEntryComponent {
       const payload = (this.isEditMode) ? {
         ...formValue,
         ...updatedBy,
-        Status: formValue.Status === "Active" ? "A" : "I"
+        Status: formValue.Status === "Active" ? "A" : "S"
       } : {
         ...formValue,
         ...createdBy,
-        Status: formValue.Status === "Active" ? "A" : "I"
+        Status: formValue.Status === "Active" ? "A" : "S"
       };
 
 
@@ -137,8 +137,8 @@ export class DepartmentEntryComponent {
   // Mapping for API status values
   statusMap: { [key: string]: string } = {
     A: 'Active',
-    I: 'Invalid',
-    B: 'Block'
+    S: 'Suspended',
+    
   };
 
 
@@ -148,7 +148,7 @@ export class DepartmentEntryComponent {
       (deptData: any) => {
         this.departmentForm.patchValue({
           ...deptData,
-          Status: deptData.Status === 'A' ? 'Active' : 'Invalid'
+          Status: deptData.Status === 'A' ? 'Active' : 'Suspended'
         },
         );
       },

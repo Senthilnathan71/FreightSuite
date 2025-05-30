@@ -45,15 +45,14 @@ export class PostMasterViewComponent {
 
   modeOfStatus = [
     { name: 'Active', value: 'Active' },
-    { name: 'Invalid', value: 'Invalid' },
-    { name: 'Block', value: 'Block' }
+    { name: 'Suspended', value: 'Suspended' },
   ]
 
   errorMessage: any;
   idParam: number;
   statusOptions = [
     { value: 'A', name: 'Active' },
-    { value: 'I', name: 'Inactive' }
+    { value: 'S', name: 'Suspended' }
   ];
 
   constructor(private config: NgSelectConfig, private fb: FormBuilder,
@@ -102,7 +101,7 @@ export class PostMasterViewComponent {
         this.portForm.patchValue({
           ...resp,
           CBMRequire: (resp.CBMRequire == 'Y' ? true : false),
-          status: resp.status === 'A' ? 'Active' : 'Invalid'
+          status: resp.status === 'A' ? 'Active' : 'Suspended'
         });
         console.log(this.portForm.value);
       },
@@ -200,14 +199,14 @@ export class PostMasterViewComponent {
       const payload = (this.isEditMode) ?
         {
           ...formValue,
-          status: formValue.status === 'Active' ? 'A' : 'I',
+          status: formValue.status === 'Active' ? 'A' : 'S',
           CBMRequire: formValue.CBMRequire ? 'Y' : 'N',
           updatedBy: updatedBy
         }
         :
         {
           ...formValue,
-          status: formValue.status === 'Active' ? 'A' : 'I',
+          status: formValue.status === 'Active' ? 'A' : 'S',
           CBMRequire: formValue.CBMRequire ? 'Y' : 'N',
           createdBy: createdBy
         }

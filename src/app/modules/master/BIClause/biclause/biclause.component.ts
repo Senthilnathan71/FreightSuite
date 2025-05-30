@@ -43,7 +43,7 @@ export class BIclauseComponent implements OnInit {
 
   statusOptions = [
     { id: 'A', name: 'Active' },
-    { id: 'I', name: 'Inactive' }
+    { id: 'S', name: 'Suspended' }
   ];
 
   constructor(
@@ -229,7 +229,7 @@ export class BIclauseComponent implements OnInit {
   }
 
   getStatusText(status: string): string {
-    return status === 'A' ? 'Active' : 'Inactive';
+    return status === 'A' ? 'Active' : 'Suspended';
   }
 
   trackByClauseId(index: number, item: BLClause): number {

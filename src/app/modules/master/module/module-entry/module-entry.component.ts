@@ -24,8 +24,7 @@ export class ModuleEntryComponent implements OnInit {
 
     modeOfStatus =[
         { value:'Active',name:'Active'},
-        { value:'Invalid',name:'Invalid'},
-        { value:'Block',name:'Block'},
+        { value:'Suspended',name:'Suspended'},
     ]
 
     // Pagination Variables
@@ -75,7 +74,7 @@ export class ModuleEntryComponent implements OnInit {
             const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
             const payload = {
                 ...formValue,
-                status : formValue.status ==='Active' ? 'A':'I',
+                status : formValue.status ==='Active' ? 'A':'S',
                 ...(this.isEditMode ? {updatedBy:updatedBy}: {createdBy:createdBy})
             }
 
@@ -118,7 +117,7 @@ export class ModuleEntryComponent implements OnInit {
                 if(resp.status){
                     this.moduleForm.patchValue({
                         ...resp.data,
-                        status : resp.data.status === 'A' ? 'Active' : 'Invalid',
+                        status : resp.data.status === 'A' ? 'Active' : 'Suspended',
                     })
                 }
             },

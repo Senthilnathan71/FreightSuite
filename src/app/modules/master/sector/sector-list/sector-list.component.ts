@@ -43,7 +43,7 @@ export class SectorListComponent {
     const payload = {
       searchType: this.searchType,
       filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'I'
+        ? this.filterValue === 'Active' ? 'A' : 'S'
         : this.filterValue
     };
 
@@ -115,7 +115,7 @@ export class SectorListComponent {
   }
 
   getStatusText(status: string): string {
-    return status === 'A' ? 'Active' : 'Inactive';
+    return status === 'A' ? 'Active' : 'Suspended';
   }
 
   report() { }

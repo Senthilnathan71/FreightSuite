@@ -20,6 +20,6 @@ export interface Commodity {
   deletedAt?: Date;
   createdBy: string;
   updatedBy?: string;
-  status?: 'A' | 'I';
+  status?: 'A' | 'S';
   Remarks: string;
 }
