@@ -764,6 +764,17 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: "hs-sac/:id",
+        component: HSSACComponent,
+        data: {
+          title: "Edit HS-SAC",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "HS-SAC" },
+          ],
+        },
+      },
+      {
         path: 'module/list',
         component: ModuleComponent,
         data: {
