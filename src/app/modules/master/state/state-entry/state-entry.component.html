@@ -1,35 +1,35 @@
 <div class="container-fluid">
   <!-- Form -->
-  <form [formGroup]="stateForm" (ngSubmit)="onSubmit()">
+  <form [formGroup]="stateForm">
     <div class="row">
       <!-- Top buttons -->
-        <div class="col-12">
+      <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0"> State</h4>
+          <div class="col-md-4 pb-2">
+            <h4 class="page-title mb-0"> State</h4>
+          </div>
+          <div class="col-md-8 pb-2">
+            <div
+              class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+              <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                (click)="goBack()">
+                <i class="fas fa-chevron-left me-1"></i>
+                Back
+              </button>
+              <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                (click)="resetForm()">
+                <i class="fas fa-sync-alt me-1"></i>
+                Reset
+              </button>
+              <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+                [disabled]="btnDisable || stateForm.invalid">
+                <i class="fas fa-save me-1"></i>
+                {{ isEditMode ? 'Update' : 'Create' }}
+              </button>
             </div>
-            <div class="col-md-8 pb-2">
-                <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="goBack()">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="resetForm()">
-                        <i class="fas fa-sync-alt me-1"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
-                        [disabled]="btnDisable || stateForm.invalid">
-                        <i class="fas fa-save me-1"></i>
-                        {{ isEditMode ? 'Update' : 'Create' }}
-                    </button>
-                </div>
-            </div>
+          </div>
         </div>
-    </div>
+      </div>
       <!-- <div class="col-12">
         <div class="d-flex align-items-center gap-2 mb-3">
           <button type="submit" class="btn btn-sm btn-info" [disabled]="btnDisable || stateForm.invalid"

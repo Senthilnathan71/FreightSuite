@@ -39,12 +39,13 @@
                 <div class="" data-bs-theme="light">
                     <form
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="search()">
                             <i class="fas fa-search me-1"></i>
                             Search
                         </button>
-                        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="button" (click)="openModal(content)"> <i
-                                class="fas fa-plus me-1"></i> Create </button>
+                        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="button"
+                            (click)="openModal(content)"> <i class="fas fa-plus me-1"></i> Create </button>
 
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                             <i class="fas fa-file-alt me-1"></i>
@@ -69,8 +70,6 @@
                                     <option value="ServiceName">Service Name</option>
                                     <option value="TaxRate">Tax Rate</option>
                                     <option value="TaxType">Tax Type</option>
-                                    <option value="EffectiveFrom">Effective From</option>
-                                    <option value="Remarks">Remarks</option>
                                     <option value="status">Status</option>
                                 </select>
                             </div>
@@ -86,102 +85,7 @@
             </div>
         </div>
     </div>
-    <ng-template #content let-modal>
-  <form [formGroup]="hssacForm" (ngSubmit)="onSubmit()">
-    <div class="modal-header">
-      <h4 class="modal-title">HS-SAC</h4>
-      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
-    </div>
-    <div class="modal-body">
-      <div class="col-md-12">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="row">
-              <aside class="col-md-6">
-                <div class="custom-form-group">
-                  <input type="text" id="text-input" class="custom-input-field sm" formControlName="HSSACCode" placeholder="" [textWithNumbers]="3">
-                  <label for="text-input" class="input-label">HS-SAC Code <span class="text-danger">*</span></label>
-                  @if(hssacForm.get('HSSACCode')?.touched && hssacForm.get('HSSACCode')?.invalid){
-                    <div class="error-message">
-                        @if(hssacForm.get('HSSACCode')?.hasError('required')){
-                            <span>HS-SAC Code is required</span>
-                        } @else if(hssacForm.get('HSSACCode')?.hasError('maxlength')){
-                            <span>Max 9 Characters</span>
-                        }
-                    </div>
-                  }
-                </div>
-              </aside>
-              <aside class="col-md-6">
-              <div class="custom-form-group">
-                <input type="text" id="text-input" formControlName="HSSACName" placeholder=""
-                  class="custom-input-field sm" [onlyText]="100">
-                <label for="text-input" class="input-label">HS-SAC Name <span
-                    class="text-danger fw-bold">*</span></label>
-                    @if(hssacForm.get('HSSACName')?.touched && hssacForm.get('HSSACName')?.invalid){
-                      <div class="error-message">
-                        @if(hssacForm.get('HSSACName')?.hasError('required')){
-                          <span>HS-SAC Name is required</span>
-                        } @else if(hssacForm.get('HSSACName')?.hasError('maxlength')){
-                          <span>Max 100 Characters</span>
-                        } @else if(hssacForm.get('HSSACName')?.hasError('numberNotAllowed')){
-                          <span>Only Alphabets are allowed</span>
-                        }
-                      </div>
-                    }
-              </div>
-            </aside>
-              <aside class="col-md-6">
-                <div class="custom-form-group">
-                  <input type="text" id="text-input" class="custom-input-field sm" formControlName="ServiceName" placeholder="">
-                  <label for="text-input" class="input-label">Service Name <span class="text-danger">*</span></label>
-                </div>
-              </aside>
-              <aside class="col-md-6">
-                <div class="custom-form-group">
-                  <input type="number"  class="custom-input-field sm" formControlName="TaxRate" placeholder="">
-                  <label for="" class="input-label">Tax Rate <span class="text-danger">*</span></label>
-                </div>
-              </aside>
-              <aside class="col-md-6">
-                <div class="custom-form-group custom-form-group-select">
-                  <ng-select formControlName="TaxType" [items]="modeOfTaxType" bindLabel="name" bindValue="name"></ng-select>
-                  <label class="input-label">Tax Type <span class="text-danger">*</span></label>
-                </div>
-              </aside>
-              <aside class="col-md-6">
-                <div class="custom-form-group">
-                  <input type="date" class="custom-input-field sm" formControlName="EffectiveFrom">
-                  <label for="" class="input-label">Effective From <span class="text-danger">*</span></label>
-                </div>
-              </aside>
-              <aside class="col-md-6">
-                <div class="custom-form-group">
-                  <input type="textarea" id="text-input" class="custom-input-field sm" formControlName="Remarks" placeholder="">
-                  <label for="text-input" class="input-label">Remarks <span class="text-danger">*</span></label>
-                </div>
-              </aside>
-              <aside class="col-md-6">
-              <div class="custom-form-group">
-                <select formControlName="status" class="form-select">
-                  <option value="">Status</option>
-                  <option *ngFor="let option of statusList" [value]="option">{{ option }}</option>
-                </select>
-                <label for="text-input" class="input-label">Status <span class="text-danger fw-bold">*</span></label>
-              </div>
-            </aside>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
-        <i class="fas fa-save me-1"></i> {{isEditMode ? 'Update' : "Save"}}
-      </button>
-    </div>
-  </form>
-</ng-template>
+
 
     <!-- <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
@@ -245,14 +149,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                         <tr *ngFor="let item of hssacList; let i= index; trackBy: trackByIndex">
+                        <tr *ngFor="let item of hssacList; let i= index; trackBy: trackByIndex">
                             <td>
                                 <div class="d-flex align-items-center">
                                     <a class="text-primary mx-2 ps-3"
                                         [routerLink]="['/master/hs-sac', item.HSSACMasterSid]">
                                         <i-feather name="eye" class="feather-sm"></i-feather>
                                     </a>
-                                    <a class="text-danger mx-2 ps-3 border-start" (click)="softDeleteHssac(item.HSSACMasterSid)">
+                                    <a class="text-danger mx-2 ps-3 border-start"
+                                        (click)="softDeleteHssac(item.HSSACMasterSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
                                 </div>
@@ -280,27 +185,27 @@
                             </td>
                             <td>
                                 @if(item.status === "A"){
-                                    <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                        Active
-                                    </div>
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active
+                                </div>
                                 } @else {
-                                    <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                        <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                        Invalid
-                                    </div>
+                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Invalid
+                                </div>
                                 }
                             </td>
 
                         </tr>
-                        
+
                     </tbody>
                 </table>
             </div>
             <div>
                 <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()">
-            </ngb-pagination>
+                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()">
+                </ngb-pagination>
             </div>
         </div>
     </div>
@@ -310,3 +215,114 @@
     </div>
 
 </div>
+
+
+
+<ng-template #content let-modal>
+    <form [formGroup]="hssacForm">
+        <div class="modal-header">
+            <h4 class="modal-title">HS-SAC</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" class="custom-input-field sm"
+                                        formControlName="HSSACCode" placeholder="" [textWithNumbers]="3">
+                                    <label for="text-input" class="input-label">HS-SAC Code <span
+                                            class="text-danger">*</span></label>
+                                    @if(hssacForm.get('HSSACCode')?.touched && hssacForm.get('HSSACCode')?.invalid){
+                                    <div class="error-message">
+                                        @if(hssacForm.get('HSSACCode')?.hasError('required')){
+                                        <span>HS-SAC Code is required</span>
+                                        } @else if(hssacForm.get('HSSACCode')?.hasError('maxlength')){
+                                        <span>Max 9 Characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" formControlName="HSSACName" placeholder=""
+                                        class="custom-input-field sm" [onlyText]="100">
+                                    <label for="text-input" class="input-label">HS-SAC Name <span
+                                            class="text-danger fw-bold">*</span></label>
+                                    @if(hssacForm.get('HSSACName')?.touched && hssacForm.get('HSSACName')?.invalid){
+                                    <div class="error-message">
+                                        @if(hssacForm.get('HSSACName')?.hasError('required')){
+                                        <span>HS-SAC Name is required</span>
+                                        } @else if(hssacForm.get('HSSACName')?.hasError('maxlength')){
+                                        <span>Max 100 Characters</span>
+                                        } @else if(hssacForm.get('HSSACName')?.hasError('numberNotAllowed')){
+                                        <span>Only Alphabets are allowed</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" class="custom-input-field sm"
+                                        formControlName="ServiceName" placeholder="">
+                                    <label for="text-input" class="input-label">Service Name <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="number" class="custom-input-field sm" formControlName="TaxRate"
+                                        placeholder="">
+                                    <label for="" class="input-label">Tax Rate <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select formControlName="TaxType" [items]="modeOfTaxType" bindLabel="name"
+                                        bindValue="name"></ng-select>
+                                    <label class="input-label">Tax Type <span class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="date" class="custom-input-field sm" formControlName="EffectiveFrom">
+                                    <label for="" class="input-label">Effective From <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="textarea" id="text-input" class="custom-input-field sm"
+                                        formControlName="Remarks" placeholder="">
+                                    <label for="text-input" class="input-label">Remarks <span
+                                            class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <select formControlName="status" class="form-select">
+                                        <option value="">Status</option>
+                                        <option *ngFor="let option of statusList" [value]="option">{{ option }}
+                                        </option>
+                                    </select>
+                                    <label for="text-input" class="input-label">Status <span
+                                            class="text-danger fw-bold">*</span></label>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
+                <i class="fas fa-save me-1"></i> {{isEditMode ? 'Update' : "Save"}}
+            </button>
+        </div>
+    </form>
+</ng-template>
