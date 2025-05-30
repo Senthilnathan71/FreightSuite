@@ -71,6 +71,8 @@ import { ImcoEntryComponent } from './Imco/imco-entry/imco-entry.component';
 import { BIclauseComponent } from './BIClause/biclause/biclause.component';
 import { ProductListComponent } from './product/product-list/product-list.component';
 import { ProductEntryComponent } from './product/product-entry/product-entry.component';
+import { SailingScheduleLsitComponent } from './SailingSchedule/sailing-schedule-lsit/sailing-schedule-lsit.component';
+import { SailingScheduleEntryComponent } from './SailingSchedule/sailing-schedule-entry/sailing-schedule-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -913,6 +915,28 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: 'Master', url: '/master' },
             { title: 'Product' },
+          ],
+        },
+      },
+       {
+        path: 'sailing-schedule/list',
+        component: SailingScheduleLsitComponent,
+        data: {
+          title: 'Sailing Schedule',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Sailing Schedule' },
+          ],
+        },
+      },
+      {
+        path: 'sailing-schedule/entry',
+        component: SailingScheduleEntryComponent,
+        data: {
+          title: 'Sailing Schedule',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Sailing Schedule' },
           ],
         },
       },
