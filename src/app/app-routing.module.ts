@@ -4,6 +4,7 @@ import { Routes, RouterModule, PreloadAllModules } from '@angular/router';
 import { FullComponent } from './layouts/full/full.component';
 import { BlankComponent } from './layouts/blank/blank.component';
 import { AuthGuard } from './core/guards/auth.guard';
+import { DashboardComponent } from './modules/crm-mobile/dashboard/dashboard.component';
 
 export const Approutes: Routes = [
   {
@@ -16,12 +17,16 @@ export const Approutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'master/department/list',
+        redirectTo: 'dashboard',
         pathMatch: 'full'
       },
       {
         path: 'crm',
         loadChildren: () => import('./modules/crm-mobile/crm-mobile.module').then(m => m.CrmMobileModule)
+      },
+      {
+        path: 'dashboard',
+        component: DashboardComponent
       },
       {
         path: 'master',
