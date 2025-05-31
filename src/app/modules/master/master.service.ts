@@ -15,7 +15,7 @@ import { Vessel } from '../crm-mobile/Interfaces/vessel.interface';
 import { Branch } from '../crm-mobile/Interfaces/branch.interface';
 import { ContainerType } from '../crm-mobile/Interfaces/container-type.interface';
 import { Division } from '../crm-mobile/Interfaces/division.interface';
-
+import { HSSAC } from '../crm-mobile/Interfaces/hs-sac.interfaces';
 import { Currency } from '../crm-mobile/Interfaces/currency.interface';
 import { Charge } from '../crm-mobile/Interfaces/charge.interface';
 @Injectable({
@@ -1658,5 +1658,62 @@ export class MasterService {
       })
     )
   }
+
+  // HSSAC-master
+  getAllHssac() {
+    return this.http.get<{ data: HSSAC[] }>('hssac').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+  getHssacById(id: number) {
+    return this.http.get<{ data: HSSAC }>(`hssac/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createHssac(payload: any) {
+    return this.http.post('hssac/create', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  editHssac(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`hssac/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+
+    )
+  }
+
+  softDeleteHssac(id: number) {
+    return this.http.delete<{ data: any }>(`hssac/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  searchHssac(payload) {
+    return this.http.post("hssac/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    );
+  }
+
 
 }

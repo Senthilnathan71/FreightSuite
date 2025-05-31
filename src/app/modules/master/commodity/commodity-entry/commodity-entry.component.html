@@ -43,7 +43,7 @@
     <div class="col-md-6">
         <div class="card h-100">
             <div class="card-body">
-                <form [formGroup]="commodityForm" (ngSubmit)="onSubmit()">
+                <form [formGroup]="commodityForm">
                     <div class="row">
                         <aside class="col-md-12">
                             <div class="custom-form-group">
@@ -125,25 +125,25 @@
                             </div>
                         </aside>
 
-                       <aside class="col-md-4">
-  <div class="custom-form-group">
-    <input type="text" id="commodityType" formControlName="CommodityType"
-           class="custom-input-field sm"
-           [class.is-invalid]="commodityForm.get('CommodityType')?.invalid && 
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="commodityType" formControlName="CommodityType"
+                                    class="custom-input-field sm" [class.is-invalid]="commodityForm.get('CommodityType')?.invalid && 
            (commodityForm.get('CommodityType')?.touched || commodityForm.get('CommodityType')?.dirty)">
-    <label for="commodityType" class="input-label">Commodity Type <span class="text-danger">*</span></label>
-    <div *ngIf="commodityForm.get('CommodityType')?.invalid && 
+                                <label for="commodityType" class="input-label">Commodity Type <span
+                                        class="text-danger">*</span></label>
+                                <div *ngIf="commodityForm.get('CommodityType')?.invalid && 
            (commodityForm.get('CommodityType')?.touched || 
            commodityForm.get('CommodityType')?.dirty)" class="invalid-feedback d-block">
-      <span *ngIf="commodityForm.get('CommodityType')?.hasError('required')">
-        Commodity Type is required
-      </span>
-      <span *ngIf="commodityForm.get('CommodityType')?.hasError('maxlength')">
-        Commodity Type cannot exceed 100 characters
-      </span>
-    </div>
-  </div>
-</aside>
+                                    <span *ngIf="commodityForm.get('CommodityType')?.hasError('required')">
+                                        Commodity Type is required
+                                    </span>
+                                    <span *ngIf="commodityForm.get('CommodityType')?.hasError('maxlength')">
+                                        Commodity Type cannot exceed 100 characters
+                                    </span>
+                                </div>
+                            </div>
+                        </aside>
                     </div>
                 </form>
             </div>
