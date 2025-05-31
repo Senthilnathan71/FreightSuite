@@ -12,6 +12,7 @@ import { FeatherModule } from 'angular-feather';
 import { HSSAC } from 'src/app/modules/crm-mobile/Interfaces/hs-sac.interfaces';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-hs-sac',
@@ -118,11 +119,37 @@ export class HSSACComponent {
   }
 
   openEditModal(content: any, id: number): void {
-    this.isEditMode = true;
-    this.HSSACMasterSid = id;
-    this.getHssacById(id);
+  this.isEditMode = true;
+  this.HSSACMasterSid = id;
+  this.getHssacById(id).add(() => {
     this.modalRef = this.modalService.open(content, { centered: false, size: 'lg' });
-  }
+  });
+}
+
+editHssac(id: number, content: any) {
+  this.isEditMode = true;
+  this.HSSACMasterSid = id;
+  this.masterService.getHssacById(id).pipe(take(1)).subscribe({
+    next: (hssac: any) => {
+      this.hssacForm.patchValue({
+        HSSACCode: hssac.HSSACCode,
+        HSSACName: hssac.HSSACName,
+        ServiceName: hssac.ServiceName,
+        TaxRate: hssac.TaxRate,
+        TaxType: hssac.TaxType,
+        EffectiveFrom: this.datePipe.transform(hssac.EffectiveFrom, 'yyyy-MM-dd'),
+        Remarks: hssac.Remarks,
+        status: hssac.status === 'A' ? 'Active' : 'Inactive'
+      });
+      this.modalService.open(content, { size: 'lg' });
+    },
+    error: (err) => {
+      console.error('Error fetching HSSAC', err);
+      this.appSettingService.showError('Error fetching data for editing');
+    }
+  });
+}
+
 
   closeModal(): void {
     if (this.modalRef) {
@@ -131,20 +158,26 @@ export class HSSACComponent {
   }
 
   getHssacById(id: number) {
-    this.resetForm();
-    this.masterService.getHssacById(id).subscribe(
-      (hssac: any) => {
-        this.hssacForm.patchValue({
-          ...hssac,
-          status: hssac.status === "Active"
-        },
-        );
-      },
-      (error) => {
-        this.appSettingService.showError('Error loading');
-      }
-    );
-  }
+  this.resetForm();
+  return this.masterService.getHssacById(id).pipe(take(1)).subscribe(
+    (hssac: any) => {
+      console.log('HSSAC from backend:', hssac);
+      this.hssacForm.patchValue({
+        HSSACCode: hssac.HSSACCode,
+        HSSACName: hssac.HSSACName,
+        ServiceName: hssac.ServiceName,
+        TaxRate: hssac.TaxRate,
+        TaxType: hssac.TaxType,
+        EffectiveFrom: this.datePipe.transform(hssac.EffectiveFrom, 'yyyy-MM-dd'),
+        Remarks: hssac.Remarks,
+        status: hssac.status === 'A' ? 'Active' : 'Inactive'
+      });
+    },
+    (error) => {
+      this.appSettingService.showError('Error loading');
+    }
+  );
+}
 
   onSubmit() {
     if (this.hssacForm.invalid) {

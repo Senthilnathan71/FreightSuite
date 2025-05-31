@@ -764,10 +764,10 @@ export const MasterRoutes: Routes = [
         },
       },
       {
-        path: "hs-sac/:id",
+        path: "hs-sac",
         component: HSSACComponent,
         data: {
-          title: "Edit HS-SAC",
+          title: "HS-SAC",
           urls: [
             { title: "Master", url: "/master" },
             { title: "HS-SAC" },
