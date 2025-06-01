@@ -151,13 +151,13 @@
                             }
                         </div>
                     </aside>
-                    <!-- <aside class="col-md-3">
+                    <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="ViaPortSid">
+                                <ng-option value="">Select Via Port</ng-option>
                                 @for (port of portList; track port) {
                                     <ng-option [value]="port.PortMasterSid" >{{ port.PortName }}</ng-option>
                                 }
-                                <ng-option value="">Select Via Port</ng-option>
                             </ng-select>
                             <label for="text-input" class="input-label">Via Port <span
                                     class="text-danger">*</span></label>
@@ -169,8 +169,7 @@
                             </div>
                             }
                         </div>
-                    </aside> -->
-
+                    </aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="POLTerminal" placeholder=""
@@ -188,14 +187,7 @@
                             }
                         </div>
                     </aside>
-                      <aside class="col-md-6">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="">
-                                        <label for="text-input" class="input-label">Via Port <span
-                                                class="text-danger"></span></label>
-                                    </div>
-                                </aside>
+                      
                     <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="PODTerminal" placeholder=""
@@ -213,15 +205,53 @@
                             }
                         </div>
                     </aside>
-                      <aside class="col-md-6">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="">
-                                        <label for="text-input" class="input-label">Movement Type <span
-                                                class="text-danger"></span></label>
-                                    </div>
-                                </aside>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="MovementType" [textWithNumbers]="10">
+                            <label for="text-input" class="input-label">Movement Type <span class="text-danger"></span></label>
+                             @if(tariffHeaderForm.get('MovementType')?.touched &&
+                            tariffHeaderForm.get('MovementType')?.errors){
+                            <div class="error-message">
+                                @if(tariffHeaderForm.get('MovementType')?.hasError('maxlength')) {
+                                <span>Max 10 characters</span>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </aside>
 
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6" [formGroup]="tariffHeaderForm">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="row">
+                    <!-- <aside class="col-md-6">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" formControlName="CargoType">
+                                <ng-option value="">Select Cargo Type</ng-option>
+                                @for (cargo of cargoTypes; track cargo) {
+                                <ng-option [value]="cargo">{{ cargo }}</ng-option>
+                                }
+                            </ng-select>
+                            <label for="text-input" class="input-label">Cargo Type <span
+                                    class="text-danger">*</span></label>
+                            @if(tariffHeaderForm.get('CargoType')?.touched &&
+                            tariffHeaderForm.get('CargoType')?.errors){
+                            <div class="error-message">
+                                @if(tariffHeaderForm.get('CargoType')?.hasError('required')){
+                                <span>Cargo Type is required</span>
+                                }
+                                @else if(tariffHeaderForm.get('CargoType')?.hasError('maxlength')) {
+                                <span>Max 10 characters</span>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </aside> -->
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="Carrier">
@@ -265,59 +295,6 @@
                             }
                         </div>
                     </aside>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-md-6" [formGroup]="tariffHeaderForm">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row">
-                    <!-- <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="CargoType">
-                                <ng-option value="">Select Cargo Type</ng-option>
-                                @for (cargo of cargoTypes; track cargo) {
-                                <ng-option [value]="cargo">{{ cargo }}</ng-option>
-                                }
-                            </ng-select>
-                            <label for="text-input" class="input-label">Cargo Type <span
-                                    class="text-danger">*</span></label>
-                            @if(tariffHeaderForm.get('CargoType')?.touched &&
-                            tariffHeaderForm.get('CargoType')?.errors){
-                            <div class="error-message">
-                                @if(tariffHeaderForm.get('CargoType')?.hasError('required')){
-                                <span>Cargo Type is required</span>
-                                }
-                                @else if(tariffHeaderForm.get('CargoType')?.hasError('maxlength')) {
-                                <span>Max 10 characters</span>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside> -->
-                    <aside class="col-md-12">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="ServiceLevel">
-                                <ng-option value="">Select Service Level</ng-option>
-                                @for (service of serviceLevel; track service) {
-                                <ng-option [value]="service">{{ service }}</ng-option>
-                                }
-                            </ng-select>
-                            <label for="text-input" class="input-label">Service Level <span
-                                    class="text-danger"></span></label>
-                            @if(tariffHeaderForm.get('ServiceLevel')?.touched &&
-                            tariffHeaderForm.get('ServiceLevel')?.errors){
-                            <div class="error-message">
-                                @if(tariffHeaderForm.get('ServiceLevel')?.hasError('required')){
-                                <span>Service Level is required</span>
-                                } @else if(tariffHeaderForm.get('ServiceLevel')?.hasError('maxlength')) {
-                                <span>Max 10 characters</span>
-                                }
-                            </div>
-                            }
-                        </div>
-                    </aside>
                     <aside class="col-md-6 mt-2">
                         <div class="custom-form-group">
                             <input type="text" formControlName="IncoTerms" id="text-input" placeholder=""
@@ -337,7 +314,7 @@
                         </div>
                     </aside>
                    
-                    <!-- <aside class="col-md-6">
+                    <aside class="col-md-6">
                         <div class="d-flex">
                             <div class="custom-form-group custom-form-group-select w-100 mb-0">
                                 <input class="form-control mb-0" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #d="ngbDatepicker"
@@ -357,7 +334,7 @@
                                 <i-feather name="calendar" class="feather-sm"></i-feather>
                             </button>
                         </div>
-                    </aside> -->
+                    </aside>
                     <aside class="col-md-6 mt-2">
                         <div class="custom-form-group custom-form-group-select">
                             <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"> -->
@@ -607,11 +584,11 @@
                             </aside>
                             <aside class="col-md-6 col-lg-4">
                                 <div class="custom-form-group custom-form-group-select">
-                                    <ng-select class="ng-select" formControlName="detailChargeMasterSid"
+                                    <ng-select class="ng-select" formControlName="detailChargeCode"
                                         (change)="setChargeCode($event)">
                                         <ng-option value="">Select Charge</ng-option>
                                         @for(charge of chargeList; track charge){
-                                        <ng-option [value]="charge.ChargeMasterSid">{{charge.chargeName}}</ng-option>
+                                        <ng-option [value]="charge.ChargeCode">{{charge.ChargeCode}}</ng-option>
                                         }
                                     </ng-select>
                                     <label for="charge" class="input-label">Charge <span
@@ -673,7 +650,7 @@
                                         <input class="form-control mb-0" placeholder="yyyy-mm-dd" name="dp"
                                             ngbDatepicker #d="ngbDatepicker" (click)="d.toggle()" readonly
                                             formControlName="detailEffectiveDate" />
-                                        <label class="input-label" for="dp">Effective Date <span
+                                        <label class="input-label" for="dp">Effective From <span
                                                 class="text-danger">*</span></label>
                                         @if(tariffDetailsForm.get('detailEffectiveDate')?.touched &&
                                         tariffDetailsForm.get('detailEffectiveDate')?.invalid){
@@ -691,7 +668,7 @@
                                     </button>
                                 </div>
                             </aside>
-                            <aside class="col-md-6 col-lg-4">
+                            <!-- <aside class="col-md-6 col-lg-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" formControlName="detailChargeCode" placeholder=""
                                         class="custom-input-field sm" [textWithNumbers]="5" readonly>
@@ -707,7 +684,7 @@
                                     </div>
                                     }
                                 </div>
-                            </aside>
+                            </aside> -->
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" formControlName="detailDescription"

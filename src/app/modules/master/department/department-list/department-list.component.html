@@ -56,6 +56,7 @@
                                     <option value="departmentType">Department Type</option>
                                     <option value="ExportImport">Export/Import</option>
                                     <option value="FCLLCL">FCLLCL</option>
+                                    <option value="Division">Division</option>
                                     <option value="Status">Status</option>
                                 </select>
                             </div>
@@ -104,6 +105,7 @@
                             <th class="bg-transparent text-light" scope="col">Dept Type</th>
                             <th class="bg-transparent text-light" scope="col">Exp/Imp</th>
                             <th class="bg-transparent text-light" scope="col">FCL/LCL</th>
+                            <th class="bg-transparent text-light" scope="col">Division</th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
 
                         </tr>
@@ -136,6 +138,9 @@
                             </td>
                             <td>
                                 <div class="text-truncate">{{item.FCLLCL}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.Division}}</div>
                             </td>
                             <td>
                                 @if(item.Status === "A"){

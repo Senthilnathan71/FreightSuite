@@ -97,32 +97,30 @@ export class TarrifEntryComponent implements OnInit {
 		this.tariffHeaderForm = this.fb.group({
 
 			DepartmentMasterSid: ['', [Validators.required]],
-			CompanyMasterSid: ['', [Validators.required]],
-			POOSid: ['', [Validators.required]],
+			POOSid: [''],
 			POLSid: ['', [Validators.required]],
 			PODSid: ['', [Validators.required]],
-			FDCSid: ['', [Validators.required]],
-			ViaPortSid: [84, [Validators.required]],
-			CargoType: ['', [Validators.required, Validators.maxLength(10)]],
-			POLTerminal: ['', [Validators.required, Validators.maxLength(5)]],
-			PODTerminal: ['', [Validators.required, Validators.maxLength(5)]],
-			Carrier: ['', [Validators.required]],
-			AgentSid: ['', [Validators.required]],
-			ServiceLevel: ['', [Validators.required, Validators.maxLength(10)]],
-			IncoTerms: ['', [Validators.required, Validators.maxLength(10)]],
-			StuffingAt: ['Dock', [Validators.required, Validators.maxLength(10)]],
-			EffectiveDate: ['', [Validators.required]],
-			status: ['Active', [Validators.required]],
-			Remarks: ['', [Validators.required, Validators.maxLength(100)]],
+			FDCSid: [''],
+			ViaPortSid: [''],
+			POLTerminal: [''],
+			PODTerminal: [''],
+			Carrier: [''],
+			MovementType : [''],
+			AgentSid: [''],
+			IncoTerms: [''],
+			StuffingAt: ['Dock'],
+			status: ['Active'],
+			Remarks: [''],
+
+			// Static Value
+			EffectiveDate: ['2025-05-28T13:29:37.391Z']
 		})
 	}
 
 	initDetailsForm() {
 		this.tariffDetailsForm = this.fb.group({
 			detailCompanyMasterSid:['',[Validators.required]],
-			detailChargeMasterSid :['',[Validators.required]],
 			detailUOMSid : ['',[Validators.required]],
-			detailCurrencyMasterSid:['',[Validators.required]],
 			detailEffectiveDate : ['',[Validators.required]],
 			detailChargeCode : ['',[Validators.required]],
 			detailDescription : ['',[Validators.required]],
