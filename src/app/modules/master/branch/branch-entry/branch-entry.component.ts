@@ -33,6 +33,7 @@ export class BranchEntryComponent implements OnInit {
 	countryList: Country[];
 	companyList: any[];
 	currencyList: any[];
+	
 
 
 
@@ -107,7 +108,7 @@ export class BranchEntryComponent implements OnInit {
 			(branchData) => {
 				this.branchForm.patchValue({
 					...branchData,
-					status: branchData.status === 'A' ? "Active" : "Invalid"
+					status: branchData.status === 'A' ? "Active" : "Suspended"
 				})
 			},
 			(error) => {
@@ -169,7 +170,7 @@ export class BranchEntryComponent implements OnInit {
 			CountryMasterSid: Number(formData.CountryMasterSid),
 			CurrencyMasterSid: Number(formData.CurrencyMasterSid),
 			CompanyMasterSid: Number(formData.CompanyMasterSid),
-			status: formData.status === 'Active' ? 'A' : 'I',
+			status: formData.status === 'Active' ? 'A' : 'S',
 			updatedBy: updatedBy
 		} : {
 			...formData,
@@ -178,7 +179,7 @@ export class BranchEntryComponent implements OnInit {
 			CountryMasterSid: Number(formData.CountryMasterSid),
 			CurrencyMasterSid: Number(formData.CurrencyMasterSid),
 			CompanyMasterSid: Number(formData.CompanyMasterSid),
-			status: formData.status === 'Active' ? 'A' : 'I',
+			status: formData.status === 'Active' ? 'A' : 'S',
 			createdBy: createdBy
 		}
 	}

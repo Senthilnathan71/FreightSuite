@@ -11,6 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 // import { SearchCountryField, CountryISO, PhoneNumberFormat } from 'ngx-intl-tel-input';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 
 @Component({
@@ -22,6 +23,7 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
     ReactiveFormsModule,
     FeatherModule,
     PreventMultiClickDirective,
+    NgSelectModule
     // NgxIntlTelInputModule
   ],
   templateUrl: './lead.component.html',
@@ -53,6 +55,13 @@ export class LeadComponent implements OnInit {
   trackByFn(index: number, item: any): any {
     return item;
   }
+
+
+  modeOfPreferredContactMode=[
+    {id:"1",name:"Email"},
+    {id:"2",name:"Phone"},
+    {id:"3",name:"Text"}
+  ]
 
   leads = [{ id: 1, name: 'Lead 001' }]; // Initial lead
 
@@ -209,6 +218,7 @@ export class LeadComponent implements OnInit {
       return emailPattern.test(email) ? null : { emailInvalid: true };
     };
   }
+
 
 
 

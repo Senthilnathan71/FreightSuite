@@ -63,13 +63,12 @@ export class OrganizationEntryComponent {
   active3 = 1;
   modeOfStatus = [
     { id: 'A', name: 'Active' },
-    { id: 'I', name: 'Invalid' },
-    { id: 'B', name: 'Block' },
+    { id: 'S', name: 'Suspended' },
   ];
 
   modeOfRegistered = [
     { id: 'Y', name: 'Active' },
-    { id: 'N', name: 'Invalid' },
+    { id: 'N', name: 'Suspended' },
   ];
   modeofPAN = [
     { id: '1', name: 'Company' },
@@ -238,7 +237,7 @@ export class OrganizationEntryComponent {
         CustBranchRegistered: data.Registered || '',
         CustBranchGSTtype: data.CustomerGstType || '',
         CustBranchGSTIN: data.GSTNo || '',
-        status: data.status === 'A' ? 'Active' : 'Invalid',
+        status: data.status === 'A' ? 'Active' : 'Suspended',
         CustomerMasterSid: data.CustomerMasterSid || '',
       });
 
@@ -593,7 +592,7 @@ export class OrganizationEntryComponent {
         CompanyType: formValue.CompanyType,
         RegistrationNo: formValue.RegistrationNo,
         ...createdBy,
-        status: formValue.status === 'Active' ? 'A' : 'C',
+        status: formValue.status === 'Active' ? 'A' : 'S',
       };
 
     if (this.isEditMode) {
@@ -634,7 +633,7 @@ export class OrganizationEntryComponent {
   // Mapping for API status values
   statusMap: { [key: string]: string } = {
     A: 'Active',
-    IA: 'Inactive',
+    S: 'Suspended',
   };
 
   // Fetch customer data and patch the form

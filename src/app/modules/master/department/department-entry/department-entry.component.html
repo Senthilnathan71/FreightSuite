@@ -108,10 +108,13 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" formControlName="ExportImport" placeholder=""
-                                    class="custom-input-field sm" [onlyText]="6">
-                                <label for="text-input" class="input-label">Exp/Imp <span
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" formControlName="ExportImport">
+                                    <ng-option value="">Select Exp/Imp</ng-option>
+                                    <ng-option value="Export">Export</ng-option>
+                                    <ng-option value="Import">Import</ng-option>
+                                </ng-select>
+                                <label for="text-input" class="input-label">Exp/Imp? <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div class="error-message">
                                     @if(departmentForm.get('ExportImport')?.touched &&
@@ -120,23 +123,18 @@
                                     @if(departmentForm.get('ExportImport')?.hasError('required')){
                                     <span>Export/Import is required</span>
                                     }
-
-                                    @else if(departmentForm.get('ExportImport')?.hasError('numberNotAllowed')){
-                                    <span>Only Alphabets are Allowed</span>
-                                    }
-
-                                    @else if(departmentForm.get('ExportImport')?.hasError('maxlength')){
-                                    <span>Max 6 characters</span>
-                                    }
                                     }
                                 </div>
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" formControlName="FCLLCL" placeholder=""
-                                    class="custom-input-field sm" [onlyText]="6">
-                                <label for="text-input" class="input-label">FCL/LCL <span
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" formControlName="FCLLCL">
+                                    <ng-option value="">Select FCL/LCL</ng-option>
+                                    <ng-option value="Export">FCL</ng-option>
+                                    <ng-option value="Import">LCL</ng-option>
+                                </ng-select>
+                                <label for="text-input" class="input-label">FCL/LCL? <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div class="error-message">
                                     @if(departmentForm.get('FCLLCL')?.touched &&
@@ -145,13 +143,40 @@
                                     @if(departmentForm.get('FCLLCL')?.hasError('required')){
                                     <span>FCL/LCL is required</span>
                                     }
-
-                                    @else if(departmentForm.get('FCLLCL')?.hasError('numberNotAllowed')){
-                                    <span>Only Alphabets are Allowed</span>
                                     }
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" formControlName="Division" [onlyText]="20">
+                                    <ng-option value="">Select Division</ng-option>
+                                    @for(division of divisionList;track division){
+                                        <ng-option [value]="division.DivisionName">{{division.DivisionName}}</ng-option>
+                                    }
+                                </ng-select>
+                                <label for="text-input" class="input-label">Division </label>
+                                <div class="error-message">
+                                    @if(departmentForm.get('Division')?.touched &&
+                                    departmentForm.get('Division')?.invalid){
 
-                                    @else if(departmentForm.get('FCLLCL')?.hasError('maxlength')){
-                                    <span>Max 6 characters</span>
+                                    @if(departmentForm.get('Division')?.hasError('maxlength')){
+                                    <span>Max 20 Characters</span>
+                                    }
+                                    }
+                                </div>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <textarea formControlName="Remarks" class="custom-input-field sm" [textWithNumbers]="20"></textarea>
+                                <label for="text-input" class="input-label">Remarks </label>
+                                <div class="error-message">
+                                    @if(departmentForm.get('Remarks')?.touched &&
+                                    departmentForm.get('Remarks')?.invalid){
+
+                                    @if(departmentForm.get('Remarks')?.hasError('maxlength')){
+                                    <span>Max 20 Characters</span>
                                     }
                                     }
                                 </div>
@@ -162,8 +187,7 @@
                                 @if(isEditMode){
                                 <select name="status" class="form-select" formControlName="Status" id="text-input">
                                     <option value="Active">Active</option>
-                                    <option value="Invalid">Invalid</option>
-                                    <option value="Block">Block</option>
+                                    <option value="Suspended">Suspended</option>
                                 </select>
                                 } @else {
                                 <input type="text" name="Status" class="custom-input-field sm" formControlName="Status"

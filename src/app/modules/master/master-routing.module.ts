@@ -24,8 +24,6 @@ import { SectorListComponent } from './sector/sector-list/sector-list.component'
 import { MenuListComponent } from './menu/menu-list/menu-list.component';
 import { ReportListComponent } from './report/report-list/report-list.component';
 import { ReportEntryComponent } from './report/report-entry/report-entry.component';
-import { RegionListComponent } from './region/region-list/region-list.component';
-import { RegionEntryComponent } from './region/region-entry/region-entry.component';
 import { CompanyListComponent } from './company/company-list/company-list.component';
 import { CompanyEntryComponent } from './company/company-entry/company-entry.component';
 import { BranchListComponent } from './branch/branch-list/branch-list.component';
@@ -69,6 +67,8 @@ import { BIclauseComponent } from './BIClause/biclause/biclause.component';
 import { ProductListComponent } from './product/product-list/product-list.component';
 import { ProductEntryComponent } from './product/product-entry/product-entry.component';
 import { DivisionComponent } from './division/division/division.component';
+import { SailingScheduleLsitComponent } from './SailingSchedule/sailing-schedule-lsit/sailing-schedule-lsit.component';
+import { SailingScheduleEntryComponent } from './SailingSchedule/sailing-schedule-entry/sailing-schedule-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -420,22 +420,6 @@ export const MasterRoutes: Routes = [
         },
       },
       {
-        path: 'region/list',
-        component: RegionListComponent,
-        data: {
-          title: 'Region',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Region' }],
-        },
-      },
-      {
-        path: 'region/entry',
-        component: RegionEntryComponent,
-        data: {
-          title: 'Region',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Region' }],
-        },
-      },
-      {
         path: 'company/list',
         component: CompanyListComponent,
         data: {
@@ -513,6 +497,16 @@ export const MasterRoutes: Routes = [
         data: {
           title: 'Container Type',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Container Type' }],
+        },
+      },
+      {
+        path: "container-type/entry/:id",
+        component: ContainerTypeEntryComponent,
+        data: {
+          title: "Edit Conatiner Type",
+          urls: [
+            { title: "Master", url: "/master" },{ title: "Conatiner Type" },
+          ],
         },
       },
       {
@@ -909,6 +903,28 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: 'Master', url: '/master' },
             { title: 'Product' },
+          ],
+        },
+      },
+       {
+        path: 'sailing-schedule/list',
+        component: SailingScheduleLsitComponent,
+        data: {
+          title: 'Sailing Schedule',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Sailing Schedule' },
+          ],
+        },
+      },
+      {
+        path: 'sailing-schedule/entry',
+        component: SailingScheduleEntryComponent,
+        data: {
+          title: 'Sailing Schedule',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Sailing Schedule' },
           ],
         },
       },

@@ -12,6 +12,6 @@ import { FeatherModule } from 'angular-feather';
 export class TaxGroupComponent {
     modeOfStatus=[
     {id:"Active",name:"Active"},
-    {id:"Inactive",name:"Inactive"},
+    {id:"Suspended",name:"Suspended"},
   ]
 }

@@ -41,8 +41,8 @@ export class CompanyEntryComponent implements OnInit {
 	active2 = 1;
 	modeOfStatus = [
 		{ id: 'Active', name: 'Active' },
-		{ id: 'Invalid', name: 'Invalid' },
-		{ id: 'Block', name: 'Block' }
+		{ id: 'Suspended', name: 'Suspended' },
+		
 	];
 
 	//  DECLARATIONS
@@ -201,7 +201,7 @@ export class CompanyEntryComponent implements OnInit {
 				branchRemarks: data.remarks || '',
 				branchCompanyLogo: data.companyLogo || '',
 				branchReportLogo: data.reportLogo || '',
-				branchStatus: data.status === 'A' ? 'Active' : 'Invalid',
+				branchStatus: data.status === 'A' ? 'Active' : 'Suspended',
 				branchCityMasterSid: data.CityMasterSid || '',
 				branchCompanyMasterSid: this.CompanyMasterSid || data.CompanyMasterSid || '',
 				branchCountryMasterSid: data.CountryMasterSid || '',
@@ -269,7 +269,7 @@ export class CompanyEntryComponent implements OnInit {
 				CountryMasterSid: parseInt(formValue.CountryMasterSid),
 				CurrencyMasterSid: parseInt(formValue.CurrencyMasterSid),
 				isHo: formValue.isHo ? 'Y' : 'N',
-				status: formValue.status === 'Active' ? 'A' : 'I',
+				status: formValue.status === 'Active' ? 'A' : 'S',
 				updatedBy: updatedBy
 			} : {
 				...formValue,
@@ -278,7 +278,7 @@ export class CompanyEntryComponent implements OnInit {
 				CountryMasterSid: parseInt(formValue.CountryMasterSid),
 				CurrencyMasterSid: parseInt(formValue.CurrencyMasterSid),
 				isHo: formValue.isHo ? 'Y' : 'N',
-				status: formValue.status === 'Active' ? 'A' : 'I',
+				status: formValue.status === 'Active' ? 'A' : 'S',
 				createdBy: createdBy
 			}
 
@@ -340,7 +340,7 @@ export class CompanyEntryComponent implements OnInit {
 				remarks: formValue.branchRemarks,
 				companyLogo: null,
 				reportLogo: null,
-				status: formValue.branchStatus === 'Active' ? 'A' : 'I',
+				status: formValue.branchStatus === 'Active' ? 'A' : 'S',
 				CityMasterSid: parseInt(formValue.branchCityMasterSid),
 				CompanyMasterSid: this.CompanyMasterSid,
 				CountryMasterSid: parseInt(formValue.branchCountryMasterSid),
@@ -396,7 +396,7 @@ export class CompanyEntryComponent implements OnInit {
 			const formValue = this.branchBankForm.value;
 			const payload = {
 				...formValue,
-				status: formValue.status === 'Active' ? 'A' : 'I',
+				status: formValue.status === 'Active' ? 'A' : 'S',
 				BranchMasterSid: this.BranchMasterSid,
 				...(this.isEditMode ? { updatedBy: updatedBy } : { createdBy: createdBy })
 			};
@@ -442,7 +442,7 @@ export class CompanyEntryComponent implements OnInit {
 				this.companyForm.patchValue({
 					...resp,
 					isHo: resp.isHo === 'Y' ? true : false,
-					status: resp.status === 'A' ? 'Active' : 'Invalid'
+					status: resp.status === 'A' ? 'Active' : 'Suspended'
 				})
 			},
 			(error) => {
@@ -480,7 +480,7 @@ export class CompanyEntryComponent implements OnInit {
 		this.masterService.getAllBranchBanks().subscribe((banks) => {
 			this.branchBankList = banks.filter((bank: { BranchMasterSid: number; }) => bank.BranchMasterSid === this.BranchMasterSid)
 			this.branchBankList.forEach(bank => {
-				bank.status = bank.status === 'A' ? 'Active' : 'Invalid';
+				bank.status = bank.status === 'A' ? 'Active' : 'Suspended';
 			})
 			this.branchBankLength = this.branchBankList.length;
 		});

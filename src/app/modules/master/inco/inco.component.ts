@@ -12,7 +12,7 @@ import { FeatherModule } from 'angular-feather';
 export class IncoComponent {
    modeOfStatus=[
     {id:"Active",name:"Active"},
-    {id:"Inactive",name:"Inactive"},
+    {id:"Suspended",name:"Suspended"},
   ]
     navigateBack() {
     history.back();

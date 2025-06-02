@@ -79,7 +79,7 @@ export class ChargeListComponent implements OnInit {
     const payload = {
       searchType: this.searchType,
       filterValue: this.searchType === 'Status' 
-        ? this.filterValue === 'Active' ? 'A' : 'I' 
+        ? this.filterValue === 'Active' ? 'A' : 'S' 
         : this.filterValue
     };
 
@@ -97,7 +97,7 @@ export class ChargeListComponent implements OnInit {
           companyName: company?.companyName || '—',
           currencyName: currency?.currencyName || '—',
           departmentName: department?.departmentName || '—',
-          statusText: charge.Status === 'A' ? 'Active' : 'Inactive'
+          statusText: charge.Status === 'A' ? 'Active' : 'Suspended'
         };
       });
 

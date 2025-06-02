@@ -33,7 +33,7 @@ export class SectorEntryComponent implements OnInit {
 
   statusOptions = [
     { id: 'A', name: 'Active' },
-    { id: 'I', name: 'Inactive' }
+    { id: 'S', name: 'Suspended' }
   ];
 
   constructor(

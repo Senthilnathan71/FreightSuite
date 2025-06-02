@@ -37,7 +37,7 @@
                   <option value="PortType">Port Type</option>
                   <option value="TerminalCode">Terminal Code</option>
                   <option value="countryName">Country Name</option>
-                  <option value="sectorName">Sector Name</option>
+                  <option value="sectorName">Region</option>
                   <option value="status">Status</option>
                 </select>
               </div>
@@ -82,7 +82,7 @@
               <th class="bg-transparent text-light" scope="col">Port Name</th>
               <th class="bg-transparent text-light" scope="col">Port Code</th>
               <th class="bg-transparent text-light" scope="col">Country</th>
-              <th class="bg-transparent text-light" scope="col">Sector</th>
+              <th class="bg-transparent text-light" scope="col">Region</th>
               <th class="bg-transparent text-light" scope="col">Port Type</th>
               <th class="bg-transparent text-light" scope="col">Terminal</th>
               <th class="bg-transparent text-light" scope="col">Status</th>
@@ -107,11 +107,11 @@
                 <div class="text-truncate">{{item.PortCode}}</div>
               </td>
               <td>
-  <div class="text-truncate">{{item.countryName || '—'}}</div>
-</td>
-<td>
-  <div class="text-truncate">{{item.sectorName || '—'}}</div>
-</td>
+                <div class="text-truncate">{{item.countryMaster?.countryName || '—'}}</div>
+              </td>
+              <td>
+                <div class="text-truncate">{{item.sectorMaster?.sectorName || '—'}}</div>
+              </td>
               <td>
                 <div class="text-truncate">{{item.PortType}}</div>
               </td>
@@ -127,7 +127,7 @@
                 } @else {
                 <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
                   <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                  Invalid
+                  Suspended
                 </div>
                 }
               </td>

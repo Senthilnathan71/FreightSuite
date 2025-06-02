@@ -1,7 +1,8 @@
-<form [formGroup]="leadForm">
+<!-- <form [formGroup]="leadForm">
     <div class="row">
-        <div class="col-12">
-            <!-- <div ngbAccordion #accordion="ngbAccordion">
+        <div class="col-12"> -->
+
+<!-- <div ngbAccordion #accordion="ngbAccordion">
             <div *ngFor="let lead of leads" ngbAccordionItem="{{ lead.id }}" [collapsed]="true">
                 <div ngbAccordionHeader class="accordion-button custom-header justify-content-between">
                     <button ngbAccordionToggle
@@ -16,14 +17,12 @@
                 </div>
             </div>
         </div> -->
-            <ng-container *ngTemplateOutlet="leadform"></ng-container>
+<!-- <ng-container *ngTemplateOutlet="leadform"></ng-container>
         </div>
 
         <div class="col-12">
             <div class="">
-                <!-- <button (click)="createNewLead()" class="btn btn-primary w-100">
-                <i class="me-2 mdi mdi-plus"></i> Create New Lead
-            </button> -->
+              
                 <div class="d-flex align-items-center justify-content-start gap-2">
 
                     <button class="btn btn-sm btn-outline-secondary waves-effect waves-light" (click)="goBack()">
@@ -198,8 +197,8 @@
                     <div class="col-sm-12 col-md-3">
                         <div class="mb-2">
                             <label for="phone" class="control-label col-form-label d-block">Phone <span
-                                    class="text-danger">*</span></label>
-                            <!-- <ngx-intl-tel-input formControlName="phone" [preferredCountries]="preferredCountries"
+                                    class="text-danger">*</span></label> -->
+<!-- <ngx-intl-tel-input formControlName="phone" [preferredCountries]="preferredCountries"
                                 [enableAutoCountrySelect]="true" [searchCountryFlag]="true"
                                 [searchCountryField]="[SearchCountryField.Iso2,SearchCountryField.Name]"
                                 [maxLength]="15" [selectFirstCountry]="false" [selectedCountryISO]="CountryISO.India"
@@ -207,7 +206,7 @@
                                 [separateDialCode]="separateDialCode" [numberFormat]="PhoneNumberFormat.National"
                                 class="w-100">
                             </ngx-intl-tel-input> -->
-                            <div *ngIf="leadForm.controls['phone'].invalid && leadForm.controls['phone'].touched">
+<!-- <div *ngIf="leadForm.controls['phone'].invalid && leadForm.controls['phone'].touched">
                                 <small *ngIf="leadForm.controls['phone'].errors?.['required']">Required.</small>
                                 <small *ngIf="leadForm.controls['phone'].invalid">Invalid phone number</small>
                             </div>
@@ -219,4 +218,589 @@
 
         </div>
     </ng-template>
-</form>
+</form> -->
+
+
+<div class="row py-3">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0"> Lead</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="goBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="card ">
+
+
+            <!-- <div ngbAccordion #acc="ngbAccordion" activeIds="first" [closeOthers]="true">
+                <div ngbAccordionItem id="first">
+                    <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                            <h5 class="card-title">First Information</h5>
+                        </button>
+                    </h2>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody>
+                            <ng-template>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="company-name" placeholder=""
+                                                    class="custom-input-field sm">
+                                                <label for="company-name" class="input-label">Company Name <span
+                                                        class="text-danger">*</span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="lead-source" placeholder=""
+                                                    class="custom-input-field sm">
+                                                <label for="lead-source" class="input-label">Lead Source</label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="customer-ref" placeholder=""
+                                                    class="custom-input-field sm">
+                                                <label for="customer-ref" class="input-label">Customer Reference</label>
+                                            </div>
+                                        </aside>
+                                    </div>
+                                </div>
+                            </ng-template>
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <div ngbAccordionItem id="second">
+                    <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                            <h5 class="card-title">Contact Information</h5>
+                        </button>
+                    </h2>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody>
+                            <ng-template>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Address1 <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Address2 <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">P.O Box <span
+                                                        class="text-danger"></span></label>
+
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Country <span
+                                                        class="text-danger"></span></label>
+
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">State <span
+                                                        class="text-danger"></span></label>
+
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">City <span
+                                                        class="text-danger"></span></label>
+
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Contact Person <span
+                                                        class="text-danger"></span></label>
+
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">E-mail <span
+                                                        class="text-danger"></span></label>
+
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Mobile <span
+                                                        class="text-danger"></span></label>
+
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Preferred Contact Mode <span
+                                                        class="text-danger"></span></label>
+
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Language Perferrenece <span
+                                                        class="text-danger"></span></label>
+
+                                            </div>
+                                        </aside>
+                                      
+                                    </div>
+                                </div>
+                            </ng-template>
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <div ngbAccordionItem id="three">
+                    <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                            <h5 class="card-title">Lead Details</h5>
+                        </button>
+                    </h2>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody>
+                            <ng-template>
+                                <div class="card-body">
+                                    <div class="row">
+
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Service of Internet <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Purchase Timeline <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Specific Requirement <span
+                                                        class="text-danger"></span></label>
+
+                                            </div>
+                                        </aside>
+                                    </div>
+                                </div>
+                            </ng-template>
+
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div ngbAccordionItem id="fourth">
+                    <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                            <h5 class="card-title">Additional Information</h5>
+                        </button>
+                    </h2>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody>
+                            <ng-template>
+                                <div class="card-body ">
+                                    <div class="row">
+
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Industry <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Company Site <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Annual Revenue <span
+                                                        class="text-danger"></span></label>
+
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="">
+                                                <label for="text-input" class="input-label">Notes <span
+                                                        class="text-danger"></span></label>
+
+                                            </div>
+                                        </aside>
+                                    </div>
+                                </div>
+                            </ng-template>
+
+                        </div>
+                    </div>
+                </div>
+
+
+
+            </div> -->
+
+
+            <div ngbAccordion #acc="ngbAccordion" activeIds="first" [closeOthers]="true">
+                <div ngbAccordionItem id="first">
+                    <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                            <h5 class="card-title">First Information</h5>
+                        </button>
+                    </h2>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody>
+                            <ng-template>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="company-name" placeholder=""
+                                                    class="custom-input-field sm">
+                                                <label for="company-name" class="input-label">Company Name <span
+                                                        class="text-danger">*</span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="lead-source" placeholder=""
+                                                    class="custom-input-field sm">
+                                                <label for="lead-source" class="input-label">Lead Source</label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="customer-ref" placeholder=""
+                                                    class="custom-input-field sm">
+                                                <label for="customer-ref" class="input-label">Customer Reference</label>
+                                            </div>
+                                        </aside>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div ngbAccordionItem id="second">
+                    <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                            <h5 class="card-title">Contact Information</h5>
+                        </button>
+                    </h2>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody>
+
+                            <div class="card-body">
+                                <div class="row">
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Address1 <span
+                                                    class="text-danger"></span></label>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Address2 <span
+                                                    class="text-danger"></span></label>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">P.O Box <span
+                                                    class="text-danger"></span></label>
+
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Country <span
+                                                    class="text-danger"></span></label>
+
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">State <span
+                                                    class="text-danger"></span></label>
+
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">City <span
+                                                    class="text-danger"></span></label>
+
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Contact Person <span
+                                                    class="text-danger"></span></label>
+
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">E-mail <span
+                                                    class="text-danger"></span></label>
+
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Mobile <span
+                                                    class="text-danger"></span></label>
+
+                                        </div>
+                                    </aside>
+                                    <!-- <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Preferred Contact Mode <span
+                                                    class="text-danger"></span></label>
+
+                                        </div>
+                                    </aside> -->
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <ng-select formControlName="" [items]="modeOfPreferredContactMode"
+                                                bindLabel="name" bindValue="name">
+
+                                            </ng-select>
+                                            <label for="" class="input-label">Preferred Contact Mode <span
+                                                    class="text-danger"></span></label>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Language Perferenece <span
+                                                    class="text-danger"></span></label>
+
+                                        </div>
+                                    </aside>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <div ngbAccordionItem id="three">
+                    <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                            <h5 class="card-title">Lead Details</h5>
+                        </button>
+                    </h2>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody>
+
+                            <div class="card-body">
+                                <div class="row">
+
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Service of Internet <span
+                                                    class="text-danger"></span></label>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Purchase Timeline <span
+                                                    class="text-danger"></span></label>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Specific Requirement <span
+                                                    class="text-danger"></span></label>
+
+                                        </div>
+                                    </aside>
+                                    <!-- <aside class="col-md-4 mt-2">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
+                               
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>   -->
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <div ngbAccordionItem id="fourth">
+                    <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>
+                            <h5 class="card-title">Additional Information</h5>
+                        </button>
+                    </h2>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody>
+
+                            <div class="card-body">
+                                <div class="row">
+
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Industry <span
+                                                    class="text-danger"></span></label>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Company Site <span
+                                                    class="text-danger"></span></label>
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Annual Revenue <span
+                                                    class="text-danger"></span></label>
+
+                                        </div>
+                                    </aside>
+                                    <aside class="col-md-4">
+                                        <div class="custom-form-group">
+                                            <input type="text" id="text-input" placeholder=""
+                                                class="custom-input-field sm" formControlName="">
+                                            <label for="text-input" class="input-label">Notes <span
+                                                    class="text-danger"></span></label>
+
+                                        </div>
+                                    </aside>
+                                    <!-- <aside class="col-md-4 mt-2">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name" bindValue="name">
+                               
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>   -->
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>

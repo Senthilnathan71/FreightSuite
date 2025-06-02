@@ -97,32 +97,30 @@ export class TarrifEntryComponent implements OnInit {
 		this.tariffHeaderForm = this.fb.group({
 
 			DepartmentMasterSid: ['', [Validators.required]],
-			CompanyMasterSid: ['', [Validators.required]],
-			POOSid: ['', [Validators.required]],
+			POOSid: [''],
 			POLSid: ['', [Validators.required]],
 			PODSid: ['', [Validators.required]],
-			FDCSid: ['', [Validators.required]],
-			ViaPortSid: [84, [Validators.required]],
-			CargoType: ['', [Validators.required, Validators.maxLength(10)]],
-			POLTerminal: ['', [Validators.required, Validators.maxLength(5)]],
-			PODTerminal: ['', [Validators.required, Validators.maxLength(5)]],
-			Carrier: ['', [Validators.required]],
-			AgentSid: ['', [Validators.required]],
-			ServiceLevel: ['', [Validators.required, Validators.maxLength(10)]],
-			IncoTerms: ['', [Validators.required, Validators.maxLength(10)]],
-			StuffingAt: ['Dock', [Validators.required, Validators.maxLength(10)]],
-			EffectiveDate: ['', [Validators.required]],
-			status: ['Active', [Validators.required]],
-			Remarks: ['', [Validators.required, Validators.maxLength(100)]],
+			FDCSid: [''],
+			ViaPortSid: [''],
+			POLTerminal: [''],
+			PODTerminal: [''],
+			Carrier: [''],
+			MovementType : [''],
+			AgentSid: [''],
+			IncoTerms: [''],
+			StuffingAt: ['Dock'],
+			status: ['Active'],
+			Remarks: [''],
+
+			// Static Value
+			EffectiveDate: ['2025-05-28T13:29:37.391Z']
 		})
 	}
 
 	initDetailsForm() {
 		this.tariffDetailsForm = this.fb.group({
 			detailCompanyMasterSid:['',[Validators.required]],
-			detailChargeMasterSid :['',[Validators.required]],
 			detailUOMSid : ['',[Validators.required]],
-			detailCurrencyMasterSid:['',[Validators.required]],
 			detailEffectiveDate : ['',[Validators.required]],
 			detailChargeCode : ['',[Validators.required]],
 			detailDescription : ['',[Validators.required]],
@@ -164,7 +162,7 @@ export class TarrifEntryComponent implements OnInit {
 				detailBuyPerUnitPrice: data.BuyPerUnitPrice || '',
 				detailSlabFrom: data.SlabFrom || '',
 				detailSlabTo: data.SlabTo || '',
-				detailstatus: data.status ? (data.status === 'A' ? 'Active' : 'Invalid') : 'Active',
+				detailstatus: data.status ? (data.status === 'A' ? 'Active' : 'Suspended') : 'Active',
 				detailRemarks: data.Remarks || ''
 			})
 			
@@ -186,7 +184,7 @@ export class TarrifEntryComponent implements OnInit {
 						...tariffData.data,
 						DepartmentMasterSid: Number(tariffData.data.DepartmentMasterSid),
 						EffectiveDate: new Date(tariffData.data.EffectiveDate),
-						status: tariffData.data.status === 'A' ? 'Active' : "Invalid"
+						status: tariffData.data.status === 'A' ? 'Active' : "Suspended"
 					})
 				}
 			},
@@ -293,7 +291,7 @@ export class TarrifEntryComponent implements OnInit {
 				BuyPerUnitPrice: parseFloat(formValue.detailBuyPerUnitPrice),
 				SlabFrom: parseInt(formValue.detailSlabFrom),
 				SlabTo:parseInt(formValue.detailSlabTo),
-				status: formValue.detailstatus === 'Active'? 'A':'I',
+				status: formValue.detailstatus === 'Active'? 'A':'S',
 				Remarks: formValue.detailRemarks,
 				...(this.isModalEditMode ? {createdBy:createdBy}:{updatedBy:updatedBy})
 			}
@@ -346,7 +344,7 @@ export class TarrifEntryComponent implements OnInit {
 			AgentSid: Number(formValue.AgentSid),
 			Carrier: Number(formValue.Carrier),
 			updatedBy,
-			status: formValue.status === "Active" ? "A" : "I"
+			status: formValue.status === "Active" ? "A" : "S"
 		} : {
 			...formValue,
 			POOSid: Number(formValue.POOSid),
@@ -357,7 +355,7 @@ export class TarrifEntryComponent implements OnInit {
 			AgentSid: Number(formValue.AgentSid),
 			Carrier: Number(formValue.Carrier),
 			createdBy,
-			status: formValue.status === "Active" ? "A" : "I"
+			status: formValue.status === "Active" ? "A" : "S"
 		}
 	}
 

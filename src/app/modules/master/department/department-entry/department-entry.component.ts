@@ -8,11 +8,14 @@ import { CommonModule } from '@angular/common';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interface';
 
 @Component({
   selector: 'app-department-entry',
   standalone: true,
   imports: [
+    NgSelectModule,
     FeatherModule,
     CommonModule,
     FormsModule,
@@ -30,10 +33,11 @@ export class DepartmentEntryComponent {
   errorMessage: string = '';  // To store any error messages
   btnDisable: boolean = false;
   DepartmentMasterSid: number;
+  divisionList : Division[];
 
   countryList: any
   stateList: any
-  statusList = ["Active", "Invalid", "Block"]
+  statusList = ["Active", "Suspended"]
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -44,7 +48,7 @@ export class DepartmentEntryComponent {
 
   ngOnInit(): void {
     this.initForm();
-
+    this.getAllDivisions();
     // Subscribe to route params and load lead if ID exists
     this.route.paramMap.subscribe(params => {
       this.DepartmentMasterSid = +params.get('id');
@@ -64,6 +68,8 @@ export class DepartmentEntryComponent {
       departmentType: ['', [Validators.required]],
       ExportImport: ['', [Validators.required]],
       FCLLCL: ['', [Validators.required]],
+      Division : [''],
+      Remarks : [''],
       Status: ['Active']
     });
   }
@@ -82,11 +88,11 @@ export class DepartmentEntryComponent {
       const payload = (this.isEditMode) ? {
         ...formValue,
         ...updatedBy,
-        Status: formValue.Status === "Active" ? "A" : "I"
+        Status: formValue.Status === "Active" ? "A" : "S"
       } : {
         ...formValue,
         ...createdBy,
-        Status: formValue.Status === "Active" ? "A" : "I"
+        Status: formValue.Status === "Active" ? "A" : "S"
       };
 
 
@@ -137,10 +143,17 @@ export class DepartmentEntryComponent {
   // Mapping for API status values
   statusMap: { [key: string]: string } = {
     A: 'Active',
-    I: 'Invalid',
-    B: 'Block'
+    S: 'Suspended',
+    
   };
 
+  getAllDivisions(){
+    this.masterService.getAllDivisions().subscribe(
+      (resp:any)=>{
+        this.divisionList=resp;
+      }
+    )
+  }
 
   // Fetch lead data and patch the form
   loadDepartmentData(deptId: number) {
@@ -148,7 +161,7 @@ export class DepartmentEntryComponent {
       (deptData: any) => {
         this.departmentForm.patchValue({
           ...deptData,
-          Status: deptData.Status === 'A' ? 'Active' : 'Invalid'
+          Status: deptData.Status === 'A' ? 'Active' : 'Suspended'
         },
         );
       },

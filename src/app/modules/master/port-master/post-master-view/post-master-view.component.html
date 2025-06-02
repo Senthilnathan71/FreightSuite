@@ -125,13 +125,12 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
-                                    formControlName="TerminalCode" />
+                                    formControlName="TerminalCode" [textWithNumbers]="10"/>
                                 <label for="text-input" class="input-label">Terminal</label>
                                 <div
                                     *ngIf="portForm.get('TerminalCode')?.touched && portForm.get('TerminalCode')?.invalid">
                                     <p *ngIf="portForm.get('TerminalCode')?.errors?.['maxlength']"
-                                        class="error-message">Code characters must be
-                                        maximum 10 characters long.
+                                        class="error-message">Max 10 Characters
                                     </p>
                                 </div>
                             </div>
@@ -139,13 +138,12 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
-                                    formControlName="EdiPortCode" />
+                                    formControlName="EdiPortCode" [textWithNumbers]="10"/>
                                 <label for="text-input" class="input-label">Edi Port</label>
                                 <div
                                     *ngIf="portForm.get('EdiPortCode')?.touched && portForm.get('EdiPortCode')?.invalid">
                                     <p *ngIf="portForm.get('EdiPortCode')?.errors?.['maxlength']" class="error-message">
-                                        Code characters must be
-                                        maximum 10 characters long.
+                                        Max 10 Characters
                                     </p>
                                 </div>
                             </div>
@@ -153,13 +151,12 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
-                                    formControlName="SCMTPortCode" />
+                                    formControlName="SCMTPortCode" [textWithNumbers]="10"/>
                                 <label for="text-input" class="input-label">SCMT Port</label>
                                 <div
                                     *ngIf="portForm.get('SCMTPortCode')?.touched && portForm.get('SCMTPortCode')?.invalid">
                                     <p *ngIf="portForm.get('SCMTPortCode')?.errors?.['maxlength']"
-                                        class="error-message">characters must be
-                                        maximum 100 characters long.</p>
+                                        class="error-message">Max 10 Characters</p>
                                 </div>
                             </div>
                         </aside>
@@ -275,37 +272,37 @@
                         <aside class="col-md-12">
                             <div class="custom-form-group">
                                 <textarea id="textarea-input" class="custom-input-field" placeholder="" rows="1"
-                                    formControlName="ExportRestriction"></textarea>
+                                    formControlName="ExportRestriction" [textWithNumbers]="100"></textarea>
                                 <label for="text-input" class="input-label">Export Restriction</label>
                                 <div
                                     *ngIf="portForm.get('ExportRestriction')?.touched && portForm.get('ExportRestriction')?.invalid">
                                     <p *ngIf="portForm.get('ExportRestriction')?.errors?.['maxlength']"
                                         class="error-message">
-                                        characters must be maximum 100 character long.</p>
+                                        Max 100 Characters</p>
                                 </div>
                             </div>
                         </aside>
                         <aside class="col-md-12">
                             <div class="custom-form-group">
                                 <textarea id="textarea-input" class="custom-input-field" placeholder="" rows="1"
-                                    formControlName="ImportRestriction"></textarea>
+                                    formControlName="ImportRestriction" [textWithNumbers]="100"></textarea>
                                 <label for="text-input" class="input-label">Import Restriction</label>
                                 <div
                                     *ngIf="portForm.get('ImportRestriction')?.touched && portForm.get('ImportRestriction')?.invalid">
                                     <p *ngIf="portForm.get('ImportRestriction')?.errors?.['maxlength']"
                                         class="error-message">
-                                        characters must be maximum 100 character long.</p>
+                                        Max 100 Characters</p>
                                 </div>
                             </div>
                         </aside>
                         <aside class="col-md-12">
                             <div class="custom-form-group">
                                 <textarea id="textarea-input" class="custom-input-field" placeholder="" rows="1"
-                                    formControlName="Remarks"></textarea>
+                                    formControlName="Remarks" [textWithNumbers]="100"></textarea>
                                 <label for="text-input" class="input-label">Remarks</label>
                                 <div *ngIf="portForm.get('Remarks')?.touched && portForm.get('Remarks')?.invalid">
                                     <p *ngIf="portForm.get('Remarks')?.errors?.['maxlength']" class="error-message">
-                                        characters must be maximum 100 character long.</p>
+                                        Max 100 Characters</p>
                                 </div>
                             </div>
                         </aside>

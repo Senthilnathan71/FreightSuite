@@ -16,45 +16,45 @@ import * as $ from 'jquery';
   templateUrl: './login.component.html',
 })
 export class LoginComponent implements OnInit {
-  loginform! : FormGroup;
+  loginform!: FormGroup;
   recoverform = false;
   isMobile: boolean = false;
   errorMessage = "";
-  isSubmitted : boolean = false;
+  isSubmitted: boolean = false;
   constructor(
-    private appService:AppService,
-    private router : Router,
-    private authService : authService,
-    private appSettingService  : AppSettingsService,
-    private localStorage : StorageMap,
-    private formBuilder : FormBuilder
-  
-  ) {}
+    private appService: AppService,
+    private router: Router,
+    private authService: authService,
+    private appSettingService: AppSettingsService,
+    private localStorage: StorageMap,
+    private formBuilder: FormBuilder
+
+  ) { }
 
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice();
     this.loginform = this.formBuilder.group({
-      email: ["",[this.emailValidator]],
-      password: ["",Validators.required]
+      email: ["", [this.emailValidator]],
+      password: ["", Validators.required]
     });
   }
 
-  login(){
+  login() {
     let param = this.loginform.value;
     this.isSubmitted = true;
 
-    if(this.loginform.invalid){
+    if (this.loginform.invalid) {
       return;
     }
 
-    this.authService.login(param).subscribe(async(resp:any)=>{
-      if(!resp.status){
+    this.authService.login(param).subscribe(async (resp: any) => {
+      if (!resp.status) {
         this.errorMessage = resp.message || "Login failed"
       }
       let userData = resp.data.user;
 
-      if(resp.status){
-        this.router.navigate(['crm/dashboard']);
+      if (resp.status) {
+        this.router.navigate(['dashboard']);
       }
     })
 
@@ -68,22 +68,22 @@ export class LoginComponent implements OnInit {
   }
 
 
-  emailValidator(field: FormControl){
+  emailValidator(field: FormControl) {
     let email = field.value.trim();
-    email = email.replace(/\s/g,'');
-    if(email !==field.value){
+    email = email.replace(/\s/g, '');
+    if (email !== field.value) {
       field.patchValue(email)
     }
 
-    if($.trim(email) == ""){
-      return {required: true}
-    }else if(email.indexOf("fb_") !== -1){
+    if ($.trim(email) == "") {
+      return { required: true }
+    } else if (email.indexOf("fb_") !== -1) {
       return null
-    }else if(regexPatterns.email.test(email)){
+    } else if (regexPatterns.email.test(email)) {
       return null
     }
 
-    return {pattern : true}
+    return { pattern: true }
   }
 
 }
@@ -92,13 +92,13 @@ var regexPatterns = {
   nameString: /^[A-Za-z]+$/,  // Allows only alphabets (both uppercase and lowercase)
   // Corrected Email regex pattern
 
-  email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,  
+  email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
   // Explanation:
   // ^[a-zA-Z0-9._%+-]+ -> matches the username (local part of email)
   // @ -> the @ symbol
   // [a-zA-Z0-9.-]+ -> matches the domain part (before the dot)
   // \.[a-zA-Z]{2,}$ -> matches the dot and domain extension (e.g., .com, .org)
-  
+
   // Numbers only pattern (only digits)
   numbersOnly: /^\d+$/,  // Matches one or more digits (no decimal)
 
@@ -111,4 +111,4 @@ var regexPatterns = {
   // (?=.*[!@#$%^&*()_+={}\[\]:;"'<>,.?/-]) -> at least one special character
   // .{8,} -> ensures a minimum of 8 characters
 }
-export {regexPatterns}
+export { regexPatterns }

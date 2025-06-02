@@ -1102,7 +1102,7 @@ export class MasterService {
     )
   }
   //container-type-master
-  getAllContainerType() {
+  getAllContainerTypes() {
     return this.http.get<ContainerType>('container-type').pipe(
       map((resp: any) => {
         let response = resp.data;
@@ -1128,15 +1128,16 @@ export class MasterService {
       })
     )
   }
-  createNewContainerType(payload: any) {
+  addNewContainerType(payload: any) {
     return this.http.post("container-type/create", payload).pipe(
-      map((res: any) => {
-        return res;
+      map((resp: any) => {
+        let response = resp;
+        return response;
       })
     )
   }
 
-  updateContainerTypeById(id: number, payload: any) {
+  editContainerTypeById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`container-type/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp.data;

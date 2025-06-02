@@ -23,7 +23,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
   currencyExchangeForm!: FormGroup;
   isEditMode = false;
   CurrencyExchangeSid: number | null = null;
-  statusList = ["Active", "Inactive"];
+  statusList = ["Active", "Suspended"];
   companies: any[] = [];
   branches: any[] = [];
   loading = false;
@@ -141,7 +141,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
         this.currencyExchangeForm.patchValue({
           ...data,
           EffectiveFrom: effectiveFrom,
-          status: data.status === 'A' ? 'Active' : 'Inactive'
+          status: data.status === 'A' ? 'Active' : 'Suspended'
         });
         this.loading = false;
       },
@@ -168,7 +168,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
       EffectiveFrom: new Date(formValue.EffectiveFrom).toISOString(),
       SellRate: parseFloat(formValue.SellRate),
       BuyRate: parseFloat(formValue.BuyRate),
-      status: formValue.status === "Active" ? "A" : "I",
+      status: formValue.status === "Active" ? "A" : "S",
       createdBy: this.appSettingService.userSettingSource.value['userEmail']
     };
 

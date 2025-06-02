@@ -5,7 +5,7 @@ export interface Division {
   CompanyMasterSid: string;
   // address: string;
   Remarks: string;
-  status: string;
+  status: 'A' | 'S';
   createdBy: string;
   updatedBy: string;
   createdOn: string;

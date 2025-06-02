@@ -28,7 +28,7 @@ export class CommodityEntryComponent implements OnInit {
 
   statusOptions = [
     { id: 'A', name: 'Active' },
-    { id: 'I', name: 'Inactive' }
+    { id: 'S', name: 'Suspended' }
   ];
 
   commodityAttributes = [
@@ -57,6 +57,7 @@ export class CommodityEntryComponent implements OnInit {
         this.isEditMode = true;
         this.loadCommodity(this.commodityId);
         this.commodityForm.get('status')?.enable();
+
         
       }
     });
@@ -105,8 +106,12 @@ export class CommodityEntryComponent implements OnInit {
   loadCommodity(id: number) {
     this.masterService.getCommodityById(id).subscribe({
       next: (commodity) => {
+        // Enable the status field first before patching values
+        this.commodityForm.get('status')?.enable();
+        
         this.commodityForm.patchValue({
           ...commodity,
+          status: commodity.status || 'A',  // Ensure status has a value
           UOMSid: commodity.UOMSid ? commodity.UOMSid.toString() : null,
           Timber: commodity.Timber || false,
           Flamable: commodity.Flamable || false,
@@ -120,8 +125,7 @@ export class CommodityEntryComponent implements OnInit {
         this.appSettingService.showError('Failed to load commodity data');
       }
     });
-  }
-
+}
   onSubmit() {
     if (this.commodityForm.invalid) {
       this.commodityForm.markAllAsTouched();

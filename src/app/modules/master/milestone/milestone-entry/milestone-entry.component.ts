@@ -12,7 +12,7 @@ import { FeatherModule } from 'angular-feather';
 export class MilestoneEntryComponent {
   modeOfStatus=[
     {id:"Active",name:"Active"},
-    {id:"Inactive",name:"Inactive"},
+    {id:"Suspended",name:"Suspended"},
   ]
   modeOfShipmentType=[
     {id:"Shipment1",name:"Shipment1"},
