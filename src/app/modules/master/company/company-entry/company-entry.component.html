@@ -417,7 +417,10 @@
 
                                     <!-- BRANCH ENTRY -->
 <ng-template #branchEntryContent let-modal>
-    <div [formGroup]="branchForm">
+   <div class="modal-container"> 
+  <div class="modal-responsive-wrapper">
+         <div class="modal-content custom-modal">
+          <div [formGroup]="branchForm" >
         <div class="modal-header">
             <h4 class="modal-title" id="modal-basic-title">{{isModalEditMode ? 'Edit Branch' : 'Add Branch'}}</h4>
             <button type="button" class="btn-close" aria-label="Close" (click)="closeBranchForm()"></button>
@@ -792,7 +795,11 @@
             <ng-container *ngTemplateOutlet='nav2Template'></ng-container>
         </div>
     </div>
-    </div>              
+    </div>    
+    </div>
+    </div>
+   </div>
+           
 </ng-template>
             
                                     <!-- BRANCH LIST -->

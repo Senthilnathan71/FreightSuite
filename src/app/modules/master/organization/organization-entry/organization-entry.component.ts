@@ -77,7 +77,6 @@ export class OrganizationEntryComponent {
   ];
   selectedStatus: string[] = [];
 
-
   modeOfCustomerType = [
     { id: '1', name: 'Forwarder' },
     { id: '2', name: 'Airline' },
@@ -105,11 +104,9 @@ export class OrganizationEntryComponent {
     { id: '24', name: 'Warehouse' },
   ];
 
-
   // isSelected(item: any): boolean {
   //   return this.selectedStatus?.includes(item.name);
   // }
-
 
   // toggleSelection(item: any): void {
   //   const index = this.selectedStatus.indexOf(item.name);
@@ -119,19 +116,20 @@ export class OrganizationEntryComponent {
   //     this.selectedStatus.push(item.name);
   //   }
 
-
   //   this.selectedStatus = [...this.selectedStatus];
   // }
-
-
 
   updateCustomerType(): void {
     const result: any = {};
     this.modeOfCustomerType.forEach((type) => {
       const key = this.toCamelCase(type.name);
-      result[key] = this.selectedStatus.includes(type.name) ? 'isTrue' : 'isFalse';
+      result[key] = this.selectedStatus.includes(type.name)
+        ? 'isTrue'
+        : 'isFalse';
     });
-    this.customerForm.get('CustomerType')?.setValue(result, { emitEvent: false });
+    this.customerForm
+      .get('CustomerType')
+      ?.setValue(result, { emitEvent: false });
   }
 
   toggleSelection(item: any): void {
@@ -155,8 +153,6 @@ export class OrganizationEntryComponent {
       .replace(/\s/g, '')
       .replace(/^(.)/, (match, group1) => group1.toLowerCase());
   }
-
-
 
   onClearSelection(): void {
     this.customerForm.get('CustomerType')?.setValue([]);
@@ -256,7 +252,9 @@ export class OrganizationEntryComponent {
       this.isModalEditMode = false;
     }
 
-    this.modalRef = this.modalService.open(content, { size: 'lg' }); // ✅ open the template
+   this.modalRef = this.modalService.open(content, { centered: true });
+
+    // ✅ open the template
     this.loadCustomerBranchContact();
     this.loadCustomerBranchEmail();
     this.loadCustomerBranchLogin();
@@ -286,7 +284,7 @@ export class OrganizationEntryComponent {
       this.isModalEditMode = false;
     }
 
-    this.modalRef = this.modalService.open(content, { size: 'lg' }); // ✅ open the template
+    this.modalRef = this.modalService.open(content, { size: 'lg', centered: true  }); // ✅ open the template
   }
 
   openBranchEmailModal(content: TemplateRef<any>, data?: any) {
@@ -313,7 +311,7 @@ export class OrganizationEntryComponent {
       this.isModalEditMode = false;
     }
 
-    this.modalRef = this.modalService.open(content, { size: 'lg' }); // ✅ open the template
+    this.modalRef = this.modalService.open(content, { size: 'lg', centered: true  }); // ✅ open the template
   }
 
   openBranchLoginModal(content: TemplateRef<any>, data?: any) {
@@ -340,7 +338,7 @@ export class OrganizationEntryComponent {
     } else {
       this.isModalEditMode = false;
     }
-    this.modalRef = this.modalService.open(content, { size: 'lg' }); // ✅ open the template
+    this.modalRef = this.modalService.open(content, { size: 'lg', centered: true  }); // ✅ open the template
   }
   modalRef: NgbModalRef;
   stateList: any;
@@ -368,7 +366,7 @@ export class OrganizationEntryComponent {
     private router: Router,
     private modalService: NgbModal,
     private cdRef: ChangeDetectorRef
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.getAllCountries();
@@ -407,7 +405,7 @@ export class OrganizationEntryComponent {
       CompanyType: [{ value: '', disabled: true }],
       Remarks: ['', [Validators.required]],
       status: [''],
-      CustomerType: [{}]
+      CustomerType: [{}],
     });
     this.customerForm
       .get('PanAvailable')
@@ -537,9 +535,6 @@ export class OrganizationEntryComponent {
   //   });
   // }
 
-
-
-
   onSubmit() {
     let createdBy = {
       createdBy: this.appSettingService.userSettingSource.value['userEmail'],
@@ -550,50 +545,50 @@ export class OrganizationEntryComponent {
     const formValue = this.customerForm.value;
     const selectedPaymentType = this.customerForm.value.paymentType;
 
-    console.log(formValue, 'formValue')
+    console.log(formValue, 'formValue');
     const payload = this.isEditMode
       ? {
-        CustomerName: formValue.CustomerName,
-        CustomerShortCode: formValue.CustomerShortCode,
-        CustomerAliasName: formValue.CustomerAliasName,
-        CustomerAddress1: formValue.CustomerAddress1,
-        CustomerAddress2: formValue.CustomerAddress2,
-        LocalLanguage: formValue.LocalLanguage,
-        PanType: formValue.PanType,
-        PanName: formValue.PanName,
-        GroupName: formValue.GroupName,
-        Website: formValue.Website,
-        Remarks: formValue.Remarks,
-        CountryMasterSid: Number(formValue.CountryMasterSid),
-        CustomerType: formValue.CustomerType,
-        CashCredit: selectedPaymentType,
-        IsMSME: formValue.IsMSME ? 'A' : 'I',
-        CompanyType: formValue.CompanyType,
-        RegistrationNo: formValue.RegistrationNo,
-        ...updatedBy,
-        status: this.status === 'A' ? 'A' : 'C',
-      }
+          CustomerName: formValue.CustomerName,
+          CustomerShortCode: formValue.CustomerShortCode,
+          CustomerAliasName: formValue.CustomerAliasName,
+          CustomerAddress1: formValue.CustomerAddress1,
+          CustomerAddress2: formValue.CustomerAddress2,
+          LocalLanguage: formValue.LocalLanguage,
+          PanType: formValue.PanType,
+          PanName: formValue.PanName,
+          GroupName: formValue.GroupName,
+          Website: formValue.Website,
+          Remarks: formValue.Remarks,
+          CountryMasterSid: Number(formValue.CountryMasterSid),
+          CustomerType: formValue.CustomerType,
+          CashCredit: selectedPaymentType,
+          IsMSME: formValue.IsMSME ? 'A' : 'I',
+          CompanyType: formValue.CompanyType,
+          RegistrationNo: formValue.RegistrationNo,
+          ...updatedBy,
+          status: this.status === 'A' ? 'A' : 'C',
+        }
       : {
-        CustomerName: formValue.CustomerName,
-        CustomerShortCode: formValue.CustomerShortCode,
-        CustomerAliasName: formValue.CustomerAliasName,
-        CustomerAddress1: formValue.CustomerAddress1,
-        CustomerAddress2: formValue.CustomerAddress2,
-        LocalLanguage: formValue.LocalLanguage,
-        PanType: formValue.PanType,
-        PanName: formValue.PanName,
-        GroupName: formValue.GroupName,
-        Website: formValue.Website,
-        Remarks: formValue.Remarks,
-        CountryMasterSid: Number(formValue.CountryMasterSid),
-        CustomerType: formValue.CustomerType,
-        CashCredit: selectedPaymentType,
-        IsMSME: formValue.IsMSME ? 'A' : 'I',
-        CompanyType: formValue.CompanyType,
-        RegistrationNo: formValue.RegistrationNo,
-        ...createdBy,
-        status: formValue.status === 'Active' ? 'A' : 'S',
-      };
+          CustomerName: formValue.CustomerName,
+          CustomerShortCode: formValue.CustomerShortCode,
+          CustomerAliasName: formValue.CustomerAliasName,
+          CustomerAddress1: formValue.CustomerAddress1,
+          CustomerAddress2: formValue.CustomerAddress2,
+          LocalLanguage: formValue.LocalLanguage,
+          PanType: formValue.PanType,
+          PanName: formValue.PanName,
+          GroupName: formValue.GroupName,
+          Website: formValue.Website,
+          Remarks: formValue.Remarks,
+          CountryMasterSid: Number(formValue.CountryMasterSid),
+          CustomerType: formValue.CustomerType,
+          CashCredit: selectedPaymentType,
+          IsMSME: formValue.IsMSME ? 'A' : 'I',
+          CompanyType: formValue.CompanyType,
+          RegistrationNo: formValue.RegistrationNo,
+          ...createdBy,
+          status: formValue.status === 'Active' ? 'A' : 'S',
+        };
 
     if (this.isEditMode) {
       this.masterService
@@ -660,12 +655,13 @@ export class OrganizationEntryComponent {
         const customerType = customerData.CustomerType || {};
 
         this.selectedStatus = this.modeOfCustomerType
-          .filter((type) => customerType[this.toCamelCase(type.name)] === 'isTrue')
+          .filter(
+            (type) => customerType[this.toCamelCase(type.name)] === 'isTrue'
+          )
           .map((type) => type.name);
 
         // Update final CustomerType value in the form control
         this.updateCustomerType(); // this will set the 'CustomerType' control value
-
       },
       (error) => {
         this.appSettingService.showError('Error loading customer data.');
@@ -674,7 +670,9 @@ export class OrganizationEntryComponent {
   }
 
   toDisplayName(camelCase: string): string {
-    return camelCase.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
+    return camelCase
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, (str) => str.toUpperCase());
   }
 
   getAllCountries() {
@@ -768,35 +766,35 @@ export class OrganizationEntryComponent {
     const payload =
       this.isModalEditMode && this.customerBranchId
         ? {
-          CustomerMasterSid: this.CustomerMasterSid,
-          CityMasterSid: Number(formValue.CustBranchCity),
-          StateMasterSid: Number(formValue.CustBranchState),
-          BranchName: formValue.CustBranchBranchName,
-          Zip_PostBox: String(formValue.CustBranchZipPostCode),
-          ContactNo: String(formValue.CustBranchPhone),
-          Email: formValue.CustBranchEmail,
-          Address: formValue.CustBranchAddress,
-          Registered: formValue.CustBranchRegistered,
-          CustomerGstType: formValue.CustBranchGSTtype,
-          GSTNo: formValue.CustBranchGSTIN,
-          ...updatedBy,
-          status: formValue.status,
-        }
+            CustomerMasterSid: this.CustomerMasterSid,
+            CityMasterSid: Number(formValue.CustBranchCity),
+            StateMasterSid: Number(formValue.CustBranchState),
+            BranchName: formValue.CustBranchBranchName,
+            Zip_PostBox: String(formValue.CustBranchZipPostCode),
+            ContactNo: String(formValue.CustBranchPhone),
+            Email: formValue.CustBranchEmail,
+            Address: formValue.CustBranchAddress,
+            Registered: formValue.CustBranchRegistered,
+            CustomerGstType: formValue.CustBranchGSTtype,
+            GSTNo: formValue.CustBranchGSTIN,
+            ...updatedBy,
+            status: formValue.status,
+          }
         : {
-          CustomerMasterSid: this.CustomerMasterSid,
-          CityMasterSid: Number(formValue.CustBranchCity),
-          StateMasterSid: Number(formValue.CustBranchState),
-          BranchName: formValue.CustBranchName,
-          Zip_PostBox: String(formValue.CustBranchZipPostCode),
-          ContactNo: String(formValue.CustBranchPhone),
-          Email: formValue.CustBranchEmail,
-          Address: formValue.CustBranchAddress,
-          Registered: formValue.CustBranchRegistered,
-          CustomerGstType: formValue.CustBranchGSTtype,
-          GSTNo: formValue.CustBranchGSTIN,
-          ...createdBy,
-          status: formValue.status,
-        };
+            CustomerMasterSid: this.CustomerMasterSid,
+            CityMasterSid: Number(formValue.CustBranchCity),
+            StateMasterSid: Number(formValue.CustBranchState),
+            BranchName: formValue.CustBranchName,
+            Zip_PostBox: String(formValue.CustBranchZipPostCode),
+            ContactNo: String(formValue.CustBranchPhone),
+            Email: formValue.CustBranchEmail,
+            Address: formValue.CustBranchAddress,
+            Registered: formValue.CustBranchRegistered,
+            CustomerGstType: formValue.CustBranchGSTtype,
+            GSTNo: formValue.CustBranchGSTIN,
+            ...createdBy,
+            status: formValue.status,
+          };
 
     if (this.isModalEditMode && this.customerBranchId) {
       this.masterService
@@ -911,25 +909,25 @@ export class OrganizationEntryComponent {
     const payload =
       this.isModalEditMode && this.CusBranchContactSid
         ? {
-          CustomerMasterSid: this.CustomerMasterSid,
-          CustomerBranchSid: this.customerBranchId,
-          ContactType: formValue.ContactType,
-          MobileNo: String(formValue.MobileNo),
-          Email: formValue.Email,
-          ContactName: formValue.ContactName,
-          ...updatedBy,
-          status: formValue.status,
-        }
+            CustomerMasterSid: this.CustomerMasterSid,
+            CustomerBranchSid: this.customerBranchId,
+            ContactType: formValue.ContactType,
+            MobileNo: String(formValue.MobileNo),
+            Email: formValue.Email,
+            ContactName: formValue.ContactName,
+            ...updatedBy,
+            status: formValue.status,
+          }
         : {
-          CustomerMasterSid: this.CustomerMasterSid,
-          CustomerBranchSid: this.customerBranchId,
-          ContactType: formValue.ContactType,
-          MobileNo: String(formValue.MobileNo),
-          Email: formValue.Email,
-          ContactName: formValue.ContactName,
-          ...createdBy,
-          status: formValue.status,
-        };
+            CustomerMasterSid: this.CustomerMasterSid,
+            CustomerBranchSid: this.customerBranchId,
+            ContactType: formValue.ContactType,
+            MobileNo: String(formValue.MobileNo),
+            Email: formValue.Email,
+            ContactName: formValue.ContactName,
+            ...createdBy,
+            status: formValue.status,
+          };
 
     if (this.isModalEditMode && this.CusBranchContactSid) {
       this.masterService
@@ -1011,19 +1009,19 @@ export class OrganizationEntryComponent {
     const payload =
       this.isModalEditMode && this.CustomerBrEmailSid
         ? {
-          CustomerBranchSid: Number(this.customerBranchId),
-          DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
-          Toemail: formValue.Toemail,
-          CCemail: formValue.CCemail,
-          ...updatedBy,
-        }
+            CustomerBranchSid: Number(this.customerBranchId),
+            DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
+            Toemail: formValue.Toemail,
+            CCemail: formValue.CCemail,
+            ...updatedBy,
+          }
         : {
-          CustomerBranchSid: Number(this.customerBranchId),
-          DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
-          Toemail: formValue.Toemail,
-          CCemail: formValue.CCemail,
-          ...createdBy,
-        };
+            CustomerBranchSid: Number(this.customerBranchId),
+            DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
+            Toemail: formValue.Toemail,
+            CCemail: formValue.CCemail,
+            ...createdBy,
+          };
 
     if (this.isModalEditMode && this.CustomerBrEmailSid) {
       this.masterService
@@ -1150,21 +1148,21 @@ export class OrganizationEntryComponent {
     const payload =
       this.isModalEditMode && this.CustomerLoginSid
         ? {
-          CustomerMasterSid: Number(this.CustomerMasterSid),
-          CustomerBranchSid: Number(this.customerBranchId),
-          LoginName: formValue.LoginName,
-          LoginEmail: formValue.LoginEmail,
-          LoginPassword: formValue.LoginPassword,
-          ...updatedBy,
-        }
+            CustomerMasterSid: Number(this.CustomerMasterSid),
+            CustomerBranchSid: Number(this.customerBranchId),
+            LoginName: formValue.LoginName,
+            LoginEmail: formValue.LoginEmail,
+            LoginPassword: formValue.LoginPassword,
+            ...updatedBy,
+          }
         : {
-          CustomerMasterSid: Number(this.CustomerMasterSid),
-          CustomerBranchSid: Number(this.customerBranchId),
-          LoginName: formValue.LoginName,
-          LoginEmail: formValue.LoginEmail,
-          LoginPassword: formValue.LoginPassword,
-          ...createdBy,
-        };
+            CustomerMasterSid: Number(this.CustomerMasterSid),
+            CustomerBranchSid: Number(this.customerBranchId),
+            LoginName: formValue.LoginName,
+            LoginEmail: formValue.LoginEmail,
+            LoginPassword: formValue.LoginPassword,
+            ...createdBy,
+          };
 
     if (this.isModalEditMode && this.CustomerLoginSid) {
       this.masterService
