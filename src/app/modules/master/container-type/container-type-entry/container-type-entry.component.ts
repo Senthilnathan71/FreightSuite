@@ -33,7 +33,7 @@ export class ContainerTypeEntryComponent {
   btnDisable: boolean = false;
   ContainerTypeMasterSid: number;
 
-  modeOfStatus = [
+  statusList = [
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }
   ];
