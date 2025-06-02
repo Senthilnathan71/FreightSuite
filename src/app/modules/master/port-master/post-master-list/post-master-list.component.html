@@ -37,7 +37,7 @@
                   <option value="PortType">Port Type</option>
                   <option value="TerminalCode">Terminal Code</option>
                   <option value="countryName">Country Name</option>
-                  <option value="sectorName">Region</option>
+                  <!-- <option value="zoneName">Region</option> -->
                   <option value="status">Status</option>
                 </select>
               </div>
@@ -110,7 +110,7 @@
                 <div class="text-truncate">{{item.countryMaster?.countryName || '—'}}</div>
               </td>
               <td>
-                <div class="text-truncate">{{item.sectorMaster?.sectorName || '—'}}</div>
+                <div class="text-truncate">{{getRegionNameById(item.ZoneMasterSid)}}</div>
               </td>
               <td>
                 <div class="text-truncate">{{item.PortType}}</div>

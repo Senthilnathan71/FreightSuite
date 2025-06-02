@@ -60,15 +60,10 @@ statusOptions = [
     this.uomForm = new FormGroup({
       UOMName: new FormControl('', [Validators.required, Validators.maxLength(20)]),
       UOMCode: new FormControl('', [Validators.required, Validators.maxLength(3)]),
-      UOMType: new FormControl('', [Validators.required, Validators.maxLength(10)]),
-      EdiCode: new FormControl('', [Validators.required, Validators.maxLength(3)]),
       DimensionReq: new FormControl('', []),
       WeightReq: new FormControl(null, []),
       VolumeReq: new FormControl('', []),
       ShipmentType: new FormControl(null, [Validators.required]),
-      CostPerUnitPrice: new FormControl('', [Validators.required, Validators.maxLength(10)]),
-      SlabFrom: new FormControl('', [Validators.required, Validators.maxLength(4)]),
-      SlabTo: new FormControl('', [Validators.required, Validators.maxLength(4)]),
       status: new FormControl({value: 'A', disabled: !this.isEditMode}, [Validators.required]),
       Remarks: new FormControl('', [Validators.maxLength(300)])
     });

@@ -315,7 +315,7 @@
                     </aside>
                    
                     <aside class="col-md-6">
-                        <div class="d-flex">
+                        <div class="d-flex my-2">
                             <div class="custom-form-group custom-form-group-select w-100 mb-0">
                                 <input class="form-control mb-0" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #d="ngbDatepicker"
                                     (click)="d.toggle()" readonly formControlName="EffectiveDate" />
@@ -436,7 +436,7 @@
                             Create new Tariff and then Add Tariff Details
                         </ngb-alert>
                     </div>
-                    <div *ngIf="filteredTariffDetail">
+                    <div *ngIf="filteredTariffDetail.length>0">
                         <ng-container *ngTemplateOutlet="tariffDetailListTemplate"></ng-container>
                     </div>
                 </div>
@@ -454,6 +454,7 @@
                     <th class="bg-transparent text-light" scope="col">Action</th>
                     <th class="bg-transparent text-light" scope="col">Slab?</th>
                     <th class="bg-transparent text-light" scope="col">Effective From</th>
+                    <th class="bg-transparent text-light" scope="col">Expired On</th>
                     <th class="bg-transparent text-light" scope="col">Charge</th>
                     <th class="bg-transparent text-light dofi-w-200" scope="col">Description</th>
                     <th class="bg-transparent text-light" scope="col">Cargo Type</th>
@@ -462,6 +463,7 @@
                     <th class="bg-transparent text-light" scope="col">Sale Unit Price</th>
                     <th class="bg-transparent text-light" scope="col">Buy Curr.</th>
                     <th class="bg-transparent text-light" scope="col">Buy Unit Price</th>
+                    <th class="bg-transparent text-light" scope="col">Min Sale</th>
                     <th class="bg-transparent text-light" scope="col">Status</th>
                     <th class="bg-transparent text-light" scope="col">Remarks</th>
                 </tr>
@@ -484,8 +486,12 @@
                     </td>
                     <td class="text-center">
                         @if(tariffDetail.IsSlabApplicable==='Y'){
-                            <div class="text-truncate" [ngbPopover]=slabTemplate popoverTitle="Slab Applicable" popoverClass="bg-light-info">
+                            <div class="text-truncate text-primary cursor-pointer" [ngbPopover]=slabTemplate popoverTitle="Slab Applicable" popoverClass="bg-light-info">
                                 <i-feather name="info" class="feather-sm"></i-feather>
+                            </div>
+                        } @else {
+                            <div class="">
+                                <i-feather name="slash" class="feather-sm"></i-feather>
                             </div>
                         }
                     </td>
@@ -493,7 +499,10 @@
                         {{tariffDetail.EffectiveDate | date:"dd-MMM-YY"}}
                     </td>
                     <td>
-                        {{tariffDetail.chargeMaster.chargeCode}}
+                        {{tariffDetail.ExpiredOn | date:"dd-MMM-YY"}}
+                    </td>
+                    <td>
+                        {{tariffDetail.ChargeCode}}
                     </td>
                     <td>
                         <div class="dofi-max-w-200 text-truncate" [ngbTooltip]=descriptionTemplate>
@@ -517,6 +526,9 @@
                     </td>
                     <td>
                         {{tariffDetail.BuyPerUnitPrice}}
+                    </td>
+                    <td>
+                        {{tariffDetail.MinSale}}
                     </td>
                     <td>
                         @if(tariffDetail.status === "A"){
@@ -552,7 +564,7 @@
     <div class="col-12">
         <div class="card h-100">
             <div class="modal-header">
-                <h4 class="modal-title">{{isModalEditMode ? 'Update Tariff Detail':'Add Tariff Details'}}</h4>
+                <h4 class="modal-title">{{isModalEditMode ? 'Update Tariff Detail':'Tariff Details'}}</h4>
                 <button type="button" class="btn-close" aria-label="Close"
                     (click)="modal.dismiss('Cross click')"></button>
             </div>
@@ -561,22 +573,133 @@
                 <form [formGroup]="tariffDetailsForm">
                     <div class="col-md-12">
                         <div class="row">
+                            <aside [class.col-md-4]="tariffDetailsForm.get('detailisSlabApplicable')?.value"
+                                [class.col-md-12]="!tariffDetailsForm.get('detailisSlabApplicable')?.value" >
+                                <div class="form-check mt-3 mb-4">
+                                    <input type="checkbox" formControlName="detailisSlabApplicable" id="text-input"
+                                        placeholder="" class="form-check-input ms-lg-1">
+                                    <label for="text-input" class="form-check-label ms-lg-1">Slab Applicable </label>
+                                </div>
+                            </aside>
+                            @if(tariffDetailsForm.get('detailisSlabApplicable')?.value){
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" formControlName="detailSlabFrom" placeholder=""
+                                        class="custom-input-field sm" [onlyNumbers]="4">
+                                    <label for="text-input" class="input-label">Slab From <span
+                                            class="text-danger">*</span></label>
+                                    @if(tariffDetailsForm.get('detailSlabFrom')?.touched &&
+                                    tariffDetailsForm.get('detailSlabFrom')?.errors){
+                                    <div class="error-message">
+                                        @if(tariffDetailsForm.get('detailSlabFrom')?.hasError('required')){
+                                        <span>Slab From is required</span>
+                                        } @else if(tariffDetailsForm.get('detailSlabFrom')?.hasError('maxlength')) {
+                                        <span>Max 4 Digits</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-4 mb-md-0">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" formControlName="detailSlabTo" placeholder=""
+                                        class="custom-input-field sm" [onlyNumbers]="4">
+                                    <label for="text-input" class="input-label">Slab To <span
+                                            class="text-danger">*</span></label>
+                                    @if(tariffDetailsForm.get('detailSlabTo')?.touched &&
+                                    tariffDetailsForm.get('detailSlabTo')?.errors){
+                                    <div class="error-message">
+                                        @if(tariffDetailsForm.get('detailSlabTo')?.hasError('required')){
+                                        <span>Slab To is required</span>
+                                        } @else if(tariffDetailsForm.get('detailSlabTo')?.hasError('maxlength')) {
+                                        <span>Max 4 Digits</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            }
+                            <aside class="col-md-6 col-lg-4">
+                                <div class="d-flex mb-2 my-lg-0">
+                                    <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                        <input class="form-control mb-0" placeholder="yyyy-mm-dd" name="dp"
+                                            ngbDatepicker #d="ngbDatepicker" (click)="d.toggle()" readonly
+                                            formControlName="detailEffectiveDate" />
+                                        <label class="input-label" for="dp">Effective From <span
+                                                class="text-danger">*</span></label>
+                                        @if(tariffDetailsForm.get('detailEffectiveDate')?.touched &&
+                                        tariffDetailsForm.get('detailEffectiveDate')?.invalid){
+                                        <div class="error-message">
+                                            @if(tariffDetailsForm.get('detailEffectiveDate')?.hasError('required')){
+                                            <span>Effective Date is required</span>
+                                            }
+                                        </div>
+                                        }
+                                    </div>
+                                    <button
+                                        class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2"
+                                        (click)="d.toggle()" type="button">
+                                        <i-feather name="calendar" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6 col-lg-4">
+                                <div class="d-flex mb-2 my-lg-0">
+                                    <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                        <input class="form-control mb-0" placeholder="yyyy-mm-dd" name="dp"
+                                            ngbDatepicker #d1="ngbDatepicker" (click)="d1.toggle()" readonly
+                                            formControlName="detailExpiredOn" />
+                                        <label class="input-label" for="dp">Expired On <span
+                                                class="text-danger">*</span></label>
+                                        @if(tariffDetailsForm.get('detailExpiredOn')?.touched &&
+                                        tariffDetailsForm.get('detailExpiredOn')?.invalid){
+                                        <div class="error-message">
+                                            @if(tariffDetailsForm.get('detailExpiredOn')?.hasError('required')){
+                                            <span>Expired On is required</span>
+                                            }
+                                        </div>
+                                        }
+                                    </div>
+                                    <button
+                                        class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2"
+                                        (click)="d1.toggle()" type="button">
+                                        <i-feather name="calendar" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                            </aside>
+                            
                             <aside class="col-md-6 col-lg-4">
                                 <div class="custom-form-group custom-form-group-select">
-                                    <ng-select class="ng-select" formControlName="detailCompanyMasterSid">
-                                        <ng-option value="">Select Company</ng-option>
-                                        @for(company of companyList; track company){
-                                        <ng-option
-                                            [value]="company.CompanyMasterSid">{{company.companyName}}</ng-option>
+                                    <ng-select class="ng-select" formControlName="detailChargeCode">
+                                        <ng-option value="">Select Charge Code</ng-option>
+                                        @for(charge of chargeList; track charge){
+                                        <ng-option [value]="charge.chargeCode">{{charge.chargeCode}}</ng-option>
                                         }
                                     </ng-select>
-                                    <label for="company" class="input-label">Company <span
+                                    <label for="charge" class="input-label">Charge Code<span
                                                 class="text-danger">*</span></label>
-                                    @if(tariffDetailsForm.get('detailCompanyMasterSid')?.touched &&
-                                    tariffDetailsForm.get('detailCompanyMasterSid')?.invalid){
+                                    @if(tariffDetailsForm.get('detailChargeMasterSid')?.touched &&
+                                    tariffDetailsForm.get('detailChargeMasterSid')?.invalid){
                                     <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailCompanyMasterSid')?.hasError('required')){
-                                        <span>Company is Required</span>
+                                        @if(tariffDetailsForm.get('detailChargeMasterSid')?.hasError('required')){
+                                        <span>Charge is Required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6 col-lg-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" formControlName="detailDescription"
+                                        placeholder="" class="custom-input-field sm" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Description</label>
+                                    @if(tariffDetailsForm.get('detailDescription')?.touched &&
+                                    tariffDetailsForm.get('detailDescription')?.errors){
+                                    <div class="error-message">
+                                        @if(tariffDetailsForm.get('detailDescription')?.hasError('required')){
+                                        <span>Description is required</span>
+                                        } @else if(tariffDetailsForm.get('detailDescription')?.hasError('maxlength')) {
+                                        <span>Max 100 characters</span>
                                         }
                                     </div>
                                     }
@@ -584,20 +707,22 @@
                             </aside>
                             <aside class="col-md-6 col-lg-4">
                                 <div class="custom-form-group custom-form-group-select">
-                                    <ng-select class="ng-select" formControlName="detailChargeCode"
-                                        (change)="setChargeCode($event)">
-                                        <ng-option value="">Select Charge</ng-option>
-                                        @for(charge of chargeList; track charge){
-                                        <ng-option [value]="charge.ChargeCode">{{charge.ChargeCode}}</ng-option>
+                                    <ng-select class="ng-select" formControlName="detailCargoType">
+                                        <ng-option value="">Select Cargo Type</ng-option>
+                                        @for (cargo of cargoTypes; track cargo) {
+                                        <ng-option [value]="cargo">{{ cargo }}</ng-option>
                                         }
                                     </ng-select>
-                                    <label for="charge" class="input-label">Charge <span
-                                                class="text-danger">*</span></label>
-                                    @if(tariffDetailsForm.get('detailChargeMasterSid')?.touched &&
-                                    tariffDetailsForm.get('detailChargeMasterSid')?.invalid){
+                                    <label for="text-input" class="input-label">Cargo Type <span
+                                            class="text-danger">*</span></label>
+                                    @if(tariffDetailsForm.get('detailCargoType')?.touched &&
+                                    tariffDetailsForm.get('detailCargoType')?.errors){
                                     <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailChargeMasterSid')?.hasError('required')){
-                                        <span>Charge is Required</span>
+                                        @if(tariffDetailsForm.get('detailCargoType')?.hasError('required')){
+                                        <span>Cargo Type is required</span>
+                                        }
+                                        @else if(tariffDetailsForm.get('detailCargoType')?.hasError('maxlength')) {
+                                        <span>Max 10 characters</span>
                                         }
                                     </div>
                                     }
@@ -623,155 +748,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6 col-lg-4">
-                                <div class="custom-form-group custom-form-group-select">
-                                    <ng-select class="ng-select" formControlName="detailCurrencyMasterSid">
-                                        <ng-option value="">Select Currency</ng-option>
-                                        @for(currency of currencyList; track currency){
-                                        <ng-option
-                                            [value]="currency.CurrencyMasterSid">{{currency.currencyName}}</ng-option>
-                                        }
-                                    </ng-select>
-                                    <label for="Currency" class="input-label">Currency <span
-                                                class="text-danger">*</span></label>
-                                    @if(tariffDetailsForm.get('detailCurrencyMasterSid')?.touched &&
-                                    tariffDetailsForm.get('detailCurrencyMasterSid')?.invalid){
-                                    <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailCurrencyMasterSid')?.hasError('required')){
-                                        <span>Currency is Required</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
-                            <aside class="col-md-6 col-lg-4">
-                                <div class="d-flex">
-                                    <div class="custom-form-group custom-form-group-select w-100 mb-0">
-                                        <input class="form-control mb-0" placeholder="yyyy-mm-dd" name="dp"
-                                            ngbDatepicker #d="ngbDatepicker" (click)="d.toggle()" readonly
-                                            formControlName="detailEffectiveDate" />
-                                        <label class="input-label" for="dp">Effective From <span
-                                                class="text-danger">*</span></label>
-                                        @if(tariffDetailsForm.get('detailEffectiveDate')?.touched &&
-                                        tariffDetailsForm.get('detailEffectiveDate')?.invalid){
-                                        <div class="error-message">
-                                            @if(tariffDetailsForm.get('detailEffectiveDate')?.hasError('required')){
-                                            <span>Effective Date is required</span>
-                                            }
-                                        </div>
-                                        }
-                                    </div>
-                                    <button
-                                        class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2"
-                                        (click)="d.toggle()" type="button">
-                                        <i-feather name="calendar" class="feather-sm"></i-feather>
-                                    </button>
-                                </div>
-                            </aside>
-                            <!-- <aside class="col-md-6 col-lg-4">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" formControlName="detailChargeCode" placeholder=""
-                                        class="custom-input-field sm" [textWithNumbers]="5" readonly>
-                                    <label for="text-input" class="input-label">Charge Code</label>
-                                    @if(tariffDetailsForm.get('detailChargeCode')?.touched &&
-                                    tariffDetailsForm.get('detailChargeCode')?.errors){
-                                    <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailChargeCode')?.hasError('required')){
-                                        <span>Charge Code is required</span>
-                                        } @else if(tariffDetailsForm.get('detailChargeCode')?.hasError('maxlength')) {
-                                        <span>Max 5 characters</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside> -->
-                            <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" formControlName="detailDescription"
-                                        placeholder="" class="custom-input-field sm" [textWithNumbers]="100">
-                                    <label for="text-input" class="input-label">Description</label>
-                                    @if(tariffDetailsForm.get('detailDescription')?.touched &&
-                                    tariffDetailsForm.get('detailDescription')?.errors){
-                                    <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailDescription')?.hasError('required')){
-                                        <span>Description is required</span>
-                                        } @else if(tariffDetailsForm.get('detailDescription')?.hasError('maxlength')) {
-                                        <span>Max 100 characters</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
-                            <aside class="col-md-6">
-                                <div class="custom-form-group custom-form-group-select">
-                                    <ng-select class="ng-select" formControlName="detailCargoType">
-                                        <ng-option value="">Select Cargo Type</ng-option>
-                                        @for (cargo of cargoTypes; track cargo) {
-                                        <ng-option [value]="cargo">{{ cargo }}</ng-option>
-                                        }
-                                    </ng-select>
-                                    <label for="text-input" class="input-label">Cargo Type <span
-                                            class="text-danger">*</span></label>
-                                    @if(tariffDetailsForm.get('detailCargoType')?.touched &&
-                                    tariffDetailsForm.get('detailCargoType')?.errors){
-                                    <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailCargoType')?.hasError('required')){
-                                        <span>Cargo Type is required</span>
-                                        }
-                                        @else if(tariffDetailsForm.get('detailCargoType')?.hasError('maxlength')) {
-                                        <span>Max 10 characters</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
-                            <aside [class.col-md-4]="tariffDetailsForm.get('detailisSlabApplicable')?.value"
-                                [class.col-md-12]="!tariffDetailsForm.get('detailisSlabApplicable')?.value" >
-                                <div class="form-check mt-3 mb-4">
-                                    <input type="checkbox" formControlName="detailisSlabApplicable" id="text-input"
-                                        placeholder="" class="form-check-input ms-lg-2">
-                                    <label for="text-input" class="form-check-label ms-lg-2">Slab Applicable <span
-                                            class="text-danger">*</span></label>
-                                </div>
-                            </aside>
-                            @if(tariffDetailsForm.get('detailisSlabApplicable')?.value){
-                            <aside class="col-md-4">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" formControlName="detailSlabFrom" placeholder=""
-                                        class="custom-input-field sm" [onlyNumbers]="4">
-                                    <label for="text-input" class="input-label">Slab From <span
-                                            class="text-danger">*</span></label>
-                                    @if(tariffDetailsForm.get('detailSlabFrom')?.touched &&
-                                    tariffDetailsForm.get('detailSlabFrom')?.errors){
-                                    <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailSlabFrom')?.hasError('required')){
-                                        <span>Slab From is required</span>
-                                        } @else if(tariffDetailsForm.get('detailSlabFrom')?.hasError('maxlength')) {
-                                        <span>Max 4 Digits</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
-                            <aside class="col-md-4 mb-4 mb-md-0">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" formControlName="detailSlabTo" placeholder=""
-                                        class="custom-input-field sm" [onlyNumbers]="4">
-                                    <label for="text-input" class="input-label">Slab To <span
-                                            class="text-danger">*</span></label>
-                                    @if(tariffDetailsForm.get('detailSlabTo')?.touched &&
-                                    tariffDetailsForm.get('detailSlabTo')?.errors){
-                                    <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailSlabTo')?.hasError('required')){
-                                        <span>Slab To is required</span>
-                                        } @else if(tariffDetailsForm.get('detailSlabTo')?.hasError('maxlength')) {
-                                        <span>Max 4 Digits</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
-                            }
+                            
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select class="ng-select" formControlName="detailSaleCurrency">
@@ -850,7 +827,24 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-4">
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" formControlName="detailMinSale"
+                                        placeholder="" class="custom-input-field sm" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Min Sale</label>
+                                    @if(tariffDetailsForm.get('detailMinSale')?.touched &&
+                                    tariffDetailsForm.get('detailMinSale')?.errors){
+                                    <div class="error-message">
+                                        @if(tariffDetailsForm.get('detailMinSale')?.hasError('required')){
+                                        <span>Min Sale is required</span>
+                                        } @else if(tariffDetailsForm.get('detailMinSale')?.hasError('maxlength')) {
+                                        <span>Max 100 characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select">
 
                                     @if(isModalEditMode){
@@ -883,6 +877,65 @@
                                     }
                                 </div>
                             </aside>
+                            <!-- <aside class="col-md-6 col-lg-4">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select class="ng-select" formControlName="detailCompanyMasterSid">
+                                        <ng-option value="">Select Company</ng-option>
+                                        @for(company of companyList; track company){
+                                        <ng-option
+                                            [value]="company.CompanyMasterSid">{{company.companyName}}</ng-option>
+                                        }
+                                    </ng-select>
+                                    <label for="company" class="input-label">Company <span
+                                                class="text-danger">*</span></label>
+                                    @if(tariffDetailsForm.get('detailCompanyMasterSid')?.touched &&
+                                    tariffDetailsForm.get('detailCompanyMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(tariffDetailsForm.get('detailCompanyMasterSid')?.hasError('required')){
+                                        <span>Company is Required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside> -->
+                            <!-- <aside class="col-md-6 col-lg-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" formControlName="detailChargeCode" placeholder=""
+                                        class="custom-input-field sm" [textWithNumbers]="5" readonly>
+                                    <label for="text-input" class="input-label">Charge Code</label>
+                                    @if(tariffDetailsForm.get('detailChargeCode')?.touched &&
+                                    tariffDetailsForm.get('detailChargeCode')?.errors){
+                                    <div class="error-message">
+                                        @if(tariffDetailsForm.get('detailChargeCode')?.hasError('required')){
+                                        <span>Charge Code is required</span>
+                                        } @else if(tariffDetailsForm.get('detailChargeCode')?.hasError('maxlength')) {
+                                        <span>Max 5 characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside> -->
+                            <!-- <aside class="col-md-6 col-lg-4">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select class="ng-select" formControlName="detailCurrencyMasterSid">
+                                        <ng-option value="">Select Currency</ng-option>
+                                        @for(currency of currencyList; track currency){
+                                        <ng-option
+                                            [value]="currency.CurrencyMasterSid">{{currency.currencyName}}</ng-option>
+                                        }
+                                    </ng-select>
+                                    <label for="Currency" class="input-label">Currency <span
+                                                class="text-danger">*</span></label>
+                                    @if(tariffDetailsForm.get('detailCurrencyMasterSid')?.touched &&
+                                    tariffDetailsForm.get('detailCurrencyMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(tariffDetailsForm.get('detailCurrencyMasterSid')?.hasError('required')){
+                                        <span>Currency is Required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside> -->
                         </div>
                     </div>
                 </form>

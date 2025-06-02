@@ -150,9 +150,9 @@
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-6" [formGroup]="commodityForm">
         <div class="card h-100">
-            <div class="card-body">
+            <div class="card-body" >
                 <div class="row">
                     <aside class="col-md-4">
                         <div class="custom-form-group">
@@ -173,26 +173,19 @@
                     </aside>
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <ng-container *ngIf="!isEditMode; else statusSelect">
-                                <input type="text" class="custom-input-field sm" value="Active" readonly>
-                                <label class="input-label">Status</label>
-                            </ng-container>
-                            <ng-template #statusSelect>
-                                <select formControlName="status" class="custom-input-field sm" [class.is-invalid]="commodityForm.get('status')?.invalid && 
-                              (commodityForm.get('status')?.touched || commodityForm.get('status')?.dirty)">
-                                    <option *ngFor="let status of statusOptions" [value]="status.id">{{status.name}}
-                                    </option>
-                                </select>
-                                <label class="input-label">Status <span class="text-danger">*</span></label>
-                                <div *ngIf="commodityForm.get('status')?.invalid && 
-                                     (commodityForm.get('status')?.touched || 
-                                     commodityForm.get('status')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="commodityForm.get('status')?.hasError('required')">
-                                        Status is required
-                                    </span>
-                                </div>
-                            </ng-template>
+                        <div class="custom-form-group custom-form-group-select">
+                    
+                            @if(isEditMode){
+                            <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
+                                <ng-option value="Active">Active</ng-option>
+                                <ng-option value="Suspended">Suspended</ng-option>
+                            </ng-select>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status" id="text-input"
+                                readonly>
+                            }
+                            <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
+                    
                         </div>
                     </aside>
 

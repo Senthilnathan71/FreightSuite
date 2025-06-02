@@ -41,7 +41,7 @@ export class PostMasterViewComponent {
   countryList: Country[] = [];
   stateList: State[] = [];
   filteredStateList: State[];
-  regionList: Sector[] = [];
+  regionList: any[] = [];
 
   modeOfStatus = [
     { name: 'Active', value: 'Active' },
@@ -81,7 +81,7 @@ export class PostMasterViewComponent {
       CountryMasterSid: [, [Validators.required]],
       StateMasterSid: [,],
       TimeZone: [''],
-      SectorMasterSid: [''],
+      ZoneMasterSid: [''],
       TerminalCode: ['', [Validators.maxLength(10)]],
       PortType: ['Sea', [Validators.maxLength(10)]],
       ExportRestriction: ['', [Validators.maxLength(100)]],
@@ -146,12 +146,12 @@ export class PostMasterViewComponent {
     forkJoin({
       countries: this.masterService.getAllCountry(),
       states: this.masterService.getAllState(),
-      sectors: this.masterService.getAllSectors()
-    }).subscribe(({ countries, states, sectors }) => {
+      regions: this.masterService.getAllZones()
+    }).subscribe(({ countries, states, regions }) => {
       this.countryList = countries.data,
         this.stateList = states.data,
         this.filteredStateList = states.data,
-        this.regionList = sectors
+        this.regionList = regions
     })
   }
 

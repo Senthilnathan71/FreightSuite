@@ -105,27 +105,19 @@ export class CompanyEntryComponent implements OnInit {
 		this.companyForm = this.fb.group({
 			companyName: ['', [Validators.required]],
 			companyCode: ['', [Validators.required]],
-			addressLine1: ['', [Validators.required]],
-			addressLine2: [''],
-			webSite: [''],
-			phoneNumber: [],
-			email: ['', Validators.email],
-			isHo: [false, [Validators.required]],
-			remarks: [''],
-			companyLogo: [null],
-			reportLogo: [null],
-			status: ['Active', [Validators.required]],
-			LoginSid: [1],
 			CountryMasterSid: ['', [Validators.required]],
-
-			// Field in Excel Design but not in Database Schema
-			// PAN : [''],
-
-			// Fields required in backend but not in design
-			CityMasterSid: ['', [Validators.required]],
-			StateMasterSid: ['', [Validators.required]],
-			postal_code: ['', [Validators.required]],
 			CurrencyMasterSid: ['', [Validators.required]],
+			addressLine1: ['', [Validators.required]],
+			webSite: [''],
+			email: ['', Validators.email],
+			phoneNumber: [],
+			Pan : [''],
+			isHo: [false, [Validators.required]],
+			status: ['Active', [Validators.required]],
+			remarks: [''],
+
+			// Needs to be removed
+			StateMasterSid : [2]
 		})
 	}
 
@@ -179,10 +171,6 @@ export class CompanyEntryComponent implements OnInit {
 
 
 	openBranchEntryModal(content: TemplateRef<any>, data?: any) {
-		if(!this.CompanyMasterSid){
-			this.setErrorMessage=true;
-			return;
-		}
 		this.initBranchForm();
 		if (data) {
 			this.isModalEditMode = true;
@@ -223,10 +211,6 @@ export class CompanyEntryComponent implements OnInit {
 	}
 
 	openBranchBankModal(content: TemplateRef<any>, data?: any) {
-		if(!this.BranchMasterSid){
-			this.setBranchErrorMessage = true;
-			return;
-		}
 		this.initBranchBankForm();
 		if (data) {
 			this.isBankModalEdit = true;
@@ -264,8 +248,6 @@ export class CompanyEntryComponent implements OnInit {
 			const formValue = this.companyForm.value;
 			const payload = this.isEditMode ? {
 				...formValue,
-				CityMasterSid: parseInt(formValue.CityMasterSid),
-				StateMasterSid: parseInt(formValue.StateMasterSid),
 				CountryMasterSid: parseInt(formValue.CountryMasterSid),
 				CurrencyMasterSid: parseInt(formValue.CurrencyMasterSid),
 				isHo: formValue.isHo ? 'Y' : 'N',
@@ -273,8 +255,6 @@ export class CompanyEntryComponent implements OnInit {
 				updatedBy: updatedBy
 			} : {
 				...formValue,
-				CityMasterSid: parseInt(formValue.CityMasterSid),
-				StateMasterSid: parseInt(formValue.StateMasterSid),
 				CountryMasterSid: parseInt(formValue.CountryMasterSid),
 				CurrencyMasterSid: parseInt(formValue.CurrencyMasterSid),
 				isHo: formValue.isHo ? 'Y' : 'N',

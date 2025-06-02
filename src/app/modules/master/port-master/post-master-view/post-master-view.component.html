@@ -101,14 +101,14 @@
                         </aside>
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="SectorMasterSid" [items]="regionList" bindLabel="sectorName"
-                                    bindValue="SectorMasterSid">
+                                <ng-select formControlName="ZoneMasterSid" [items]="regionList" bindLabel="ZoneName"
+                                    bindValue="ZoneMasterSid">
 
                                 </ng-select>
                                 <label for="text-input" class="input-label">Region</label>
                                 <div
-                                    *ngIf="portForm.get('SectorMasterSid')?.touched && portForm.get('SectorMasterSid')?.invalid">
-                                    <p *ngIf="portForm.get('SectorMasterSid')?.errors?.['required']"
+                                    *ngIf="portForm.get('ZoneMasterSid')?.touched && portForm.get('ZoneMasterSid')?.invalid">
+                                    <p *ngIf="portForm.get('ZoneMasterSid')?.errors?.['required']"
                                         class="error-message">Region is required.
                                     </p>
                                 </div>

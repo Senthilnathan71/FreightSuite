@@ -56,7 +56,7 @@
 
                                             <!-- COMPANY NAME -->
 
-                        <aside class="col-md-3">
+                        <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="companyName" [onlyText]="100">
                                 <label for="text-input" class="input-label">Company Name <span class="text-danger"></span></label>
@@ -78,7 +78,7 @@
 
                                                     <!-- COMPANY CODE -->
 
-                        <aside class="col-md-3 ">
+                        <aside class="col-md-4 ">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="companyCode" [textWithNumbers]="10">
                                 <label for="text-input" class="input-label">Company Code <span class="text-danger"></span></label>
@@ -95,7 +95,7 @@
                                 }
                             </div>
                         </aside>
-                         <aside class="col-md-3">
+                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <select formControlName="CountryMasterSid" class="form-select">
                                     <option value="">Select Country</option>
@@ -113,7 +113,7 @@
                                 }
                             </div>
                         </aside>
-                         <aside class="col-md-3">
+                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <select formControlName="CurrencyMasterSid" class="form-select">
                                     <option value="">Select Currency</option>
@@ -121,7 +121,7 @@
                                 </select>
                                 <label for="text-input" class="input-label">Currency <span class="text-danger"></span></label>
                         
-                                <!--  Validation -->
+                                
                                 @if(companyForm.get('CurrencyMasterSid')?.touched && companyForm.get('CurrencyMasterSid')?.invalid){
                                     <div class="error-message">
                                         @if(companyForm.get('CurrencyMasterSid')?.hasError('required')){
@@ -134,7 +134,7 @@
                         
                                                     <!-- ADDRESS LINE 1 -->
 
-                        <aside class="col-md-3">
+                        <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="addressLine1" [textWithNumbers]="500">
                                 <label for="text-input" class="input-label">Address  <span class="text-danger"></span></label>
@@ -151,7 +151,7 @@
                                 }
                             </div>
                         </aside>
-                         <aside class="col-md-3">
+                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="webSite" [textWithNumbers]="100">
                                 <label for="text-input" class="input-label">Website </label>
@@ -166,7 +166,7 @@
                                 }
                             </div>
                         </aside>
-                         <aside class="col-md-3">
+                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="email">
                                 <label for="text-input" class="input-label">Email </label>
@@ -245,14 +245,19 @@
                                </div>
                         </aside> -->
 
-                         <aside class="col-md-3">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="">
-                                        <label for="text-input" class="input-label">PAN<span
-                                                class="text-danger">*</span></label>
-                                    </div>
-                                </aside>
+                        <!-- <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Pan" [textWithNumbers]="20">
+                                <label for="text-input" class="input-label">PAN</label>
+                            </div>
+                            @if(companyForm.get('Pan')?.touched && companyForm.get('Pan')?.invalid){
+                                <div class="error-message">
+                                    @if(companyForm.get('Pan')?.hasError('maxlength')){
+                                        <span>Max 20 Characters</span>
+                                    }
+                                </div>
+                            }
+                        </aside> -->
                         
                                                         <!-- STATE -->
 <!--                         
@@ -289,7 +294,7 @@
                         
                                                         <!-- PHONE NUMBER -->
                         
-                        <aside class="col-md-4 col-lg-2">
+                        <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="phoneNumber" [onlyNumbers]="20">
                                 <label for="text-input" class="input-label">Phone Number </label>
@@ -308,24 +313,9 @@
                             </div>
                         </aside>
                         
-                                                        <!-- EMAIL -->
-                        
-                       
-                        
-                                                        <!-- isHO? -->
-                        
-                        <aside class="col-md-3 col-lg-2">
-                            <div class="form-check form-check-inline mt-3">
-                                    <input type="checkbox" id="Cash" formControlName="isHo" class="form-check-input"
-                                        name="HO" value="Cash" />
-                                    <label for="Cash" class="form-check-label">Head Office <span class="text-danger"></span></label>
-                                </div>
-                        </aside>
-
-                        
                                                         <!-- PAN -->
                         
-                        <!-- <aside class="col-md-4 col-lg-3">
+                       <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="PAN" [textWithNumbers]="20">
                                 <label for="text-input" class="input-label">PAN </label>
@@ -338,7 +328,22 @@
                                     </div>
                                 }
                             </div>
-                        </aside> -->
+                        </aside>
+                        
+                                                        <!-- isHO? -->
+                        
+                        <aside class="col-md-3">
+                            <div class="form-check form-check-inline mt-3">
+                                    <input type="checkbox" id="Cash" formControlName="isHo" class="form-check-input"
+                                        name="HO" value="Cash" />
+                                    <label for="Cash" class="form-check-label">Head Office <span class="text-danger"></span></label>
+                                </div>
+                        </aside>
+
+                        
+                                                        <!-- PAN -->
+                        
+                        
 
                                                         <!-- STATUS -->
 
@@ -359,9 +364,9 @@
                         
                                                         <!-- REMARKS -->
                         
-                        <aside class="col-md-6 col-lg-5">
+                        <aside class="col-md-6">
                             <div class="custom-form-group">
-                                <textarea id="" placeholder="" rows="1" class="input-field sm"
+                                <textarea id="" placeholder="" rows="1" class="custom-input-field"
                                         formControlName="remarks" [textWithNumbers]="500"></textarea>
                                 <label for="text-input" class="input-label">Remarks </label>
                         
@@ -417,7 +422,10 @@
 
                                     <!-- BRANCH ENTRY -->
 <ng-template #branchEntryContent let-modal>
-    <div [formGroup]="branchForm">
+   <div class="modal-container"> 
+  <div class="modal-responsive-wrapper">
+         <div class="modal-content custom-modal">
+          <div [formGroup]="branchForm" >
         <div class="modal-header">
             <h4 class="modal-title" id="modal-basic-title">{{isModalEditMode ? 'Edit Branch' : 'Add Branch'}}</h4>
             <button type="button" class="btn-close" aria-label="Close" (click)="closeBranchForm()"></button>
@@ -792,7 +800,11 @@
             <ng-container *ngTemplateOutlet='nav2Template'></ng-container>
         </div>
     </div>
-    </div>              
+    </div>    
+    </div>
+    </div>
+   </div>
+           
 </ng-template>
             
                                     <!-- BRANCH LIST -->
@@ -928,14 +940,17 @@
                             <div class="text-truncate">{{bank.BeneficiaryName}}</div>
                         </td>
                         <td>
-                            <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1" *ngIf="bank.status ==='A'">
+                            @if(bank.status === 'Active'){
+                            <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
                                     Active
                             </span>
-                            <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1" *ngIf="bank.status !=='A'">
+                            } @else {
+                            <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
                                     Suspended
                             </span>
+                            }
                         </td>
                     </tr>
                 </tbody>
