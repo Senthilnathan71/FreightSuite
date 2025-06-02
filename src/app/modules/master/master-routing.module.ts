@@ -26,8 +26,6 @@ import { SectorListComponent } from './sector/sector-list/sector-list.component'
 import { MenuListComponent } from './menu/menu-list/menu-list.component';
 import { ReportListComponent } from './report/report-list/report-list.component';
 import { ReportEntryComponent } from './report/report-entry/report-entry.component';
-import { RegionListComponent } from './region/region-list/region-list.component';
-import { RegionEntryComponent } from './region/region-entry/region-entry.component';
 import { CompanyListComponent } from './company/company-list/company-list.component';
 import { CompanyEntryComponent } from './company/company-entry/company-entry.component';
 import { BranchListComponent } from './branch/branch-list/branch-list.component';
@@ -445,22 +443,6 @@ export const MasterRoutes: Routes = [
         data: {
           title: 'Report',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Report' }],
-        },
-      },
-      {
-        path: 'region/list',
-        component: RegionListComponent,
-        data: {
-          title: 'Region',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Region' }],
-        },
-      },
-      {
-        path: 'region/entry',
-        component: RegionEntryComponent,
-        data: {
-          title: 'Region',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Region' }],
         },
       },
       {
