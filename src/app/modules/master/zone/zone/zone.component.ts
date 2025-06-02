@@ -1,0 +1,285 @@
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { FormsModule, FormGroup, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import { FeatherModule } from 'angular-feather';
+import { NgbModalModule, NgbPagination, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { MasterService } from '../../master.service';
+import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { take } from 'rxjs';
+
+@Component({
+  selector: 'app-zone',
+  standalone: true,
+  imports: [
+    CommonModule, 
+    FeatherModule, 
+    FormsModule, 
+    NgbPagination, 
+    RouterModule,
+    NgbModalModule,
+    NgSelectModule,
+    ReactiveFormsModule,
+    OnlyTextDirective,
+    TextWithNumbersDirective
+  ],
+  templateUrl: './zone.component.html',
+  styleUrl: './zone.component.scss'
+})
+export class ZoneComponent {
+  zoneForm!: FormGroup;
+  isEditMode: boolean = false;
+  zones: Zone[] = [];
+  results: any[] = [];
+  ZoneMasterSid!: number;
+  errorMessage: string = '';
+  btnDisable: boolean = false;
+  zoneList: any[] = [];
+  statusList = ["Active", "Suspended"]
+  modalRef!: NgbModalRef;
+  searchType = 'ZoneName';
+  filterValue = '';
+  searchPerformed = false;
+  page = 1;
+  pageSize = 5;
+  totalLengthOfCollection = 0;
+
+  constructor(
+   private modalService: NgbModal,
+   private fb: FormBuilder,
+   private masterService: MasterService,
+   private route: ActivatedRoute,
+   private router: Router,
+   private appSettingService: AppSettingsService,
+   private dialog: MatDialog
+  ) {}
+
+  ngOnInit(): void {
+    // this.loadZone();
+    this.initForm();
+    this.route.paramMap.subscribe(params => {
+      this.ZoneMasterSid = +params.get('id');
+      if (this.ZoneMasterSid) {
+        this.isEditMode = true;
+        this.loadZoneData(this.ZoneMasterSid);
+      }
+    });
+  }
+
+  // loadZone(): void {
+  //   this.masterService.getAllZone().subscribe(
+  //     (resp: Zone[]) => {
+  //       console.log(resp,'Zones')
+  //       this.zones=resp['data'];
+  //     },
+  //     (error) => {
+  //       this.errorMessage = error.message;
+  //       console.error('Error loading:',error);
+  //     }
+  //   );
+  // }
+
+  initForm() {
+    this.zoneForm = this.fb.group({
+      ZoneCode: ['', [Validators.required]],
+      ZoneName: ['', [Validators.required]],
+      status: ['Active']
+    });
+  }
+
+  resetForm(): void {
+    this.zoneForm.reset();
+  }
+
+  openModal(content: any): void {
+    this.isEditMode = false;
+    this.resetForm();
+    this.modalRef = this.modalService.open(content, { centered: false, size: 'lg'});
+  }
+  
+  openEditModal(content: any, id: number): void {
+    this.isEditMode = true;
+    this.ZoneMasterSid = id;
+    this.getZoneById(id).add(() => {
+      this.modalRef = this.modalService.open(content, { centered: false, size: 'lg'});
+    });
+  }
+
+  updateZoneById(id: number, content: any) {
+    this.isEditMode = true;
+    this.ZoneMasterSid = id;
+    this.masterService.getZoneById(id).pipe(take(1)).subscribe({
+      next: (zone: any) => {
+        this.zoneForm.patchValue({
+          ZoneName: zone.ZoneName,
+          ZoneCode: zone.ZoneCode,
+          status: zone.status === 'A' ? 'Active' : 'Suspended'
+        });
+        this.modalRef = this.modalService.open(content, { size: ' lg'});
+      },
+      error: (err) => {
+        console.error('Error fetching', err);
+        this.appSettingService.showError('Error fetching data for editing');
+      }
+    });
+  }
+
+  closeModal(): void {
+    if (this.modalRef) {
+      this.modalRef.close();
+    }
+  }
+
+  getZoneById(id: number) {
+    this.resetForm();
+    return this.masterService.getZoneById(id).pipe(take(1)).subscribe(
+      (zone: any) => {
+        console.log('Zone from backend:', zone);
+        this.zoneForm.patchValue({
+          ZoneName: zone.ZoneName,
+          ZoneCode: zone.ZoneCode,
+          status: zone.status === 'A' ? 'Active' : 'Suspended'
+        });
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading');
+      }
+    );
+  }
+
+  onSubmit() {
+    if (this.zoneForm.invalid) {
+      this.zoneForm.markAllAsTouched();
+      this.zoneForm.updateValueAndValidity();
+      this.appSettingService.showWarning('Please fill all required fields correctly.');
+      return;
+    } else {
+      let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
+      let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
+      const formValue = this.zoneForm.value;
+
+      const payload = (this.isEditMode) ? {
+        ...formValue,
+        ...updatedBy,
+        status: formValue.status === "Active" ? "A" : "I"
+      } : {
+        ...formValue,
+        ...createdBy,
+        status: formValue.status === "Active" ? "A" : "I"
+      };
+
+      console.log('payload', payload);
+
+      if (this.isEditMode) {
+        this.masterService.updateZoneById(this.ZoneMasterSid, payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.appSettingService.showSuccess(resp.message);
+              this.closeModal();
+              this.router.navigate(['master/zone']);
+            } else {
+              this.appSettingService.showError(resp.message);
+            }
+          },
+          (error) => {
+            this.errorMessage = error.message;
+            console.error('Update Zone Error:', error);
+          }
+        );
+      } else {
+        this.masterService.createNewZone(payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.appSettingService.showSuccess(resp.message);
+              this.closeModal();
+              this.router.navigate(['master/zone']);
+            } else {
+              this.appSettingService.showError(resp.message);
+            }
+          },
+          (error) => {
+            this.errorMessage = error.message;
+            console.error('Create Zone Error:', error);
+          }
+        );
+      }
+    }
+  }
+
+  statusMap: { [key: string]: string } = {
+    A: 'Active',
+    IA: 'Suspended'
+  };
+
+  loadZoneData(id: number) {
+    this.masterService.getZoneById(id).subscribe(
+      (zoneData) => {
+        this.zoneForm.patchValue({
+          ...zoneData,
+          status: zoneData.status === 'A' ? 'Active' : 'Suspended'
+        },
+        );
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading data.');
+      }
+    );
+  }
+
+  search() {
+    const payload = {
+      searchType: this.searchType,
+      filterValue: this.filterValue
+    };
+
+    this.masterService.searchZone(payload).subscribe((res: any) => {
+      this.results = res;
+      console.log(this.results)
+      this.searchPerformed = true;
+      this.updatePaginatedData();
+      this.totalLengthOfCollection = this.results.length || 0;
+    });
+  }
+
+  updatePaginatedData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.zoneList = this.results.slice(startIndex, endIndex);
+  }
+
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
+
+  softDeleteZone(id) {
+    const dialogRef = this.dialog.open(DeleteWarningComponent);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.masterService.softDeleteZone(id).subscribe((resp: any) => {
+          this.appSettingService.showSuccess("Deleted!");
+          this.router.navigate(['master/zone'])
+          this.search();
+        });
+      }
+    });
+  }
+
+  resetPage(): void {
+    this.filterValue = '';
+    this.searchType = 'ZoneName';
+    this.page = 1;
+    this.zones = [] ;
+    this.zoneList = [];
+    this.totalLengthOfCollection = 0;
+    this.searchPerformed = false;
+  }
+
+  report() {  }
+
+}

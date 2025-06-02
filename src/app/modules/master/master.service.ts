@@ -712,7 +712,7 @@ export class MasterService {
 
   getAllZones() {
     return this.http.get<{ data: Zone[] }>(`zone`).pipe(
-      map((resp) => {
+      map((resp: any) => {
         let response = resp.data;
         return response;
       })
@@ -727,7 +727,7 @@ export class MasterService {
       })
     );
   }
-  deleteZone(id: number) {
+  softDeleteZone(id: number) {
     return this.http.delete<{ data: any }>(`zone/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
@@ -736,8 +736,8 @@ export class MasterService {
     );
   }
 
-  updateZoneById(id: number, data: any) {
-    return this.http.patch<{ data: any }>(`zone/update/${id}`, data).pipe(
+  updateZoneById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`zone/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -745,8 +745,8 @@ export class MasterService {
     );
   }
 
-  createZone(newData: Zone) {
-    return this.http.post<{ data: any }>(`zone/create`, newData).pipe(
+  createNewZone(payload: Zone) {
+    return this.http.post<{ data: any }>(`zone/create`, payload).pipe(
       map((resp) => {
         let response = resp.data;
         return response;

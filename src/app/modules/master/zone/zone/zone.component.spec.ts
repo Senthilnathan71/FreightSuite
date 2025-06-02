@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ZoneEntryComponent } from './zone-entry.component';
+import { ZoneEntryComponent } from './zone.component';
 
 describe('ZoneEntryComponent', () => {
   let component: ZoneEntryComponent;

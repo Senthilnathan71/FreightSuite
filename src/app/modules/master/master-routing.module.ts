@@ -19,8 +19,6 @@ import { CityEntryComponent } from './city/city-entry/city-entry.component';
 import { CityListComponent } from './city/city-list/city-list.component';
 import { TarrifEntryComponent } from './tarrif/tarrif-entry/tarrif-entry.component';
 import { TarrifListComponent } from './tarrif/tarrif-list/tarrif-list.component';
-import { ZoneEntryComponent } from './zone/zone-entry/zone-entry.component';
-import { ZoneListComponent } from './zone/zone-list/zone-list.component';
 import { SectorEntryComponent } from './sector/sector-entry/sector-entry.component';
 import { SectorListComponent } from './sector/sector-list/sector-list.component';
 import { MenuListComponent } from './menu/menu-list/menu-list.component';
@@ -56,6 +54,7 @@ import { ChargeEntryComponent } from './charge/charge-entry/charge-entry.compone
 import { TermsConditionListComponent } from './terms-condition/terms-condition-list/terms-condition-list.component';
 import { TermsConditionEntryComponent } from './terms-condition/terms-condition-entry/terms-condition-entry.component';
 import { HSSACComponent } from './HS-SAC/hs-sac/hs-sac.component';
+import { ZoneComponent } from './zone/zone/zone.component';
 import { ModuleComponent } from './module/module-list/module.component';
 import { RoleComponent } from './role/role-list/role.component';
 import { ChargegroupComponent } from './chargeGroup/chargegroup/chargegroup.component';
@@ -338,30 +337,6 @@ export const MasterRoutes: Routes = [
         data: {
           title: 'Edit Vessel',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Vessel Add' }],
-        },
-      },
-      {
-        path: 'zone/list',
-        component: ZoneListComponent,
-        data: {
-          title: 'Zone',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Zone List' }],
-        },
-      },
-      {
-        path: 'zone/entry',
-        component: ZoneEntryComponent,
-        data: {
-          title: 'Zone',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Zone Add' }],
-        },
-      },
-      {
-        path: 'zone/entry/:id',
-        component: ZoneEntryComponent,
-        data: {
-          title: 'Zone',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Zone Add' }],
         },
       },
       {
@@ -762,6 +737,25 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: "Master", url: "/master" },
             { title: "Division" },
+          ],
+        },
+      },
+      {
+        path: 'zone',
+        component: ZoneComponent,
+        data: {
+          title: 'Zone',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Zone' }],
+        },
+      },
+      {
+        path: "zone/:id",
+        component: ZoneComponent,
+        data: {
+          title: "Zone",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Zone" },
           ],
         },
       },
