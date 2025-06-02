@@ -7,6 +7,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ContainerType } from 'src/app/modules/crm-mobile/Interfaces/container-type.interface';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
   selector: 'app-container-type-entry',
@@ -16,12 +18,13 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    NgSelectModule,
+    OnlyTextDirective,
+    TextWithNumbersDirective
   ],
   templateUrl: './container-type-entry.component.html',
   styleUrl: './container-type-entry.component.scss'
 })
-export class ContainerTypeEntryComponent implements OnInit {
+export class ContainerTypeEntryComponent {
 
   containertypeForm!: FormGroup;
   isEditMode = false;
@@ -35,6 +38,8 @@ export class ContainerTypeEntryComponent implements OnInit {
     { id: 'S', name: 'Suspended' }
   ];
 
+  companyList: any
+
 
   constructor(
     private fb: FormBuilder,
@@ -45,13 +50,13 @@ export class ContainerTypeEntryComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.getAllCompanies()
     this.loadContainerTypes();
     this.initForm();
 
     this.route.paramMap.subscribe(params => {
-      const idParam = params.get('id');
-      if (idParam) {
-        this.ContainerTypeMasterSid = +idParam;
+      this.ContainerTypeMasterSid = +params.get('id');
+      if(this.ContainerTypeMasterSid) {
         this.isEditMode = true;
         this.loadContainerData(this.ContainerTypeMasterSid);
       }
@@ -59,8 +64,8 @@ export class ContainerTypeEntryComponent implements OnInit {
   }
 
   loadContainerTypes(): void {
-    this.masterService.getAllContainerType().subscribe(
-      (resp: any) => {
+    this.masterService.getAllContainerTypes().subscribe(
+      (resp: ContainerType[]) => {
         console.log(resp, 'Container-Type');
         this.containertypes = resp['data'];
       },
@@ -73,28 +78,21 @@ export class ContainerTypeEntryComponent implements OnInit {
 
   initForm() {
     this.containertypeForm = this.fb.group({
-      ContainerName: ['', [Validators.required]],
-      ContainerCode: ['', [Validators.required]],
-      GrossWeight: ['', [Validators.required]],
-      TareWeight: ['', [Validators.required]],
-      MaxVolume: ['', [Validators.required]],
-      ContainerCategory: ['', [Validators.required]],
-      // shippingMode: ['', [Validators.required]],
-      // iataRateClass: ['', [Validators.required]],
-      // handlingRateClass: ['', [Validators.required]],
-      // freightRateClass: ['', [Validators.required]],
-      // testing: ['', [Validators.required]],
-      Length: ['', [Validators.required]],
-      Width: ['', [Validators.required]],
-      Height: ['', [Validators.required]],
-      // portType: ['', [Validators.required]],
-      // storageClass: ['', [Validators.required]],
-      // cargoClass: ['', [Validators.required]],
-      // usContainerCode: ['', [Validators.required]],
-      // usContainerType: ['', [Validators.required]],
-      ContainerIsoCode: ['', [Validators.required]],
-      NoOfTEU: ['', [Validators.required]],
-      status: ['']
+      CompanyMasterSid:['',[Validators.required]],
+      ContainerCode: ['',[Validators.required]],
+      ContainerSize: ['',[Validators.required]],
+      ContainerIsoCode: ['',[Validators.required]],
+      ContainerName: ['',[Validators.required]],
+      ContainerCategory: ['',[Validators.required]],
+      Length: ['',[Validators.required]],
+      Width: ['',[Validators.required]],
+      Height: ['',[Validators.required]],
+      MaxVolume: ['',[Validators.required]],
+      TareWeight: ['',[Validators.required]],
+      GrossWeight: ['',[Validators.required]],
+      NoOfTeu: ['',[Validators.required]],
+      Remarks: ['',[Validators.required]],
+      status:['Active']
     });
   }
 
@@ -104,53 +102,58 @@ export class ContainerTypeEntryComponent implements OnInit {
       this.containertypeForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
-    }
+    } else {
+      let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail']};
+      let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail']};
+      const formValue = this.containertypeForm.value;
 
-    const formValue = this.containertypeForm.value;
-    const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
-
-    const payload = this.isEditMode
-      ? {
+      const payload = (this.isEditMode) ? {
         ...formValue,
-        updatedBy: userEmail,
-        status: formValue.status
-      }
-      : {
+        CompanyMasterSid: Number(formValue.CompanyMasterSid),
+        ...updatedBy,
+        status: formValue.status === "Active" ? "A" : "C"
+      } : {
         ...formValue,
-        createdBy: userEmail,
-        status: formValue.status
+        CompanyMasterSid: Number(formValue.CompanyMasterSid),
+        ...createdBy,
+        status: formValue.status === "Active" ? "A" : "C"
       };
 
-    if (this.isEditMode) {
-      this.masterService.updateContainerTypeById(this.ContainerTypeMasterSid, payload).subscribe(
-        (resp: any) => {
-          if (resp.status !== false) {
-            this.appSettingService.showSuccess(resp.message);
-            this.router.navigate(['master/container-type/list']);
-          } else {
-            this.appSettingService.showError(resp.message);
+      console.log('payload', payload);
+
+      if (this.isEditMode) {
+        this.masterService.editContainerTypeById(this.ContainerTypeMasterSid, payload).subscribe(
+          (resp: any) => {
+            console.log(resp.message);
+            if(resp.status) {
+              this.appSettingService.showSuccess(resp.message);
+              this.router.navigate(['master/container-type/list']);
+            } else {
+              this.appSettingService.showError(resp.message);
+            }
+          },
+          (error) => {
+            this.errorMessage = error.message;
+            console.error('Error loading:', error);
           }
-        },
-        (error) => {
-          this.errorMessage = error.message;
-          console.error('Error updating container type:', error);
-        }
-      );
-    } else {
-      this.masterService.createNewContainerType(payload).subscribe(
-        (resp: any) => {
-          if (resp.status !== false) {
-            this.appSettingService.showSuccess('Container Type created successfully');
-            this.router.navigate(['master/container-type/list']);
-          } else {
-            this.appSettingService.showError(resp.message);
+        );
+      } else {
+        this.masterService.addNewContainerType(payload).subscribe(
+          (resp: any) => {
+            console.log(resp);
+            if (resp.status) {
+              this.appSettingService.showSuccess(resp.message);
+              this.router.navigate(['master/container-type/list']);
+            } else {
+              this.appSettingService.showError(resp.message);
+            }
+          },
+          (error) => {
+            this.errorMessage = error.message;
+            console.error('Error loading:', error);
           }
-        },
-        (error) => {
-          this.errorMessage = error.message;
-          console.error('Error creating container type:', error);
-        }
-      );
+        );
+      }
     }
   }
 
@@ -165,13 +168,21 @@ export class ContainerTypeEntryComponent implements OnInit {
       (data) => {
         this.containertypeForm.patchValue({
           ...data,
-        });
+          CompanyMasterSid: data.CompanyMasterSid,
+          status: data.status === 'A' ? 'Active' : 'Invalid'
+        },
+      );
       },
       (error) => {
         this.appSettingService.showError('Error loading container data.');
-        console.error('Error:', error);
       }
     );
+  }
+
+  getAllCompanies() {
+    this.masterService.getAllCompanies().subscribe((res) => {
+      this.companyList = res;
+    })
   }
 
   reset() {

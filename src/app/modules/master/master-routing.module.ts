@@ -553,6 +553,16 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: "container-type/entry/:id",
+        component: ContainerTypeEntryComponent,
+        data: {
+          title: "Edit Conatiner Type",
+          urls: [
+            { title: "Master", url: "/master" },{ title: "Conatiner Type" },
+          ],
+        },
+      },
+      {
         path: 'milestone/list',
         component: MilestoneListComponent,
         data: {
