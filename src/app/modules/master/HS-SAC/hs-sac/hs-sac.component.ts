@@ -115,14 +115,14 @@ export class HSSACComponent {
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.modalRef = this.modalService.open(content, { centered: false, size: 'lg' });
+    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
   }
 
   openEditModal(content: any, id: number): void {
   this.isEditMode = true;
   this.HSSACMasterSid = id;
   this.getHssacById(id).add(() => {
-    this.modalRef = this.modalService.open(content, { centered: false, size: 'lg' });
+    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
   });
 }
 
@@ -141,7 +141,7 @@ editHssac(id: number, content: any) {
         Remarks: hssac.Remarks,
         status: hssac.status === 'A' ? 'Active' : 'Inactive'
       });
-      this.modalRef = this.modalService.open(content, { size: 'lg'});
+      this.modalRef = this.modalService.open(content, {centered: true, size: 'lg', backdrop: 'static'});
     },
     error: (err) => {
       console.error('Error fetching HSSAC', err);

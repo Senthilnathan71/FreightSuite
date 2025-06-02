@@ -105,14 +105,14 @@ export class DivisionComponent {
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.modalRef = this.modalService.open(content, { centered: false, size: 'lg'});
+    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static'});
   }
   
   openEditModal(content: any, DivisionMasterSid: number): void {
     this.isEditMode = true;
     this.DivisionMasterSid = DivisionMasterSid;
     this.getDivisionById(DivisionMasterSid).add(() => {
-      this.modalRef = this.modalService.open(content, { centered: false, size: 'lg'});
+      this.modalRef = this.modalService.open(content, { centered: true, size: 'lg' , backdrop: 'static'});
     });
   }
 
@@ -128,7 +128,7 @@ export class DivisionComponent {
           Remarks: division.Remarks,
           status: division.status === 'A' ? 'Active' : 'Suspended'
         });
-        this.modalRef = this.modalService.open(content, { size: ' lg'});
+        this.modalRef = this.modalService.open(content, { centered: true,  size: 'lg', backdrop: 'static'});
       },
       error: (err) => {
         console.error('Error fetching', err);

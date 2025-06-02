@@ -100,14 +100,14 @@ export class ZoneComponent {
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.modalRef = this.modalService.open(content, { centered: false, size: 'lg'});
+    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static'});
   }
   
   openEditModal(content: any, id: number): void {
     this.isEditMode = true;
     this.ZoneMasterSid = id;
     this.getZoneById(id).add(() => {
-      this.modalRef = this.modalService.open(content, { centered: false, size: 'lg'});
+      this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static'});
     });
   }
 
@@ -121,7 +121,7 @@ export class ZoneComponent {
           ZoneCode: zone.ZoneCode,
           status: zone.status === 'A' ? 'Active' : 'Suspended'
         });
-        this.modalRef = this.modalService.open(content, { size: ' lg'});
+        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static'});
       },
       error: (err) => {
         console.error('Error fetching', err);
