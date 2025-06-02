@@ -141,7 +141,7 @@ editHssac(id: number, content: any) {
         Remarks: hssac.Remarks,
         status: hssac.status === 'A' ? 'Active' : 'Inactive'
       });
-      this.modalService.open(content, { size: 'lg' });
+      this.modalRef = this.modalService.open(content, { size: 'lg'});
     },
     error: (err) => {
       console.error('Error fetching HSSAC', err);
@@ -210,6 +210,7 @@ editHssac(id: number, content: any) {
             console.log(resp.message);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.closeModal();
               this.router.navigate(['master/hs-sac']);
             } else {
               this.appSettingService.showError(resp.message);
@@ -226,6 +227,7 @@ editHssac(id: number, content: any) {
             console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.closeModal();
               this.router.navigate(['master/hs-sac']);
             } else {
               this.appSettingService.showError(resp.message);

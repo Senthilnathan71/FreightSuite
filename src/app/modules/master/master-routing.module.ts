@@ -38,8 +38,6 @@ import { MilestoneListComponent } from './milestone/milestone-list/milestone-lis
 import { MilestoneEntryComponent } from './milestone/milestone-entry/milestone-entry.component';
 import { OrganizationListComponent } from './organization/organization-list/organization-list.component';
 import { OrganizationEntryComponent } from './organization/organization-entry/organization-entry.component';
-import { DivisionListComponent } from './division/division-list/division-list.component';
-import { DivisionEntryComponent } from './division/division-entry/division-entry.component';
 import { ContainerTypeListComponent } from './container-type/container-type-list/container-type-list.component';
 import { ContainerTypeEntryComponent } from './container-type/container-type-entry/container-type-entry.component';
 import { CommodityListComponent } from './commodity/commodity-list/commodity-list.component';
@@ -71,6 +69,7 @@ import { ImcoEntryComponent } from './Imco/imco-entry/imco-entry.component';
 import { BIclauseComponent } from './BIClause/biclause/biclause.component';
 import { ProductListComponent } from './product/product-list/product-list.component';
 import { ProductEntryComponent } from './product/product-entry/product-entry.component';
+import { DivisionComponent } from './division/division/division.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -526,33 +525,6 @@ export const MasterRoutes: Routes = [
         },
       },
       {
-        path: 'division/list',
-        component: DivisionListComponent,
-        data: {
-          title: 'Division',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Division' }],
-        },
-      },
-      {
-        path: 'division/entry',
-        component: DivisionEntryComponent,
-        data: {
-          title: 'Division',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'division' }],
-        },
-      },
-      {
-        path: "division/entry/:id",
-        component: DivisionEntryComponent,
-        data: {
-          title: "Edit Division",
-          urls: [
-            { title: "Master", url: "/master" },
-            { title: "division" },
-          ],
-        },
-      },
-      {
         path: 'container-type/list',
         component: ContainerTypeListComponent,
         data: {
@@ -771,6 +743,25 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: "Master", url: "/master" },
             { title: "HS-SAC" },
+          ],
+        },
+      },
+      {
+        path: 'division',
+        component: DivisionComponent,
+        data: {
+          title: 'Division',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Division' }],
+        },
+      },
+      {
+        path: "division/:DivisionMasterSid",
+        component: DivisionComponent,
+        data: {
+          title: "Division",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Division" },
           ],
         },
       },

@@ -1253,7 +1253,7 @@ export class MasterService {
     );
   }
 
-  searchDivisionList(payload) {
+  searchDivision(payload) {
     return this.http.post("division/search-list", payload).pipe(
       map((res: any) => {
         return res.data;

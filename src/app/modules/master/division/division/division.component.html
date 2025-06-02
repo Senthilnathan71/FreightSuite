@@ -1,0 +1,221 @@
+<div class="row">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">Division</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div class="" data-bs-theme="light">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openModal(content)">
+                            <i class="fas fa-plus me-1"></i> Create
+                        </button>
+                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="report()"
+                            [disabled]="!searchPerformed || totalLengthOfCollection === 0">
+                            <i class="fas fa-file-alt me-1"></i> Report
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="resetPage()"
+                            [disabled]="!searchPerformed">
+                            <i class="fas fa-sync-alt me-1"></i> Reset
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-12 border-top">
+                <div class="row mx-0 py-2">
+                    <div class="col-md-8 mx-auto px-0">
+                        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                            <div class="form-outline col-12 col-md px-0">
+                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                                    <option value="DivisionName">Division Name</option>
+                                    <option value="DivisionCode">DivisionCode</option>
+                                    <option value="CompanyMasterSid">Company</option>
+                                    <option value="Remarks">Remarks</option>
+                                    <option value="status">Status</option>
+                                </select>
+                            </div>
+                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
+                                <div class="form-outline flex-grow-1">
+                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" 
+                                        class="form-control" placeholder="Enter filter value">
+                                    <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                                </div>
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                                    (click)="search()">
+                                    <i class="fas fa-search me-1"></i> Search
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Division Name</th>
+                            <th class="bg-transparent text-light" scope="col">Division Code</th>
+                            <th class="bg-transparent text-light" scope="col">Company</th>
+                            <th class="bg-transparent text-light" scope="col">Remarks</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of divisionList; trackBy: trackByIndex">
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-link text-primary p-0" 
+                                        (click)="updateDivisionById(item.DivisionMasterSid, content)"
+                                        title="Edit">
+                                        <i-feather class="feather-sm" name="eye"></i-feather>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-danger p-0" 
+                                        (click)="deleteDivision(item.DivisionMasterSid)"
+                                        title="Delete">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.DivisionName}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.DivisionCode}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.CompanyMasterSid}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.Remarks}}</div>
+                            </td>
+                            <td>
+                                @if(item.status === "A"){
+                                    <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                        Active
+                                    </div>
+                                } @else {
+                                    <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                        Suspended
+                                    </div>
+                                }
+                            </td> 
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" 
+                    [pageSize]="pageSize" (pageChange)="updatePaginatedData()">
+                </ngb-pagination>
+            </div>
+        </div>
+    </div>
+    <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
+        <div class="alert alert-info text-center">No records found</div>
+    </div>
+    <ng-template #content let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Division</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="divisionForm">
+                <div class="col-md-12">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="row">
+                                <aside class="col-md-6">
+                                  <div class="custom-form-group">
+                                     <input type="text" id="text-input" formControlName="DivisionName" placeholder=""
+                                        class="custom-input-field sm" [onlyText]="100">
+                                     <label for="text-input" class="input-label">DivisionName <span
+                                        class="text-danger fw-bold">*</span></label>
+                                        @if(divisionForm.get('DivisionName')?.touched && divisionForm.get('DivisionName')?.invalid){
+                                          <div class="error-message">
+                                            @if(divisionForm.get('DivisionName')?.hasError('required')){
+                                              <span>Division Name is required</span>
+                                            } @else if(divisionForm.get('DivisionName')?.hasError('maxlength')){
+                                              <span>Max 100 Characters</span>
+                                            } @else if(divisionForm.get('DivisionName')?.hasError('numberNotAllowed')){
+                                              <span>Only Alphabets are allowed</span>
+                                            }
+                                          </div>
+                                        }
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                  <div class="custom-form-group">
+                                     <input type="text" formControlName="DivisionCode" id="text-input" placeholder=""
+                                         class="custom-input-field sm" [textWithNumbers]="9">
+                                     <label for="text-input" class="input-label">Division Code <span
+                                         class="text-danger fw-bold">*</span></label>
+                                         @if(divisionForm.get('DivisionCode')?.touched && divisionForm.get('DivisionCode')?.invalid){
+                                  <div class="error-message">
+                                    @if(divisionForm.get('DivisionCode')?.hasError('required')){
+                                      <span>Division Code is required</span>
+                                    } @else if(divisionForm.get('DivisionCode')?.hasError('maxlength')){
+                                      <span>Max 9 Characters</span>
+                                    }
+                                 </div>
+                                }
+                            </div>
+                            </aside>
+                            <aside class="col-md-6">
+                              <div class="custom-form-group">
+                                <select formControlName="CompanyMasterSid" class="form-select">
+                                  <option value="" disabled selected>Select Company</option>
+                                  <option *ngFor="let option of companyList" [value]="option.CompanyMasterSid">
+                                    {{option.companyName}}
+                                  </option>
+                                </select>
+                                <label for="text-input" class="input-label">Company <span
+                                  class="text-danger fw-bold">*</span></label>
+                                  @if(divisionForm.get('CompanyMasterSid')?.touched && divisionForm.get('CompanyMasterSid')?.invalid){
+                                    <div class="error-message">
+                                      @if(divisionForm.get('CompanyMasterSid')?.hasError('required')){
+                                        <span>Company is required</span>
+                                      }
+                                    </div>
+                                  }
+                                </div>
+                              </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="textarea" id="text-input" class="custom-input-field sm" formControlName="Remarks" placeholder="">
+                                    <label for="text-input" class="input-label">Remarks <span class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <select formControlName="status" class="form-select">
+                                        <option value="">Status</option>
+                                        <option *ngFor="let option of statusList" [value]="option">{{ option }}</option>
+                                    </select>
+                                    <label for="text-input" class="input-label">Status <span class="text-danger fw-bold">*</span></label>
+                                </div>
+                            </aside>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-primary" 
+                (click)="onSubmit()" 
+                [disabled]="btnDisable || divisionForm.invalid">
+                {{ isEditMode ? 'Update' : 'Save' }}
+            </button>
+        </div>
+    </ng-template>
+</div>
