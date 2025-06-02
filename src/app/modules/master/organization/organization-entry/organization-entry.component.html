@@ -696,6 +696,13 @@
                             <ng-container *ngTemplateOutlet="TabMilestone"></ng-container>
                         </ng-template>
                     </li>
+                     <li [ngbNavItem]="4">
+                        <button ngbNavLink> <button class="btn btn-info p-0 me-2" (click)="openModal(content6)">
+                                <i-feather name="plus-circle" class="feather-sm "></i-feather></button>Salesman</button>
+                        <ng-template ngbNavContent>
+                            <ng-container *ngTemplateOutlet="salesperson"></ng-container>
+                        </ng-template>
+                    </li>
 
                     <!-- <li [ngbNavItem]="2">
                         <button ngbNavLink>
@@ -837,9 +844,83 @@
 
 </ng-template>
 
+<ng-template #content6 let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title">Salesman</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="col-md-12">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row">
 
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="City">
+                                <label for="text-input" class="input-label">Department <span
+                                        class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="BranchName">
+                                <label for="text-input" class="input-label">Sales Person <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="BranchType">
+                                <label for="text-input" class="input-label">CS Person <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                         <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="BranchCode">
+                                <label for="text-input" class="input-label">Doc Person <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                          <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="BranchCode">
+                                <label for="text-input" class="input-label">Branch <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="BranchCode">
+                                <label for="text-input" class="input-label">Effective Form <span
+                                        class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                       
+
+
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</ng-template>
 
 <ng-template #content let-modal>
+   <div class="modal-container"> 
+     <div class="modal-responsive-wrapper">
+        <div class="modal-content custom-modal">
     <div class="modal-header">
         <h4 class="modal-title">Branch</h4>
         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
@@ -1165,8 +1246,9 @@
     <div>
         <button class="btn btn-sm btn-info" (click)="customerBranchSubmit()">CBSubmit</button>
     </div>
-
-
+    </div>
+    </div>
+    </div>
 
 
 </ng-template>
@@ -1890,6 +1972,70 @@
                             <div class="text-truncate">Rial</div>
                         </td>
                         <td>
+                            <div class="text-truncate">Baizas</div>
+                        </td>
+                        <!-- <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Baizas</div>
+                            </td> -->
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #salesperson>
+    <div class="col-12">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">Department</th>
+                        <th class="bg-transparent text-light" scope="col">Salesperson</th>
+                        <th class="bg-transparent text-light" scope="col">CS Person</th>
+                        <th class="bg-transparent text-light" scope="col"> Doc Person</th>
+                        <th class="bg-transparent text-light" scope="col"> Branch</th>
+                        <th class="bg-transparent text-light" scope="col">Effective From</th>
+                        <!-- <th class="bg-transparent text-light" scope="col">Address Line 3</th>
+                            <th class="bg-transparent text-light" scope="col">City</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Phone</th>
+                            <th class="bg-transparent text-light" scope="col">Email</th> -->
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (item of [0,1,2,3]; track $index) {
+                    <tr>
+                        <td>
+                            <div class="text-truncate">Oman Rials</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">OMR</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">RO</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">Rial</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">Baizas</div>
+                        </td>
+                         <td>
                             <div class="text-truncate">Baizas</div>
                         </td>
                         <!-- <td>
