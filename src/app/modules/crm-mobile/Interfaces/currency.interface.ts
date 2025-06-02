@@ -2,14 +2,11 @@ export interface Currency {
   CurrencyMasterSid: number;
   currencyName: string;
   currencyCode: string;
-  currencyID: string;
   CurrencyUnit: string | null;
   CurrencySubUnit: string | null;
+  SubUnitIn:string |null;
   ShortCode: string | null;
   Symbol: string | null;
-  currencyFirstName: string;
-  currencyLastName: string;
-  currencyRatio: number;
   amountDecimal: number;
   exchangeDecimal: number;
   createdBy: string;
@@ -18,7 +15,6 @@ export interface Currency {
   deletedAt: Date | null;
   updatedBy: string | null;
   status: 'A' | 'S';
-  CountryMasterSid: number;
+  RoundOf: string | null;
   LoginSid: number | null;
-  Remarks?: string | null;
 }

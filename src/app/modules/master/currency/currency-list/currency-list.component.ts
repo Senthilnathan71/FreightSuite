@@ -9,7 +9,6 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from '../../master.service';
 
-
 @Component({
   selector: 'app-currency-list',
   standalone: true,
@@ -27,13 +26,19 @@ export class CurrencyListComponent {
   searchType = 'currencyName';
   filterValue = '';
   results: any[] = [];
+  allCurrencies: any[] = []; // Renamed from results to allCurrencies for consistency
   currencyList: any[] = [];
   searchPerformed = false;
+  loading: boolean = false;
 
   // pagination
   page = 1;
   pageSize = 10;
-  totalLengthOfCollection: number;
+  totalLengthOfCollection: number = 0;
+
+  // sorting
+  sortColumn: string = 'currencyName'; // default sort column
+  sortDirection: string = 'asc'; // default sort direction
 
   constructor(
     private masterService: MasterService,
@@ -45,37 +50,90 @@ export class CurrencyListComponent {
   ngOnInit() { }
 
   search() {
+    this.loading = true;
     const payload = {
       searchType: this.searchType,
-      filterValue: this.searchType === 'status'
-        ? this.filterValue === 'Active' ? 'A' : 'S'
-        : this.filterValue,
+      filterValue: this.filterValue,
+    };
+
+    this.masterService.searchCurrencyList(payload).subscribe({
+      next: (res: any) => {
+        this.allCurrencies = res.data || res;
+        this.applySorting(); // Apply sorting after getting new data
+        this.searchPerformed = true;
+        this.totalLengthOfCollection = this.allCurrencies.length;
+        this.page = 1;
+        this.updatePaginatedData();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Search error:', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  sort(column: string) {
+    if (this.sortColumn === column) {
+      // Reverse the sort direction if clicking the same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Set new sort column and default to ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
     }
-    this.masterService.searchCurrencyList(payload).subscribe((res: any) => {
-      this.results = res;
-      this.searchPerformed = true;
-      this.updatePaginatedData();
-      this.totalLengthOfCollection = this.results.length || 0;
+    
+    this.applySorting();
+    this.updatePaginatedData();
+  }
+
+  applySorting() {
+    this.allCurrencies.sort((a, b) => {
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
+      
+      // Handle null/undefined values
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+      
+      // Convert to string for case-insensitive comparison
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+    
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
     });
   }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.currencyList = this.results.slice(startIndex, endIndex);
+    this.currencyList = this.allCurrencies.slice(startIndex, endIndex);
   }
 
-  trackByIndex(index: number, item: any): number {
-    return index;
-  }
+  trackByCurrencyId(index: number, item: any): number {
+  return item.CurrencyMasterSid;
+}
 
   deleteCurrency(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        this.masterService.softDelete(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess("Deleted!");
-          this.search(); // Refresh the list after deletion
+        this.loading = true;
+        this.masterService.softDelete(id).subscribe({
+          next: (resp: any) => {
+            this.appSettingService.showSuccess("Currency deleted successfully!");
+            this.search(); // Refresh search results
+          },
+          error: (err) => {
+            console.error('Delete error:', err);
+            this.loading = false;
+          }
         });
       }
     });
@@ -86,15 +144,22 @@ export class CurrencyListComponent {
   }
 
   resetPage() {
-    this.currencyList = [];
-    this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
     this.filterValue = '';
+    this.searchType = 'currencyName';
+    this.page = 1;
+    this.searchPerformed = false;
+    this.currencyList = [];
+    this.allCurrencies = [];
+    this.totalLengthOfCollection = 0;
+    this.sortColumn = 'currencyName';
+    this.sortDirection = 'asc';
   }
-
-  report() { }
 
   getStatusText(status: string): string {
     return status === 'A' ? 'Active' : 'Suspended';
+  }
+
+  report() {
+    // Implement report functionality here
   }
 }

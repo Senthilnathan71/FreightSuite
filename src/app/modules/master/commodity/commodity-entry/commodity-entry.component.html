@@ -92,22 +92,25 @@
                             </div>
                         </aside>
 
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="number" id="hssacCode" formControlName="HSSACCode"
-                                    class="custom-input-field sm"
-                                    [class.is-invalid]="commodityForm.get('HSSACCode')?.invalid && 
-                                    (commodityForm.get('HSSACCode')?.touched || commodityForm.get('HSSACCode')?.dirty)">
-                                <label for="hssacCode" class="input-label">HS Code</label>
-                                <div *ngIf="commodityForm.get('HSSACCode')?.invalid && 
-                                           (commodityForm.get('HSSACCode')?.touched || 
-                                           commodityForm.get('HSSACCode')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="commodityForm.get('HSSACCode')?.hasError('pattern')">
-                                        Only numbers are allowed
-                                    </span>
-                                </div>
-                            </div>
-                        </aside>
+                       <aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select 
+      id="HSSACCode"
+      [items]="hssacOptions"
+      bindLabel="HSSACCode"
+      bindValue="HSSACCode"
+      placeholder=""
+      formControlName="HSSACCode"
+      [class.is-invalid]="commodityForm.get('HSSACCode')?.invalid && 
+                         (commodityForm.get('HSSACCode')?.touched || 
+                          commodityForm.get('HSSACCode')?.dirty)">
+      <ng-template ng-option-tmp let-item="item">
+        {{ item.code }} - {{ item.description }}
+      </ng-template>
+    </ng-select>
+    <label for="HSSACCode" class="input-label">HS/SAC Code</label>
+  </div>
+</aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -172,21 +175,14 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                    
-                            @if(isEditMode){
-                            <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
-                                <ng-option value="Active">Active</ng-option>
-                                <ng-option value="Suspended">Suspended</ng-option>
-                            </ng-select>
-                            } @else {
-                            <input type="text" name="status" class="custom-input-field sm" formControlName="status" id="text-input"
-                                readonly>
-                            }
-                            <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
-                    
-                        </div>
+                    <!-- Status -->
+                    <aside class="col-md-6">
+                        <div *ngIf="isEditMode" class="custom-form-group custom-form-group-select">
+                  <ng-select [items]="statusOptions" bindLabel="name" bindValue="id"
+                    formControlName="status"></ng-select>
+                  <label class="input-label">Status</label>
+                </div>
+        
                     </aside>
 
                     <aside class="col-md-12 pt-2">

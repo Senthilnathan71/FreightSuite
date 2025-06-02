@@ -9,6 +9,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { BLClause } from 'src/app/modules/crm-mobile/Interfaces/biclause.interface';
+import { FeatherModule } from 'angular-feather';
 
 @Component({
   selector: 'app-biclause',
@@ -19,7 +20,8 @@ import { BLClause } from 'src/app/modules/crm-mobile/Interfaces/biclause.interfa
     ReactiveFormsModule,
     RouterModule,
     FormsModule,
-    NgbPaginationModule
+    NgbPaginationModule,
+    FeatherModule
   ],
   templateUrl: './biclause.component.html',
   styleUrls: ['./biclause.component.scss']

@@ -1,11 +1,12 @@
 export interface Unit {
+    containerTypeMasterSid: string;
     UnitMasterSid: number,
     unitCode: string,
     unitName: string,
     measurementType: string,
     jobType: string,
     containerType: string,
-    remarks: string,
+    Remarks: string,
    // createdBy: string,
     //updatedBy: string,
     status: string,

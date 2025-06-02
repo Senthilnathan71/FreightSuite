@@ -6,6 +6,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
+import { formatDate } from '@angular/common';
 
 @Component({
   selector: 'app-charge-entry',
@@ -31,7 +32,9 @@ export class ChargeEntryComponent implements OnInit {
   currencyOptions: any[] = [];
   departmentOptions: any[] = [];
   chargeGroupOptions: any[] = [];
-  // uomOptions: any[] = [];
+  uomOptions: any[] = [];
+  hsnsacOptions: any[] = [];
+  tdsOptions: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -59,18 +62,19 @@ export class ChargeEntryComponent implements OnInit {
       chargeCode: ['', [Validators.required, Validators.maxLength(5)]],
       chargeName: ['', [Validators.required, Validators.maxLength(100)]],
       UOM: [null],
+      HSNSAC: ['', Validators.required],
       Status: ['A', Validators.required],
-      ChargeGroupSid: [null, Validators.required],
+      ChargeGroupSid: [null],
       CompanyMasterSid: [null],
-      CurrencyMasterSid: [null, Validators.required],
+      CurrencyMasterSid: [null],
       DepartmentMasterSid: [null, Validators.required],
+      TDSMasterSid: [null],
       // GST fields
-      SACCode: [''],
       GSTDescription: [''],
       TaxRate: [null],
       // TDS fields
-      TDSSet: [''],
-      EffectiveFrom: ['']
+      EffectiveFrom: [formatDate(new Date(), 'yyyy-MM-dd', 'en'), Validators.required],
+      Remarks: ['']
     });
   }
 
@@ -78,7 +82,6 @@ export class ChargeEntryComponent implements OnInit {
     this.masterService.getAllCompanies().subscribe(companies => {
       this.companyOptions = companies.data || companies;
     });
-
 
     this.masterService.getAllCurrencies().subscribe(currencies => {
       this.currencyOptions = currencies.data || currencies;
@@ -92,15 +95,27 @@ export class ChargeEntryComponent implements OnInit {
       this.chargeGroupOptions = chargeGroups.data || chargeGroups;
     });
 
-  //   this.masterService.getAllUom().subscribe(uoms => {
-  //   this.uomOptions = uoms.data || uoms;
-  // });
+    this.masterService.getAllUom().subscribe(uoms => {
+      this.uomOptions = uoms.data || uoms;
+    });
+
+    this.masterService.getAllHssac().subscribe(hsnsac => {
+      this.hsnsacOptions = hsnsac.data || hsnsac;
+    });
+
+    // this.masterService.getAllTdsSets().subscribe(tdsSets => {
+    //   this.tdsOptions = tdsSets.data || tdsSets;
+    // });
   }
 
   loadCharge(ChargeMasterSid: number): void {
     this.masterService.getChargeById(ChargeMasterSid).subscribe(
       (resp) => {
-        this.chargeForm.patchValue(resp);
+        const chargeData = {
+          ...resp,
+          // EffectiveFrom: resp.EffectiveFrom ? formatDate(new Date(resp.EffectiveFrom), 'yyyy-MM-dd', 'en') : ''
+        };
+        this.chargeForm.patchValue(chargeData);
       },
       (error) => {
         this.errorMessage = error.message;
@@ -118,7 +133,10 @@ export class ChargeEntryComponent implements OnInit {
       this.loadCharge(this.idParam);
     } else {
       this.chargeForm.reset();
-      this.chargeForm.patchValue({ Status: 'A' });
+      this.chargeForm.patchValue({ 
+        Status: 'A',
+        EffectiveFrom: formatDate(new Date(), 'yyyy-MM-dd', 'en')
+      });
     }
   }
 

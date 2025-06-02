@@ -6,12 +6,7 @@
             </div>
             <div class="col-md-8 pb-2">
                 <div class="" data-bs-theme="light">
-                    <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="search()">
-                            <i class="fas fa-search me-1"></i>
-                            Search
-                        </button> -->
+                    <form class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="navigateToCreateCurrencyExchange()">
                             <i class="fas fa-plus me-1"></i> Create
@@ -31,11 +26,10 @@
                     </form>
                 </div>
             </div>
-             <div class="col-md-12  border-top">
-                <div class="row mx-0 py-2 ">
+            <div class="col-md-12 border-top">
+                <div class="row mx-0 py-2">
                     <div class="col-md-8 mx-auto px-0">
-                        <form
-                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="form-outline col-12 col-md px-0">
                                 <select [(ngModel)]="searchType" name="searchType" class="form-select">
                                     <option value="EffectiveFrom">Effective From</option>
@@ -47,23 +41,17 @@
                                     <option value="status">Status</option>
                                 </select>
                             </div>
-                            <!-- <div class="form-outline col-12 col-md px-0">
-                                <input name="filterValue" [(ngModel)]="filterValue" type="text" class="form-control"
-                                 placeholder="Enter filter value">
-                                <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                            </div> -->
-                             <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                <div class="form-outline flex-grow-1">
-                  <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
-                    placeholder="Enter filter value">
-                  <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                </div>
-
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="search()">
-                  <i class="fas fa-search me-1"></i>
-                  Search
-                </button>
-              </div>
+                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
+                                <div class="form-outline flex-grow-1">
+                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
+                                        placeholder="Enter filter value">
+                                    <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                                </div>
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="search()">
+                                    <i class="fas fa-search me-1"></i>
+                                    Search
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -71,31 +59,49 @@
         </div>
     </div>
     
-    
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed">
-  <div class="col-12 p-0">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle no-wrap table-bordered">
-        <thead>
-          <tr class="bg-info">
-            <th class="bg-transparent text-light" scope="col">Action</th>
-            <th class="bg-transparent text-light" scope="col">Effective From</th>
-            <th class="bg-transparent text-light" scope="col">From Currency</th>
-            <th class="bg-transparent text-light" scope="col">To Currency</th>
-            <th class="bg-transparent text-light" scope="col">Sell Rate</th>
-            <th class="bg-transparent text-light" scope="col">Buy Rate</th>
-            <th class="bg-transparent text-light" scope="col">Bank Name</th>
-            <th class="bg-transparent text-light" scope="col">Status</th>
-          </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of currencyExchangeList; let i = index">
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveFrom')">
+                                Effective From
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'EffectiveFrom', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'EffectiveFrom'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('FromCurrency')">
+                                From Currency
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'FromCurrency', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'FromCurrency'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('ToCurrency')">
+                                To Currency
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ToCurrency', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ToCurrency'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('SellRate')">
+                                Sell Rate
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'SellRate', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'SellRate'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('BuyRate')">
+                                Buy Rate
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'BuyRate', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'BuyRate'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('BankName')">
+                                Bank Name
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'BankName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'BankName'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of currencyExchangeList; let i = index; trackBy: trackByExchangeId">
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <a [routerLink]="['/accounts/currency-exchange/entry', item.CurrencyExchangeSid]">
-                                        <i-feather class="feather-sm" name="eye"></i-feather>
+                                    <a class="mx-2 ps-3" [routerLink]="['/accounts/currency-exchange/entry', item.ExchangeRateSid]" title="Edit">
+                                        <i-feather name="eye" class="feather-sm"></i-feather>
                                     </a>
-                                    <a class="text-danger mx-2 ps-3 border-start" (click)="deleteCurrencyExchange(item.CurrencyExchangeSid)">                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    <a class="text-danger mx-2 ps-3 border-start" (click)="deleteCurrencyExchange(item.ExchangeRateSid)" title="Delete">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
                                 </div>
                             </td>
@@ -131,12 +137,16 @@
                                 }
                             </td>
                         </tr>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+                </ngb-pagination>
+            </div>
         </div>
     </div>
-    </div>
-    <!-- No records found -->
     <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
         <div class="alert alert-info text-center">No records found</div>
     </div>

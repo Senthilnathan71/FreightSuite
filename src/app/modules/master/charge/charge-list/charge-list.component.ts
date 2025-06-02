@@ -43,6 +43,8 @@ export class ChargeListComponent implements OnInit {
   companyOptions: any[] = [];
   currencyOptions: any[] = [];
   departmentOptions: any[] = [];
+  uomOptions: any[] = [];
+  tdsOptions: any[] = [];
 
   constructor(
     private masterService: MasterService,
@@ -72,6 +74,14 @@ export class ChargeListComponent implements OnInit {
     this.masterService.getAllDepartments().subscribe(departments => {
       this.departmentOptions = departments;
     });
+
+    this.masterService.getAllUom().subscribe(uoms => {
+      this.uomOptions = uoms;
+    });
+
+    // this.masterService.getAllTdsSets().subscribe(tdsSets => {
+    //   this.tdsOptions = tdsSets;
+    // });
   }
 
   /** Triggered when user clicks "Search" */
@@ -90,6 +100,8 @@ export class ChargeListComponent implements OnInit {
         const company = this.companyOptions.find(c => c.CompanyMasterSid === charge.CompanyMasterSid);
         const currency = this.currencyOptions.find(c => c.CurrencyMasterSid === charge.CurrencyMasterSid);
         const department = this.departmentOptions.find(d => d.DepartmentMasterSid === charge.DepartmentMasterSid);
+        const uom = this.uomOptions.find(u => u.UOMMasterSid === charge.UOM);
+        const tdsSet = this.tdsOptions.find(t => t.TDSSetHeaderSid === charge.TDSMasterSid);
 
         return {
           ...charge,
@@ -97,6 +109,8 @@ export class ChargeListComponent implements OnInit {
           companyName: company?.companyName || '—',
           currencyName: currency?.currencyName || '—',
           departmentName: department?.departmentName || '—',
+          uomName: uom?.uomName || '—',
+          tdsSetName: tdsSet?.tdsSetName || '—',
           statusText: charge.Status === 'A' ? 'Active' : 'Suspended'
         };
       });

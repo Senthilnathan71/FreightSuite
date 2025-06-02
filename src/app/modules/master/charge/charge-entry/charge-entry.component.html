@@ -59,47 +59,38 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-              <div class="custom-form-group">
-                <input type="number" id="UOM" class="custom-input-field sm" placeholder=" " formControlName="UOM">
-                <label for="UOM" class="input-label">UOM <span class="text-danger fw-semibold"></span></label>
-                <div *ngIf="chargeForm.get('UOM')?.touched && chargeForm.get('UOM')?.invalid">
-                  <p *ngIf="chargeForm.get('UOM')?.errors?.['required']" class="error-message">UOM is required.</p>
-                </div>
-              </div>
-            </aside>
-                       
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="UOM" [items]="uomOptions" bindLabel="uomName" bindValue="UOMMasterSid">
+                                </ng-select>
+                                <label class="input-label">UOM</label>
+                            </div>
+                        </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="ChargeGroupSid" [items]="chargeGroupOptions" bindLabel="chargeGroupName" bindValue="ChargeGroupSid">
                                 </ng-select>
-                                <label class="input-label">Charge Group <span class="text-danger fw-semibold"></span></label>
-                                <div *ngIf="chargeForm.get('ChargeGroupSid')?.touched && chargeForm.get('ChargeGroupSid')?.invalid">
-                                    <p *ngIf="chargeForm.get('ChargeGroupSid')?.errors?.['required']" class="error-message">Charge group is required.</p>
-                                </div>
+                                <label class="input-label">Charge Group</label>
                             </div>
                         </aside>
-                        <!-- <aside class="col-md-4">
+                        <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="CompanyMasterSid" [items]="companyOptions" bindLabel="companyName" bindValue="CompanyMasterSid">
                                 </ng-select>
                                 <label class="input-label">Company</label>
                             </div>
-                        </aside> -->
+                        </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="CurrencyMasterSid" [items]="currencyOptions" bindLabel="currencyName" bindValue="CurrencyMasterSid">
                                 </ng-select>
-                                <label class="input-label">Currency <span class="text-danger fw-semibold"></span></label>
-                                <div *ngIf="chargeForm.get('CurrencyMasterSid')?.touched && chargeForm.get('CurrencyMasterSid')?.invalid">
-                                    <p *ngIf="chargeForm.get('CurrencyMasterSid')?.errors?.['required']" class="error-message">Currency is required.</p>
-                                </div>
+                                <label class="input-label">Currency</label>
                             </div>
                         </aside>
-                         <aside class="col-md-4">
+                        <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="Status" [items]="[{id: 'A', name: 'Active'}, {id: 'S', name: 'Suspended'}]" bindLabel="name" bindValue="id">
                                 </ng-select>
-                                <label class="input-label">Status <span class="text-danger fw-semibold"></span></label>
+                                <label class="input-label">Status <span class="text-danger fw-semibold">*</span></label>
                             </div>
                         </aside>
                     </div>
@@ -113,9 +104,19 @@
                     <div class="row">
                         <h4>GST</h4>
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="SACCode" class="custom-input-field sm" placeholder=" " formControlName="SACCode">
-                                <label for="SACCode" class="input-label">SAC Code <span class="text-danger fw-semibold">*</span></label>
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="HSNSAC" [items]="hsnsacOptions" bindLabel="code" bindValue="code">
+                                    <ng-template ng-label-tmp let-item="item">
+                                        {{item.code}} - {{item.description}}
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item">
+                                        {{item.code}} - {{item.description}}
+                                    </ng-template>
+                                </ng-select>
+                                <label class="input-label">HSN/SAC Code <span class="text-danger fw-semibold">*</span></label>
+                                <div *ngIf="chargeForm.get('HSNSAC')?.touched && chargeForm.get('HSNSAC')?.invalid">
+                                    <p *ngIf="chargeForm.get('HSNSAC')?.errors?.['required']" class="error-message">HSN/SAC code is required.</p>
+                                </div>
                             </div>
                         </aside>
                         <aside class="col-md-4">
@@ -127,7 +128,7 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="number" id="TaxRate" class="custom-input-field sm" placeholder=" " formControlName="TaxRate">
-                                <label for="TaxRate" class="input-label">Tax Rate <span class="text-danger fw-semibold">*</span></label>
+                                <label for="TaxRate" class="input-label">Tax Rate</label>
                             </div>
                         </aside>
                     </div>
@@ -141,20 +142,40 @@
                     <div class="row">
                         <h4>TDS</h4>
                         <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="TDSSet" class="custom-input-field sm" placeholder=" " formControlName="TDSSet">
-                                <label for="TDSSet" class="input-label">TDS Set <span class="text-danger fw-semibold">*</span></label>
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="TDSMasterSid" [items]="tdsOptions" bindLabel="tdsSetName" bindValue="TDSSetHeaderSid">
+                                </ng-select>
+                                <label class="input-label">TDS Set</label>
                             </div>
                         </aside>
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="date" id="EffectiveFrom" class="custom-input-field sm" placeholder=" " formControlName="EffectiveFrom">
                                 <label for="EffectiveFrom" class="input-label">Effective From <span class="text-danger fw-semibold">*</span></label>
+                                <div *ngIf="chargeForm.get('EffectiveFrom')?.touched && chargeForm.get('EffectiveFrom')?.invalid">
+                                    <p *ngIf="chargeForm.get('EffectiveFrom')?.errors?.['required']" class="error-message">Effective from date is required.</p>
+                                </div>
                             </div>
                         </aside>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- <div class="col-md-12 mt-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <h4>Remarks</h4>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <textarea id="Remarks" class="custom-input-field sm" placeholder=" " formControlName="Remarks" rows="3"></textarea>
+                                <label for="Remarks" class="input-label">Remarks</label>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+        </div> -->
     </div>
 </form>

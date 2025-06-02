@@ -1,17 +1,4 @@
 <div class="row">
-    <!-- <div class="col-12">
-        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <form action="" class="d-flex align-items-center gap-2">
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5" name="search" placeholder="Search">
-                    <i class="fas fa-search ms-3"></i>
-                </div>
-                <button type="button" class="btn btn-info btn-sm" (click)="navigateToCreateState()">
-                    <i class="mdi mdi-plus"></i> Add
-                </button>
-            </form>
-        </div>
-    </div> -->
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col-md-4 pb-2">
@@ -19,9 +6,7 @@
             </div>
             <div class="col-md-8 pb-2">
                 <div class="" data-bs-theme="light">
-                    <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                 
+                    <form class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="navigateToCreateState()">
                             <i class="fas fa-plus me-1"></i> Create
@@ -41,47 +26,31 @@
                     </form>
                 </div>
             </div>
-            <div class="col-md-12  border-top">
+            <div class="col-md-12 border-top">
                 <div class="row mx-0 py-2">
                     <div class="col-md-8 mx-auto px-0">
-                        <form
-                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="form-outline col-12 col-md px-0">
-                                <!-- <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
-                                    autocomplete="off" placeholder="Search">
-                                <i class="fas fa-search ms-3"></i> -->
                                 <select [(ngModel)]="searchType" name="searchType" class="form-select">
                                     <option value="stateName">State Name</option>
                                     <option value="stateCode">State Code</option>
                                     <option value="stateGSTCode">GST Code</option>
-                                    <option value="region">Country</option>
-                                    <option value="zone">Zone</option> <!-- Keep this -->
+                                    <option value="countryName">Country</option>
+                                    <option value="zoneName">Zone</option>
                                     <option value="status">Status</option>
                                 </select>
                             </div>
-                            <!-- <div class="form-outline col-12 col-md px-0">
-                                <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
-                                    placeholder="Enter filter value">
-                                <i
-                                    class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
+                                <div class="form-outline flex-grow-1">
+                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
+                                        placeholder="Enter filter value">
+                                    <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                                </div>
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="search()">
+                                    <i class="fas fa-search me-1"></i>
+                                    Search
+                                </button>
                             </div>
-                                   <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="search()">
-                            <i class="fas fa-search me-1"></i>
-                            Search
-                        </button> -->
-                        
-              <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                <div class="form-outline flex-grow-1">
-                  <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
-                    placeholder="Enter filter value">
-                  <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                </div>
-
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="search()">
-                  <i class="fas fa-search me-1"></i>
-                  Search
-                </button>
-              </div>
                         </form>
                     </div>
                 </div>
@@ -89,81 +58,96 @@
         </div>
     </div>
     <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
-        <div class="col-12 p-0" >
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">State Name</th>
-                        <th class="bg-transparent text-light" scope="col">State Code</th>
-                        <th class="bg-transparent text-light" scope="col">GST Code</th>
-                        <th class="bg-transparent text-light" scope="col">Country</th>
-                        <th class="bg-transparent text-light" scope="col">Zone</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of stateList; let i = index; trackBy: trackByStateId">
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <a class="mx-2 ps-3"
-                                    [routerLink]="['/master/state/entry/', item.StateMasterSid]" title="Edit">
-                                    <i-feather name="eye" class="feather-sm"></i-feather>
-                                </a>
-                                <a class="text-danger mx-2 ps-3 border-start" (click)="deleteState(item.StateMasterSid)"
-                                    title="Delete">
-                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                </a>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.stateName}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.stateCode}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.stateGSTCode}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.countryName}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.zoneName || '-'}}</div>
-                        </td>
-
-                        <td>
-                            @if(item.status === "A"){
-                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                Active
-                            </div>
-                            } @else {
-                            <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                Suspended
-                            </div>
-                            }
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <!-- Update the table headers to make them sortable -->
+<!-- ... previous code remains the same until the table headers ... -->
+<thead>
+    <tr class="bg-info">
+        <th class="bg-transparent text-light" scope="col">Action</th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('stateName')">
+            State Name
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'stateName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'stateName'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('stateCode')">
+            State Code
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'stateCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'stateCode'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('stateGSTCode')">
+            GST Code
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'stateGSTCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'stateGSTCode'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('countryName')">
+            Country
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'countryName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'countryName'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('zoneName')">
+            Zone
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'zoneName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'zoneName'}"></i>
+        </th>
+        
+<!-- ... rest of the code remains the same ... -->
+        
+                            <th class="bg-transparent text-light" scope="col">
+                                Status
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of stateList; let i = index; trackBy: trackByStateId">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <a class="mx-2 ps-3"
+                                        [routerLink]="['/master/state/entry/', item.StateMasterSid]" title="Edit">
+                                        <i-feather name="eye" class="feather-sm"></i-feather>
+                                    </a>
+                                    <a class="text-danger mx-2 ps-3 border-start" (click)="softDelete(item.StateMasterSid)"
+                                        title="Delete">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </a>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.stateName}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.stateCode}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.stateGSTCode}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.countryName || '-'}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.zoneName || '-'}}</div>
+                            </td>
+                            <td>
+                                @if(item.status === "A"){
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active
+                                </div>
+                                } @else {
+                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Suspended
+                                </div>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+                </ngb-pagination>
+            </div>
         </div>
-        <div>
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
-            </ngb-pagination>
-        </div>
-
-
-    </div>
-    
     </div>
     <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
         <div class="alert alert-info text-center">No records found</div>
     </div>
-    <!-- No records found
-    <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
-        <div class="alert alert-info">No records found</div>
-    </div> -->
+</div>
