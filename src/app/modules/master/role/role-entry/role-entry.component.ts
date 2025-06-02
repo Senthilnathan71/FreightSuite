@@ -59,9 +59,10 @@ export class RoleEntryComponent implements OnInit {
         this.roleForm = this.fb.group({
             UserRoleName:['',[Validators.required]],
             UserRoleCode : ['',[Validators.required]],
-            CompanyMasterSid : ['',[Validators.required]],
+            LicenseType:['',[Validators.required]],
+            // CompanyMasterSid : ['',[Validators.required]],
             status : ['Active',[Validators.required]],
-            Remarks : ['',[Validators.required]]
+            // Remarks : ['',[Validators.required]]
         })
     }
 

@@ -5,8 +5,6 @@ import { CommonModule } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { NgSelectModule } from '@ng-select/ng-select';
-import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface';
 import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interface';
 
 @Component({
@@ -15,25 +13,17 @@ import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interfa
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    FeatherModule,
-    NgSelectModule
+    FeatherModule
   ],
   templateUrl: './currency-entry.component.html',
   styleUrls: ['./currency-entry.component.scss']
 })
 export class CurrencyEntryComponent implements OnInit {
-  countryOptions: readonly any[];
-  
-  goBack() {
-    this.router.navigate(['master/currency/list']);
-  }
-
   currencyForm: FormGroup;
   isEditMode = false;
   btnDisable = false;
   currencyID: number;
   loading = false;
-  countries: Country[] = [];
   
   statusOptions = [
     { id: 'A', name: 'Active' },
@@ -51,7 +41,6 @@ export class CurrencyEntryComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadCountries();
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.currencyID = +params['id'];
@@ -66,69 +55,70 @@ export class CurrencyEntryComponent implements OnInit {
       currencyName: ['', [
         Validators.required, 
         Validators.maxLength(100),
-        Validators.pattern(/^[a-zA-Z\s]*$/) // Alphabets and spaces only
+        Validators.pattern(/^[a-zA-Z\s]*$/)
       ]],
       currencyCode: ['', [
         Validators.required,
         Validators.maxLength(3),
-        Validators.pattern(/^[A-Z]{3}$/) // Exactly 3 uppercase letters
+        Validators.pattern(/^[A-Z]{3}$/)
       ]],
-      // currencyID: ['', [
-      //   Validators.required,
-      //   Validators.minLength(1),  
-      //   Validators.maxLength(3),
-      //   Validators.pattern(/^[A-Za-z0-9]{1,3}$/) // Single alphanumeric character
-      // ]],
-      currencyUnit: ['', [
+      CurrencyUnit: ['', [
         Validators.required, 
         Validators.maxLength(50)
       ]],
-      currencySubUnit: ['', [
-        Validators.maxLength(50) // Made optional since it wasn't marked as required in UI
+      CurrencySubUnit: ['', [
+        Validators.maxLength(50)
       ]],
-      symbol: ['', [
+      SubUnitIn: ['', [
+      Validators.pattern(/^[1-9]\d{0,2}$/), 
+      Validators.maxLength(3) 
+    ]],
+      ShortCode: ['', [
+        Validators.maxLength(3)
+      ]],
+      Symbol: ['', [
         Validators.required, 
         Validators.maxLength(5)
       ]],
-      // currencyFirstName: ['', [
-      //   Validators.maxLength(50)
-      // ]],
-      // currencyLastName: ['', [
-      //   Validators.maxLength(50)
-      // ]],
-      // currencyRatio: [1, [
-      //   Validators.required,
-      //   Validators.min(1), // Minimum value 1 (positive integer)
-      //   Validators.pattern(/^[1-9]\d*$/) // Positive integers only
-      // ]],
       amountDecimal: [2, [
         Validators.required,
         Validators.min(0),
-        Validators.max(8), // Max 8 decimal places
-        Validators.pattern(/^\d+$/) // Integers only
+        Validators.max(8),
+        Validators.pattern(/^\d+$/)
       ]],
       exchangeDecimal: [4, [
         Validators.required,
         Validators.min(0),
-        Validators.max(8), // Max 8 decimal places
-        Validators.pattern(/^\d+$/) // Integers only
+        Validators.max(8),
+        Validators.pattern(/^\d+$/)
       ]],
-      status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
-      // CountryMasterSid: ['', Validators.required],
-      remarks: ['']
+      RoundOf: ['', [
+        Validators.maxLength(100)
+      ]],
+      status: [{value: 'A', disabled: !this.isEditMode}, Validators.required]
     });
 
-     // Auto-uppercase and enforce 3 characters for currency code
-    this.currencyForm.get('currencyCode')?.valueChanges.subscribe(val => {
+    // Add value change handlers for form controls
+    this.setupValueChangeHandlers();
+  }
+
+  setupValueChangeHandlers() {
+  this.currencyForm.get('SubUnitIn')?.valueChanges.subscribe(val => {
+    if (val && !/^[1-9]\d{0,2}$/.test(val)) {
+      this.currencyForm.get('SubUnitIn')?.setValue('', { emitEvent: false });
+    }
+  });
+
+
+    this.currencyForm.get('ShortCode')?.valueChanges.subscribe(val => {
       if (val) {
         const upperVal = val.toUpperCase().replace(/[^A-Z]/g, '').substring(0, 3);
         if (upperVal !== val) {
-          this.currencyForm.get('currencyCode')?.setValue(upperVal, { emitEvent: false });
+          this.currencyForm.get('ShortCode')?.setValue(upperVal, { emitEvent: false });
         }
       }
     });
 
-    // Prevent non-alphabet characters and spaces for currency name
     this.currencyForm.get('currencyName')?.valueChanges.subscribe(val => {
       if (val) {
         const cleanVal = val.replace(/[^a-zA-Z\s]/g, '');
@@ -137,47 +127,34 @@ export class CurrencyEntryComponent implements OnInit {
         }
       }
     });
-  }
 
-  // Rest of the component remains the same...
-  loadCountries() {
-    this.loading = true;
-    this.masterService.getAllCountry().subscribe({
-      next: (resp: any) => {
-        this.countries = resp.data || resp;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading countries:', err);
-        this.loading = false;
+    this.currencyForm.get('SubUnitIn')?.valueChanges.subscribe(val => {
+      if (val && (isNaN(val) || val < 1 || val > 1000)) {
+        this.currencyForm.get('SubUnitIn')?.setValue(null, { emitEvent: false });
       }
     });
   }
 
   getCurrencyById(id: number) {
     this.loading = true;
-    this.currencyForm.reset();
     this.masterService.getCurrencyById(id).subscribe({
       next: (currency: Currency) => {
         if (this.isEditMode) {
-        this.currencyForm.get('status')?.enable();
-      }
-      
+          this.currencyForm.get('status')?.enable();
+        }
+        
         this.currencyForm.patchValue({
           currencyName: currency.currencyName,
           currencyCode: currency.currencyCode,
-          // currencyID: currency.currencyID,
-          currencyUnit: currency.CurrencyUnit, 
-          currencySubUnit: currency.CurrencySubUnit,
-          symbol: currency.Symbol,
-          // currencyFirstName: currency.currencyFirstName || '',
-          // currencyLastName: currency.currencyLastName || '',
-          // currencyRatio: currency.currencyRatio,
+          CurrencyUnit: currency.CurrencyUnit, 
+          CurrencySubUnit: currency.CurrencySubUnit,
+          SubUnitIn: currency.SubUnitIn,
+          ShortCode: currency.ShortCode,
+          Symbol: currency.Symbol,
           amountDecimal: currency.amountDecimal,
           exchangeDecimal: currency.exchangeDecimal,
-          status: currency.status,
-          // CountryMasterSid: currency.CountryMasterSid,
-          Remarks: currency.Remarks || ''
+          RoundOf: currency.RoundOf,
+          status: currency.status
         });
         this.loading = false;
       },
@@ -201,18 +178,17 @@ export class CurrencyEntryComponent implements OnInit {
     const payload = {
       currencyName: this.currencyForm.value.currencyName,
       currencyCode: this.currencyForm.value.currencyCode,
-      // currencyID: this.currencyForm.value.currencyID,
-      CurrencyUnit: this.currencyForm.value.currencyUnit, 
-      CurrencySubUnit: this.currencyForm.value.currencySubUnit, 
-      Symbol: this.currencyForm.value.symbol,
-      // currencyFirstName: this.currencyForm.value.currencyFirstName,
-      // currencyLastName: this.currencyForm.value.currencyLastName,
-      // currencyRatio: Number(this.currencyForm.value.currencyRatio),
+      CurrencyUnit: this.currencyForm.value.CurrencyUnit,
+      CurrencySubUnit: this.currencyForm.value.CurrencySubUnit,
+      SubUnitIn: this.currencyForm.value.SubUnitIn !== null 
+      ? String(this.currencyForm.value.SubUnitIn) 
+      : null,
+      ShortCode: this.currencyForm.value.ShortCode,
+      Symbol: this.currencyForm.value.Symbol,
       amountDecimal: Number(this.currencyForm.value.amountDecimal),
       exchangeDecimal: Number(this.currencyForm.value.exchangeDecimal),
-      // CountryMasterSid: Number(this.currencyForm.value.CountryMasterSid),
-      status: this.currencyForm.value.status,
-      Remarks: this.currencyForm.value.Remarks
+      RoundOf: this.currencyForm.value.RoundOf,
+      status: this.currencyForm.value.status
     };
   
     const operation = this.isEditMode 
@@ -228,19 +204,16 @@ export class CurrencyEntryComponent implements OnInit {
           : 'Currency created successfully!';
         
         this.appSettingService.showSuccess(message);
-        this.router.navigate(['/master/currency/list'], {
-          queryParams: { refresh: Date.now() }
-        });
+        this.router.navigate(['/master/currency/list']);
       },
       error: (err) => {
         console.error(err);
         this.loading = false;
         this.btnDisable = false;
-        let errorMessage = `Error ${this.isEditMode ? 'updating' : 'creating'} currency`;
         if (err.status === 400 && err.error.message.includes('already exists')) {
           this.appSettingService.showError(err.error.message);
         } else {
-          this.appSettingService.showError('Failed to create currency. Please try again.');
+          this.appSettingService.showError('Failed to process currency. Please try again.');
         }      
       }
     });
@@ -253,19 +226,21 @@ export class CurrencyEntryComponent implements OnInit {
       this.currencyForm.reset({
         currencyName: '',
         currencyCode: '',
-        currencyUnit: '',
-        currencySubUnit: '',
+        CurrencyUnit: '',
+        CurrencySubUnit: '',
+        SubUnitIn: null,
+        ShortCode: '',
         Symbol: '',
-        // currencyFirstName: '',
-        // currencyLastName: '',
-        // currencyRatio: 1,
         amountDecimal: 2,
         exchangeDecimal: 4,
-        status: 'A',
-        // countryMasterSid: '',
-        remarks: ''
+        RoundOf: '',
+        status: 'A'
       });
     }
+  }
+
+  goBack() {
+    this.router.navigate(['master/currency/list']);
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {

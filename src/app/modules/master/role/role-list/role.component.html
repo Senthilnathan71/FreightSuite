@@ -40,8 +40,8 @@
                                 <select name="searchType" class="form-select" [(ngModel)]="searchType">
                                     <option value="UserRoleName">Role Name</option>
                                     <option value="UserRoleCode">Role Code</option>
-                                    <option value="CompanyMasterSid">Company</option>
-                                    <option value="Remarks">Remarks</option>
+                                    <option value="LicenseType">LicenseType</option>
+                                  
                                     <option value="status">Status</option>
                                 </select>
                             </div>
@@ -83,7 +83,7 @@
                             <th class="bg-transparent text-light" scope="col">Actions</th>
                             <th class="bg-transparent text-light" scope="col">Role Name</th>
                             <th class="bg-transparent text-light" scope="col">Role Code</th>
-                            <th class="bg-transparent text-light" scope="col">Licence Type</th>
+                            <th class="bg-transparent text-light" scope="col">License Type </th>
                             <!-- <th class="bg-transparent text-light" scope="col">Company</th>
                             <th class="bg-transparent text-light" scope="col">Remarks</th> -->
                             <th class="bg-transparent text-light" scope="col">Status</th>
@@ -115,7 +115,7 @@
                                 <div class="text-truncate">{{getCompanyById(item.CompanyMasterSid)}}</div>
                             </td> -->
                             <td>
-                                <div class="text-truncate">{{item.Remarks}}</div>
+                                <div class="text-truncate">{{item.LicenseType}}</div>
                             </td>
                             <td>
                                 @if(item.status === "A"){

@@ -7,15 +7,12 @@
             <h4 class="page-title mb-0">{{ isEditMode ? 'Edit' : '' }} Sector</h4>
           </div>
           <div class="col-md-8 pb-2">
-            <div
-              class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-              <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                (click)="goBack()">
+            <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+              <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
                 <i class="fas fa-chevron-left me-1"></i>
                 Back
               </button>
-              <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                (click)="resetForm()">
+              <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
                 <i class="fas fa-sync-alt me-1"></i>
                 Reset
               </button>
@@ -69,29 +66,56 @@
                 </div>
               </aside>
 
-              <!-- <aside class="col-md-8 mt-2">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="FreightMode" >
-                            <label for="text-input" class="input-label">Freight Mode <span class="text-danger"></span></label>
-                            
-                        </div>
-                    </aside> -->
               <aside class="col-md-6 mt-2">
-                <div class="custom-form-group">
-                  <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                    formControlName="FreightMode">
-                  <label for="text-input" class="input-label">Region Name <span class="text-danger"></span></label>
-
+                <div class="custom-form-group custom-form-group-select">
+                  <ng-select [items]="filteredZones" 
+                            bindLabel="ZoneName" 
+                            bindValue="ZoneName"
+                            formControlName="RegionName"
+                            placeholder=""
+                           
+                            [class.is-invalid]="sectorForm.get('RegionName')?.invalid && 
+                                               sectorForm.get('RegionName')?.touched">
+                    <ng-template ng-label-tmp let-item="item">
+                      {{item.ZoneName}} ({{item.ZoneCode}})
+                    </ng-template>
+                    <ng-template ng-option-tmp let-item="item">
+                      {{item.ZoneName}} ({{item.ZoneCode}})
+                    </ng-template>
+                    <ng-template ng-option-tmp let-item="item" let-index="index" let-search="searchTerm">
+  <div>{{item.ZoneName}}</div>
+  <small class="text-muted">{{item.ZoneCode}}</small>
+</ng-template>
+                  </ng-select>
+                  <label for="RegionName" class="input-label">Region Name</label>
+                  <div *ngIf="sectorForm.get('RegionName')?.touched && 
+                             sectorForm.get('RegionName')?.errors"
+                       class="invalid-feedback d-block">
+                    <span *ngIf="sectorForm.get('RegionName')?.hasError('maxlength')">
+                      Cannot exceed 50 characters
+                    </span>
+                  </div>
                 </div>
               </aside>
+
               <aside class="col-md-6 mt-2">
                 <div class="custom-form-group">
-                  <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                    formControlName="FreightMode">
-                  <label for="text-input" class="input-label">Region Code <span class="text-danger"></span></label>
-
+                  <input type="text" id="RegionCode" formControlName="RegionCode" 
+                         class="custom-input-field sm"
+                         readonly
+                         [class.is-invalid]="sectorForm.get('RegionCode')?.invalid && 
+                                            sectorForm.get('RegionCode')?.touched">
+                  <label for="RegionCode" class="input-label">Region Code</label>
+                  <div *ngIf="sectorForm.get('RegionCode')?.touched && 
+                             sectorForm.get('RegionCode')?.errors"
+                       class="invalid-feedback d-block">
+                    <span *ngIf="sectorForm.get('RegionCode')?.hasError('maxlength')">
+                      Cannot exceed 10 characters
+                    </span>
+                  </div>
                 </div>
               </aside>
+
               <aside class="col-md-6 mt-2">
                 <div class="custom-form-group custom-form-group-select">
                   <ng-select [items]="statusOptions" bindLabel="name" bindValue="id" formControlName="status"
@@ -104,21 +128,6 @@
           </div>
         </div>
       </div>
-      <!--       
-      <div class="col-md-6 mt-md-0 mt-3">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="row">
-              <aside class="col-md-12 pt-2">
-                <div class="custom-form-group">
-                  <textarea id="remarks" formControlName="remarks" class="input-field sm"></textarea>
-                  <label for="remarks" class="input-label">Remarks</label>
-                </div>
-              </aside>
-            </div>
-          </div>
-        </div>
-      </div> -->
     </div>
   </form>
 </div>

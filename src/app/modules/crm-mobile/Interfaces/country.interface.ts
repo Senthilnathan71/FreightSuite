@@ -4,20 +4,19 @@ export interface Country {
     CountryMasterSid: number,
     countryCode: string,
     countryName: string,
-    AWBCurrencyCode: string,
-    AWBCurrencyName: string,
-    ISO3DigitCode: string,
-    LocalCurrencyCode: string,
-    LocalCurrencyName: string,
-    Remarks: string,
-    ShortName: string,
-    UNM49Code: string,
-    dialingCode: string,
-    region: string,
+    ZoneMasterSid?: number;
+    CurrencyMasterSid?: number,
     LoginSid: string,
     createdBy: string,
     updatedBy: string,
     status: string,
     createdOn: string,
     updatedOn: string
+    zoneMaster: {
+        zoneName: number,
+    }
+    currencyMaster: {
+        currencyName: number,
+    }
+
 }

@@ -42,7 +42,7 @@ export class HSSACComponent {
   errorMessage: string = '';
   btnDisable: boolean = false;
   hssacList: any[] = [];
-  statusList = ["Active", "Inactive"]
+  statusList = ["Active", "Suspended"]
   modeOfTaxType = [
     { id: 'VAT', name: 'VAT' },
     { id: 'UGST', name: 'UGST' },
@@ -139,7 +139,7 @@ editHssac(id: number, content: any) {
         TaxType: hssac.TaxType,
         EffectiveFrom: this.datePipe.transform(hssac.EffectiveFrom, 'yyyy-MM-dd'),
         Remarks: hssac.Remarks,
-        status: hssac.status === 'A' ? 'Active' : 'Inactive'
+        status: hssac.status === 'A' ? 'Active' : 'Suspended'
       });
       this.modalService.open(content, { size: 'lg' });
     },
@@ -170,7 +170,7 @@ editHssac(id: number, content: any) {
         TaxType: hssac.TaxType,
         EffectiveFrom: this.datePipe.transform(hssac.EffectiveFrom, 'yyyy-MM-dd'),
         Remarks: hssac.Remarks,
-        status: hssac.status === 'A' ? 'Active' : 'Inactive'
+        status: hssac.status === 'A' ? 'Active' : 'Suspended'
       });
     },
     (error) => {
@@ -194,12 +194,12 @@ editHssac(id: number, content: any) {
         ...formValue,
         ...updatedBy,
         EffectiveFrom: new Date(formValue.EffectiveFrom),
-        status: formValue.status === "Active" ? "A" : "I"
+        status: formValue.status === "Active" ? "A" : "S"
       } : {
         ...formValue,
         ...createdBy,
         EffectiveFrom: new Date(formValue.EffectiveFrom),
-        status: formValue.status === "Active" ? "A" : "I"
+        status: formValue.status === "Active" ? "A" : "S"
       };
 
       console.log('payload', payload);
@@ -242,7 +242,7 @@ editHssac(id: number, content: any) {
 
   statusMap: { [key: string]: string } = {
     A: 'Active',
-    IA: 'Inactive,'
+    S: 'Suspended,'
   };
 
   loadHssacData(id: number) {
@@ -250,7 +250,7 @@ editHssac(id: number, content: any) {
       (data) => {
         this.hssacForm.patchValue({
           ...data,
-          status: data.status === 'A' ? 'Active' : 'Inactive'
+          status: data.status === 'A' ? 'Active' : 'Suspended'
         },
         );
       },

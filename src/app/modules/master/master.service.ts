@@ -1277,7 +1277,8 @@ export class MasterService {
   createSector(payload: any) {
     return this.http.post('sector/create', payload).pipe(
       map((res: any) => {
-        return res;
+        let response = res;
+        return response;
       })
     );
   }

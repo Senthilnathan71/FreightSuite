@@ -38,6 +38,10 @@ export class StateListComponent {
   pageSize = 10;
   totalLengthOfCollection: number = 0;
 
+  // sorting
+  sortColumn: string = 'stateName'; // default sort column
+  sortDirection: string = 'asc'; // default sort direction
+
   constructor(
     private masterService: MasterService,
     private router: Router,
@@ -99,6 +103,9 @@ export class StateListComponent {
           };
         });
         
+        // Apply sorting after loading new data
+        this.applySorting();
+        
         this.stateList = [...this.allStates];
         this.totalLengthOfCollection = this.stateList.length;
         this.searchPerformed = true;
@@ -113,6 +120,44 @@ export class StateListComponent {
     });
   }
 
+  sort(column: string) {
+    if (this.sortColumn === column) {
+      // Reverse the sort direction if clicking the same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Set new sort column and default to ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    
+    this.applySorting();
+    this.updatePaginatedData();
+  }
+
+  applySorting() {
+    this.allStates.sort((a, b) => {
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
+      
+      // Handle null/undefined values
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+      
+      // Convert to string for case-insensitive comparison
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+    
+      
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
@@ -123,12 +168,12 @@ export class StateListComponent {
     return item.StateMasterSid;
   }
 
-  deleteState(id: number) {
+  softDelete(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         this.loading = true;
-        this.masterService.softDelete(id).subscribe({ // Changed to softDeleteState for clarity
+        this.masterService.softDelete(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("State deleted successfully!");
             this.search(); // Refresh search results
@@ -153,6 +198,8 @@ export class StateListComponent {
     this.searchPerformed = false;
     this.stateList = [];
     this.totalLengthOfCollection = 0;
+    this.sortColumn = 'stateName';
+    this.sortDirection = 'asc';
   }
 
   getStatusClass(status: string): string {
@@ -162,7 +209,8 @@ export class StateListComponent {
   getStatusText(status: string): string {
     return status === 'A' ? 'Active' : 'Suspended';
   }
-  report(){
-    
+
+  report() {
+    // Implement report functionality here
   }
 }

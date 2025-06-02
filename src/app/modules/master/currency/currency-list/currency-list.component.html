@@ -53,12 +53,12 @@
                                 <select [(ngModel)]="searchType" name="searchType" class="form-select">
                                     <option value="currencyName">Currency Name</option>
                                     <option value="currencyCode">Currency Code</option>
-                                    
-                                    <option value="symbol">Symbol</option>
+                                    <option value="currencyCode">Short Code</option>
                                     <option value="unit">Unit</option>
                                     <option value="subUnit">Sub Unit</option>
-                                    <option value="status">Status</option>
-                                    <option value="countryName">Country Name</option>
+                                    <option value="subUnit">Sub Unit IN</option>
+                                    <option value="RoundOf">Round Off</option>
+                                    
                                 </select>
                             </div>
                             <!-- <div class="form-outline col-12 col-md px-0">
@@ -90,22 +90,45 @@
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Currency Name</th>
-                            <th class="bg-transparent text-light" scope="col">Currency Code</th>
-                             <th class="bg-transparent text-light" scope="col">Short Code</th>
-                            <th class="bg-transparent text-light" scope="col">Symbol</th>
-                            <th class="bg-transparent text-light" scope="col">Unit</th>
-                            <th class="bg-transparent text-light" scope="col">Sub Unit</th>
-                             <th class="bg-transparent text-light" scope="col">Round Off</th>
+                    <!-- Update the table headers to make them sortable -->
+<thead>
+    <tr class="bg-info">
+        <th class="bg-transparent text-light" scope="col">Action</th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('currencyName')">
+            Currency Name
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'currencyName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'currencyName'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('currencyCode')">
+            Currency Code
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'currencyCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'currencyCode'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('ShortCode')">
+            Short Code
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ShortCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ShortCode'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('CurrencyUnit')">
+            Unit
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CurrencyUnit', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CurrencyUnit'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('CurrencySubUnit')">
+            Sub Unit
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CurrencySubUnit', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CurrencySubUnit'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('CurrencySubUnitIN')">
+            Sub Unit In
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CurrencySubUnitIN', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CurrencySubUnitIN'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('RoundOf')">
+            Round Off
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'RoundOf', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'RoundOf'}"></i>
+        </th>
+        
                             <th class="bg-transparent text-light" scope="col">Status</th>
 
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of currencyList; let i = index; trackBy: trackByIndex">
+                        <tr *ngFor="let item of currencyList; let i = index; trackBy: trackByCurrencyId">
                             <td>
                                 <div class="d-flex align-items-center">
                                     <a class="text-info mx-2"
@@ -125,19 +148,19 @@
                                 <div class="text-truncate">{{item.currencyCode}}</div>
                             </td>
                              <td>
-                                <div class="text-truncate">{{item.CurrencyUnit || '-'}}</div>
+                                <div class="text-truncate">{{item.ShortCode || '-'}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">{{item.Symbol || '-'}}</div>
+                                <div class="text-truncate">{{item.CurrencyUnit || '-'}}</div>
                             </td>
                             <td>
                                 <div class="text-truncate">{{item.CurrencySubUnit || '-'}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">{{item.CurrencyUnit || '-'}}</div>
+                                <div class="text-truncate">{{item.SubUnitIn || '-'}}</div>
                             </td>
                              <td>
-                                <div class="text-truncate">{{item.CurrencyUnit || '-'}}</div>
+                                <div class="text-truncate">{{item.RoundOf || '-'}}</div>
                             </td>
                             <td>
                                 <div class="text-truncate">@if(item.status === "A"){
