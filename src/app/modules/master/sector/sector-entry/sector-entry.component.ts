@@ -115,14 +115,6 @@ export class SectorEntryComponent implements OnInit {
         console.error('Error loading zones:', err);
         this.appSettingService.showError('Failed to load zone data');
         this.isLoading = false;
-        
-        // Fallback to mock data if API fails
-        this.zones = [
-          { ZoneMasterSid: 1, ZoneCode: 'ZONE1', ZoneName: 'North Zone' },
-          { ZoneMasterSid: 2, ZoneCode: 'ZONE2', ZoneName: 'South Zone' },
-          { ZoneMasterSid: 3, ZoneCode: 'ZONE3', ZoneName: 'East Zone' },
-          { ZoneMasterSid: 4, ZoneCode: 'ZONE4', ZoneName: 'West Zone' }
-        ];
         this.filteredZones = [...this.zones];
       }
     });

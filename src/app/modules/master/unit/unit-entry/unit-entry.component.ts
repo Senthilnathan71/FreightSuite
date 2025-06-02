@@ -85,7 +85,7 @@ export class UnitEntryComponent {
   }
 
   loadContainerTypes() {
-    this.masterService.getAllContainerType().subscribe({
+    this.masterService.getAllContainerTypes().subscribe({
       next: (resp: any) => {
         this.containerTypes = resp.data || resp;
       },
