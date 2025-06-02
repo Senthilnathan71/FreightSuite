@@ -42,6 +42,7 @@ export class PostMasterListComponent implements OnInit {
   // lookup arrays
   countryOptions: any[] = [];
   sectorOptions: any[] = [];
+  regionList : any[];
 
   constructor(
     private masterService: MasterService,
@@ -52,6 +53,7 @@ export class PostMasterListComponent implements OnInit {
 
   ngOnInit(): void {
     // this.loadMasterData();
+    this.loadAllRegions();
   }
 
   /** Load all countries and sectors for lookup */
@@ -120,6 +122,19 @@ export class PostMasterListComponent implements OnInit {
 
   navigateToCreatePort(): void {
     this.router.navigate(['master/port-master/view']);
+  }
+
+  loadAllRegions(){
+    this.masterService.getAllZones().subscribe(
+      (resp)=>{
+        this.regionList = resp;
+      }
+    )
+  }
+
+  getRegionNameById(RegionMasterSid){
+    let region = this.regionList.find(region => region.ZoneMasterSid ===RegionMasterSid);
+    return region.ZoneName;
   }
 
   resetPage(): void {

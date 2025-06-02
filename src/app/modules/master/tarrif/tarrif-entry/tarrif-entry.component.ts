@@ -4,7 +4,7 @@ import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
@@ -109,33 +109,67 @@ export class TarrifEntryComponent implements OnInit {
 			AgentSid: [''],
 			IncoTerms: [''],
 			StuffingAt: ['Dock'],
+			EffectiveDate: ['',[Validators.required]],
 			status: ['Active'],
 			Remarks: [''],
-
-			// Static Value
-			EffectiveDate: ['2025-05-28T13:29:37.391Z']
 		})
 	}
 
 	initDetailsForm() {
 		this.tariffDetailsForm = this.fb.group({
-			detailCompanyMasterSid:['',[Validators.required]],
-			detailUOMSid : ['',[Validators.required]],
+			detailisSlabApplicable : [false,[Validators.required]],
+			detailSlabFrom : ['',this.slabConditionalValidator()],
+			detailSlabTo : ['',this.slabConditionalValidator()],
 			detailEffectiveDate : ['',[Validators.required]],
+			detailExpiredOn : ['',[Validators.required]],
 			detailChargeCode : ['',[Validators.required]],
 			detailDescription : ['',[Validators.required]],
 			detailCargoType : ['',[Validators.required]],
-			detailisSlabApplicable : [false,[Validators.required]],
+			detailUOMSid : ['',[Validators.required]],
 			detailSaleCurrency :['',Validators.required],
 			detailSalePerUnitPrice:['',[Validators.required]],
 			detailBuyCurrency : ['',[Validators.required]],
 			detailBuyPerUnitPrice : ['',[Validators.required]],
-			detailSlabFrom : [''],
-			detailSlabTo : [''],
+			detailMinSale : ['',[Validators.required]],
 			detailstatus : ['Active'],
 			detailRemarks : ['',[Validators.required]]
 		})
+		this.tariffDetailsForm.get('detailisSlabApplicable')?.valueChanges.subscribe(() => {
+			this.updateSlabValidators();
+		});
 	}
+
+	slabConditionalValidator(): ValidatorFn {
+		return (control: AbstractControl): { [key: string]: any } | null => {
+			const parent = control.parent;
+			if (!parent) return null;
+
+			const isSlabApplicable = parent.get('detailisSlabApplicable')?.value;
+			if (isSlabApplicable && !control.value) {
+				return { required: true };
+			}
+			return null;
+		};
+	}
+
+	updateSlabValidators() {
+		const isApplicable = this.tariffDetailsForm.get('detailisSlabApplicable')?.value;
+
+		const slabFromCtrl = this.tariffDetailsForm.get('detailSlabFrom');
+		const slabToCtrl = this.tariffDetailsForm.get('detailSlabTo');
+
+		if (isApplicable) {
+			slabFromCtrl?.setValidators([this.slabConditionalValidator()]);
+			slabToCtrl?.setValidators([this.slabConditionalValidator()]);
+		} else {
+			slabFromCtrl?.clearValidators();
+			slabToCtrl?.clearValidators();
+		}
+
+		slabFromCtrl?.updateValueAndValidity();
+		slabToCtrl?.updateValueAndValidity();
+	}
+
 
 	openTariffDetailEntryModal(content: TemplateRef<any>, data?: any) {
 		if (!this.TariffHeaderSid) {
@@ -147,21 +181,20 @@ export class TarrifEntryComponent implements OnInit {
 		if(data){
 			this.isModalEditMode= true;
 			this.tariffDetailsForm.patchValue({
-				detailCompanyMasterSid: data.CompanyMasterSid || '',
-				detailChargeMasterSid: data.ChargeMasterSid || '',
-				detailUOMSid: data.UOMSid || '',
-				detailCurrencyMasterSid: data.CurrencyMasterSid || '',
+				detailisSlabApplicable: data.IsSlabApplicable ==='Y' ? true : false || false,
+				detailSlabFrom: data.SlabFrom || '',
+				detailSlabTo: data.SlabTo || '',
 				detailEffectiveDate: new Date(data.EffectiveDate) || '',
+				detailExpiredOn: new Date(data.ExpiredOn) || '',
 				detailChargeCode: data.ChargeCode || '',
 				detailDescription: data.Description || '',
 				detailCargoType: data.CargoType || '',
-				detailisSlabApplicable: data.IsSlabApplicable ==='Y' ? true : false || false,
+				detailUOMSid: data.UOMSid || '',
 				detailSaleCurrency: data.SaleCurrency || '',
 				detailSalePerUnitPrice: data.SalePerUnitPrice ||'',
 				detailBuyCurrency: data.BuyCurrency || '',
 				detailBuyPerUnitPrice: data.BuyPerUnitPrice || '',
-				detailSlabFrom: data.SlabFrom || '',
-				detailSlabTo: data.SlabTo || '',
+				detailMinSale: data.MinSale || '',
 				detailstatus: data.status ? (data.status === 'A' ? 'Active' : 'Suspended') : 'Active',
 				detailRemarks: data.Remarks || ''
 			})
@@ -215,7 +248,7 @@ export class TarrifEntryComponent implements OnInit {
 			charges: this.masterServ.getAllCharges(),
 			UOMs: this.masterServ.getAllUom(),
 		}).subscribe(({ charges, UOMs }) => {
-			this.chargeList = charges.data,
+			this.chargeList = charges,
 				this.UOMList = UOMs.data
 		})
 	}
@@ -276,21 +309,21 @@ export class TarrifEntryComponent implements OnInit {
 			const updatedBy = this.appSettingServ.userSettingSource.value['userEmail'];
 			let formValue = this.tariffDetailsForm.value;
 			const payload = {
-				CompanyMasterSid: parseInt(formValue.detailCompanyMasterSid),
-				ChargeMasterSid: parseInt(formValue.detailChargeMasterSid),
-				UOMSid: parseInt(formValue.detailUOMSid),
-				CurrencyMasterSid: parseInt(formValue.detailCurrencyMasterSid),
+				TariffHeaderSid : this.TariffHeaderSid || parseInt(formValue.TariffHeaderSid),
+				IsSlabApplicable: formValue.detailisSlabApplicable ? 'Y':'N',
+				SlabFrom: parseInt(formValue.detailSlabFrom),
+				SlabTo:parseInt(formValue.detailSlabTo),
 				EffectiveDate: formValue.detailEffectiveDate,
+				ExpiredOn : formValue.detailExpiredOn,
 				ChargeCode: formValue.detailChargeCode,
 				Description: formValue.detailDescription,
 				CargoType: formValue.detailCargoType,
-				IsSlabApplicable: formValue.detailisSlabApplicable ? 'Y':'N',
+				UOMSid: parseInt(formValue.detailUOMSid),
 				SaleCurrency: parseInt(formValue.detailSaleCurrency),
 				SalePerUnitPrice: parseFloat(formValue.detailSalePerUnitPrice),
 				BuyCurrency: parseInt(formValue.detailBuyCurrency),
 				BuyPerUnitPrice: parseFloat(formValue.detailBuyPerUnitPrice),
-				SlabFrom: parseInt(formValue.detailSlabFrom),
-				SlabTo:parseInt(formValue.detailSlabTo),
+				MinSale: formValue.detailMinSale,
 				status: formValue.detailstatus === 'Active'? 'A':'S',
 				Remarks: formValue.detailRemarks,
 				...(this.isModalEditMode ? {createdBy:createdBy}:{updatedBy:updatedBy})
@@ -414,14 +447,14 @@ export class TarrifEntryComponent implements OnInit {
 	loadTariffDetails(){
 		this.masterServ.getAllTariffDetail().subscribe(
 			(resp)=>{
-				// if(this.TariffHeaderSid){
-				// 	this.filteredTariffDetail = this.tariffDetailList.filter(
-				// 		tariffDetail=> tariffDetail.TariffHeaderSid === this.TariffHeaderSid
-				// 	);
-				// }
-				this.TariffDetailsList =resp.data;
-				this.updatePaginationData();
+				const allTariffDetails = resp.data;
+				if(this.TariffHeaderSid){
+					this.TariffDetailsList = allTariffDetails.filter(
+						tariffDetail=> tariffDetail.TariffHeaderSid === this.TariffHeaderSid
+					);
+				}
 				this.totalNumberOfCollection=this.TariffDetailsList.length;
+				this.updatePaginationData();
 			},
 			(error)=>{
 				console.error('Error Loading All Tariff Details',error);

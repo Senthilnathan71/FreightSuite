@@ -27,8 +27,8 @@ export class CommodityEntryComponent implements OnInit {
   commodityId: number;
 
   statusOptions = [
-    { id: 'A', name: 'Active' },
-    { id: 'S', name: 'Suspended' }
+    { id: 'Active', name: 'Active' },
+    { id: 'Suspended', name: 'Suspended' }
   ];
 
   commodityAttributes = [
@@ -93,7 +93,7 @@ export class CommodityEntryComponent implements OnInit {
       PackingGroup: ['', [Validators.maxLength(10)]],
       // HSSACCode: [null],
       FlashPoint: ['', [Validators.maxLength(5)]],
-      status: [{ value: 'A', disabled: !this.isEditMode }, Validators.required],
+      status: ['Active'],
       Remarks: ['', [Validators.maxLength(200)]],
       // Timber: [false],
       // Flamable: [false],
@@ -111,7 +111,7 @@ export class CommodityEntryComponent implements OnInit {
         
         this.commodityForm.patchValue({
           ...commodity,
-          status: commodity.status || 'A',  // Ensure status has a value
+          status: commodity.status === 'A' ? 'Active' : 'Suspended',  // Ensure status has a value
           UOMSid: commodity.UOMSid ? commodity.UOMSid.toString() : null,
           Timber: commodity.Timber || false,
           Flamable: commodity.Flamable || false,
@@ -138,7 +138,7 @@ export class CommodityEntryComponent implements OnInit {
       ...formValue,
       HSSACCode: formValue.HSSACCode ? Number(formValue.HSSACCode) : null,
       UOMSid: formValue.UOMSid ? Number(formValue.UOMSid) : null,
-      status: this.isEditMode ? formValue.status : 'A'
+      status: formValue.status ==='Active' ? 'A' : 'S'
     };
 
     const operation = this.isEditMode
@@ -182,19 +182,12 @@ export class CommodityEntryComponent implements OnInit {
         CommodityCode: '',
         CommodityNameLL: '',
         CommodityType: '',
-        // UOMSid: null,
         ImcoName: '',
         UNNo: '',
         PackingGroup: '',
-        // HSSACCode: null,
         FlashPoint: '',
-        status: 'A',
+        status: 'Active',
         Remarks: '',
-        // Timber: false,
-        // Flamable: false,
-        // Perishable: false,
-        // Haz: false,
-        // ContainerVentRequired: false
       });
     }
   }
