@@ -786,7 +786,7 @@ export class OrganizationEntryComponent {
           CustomerGstType: formValue.CustBranchGSTtype,
           GSTNo: formValue.CustBranchGSTIN,
           ...updatedBy,
-          status: formValue.status,
+          status: formValue.status==="Active" ? "A" : "S",
         }
         : {
           CustomerMasterSid: this.CustomerMasterSid,
@@ -801,9 +801,8 @@ export class OrganizationEntryComponent {
           CustomerGstType: formValue.CustBranchGSTtype,
           GSTNo: formValue.CustBranchGSTIN,
           ...createdBy,
-          status: formValue.status,
+          status: formValue.status==="Active" ? "A" : "S",
         };
-
     if (this.isModalEditMode && this.customerBranchId) {
       this.masterService
         .updateCustomerBranchById(this.customerBranchId, payload)
@@ -924,7 +923,7 @@ export class OrganizationEntryComponent {
           Email: formValue.Email,
           ContactName: formValue.ContactName,
           ...updatedBy,
-          status: formValue.status,
+          status: formValue.status==="Active" ? "A" : "S",
         }
         : {
           CustomerMasterSid: this.CustomerMasterSid,
@@ -934,7 +933,7 @@ export class OrganizationEntryComponent {
           Email: formValue.Email,
           ContactName: formValue.ContactName,
           ...createdBy,
-          status: formValue.status,
+          status: formValue.status==="Active" ? "A" : "S",
         };
 
     if (this.isModalEditMode && this.CusBranchContactSid) {
@@ -1098,12 +1097,12 @@ export class OrganizationEntryComponent {
 
   loadCustomerBranchEmail(): void {
     this.masterService.getAllCustomerBranchEmail().subscribe((resp: any[]) => {
+      console.log(resp,'getAllCustomerBranchEmail')
       this.customerBranchEmailResults = resp.filter(
         (item) => item.CustomerBranchSid === this.customerBranchId
       );
       this.updatePaginatedEmailData(); // Update paginated data
-      this.totalLengthOfBranchEmail =
-        this.customerBranchEmailResults.length || 0;
+      this.totalLengthOfBranchEmail =  this.customerBranchEmailResults.length || 0;
       this.cdRef.detectChanges(); // trigger change detection
     });
   }
