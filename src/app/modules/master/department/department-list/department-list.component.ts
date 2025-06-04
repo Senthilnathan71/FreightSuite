@@ -75,6 +75,7 @@ export class DepartmentListComponent {
   }
 
   resetPage() {
+    this.searchPerformed = false;
     this.departmentList = []
     this.totalLengthOfCollection = 0
   }

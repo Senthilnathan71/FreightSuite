@@ -444,13 +444,8 @@
                         </li>
                     </ul>
                 </div>
-                <div class="row">
-                    <div *ngIf="setErrorMessage">
-                        <ngb-alert [dismissible]="false" class="mt-3" type="info">
-                            Create new Tariff and then Add Tariff Details
-                        </ngb-alert>
-                    </div>
-                    <div *ngIf="filteredTariffDetail.length>0">
+                <div class="row" *ngIf="filteredTariffDetail">
+                    <div>
                         <ng-container *ngTemplateOutlet="tariffDetailListTemplate"></ng-container>
                     </div>
                 </div>

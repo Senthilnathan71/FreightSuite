@@ -220,8 +220,10 @@ export class OrganizationEntryComponent {
   openModal(content: TemplateRef<any>, data?: any) {
     // Initialize both forms before patching
     this.initCustomerBranchForm();
+    this.getStatesByCountryId();
     if (data) {
       this.isModalEditMode = true;
+      this.getCitiesByStateId(data.StateMasterSid);
       // Patch form #1
       this.customerBranchForm.patchValue({
         CustBranchName: data.BranchName || '',
@@ -371,8 +373,8 @@ export class OrganizationEntryComponent {
 
   ngOnInit(): void {
     this.getAllCountries();
-    this.getAllState();
-    this.loadCity();
+    // this.getAllState();
+    // this.loadCity();
     this.loadDepartments();
     this.route.paramMap.subscribe((params) => {
       this.CustomerMasterSid = +params.get('id');
@@ -689,19 +691,19 @@ export class OrganizationEntryComponent {
     });
   }
 
-  getAllState() {
-    this.masterService.getAllState().subscribe((res) => {
-      this.stateList = res.data;
-      this.cdRef.detectChanges(); // trigger change detection
-    });
-  }
+  // getAllState() {
+  //   this.masterService.getAllState().subscribe((res) => {
+  //     this.stateList = res.data;
+  //     this.cdRef.detectChanges(); // trigger change detection
+  //   });
+  // }
 
-  loadCity(): void {
-    this.masterService.getAllCity().subscribe((resp: City[]) => {
-      this.cityList = resp;
-      this.cdRef.detectChanges(); // trigger change detection
-    });
-  }
+  // loadCity(): void {
+  //   this.masterService.getAllCity().subscribe((resp: City[]) => {
+  //     this.cityList = resp;
+  //     this.cdRef.detectChanges(); // trigger change detection
+  //   });
+  // }
 
   loadCustomerBranch(): void {
     this.masterService.getAllCustomerBranches().subscribe((resp: any[]) => {
@@ -1215,6 +1217,68 @@ export class OrganizationEntryComponent {
       this.appSettingService.showSuccess('Deleted!');
       this.loadCustomerBranchLogin();
     });
+  }
+
+
+  getStatesByCountryId(){
+
+    const countryId = this.customerForm.get('CountryMasterSid')?.value;
+
+    if(countryId){
+    this.masterService.getStateByCountryId(countryId).subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          this.stateList = resp.data;
+        } 
+        else {
+          console.error('Error fetching States with Country Id');
+        }
+      }
+    )
+    }
+  }
+
+  getCitiesByStateId(state){
+    // To handle when we click clear
+    this.cityList = [];
+
+    if (this.customerBranchForm.get('CustBranchCity')?.value) {
+      this.customerBranchForm.get('CustBranchCity')?.reset();
+      this.customerBranchForm.get('CustBranchCity').markAsTouched();
+    }
+    
+    let stateId : any;
+
+    // Handle Invalid Case
+    if(!state){
+      return;
+    }
+    
+    // Handle Event happened on Selecting Dropdown
+    if(state instanceof Event){
+      let element = state.target as HTMLSelectElement;
+      stateId = element.value;
+    } 
+    // Used on Patching Value
+    else {
+      stateId = state;
+    }
+
+    this.masterService.getCityByStateId(stateId).subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          this.cityList = resp.data;
+        } else {
+          console.error('Error fetching Cities with State Id');
+        }
+      }
+    )
+  }
+
+  modalClose(){
+    this.cityList = [];
+    this.stateList =[];
+    this.modalRef.close();
   }
 
   reset() {

@@ -68,12 +68,8 @@
                         </aside>
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select class="ng-select" formControlName="CountryMasterSid"
-                                    (change)="filterStateByCountry($event)">
-                                    <ng-option value="">Select Country</ng-option>
-                                    @for (country of countryList; track country) {
-                                    <ng-option [value]="country.CountryMasterSid">{{ country.countryName }}</ng-option>
-                                    }
+                                <ng-select class="ng-select" [items]="countryList" bindLabel="countryName" bindValue="CountryMasterSid"
+                                    formControlName="CountryMasterSid" placeholder="Select Country" (change)="filterStateByCountry($event)">
                                 </ng-select>
                                 <label for="text-input" class="input-label">Country <span
                                         class="text-danger fw-semibold">*</span></label>
@@ -89,20 +85,23 @@
                         </aside>
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select class="ng-select" formControlName="StateMasterSid"
-                                    (change)="setCountryByState($event)">
-                                    <ng-option value="">Select State</ng-option>
-                                    @for (state of filteredStateList; track state) {
-                                    <ng-option [value]="state.StateMasterSid">{{ state.stateName }}</ng-option>
-                                    }
+                                <ng-select class="ng-select" [items]="filteredStateList" bindLabel="stateName" bindValue="StateMasterSid"
+                                    formControlName="StateMasterSid" placeholder="Select State">
                                 </ng-select>
-                                <label for="" class="input-label">State</label>
+
+                                <label for="text-input" class="input-label">State</label>
                             </div>
                         </aside>
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
+                                <!-- <ng-select class="ng-select" formControlName="ZoneMasterSid">
+                                    <ng-option value="">Select Region</ng-option>
+                                    @for (region of regionList; track region) {
+                                    <ng-option [value]="region.ZoneMasterSid">{{ region.ZoneName }}</ng-option>
+                                    }
+                                </ng-select> -->
                                 <ng-select formControlName="ZoneMasterSid" [items]="regionList" bindLabel="ZoneName"
-                                    bindValue="ZoneMasterSid">
+                                    bindValue="ZoneMasterSid" class="ng-select">
 
                                 </ng-select>
                                 <label for="text-input" class="input-label">Region</label>
@@ -236,7 +235,7 @@
                                 <div class="custom-form-group">
 
                                     <div class="form-check">
-                                        <input type="radio" class="form-check-input" formControlName="PortType">
+                                        <input type="radio" class="form-check-input" formControlName="PortType" value="Terminal">
                                         <label class="form-check-label" value="Terminal">
                                             Terminal
                                         </label>

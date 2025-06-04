@@ -172,10 +172,6 @@ export class TarrifEntryComponent implements OnInit {
 
 
 	openTariffDetailEntryModal(content: TemplateRef<any>, data?: any) {
-		if (!this.TariffHeaderSid) {
-			this.setErrorMessage = true;
-			return;
-		}
 		this.initDetailsForm();
 		this.loadModalFields();
 		if(data){
