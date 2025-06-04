@@ -294,23 +294,22 @@
                                     }
                                 </div> -->
                             </aside>
-                            <aside class="col-md-3">
+                            <aside class="col-md-auto">
                                 <div class="form-check form-check-inline mt-3">
                                     <input type="radio" id="Cash" formControlName="paymentType" class="form-check-input"
                                         name="paymentType" value="Cash" />
                                     <label for="Cash" class="form-check-label">Cash <span
                                                 class="text-danger">*</span></label>
                                 </div>
-                            </aside>
-
-                            <aside class="col-md-3">
-                                <div class="form-check form-check-inline mt-3">
+                                 <div class="form-check form-check-inline mt-3">
                                     <input type="radio" id="Credit" formControlName="paymentType"
                                         class="form-check-input" name="paymentType" value="Credit" />
                                     <label for="Credit" class="form-check-label">Credit <span
                                                 class="text-danger">*</span></label>
                                 </div>
                             </aside>
+
+                          
 
                               <aside class="col-md-3">
                                     <div class="custom-form-group">
@@ -323,7 +322,7 @@
                         
 
 
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <textarea id="" placeholder="" rows="1" class="input-field sm"
                                         formControlName="Remarks" [textWithNumbers]="100"></textarea>
@@ -340,7 +339,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-3 d-flex align-items-center">
+                            <aside class="col-md-auto d-flex align-items-center">
                                 <div class="form-check form-check-inline ">
                                     <div class="form-check d-flex align-items-center">
                                         <input type="checkbox" formControlName="IsMSME" id="IsMSME"
@@ -359,7 +358,7 @@
                                 </div>
                             </aside>
 
-                            <h5 class="text-center mt-2">KYC SECTION</h5>
+                            <h5 class="text-center mt-2 border-top pt-2">KYC SECTION</h5>
                             <aside class="col-md-4 d-flex align-items-center">
                                 <div class="form-check form-check-inline ">
                                     <div class="form-check d-flex align-items-center">
@@ -696,8 +695,8 @@
                 <ul ngbNav #nav2="ngbNav" [(activeId)]="active2" class="nav-tabs">
                     <li [ngbNavItem]="1">
                         <button ngbNavLink>
-                            <button class="btn btn-info p-0 me-2" (click)="openModal(content)"> <i-feather
-                                    name="plus-circle" class="feather-sm "></i-feather></button>
+                             <i-feather
+                                    name="plus-circle" class="feather-sm pt-1 text-info" (click)="openModal(content)" ></i-feather>
                             Branch</button>
 
                         <ng-template ngbNavContent>
@@ -705,15 +704,15 @@
                         </ng-template>
                     </li>
                     <li [ngbNavItem]="3">
-                        <button ngbNavLink> <button class="btn btn-info p-0 me-2" (click)="openModal(content3)">
-                                <i-feather name="plus-circle" class="feather-sm "></i-feather></button>Milestoe</button>
+                        <button ngbNavLink>  
+                                <i-feather name="plus-circle" class="feather-sm pt-1 text-info" (click)="openModal(content3)"></i-feather> Milestoe</button>
                         <ng-template ngbNavContent>
                             <ng-container *ngTemplateOutlet="TabMilestone"></ng-container>
                         </ng-template>
                     </li>
                      <li [ngbNavItem]="4">
-                        <button ngbNavLink> <button class="btn btn-info p-0 me-2" (click)="openModal(content6)">
-                                <i-feather name="plus-circle" class="feather-sm "></i-feather></button>Salesman</button>
+                        <button ngbNavLink>  
+                                <i-feather name="plus-circle" class="feather-sm pt-1 text-info" (click)="openModal(content6)"></i-feather> Salesman</button>
                         <ng-template ngbNavContent>
                             <ng-container *ngTemplateOutlet="salesperson"></ng-container>
                         </ng-template>
@@ -947,7 +946,7 @@
                     <div class="card-body">
                         <div class="row">
 
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <select id="city" formControlName="CustBranchCity" class="form-select">
                                         <option value="">Select City</option>
@@ -966,7 +965,7 @@
                                     }
                                 </div>
                             </aside>
-                               <aside class="col-md-6">
+                               <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input id="branchName" type="text" id="text-input" placeholder=""
                                         class="custom-input-field sm" formControlName="CustBranchName"
@@ -985,14 +984,14 @@
                                     }
                                 </div>
                             </aside>
-                               <aside class="col-md-6">
+                               <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm" formControlName="">
                                         <label for="text-input" class="input-label">Branch Type <span class="text-danger">*</span></label>
                                 </div>
                             </aside>
-                              <aside class="col-md-6">
+                              <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm" formControlName="">
@@ -1088,7 +1087,7 @@
                                 </div>
                             </aside>
 
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group custom-form-group custom-form-group-select">
                                     <ng-select id="registered" formControlName="CustBranchRegistered"
                                         [items]="modeOfRegistered" bindLabel="name" bindValue="id">
@@ -1105,7 +1104,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select id="status" formControlName="status" [items]="modeOfStatus"
                                         bindLabel="name" bindValue="name">
@@ -1113,7 +1112,7 @@
                                     <label for="status" class="input-label">Status </label>
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <select id="gstType" formControlName="CustBranchGSTtype" class="form-select"
                                         [textWithNumbers]="10">
@@ -1132,7 +1131,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="gstIn" placeholder="" class="custom-input-field sm"
                                         formControlName="CustBranchGSTIN" [textWithNumbers]="15">
@@ -1173,10 +1172,10 @@
                                         <ul ngbNav #nav2="ngbNav" [(activeId)]="active3" class="nav-tabs">
                                             <li [ngbNavItem]="1">
                                                 <button ngbNavLink>
-                                                    <button class="btn btn-info p-0 me-2"
-                                                        (click)="openBranchContactModal(content1)">
+                                                    
+                                                        
                                                         <i-feather name="plus-circle"
-                                                            class="feather-sm "></i-feather></button>
+                                                            class="feather-sm pt-1 text-info" (click)="openBranchContactModal(content1)"></i-feather>
                                                     Branch Contact</button>
 
                                                 <ng-template ngbNavContent>
@@ -1186,10 +1185,9 @@
 
                                             <li [ngbNavItem]="2">
                                                 <button ngbNavLink>
-                                                    <button class="btn btn-info p-0 me-2"
-                                                        (click)="openBranchEmailModal(content2)">
+                                                    
                                                         <i-feather name="plus-circle"
-                                                            class="feather-sm "></i-feather></button>
+                                                            class="feather-sm pt-1 text-info"  (click)="openBranchEmailModal(content2)"></i-feather>
                                                     Email</button>
                                                 <ng-template ngbNavContent>
                                                     <ng-container *ngTemplateOutlet="Email"></ng-container>
@@ -1215,10 +1213,10 @@
                                                 </ng-template>
                                             </li> -->
                                             <li [ngbNavItem]="5">
-                                                <button ngbNavLink><button class="btn btn-info p-0 me-2"
-                                                        (click)="openBranchLoginModal(content5)">
+                                                <button ngbNavLink>
+                                                        
                                                         <i-feather name="plus-circle"
-                                                            class="feather-sm "></i-feather></button>eLogin</button>
+                                                            class="feather-sm pt-1 text-info" (click)="openBranchLoginModal(content5)"></i-feather> eLogin</button>
                                                 <ng-template ngbNavContent>
                                                     <ng-container *ngTemplateOutlet="eLogin"></ng-container>
                                                 </ng-template>
