@@ -1,35 +1,199 @@
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
+import { MasterService } from '../../master.service';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
-  selector: 'app-product-entry',
-  standalone: true,
-  imports: [FeatherModule,NgSelectModule],
-  templateUrl: './product-entry.component.html',
-  styleUrl: './product-entry.component.scss',
+    selector: 'app-product-entry',
+    standalone: true,
+    imports: [FeatherModule, NgSelectModule,ReactiveFormsModule,OnlyTextDirective,OnlyNumbersDirective,TextWithNumbersDirective],
+    templateUrl: './product-entry.component.html',
+    styleUrl: './product-entry.component.scss',
 })
-export class ProductEntryComponent {
-  modeOfUOM = [
-    { id: '1', name: 'Days' },
-    { id: '2', name: 'Shipment' },
-    { id: '3', name: 'KG' },
-    { id: '4', name: 'CBMS' },
-    { id: '5', name: 'Per Unit' },
-    { id: '6', name: 'Per MT' },
-    { id: '7', name: 'Per Ton' },
-    { id: '8', name: 'Per Cntr' },
-    { id: '9', name: 'Teu' },
-  ];
-  modeOfProductType=[
-    {id:"1",name:"General"},
-    {id:"2",name:"Haz"},
-    {id:"3",name:"Frozen"},
+export class ProductEntryComponent implements OnInit{
+
+    productForm !:FormGroup;
+    isEditMode : boolean;
+    ProductMasterSId : number;
+    UOMList : any[];
+    hsnList : any[];
+
+    // modeOfUOM = [
+    //     { id: '1', name: 'Days' },
+    //     { id: '2', name: 'Shipment' },
+    //     { id: '3', name: 'KG' },
+    //     { id: '4', name: 'CBMS' },
+    //     { id: '5', name: 'Per Unit' },
+    //     { id: '6', name: 'Per MT' },
+    //     { id: '7', name: 'Per Ton' },
+    //     { id: '8', name: 'Per Cntr' },
+    //     { id: '9', name: 'Teu' },
+    // ];
+    modeOfProductType = [
+        { id: "1", name: "General" },
+        { id: "2", name: "Haz" },
+        { id: "3", name: "Frozen" },
+    ]
+    modeOfStatus = [
+    { name: 'Active', value: 'Active' },
+    { name: 'Suspended', value: 'Suspended' },
   ]
 
-   navigateBack() {
-    history.back();
-  }
+    constructor(
+        private masterService:MasterService,
+        private appSettingService:AppSettingsService,
+        private currentRoute : ActivatedRoute,
+        private route:Router,
+        private fb:FormBuilder
+    ){}
+
+    ngOnInit(): void {
+        this.initProductForm();
+        this.getAllUom();
+        this.getAllHSN();
+        this.currentRoute.paramMap.subscribe(
+            (param)=>{
+                this.ProductMasterSId = +param.get('id')
+                if(this.ProductMasterSId){
+                    this.isEditMode = true;
+                    this.loadProductData();
+                }
+            }
+        )
+    }
+
+    initProductForm(){
+        this.productForm = this.fb.group({
+            ProductName:['',[Validators.required]],
+            ProductCode:['',[Validators.required]],
+            Product_LL : [''],
+            UOMCode : [''],
+            ProductId : [''],
+            PackingGroup :[''],
+            Description : [''],
+            ProductType : [''],
+            UNNo : [''],
+            UNPackingCode : [''],
+            IMOClass : [''],
+            IMOSubClass : [''],
+            FlashPoint : [''],
+            
+            HSNCode : [''],
+            status : ['Active'],
+
+        })
+    }
+
+
+    loadProductData(){
+        let ourProduct :any;
+        this.masterService.getProductById(this.ProductMasterSId).subscribe(
+            (resp:any)=>{
+                this.productForm.patchValue({
+                    ...resp.data,
+                    status : resp.data.status === 'A' ? 'Active' : 'Suspended'
+                })
+            },
+            (error)=>{
+                console.error('Error Loading Product',error);
+            }
+        )
+        return ourProduct
+    }
+
+    getAllUom(){
+        this.masterService.getAllUom().subscribe(
+            (resp)=>{
+                this.UOMList=resp.data;
+            },
+            (error)=>{
+                console.error('Error Loading UOM',error);
+            }
+        )
+    }
+
+    
+
+    onSubmit(){
+        if(this.productForm.invalid){
+            this.productForm.markAllAsTouched();
+            this.productForm.updateValueAndValidity();
+            this.appSettingService.showWarning('Please fill all the required fields');
+            return;
+        }
+        else {
+            const createdBy = this.appSettingService.userSettingSource.value['UserEmail'];
+            const updatedBy = this.appSettingService.userSettingSource.value['UserEmail'];
+            const formValue = this.productForm.value;
+            const payload = this.isEditMode ? {
+                ...formValue,
+                UNNo : parseInt(formValue.UNNo),
+                status : formValue.status === 'Active' ? 'A' : 'S',
+                updatedBy:updatedBy
+            } : {
+                ...formValue,
+                UNNo : parseInt(formValue.UNNo),
+                status : formValue.status === 'Active' ? 'A' : 'S',
+                createdBy:createdBy
+            }
+            if(this.isEditMode){
+                this.masterService.updateProductById(this.ProductMasterSId,payload).subscribe(
+                    (resp:any)=>{
+                        if(resp.status){
+                            this.appSettingService.showSuccess('Product Updated Successfully');
+                            this.route.navigate(['master/product/list']);
+                        } else {
+                            this.appSettingService.showWarning('Error Updating Product');
+                        }
+                    },
+                    (error)=>{
+                        console.error('Error Updating Product',error);
+                    }
+                )
+            } else {
+                this.masterService.createNewProduct(payload).subscribe(
+                    (resp:any)=>{
+                        if(resp.status){
+                            this.appSettingService.showSuccess('Product Created Successfully');
+                            this.route.navigate(['master/product/list']);
+                        } else {
+                            this.appSettingService.showWarning('Error Creating Product');
+                        }
+                    },
+                    (error)=>{
+                        console.error('Error Creating Product',error);
+                    }
+                )
+            }
+        }
+    }
+
+    resetForm(){
+        this.productForm.reset();
+    }
+
+
+    navigateBack() {
+        history.back();
+    }
+
+    getAllHSN(){
+        this.masterService.getAllChargeTax().subscribe(
+            (resp:any)=>{
+                if(resp.status){
+                    this.hsnList = resp.data;
+                }
+            },
+            (error)=>{
+                console.error('Error Loading Charge Tax',error);
+            }
+        )
+    }
 
 }

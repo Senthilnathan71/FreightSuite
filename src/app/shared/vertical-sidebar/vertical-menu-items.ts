@@ -123,7 +123,7 @@ export const ROUTES: RouteInfo[] = [
       },
       {
         path: '/master/tarrif/list',
-        title: 'Tarrif',
+        title: 'Tariff',
         icon: 'mdi mdi-file-document',
         class: '',
         extralink: false,
@@ -145,16 +145,6 @@ export const ROUTES: RouteInfo[] = [
         path: '/master/company/list',
         title: 'Company',
         icon: 'fas fa-dot-circle',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
-      {
-        path: '/master/branch/list',
-        title: 'Branch',
-        icon: 'fas fa-code-branch',
         class: '',
         extralink: false,
         label: '',

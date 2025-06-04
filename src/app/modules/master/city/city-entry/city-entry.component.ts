@@ -8,6 +8,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-city-entry',
@@ -18,7 +19,8 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
     FormsModule,
     ReactiveFormsModule,
     OnlyTextDirective,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    NgSelectModule
   ],
   templateUrl: './city-entry.component.html',
   styleUrl: './city-entry.component.scss'
@@ -47,7 +49,7 @@ export class CityEntryComponent {
 
   ngOnInit(): void {
     this.getAllCountries()
-    this.getAllState()
+    // this.getAllState()
     this.loadCity()
     this.initForm();
 
@@ -167,6 +169,7 @@ export class CityEntryComponent {
   loadLeadData(leadId: number) {
     this.masterService.getCityById(leadId).subscribe(
       (leadData) => {
+        this.getStateForCountry(leadData.CountryMasterSid);
         this.cityForm.patchValue({
           ...leadData,
           CountryMasterSid: leadData.CountryMasterSid,
@@ -186,11 +189,11 @@ export class CityEntryComponent {
     })
   }
 
-  getAllState() {
-    this.masterService.getAllState().subscribe((res) => {
-      this.stateList = res.data
-    })
-  }
+  // getAllState() {
+  //   this.masterService.getAllState().subscribe((res) => {
+  //     this.stateList = res.data
+  //   })
+  // }
 
   reset() {
     this.cityForm.reset();
@@ -199,6 +202,38 @@ export class CityEntryComponent {
       this.cityForm.get('status')?.setValue('Active');
       this.cityForm.get('status')?.disable();
     }
+  }
+
+  getStateForCountry(country){
+
+    this.stateList = [];
+    if(this.cityForm.get('StateMasterSid').value){
+      this.cityForm.get('StateMasterSid').reset();
+      this.cityForm.get('StateMasterSid').markAsTouched();
+    }
+
+    if(!country){
+      return;
+    }
+    let countryId :number;
+    // Ng-select change Event Emits the whole "Object"
+    if(country instanceof Object){
+      countryId = country.CountryMasterSid;
+    } 
+    // While Patching It will be a type of Number
+    else {
+      countryId = country;
+    }
+
+    this.masterService.getStateByCountryId(countryId).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.stateList = resp.data;
+        } else {
+          console.error('Error Fetching State for Country')
+        }
+      }
+    )
   }
 
   goBack() {

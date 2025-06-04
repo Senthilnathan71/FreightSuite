@@ -127,24 +127,17 @@
                 </div>
               </aside>
               <aside class="col-md-6">
-                <div class="custom-form-group">
-                  <select formControlName="ZoneMasterSid" class="form-select">
-                    <option value="" disabled selected>Select Zone</option>
-                    <option *ngFor="let option of zones" [value]="option.ZoneMasterSid">
+                <div class="custom-form-group custom-form-group-select">
+                  <ng-select formControlName="ZoneMasterSid" class="ng-select">
+                    <ng-option value="">Select Zone</ng-option>
+                    <ng-option *ngFor="let option of zones" [value]="option.ZoneMasterSid">
                       {{ option.ZoneName }}
-                    </option>
-                  </select>
+                    </ng-option>
+                  </ng-select>
                   <label for="text-input" class="input-label">Zone <span class="text-danger fw-bold">*</span></label>
                 </div>
               </aside>
 
-              <!-- Region -->
-              <aside class="col-md-6">
-                <div class="custom-form-group">
-                  <input type="text" id="region" formControlName="region" class="custom-input-field sm" />
-                  <label for="region" class="input-label">Region</label>
-                </div>
-              </aside>
 
               <!-- Status -->
               <aside class="col-md-6">
@@ -161,9 +154,9 @@
               </aside>
 
               <!-- Remarks -->
-              <aside class="col-md-12">
+              <aside class="col-md-6">
                 <div class="custom-form-group">
-                  <textarea rows="1" class="input-field sm" formControlName="Remarks"></textarea>
+                  <textarea rows="1" class="custom-input-field" formControlName="Remarks"></textarea>
                   <label class="input-label">Remarks</label>
                 </div>
               </aside>

@@ -174,6 +174,8 @@ export class CompanyEntryComponent implements OnInit {
 		this.initBranchForm();
 		if (data) {
 			this.isModalEditMode = true;
+			this.getStatesByCountry(data.CountryMasterSid);
+			this.getCitiesByState(data.StateMasterSid);
 			this.branchForm.patchValue({
 				branchName: data.branchName || '',
 				branchCode: data.branchCode || '',
@@ -435,13 +437,9 @@ export class CompanyEntryComponent implements OnInit {
 	loadAllFields() {
 		forkJoin({
 			countries: this.masterService.getAllCountry(),
-			states: this.masterService.getAllState(),
-			cities: this.masterService.getAllCity(),
 			currencies: this.masterService.getAllCurrencies()
-		}).subscribe(({ countries, states, cities, currencies }) => {
+		}).subscribe(({ countries, currencies }) => {
 			this.countryResults = countries.data;
-			this.stateResults = states.data;
-			this.cityResults = cities;
 			this.currencyResults = currencies;
 
 		})
@@ -519,6 +517,58 @@ export class CompanyEntryComponent implements OnInit {
 		)
 	}
 
+	getStatesByCountry(CountryMasterSid){
+		// Remove Everything and mark the control as touched
+		this.cityResults = [];
+		this.stateResults = [];
+		if (this.branchForm.get('branchStateMasterSid').value) {
+			this.branchForm.get('branchStateMasterSid').reset();
+			this.branchForm.get('branchStateMasterSid').markAsTouched();
+		}
+		if (this.branchForm.get('branchCityMasterSid').value) {
+			this.branchForm.get('branchCityMasterSid').reset();
+			this.branchForm.get('branchCityMasterSid').markAsTouched();
+		}
+
+		if(!CountryMasterSid){
+			return;
+		}
+
+		this.masterService.getStateByCountryId(CountryMasterSid).subscribe(
+			(resp:any)=>{
+				if(resp.status){
+					this.stateResults = resp.data;
+				} else {
+					console.error('Error loading States with CountryId');
+				}
+			}
+		)
+	}
+
+	getCitiesByState(StateMasterSid){
+		this.cityResults = [];
+
+		if(this.branchForm.get('branchCityMasterSid').value){
+			this.branchForm.get('branchCityMasterSid').reset();
+			this.branchForm.get('branchCityMasterSid').markAsTouched();
+		}
+
+		if(!StateMasterSid){
+			return;
+		}
+
+		this.masterService.getCityByStateId(StateMasterSid).subscribe(
+			(resp:any)=>{
+				if(resp.status){
+				this.cityResults = resp.data
+				} else {
+					console.error('Error loading City with State Id');
+				}
+			}
+		)
+
+	}
+
 	navigateBack() {
 		history.back();
 	}
@@ -535,6 +585,8 @@ export class CompanyEntryComponent implements OnInit {
 	}
 	closeBranchForm() {
 		this.branchForm.reset();
+		this.cityResults = [];
+		this.stateResults = [];
 		this.isModalEditMode = false;
 		this.setBranchErrorMessage=false;
 		this.modalService.dismissAll()

@@ -938,7 +938,7 @@
         <div class="modal-content custom-modal">
     <div class="modal-header">
         <h4 class="modal-title">Branch</h4>
-        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modalClose()"></button>
     </div>
     <div class="modal-body">
         <form [formGroup]="customerBranchForm">
@@ -968,7 +968,7 @@
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <select id="state" formControlName="CustBranchState" class="form-select">
+                                    <select id="state" formControlName="CustBranchState" class="form-select" (change)="getCitiesByStateId($event)">
                                         <option value="" disabled>Select State</option>
                                         <option *ngFor="let option of stateList" [value]="option.StateMasterSid">
                                             {{option.stateName}} - {{option.stateCode}}</option>

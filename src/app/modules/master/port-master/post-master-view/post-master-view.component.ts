@@ -78,8 +78,8 @@ export class PostMasterViewComponent {
     this.portForm = this.fb.group({
       PortName: ['', [Validators.required, Validators.maxLength(50)]],
       PortCode: ['', [Validators.required, Validators.maxLength(5)]],
-      CountryMasterSid: [, [Validators.required]],
-      StateMasterSid: [,],
+      CountryMasterSid: ['', [Validators.required]],
+      StateMasterSid: ['',],
       TimeZone: [''],
       ZoneMasterSid: [''],
       TerminalCode: ['', [Validators.maxLength(10)]],
@@ -98,6 +98,7 @@ export class PostMasterViewComponent {
     this.masterService.getPortById(PortMasterSid).subscribe(
       (resp) => {
         console.log(resp, 'portdata')
+        this.filterStateByCountry(resp.CountryMasterSid);
         this.portForm.patchValue({
           ...resp,
           CBMRequire: (resp.CBMRequire == 'Y' ? true : false),
@@ -145,33 +146,42 @@ export class PostMasterViewComponent {
   loadAllFields() {
     forkJoin({
       countries: this.masterService.getAllCountry(),
-      states: this.masterService.getAllState(),
       regions: this.masterService.getAllZones()
-    }).subscribe(({ countries, states, regions }) => {
+    }).subscribe(({ countries, regions }) => {
       this.countryList = countries.data,
-        this.stateList = states.data,
-        this.filteredStateList = states.data,
         this.regionList = regions
     })
   }
 
-  filterStateByCountry(CountryMasterSid) {
-    if (!CountryMasterSid) {
-      this.filteredStateList = this.stateList;
-      return;
-    }
-    this.filteredStateList = this.stateList.filter(state => state.CountryMasterSid === CountryMasterSid);
-  }
+  filterStateByCountry(country) {
 
-  setCountryByState(StateMasterSid) {
-    if (!StateMasterSid) {
+    this.filteredStateList = [];
+    if(this.portForm.get('StateMasterSid').value){
+      this.portForm.get('StateMasterSid').reset();
+      this.portForm.get('StateMasterSid').markAsTouched();
+    }
+    if(!country){
       return;
     }
-    console.log(StateMasterSid);
-    let selectedState = this.stateList.find(state => state.StateMasterSid);
-    this.portForm.get('StateMasterSid').setValue(StateMasterSid);
-    this.portForm.get('CountryMasterSid').setValue(selectedState.CountryMasterSid);
-    console.log('CountryCode', selectedState.CountryMasterSid)
+    let countryId :number;
+    // Ng-select Change Event Emits the whole "Object"
+    if(country instanceof Object){
+      countryId = country.CountryMasterSid;
+    } 
+    // While Patching It will be a type of Number
+    else {
+      countryId = country;
+    }
+    this.portForm.get('StateMasterSid')?.reset();
+    this.masterService.getStateByCountryId(countryId).subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          this.filteredStateList = resp.data;
+        } else { 
+          console.error('Error Fetching State for Country')
+        }
+      }
+    )
   }
 
 

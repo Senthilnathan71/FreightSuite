@@ -567,7 +567,7 @@
                                     <ng-select id="text-input" class="ng-select" formControlName="branchCityMasterSid">
                                         <ng-option value="">Select City</ng-option>
                                         <ng-option *ngFor="let city of cityResults" [value]="city.CityMasterSid">
-                                        {{city.cityCode}} - {{ city.cityName }}
+                                        {{city.cityName}} - {{ city.cityCode }}
                                         </ng-option>
                                     </ng-select>
                                     <label for="text-input" class="input-label">City <span class="text-danger">*</span></label>
@@ -583,10 +583,10 @@
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select">
-                                    <ng-select id="text-input" class="ng-select" formControlName="branchStateMasterSid">
+                                    <ng-select id="text-input" class="ng-select" formControlName="branchStateMasterSid" (change)="getCitiesByState($event)">
                                         <ng-option value="">Select State</ng-option>
                                         <ng-option *ngFor="let state of stateResults" [value]="state.StateMasterSid">
-                                            {{state.stateCode}}-{{ state.stateName }}
+                                            {{ state.stateName }}-{{state.stateCode}}
                                         </ng-option>
                                     </ng-select>
                                     <label for="text-input" class="input-label">State <span class="text-danger">*</span></label>
@@ -602,10 +602,10 @@
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select">
-                                    <ng-select id="text-input" class="ng-select" formControlName="branchCountryMasterSid">
+                                    <ng-select id="text-input" class="ng-select" formControlName="branchCountryMasterSid" (change)="getStatesByCountry($event)">
                                         <ng-option value="">Select Country</ng-option>
                                         <ng-option *ngFor="let country of countryResults" [value]="country.CountryMasterSid">
-                                            {{country.countryCode}}-{{ country.countryName }}
+                                            {{ country.countryName }}-{{country.countryCode}}
                                         </ng-option>
                                     </ng-select>
                                     <label for="text-input" class="input-label">Country <span

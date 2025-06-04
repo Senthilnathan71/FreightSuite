@@ -26,8 +26,6 @@ import { ReportListComponent } from './report/report-list/report-list.component'
 import { ReportEntryComponent } from './report/report-entry/report-entry.component';
 import { CompanyListComponent } from './company/company-list/company-list.component';
 import { CompanyEntryComponent } from './company/company-entry/company-entry.component';
-import { BranchListComponent } from './branch/branch-list/branch-list.component';
-import { BranchEntryComponent } from './branch/branch-entry/branch-entry.component';
 import { AirlineListComponent } from './airline/airline-list/airline-list.component';
 import { AirlineEntryComponent } from './airline/airline-entry/airline-entry.component';
 import { MilestoneListComponent } from './milestone/milestone-list/milestone-list.component';
@@ -441,30 +439,6 @@ export const MasterRoutes: Routes = [
         data: {
           title: 'Edit Company',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Company' }],
-        },
-      },
-      {
-        path: 'branch/list',
-        component: BranchListComponent,
-        data: {
-          title: 'Branch',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Branch' }],
-        },
-      },
-      {
-        path: 'branch/entry',
-        component: BranchEntryComponent,
-        data: {
-          title: 'Create Branch',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Branch' }],
-        },
-      },
-      {
-        path: 'branch/entry/:id',
-        component: BranchEntryComponent,
-        data: {
-          title: 'Edit Branch',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Branch' }],
         },
       },
       {
@@ -896,7 +870,29 @@ export const MasterRoutes: Routes = [
   },
 },
       {
+        path: 'product/list',
+        component: ProductListComponent,
+        data: {
+          title: 'Product',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Product' },
+          ],
+        },
+      },
+      {
         path: 'product/entry',
+        component: ProductEntryComponent,
+        data: {
+          title: 'Product',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Product' },
+          ],
+        },
+      },
+      {
+        path: 'product/entry/:id',
         component: ProductEntryComponent,
         data: {
           title: 'Product',

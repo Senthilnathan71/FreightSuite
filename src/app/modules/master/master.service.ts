@@ -18,6 +18,7 @@ import { Division } from '../crm-mobile/Interfaces/division.interface';
 import { HSSAC } from '../crm-mobile/Interfaces/hs-sac.interfaces';
 import { Currency } from '../crm-mobile/Interfaces/currency.interface';
 import { Charge } from '../crm-mobile/Interfaces/charge.interface';
+import { Product } from '../crm-mobile/Interfaces/product.interface';
 @Injectable({
   providedIn: 'root',
 })
@@ -529,6 +530,15 @@ export class MasterService {
     )
   }
 
+  getStateByCountryId(CountryMasterSid){
+    return this.http.get<{data:any}>(`state/fetchByCountry/${CountryMasterSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   //port-master
   getAllPorts() {
     return this.http.get('port').pipe(
@@ -706,6 +716,15 @@ export class MasterService {
         return response;
       })
     );
+  }
+
+  getCityByStateId(StateMasterSid:number){
+    return this.http.get<{data:any[]}>(`city/fetchByState/${StateMasterSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
   }
 
   // Zone - Master
@@ -1717,5 +1736,70 @@ export class MasterService {
     );
   }
 
+  // Product Master
 
+  getAllProduct(){
+    return this.http.get<{data:Product[]}>('product').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewProduct(payload){
+    return this.http.post<{data:Product}>('product/create',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getProductById(ProductMasterSid){
+    return this.http.get<{data:Product}>(`product/fetch/${ProductMasterSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateProductById(ProductMasterSid,payload){
+    return this.http.patch<{data:Product}>(`product/update/${ProductMasterSid}`,payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteProductById(ProductMasterSid){
+    return this.http.delete<{data:Product}>(`product/delete/${ProductMasterSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchProducts(payload){
+    return this.http.post<{data:Product[]}>('product/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+
+  // Charge - tax
+  getAllChargeTax(){
+    return this.http.get<{data:any[]}>('charge-tax').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
 }
