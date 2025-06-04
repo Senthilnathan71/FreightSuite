@@ -130,7 +130,7 @@
                     <tbody>
                         <tr *ngFor="let item of currencyList; let i = index; trackBy: trackByCurrencyId">
                             <td>
-                                <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center justify-content-center">
                                     <a class="text-info mx-2"
                                         [routerLink]="['/master/currency/entry/', item.CurrencyMasterSid]">
                                         <i-feather class="feather-sm" name="eye"></i-feather>

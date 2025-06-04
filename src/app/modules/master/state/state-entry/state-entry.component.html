@@ -99,7 +99,7 @@
                     (keypress)="onKeyPress($event, 'stateGSTCode')"
                     [class.is-invalid]="stateForm.get('stateGSTCode')?.invalid && stateForm.get('stateGSTCode')?.touched" />
                   <label for="stateGSTCode" class="input-label">State GST Code <span
-                      class="text-danger">*</span></label>
+                      class="text-danger"></span></label>
                   <div *ngIf="stateForm.get('stateGSTCode')?.touched && stateForm.get('stateGSTCode')?.errors"
                     class="invalid-feedback">
                     <span *ngIf="stateForm.get('stateGSTCode')?.hasError('required')">GST Code is required</span>
@@ -139,12 +139,12 @@
               </aside>
 
               <!-- Region -->
-              <aside class="col-md-6">
+              <!-- <aside class="col-md-6">
                 <div class="custom-form-group">
                   <input type="text" id="region" formControlName="region" class="custom-input-field sm" />
                   <label for="region" class="input-label">Region</label>
                 </div>
-              </aside>
+              </aside> -->
 
               <!-- Status -->
               <aside class="col-md-6">
@@ -161,7 +161,7 @@
               </aside>
 
               <!-- Remarks -->
-              <aside class="col-md-12">
+              <aside class="col-md-6">
                 <div class="custom-form-group">
                   <textarea rows="1" class="input-field sm" formControlName="Remarks"></textarea>
                   <label class="input-label">Remarks</label>

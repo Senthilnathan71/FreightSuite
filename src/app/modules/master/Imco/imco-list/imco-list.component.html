@@ -78,7 +78,7 @@
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                             <th class="bg-transparent text-light" scope="col">Imco Class</th>
                             <th class="bg-transparent text-light" scope="col">UN No</th>
                             <th class="bg-transparent text-light" scope="col">Packing Group</th>
@@ -92,10 +92,10 @@
                             <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
                         </td> -->
                             <td>
-                                <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center justify-content-center">
                                     <a class="text-info mx-2" class="link mx-2 ps-3 "
                                         [routerLink]="['/master/Imco/entry/',item.ImcoMasterSid]">
-                                        <i-feather class="feather-sm" name="eye"></i-feather>
+                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </a>
                                     <a class="text-danger mx-2 ps-3 border-start"
                                         (click)="deleteIMCOById(item.ImcoMasterSid)">

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 
 @Component({
@@ -9,5 +10,11 @@ import { FeatherModule } from 'angular-feather';
   styleUrl: './rolemenu.component.scss'
 })
 export class RolemenuComponent {
-
-}
+    modalRef: any;
+    constructor(
+     private modalService: NgbModal,
+    ) {}
+    openModal(content: any): void {
+    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static'});
+  }
+} 

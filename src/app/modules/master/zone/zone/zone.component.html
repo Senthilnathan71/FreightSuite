@@ -57,22 +57,22 @@
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col"  width="10%">Action</th>
                             <th class="bg-transparent text-light" scope="col">Zone Name</th>
                             <th class="bg-transparent text-light" scope="col">Zone Code</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col"  width="10%">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of zoneList; trackBy: trackByIndex">
                             <td>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-link text-primary p-0" 
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    <button class="btn btn-sm btn-link text-info p-0" 
                                         (click)="updateZoneById(item.ZoneMasterSid, content)"
                                         title="Edit">
                                         <i-feather class="feather-sm" name="eye"></i-feather>
                                     </button>
-                                    <button class="btn btn-sm btn-link text-danger p-0" 
+                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" 
                                         (click)="softDeleteZone(item.ZoneMasterSid)"
                                         title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
@@ -176,7 +176,7 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-            <button type="button" class="btn btn-primary" 
+            <button type="button" class="btn btn-info" 
                 (click)="onSubmit()" 
                 [disabled]="btnDisable || zoneForm.invalid">
                 {{ isEditMode ? 'Update' : 'Save' }}

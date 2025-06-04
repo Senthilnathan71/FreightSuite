@@ -73,7 +73,7 @@
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                          <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                             <th class="bg-transparent text-light" scope="col">Sector Name</th>
                             <th class="bg-transparent text-light" scope="col">Sector Code</th>
                              <th class="bg-transparent text-light" scope="col">Region Name</th>
@@ -85,9 +85,9 @@
                     <tbody>
                         <tr *ngFor="let item of sectorList; trackBy: trackBySectorId">
                             <td>
-                                <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center justify-content-center">
                                     <a class="text-info mx-2" (click)="navigateToEditSector(item.SectorMasterSid)">
-                                        <i-feather name="edit-3" class="feather-sm"></i-feather>
+                                        <i-feather name="eye" class="feather-sm text-info"></i-feather>
                                     </a>
                                     <a class="text-danger mx-2 ps-3 border-start" (click)="deleteSector(item.SectorMasterSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>

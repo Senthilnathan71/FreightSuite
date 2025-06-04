@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">{{ isEditMode ? 'Edit' : 'Create' }} Currency</h4>
+                <h4 class="page-title mb-0">{{ isEditMode ? 'Edit' : '' }} Currency</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div class="d-flex justify-content-end gap-2">
@@ -71,7 +71,7 @@
 
                         <!-- Short Code -->
                         <div class="col-md-4">
-                            <label class="form-label">Short Code</label>
+                            <label class="form-label">Short Code <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="ShortCode"
                                 [class.is-invalid]="currencyForm.get('ShortCode')?.invalid && 
                                 (currencyForm.get('ShortCode')?.touched || currencyForm.get('ShortCode')?.dirty)">
@@ -86,7 +86,7 @@
 
                         <!-- Currency Unit -->
                         <div class="col-md-4">
-                            <label class="form-label">Unit <span class="text-danger">*</span></label>
+                            <label class="form-label">Unit <span class="text-danger"></span></label>
                             <input type="text" class="form-control" formControlName="CurrencyUnit"
                                 [class.is-invalid]="currencyForm.get('CurrencyUnit')?.invalid && 
                                 (currencyForm.get('CurrencyUnit')?.touched || currencyForm.get('CurrencyUnit')?.dirty)">
@@ -135,7 +135,7 @@
 
                         <!-- Symbol -->
                         <div class="col-md-4">
-                            <label class="form-label">Symbol <span class="text-danger">*</span></label>
+                            <label class="form-label">Symbol <span class="text-danger"></span></label>
                             <input type="text" class="form-control" formControlName="Symbol"
                                 [class.is-invalid]="currencyForm.get('Symbol')?.invalid && 
                                 (currencyForm.get('Symbol')?.touched || currencyForm.get('Symbol')?.dirty)">
@@ -168,7 +168,7 @@
 
                         <!-- Amount Decimal -->
                         <div class="col-md-4">
-                            <label class="form-label">Amount Decimal <span class="text-danger">*</span></label>
+                            <label class="form-label">Amount Decimal <span class="text-danger"></span></label>
                             <input type="number" class="form-control" formControlName="amountDecimal"
                                 [class.is-invalid]="currencyForm.get('amountDecimal')?.invalid && 
                                 (currencyForm.get('amountDecimal')?.touched || currencyForm.get('amountDecimal')?.dirty)">
@@ -192,7 +192,7 @@
 
                         <!-- Exchange Decimal -->
                         <div class="col-md-4">
-                            <label class="form-label">Exchange Decimal <span class="text-danger">*</span></label>
+                            <label class="form-label">Exchange Decimal <span class="text-danger"></span></label>
                             <input type="number" class="form-control" formControlName="exchangeDecimal"
                                 [class.is-invalid]="currencyForm.get('exchangeDecimal')?.invalid && 
                                 (currencyForm.get('exchangeDecimal')?.touched || currencyForm.get('exchangeDecimal')?.dirty)">

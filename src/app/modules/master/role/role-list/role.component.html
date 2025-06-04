@@ -80,7 +80,7 @@
                     <thead>
                         <tr class="bg-info">
                             <!-- <th class="bg-transparent text-light" scope="col">Action</th> -->
-                            <th class="bg-transparent text-light" scope="col">Actions</th>
+                            <th class="bg-transparent text-light" scope="col" width="10% ">Actions</th>
                             <th class="bg-transparent text-light" scope="col">Role Name</th>
                             <th class="bg-transparent text-light" scope="col">Role Code</th>
                             <th class="bg-transparent text-light" scope="col">License Type </th>
@@ -94,10 +94,10 @@
                         @for (item of roleList; track $index) {
                         <tr>
                             <td>
-                                <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center justify-content-center">
                                     <a class="text-info mx-2" class="link mx-2 ps-3 "
                                         [routerLink]="['/master/role/entry/',item.RoleMasterSid]">
-                                        <i-feather class="feather-sm" name="eye"></i-feather>
+                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </a>
                                     <a class="text-danger mx-2 ps-3 border-start"
                                         (click)="deleteRoleById(item.RoleMasterSid)">
