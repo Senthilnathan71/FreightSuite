@@ -396,9 +396,8 @@
             <ul ngbNav #nav1="ngbNav" [(activeId)]="active" class="nav-tabs">
                 <li [ngbNavItem]="1">
                     <button ngbNavLink (click)="openBranchEntryModal(branchEntryContent)">
-                        <button class="btn btn-info p-0 me-2">
-                            <i-feather name="plus-circle" class="feather-sm "></i-feather>
-                        </button>
+                            <i-feather name="plus-circle" class="feather-sm pt-1 text-info "></i-feather>
+                       
                         Branch
                     </button>
                 </li>
@@ -436,7 +435,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
-                            <aside class="col-md-8">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchName" [onlyText]="100">
@@ -456,7 +455,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-4">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchCode" [textWithNumbers]="10">
@@ -491,7 +490,7 @@
                                 </div>
                             </aside>
                             } -->
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="branchTaxRegistrationNo" [textWithNumbers]="50">
                                     <label for="text-input" class="input-label">Tax Registration No</label>
@@ -505,7 +504,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchCISN" [textWithNumbers]="50">
@@ -520,7 +519,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-12">
+                            <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchAddressLine1" [textWithNumbers]="500">
@@ -538,7 +537,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-12">
+                            <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchAddressLine2" [textWithNumbers]="500">
@@ -562,7 +561,7 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="row">
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select id="text-input" class="ng-select" formControlName="branchCityMasterSid">
                                         <ng-option value="">Select City</ng-option>
@@ -581,7 +580,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select id="text-input" class="ng-select" formControlName="branchStateMasterSid">
                                         <ng-option value="">Select State</ng-option>
@@ -600,7 +599,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select id="text-input" class="ng-select" formControlName="branchCountryMasterSid">
                                         <ng-option value="">Select Country</ng-option>
@@ -620,7 +619,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchPostalCode" [onlyNumbers]="10">
@@ -641,7 +640,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-12">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchWebSite" [textWithNumbers]="100">
@@ -656,7 +655,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-12">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchPhoneNumber" [onlyNumbers]="20">
@@ -674,7 +673,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-12">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchEmail">
@@ -698,7 +697,7 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="row">
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select id="text-input" class="ng-select" formControlName="branchCurrencyMasterSid">
                                         <ng-option value="">Currency</ng-option>
@@ -718,7 +717,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchTimeZone" [textWithNumbers]="6">
@@ -733,7 +732,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-12">
+                            <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchRemarks" [textWithNumbers]="500">
@@ -748,23 +747,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-12">
-                                <div class="custom-form-group">
-                                    <input type="file" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="branchCompanyLogo">
-                                    <label for="text-input" class="input-label">Company Logo</label>
-
-                                </div>
-                            </aside>
-                            <aside class="col-md-12">
-                                <div class="custom-form-group">
-                                    <input type="file" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="branchReportLogo">
-                                    <label for="text-input" class="input-label">Report Logo </label>
-
-                                </div>
-                            </aside>
-                            <aside class="col-md-12">
+                             <aside class="col-md-3">
                                 <div class="custom-form-group custom-form-group-select">
 
                                     @if(isModalEditMode){
@@ -781,6 +764,23 @@
 
                                 </div>
                             </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="file" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchCompanyLogo">
+                                    <label for="text-input" class="input-label">Company Logo</label>
+
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="file" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="branchReportLogo">
+                                    <label for="text-input" class="input-label">Report Logo </label>
+
+                                </div>
+                            </aside>
+                           
 
                         </div>
                     </div>
@@ -872,9 +872,9 @@
             <ul ngbNav #nav2="ngbNav" [(activeId)]="active2" class="nav-tabs">
                 <li [ngbNavItem]="1">
                     <button ngbNavLink>
-                        <button class="btn btn-info p-0 me-2" (click)="openBranchBankModal(bankEntryContent)">
-                            <i-feather name="plus-circle" class="feather-sm "></i-feather>
-                        </button>
+                       
+                            <i-feather name="plus-circle" class="feather-sm pt-1 text-info"  (click)="openBranchBankModal(bankEntryContent)"></i-feather>
+                        
                         Bank
                     </button>
                 </li>
