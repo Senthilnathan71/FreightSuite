@@ -6,92 +6,81 @@
             </div>
             <div class="col-md-8 pb-2">
                 <div class="" data-bs-theme="light">
-                    <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="search()">
-                            <i class="fas fa-search me-1"></i>
-                            Search
-                        </button> -->
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="navigateToCreateSector()">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openModal(content)">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
                             (click)="report()"
                             [disabled]="!searchPerformed || totalLengthOfCollection === 0">
-                            <i class="fas fa-file-alt me-1"></i>
-                            Report
+                            <i class="fas fa-file-alt me-1"></i> Report
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
                             (click)="resetPage()"
                             [disabled]="!searchPerformed">
-                            <i class="fas fa-sync-alt me-1"></i>
-                            Reset
+                            <i class="fas fa-sync-alt me-1"></i> Reset
                         </button>
                     </form>
                 </div>
             </div>
-            <div class="col-md-12  border-top">
+            <div class="col-md-12 border-top">
                 <div class="row mx-0 py-2">
                     <div class="col-md-8 mx-auto px-0">
-                        <form
-                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="form-outline col-12 col-md px-0">
                                 <select [(ngModel)]="searchType" name="searchType" class="form-select">
                                     <option value="sectorName">Sector Name</option>
                                     <option value="sectorCode">Sector Code</option>
+                                    <option value="RegionName">Region Name</option>
+                                    <option value="RegionCode">Region Code</option>
                                     <option value="status">Status</option>
                                 </select>
                             </div>
-                            <!-- <div class="form-outline col-12 col-md px-0">
-                                <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
-                                    placeholder="Enter filter value">
-                                <i
-                                    class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                            </div> -->
-                             <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                <div class="form-outline flex-grow-1">
-                  <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
-                    placeholder="Enter filter value">
-                  <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                </div>
-
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="search()">
-                  <i class="fas fa-search me-1"></i>
-                  Search
-                </button>
-              </div>
+                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
+                                <div class="form-outline flex-grow-1">
+                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" 
+                                        class="form-control" placeholder="Enter filter value">
+                                    <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                                </div>
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                                    (click)="search()">
+                                    <i class="fas fa-search me-1"></i> Search
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
-                         <tr class="bg-info">
+                        <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col">Action</th>
                             <th class="bg-transparent text-light" scope="col">Sector Name</th>
                             <th class="bg-transparent text-light" scope="col">Sector Code</th>
-                             <th class="bg-transparent text-light" scope="col">Region Name</th>
+                            <th class="bg-transparent text-light" scope="col">Region Name</th>
                             <th class="bg-transparent text-light" scope="col">Region Code</th>
-                            <!-- <th class="bg-transparent text-light" scope="col">Remarks</th> -->
                             <th class="bg-transparent text-light" scope="col">Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of sectorList; trackBy: trackBySectorId">
+                        <tr *ngFor="let item of sectorList; trackBy: trackByIndex">
                             <td>
-                                <div class="d-flex align-items-center">
-                                    <a class="text-info mx-2" (click)="navigateToEditSector(item.SectorMasterSid)">
-                                        <i-feather name="edit-3" class="feather-sm"></i-feather>
-                                    </a>
-                                    <a class="text-danger mx-2 ps-3 border-start" (click)="deleteSector(item.SectorMasterSid)">
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-link text-primary p-0" 
+                                        (click)="editSector(item.SectorMasterSid, content)"
+                                        title="Edit">
+                                        <i-feather class="feather-sm" name="eye"></i-feather>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-danger p-0" 
+                                        (click)="softDeleteSector(item.SectorMasterSid)"
+                                        title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
+                                    </button>
                                 </div>
                             </td>
                             <td>
@@ -100,39 +89,140 @@
                             <td>
                                 <div class="text-truncate">{{item.sectorCode}}</div>
                             </td>
-                           <td>
-    <div class="text-truncate">{{item.RegionName || '-'}}</div>
-</td>
-<td>
-    <div class="text-truncate">{{item.RegionCode || '-'}}</div>
-</td>
+                            <td>
+                                <div class="text-truncate">{{item.RegionName || '-'}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.RegionCode || '-'}}</div>
+                            </td>
                             <td>
                                 @if(item.status === "A"){
-                                <span class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Active
-                                </span>
+                                    <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                        Active
+                                    </div>
                                 } @else {
-                                <span class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                    Suspended
-                                </span>
+                                    <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                        Suspended
+                                    </div>
                                 }
-                            </td>
+                            </td> 
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <div>
-                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+            <div class="d-flex justify-content-end mt-3">
+                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" 
+                    [pageSize]="pageSize" (pageChange)="updatePaginationData()">
                 </ngb-pagination>
             </div>
         </div>
     </div>
-   
-
-</div>
- <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
+    <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
         <div class="alert alert-info text-center">No records found</div>
     </div>
+    <ng-template #content let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Sector</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="sectorForm">
+                <div class="col-md-12">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="row">
+                                <aside class="col-md-6">
+                                  <div class="custom-form-group">
+                                     <input type="text" id="sectorName" formControlName="sectorName" placeholder=""
+                                        class="custom-input-field sm">
+                                     <label for="sectorName" class="input-label">Sector Name <span
+                                        class="text-danger fw-bold">*</span></label>
+                                        @if(sectorForm.get('sectorName')?.touched && sectorForm.get('sectorName')?.invalid){
+                                          <div class="error-message">
+                                            @if(sectorForm.get('sectorName')?.hasError('required')){
+                                              <span>Sector Name is required</span>
+                                            } @else if(sectorForm.get('sectorName')?.hasError('maxlength')){
+                                              <span>Max 50 Characters</span>
+                                            }
+                                          </div>
+                                        }
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                  <div class="custom-form-group">
+                                     <input type="text" formControlName="sectorCode" id="sectorCode" placeholder=""
+                                         class="custom-input-field sm">
+                                     <label for="sectorCode" class="input-label">Sector Code <span
+                                         class="text-danger fw-bold">*</span></label>
+                                         @if(sectorForm.get('sectorCode')?.touched && sectorForm.get('sectorCode')?.invalid){
+                                  <div class="error-message">
+                                    @if(sectorForm.get('sectorCode')?.hasError('required')){
+                                      <span>Sector Code is required</span>
+                                    } @else if(sectorForm.get('sectorCode')?.hasError('maxlength')){
+                                      <span>Max 10 Characters</span>
+                                    } @else if(sectorForm.get('sectorCode')?.hasError('invalidAlphaNumeric')){
+                                      <span>Only alphanumeric characters allowed</span>
+                                    } @else if(sectorForm.get('sectorCode')?.hasError('notUppercase')){
+                                      <span>Must be uppercase</span>
+                                    }
+                                 </div>
+                                }
+                            </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select formControlName="RegionName" [items]="filteredZones" 
+                                              bindLabel="ZoneName" bindValue="ZoneName"
+                                              placeholder="">
+                                        <ng-template ng-label-tmp let-item="item">
+                                            {{item.ZoneName}} ({{item.ZoneCode}})
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item">
+                                            {{item.ZoneName}} ({{item.ZoneCode}})
+                                        </ng-template>
+                                    </ng-select>
+                                    <label class="input-label">Region Name</label>
+                                </div>                                    
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="RegionCode" formControlName="RegionCode" 
+                                           class="custom-input-field sm" readonly>
+                                    <label for="RegionCode" class="input-label">Region Code</label>
+                                </div>
+                            </aside>
+                            <!-- <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <select formControlName="status" class="form-select">
+                                       
+                                        <option *ngFor="let option of statusList" [value]="option">{{ option }}</option>
+                                    </select>
+                                    <label for="text-input" class="input-label">Status <span class="text-danger fw-bold">*</span></label>
+                                </div>
+                            </aside> -->
+                             <aside class="col-md-6 mt-2">
+                <div class="custom-form-group custom-form-group-select">
+                  <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"
+                    [class.is-invalid]="sectorForm.get('status')?.invalid && sectorForm.get('status')?.touched">
+                  </ng-select>
+                  <label class="input-label">Status <span class="text-danger">*</span></label>
+                </div>
+              </aside>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-primary" 
+                (click)="onSubmit()" 
+                [disabled]="btnDisable || sectorForm.invalid">
+                {{ isEditMode ? 'Update' : 'Save' }}
+            </button>
+        </div>
+    </ng-template>
+</div>

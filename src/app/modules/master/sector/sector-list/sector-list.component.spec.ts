@@ -1,18 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { SectorComponent } from './sector-list.component';
 
-import { SectorListComponent } from './sector-list.component';
+
 
 describe('SectorListComponent', () => {
-  let component: SectorListComponent;
-  let fixture: ComponentFixture<SectorListComponent>;
+  let component: SectorComponent;
+  let fixture: ComponentFixture<SectorComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SectorListComponent]
+      imports: [SectorComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(SectorListComponent);
+    fixture = TestBed.createComponent(SectorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -19,8 +19,6 @@ import { CityEntryComponent } from './city/city-entry/city-entry.component';
 import { CityListComponent } from './city/city-list/city-list.component';
 import { TarrifEntryComponent } from './tarrif/tarrif-entry/tarrif-entry.component';
 import { TarrifListComponent } from './tarrif/tarrif-list/tarrif-list.component';
-import { SectorEntryComponent } from './sector/sector-entry/sector-entry.component';
-import { SectorListComponent } from './sector/sector-list/sector-list.component';
 import { MenuListComponent } from './menu/menu-list/menu-list.component';
 import { ReportListComponent } from './report/report-list/report-list.component';
 import { ReportEntryComponent } from './report/report-entry/report-entry.component';
@@ -39,7 +37,6 @@ import { ContainerTypeEntryComponent } from './container-type/container-type-ent
 import { CommodityListComponent } from './commodity/commodity-list/commodity-list.component';
 import { CommodityEntryComponent } from './commodity/commodity-entry/commodity-entry.component';
 import { PackageTypeListComponent } from './package-type/package-type-list/package-type-list.component';
-import { PackageTypeEntryComponent } from './package-type/package-type-entry/package-type-entry.component';
 import { MenuEntryComponent } from './menu/menu-entry/menu-entry.component';
 import { ServiceLevelListComponent } from './service-level/service-level-list/service-level-list.component';
 import { ServiceLevelComponent } from './service-level/service-level.component';
@@ -59,8 +56,6 @@ import { ChargegroupComponent } from './chargeGroup/chargegroup/chargegroup.comp
 import { RolemenuComponent } from './rolemenu/rolemenu/rolemenu.component';
 import { TdsSetListComponent } from './TDS-Set/tds-set-list/tds-set-list.component';
 import { TdsSetEntryComponent } from './TDS-Set/tds-set-entry/tds-set-entry.component';
-import { ModuleEntryComponent } from './module/module-entry/module-entry.component';
-import { RoleEntryComponent } from './role/role-entry/role-entry.component';
 import { ImcoListComponent } from './Imco/imco-list/imco-list.component';
 import { ImcoEntryComponent } from './Imco/imco-entry/imco-entry.component';
 import { BIclauseComponent } from './BIClause/biclause/biclause.component';
@@ -69,6 +64,7 @@ import { ProductEntryComponent } from './product/product-entry/product-entry.com
 import { DivisionComponent } from './division/division/division.component';
 import { SailingScheduleLsitComponent } from './SailingSchedule/sailing-schedule-lsit/sailing-schedule-lsit.component';
 import { SailingScheduleEntryComponent } from './SailingSchedule/sailing-schedule-entry/sailing-schedule-entry.component';
+import { SectorComponent } from './sector/sector-list/sector-list.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -365,26 +361,10 @@ export const MasterRoutes: Routes = [
       },
       {
         path: 'sector/list',
-        component: SectorListComponent,
+        component: SectorComponent,
         data: {
           title: 'Sector List',
           urls: [{ title: 'Master', url: '/master' }, { title: 'sector' }],
-        },
-      },
-      {
-        path: 'sector/entry',
-        component: SectorEntryComponent,
-        data: {
-          title: 'Sector Entry',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'sector' }],
-        },
-      },
-      {
-        path: 'sector/entry/:id',
-        component: SectorEntryComponent,
-        data: {
-          title: 'Sector edit',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Sector Edit' }],
         },
       },
       {
@@ -582,23 +562,6 @@ export const MasterRoutes: Routes = [
         },
       },
       {
-        path: 'package-type/entry',
-        component: PackageTypeEntryComponent,
-        data: {
-          title: 'Package Type',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Package Type' }],
-        },
-      },
-      {
-        path: 'package-type/entry/:id',
-        component: PackageTypeEntryComponent,
-        data: {
-          title: 'Package Type',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Package Type' }],
-        },
-      },
-
-      {
         path: 'service-level/list',
         component: ServiceLevelListComponent,
         data: {
@@ -761,22 +724,7 @@ export const MasterRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Module' }],
         },
       },
-      {
-        path: 'module/entry',
-        component: ModuleEntryComponent,
-        data: {
-          title: 'Add Module Module',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Module' }],
-        },
-      },
-      {
-        path: 'module/entry/:id',
-        component: ModuleEntryComponent,
-        data: {
-          title: 'Edit Module Module',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Module' }],
-        },
-      },
+      
       {
         path: 'role/list',
         component: RoleComponent,
@@ -785,22 +733,7 @@ export const MasterRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Role' }],
         },
       },
-      {
-        path: 'role/entry',
-        component: RoleEntryComponent,
-        data: {
-          title: 'Role',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Role' }],
-        },
-      },
-      {
-        path: 'role/entry/:id',
-        component: RoleEntryComponent,
-        data: {
-          title: 'Role',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Role' }],
-        },
-      },
+      
       {
         path: 'rolemenu',
         component: RolemenuComponent,
@@ -884,17 +817,6 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
-       {
-  path: 'biclause',
-  component: BIclauseComponent,
-  data: {
-    title: 'BI Clause',
-    urls: [
-      { title: 'Master', url: '/master' },
-      { title: 'BI Clause' },
-    ],
-  },
-},
       {
         path: 'product/entry',
         component: ProductEntryComponent,

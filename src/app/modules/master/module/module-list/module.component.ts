@@ -1,99 +1,199 @@
-import { Component } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
-import { FeatherModule } from 'angular-feather';
-import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { MasterService } from '../../master.service';
-import { MatDialog } from '@angular/material/dialog';
-import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { FeatherModule } from 'angular-feather';
+import { NgbModal, NgbModalModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { MatDialog } from '@angular/material/dialog';
+
+import { MasterService } from '../../master.service';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 
 @Component({
-	selector: 'app-module',
-	standalone: true,
-	imports: [FeatherModule,RouterModule,FormsModule,CommonModule,NgbPaginationModule],
-	templateUrl: './module.component.html',
-	styleUrl: './module.component.scss'
+  selector: 'app-module',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    FeatherModule,
+    NgbModalModule,
+    NgbPaginationModule,
+    NgSelectModule
+  ],
+  templateUrl: './module.component.html',
+  styleUrls: ['./module.component.scss']
 })
-export class ModuleComponent {
+export class ModuleComponent implements OnInit {
+  moduleForm!: FormGroup;
+  isEditMode: boolean = false;
+  results: any[] = [];
+  ModuleMasterSid!: number;
+  moduleList: any[] = [];
+  statusList = ["Active", "Suspended"];
+  modalRef!: any;
+  
+  searchType = 'ModuleName';
+  filterValue = '';
+  searchPerformed = false;
+  page = 1;
+  pageSize = 10;
+  totalAmountOfCollection = 0;
 
-	searchType:string="ModuleName";
-	filterValue:any;
-	searchPerformed : boolean;
-	moduleList : any[];
-	searchResults : any[];
+  constructor(
+    private modalService: NgbModal,
+    private fb: FormBuilder,
+    private masterService: MasterService,
+    private appSettingService: AppSettingsService,
+    private dialog: MatDialog
+  ) { }
 
-	// Pagination Data
-	page = 1;
-	pageSize = 10;
-	totalAmountOfCollection : number; 
+  ngOnInit(): void {
+    this.initForm();
+  }
 
-	constructor(
-		private masterService:MasterService,
-		private appSettingService:AppSettingsService,
-		private matdial : MatDialog,
-		private route: Router
-	) { }
+  initForm() {
+    this.moduleForm = this.fb.group({
+      ModuleName: ['', [Validators.required, Validators.maxLength(50)]],
+      ModuleCode: ['', [Validators.required, Validators.maxLength(20)]],
+      status: ['Active', Validators.required],
+      Remarks: ['', [Validators.required, Validators.maxLength(300)]]
+    });
+  }
 
-	onSearch(){
-		const payload = {
-			searchType : this.searchType,
-			filterValue : this.filterValue
-		}
-		this.searchPerformed = true;
-		this.masterService.searchModule(payload).subscribe(
-			(resp:any)=>{
-				if(resp.status){
-					this.searchResults= resp.data;
-					this.updatePaginationData();
-					this.totalAmountOfCollection = this.searchResults.length;
-				}
-			}
-		)
-	}
+  openModal(content: any): void {
+    this.isEditMode = false;
+    this.moduleForm.reset({
+      status: 'Active'
+    });
+    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+  }
 
-	updatePaginationData(){
-		let start = (this.page - 1) * this.pageSize;
-		let end = start + this.pageSize;
-		this.moduleList = this.searchResults.slice(start,end);
-	}
+  editModule(id: number, content: any) {
+    this.isEditMode = true;
+    this.ModuleMasterSid = id;
+    this.masterService.getModuleById(id).subscribe({
+      next: (response: any) => {
+        const module = response.data;
+        this.moduleForm.patchValue({
+          ModuleName: module.ModuleName,
+          ModuleCode: module.ModuleCode,
+          Remarks: module.Remarks,
+          status: module.status === 'A' ? 'Active' : 'Suspended'
+        });
+        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+      },
+      error: (err) => {
+        console.error('Error fetching Module', err);
+        this.appSettingService.showError('Error fetching data for editing');
+      }
+    });
+  }
 
-	deleteModuleById(ModuleMasterSid:number){
-		const matRef = this.matdial.open(DeleteWarningComponent);
-		matRef.afterClosed().subscribe(
-			(result)=>{
-				if(result){
-					this.masterService.deleteModuleById(ModuleMasterSid).subscribe(
-						(resp:any)=>{
-							if(resp.status){
-								this.appSettingService.showSuccess('Module Deleted');
-								this.onSearch();
-							} else {
-								this.appSettingService.showError('Error Deleting Module');
-							}
-						},
-						(error)=>{
-							console.error('Error Deleting Module',error);
-						}
-					)
-				}
-			}
-		)
-	}
+  onSubmit() {
+    if (this.moduleForm.invalid) {
+      this.moduleForm.markAllAsTouched();
+      this.moduleForm.updateValueAndValidity();
+      this.appSettingService.showWarning('Please fill all required fields correctly.');
+      return;
+    }
 
+    const formValue = this.moduleForm.value;
+    const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
+    const payload = {
+      ...formValue,
+      status: formValue.status === "Active" ? "A" : "S",
+      ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail })
+    };
 
-	navigateToCreate() {
-		this.route.navigate(['master/module/entry']);
-	}
+    const operation = this.isEditMode 
+      ? this.masterService.updateModuleById(this.ModuleMasterSid, payload)
+      : this.masterService.createNewModule(payload);
 
-	reset(){
-		this.searchPerformed = false;
-		this.moduleList = [];
-		this.totalAmountOfCollection = 0;
-	}
+    operation.subscribe({
+      next: (resp: any) => {
+        if (resp.status) {
+          this.appSettingService.showSuccess(resp.message || 'Operation successful');
+          this.closeModal();
+          this.onSearch();
+        } else {
+          this.appSettingService.showError(resp.message || 'Operation failed');
+        }
+      },
+      error: (error) => {
+        console.error('Error:', error);
+        this.appSettingService.showError('An error occurred');
+      }
+    });
+  }
 
-	report(){
+  closeModal(): void {
+    if (this.modalRef) {
+      this.modalRef.close();
+    }
+  }
 
-	}
+  onSearch() {
+    const payload = {
+      searchType: this.searchType,
+      filterValue: this.searchType === 'status' 
+        ? this.filterValue === 'Active' ? 'A' : 'S'
+        : this.filterValue
+    };
+
+    this.masterService.searchModule(payload).subscribe({
+      next: (res: any) => {
+        this.results = res.data || res;
+        this.searchPerformed = true;
+        this.updatePaginationData();
+        this.totalAmountOfCollection = this.results.length;
+      },
+      error: (err) => {
+        console.error('Search error:', err);
+      }
+    });
+  }
+
+  updatePaginationData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.moduleList = this.results.slice(startIndex, endIndex);
+  }
+
+  deleteModuleById(id: number) {
+    const dialogRef = this.dialog.open(DeleteWarningComponent);
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.masterService.deleteModuleById(id).subscribe({
+          next: (resp: any) => {
+            if (resp.status) {
+              this.appSettingService.showSuccess('Module deleted successfully');
+              this.onSearch();
+            }
+          },
+          error: (err) => {
+            console.error('Delete error:', err);
+          }
+        });
+      }
+    });
+  }
+
+  reset() {
+    this.moduleList = [];
+    this.totalAmountOfCollection = 0;
+    this.searchPerformed = false;
+    this.filterValue = '';
+    this.searchType = 'ModuleName';
+  }
+  trackByIndex(index: number, item: any): number {
+  return index; // or return item.ModuleMasterSid if you want to track by ID
+}
+
+  report() {
+    // Implement report functionality
+  }
 }
