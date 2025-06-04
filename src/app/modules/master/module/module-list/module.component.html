@@ -1,5 +1,4 @@
 <div class="row">
-
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col-md-4 pb-2">
@@ -7,131 +6,200 @@
             </div>
             <div class="col-md-8 pb-2">
                 <div class="" data-bs-theme="light">
-                    <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSearch()">
-                            <i class="fas fa-search me-1"></i>
-                            Search
-                        </button> -->
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToCreate()">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openModal(content)">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()" [disabled]="!searchPerformed">
-                            <i class="fas fa-file-alt me-1"></i>
-                            Report
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="report()"
+                            [disabled]="!searchPerformed || totalAmountOfCollection === 0">
+                            <i class="fas fa-file-alt me-1"></i> Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()" [disabled]="!searchPerformed">
-                            <i class="fas fa-sync-alt me-1"></i>
-                            Reset
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="reset()"
+                            [disabled]="!searchPerformed">
+                            <i class="fas fa-sync-alt me-1"></i> Reset
                         </button>
                     </form>
                 </div>
             </div>
-            <div class="col-md-12  border-top">
+            <div class="col-md-12 border-top">
                 <div class="row mx-0 py-2">
                     <div class="col-md-8 mx-auto px-0">
-                        <form
-                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="form-outline col-12 col-md px-0">
-                                <select name="searchType" class="form-select" [(ngModel)]="searchType">
+                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
                                     <option value="ModuleName">Module Name</option>
                                     <option value="ModuleCode">Module Code</option>
                                     <option value="Remarks">Remarks</option>
                                     <option value="status">Status</option>
                                 </select>
                             </div>
-                            <!-- <div class="form-outline col-12 col-md px-0">
-                                <input name="filterValue" type="text" class="form-control"
-                                    placeholder="Enter filter value" [(ngModel)]="filterValue">
-                                <i
-                                    class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                            </div> -->
-                             <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                <div class="form-outline flex-grow-1">
-                  <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
-                    placeholder="Enter filter value">
-                  <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                </div>
-
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSearch()">
-                  <i class="fas fa-search me-1"></i>
-                  Search
-                </button>
-              </div>
+                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
+                                <div class="form-outline flex-grow-1">
+                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" 
+                                        class="form-control" placeholder="Enter filter value">
+                                    <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                                </div>
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                                    (click)="onSearch()">
+                                    <i class="fas fa-search me-1"></i> Search
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
- 
-    
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalAmountOfCollection > 0">
-         <div class="col-12 p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <!-- <th class="bg-transparent text-light" scope="col">Action</th> -->
-                        <th class="bg-transparent text-light" scope="col" width="10%"> Actions</th>
-                        <th class="bg-transparent text-light" scope="col"> Module Name</th>
-                        <th class="bg-transparent text-light" scope="col">Module Code</th>
-                        <th class="bg-transparent text-light" scope="col">Remarks</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of moduleList; track $index) {
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center justify-content-center">
-                                <a class="text-info mx-2" class="link mx-2 ps-3 " [routerLink]="['/master/module/entry/',item.ModuleMasterSid]">
-                                    <i-feather class="feather-sm text-info" name="eye"></i-feather>
-                                </a>
-                                <a class="text-danger mx-2 ps-3 border-start" (click)="deleteModuleById(item.ModuleMasterSid)">
-                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                </a>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.ModuleName}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.ModuleCode}}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{item.Remarks}}</div>
-                        </td>
-                        <td>
-                            @if(item.status === "A"){
-                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                Active
-                            </div>
-                            } @else {
-                            <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                Suspended
-                            </div>
-                            }
-                        </td>
-
-
-
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        <div>
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalAmountOfCollection"
-                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()">
-            </ngb-pagination>
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalAmountOfCollection > 0">
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Module Name</th>
+                            <th class="bg-transparent text-light" scope="col">Module Code</th>
+                            <th class="bg-transparent text-light" scope="col">Remarks</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of moduleList; trackBy: trackByIndex">
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-link text-primary p-0" 
+                                        (click)="editModule(item.ModuleMasterSid, content)"
+                                        title="Edit">
+                                        <i-feather class="feather-sm" name="eye"></i-feather>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-danger p-0" 
+                                        (click)="deleteModuleById(item.ModuleMasterSid)"
+                                        title="Delete">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.ModuleName}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.ModuleCode}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.Remarks || '-'}}</div>
+                            </td>
+                            <td>
+                                @if(item.status === "A"){
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active
+                                </div>
+                                } @else {
+                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Suspended
+                                </div>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+                <ngb-pagination [collectionSize]="totalAmountOfCollection" [(page)]="page" 
+                    [pageSize]="pageSize" (pageChange)="updatePaginationData()">
+                </ngb-pagination>
+            </div>
         </div>
     </div>
-    </div>
-   <div class="col-12" *ngIf="totalAmountOfCollection === 0">
+    <div class="col-12" *ngIf="searchPerformed && totalAmountOfCollection === 0">
         <div class="alert alert-info text-center">No records found</div>
     </div>
 </div>
+
+<ng-template #content let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Module</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <form [formGroup]="moduleForm">
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row">
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="ModuleName" formControlName="ModuleName" placeholder=""
+                                        class="custom-input-field sm">
+                                    <label for="ModuleName" class="input-label">Module Name <span
+                                        class="text-danger fw-bold">*</span></label>
+                                        @if(moduleForm.get('ModuleName')?.touched && moduleForm.get('ModuleName')?.invalid){
+                                          <div class="error-message">
+                                            @if(moduleForm.get('ModuleName')?.hasError('required')){
+                                              <span>Module Name is required</span>
+                                            } @else if(moduleForm.get('ModuleName')?.hasError('maxlength')){
+                                              <span>Max 50 Characters</span>
+                                            }
+                                          </div>
+                                        }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" formControlName="ModuleCode" id="ModuleCode" placeholder=""
+                                        class="custom-input-field sm">
+                                    <label for="ModuleCode" class="input-label">Module Code <span
+                                        class="text-danger fw-bold">*</span></label>
+                                        @if(moduleForm.get('ModuleCode')?.touched && moduleForm.get('ModuleCode')?.invalid){
+                                          <div class="error-message">
+                                            @if(moduleForm.get('ModuleCode')?.hasError('required')){
+                                              <span>Module Code is required</span>
+                                            } @else if(moduleForm.get('ModuleCode')?.hasError('maxlength')){
+                                              <span>Max 20 Characters</span>
+                                            }
+                                          </div>
+                                        }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"
+                                        [class.is-invalid]="moduleForm.get('status')?.invalid && moduleForm.get('status')?.touched">
+                                    </ng-select>
+                                    <label class="input-label">Status <span class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <textarea formControlName="Remarks" class="custom-input-field sm" rows="1"></textarea>
+                                    <label for="Remarks" class="input-label">Remarks <span
+                                        class="text-danger fw-bold">*</span></label>
+                                        @if(moduleForm.get('Remarks')?.touched && moduleForm.get('Remarks')?.invalid){
+                                          <div class="error-message">
+                                            @if(moduleForm.get('Remarks')?.hasError('required')){
+                                              <span>Remarks is required</span>
+                                            } @else if(moduleForm.get('Remarks')?.hasError('maxlength')){
+                                              <span>Max 300 Characters</span>
+                                            }
+                                          </div>
+                                        }
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+        <button type="button" class="btn btn-primary" 
+            (click)="onSubmit()" 
+            [disabled]="moduleForm.invalid">
+            {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+    </div>
+</ng-template>

@@ -1,5 +1,4 @@
 <div class="row">
-
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col-md-4 pb-2">
@@ -7,62 +6,44 @@
             </div>
             <div class="col-md-8 pb-2">
                 <div class="" data-bs-theme="light">
-                    <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="onSearch()">
-                            <i class="fas fa-search me-1"></i>
-                            Search
-                        </button> -->
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="navigateToCreate()">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openModal(content)">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
-                            [disabled]="!searchPerformed">
-                            <i class="fas fa-file-alt me-1"></i>
-                            Report
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="report()"
+                            [disabled]="!searchPerformed || totalLengthOfCollection === 0">
+                            <i class="fas fa-file-alt me-1"></i> Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()"
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="resetPage()"
                             [disabled]="!searchPerformed">
-                            <i class="fas fa-sync-alt me-1"></i>
-                            Reset
+                            <i class="fas fa-sync-alt me-1"></i> Reset
                         </button>
                     </form>
                 </div>
             </div>
-            <div class="col-md-12  border-top">
+            <div class="col-md-12 border-top">
                 <div class="row mx-0 py-2">
                     <div class="col-md-8 mx-auto px-0">
-                        <form
-                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="form-outline col-12 col-md px-0">
-                                <select name="searchType" class="form-select" [(ngModel)]="searchType">
+                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
                                     <option value="UserRoleName">Role Name</option>
                                     <option value="UserRoleCode">Role Code</option>
-                                    <option value="LicenseType">LicenseType</option>
-                                  
+                                    <option value="LicenseType">License Type</option>
                                     <option value="status">Status</option>
                                 </select>
                             </div>
-                            <!-- <div class="form-outline col-12 col-md px-0">
-                                <input name="filterValue" type="text" class="form-control"
-                                    placeholder="Enter filter value" [(ngModel)]="filterValue">
-                                <i
-                                    class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                            </div> -->
                             <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
                                 <div class="form-outline flex-grow-1">
-                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
-                                        placeholder="Enter filter value">
-                                    <i
-                                        class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" 
+                                        class="form-control" placeholder="Enter filter value">
+                                    <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
                                 </div>
-
-                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                                    (click)="onSearch()">
-                                    <i class="fas fa-search me-1"></i>
-                                    Search
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                                    (click)="search()">
+                                    <i class="fas fa-search me-1"></i> Search
                                 </button>
                             </div>
                         </form>
@@ -71,81 +52,144 @@
             </div>
         </div>
     </div>
-
-
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalAmountOfCollection > 0">
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <!-- <th class="bg-transparent text-light" scope="col">Action</th> -->
-                            <th class="bg-transparent text-light" scope="col" width="10% ">Actions</th>
+                            <th class="bg-transparent text-light" scope="col">Action</th>
                             <th class="bg-transparent text-light" scope="col">Role Name</th>
                             <th class="bg-transparent text-light" scope="col">Role Code</th>
-                            <th class="bg-transparent text-light" scope="col">License Type </th>
-                            <!-- <th class="bg-transparent text-light" scope="col">Company</th>
-                            <th class="bg-transparent text-light" scope="col">Remarks</th> -->
+                            <th class="bg-transparent text-light" scope="col">License Type</th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
-
                         </tr>
                     </thead>
                     <tbody>
-                        @for (item of roleList; track $index) {
-                        <tr>
+                        <tr *ngFor="let item of roleList; trackBy: trackByIndex">
                             <td>
                                 <div class="d-flex align-items-center justify-content-center">
                                     <a class="text-info mx-2" class="link mx-2 ps-3 "
                                         [routerLink]="['/master/role/entry/',item.RoleMasterSid]">
                                         <i-feather class="feather-sm text-info" name="eye"></i-feather>
-                                    </a>
-                                    <a class="text-danger mx-2 ps-3 border-start"
-                                        (click)="deleteRoleById(item.RoleMasterSid)">
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-danger p-0" 
+                                        (click)="deleteRoleById(item.RoleMasterSid)"
+                                        title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
+                                    </button>
                                 </div>
                             </td>
-                            <td>
                                 <div class="text-truncate">{{item.UserRoleName}}</div>
                             </td>
                             <td>
                                 <div class="text-truncate">{{item.UserRoleCode}}</div>
                             </td>
-                            <!-- <td>
-                                <div class="text-truncate">{{getCompanyById(item.CompanyMasterSid)}}</div>
-                            </td> -->
                             <td>
-                                <div class="text-truncate">{{item.LicenseType}}</div>
+                                <div class="text-truncate">{{item.LicenseType || '-'}}</div>
                             </td>
                             <td>
-                                @if(item.status === "A"){
-                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Active
-                                </div>
-                                } @else {
-                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                    Suspended
-                                </div>
-                                }
-                            </td>
-
-
-
+  @if(item.status === "A"){
+    <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+      <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+      Active
+    </div>
+  } @else {
+    <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+      <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+      Suspended
+    </div>
+  }
+</td>
                         </tr>
-                        }
                     </tbody>
                 </table>
             </div>
-            <div>
-                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalAmountOfCollection"
-                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()">
+            <div class="d-flex justify-content-end mt-3">
+                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" 
+                    [pageSize]="pageSize" (pageChange)="updatePaginationData()">
                 </ngb-pagination>
             </div>
         </div>
     </div>
-    <div class="col-12" *ngIf="totalAmountOfCollection === 0">
+    <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
         <div class="alert alert-info text-center">No records found</div>
     </div>
+    <ng-template #content let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Role</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="roleForm">
+                <div class="col-md-12">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="row">
+                                <aside class="col-md-6">
+                                  <div class="custom-form-group">
+                                     <input type="text" id="UserRoleName" formControlName="UserRoleName" placeholder=""
+                                        class="custom-input-field sm">
+                                     <label for="UserRoleName" class="input-label">Role Name <span
+                                        class="text-danger fw-bold">*</span></label>
+                                        @if(roleForm.get('UserRoleName')?.touched && roleForm.get('UserRoleName')?.invalid){
+                                          <div class="error-message">
+                                            @if(roleForm.get('UserRoleName')?.hasError('required')){
+                                              <span>Role Name is required</span>
+                                            } @else if(roleForm.get('UserRoleName')?.hasError('maxlength')){
+                                              <span>Max 50 Characters</span>
+                                            }
+                                          </div>
+                                        }
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                  <div class="custom-form-group">
+                                     <input type="text" formControlName="UserRoleCode" id="UserRoleCode" placeholder=""
+                                         class="custom-input-field sm">
+                                     <label for="UserRoleCode" class="input-label">Role Code <span
+                                         class="text-danger fw-bold">*</span></label>
+                                         @if(roleForm.get('UserRoleCode')?.touched && roleForm.get('UserRoleCode')?.invalid){
+                                  <div class="error-message">
+                                    @if(roleForm.get('UserRoleCode')?.hasError('required')){
+                                      <span>Role Code is required</span>
+                                    } @else if(roleForm.get('UserRoleCode')?.hasError('maxlength')){
+                                      <span>Max 3 Characters</span>
+                                    } @else if(roleForm.get('UserRoleCode')?.hasError('invalidAlphaNumeric')){
+                                      <span>Only alphanumeric characters allowed</span>
+                                    }
+                                 </div>
+                                }
+                            </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="LicenseType" formControlName="LicenseType" 
+                                           class="custom-input-field sm">
+                                    <label for="LicenseType" class="input-label">License Type</label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-6 mt-2">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"
+                                        [class.is-invalid]="roleForm.get('status')?.invalid && roleForm.get('status')?.touched">
+                                    </ng-select>
+                                    <label class="input-label">Status <span class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-primary" 
+                (click)="onSubmit()" 
+                [disabled]="btnDisable || roleForm.invalid">
+                {{ isEditMode ? 'Update' : 'Save' }}
+            </button>
+        </div>
+    </ng-template>
 </div>

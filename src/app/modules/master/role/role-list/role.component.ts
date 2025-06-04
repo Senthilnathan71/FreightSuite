@@ -1,119 +1,246 @@
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
-import { FeatherModule } from 'angular-feather';
-import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { MasterService } from '../../master.service';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
+import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
+import { MasterService } from '../../master.service';
+import { ActivatedRoute, Router, RouterLink, RouterModule } from '@angular/router';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { FeatherModule } from 'angular-feather';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-role',
   standalone: true,
-  imports: [FeatherModule,RouterModule,FormsModule,CommonModule,NgbPaginationModule],
+  imports: [
+    NgbModalModule,
+    FeatherModule,
+    NgSelectModule,
+    CommonModule,
+    ReactiveFormsModule,
+    NgbPagination,
+    RouterModule,
+    FormsModule
+  ],
   templateUrl: './role.component.html',
-  styleUrl: './role.component.scss'
+  styleUrl: './role.component.scss',
+  providers: [DatePipe]
 })
 export class RoleComponent implements OnInit {
-
-  searchType:string="UserRoleName";
-  filterValue:any;
-  searchPerformed : boolean;
-  roleList : any[];
-  searchResults : any[];
-  companyList : any[];
-
-  // Pagination Data
+  roleForm!: FormGroup;
+  isEditMode: boolean = false;
+  results: any[] = [];
+  RoleMasterSid!: number;
+  errorMessage: string = '';
+  btnDisable: boolean = false;
+  roleList: any[] = [];
+  statusList = ["Active", "Suspended"];
+  modalRef!: NgbModalRef;
+  searchType = 'UserRoleName';
+  filterValue = '';
+  searchPerformed = false;
   page = 1;
   pageSize = 10;
-  totalAmountOfCollection : number; 
+  totalLengthOfCollection = 0;
+  isLoading = false;
 
   constructor(
-    private masterService:MasterService,
-    private appSettingService:AppSettingsService,
-    private matdial : MatDialog,
-    private route: Router
+    private modalService: NgbModal,
+    private fb: FormBuilder,
+    private masterService: MasterService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private appSettingService: AppSettingsService,
+    private dialog: MatDialog,
+    private datePipe: DatePipe
   ) { }
 
   ngOnInit(): void {
-    this.getAllCompany();
+    this.initForm();
+    this.route.paramMap.subscribe(params => {
+      this.RoleMasterSid = +params.get('id');
+      if (this.RoleMasterSid) {
+        this.isEditMode = true;
+        this.loadRoleData(this.RoleMasterSid);
+      }
+    });
   }
 
-  onSearch(){
-    const payload = {
-      searchType : this.searchType,
-      filterValue : this.filterValue
+  initForm() {
+    this.roleForm = this.fb.group({
+      UserRoleName: ['', [Validators.required, Validators.maxLength(50)]],
+      UserRoleCode: ['', [Validators.required, Validators.maxLength(3), this.alphaNumericValidator()]],
+      LicenseType: ['', [Validators.maxLength(50)]],
+      status: ['Active', Validators.required]
+    });
+  }
+
+  private alphaNumericValidator(): ValidatorFn {
+    return (control: AbstractControl): {[key: string]: any} | null => {
+      if (!control.value) return null;
+      const valid = /^[A-Za-z0-9]+$/.test(control.value);
+      return valid ? null : { invalidAlphaNumeric: true };
+    };
+  }
+
+  resetForm(): void {
+    this.roleForm.reset({
+      status: 'Active'
+    });
+  }
+
+ openModal(content: any): void {
+  this.isEditMode = false;
+  this.resetForm();
+  this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+}
+
+  editRole(id: number, content: any) {
+  this.isEditMode = true;
+  this.RoleMasterSid = id;
+  this.masterService.getRoleById(id).pipe(take(1)).subscribe({
+    next: (response: any) => {
+      const role = response.data; // Access the data property from the response
+      this.roleForm.patchValue({
+        UserRoleName: role.UserRoleName,
+        UserRoleCode: role.UserRoleCode,
+        LicenseType: role.LicenseType || '',
+        status: role.status === 'A' ? 'Active' : 'Suspended'
+      });
+      this.roleForm.get('status')?.enable();
+      this.modalRef = this.modalService.open(content, {centered: true, size: 'lg', backdrop: 'static'});
+    },
+    error: (err) => {
+      console.error('Error fetching Role', err);
+      this.appSettingService.showError('Error fetching data for editing');
     }
-    this.searchPerformed = true;
-    this.masterService.searchRole(payload).subscribe(
-      (resp:any)=>{
-        if(resp.status){
-          this.searchResults= resp.data;
-          this.updatePaginationData();
-          this.totalAmountOfCollection = this.searchResults.length;
-        }
-      }
-    )
+  });
+}
+  closeModal(): void {
+    if (this.modalRef) {
+      this.modalRef.close();
+    }
   }
 
-  updatePaginationData(){
-    let start = (this.page - 1) * this.pageSize;
-    let end = start + this.pageSize;
-    this.roleList = this.searchResults.slice(start,end);
-  }
+  loadRoleData(id: number) {
+  this.masterService.getRoleById(id).subscribe(
+    (response: any) => {
+      const data = response.data; // Access the data property from the response
+      this.roleForm.patchValue({
+        UserRoleName: data.UserRoleName,
+        UserRoleCode: data.UserRoleCode,
+        LicenseType: data.LicenseType,
+        status: data.status === 'A' ? 'Active' : 'Suspended'
+      });
+    },
+    (error) => {
+      this.appSettingService.showError('Error loading data.');
+    }
+  );
+}
 
-  deleteRoleById(RoleMasterSid:number){
-    const matRef = this.matdial.open(DeleteWarningComponent);
-    matRef.afterClosed().subscribe(
-      (result)=>{
-        if(result){
-          this.masterService.deleteRoleById(RoleMasterSid).subscribe(
-            (resp:any)=>{
-              if(resp.status){
-                this.appSettingService.showSuccess('Role Deleted');
-                this.onSearch();
-              } else {
-                this.appSettingService.showError('Error Deleting Role');
-              }
-            },
-            (error)=>{
-              console.error('Error Deleting Role',error);
+  onSubmit() {
+    if (this.roleForm.invalid) {
+      this.roleForm.markAllAsTouched();
+      this.roleForm.updateValueAndValidity();
+      this.appSettingService.showWarning('Please fill all required fields correctly.');
+      return;
+    } else {
+      let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
+      let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
+      const formValue = this.roleForm.value;
+
+      const payload = {
+    ...formValue,
+    ...(this.isEditMode ? updatedBy : createdBy),
+    status: formValue.status === "Active" ? "A" : "S"
+  };
+
+      if (this.isEditMode) {
+        this.masterService.updateRoleById(this.RoleMasterSid, payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.appSettingService.showSuccess(resp.message);
+              this.closeModal();
+              this.search();
+            } else {
+              this.appSettingService.showError(resp.message);
             }
-          )
-        }
+          },
+          (error) => {
+            this.errorMessage = error.message;
+            console.error('Error loading:', error);
+          }
+        );
+      } else {
+        this.masterService.createNewRole(payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.appSettingService.showSuccess(resp.message);
+              this.closeModal();
+              this.search();
+            } else {
+              this.appSettingService.showError(resp.message);
+            }
+          },
+          (error) => {
+            this.errorMessage = error.message;
+            console.error('Error loading:', error);
+          }
+        );
       }
-    )
+    }
   }
 
-  getAllCompany(){
-      this.masterService.getAllCompanies().subscribe(
-        (resp)=>{
-          this.companyList=resp;
-        },
-        (error)=>{
-          console.error('Error Loading Companies',error);
-        }
-      )
+  search() {
+    const payload = {
+      searchType: this.searchType,
+      filterValue: this.searchType === 'status' 
+        ? this.filterValue === 'Active' ? 'A' : 'S'
+        : this.filterValue
+    };
+
+    this.masterService.searchRole(payload).subscribe((res: any) => {
+      this.results = res.data || res;
+      this.searchPerformed = true;
+      this.updatePaginationData();
+      this.totalLengthOfCollection = this.results.length || 0;
+    });
   }
 
-  getCompanyById(CompanyMasterSid){
-    let company = this.companyList.find(company=> company.CompanyMasterSid === CompanyMasterSid);
-    return company.companyName;
+  updatePaginationData(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.roleList = this.results.slice(startIndex, endIndex);
   }
 
-  navigateToCreate() {
-    this.route.navigate(['master/role/entry']);
+  trackByIndex(index: number, item: any): number {
+    return index;
   }
 
-  reset(){
-    this.searchPerformed = false;
+  deleteRoleById(id: number) {
+    const dialogRef = this.dialog.open(DeleteWarningComponent);
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        this.masterService.deleteRoleById(id).subscribe((resp: any) => {
+          this.appSettingService.showSuccess('Deleted!');
+          this.search();
+        });
+      }
+    });
+  }
+
+  resetPage(): void {
     this.roleList = [];
-    this.totalAmountOfCollection = 0;
+    this.totalLengthOfCollection = 0;
+    this.searchPerformed = false;
+    this.filterValue = '';
+    this.searchType = 'UserRoleName';
   }
 
-  report(){
-
+  report(): void {
+    // Implement report functionality
   }
 }
