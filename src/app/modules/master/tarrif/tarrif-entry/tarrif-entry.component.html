@@ -30,7 +30,7 @@
         <div class="card h-100">
             <div class="card-body">
                 <div class="row">
-                    <aside class="col-md-6">
+                    <aside class="col-md-12">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="DepartmentMasterSid">
                                 <ng-option value="">Select Department</ng-option>
@@ -90,7 +90,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-6 ">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="POLSid" (change)="setPOLTerminal($event)">
                                 <ng-option value="">Select POL</ng-option>
@@ -111,7 +111,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="PODSid" (change)="setPODTerminal($event)">
                                 <ng-option value="">Select POD</ng-option>
@@ -132,7 +132,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="FDCSid">
                                 <ng-option value="">Select FDC</ng-option>
@@ -151,7 +151,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="ViaPortSid">
                                 <ng-option value="">Select Via Port</ng-option>
@@ -160,7 +160,7 @@
                                 }
                             </ng-select>
                             <label for="text-input" class="input-label">Via Port <span
-                                    class="text-danger">*</span></label>
+                                    class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('ViaPortSid')?.touched && tariffHeaderForm.get('ViaPortSid')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('ViaPortSid')?.hasError('required')){
@@ -170,7 +170,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="POLTerminal" placeholder=""
                                 class="custom-input-field sm" [textWithNumbers]="5" readonly>
@@ -188,7 +188,7 @@
                         </div>
                     </aside>
                       
-                    <aside class="col-md-6">
+                    <aside class="col-md-12 mt-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="PODTerminal" placeholder=""
                                 class="custom-input-field sm" [textWithNumbers]="5" readonly>
@@ -205,7 +205,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <!-- <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="MovementType" [textWithNumbers]="10">
                             <label for="text-input" class="input-label">Movement Type <span class="text-danger"></span></label>
@@ -218,14 +218,14 @@
                             </div>
                             }
                         </div>
-                    </aside>
+                    </aside> -->
 
                     
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-12 col-md-6" [formGroup]="tariffHeaderForm">
+    <div class="col-12 col-md-6 mt-md-0 mt-2" [formGroup]="tariffHeaderForm">
         <div class="card h-100">
             <div class="card-body">
                 <div class="row">
@@ -273,7 +273,14 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                     <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder=""
+                            class="custom-input-field sm" formControlName="">
+                                <label for="text-input" class="input-label">Cargo Type <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-6 ">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="AgentSid">
                                 <ng-option value="">Select Agent</ng-option>
@@ -295,7 +302,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6 mt-2">
+                    <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" formControlName="IncoTerms" id="text-input" placeholder=""
                                 class="custom-input-field sm" [textWithNumbers]="10">
@@ -393,11 +400,18 @@
                             </div>
                             }
                         </div>
+                    </aside> 
+                     <aside class="col-md-6 mt-md-2" >
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder=""
+                            class="custom-input-field sm" formControlName="">
+                                <label for="text-input" class="input-label">Service level <span class="text-danger"></span></label>
+                        </div>
                     </aside>
                     <aside class="col-md-12">
                         <div class="custom-form-group">
                             <textarea type="text" formControlName="Remarks" id="text-input" placeholder=""
-                                class="custom-input-field" [textWithNumbers]="100" rows="1"></textarea>
+                                class="custom-input-field sm" [textWithNumbers]="100" rows="1"></textarea>
                             <label for="text-input" class="input-label">Remarks <span
                                     class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('Remarks')?.touched && tariffHeaderForm.get('Remarks')?.errors){

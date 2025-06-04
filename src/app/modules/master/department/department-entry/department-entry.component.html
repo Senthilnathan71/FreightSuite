@@ -115,7 +115,7 @@
                                     <ng-option value="Import">Import</ng-option>
                                 </ng-select>
                                 <label for="text-input" class="input-label">Exp/Imp? <span
-                                        class="text-danger fw-bold">*</span></label>
+                                        class="text-danger fw-bold"></span></label>
                                 <div class="error-message">
                                     @if(departmentForm.get('ExportImport')?.touched &&
                                     departmentForm.get('ExportImport')?.invalid){
@@ -135,7 +135,7 @@
                                     <ng-option value="Import">LCL</ng-option>
                                 </ng-select>
                                 <label for="text-input" class="input-label">FCL/LCL? <span
-                                        class="text-danger fw-bold">*</span></label>
+                                        class="text-danger fw-bold"></span></label>
                                 <div class="error-message">
                                     @if(departmentForm.get('FCLLCL')?.touched &&
                                     departmentForm.get('FCLLCL')?.invalid){
@@ -169,7 +169,7 @@
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <textarea formControlName="Remarks" class="custom-input-field sm" [textWithNumbers]="20"></textarea>
+                                <textarea formControlName="Remarks" class="custom-input-field sm" [textWithNumbers]="20" rows="1"></textarea>
                                 <label for="text-input" class="input-label">Remarks </label>
                                 <div class="error-message">
                                     @if(departmentForm.get('Remarks')?.touched &&

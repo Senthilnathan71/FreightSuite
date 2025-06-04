@@ -110,21 +110,22 @@
     </div>
 </div> -->
 
-    <div class="col-12" *ngIf="totalLengthOfCollection > 0">
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+        <div class="col-12 p-0-" >
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
+                        <th class="bg-transparent text-light" scope="col" width="8%">Action</th>
                         <th class="bg-transparent text-light" scope="col">UOM Name</th>
                         <th class="bg-transparent text-light" scope="col">UOM Code</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
+                        <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let item of uomList; let i = index; trackBy: trackByIndex">
                         <td>
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center justify-content-center">
                                 <a class="text-info mx-2"
                                     [routerLink]="['/master/uom-master/view/', item.UOMMasterSid]">
                                     <i-feather class="feather-sm" name="eye"></i-feather>
@@ -136,8 +137,8 @@
                         </td>
                         <td>{{item.UOMName}}</td>
                         <td>{{item.UOMCode}}</td>
-                        <td>@if(item.status === "A"){
-                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                        <td class="d-flex align-items-center">@if(item.status === "A"){
+                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center  gap-1">
                                 <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
                                 Active
                             </div>
@@ -158,6 +159,8 @@
             </ngb-pagination>
         </div>
     </div>
+    </div>
+    
 
 
     <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">

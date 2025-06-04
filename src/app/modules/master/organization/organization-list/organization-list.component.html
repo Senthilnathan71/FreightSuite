@@ -173,7 +173,7 @@
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
+                        <th class="bg-transparent text-light" scope="col"  width="10%">Action</th>
                         <th class="bg-transparent text-light" scope="col">Customer Name</th>
                         <!-- <th class="bg-transparent text-light" scope="col">Code</th>
                         <th class="bg-transparent text-light" scope="col">Full Name</th>
@@ -189,10 +189,10 @@
                 <tbody>
                     <tr *ngFor="let item of organizationList; let i = index; trackBy: trackByIndex">
                          <td>
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center justify-content-center">
                                 <a class="text-info mx-2" class="link mx-2 ps-3 "
                                     [routerLink]="['/master/organization/entry/', item.CustomerMasterSid]">
-                                    <i-feather class="feather-sm" name="eye"></i-feather>
+                                    <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                 </a>
                                 <a class="text-danger mx-2 ps-3 border-start"
                                     (click)="deleteOrganization(item.CustomerMasterSid)">

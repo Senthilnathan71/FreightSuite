@@ -65,7 +65,7 @@
 <!-- ... previous code remains the same until the table headers ... -->
 <thead>
     <tr class="bg-info">
-        <th class="bg-transparent text-light" scope="col">Action</th>
+        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
         <th class="bg-transparent text-light" scope="col" (click)="sort('stateName')">
             State Name
             <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'stateName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'stateName'}"></i>

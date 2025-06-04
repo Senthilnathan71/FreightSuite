@@ -1,61 +1,4 @@
-<div class="row py-3">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm ">
-            <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0"> Role Menu</h4>
-            </div>
-            <div class="col-md-8 pb-2">
-                <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                    <!-- <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80">
-                        <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
-                    </button> -->
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-save me-1"></i>
-                        Save
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-12 p-0">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row">
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Name">
-                            <label for="text-input" class="input-label">Module <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="displayName">
-                            <label for="text-input" class="input-label">Role Name </label>
-                        </div>
-                    </aside>
-                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="displayName">
-                            <label for="text-input" class="input-label">Remarks </label>
-                        </div>
-                    </aside>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <div class="row">
 
@@ -72,7 +15,8 @@
                             <i class="fas fa-search me-1"></i>
                             Search
                         </button> -->
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="openModal(content)">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
@@ -107,62 +51,106 @@
                                 <i
                                     class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
                             </div> -->
-                             <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                <div class="form-outline flex-grow-1">
-                  <input  name="filterValue" type="text" class="form-control"
-                    placeholder="Enter filter value">
-                  <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                </div>
+                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
+                                <div class="form-outline flex-grow-1">
+                                    <input name="filterValue" type="text" class="form-control"
+                                        placeholder="Enter filter value">
+                                    <i
+                                        class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                                </div>
 
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                  <i class="fas fa-search me-1"></i>
-                  Search
-                </button>
-              </div>
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                    <i class="fas fa-search me-1"></i>
+                                    Search
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
- 
-    
+    <ng-template #content let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">Role Menu</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <form>
+                <div class="col-md-12 p-0">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="row">
+                                <aside class="col-md-4">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="Name">
+                                        <label for="text-input" class="input-label">Module <span
+                                                class="text-danger"></span></label>
+                                    </div>
+                                </aside>
+                                <aside class="col-md-4">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="displayName">
+                                        <label for="text-input" class="input-label">Role Name </label>
+                                    </div>
+                                </aside>
+                                <aside class="col-md-4">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                            formControlName="displayName">
+                                        <label for="text-input" class="input-label">Remarks </label>
+                                    </div>
+                                </aside>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+        </div>
+    </ng-template>
+
+
     <div class="row bg-white py-2 rounded shadow-sm mx-auto">
-         <div class="col-12 p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <!-- <th class="bg-transparent text-light" scope="col">Action</th> -->
-                        <th class="bg-transparent text-light" scope="col"> Menu Name</th>
-                        <th class="bg-transparent text-light" scope="col">Allow Add</th>
-                        <th class="bg-transparent text-light" scope="col">Allow Modify</th>
-                        <th class="bg-transparent text-light" scope="col">Allow View</th>
-                         <th class="bg-transparent text-light" scope="col">Allow Delete</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <!-- <td>
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <!-- <th class="bg-transparent text-light" scope="col">Action</th> -->
+                            <th class="bg-transparent text-light" scope="col"> Menu Name</th>
+                            <th class="bg-transparent text-light" scope="col">Allow Add</th>
+                            <th class="bg-transparent text-light" scope="col">Allow Modify</th>
+                            <th class="bg-transparent text-light" scope="col">Allow View</th>
+                            <th class="bg-transparent text-light" scope="col">Allow Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        <tr>
+                            <!-- <td>
                             <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
                         </td> -->
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                         <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                         <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <!-- <td>
+                            <td>
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Rial</div>
+                            </td>
+                            <!-- <td>
                             <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
                                 <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
                                 Approved</span>
@@ -170,12 +158,12 @@
 
 
 
-                    </tr>
-                    }
-                </tbody>
-            </table>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    </div>
-   
+
 </div>

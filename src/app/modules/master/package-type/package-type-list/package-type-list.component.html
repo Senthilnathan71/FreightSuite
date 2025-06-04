@@ -70,11 +70,11 @@
       <table class="table table-hover align-middle no-wrap table-bordered">
         <thead>
           <tr class="bg-info">
-            <th class="bg-transparent text-light" scope="col">Action</th>
+            <th class="bg-transparent text-light text-center" scope="col" width="10%">Action</th>
             <th class="bg-transparent text-light" scope="col">Name</th>
             <th class="bg-transparent text-light" scope="col">Code</th>
             <!-- <th class="bg-transparent text-light" scope="col">Remarks</th> -->
-            <th class="bg-transparent text-light" scope="col">Status</th>
+            <th class="bg-transparent text-light text-center" scope="col" width="13%">Status</th>
           </tr>
         </thead>
         <tbody>
@@ -82,16 +82,19 @@
           package.PackageTypeMasterSid) {
           <tr>
             <td>
-              <a class="text-dark mx-2" [routerLink]="[
+              <div class="d-flex align-items-center justify-content-center">
+                 <a class="text-dark mx-2" [routerLink]="[
                   '/master/package-type/entry',
                   package.PackageTypeMasterSid
                 ]">
-                <i-feather name="eye" class="feather-sm"></i-feather>
+                <i-feather name="eye" class="feather-sm text-info" ></i-feather>
               </a>
               <a class="text-danger mx-2 ps-3 border-start"
                 (click)="deletePackageTypeById(package.PackageTypeMasterSid)">
                 <i-feather name="trash-2" class="feather-sm"></i-feather>
               </a>
+              </div>
+             
             </td>
             <td>
               <div class="text-truncate">{{ package.PackageName }}</div>
@@ -99,7 +102,7 @@
             <td>
               <div class="text-truncate">{{ package.PackageCode }}</div>
             </td>
-            <td>
+            <td  class="d-flex align-items-center justify-content-center">
               <div class="text-truncate">@if(package.status === "A"){
                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                   <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>

@@ -966,6 +966,39 @@
                                     }
                                 </div>
                             </aside>
+                               <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input id="branchName" type="text" id="text-input" placeholder=""
+                                        class="custom-input-field sm" formControlName="CustBranchName"
+                                        [textWithNumbers]="20">
+                                    <label for="branchName" class="input-label">Branch Name <span
+                                            class="text-danger">*</span></label>
+                                    @if(customerBranchForm.get('CustBranchName')?.touched &&
+                                    customerBranchForm.get('CustBranchName')?.invalid){
+                                    <div class="error-message">
+                                        @if(customerBranchForm.get('CustBranchName')?.hasError('required')){
+                                        <span>Branch Name is required</span>
+                                        } @else if(customerBranchForm.get('CustBranchName')?.hasError('maxlength')){
+                                        <span>Max 20 Characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                               <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder=""
+                                    class="custom-input-field sm" formControlName="">
+                                        <label for="text-input" class="input-label">Branch Type <span class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                              <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder=""
+                                    class="custom-input-field sm" formControlName="">
+                                        <label for="text-input" class="input-label">Branch Code <span class="text-danger"></span></label>
+                                </div>
+                            </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <select id="state" formControlName="CustBranchState" class="form-select">
@@ -985,25 +1018,8 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <input id="branchName" type="text" id="text-input" placeholder=""
-                                        class="custom-input-field sm" formControlName="CustBranchName"
-                                        [textWithNumbers]="20">
-                                    <label for="branchName" class="input-label">Branch Name <span
-                                            class="text-danger">*</span></label>
-                                    @if(customerBranchForm.get('CustBranchName')?.touched &&
-                                    customerBranchForm.get('CustBranchName')?.invalid){
-                                    <div class="error-message">
-                                        @if(customerBranchForm.get('CustBranchName')?.hasError('required')){
-                                        <span>Branch Name is required</span>
-                                        } @else if(customerBranchForm.get('CustBranchName')?.hasError('maxlength')){
-                                        <span>Max 20 Characters</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
+                          
+                         
 
 
                             <aside class="col-md-6">
@@ -1026,7 +1042,14 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                              <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder=""
+                                    class="custom-input-field sm" formControlName="">
+                                        <label for="text-input" class="input-label">Contact Person <span class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input id="phone" type="number" id="text-input" placeholder=""
                                         class="custom-input-field sm" formControlName="CustBranchPhone"
@@ -1045,7 +1068,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input id="email" type="text" id="text-input" placeholder=""
                                         class="custom-input-field sm" formControlName="CustBranchEmail">
@@ -1345,7 +1368,7 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="Email" placeholder="" class="custom-input-field sm"
                                         formControlName="Email">
-                                    <label for="Email" class="input-label">Email<span
+                                    <label for="Email" class="input-label">Email <span
                                             class="text-danger">*</span></label>
                                     @if(customerBranchContactForm.get('Email')?.touched &&
                                     customerBranchContactForm.get('Email')?.invalid){
@@ -1397,7 +1420,7 @@
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="BranchName">
                                     <label for="text-input" class="input-label">Branch <span
-                                            class="text-danger">*</span></label>
+                                            class="text-danger"></span></label>
                                     @if(customerBranchEmailForm.get('BranchName')?.touched &&
                                     customerBranchEmailForm.get('BranchName')?.invalid){
                                     <div class="error-message">
@@ -1608,7 +1631,7 @@
                                     <input type="text" id="BranchName" placeholder="" class="custom-input-field sm"
                                         formControlName="BranchName">
                                     <label for="BranchName" class="input-label">Branch <span
-                                            class="text-danger">*</span></label>
+                                            class="text-danger"></span></label>
                                 </div>
                             </aside>
                             <aside class="col-md-6">
@@ -1616,7 +1639,7 @@
                                     <input type="text" id="LoginName" placeholder="" class="custom-input-field sm"
                                         formControlName="LoginName" [onlyText]="50">
                                     <label for="LoginName" class="input-label">Name<span
-                                            class="text-danger">*</span></label>
+                                            class="text-danger"></span></label>
                                     @if(customerBranchLoginForm.get('LoginName')?.touched &&
                                     customerBranchLoginForm.get('LoginName')?.invalid){
                                     <div class="error-message">
@@ -1638,7 +1661,7 @@
                                     <input type="text" id="LoginEmail" placeholder="" class="custom-input-field sm"
                                         formControlName="LoginEmail">
                                     <label for="LoginEmail" class="input-label">email<span
-                                            class="text-danger">*</span></label>
+                                            class="text-danger"></span></label>
                                     @if(customerBranchLoginForm.get('LoginEmail')?.touched &&
                                     customerBranchLoginForm.get('LoginEmail')?.invalid){
                                     <div class="error-message">
@@ -1657,7 +1680,7 @@
                                     <input type="text" id="LoginPassword" placeholder="" class="custom-input-field sm"
                                         formControlName="LoginPassword" [textWithNumbers]="50">
                                     <label for="LoginPassword" class="input-label">Password <span
-                                            class="text-danger">*</span></label>
+                                            class="text-danger"></span></label>
                                     @if(customerBranchLoginForm.get('LoginPassword')?.touched &&
                                     customerBranchLoginForm.get('LoginPassword')?.invalid){
                                     <div class="error-message">
@@ -1900,7 +1923,7 @@
                 <thead>
                     <tr class="bg-info">
                         <th class="bg-transparent text-light" scope="col">Action</th>
-                        <!-- <th class="bg-transparent text-light" scope="col">Menu Name</th> -->
+                        <th class="bg-transparent text-light" scope="col">Menu Name</th>
                         <th class="bg-transparent text-light" scope="col">Branch</th>
                         <th class="bg-transparent text-light" scope="col">Department</th>
                         <th class="bg-transparent text-light" scope="col">To email</th>
@@ -2148,8 +2171,8 @@
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent ttext-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Customer</th>
+                        <th class="bg-transparent text-light" scope="col">Action</th>
+                        <!-- <th class="bg-transparent text-light" scope="col">Customer</th> -->
                         <th class="bg-transparent text-light" scope="col">Branch</th>
                         <th class="bg-transparent text-light" scope="col">Name</th>
                         <th class="bg-transparent text-light" scope="col">email</th>
@@ -2171,9 +2194,9 @@
                                 </a>
                             </div>
                         </td>
-                        <td>
+                        <!-- <td>
                             <div class="text-truncate">{{ customerName }}</div>
-                        </td>
+                        </td> -->
                         <td>
                             <div class="text-truncate">{{ getBranchName(item.CustomerBranchSid) }}</div>
                         </td>
