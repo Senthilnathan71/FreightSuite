@@ -658,7 +658,7 @@ export class MasterService {
   //city-master
 
   getAllCity() {
-    return this.http.get<City>('city').pipe(
+    return this.http.get<{ data:City[] }>('city').pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -666,9 +666,10 @@ export class MasterService {
     );
   }
   searchCityList(payload) {
-    return this.http.post("city/search-list", payload).pipe(
-      map((res: any) => {
-        return res.data;
+    return this.http.post<{ data: City[] }>("city/search-list", payload).pipe(
+      map((resp) => {
+        let response = resp.data
+        return response;
       })
     )
   }
@@ -682,10 +683,11 @@ export class MasterService {
     );
   }
 
-  createCity(payload: any) {
-    return this.http.post('city/add', payload).pipe(
-      map((res: any) => {
-        return res;
+  createCity(payload: City) {
+    return this.http.post<{ data: any}>('city/add', payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
       })
     );
   }

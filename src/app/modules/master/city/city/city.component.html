@@ -1,0 +1,237 @@
+<div class="row">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">City</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div class="" data-bs-theme="light">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openModal(content)">
+                            <i class="fas fa-plus me-1"></i> Create
+                        </button>
+                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="report()"
+                            [disabled]="!searchPerformed || totalLengthOfCollection === 0">
+                            <i class="fas fa-file-alt me-1"></i> Report
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="resetPage()"
+                            [disabled]="!searchPerformed">
+                            <i class="fas fa-sync-alt me-1"></i> Reset
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-12 border-top">
+                <div class="row mx-0 py-2">
+                    <div class="col-md-8 mx-auto px-0">
+                        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                            <div class="form-outline col-12 col-md px-0">
+                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                                    <option value="cityName">City Name</option>
+                                    <option value="cityCode">City Code</option>
+                                    <option value="StateMasterSid">State</option>
+                                    <option value="CountryMasterSid">Country</option>
+                                    <option value="status">Status</option>
+                                </select>
+                            </div>
+                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
+                                <div class="form-outline flex-grow-1">
+                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" 
+                                        class="form-control" placeholder="Enter filter value">
+                                    <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                                </div>
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                                    (click)="search()">
+                                    <i class="fas fa-search me-1"></i> Search
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">City Name</th>
+                            <th class="bg-transparent text-light" scope="col">City Code</th>
+                            <th class="bg-transparent text-light" scope="col">State</th>
+                            <th class="bg-transparent text-light" scope="col">Country</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of cityList; trackBy: trackByIndex">
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-link text-primary p-0" 
+                                        (click)="updateCityById(item.CityMasterSid, content)"
+                                        title="Edit">
+                                        <i-feather class="feather-sm" name="eye"></i-feather>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-danger p-0" 
+                                        (click)="deleteCityById(item.CityMasterSid)"
+                                        title="Delete">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.cityName}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.cityCode}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.CountryMasterSid}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.StateMasterSid}}</div>
+                            </td>
+                            <td>
+                                @if(item.status === "A"){
+                                    <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                        Active
+                                    </div>
+                                } @else {
+                                    <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                        Suspended
+                                    </div>
+                                }
+                            </td> 
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" 
+                    [pageSize]="pageSize" (pageChange)="updatePaginatedData()">
+                </ngb-pagination>
+            </div>
+        </div>
+    </div>
+    <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
+        <div class="alert alert-info text-center">No records found</div>
+    </div>
+    <ng-template #content let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} City</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="cityForm">
+                <div class="col-md-12">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="row">
+                                <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input formControlName="cityName" type="text" id="text-input" placeholder=""
+                                    class="custom-input-field sm" [onlyText]="100">
+                                <label for="text-input" class="input-label">City Name <span
+                                        class="text-danger fw-bold">*</span></label>
+                                @if(cityForm.get('cityName')?.touched && cityForm.get('cityName')?.invalid){
+                                <div class="error-message">
+                                    @if(cityForm.get('cityName')?.hasError('required')){
+                                    <span>City Name is required</span>
+                                    } @else if(cityForm.get('cityName')?.hasError('maxlength')){
+                                    <span>Max 100 Characters</span>
+                                    } @else if(cityForm.get('cityName')?.hasError('numberNotAllowed')){
+                                    <span>Only Alphabets are allowed</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </aside>
+
+                                <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input formControlName="cityCode" type="text" id="text-input" placeholder=""
+                                    class="custom-input-field sm" [textWithNumbers]="3">
+                                <label for="text-input" class="input-label">City Code <span
+                                        class="text-danger fw-bold">*</span></label>
+                                @if(cityForm.get('cityCode')?.touched && cityForm.get('cityCode')?.invalid){
+                                <div class="error-message">
+                                    @if(cityForm.get('cityCode')?.hasError('required')){
+                                    <span>City Code is required</span>
+                                    } @else if(cityForm.get('cityCode')?.hasError('maxlength')){
+                                    <span>Max 3 Characters</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </aside>
+
+                            <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <select formControlName="CountryMasterSid" class="form-select">
+                                    <option value="" disabled selected>Select Country</option>
+                                    <option *ngFor="let option of countryList" [value]="option.CountryMasterSid">
+                                        {{option.countryName }}</option>
+                                </select>
+                                <label for="text-input" class="input-label">Country <span
+                                        class="text-danger fw-bold">*</span></label>
+                                @if(cityForm.get('CountryMasterSid')?.touched &&
+                                cityForm.get('CountryMasterSid')?.invalid){
+                                <div class="error-message">
+                                    @if(cityForm.get('CountryMasterSid')?.hasError('required')){
+                                    <span>Country is required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </aside>
+
+                            <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <select formControlName="StateMasterSid" class="form-select">
+                                    <option value="" disabled selected>Select State</option>
+                                    <option *ngFor="let option of stateList" [value]="option.StateMasterSid">{{
+                                        option.stateName }}</option>
+                                </select>
+                                <label for="text-input" class="input-label">State <span
+                                        class="text-danger fw-bold">*</span></label>
+                                @if(cityForm.get('StateMasterSid')?.touched &&
+                                cityForm.get('StateMasterSid')?.invalid){
+                                <div class="error-message">
+                                    @if(cityForm.get('StateMasterSid')?.hasError('required')){
+                                    <span>State is required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <select formControlName="status" class="form-select">
+                                        <option value="">Status</option>
+                                        <option *ngFor="let option of statusList" [value]="option">{{ option }}</option>
+                                    </select>
+                                    <label for="text-input" class="input-label">Status <span class="text-danger fw-bold">*</span></label>
+                                </div>
+                            </aside>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-primary" 
+                (click)="onSubmit()" 
+                [disabled]="btnDisable || cityForm.invalid">
+                {{ isEditMode ? 'Update' : 'Save' }}
+            </button>
+        </div>
+    </ng-template>
+</div>
