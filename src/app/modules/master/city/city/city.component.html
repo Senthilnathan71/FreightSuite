@@ -77,7 +77,7 @@
                                         <i-feather class="feather-sm" name="eye"></i-feather>
                                     </button>
                                     <button class="btn btn-sm btn-link text-danger p-0" 
-                                        (click)="deleteCityById(item.CityMasterSid)"
+                                        (click)="deleteCity(item.CityMasterSid)"
                                         title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </button>
@@ -90,10 +90,10 @@
                                 <div class="text-truncate">{{item.cityCode}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">{{item.CountryMasterSid}}</div>
+                                <div class="text-truncate">{{item.countryName}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">{{item.StateMasterSid}}</div>
+                                <div class="text-truncate">{{item.stateName}}</div>
                             </td>
                             <td>
                                 @if(item.status === "A"){

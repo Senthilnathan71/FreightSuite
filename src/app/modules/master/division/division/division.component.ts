@@ -42,8 +42,9 @@ export class DivisionComponent {
   btnDisable: boolean = false;
   divisionList: any[] = [];
   statusList = ["Active", "Suspended"]
-  companyList: any;
+  companyList: any[] = [] ;
   modalRef!: NgbModalRef;
+  companyMap: { [id: number]: string} ={};
   searchType = 'DivisionName';
   filterValue = '';
   searchPerformed = false;
@@ -63,6 +64,7 @@ export class DivisionComponent {
 
   ngOnInit(): void {
     this.getAllCompanies();
+    this.loadCompanies();
     // this.loadDivision();
     this.initForm();
     this.route.paramMap.subscribe(params => {
@@ -92,14 +94,20 @@ export class DivisionComponent {
       DivisionName: ['', [Validators.required]],
       DivisionCode: ['', [Validators.required]],
       // address: ['', [Validators.required]],
-      CompanyMasterSid: ['',Validators.required],
+      CompanyMasterSid: ['',[Validators.required]],
       Remarks: ['', [Validators.required]],
-      status: ['Active']
+      status: ['Active',[Validators.required]]
     });
   }
 
   resetForm(): void {
-    this.divisionForm.reset();
+    this.divisionForm.reset({
+      DivisionName: '',
+      DivisionCode: '',
+      CompanyMasterSid: '',
+      Remarks: '',
+      status: 'Active'
+    });
   }
 
   openModal(content: any): void {
@@ -284,6 +292,15 @@ export class DivisionComponent {
   getAllCompanies() {
     this.masterService.getAllCompanies().subscribe((res)=> {
       this.companyList = res;
+    })
+  }
+
+  loadCompanies() {
+    this.masterService.getAllCompanies().subscribe((companies: any[]) => {
+      this.companyMap ={};
+      companies.forEach(c => {
+        this.companyMap[c.CompanyMasterSid] = c.companyName;
+      })
     })
   }
 

@@ -38,7 +38,7 @@ export class ContainerTypeEntryComponent {
     { id: 'S', name: 'Suspended' }
   ];
 
-  companyList: any
+  companyList: any[] =[];
 
 
   constructor(
@@ -92,7 +92,7 @@ export class ContainerTypeEntryComponent {
       GrossWeight: ['',[Validators.required]],
       NoOfTeu: ['',[Validators.required]],
       Remarks: ['',[Validators.required]],
-      status:['Active']
+      status:['Active',[Validators.required]]
     });
   }
 
@@ -180,7 +180,7 @@ export class ContainerTypeEntryComponent {
   }
 
   getAllCompanies() {
-    this.masterService.getAllCompanies().subscribe((res) => {
+    this.masterService.getAllCompanies().subscribe((res: any[]) => {
       this.companyList = res;
     })
   }

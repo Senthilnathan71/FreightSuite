@@ -90,7 +90,7 @@
                                 <div class="text-truncate">{{item.DivisionCode}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">{{item.CompanyMasterSid}}</div>
+                                <div class="text-truncate">{{companyMap[item.CompanyMasterSid] || item.CompanyMasterSid}}</div>
                             </td>
                             <td>
                                 <div class="text-truncate">{{item.Remarks}}</div>
