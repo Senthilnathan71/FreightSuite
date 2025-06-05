@@ -69,16 +69,19 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of roleList; trackBy: trackByIndex">
+                            <tr *ngFor="let item of roleList; trackBy: trackByIndex">
                             <td>
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <button class="text-info mx-2" class="link mx-2 ps-3 "
-                                        [routerLink]="['/master/role/entry/',item.RoleMasterSid]">
-                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
-                                        </button>
-                                        <button class="btn btn-sm btn-link text-danger p-0"
-                                            (click)="deleteRoleById(item.RoleMasterSid)" title="Delete">
-                                            <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                        </button>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-link text-primary p-0" 
+                                        (click)="editRole(item.RoleMasterSid, content)"
+                                        title="Edit">
+                                        <i-feather class="feather-sm" name="eye"></i-feather>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-danger p-0" 
+                                        (click)="deleteRoleById(item.RoleMasterSid)"
+                                        title="Delete">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </button>
                                 </div>
                             </td>
                             <td>

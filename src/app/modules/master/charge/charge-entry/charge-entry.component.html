@@ -60,18 +60,29 @@
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="UOM" [items]="uomOptions" bindLabel="uomName" bindValue="UOMMasterSid">
+                                <ng-select formControlName="UOM" [items]="uomOptions"
+                                bindLabel="uomName" bindValue="uomId"> 
                                 </ng-select>
                                 <label class="input-label">UOM</label>
                             </div>
                         </aside>
-                        <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="ChargeGroupSid" [items]="chargeGroupOptions" bindLabel="chargeGroupName" bindValue="ChargeGroupSid">
-                                </ng-select>
-                                <label class="input-label">Charge Group</label>
-                            </div>
-                        </aside>
+                       <!-- Update the charge group dropdown section -->
+<aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select 
+      formControlName="ChargeGroupSid" 
+      [items]="chargeGroupOptions" 
+      bindLabel="GroupName" 
+      bindValue="ChargeGroupSid"
+      placeholder="Select charge group"
+      [class.is-invalid]="chargeForm.get('ChargeGroupSid')?.invalid && chargeForm.get('ChargeGroupSid')?.touched">
+      <ng-template ng-option-tmp let-item="item">
+        {{ item.GroupName }} ({{ item.ChargeGroupSid }})
+      </ng-template>
+    </ng-select>
+    <label class="input-label">Charge Group</label>
+  </div>
+</aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="CompanyMasterSid" [items]="companyOptions" bindLabel="companyName" bindValue="CompanyMasterSid">

@@ -1,5 +1,4 @@
 <div class="row">
-
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col-md-4 pb-2">
@@ -7,110 +6,219 @@
             </div>
             <div class="col-md-8 pb-2">
                 <div class="" data-bs-theme="light">
-                    <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-search me-1"></i>
-                            Search
-                        </button> -->
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openModal(content)">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-file-alt me-1"></i>
-                            Report
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="report()"
+                            [disabled]="!searchPerformed || totalLengthOfCollection === 0">
+                            <i class="fas fa-file-alt me-1"></i> Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-sync-alt me-1"></i>
-                            Reset
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="resetPage()"
+                            [disabled]="!searchPerformed">
+                            <i class="fas fa-sync-alt me-1"></i> Reset
                         </button>
                     </form>
                 </div>
             </div>
-            <div class="col-md-12  border-top">
+            <div class="col-md-12 border-top">
                 <div class="row mx-0 py-2">
                     <div class="col-md-8 mx-auto px-0">
-                        <form
-                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="form-outline col-12 col-md px-0">
-                                <select name="searchType" class="form-select">
-                                    <option value="departmentName">Department Name</option>
-                                    <option value="departmentCode">Department Code</option>
-                                    <option value="departmentType">Department Type</option>
-                                    <option value="ExportImport">Export/Import</option>
-                                    <option value="FCLLCL">FCLLCL</option>
+                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                                    <option value="GroupName">Group Name</option>
+                                    <option value="Remarks">Remarks</option>
                                     <option value="status">Status</option>
                                 </select>
                             </div>
-                            <!-- <div class="form-outline col-12 col-md px-0">
-                                <input name="filterValue" type="text" class="form-control"
-                                    placeholder="Enter filter value">
-                                <i
-                                    class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                            </div> -->
-                                   <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                <div class="form-outline flex-grow-1">
-                  <input  name="filterValue" type="text" class="form-control"
-                    placeholder="Enter filter value">
-                  <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                </div>
-
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                  <i class="fas fa-search me-1"></i>
-                  Search
-                </button>
-              </div>
+                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
+                                <div class="form-outline flex-grow-1 position-relative">
+                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" 
+                                        class="form-control pe-4" placeholder="Enter filter value">
+                                    <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                                </div>
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                                    (click)="search()"
+                                    [disabled]="isLoading">
+                                    <i class="fas fa-search me-1"></i> 
+                                    <span *ngIf="!isLoading">Search</span>
+                                    <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
- 
-    
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
-         <div class="col-12 p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <!-- <th class="bg-transparent text-light" scope="col">Action</th> -->
-                        <th class="bg-transparent text-light" scope="col">Company</th>
-                        <th class="bg-transparent text-light" scope="col">Group Name</th>
-                        <th class="bg-transparent text-light" scope="col">Remarks</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                    <tr>
-                        <!-- <td>
-                            <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
-                        </td> -->
-                        <td>
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">Rial</div>
-                        </td>
-                        <td>
-                            <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                Approved</span>
-                        </td>
-
-
-
-                    </tr>
-                    }
-                </tbody>
-            </table>
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Company</th>
+                            <th class="bg-transparent text-light" scope="col">Group Name</th>
+                            <th class="bg-transparent text-light" scope="col">Remarks</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of chargeGroupList; trackBy: trackByIndex">
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-link text-primary p-0" 
+                                        (click)="editChargeGroup(item.ChargeGroupSid, content)"
+                                        title="Edit">
+                                        <i-feather class="feather-sm" name="edit"></i-feather>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-danger p-0" 
+                                        (click)="deleteChargeGroupById(item.ChargeGroupSid)"
+                                        title="Delete">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.companyMaster?.companyName || '-'}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.GroupName}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.Remarks || '-'}}</div>
+                            </td>
+                            <td>
+                                @if(item.status === "A"){
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active
+                                </div>
+                                } @else {
+                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Suspended
+                                </div>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" 
+                    [pageSize]="pageSize" (pageChange)="updatePaginationData()"
+                    [maxSize]="5" [rotate]="true" [ellipses]="false" [boundaryLinks]="true">
+                </ngb-pagination>
+            </div>
         </div>
     </div>
+    <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
+        <div class="alert alert-info text-center">No records found</div>
     </div>
-   
+    <div class="col-12" *ngIf="isLoading">
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading data...</p>
+        </div>
+    </div>
+    <ng-template #content let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Charge Group</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="chargeGroupForm">
+                <div class="col-md-12">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="row">
+                                <aside class="col-md-6">
+                                    <div class="custom-form-group custom-form-group-select">
+                                        <ng-select [items]="companyOptions"  
+                                        bindLabel="companyName" 
+                                         bindValue="CompanyMasterSid"
+                                         formControlName="CompanyMasterSid"
+                                         placeholder="Select company"
+                                         [class.is-invalid]="chargeGroupForm.get('CompanyMasterSid')?.invalid && chargeGroupForm.get('CompanyMasterSid')?.touched">
+                                        </ng-select>
+                                        <label class="input-label">Company <span class="text-danger">*</span></label>
+                                        @if(chargeGroupForm.get('CompanyMasterSid')?.touched && chargeGroupForm.get('CompanyMasterSid')?.invalid){
+                                        <div class="error-message">
+                                            <span>Company is required</span>
+                                        </div>
+                                        }
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="GroupName" formControlName="GroupName" placeholder=""
+                                            class="custom-input-field sm">
+                                        <label for="GroupName" class="input-label">Group Name <span
+                                                class="text-danger fw-bold">*</span></label>
+                                        @if(chargeGroupForm.get('GroupName')?.touched && chargeGroupForm.get('GroupName')?.invalid){
+                                        <div class="error-message">
+                                            @if(chargeGroupForm.get('GroupName')?.hasError('required')){
+                                            <span>Group Name is required</span>
+                                            } @else if(chargeGroupForm.get('GroupName')?.hasError('maxlength')){
+                                            <span>Max 100 Characters</span>
+                                            }
+                                        </div>
+                                        }
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+  <div class="custom-form-group">
+    <input type="text" id="Remarks" formControlName="Remarks" placeholder=""
+           class="custom-input-field sm">
+    <label for="Remarks" class="input-label">Remarks <span class="text-danger fw-bold">*</span></label>
+    @if(chargeGroupForm.get('Remarks')?.touched && chargeGroupForm.get('Remarks')?.invalid){
+    <div class="error-message">
+      @if(chargeGroupForm.get('Remarks')?.hasError('required')){
+      <span>Remarks is required</span>
+      } @else if(chargeGroupForm.get('Remarks')?.hasError('maxlength')){
+      <span>Max 100 Characters</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
+                               <aside class="col-md-6">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select [items]="statusList" 
+              formControlName="status"
+              placeholder="Select status"
+              [disabled]="isEditMode"
+              [class.is-invalid]="chargeGroupForm.get('status')?.invalid && chargeGroupForm.get('status')?.touched">
+    </ng-select>
+    <label class="input-label">Status <span class="text-danger">*</span></label>
+    @if(chargeGroupForm.get('status')?.touched && chargeGroupForm.get('status')?.invalid){
+    <div class="error-message">
+      <span>Status is required</span>
+    </div>
+    }
+  </div>
+</aside>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-primary" 
+                (click)="onSubmit()" 
+                [disabled]="btnDisable || chargeGroupForm.invalid || isLoading">
+                <span *ngIf="!isLoading">{{ isEditMode ? 'Update' : 'Save' }}</span>
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            </button>
+        </div>
+    </ng-template>
 </div>

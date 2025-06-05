@@ -1432,14 +1432,7 @@ export class MasterService {
       })
     );
   }
-  getAllChargeGroups() {
-    return this.http.get<{ data: any }>('charge/charge-group').pipe(
-      map((resp) => {
-        let response = resp.data;
-        return response;
-      })
-    );
-  }
+  
 
   deleteChargeById(id: number) {
     return this.http.delete<{ data: any }>(`charge/delete/${id}`).pipe(
@@ -1804,4 +1797,59 @@ export class MasterService {
       })
     )
   }
+  // Charge Group Master
+
+getAllChargeGroups() {
+  return this.http.get<{ data: any[] }>('charge-group').pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+getChargeGroupById(ChargeGroupSid: number) {
+  return this.http.get<{ data: any }>(`charge-group/fetch/${ChargeGroupSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+createNewChargeGroup(payload: any) {
+  return this.http.post<{ data: any }>('charge-group/create', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+updateChargeGroupById(ChargeGroupSid: number, payload: any) {
+  return this.http.patch<{ data: any }>(`charge-group/update/${ChargeGroupSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+deleteChargeGroupById(ChargeGroupSid: number) {
+  return this.http.delete<{ data: any }>(`charge-group/delete/${ChargeGroupSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+searchChargeGroups(payload: any) {
+  return this.http.post<{ data: any[] }>('charge-group/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
 }
