@@ -29,6 +29,7 @@ export class ContainerTypeListComponent {
   results: any[] = [];
   containerList: any[] = [];
   searchPerformed = false;
+  companyMap: { [id: number]: string} = {};
 
   // Pagination 
   page = 1;
@@ -42,7 +43,18 @@ export class ContainerTypeListComponent {
     private dialog: MatDialog
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() { 
+    this.getAllCompanies();
+  }
+
+  getAllCompanies() {
+    this.masterService.getAllCompanies().subscribe((companies: any[]) => {
+      this.companyMap = {};
+      companies.forEach(c => {
+        this.companyMap[c.CompanyMasterSid] = c.companyName;
+      });
+    });
+  }
 
   search() {
     const payload = {

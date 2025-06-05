@@ -40,10 +40,13 @@ export class CityComponent {
   CityMasterSid!: number;
   errorMessage: string = '';  // To store any error messages
   btnDisable: boolean = false;
+  isViewMode = false;
   cityList: any[] = [];
   statusList = ["Active", "Suspended"]
-  countryList: any;
-  stateList: any;
+  countryList: any[] = [];;
+  stateList: any [] = [];
+  countryMap: { [id: number]: string} = {};
+  stateMap: { [id: number]: string} = {};
   modalRef!: NgbModalRef;
   searchType = 'cityName';
   filterValue = '';
@@ -64,20 +67,49 @@ export class CityComponent {
   ) { }
 
   ngOnInit(): void {
-    this.getAllCountries()
-    this.getAllState()
-    // this.loadCity()
+    this.getAllCountries();
+    this.getAllState();
+    // this.loadCity();
     this.loadCountryAndStateData();
     this.initForm();
     this.route.paramMap.subscribe(params => {
       this.CityMasterSid = +params.get('id');
       if (this.CityMasterSid) {
         this.isEditMode = true;
-        this.loadLeadData(this.CityMasterSid);
+        // Check if we're in view mode (from query params)
+        this.route.queryParams.subscribe(queryParams => {
+          this.isViewMode = queryParams['mode'] === 'view';
+          this.loadLeadData(this.CityMasterSid);
+          // In edit mode, update statusList to include both options
+          this.statusList = ["Active", "Suspended"];
+          // Enable the status control in edit mode
+          this.cityForm.get('status')?.enable();
+        });
       }
     });
   }
 
+  loadCountryAndStateData() {
+    forkJoin({
+      countries: this.masterService.getAllCountry(),
+      states: this.masterService.getAllState(),
+      city: this.masterService.getAllCity()
+    }).subscribe(({ countries, states, city }) => {
+      this.countryList = countries.data;  // assuming res.data format
+      this.stateList = states.data;
+      this.cityList = city.map(city => {
+        const country = this.countryList.find(c => c.CountryMasterSid === city.CountryMasterSid);
+        const state = this.stateList.find(s => s.StateMasterSid === city.StateMasterSid);
+        return {
+          ...city,
+          countryName: country ? country.countryName : '',
+          stateName: state ? state.stateName : ''
+        };
+      });
+    });
+  }
+
+   // Method to load the city data
   // loadCity(): void {
   //   this.masterService.getAllCity().subscribe(
   //     (resp: City[]) => {
@@ -91,6 +123,9 @@ export class CityComponent {
   //   );
   // }
 
+
+  
+
   // Initialize the Form
   initForm() {
     this.cityForm = this.fb.group({
@@ -103,7 +138,13 @@ export class CityComponent {
   }
 
   resetForm(): void {
-    this.cityForm.reset();
+    this.cityForm.reset({
+      cityName: '',
+      cityCode: '',
+      StateMasterSid: '',
+      CountryMasterSid: '',
+      status: 'Active'
+    });
   }
 
   openModal(content: any): void {
@@ -174,20 +215,20 @@ export class CityComponent {
     } else {
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      const formValue = this.cityForm.value;
+      const formValue = this.cityForm.getRawValue(); // Use getRawValue() to get disabled values too
 
       const payload = (this.isEditMode) ? {
         ...formValue,
         StateMasterSid: Number(formValue.StateMasterSid),
         CountryMasterSid: Number(formValue.CountryMasterSid),
         ...updatedBy,
-        status: formValue.status === "Active" ? "A" : "I"
+        status: formValue.status === "Active" ? "A" : "S"
       } : {
         ...formValue,
         StateMasterSid: Number(formValue.StateMasterSid),
         CountryMasterSid: Number(formValue.CountryMasterSid),
         ...createdBy,
-        status: formValue.status === "Active" ? "A" : "I"
+        status: "A" // Always Active for create mode
       };
 
       console.log('payload', payload);
@@ -198,15 +239,14 @@ export class CityComponent {
             console.log(resp.message);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.closeModal();
-              this.router.navigate(['master/city']);
+              this.router.navigate(['master/city/list']);
             } else {
               this.appSettingService.showError(resp.message);
             }
           },
           (error) => {
             this.errorMessage = error.message;
-            console.error('Error loading :', error);
+            console.error('Error loading country:', error);
           }
         );
       } else {
@@ -215,20 +255,20 @@ export class CityComponent {
             console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.closeModal();
-              this.router.navigate(['master/city']);
+              this.router.navigate(['master/city/list']);
             } else {
               this.appSettingService.showError(resp.message);
             }
           },
           (error) => {
             this.errorMessage = error.message;
-            console.error('Error loading :', error);
+            console.error('Error loading country:', error);
           }
         );
       }
     }
   }
+
 
   // Mapping for API status values
   statusMap: { [key: string]: string } = {
@@ -237,8 +277,8 @@ export class CityComponent {
   };
 
   // Fetch lead data and patch the form
-  loadLeadData(id: number) {
-    this.masterService.getCityById(id).subscribe(
+  loadLeadData(leadId: number) {
+    this.masterService.getCityById(leadId).subscribe(
       (leadData) => {
         this.cityForm.patchValue({
           ...leadData,
@@ -253,15 +293,25 @@ export class CityComponent {
     );
   }
 
+
   search() {
     const payload = {
       searchType: this.searchType,
-      filterValue: this.filterValue
-    };
-
+      filterValue: this.searchType === 'status' 
+        ? this.filterValue === 'Active' ? 'A' : 'S' 
+        : this.filterValue,
+    }
+    
     this.masterService.searchCityList(payload).subscribe((res: any) => {
-      this.results = res;
-      console.log(this.results)
+      this.results = res.map(city => {
+        const country = this.countryList.find(c => c.CountryMasterSid === city.CountryMasterSid);
+        const state = this.stateList.find(s => s.StateMasterSid === city.StateMasterSid);
+        return {
+          ...city,
+          countryName: country ? country.countryName : '',
+          stateName: state ? state.stateName : ''
+        };
+      });
       this.searchPerformed = true;
       this.updatePaginatedData();
       this.totalLengthOfCollection = this.results.length || 0;
@@ -278,50 +328,30 @@ export class CityComponent {
     return index;
   }
 
-  deleteCityById(id) {
-      const dialogRef = this.dialog.open(DeleteWarningComponent);
-      dialogRef.afterClosed().subscribe(result => {
-        if (result === true) {
-          this.masterService.deleteCityById(id).subscribe((resp: any) => {
-            this.appSettingService.showSuccess("Deleted!");
-            this.router.navigate(['master/city'])
-            this.search(); 
-          });
-        }
-      });
+  deleteCity(id: number) {
+    const dialogRef = this.dialog.open(DeleteWarningComponent);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.masterService.deleteCityById(id).subscribe((resp: any) => {
+          this.appSettingService.showSuccess("Deleted!");
+          this.search(); // Refresh the list after deletion
+        });
+      }
+    });
   }
 
   getAllCountries() {
     this.masterService.getAllCountry().subscribe((res) => {
-      this.countryList = res;
+      this.countryList = res.data;
     })
   }
 
+  
   getAllState() {
     this.masterService.getAllState().subscribe((res) => {
-      this.stateList = res;
+      this.stateList = res.data;
     })
   }
-
-  loadCountryAndStateData() {
-      forkJoin({
-        countries: this.masterService.getAllCountry(),
-        states: this.masterService.getAllState(),
-        city: this.masterService.getAllCity()
-      }).subscribe(({ countries, states, city }) => {
-        this.countryList = countries.data;  // assuming res.data format
-        this.stateList = states.data;
-        this.cityList = city.map(city => {
-          const country = this.countryList.find(c => c.CountryMasterSid === city.CountryMasterSid);
-          const state = this.stateList.find(s => s.StateMasterSid === city.StateMasterSid);
-          return {
-            ...city,
-            countryName: country ? country.countryName : '',
-            stateName: state ? state.stateName : ''
-          };
-        });
-      });
-    }
 
   resetPage(): void {
     this.filterValue = '';

@@ -89,12 +89,16 @@ export class ZoneComponent {
     this.zoneForm = this.fb.group({
       ZoneCode: ['', [Validators.required]],
       ZoneName: ['', [Validators.required]],
-      status: ['Active']
+      status: ['Active',[Validators.required]]
     });
   }
 
   resetForm(): void {
-    this.zoneForm.reset();
+    this.zoneForm.reset({
+      ZoneCode: '',
+      ZoneName: '',
+      status: 'Active'
+    });
   }
 
   openModal(content: any): void {

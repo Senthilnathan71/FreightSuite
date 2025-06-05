@@ -100,16 +100,25 @@ export class HSSACComponent {
       HSSACCode: ['', [Validators.required]],
       HSSACName: ['', [Validators.required]],
       ServiceName: ['', [Validators.required]],
-      TaxRate: ['Default'],
+      TaxRate: ['Default', [Validators.required]],
       TaxType: ['', [Validators.required]],
       EffectiveFrom: ['', [Validators.required]],
       Remarks: ['', [Validators.required]],
-      status: ['Active'],
+      status: ['Active', [Validators.required]],
     });
   }
 
   resetForm(): void {
-    this.hssacForm.reset();
+    this.hssacForm.reset({
+    HSSACCode: '',
+    HSSACName: '',
+    ServiceName: '',
+    TaxRate: '',
+    TaxType: 'Default',     
+    EffectiveFrom: '',
+    Remarks: '',
+    status: 'Active'
+    });
   }
 
   openModal(content: any): void {
@@ -244,7 +253,7 @@ editHssac(id: number, content: any) {
 
   statusMap: { [key: string]: string } = {
     A: 'Active',
-    S: 'Suspended,'
+    S: 'Suspended'
   };
 
   loadHssacData(id: number) {
