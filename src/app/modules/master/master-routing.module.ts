@@ -609,6 +609,17 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: 'terms-condition/entry/:id',
+        component: TermsConditionEntryComponent,
+        data: {
+          title: 'Terms and Condition',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Terms and Condition' },
+          ],
+        },
+      },
+      {
         path: 'hs-sac',
         component: HSSACComponent,
         data: {

@@ -184,11 +184,9 @@ export class ProductEntryComponent implements OnInit{
     }
 
     getAllHSN(){
-        this.masterService.getAllChargeTax().subscribe(
+        this.masterService.getAllHssac().subscribe(
             (resp:any)=>{
-                if(resp.status){
-                    this.hsnList = resp.data;
-                }
+                this.hsnList = resp;
             },
             (error)=>{
                 console.error('Error Loading Charge Tax',error);
