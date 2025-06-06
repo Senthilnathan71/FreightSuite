@@ -59,24 +59,24 @@
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                             <th class="bg-transparent text-light" scope="col">City Name</th>
                             <th class="bg-transparent text-light" scope="col">City Code</th>
                             <th class="bg-transparent text-light" scope="col">State</th>
                             <th class="bg-transparent text-light" scope="col">Country</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col"  width="10%">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of cityList; trackBy: trackByIndex">
                             <td>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-link text-primary p-0" 
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <button class="btn btn-sm btn-link text-info p-0" 
                                         (click)="updateCityById(item.CityMasterSid, content)"
                                         title="Edit">
                                         <i-feather class="feather-sm" name="eye"></i-feather>
                                     </button>
-                                    <button class="btn btn-sm btn-link text-danger p-0" 
+                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" 
                                         (click)="deleteCity(item.CityMasterSid)"
                                         title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>

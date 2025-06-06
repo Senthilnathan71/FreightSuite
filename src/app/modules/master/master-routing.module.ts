@@ -62,6 +62,8 @@ import { DivisionComponent } from './division/division/division.component';
 import { SailingScheduleLsitComponent } from './SailingSchedule/sailing-schedule-lsit/sailing-schedule-lsit.component';
 import { SailingScheduleEntryComponent } from './SailingSchedule/sailing-schedule-entry/sailing-schedule-entry.component';
 import { SectorComponent } from './sector/sector-list/sector-list.component';
+import { UserListComponent } from './user/user-list/user-list.component';
+import { UserEntryComponent } from './user/user-entry/user-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -837,6 +839,28 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: 'Master', url: '/master' },
             { title: 'Sailing Schedule' },
+          ],
+        },
+      },
+      {
+        path: 'user/list',
+        component: UserListComponent,
+        data: {
+          title: 'User',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'User' },
+          ],
+        },
+      },
+      {
+        path: 'user/entry',
+        component: UserEntryComponent,
+        data: {
+          title: 'User',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'User' },
           ],
         },
       },
