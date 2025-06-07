@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http"; 
-import { BehaviorSubject, forkJoin, map, observable } from "rxjs";
+import { BehaviorSubject, forkJoin, map, Observable, observable } from "rxjs";
 import { StorageMap } from "@ngx-pwa/local-storage";
 import { ActiveToast, ToastrService } from "ngx-toastr";
 
@@ -12,6 +12,7 @@ export class AppSettingsService {
     tokenName = 'crm-token'
     userSettingSource: BehaviorSubject<any> = new BehaviorSubject(null);
     userSetting$ = this.userSettingSource.asObservable();
+    private userSubject = new BehaviorSubject<any>(null);
 
     constructor(
         private http: HttpClient,
@@ -31,6 +32,7 @@ export class AppSettingsService {
         return this.http.get('user/sign-in-token').pipe(
             map((resp:any)=>{
                 let mappedUser = resp.data || {};
+                this.userSubject.next(resp.data); // ✅ Set user in BehaviorSubject
                 return mappedUser
             }),
             map((user:any)=>{
@@ -81,6 +83,11 @@ export class AppSettingsService {
 
     showInfo(message = ''){
         return this.toaster.info(message)
+    }
+
+    // To get the user as an observable
+    getUser(): Observable<any> {
+        return this.userSubject.asObservable(); // ✅ Other components can subscribe to this
     }
 
     

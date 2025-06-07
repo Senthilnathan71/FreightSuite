@@ -83,4 +83,8 @@ export class OrganizationListComponent {
     this.organizationList=[];
     this.totalLengthOfCollection=0;
   }
+
+  report() {
+    // Report functionality implementation
+  }
 }

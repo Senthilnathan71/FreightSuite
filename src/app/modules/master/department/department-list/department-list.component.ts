@@ -6,8 +6,10 @@ import { Router, RouterModule } from '@angular/router';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { authService } from 'src/app/modules/authentication/auth.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-department-list',
@@ -27,11 +29,18 @@ export class DepartmentListComponent {
   page = 1;
   pageSize = 10;
   totalLengthOfCollection: number;
-
-  constructor(private masterService: MasterService, private router: Router,
+userData:any
+  constructor(private userService: authService,private masterService: MasterService, private excelReportService:ExcelExportService, private router: Router,
     private appSettingService: AppSettingsService, private dialog: MatDialog
   ) { }
-  ngOnInit() { }
+  ngOnInit() {
+this.appSettingService.getUser().subscribe(user => {
+      if (user) {
+        this.userData = user
+        console.log(this.userData,'userData')
+      }
+    });  
+  }
 
   search() {
     const payload = {
@@ -80,6 +89,31 @@ export class DepartmentListComponent {
     this.totalLengthOfCollection = 0
   }
 
-  report() { }
+  report(): void {
+   const formattedData = this.departmentList.map(item => ({
+    ...item,
+    Status: item.Status === 'A' ? 'Active' : 'Suspended'
+  }));
+
+  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: [
+      { key: 'departmentCode', label: 'Dept Code' },
+      { key: 'departmentName', label: 'Dept Name' },
+      { key: 'departmentType', label: 'Dept Type' },
+      { key: 'ExportImport', label: 'Exp/Imp' },
+      { key: 'FCLLCL', label: 'FCL/LCL' },
+      { key: 'Division', label: 'Division' },
+      { key: 'Status', label: 'Status' }
+    ],
+  fileName: 'Department-Report', // Will also be used as sheet name: DepartmentReport
+    title: companyName
+  });
+}
 
 }
+
+
+

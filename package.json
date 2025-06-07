@@ -33,6 +33,7 @@
     "angularx-flatpickr": "^7.3.0",
     "bootstrap": "^5.3.2",
     "date-fns": "^2.30.0",
+    "file-saver": "^2.0.5",
     "flatpickr": "^4.6.13",
     "FreightForwarding": "file:",
     "jquery": "^3.7.1",
@@ -44,6 +45,7 @@
     "sass": "^1.62.1",
     "ts-node": "^10.9.1",
     "tslib": "^2.3.0",
+    "xlsx": "^0.18.5",
     "zone.js": "~0.13.0"
   },
   "devDependencies": {

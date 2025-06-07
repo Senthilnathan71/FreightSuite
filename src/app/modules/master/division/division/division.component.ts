@@ -42,8 +42,9 @@ export class DivisionComponent {
   btnDisable: boolean = false;
   divisionList: any[] = [];
   statusList = ["Active", "Suspended"]
-  companyList: any;
+  companyList: any[] = [] ;
   modalRef!: NgbModalRef;
+  companyMap: { [id: number]: string} ={};
   searchType = 'DivisionName';
   filterValue = '';
   searchPerformed = false;
@@ -63,6 +64,7 @@ export class DivisionComponent {
 
   ngOnInit(): void {
     this.getAllCompanies();
+    this.loadCompanies();
     // this.loadDivision();
     this.initForm();
     this.route.paramMap.subscribe(params => {
@@ -92,14 +94,18 @@ export class DivisionComponent {
       DivisionName: ['', [Validators.required]],
       DivisionCode: ['', [Validators.required]],
       // address: ['', [Validators.required]],
-      CompanyMasterSid: ['',Validators.required],
+      CompanyMasterSid: ['',[Validators.required]],
       Remarks: ['', [Validators.required]],
-      status: ['Active']
+      status: [{value: 'Active', disabled: false}, Validators.required],
     });
   }
 
   resetForm(): void {
-    this.divisionForm.reset();
+    // Disable status field and set to 'Active' for create mode
+    this.divisionForm.get('status')?.disable();
+    this.divisionForm.reset({
+      status: 'Active'
+    });
   }
 
   openModal(content: any): void {
@@ -121,6 +127,7 @@ export class DivisionComponent {
     this.DivisionMasterSid = DivisionMasterSid;
     this.masterService.getDivisionById(DivisionMasterSid).pipe(take(1)).subscribe({
       next: (division: any) => {
+        this.divisionForm.get('status')?.enable();
         this.divisionForm.patchValue({
           DivisionName: division.DivisionName,
           DivisionCode: division.DivisionCode,
@@ -163,6 +170,9 @@ export class DivisionComponent {
   }
 
   onSubmit() {
+    if (this.divisionForm.get('status')?.disabled) {
+      this.divisionForm.get('status')?.enable();
+    }
     if (this.divisionForm.invalid) {
       this.divisionForm.markAllAsTouched();
       this.divisionForm.updateValueAndValidity();
@@ -284,6 +294,15 @@ export class DivisionComponent {
   getAllCompanies() {
     this.masterService.getAllCompanies().subscribe((res)=> {
       this.companyList = res;
+    })
+  }
+
+  loadCompanies() {
+    this.masterService.getAllCompanies().subscribe((companies: any[]) => {
+      this.companyMap ={};
+      companies.forEach(c => {
+        this.companyMap[c.CompanyMasterSid] = c.companyName;
+      })
     })
   }
 

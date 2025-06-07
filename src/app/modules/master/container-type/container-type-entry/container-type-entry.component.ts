@@ -19,7 +19,8 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
     FormsModule,
     ReactiveFormsModule,
     OnlyTextDirective,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    NgSelectModule
   ],
   templateUrl: './container-type-entry.component.html',
   styleUrl: './container-type-entry.component.scss'
@@ -38,7 +39,7 @@ export class ContainerTypeEntryComponent {
     { id: 'S', name: 'Suspended' }
   ];
 
-  companyList: any
+  companyList: any[] =[];
 
 
   constructor(
@@ -59,6 +60,9 @@ export class ContainerTypeEntryComponent {
       if(this.ContainerTypeMasterSid) {
         this.isEditMode = true;
         this.loadContainerData(this.ContainerTypeMasterSid);
+      }else {
+        // Disable status field for create mode
+        this.containertypeForm.get('status')?.disable();
       }
     });
   }
@@ -78,25 +82,84 @@ export class ContainerTypeEntryComponent {
 
   initForm() {
     this.containertypeForm = this.fb.group({
-      CompanyMasterSid:['',[Validators.required]],
-      ContainerCode: ['',[Validators.required]],
-      ContainerSize: ['',[Validators.required]],
-      ContainerIsoCode: ['',[Validators.required]],
-      ContainerName: ['',[Validators.required]],
-      ContainerCategory: ['',[Validators.required]],
-      Length: ['',[Validators.required]],
-      Width: ['',[Validators.required]],
-      Height: ['',[Validators.required]],
-      MaxVolume: ['',[Validators.required]],
-      TareWeight: ['',[Validators.required]],
-      GrossWeight: ['',[Validators.required]],
-      NoOfTeu: ['',[Validators.required]],
-      Remarks: ['',[Validators.required]],
-      status:['Active']
+      CompanyMasterSid: ['', [Validators.required]],
+      ContainerCode: ['', [
+        Validators.required,
+        Validators.maxLength(4),
+        // Add pattern validation if needed for format
+      ]],
+      ContainerSize: ['', [
+        Validators.required,
+        Validators.maxLength(10)
+      ]],
+      ContainerIsoCode: ['', [
+        Validators.required,
+        Validators.maxLength(10)
+      ]],
+      ContainerName: ['', [
+        Validators.required,
+        Validators.maxLength(30)
+      ]],
+      ContainerCategory: ['', [
+        Validators.required,
+        Validators.maxLength(10)
+      ]],
+      Length: ['', [
+        Validators.required,
+        Validators.min(0),
+        Validators.pattern(/^\d+$/)
+      ]],
+      Width: ['', [
+        Validators.required,
+        Validators.min(0),
+        Validators.pattern(/^\d+$/)
+      ]],
+      Height: ['', [
+        Validators.required,
+        Validators.min(0),
+        Validators.pattern(/^\d+$/)
+      ]],
+      MaxVolume: ['', [
+        Validators.required,
+        Validators.min(0),
+        Validators.pattern(/^\d{1,3}$/) // Matches decimal(3,0)
+      ]],
+      TareWeight: ['', [
+        Validators.required,
+        Validators.min(0),
+        Validators.pattern(/^\d{1,3}(\.\d{1,3})?$/) // Matches decimal(6,3)
+      ]],
+      GrossWeight: ['', [
+        Validators.required,
+        Validators.min(0),
+        Validators.pattern(/^\d{1,5}(\.\d{1,3})?$/) // Matches decimal(8,3)
+      ]],
+      NoOfTeu: ['', [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(9), // Single digit as per decimal(1,0)
+        Validators.pattern(/^\d$/)
+      ]],
+      Remarks: ['', [
+        Validators.required,
+        Validators.maxLength(300)
+      ]],
+      status: [{value: 'Active', disabled: false}, Validators.required],
+    });
+}
+
+resetForm(): void {
+   
+    this.containertypeForm.get('status')?.disable();
+    this.containertypeForm.reset({
+      status: 'Active'
     });
   }
 
   onSubmit() {
+    if (this.containertypeForm.get('status')?.disabled) {
+      this.containertypeForm.get('status')?.enable();
+    }
     if (this.containertypeForm.invalid) {
       this.containertypeForm.markAllAsTouched();
       this.containertypeForm.updateValueAndValidity();
@@ -169,7 +232,7 @@ export class ContainerTypeEntryComponent {
         this.containertypeForm.patchValue({
           ...data,
           CompanyMasterSid: data.CompanyMasterSid,
-          status: data.status === 'A' ? 'Active' : 'Invalid'
+          status: data.status
         },
       );
       },
@@ -180,7 +243,7 @@ export class ContainerTypeEntryComponent {
   }
 
   getAllCompanies() {
-    this.masterService.getAllCompanies().subscribe((res) => {
+    this.masterService.getAllCompanies().subscribe((res: any[]) => {
       this.companyList = res;
     })
   }

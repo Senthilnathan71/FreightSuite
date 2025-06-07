@@ -55,21 +55,21 @@
         <table class="table table-hover align-middle no-wrap table-bordered">
           <thead>
             <tr class="bg-info">
-              <th class="bg-transparent text-light" scope="col">Action</th>
+              <th class="bg-transparent text-light" scope="col"  width="10%">Action</th>
               <th class="bg-transparent text-light" scope="col">Package Name</th>
               <th class="bg-transparent text-light" scope="col">Package Code</th>
-              <th class="bg-transparent text-light" scope="col">Status</th>
+              <th class="bg-transparent text-light" scope="col"  width="10%">Status</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let item of packageTypeList; trackBy: trackByIndex">
               <td>
-                <div class="d-flex gap-2">
-                  <button class="btn btn-sm btn-link text-primary p-0"
+                <div class="d-flex gap-2 align-items-center justify-content-center">
+                  <button class="btn btn-sm btn-link text-info p-0"
                     (click)="editPackageType(item.PackageTypeMasterSid, content)" title="Edit">
                     <i-feather class="feather-sm" name="eye"></i-feather>
                   </button>
-                  <button class="btn btn-sm btn-link text-danger p-0"
+                  <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3"
                     (click)="deletePackageTypeById(item.PackageTypeMasterSid)" title="Delete">
                     <i-feather name="trash-2" class="feather-sm"></i-feather>
                   </button>
@@ -106,7 +106,7 @@
     </div>
   </div>
   <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
-    <div class="alert alert-info text-center">No records found</div>
+    <div>No records found</div>
   </div>
   <ng-template #content let-modal>
     <div class="modal-header">
@@ -153,15 +153,21 @@
                     }
                   </div>
                 </aside>
-                <aside class="col-md-6 mt-2">
-                  <div class="custom-form-group custom-form-group-select">
-                    <select class="form-select" formControlName="status"
-                      [class.is-invalid]="packageTypeForm.get('status')?.invalid && packageTypeForm.get('status')?.touched">
-                      <option *ngFor="let status of statusList" [value]="status">{{status}}</option>
-                    </select>
-                    <label class="input-label">Status <span class="text-danger">*</span></label>
-                  </div>
-                </aside>
+                <aside class="col-md-6">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select [items]="statusList" 
+              formControlName="status"
+              [class.is-invalid]="packageTypeForm.get('status')?.invalid && packageTypeForm.get('status')?.touched"
+              [disabled]="packageTypeForm.get('status')?.disabled">
+    </ng-select>
+    <label class="input-label">Status <span class="text-danger">*</span></label>
+    @if(packageTypeForm.get('status')?.touched && packageTypeForm.get('status')?.invalid){
+    <div class="error-message">
+      <span>Status is required</span>
+    </div>
+    }
+  </div>
+</aside>
               </div>
             </div>
           </div>
@@ -170,7 +176,7 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="onSubmit()"
+      <button type="button" class="btn btn-info" (click)="onSubmit()"
         [disabled]="btnDisable || packageTypeForm.invalid">
         {{ isEditMode ? 'Update' : 'Save' }}
       </button>

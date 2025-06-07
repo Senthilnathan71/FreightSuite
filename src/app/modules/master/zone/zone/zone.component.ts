@@ -89,12 +89,16 @@ export class ZoneComponent {
     this.zoneForm = this.fb.group({
       ZoneCode: ['', [Validators.required]],
       ZoneName: ['', [Validators.required]],
-      status: ['Active']
+      status: [{value: 'Active', disabled: false}, Validators.required],
     });
   }
 
-  resetForm(): void {
-    this.zoneForm.reset();
+   resetForm(): void {
+
+    this.zoneForm.get('status')?.disable();
+    this.zoneForm.reset({
+      status: 'Active'
+    });
   }
 
   openModal(content: any): void {
@@ -116,6 +120,7 @@ export class ZoneComponent {
     this.ZoneMasterSid = id;
     this.masterService.getZoneById(id).pipe(take(1)).subscribe({
       next: (zone: any) => {
+        this.zoneForm.get('status')?.enable();
         this.zoneForm.patchValue({
           ZoneName: zone.ZoneName,
           ZoneCode: zone.ZoneCode,
@@ -154,6 +159,9 @@ export class ZoneComponent {
   }
 
   onSubmit() {
+    if (this.zoneForm.get('status')?.disabled) {
+      this.zoneForm.get('status')?.enable();
+    }
     if (this.zoneForm.invalid) {
       this.zoneForm.markAllAsTouched();
       this.zoneForm.updateValueAndValidity();

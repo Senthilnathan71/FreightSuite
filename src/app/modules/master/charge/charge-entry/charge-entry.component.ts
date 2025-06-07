@@ -78,36 +78,64 @@ export class ChargeEntryComponent implements OnInit {
     });
   }
 
-  loadLookupData(): void {
-    this.masterService.getAllCompanies().subscribe(companies => {
-      this.companyOptions = companies.data || companies;
-    });
+  // Update the loadLookupData method to properly handle charge groups
+loadLookupData(): void {
+  this.masterService.getAllCompanies().subscribe(companies => {
+    this.companyOptions = companies.data || companies;
+  });
 
-    this.masterService.getAllCurrencies().subscribe(currencies => {
-      this.currencyOptions = currencies.data || currencies;
-    });
+  this.masterService.getAllCurrencies().subscribe(currencies => {
+    this.currencyOptions = currencies.data || currencies;
+  });
 
-    this.masterService.getAllDepartments().subscribe(departments => {
-      this.departmentOptions = departments.data || departments;
-    });
+  this.masterService.getAllDepartments().subscribe(departments => {
+    this.departmentOptions = departments.data || departments;
+  });
 
-    this.masterService.getAllChargeGroups().subscribe(chargeGroups => {
-      this.chargeGroupOptions = chargeGroups.data || chargeGroups;
-    });
+  // Updated charge groups loading
+  this.masterService.getAllChargeGroups().subscribe({
+    next: (response: any) => {
+      // Handle different response structures
+      if (Array.isArray(response)) {
+        this.chargeGroupOptions = response;
+      } else if (response.data && Array.isArray(response.data)) {
+        this.chargeGroupOptions = response.data;
+      } else {
+        this.chargeGroupOptions = [];
+        console.warn('Unexpected charge groups response format:', response);
+      }
+    },
+    error: (error) => {
+      console.error('Error loading charge groups:', error);
+      this.chargeGroupOptions = [];
+    }
+  });
 
-    this.masterService.getAllUom().subscribe(uoms => {
-      this.uomOptions = uoms.data || uoms;
-    });
-
-    this.masterService.getAllHssac().subscribe(hsnsac => {
-      this.hsnsacOptions = hsnsac.data || hsnsac;
-    });
-
+  this.masterService.getAllUom().subscribe({
+  next: (response: any) => {
+    // Handle different response structures
+    if (Array.isArray(response)) {
+      this.uomOptions = response;
+    } else if (response.data && Array.isArray(response.data)) {
+      this.uomOptions = response.data;
+    } else {
+      this.uomOptions = [];
+      console.warn('Unexpected UOM response format:', response);
+    }
+  },
+  error: (error) => {
+    console.error('Error loading UOMs:', error);
+    this.uomOptions = [];
+  }
+});
+  this.masterService.getAllHssac().subscribe(hsnsac => {
+    this.hsnsacOptions = hsnsac.data || hsnsac;
+  });
+  
     // this.masterService.getAllTdsSets().subscribe(tdsSets => {
     //   this.tdsOptions = tdsSets.data || tdsSets;
     // });
-  }
-
+}
   loadCharge(ChargeMasterSid: number): void {
     this.masterService.getChargeById(ChargeMasterSid).subscribe(
       (resp) => {

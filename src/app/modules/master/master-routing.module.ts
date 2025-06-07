@@ -62,6 +62,8 @@ import { DivisionComponent } from './division/division/division.component';
 import { SailingScheduleLsitComponent } from './SailingSchedule/sailing-schedule-lsit/sailing-schedule-lsit.component';
 import { SailingScheduleEntryComponent } from './SailingSchedule/sailing-schedule-entry/sailing-schedule-entry.component';
 import { SectorComponent } from './sector/sector-list/sector-list.component';
+import { UserListComponent } from './user/user-list/user-list.component';
+import { UserEntryComponent } from './user/user-entry/user-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -609,6 +611,17 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: 'terms-condition/entry/:id',
+        component: TermsConditionEntryComponent,
+        data: {
+          title: 'Terms and Condition',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Terms and Condition' },
+          ],
+        },
+      },
+      {
         path: 'hs-sac',
         component: HSSACComponent,
         data: {
@@ -839,6 +852,39 @@ export const MasterRoutes: Routes = [
             { title: 'Sailing Schedule' },
           ],
         },
+      },
+      {
+      path: 'sailing-schedule/entry/:id',
+        component: SailingScheduleEntryComponent,
+        data: {
+          title: 'Sailing Schedule',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Sailing Schedule' },
+          ],
+        },
+      },
+      {
+        path: 'user/list',
+        component: UserListComponent,
+        data: {
+          title: 'User',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'User' },
+          ],
+        },
+      },
+      {
+        path: 'user/entry',
+        component: UserEntryComponent,
+        data: {
+          title: 'User',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'User' },
+          ]
+        }
       },
     ],
   },

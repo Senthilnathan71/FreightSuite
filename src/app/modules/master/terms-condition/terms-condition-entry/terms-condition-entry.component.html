@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0"> Terms and Condition</h4>
+                <h4 class="page-title mb-0"> {{isEditMode ? 'Edit Terms and Condition' : 'Terms and Condition'}} </h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -18,124 +18,304 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
                         <i class="fas fa-save me-1"></i>
-                        Save
+                        {{isEditMode ? 'Update' : 'Save' }}
                     </button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-12">
+    <div class="col-md-12" [formGroup]="termsAndConditionForm">
         <div class="card h-100">
             <div class="card-body">
                 <div class="row">
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Code">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" [items]="menuList" bindValue="MenuMasterSid" bindLabel="MenuName" formControlName="MenuMasterSid" placeholder="Select Menu">
+                            </ng-select>
                             <label for="text-input" class="input-label">Menu <span class="text-danger">*</span></label>
+                            @if(termsAndConditionForm.get('MenuMasterSid').touched && termsAndConditionForm.get('MenuMasterSid').invalid){
+                                <div class="error-message">
+                                    @if(termsAndConditionForm.get('MenuMasterSid').hasError('required')){
+                                        <span>Menu is required</span>
+                                    }
+                                </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Name">
-                            <label for="text-input" class="input-label">Dept <span
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" [items]="branchList" bindValue="BranchMasterSid" bindLabel="branchName" formControlName="BranchMasterSid" placeholder="Select Branch">
+                            </ng-select>
+                            <label for="text-input" class="input-label">Branch <span
                                     class="text-danger">*</span></label>
+                            @if(termsAndConditionForm.get('BranchMasterSid').touched && termsAndConditionForm.get('BranchMasterSid').invalid){
+                                <div class="error-message">
+                                    @if(termsAndConditionForm.get('BranchMasterSid').hasError('required')){
+                                        <span>Branch is required</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" [items]="departmentList" bindValue="DepartmentMasterSid" bindLabel="departmentName" formControlName="departmentId" placeholder="Select Department">
+                            </ng-select>
+                            <label for="text-input" class="input-label">Department <span
+                                    class="text-danger">*</span></label>
+                            @if(termsAndConditionForm.get('departmentId').touched && termsAndConditionForm.get('departmentId').invalid){
+                                <div class="error-message">
+                                    @if(termsAndConditionForm.get('departmentId').hasError('required')){
+                                        <span>Department is required</span>
+                                    }
+                                </div>
+                            }
                         </div>
                     </aside>
 
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="numericCode">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" [items]="carrierList" bindValue="CustomerMasterSid" bindLabel="CustomerName" formControlName="Carrier" placeholder="Select Carrier">
+                            </ng-select>
                             <label for="text-input" class="input-label">Carrier <span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="3letterCode">
-                            <label for="text-input" class="input-label">POL</label>
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" [items]="portList" bindValue="PortCode" bindLabel="PortCode" formControlName="POL" [multiple]="true" [closeOnSelect]="false" placeholder="Select POL">
+                                <ng-template ng-option-tmp let-item="item">
+                                    {{ item.PortName }} - {{ item.PortCode }}
+                                </ng-template>
+                            </ng-select>
+                            <label for="text-input" class="input-label">POL</label> 
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="address1">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" [items]="portList" bindValue="PortCode" bindLabel="PortCode" formControlName="POD" [multiple]="true" [closeOnSelect]="false" placeholder="Select POD">
+                                <ng-template ng-option-tmp let-item="item">
+                                    {{ item.PortName }} - {{ item.PortCode }}
+                                </ng-template>
+                            </ng-select>
                             <label for="text-input" class="input-label">POD</label>
 
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="address2">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" [items]="portList" bindValue="PortCode" bindLabel="PortCode" formControlName="FDC" [multiple]="true" [closeOnSelect]="false" placeholder="Select FDC">
+                                <ng-template ng-option-tmp let-item="item">
+                                    {{ item.PortName }} - {{ item.PortCode }}
+                                </ng-template>
+                            </ng-select>
                             <label for="text-input" class="input-label">FDC</label>
 
                         </div>
                     </aside>
-                    <!-- <aside class="col-md-3">
+                    <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
-                                bindValue="name">
-
+                            @if(isEditMode){
+                            <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
+                                <ng-option value="Active">Active</ng-option>
+                                <ng-option value="Suspended">Suspended</ng-option>
                             </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status" id="text-input"
+                                readonly>
+                            }
+                            <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
+                    
                         </div>
-                    </aside> -->
+                    </aside>
                 </div>
             </div>
         </div>
     </div>
 
-     <div class="row bg-white py-2 rounded shadow-sm mx-2 mt-2">
-        <div class="col-12 ">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered">
-                    <thead>
-                        <tr class="bg-info">
-                            <!-- <th class="bg-transparent text-light" scope="col">Action</th> -->
-                            <th class="bg-transparent text-light" scope="col">Default</th>
-                            <th class="bg-transparent text-light" scope="col">Terms ad Condition</th>
-                             <th class="bg-transparent text-light" scope="col">Type</th>
-                              <th class="bg-transparent text-light" scope="col">Type Value</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                        <tr>
-                            <!-- <td>
-                            <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
-                        </td> -->
-                            <td>
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">RO</div>
-                            </td>
-                             <td>
-                                <div class="text-truncate">RO</div>
-                            </td>
-                             <td>
-                                <div class="text-truncate">RO</div>
-                            </td>
-                            <td>
-                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Active
-                                </div>
-                            </td>
-
-                        </tr>
-                        }
-                    </tbody>
-                </table>
+     <div class="col-12 mt-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="row">
+                    <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
+                        <li [ngbNavItem]="1">
+                            <button ngbNavLink (click)="openTandCEntryModal(TandCEntryTemplate)">
+                                <i-feather name="plus-circle" class="feather-sm pt-1 text-info "></i-feather>
+                                Details
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="row">
+                    <div *ngIf="TandCDetailLength > 0">
+                        <ng-container *ngTemplateOutlet="TandCListTemplate"></ng-container>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
 
 </div>
+<ng-template #TandCListTemplate>
+    <div class="table-responsive mt-3">
+        <table class="table table-hover align-middle no-wrap table-bordered">
+            <thead>
+                <tr class="bg-info">
+                    <th class="bg-transparent text-light" scope="col" width="8%">Action</th>
+                    <th class="bg-transparent text-light" scope="col">Default</th>
+                    <th class="bg-transparent text-light" scope="col">Terms and Condition</th>
+                    <th class="bg-transparent text-light" scope="col">Type</th>
+                    <th class="bg-transparent text-light" scope="col">Type Value</th>
+                    <th class="bg-transparent text-light" scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (item of filteredTandCDetail; track $index) {
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <a class="mx-2 ps-2" (click)="openTandCEntryModal(TandCEntryTemplate,item)"
+                                title="Edit">
+                                <i-feather name="eye" class="feather-sm"></i-feather>
+                            </a>
+                            <a class="text-danger mx-2 ps-3 border-start" (click)="deleteTandCDetail(item.TermsAndConditionsDetailSid)"
+                                title="Delete">
+                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                            </a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{item.IsDefaut}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{item.TandC}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{item.Type}}</div>
+                    </td>
+                    <td>
+                        <div class="text-truncate">{{item.TypeValue}}</div>
+                    </td>
+                    <td>
+                        @if(item.status === "A"){
+                        <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                            <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                            Active
+                        </div>
+                        } @else {
+                        <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                            <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                            Suspended
+                        </div>
+                        }
+                    </td>
+
+                </tr>
+                }
+            </tbody>
+        </table>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalAmountOfCollections" [pageSize]="pageSize"
+                [(page)]="page" (pageChange)="updatePaginationData()">
+            </ngb-pagination>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #TandCEntryTemplate>
+    <div [formGroup]="termsAndConditionDetailForm">
+        <div class="modal-header">
+            <h4 class="modal-title" id="modal-basic-title">{{isModalEditMode ? 'Edit Terms and Conditions
+                Details' : 'Terms and Conditions Details'}}</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="closeDetailForm()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="col-md-12 mt-md-0 mt-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check ms-2">
+                                    <input type="checkbox" id="text-input" placeholder="" class="form-check-input"
+                                        formControlName="IsDefaut">
+                                    <label for="text-input" class="form-check-label">is Default?</label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-8">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="TandC" [textWithNumbers]="500">
+                                    <label for="text-input" class="input-label">Terms and Conditions <span
+                                            class="text-danger">*</span></label>
+                                    @if(termsAndConditionDetailForm.get('TandC').touched && termsAndConditionDetailForm.get('TandC').invalid){
+                                    <div class="error-message">
+                                        @if(termsAndConditionDetailForm.get('TandC').hasError('required')){
+                                        <span>Terms and Conditions is required</span>
+                                        } @else if(termsAndConditionDetailForm.get('TandC').hasError('maxlength')){
+                                            <span>Max 500 Characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="Type" [textWithNumbers]="20">
+                                    <label for="text-input" class="input-label">Type </label>
+                                    @if(termsAndConditionDetailForm.get('Type').touched && termsAndConditionDetailForm.get('Type').invalid){
+                                    <div class="error-message">
+                                        @if(termsAndConditionDetailForm.get('Type').hasError('maxlength')){
+                                            <span>Max 20 Characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="TypeValue" [textWithNumbers]="20">
+                                    <label for="text-input" class="input-label">Type Value<span
+                                            class="text-danger"></span></label>
+                                    @if(termsAndConditionDetailForm.get('TypeValue').touched && termsAndConditionDetailForm.get('TypeValue').invalid){
+                                    <div class="error-message">
+                                        @if(termsAndConditionDetailForm.get('TypeValue').hasError('maxlength')){
+                                            <span>Max 20 Characters</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select">
+                                    @if(isModalEditMode){
+                                    <ng-select name="status" class="ng-select" formControlName="detailstatus"
+                                        id="text-input">
+                                        <ng-option value="Active">Active</ng-option>
+                                        <ng-option value="Suspended">Suspended</ng-option>
+                                    </ng-select>
+                                    } @else {
+                                    <input type="text" name="status" class="custom-input-field sm"
+                                        formControlName="detailstatus" id="text-input" readonly>
+                                    }
+                                    <label for="text-input" class="input-label">Status <span
+                                            class="text-danger">*</span></label>
+
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onModalSubmit()">
+                <i class="fas fa-save me-1"></i>
+                {{isModalEditMode ? 'Update' : 'Create'}}
+            </button>
+        </div>
+    </div>
+</ng-template>

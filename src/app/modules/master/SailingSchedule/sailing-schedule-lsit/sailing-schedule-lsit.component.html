@@ -1,35 +1,5 @@
 <div class="row">
-    <!-- <div class="col-12">
-        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
-            <form class="d-flex align-items-center gap-2">
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5"  name="search" placeholder="Search Type">
-                    <i class="fas fa-search ms-3"></i>
-                </div>
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5"  name="search" placeholder="Enter Name">
-                    <i class="fas fa-search ms-3"></i>
-                </div>
-                <button type="button" class="btn btn-info btn-sm">
-                    <i class="fas fa-search"></i>
-                    Search
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm">
-                    <i class="mdi mdi-plus"></i>
-                    Create
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm d-flex align-items-center gap-1">
-                    <i-feather name="arrow-down-right" class="feather-sm "></i-feather>
-                    Report
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm d-flex align-items-center gap-1">
-                    <i-feather name="arrow-down-right" class="feather-sm"></i-feather>
-                    Reset
-                </button>
-            </form>
-        </div>
-    </div> -->
-
+    
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col-md-4 pb-2">
@@ -46,11 +16,11 @@
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="nagivateTocreateSailingSchedule()">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()" [disabled]="!searchPerformed">
                             <i class="fas fa-file-alt me-1"></i>
                             Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()" [disabled]="!searchPerformed">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
@@ -63,8 +33,8 @@
                         <form
                             class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="form-outline col-12 col-md px-0">
-                                <select name="searchType" class="form-select">
-                                    <option value="departmentName">Department Name</option>
+                                <select name="searchType" class="form-select" [(ngModel)]="searchType">
+                                    <option value="VoyageNo">Voyage No</option>
                                     <option value="departmentCode">Department Code</option>
                                     <option value="departmentType">Department Type</option>
                                     <option value="ExportImport">Export/Import</option>
@@ -82,11 +52,11 @@
               <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
                 <div class="form-outline flex-grow-1">
                   <input  name="filterValue" type="text" class="form-control"
-                    placeholder="Enter filter value">
+                    placeholder="Enter filter value" [(ngModel)]="filterValue">
                   <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
                 </div>
 
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" >
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSearch()">
                   <i class="fas fa-search me-1"></i>
                   Search
                 </button>
@@ -97,96 +67,161 @@
             </div>
         </div>
     </div>
-    <!-- <div class="col-12">
-        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <div class="col-8 mx-auto">
-                <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
-                    <form class="d-flex align-items-center gap-2">
-                        <div class="form-outline col">
-                            <select name="searchType" class="form-select">
-                                <option value="departmentName">Department Name</option>
-                                <option value="departmentCode">Department Code</option>
-                                <option value="departmentType">Department Type</option>
-                                <option value="ExportImport">Export/Import</option>
-                                <option value="FCLLCL">FCLLCL</option>
-                                <option value="status">Status</option>
+    
+    <!-- Special Search -->
+    <div class="col-12">
+        <div class="row bg-white align-items-center pt-2 rounded-top shadow-sm">
+            <div class="row mx-0 py-2">
+                <div class="col-md-8 mx-auto px-0">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+    
+                        <div class="form-outline col-12 col-md px-0">
+                            <select name="POL" class="form-select" [(ngModel)]="portOfLoading">
+                                <option value="">Select POL</option>
+                                @for(port of portList ; track port){
+                                    @if(port.PortMasterSid != portOfDeparture){
+                                        <option [value]="port.PortMasterSid">
+                                            {{port.PortName | uppercase}} - {{port.PortCode | uppercase}}
+                                        </option>
+                                    }
+                                }
                             </select>
+                            <label for="text-input" class="input-label">POL <span class="text-danger"></span></label>
                         </div>
-                        <div class="form-outline col">
-                            <input  name="filterValue" type="text" class="form-control"
-                                placeholder="Enter filter value">
-                            <i
-                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+    
+                        <div class="form-outline col-12 col-md px-0 mt-md-0 mt-1">
+                            <select name="POD" class="form-select" [(ngModel)]="portOfDeparture">
+                                <option value="">Select POD</option>
+                                @for(port of portList ; track port){
+                                    @if(port.PortMasterSid != portOfLoading){
+                                        <option [value]="port.PortMasterSid">
+                                            {{port.PortName | uppercase}} - {{port.PortCode | uppercase}}
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <label for="text-input" class="input-label">POD <span class="text-danger"></span></label>
                         </div>
-
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" >
-                            <i class="fas fa-search"></i>
+    
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSpecialSearch()">
+                            <i class="fas fa-search me-1"></i>
                             Search
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80"
-                            >
-                            <i class="mdi mdi-plus"></i> Create
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" >
-                          
-                            Report
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
-                            
-                            Reset
-                        </button>
+    
                     </form>
                 </div>
             </div>
         </div>
-    </div> -->
+    </div>
     
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+    <div class="row bg-white py-2 border-top shadow-sm mx-auto" *ngIf="totalAmountOfCollections > 0">
           <div class="col-12 p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
+                        <th class="bg-transparent text-light" scope="col" width="8%">Action</th>
                         <th class="bg-transparent text-light" scope="col">Vsl/Voy</th>
                         <th class="bg-transparent text-light" scope="col">POL</th>
                         <th class="bg-transparent text-light" scope="col">POD</th>
                         <th class="bg-transparent text-light" scope="col">ETA</th>
                         <th class="bg-transparent text-light" scope="col">ETD</th>
-                        <th class="bg-transparent text-light" scope="col"></th>
+                        <th class="bg-transparent text-light" scope="col" width="8%"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of [0,1,2,3]; track $index) {
+                    @for (schedule of scheduleList; track schedule) {
+                    @for(scheduleDetail of schedule.voyageMasterDetail ; track scheduleDetail){
                     <tr>
                         <td>
-                            <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
+                            <div class="d-flex align-items-center">
+                                <a class="text-info mx-2 ps-3" [routerLink]="['/master/sailing-schedule/entry/', schedule.VoyageMasterHeaderSid]" title="Edit Sailing Schedule">
+                                    <i-feather class="feather-sm" name="eye"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start" (click)="deleteSchedule(schedule.VoyageMasterHeaderSid)" title="Delete Sailing Schedule">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
                         </td>
                         <td>
-                            <div class="text-truncate">OMR</div>
+                            <div class="text-truncate">{{schedule.vesselMaster?.VesselName}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">RO</div>
+                            <div class="text-truncate">{{scheduleDetail.portMasterPOL?.PortCode}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Rial</div>
+                            <div class="text-truncate">{{scheduleDetail.portMasterPOD?.PortCode}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{scheduleDetail.ETA | date:'dd-MMM-YY'}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{scheduleDetail.ETD | date:'dd-MMM-YY'}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">
+                                <button type=button class="btn btn-sm btn-info" [routerLink]="['/crm/rate-request']">Get Rate</button>
+                            </div>
                         </td>
-
+                    
                     </tr>
+                    } @empty{
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <a class="text-info mx-2 ps-3"
+                                        [routerLink]="['/master/sailing-schedule/entry/', schedule.VoyageMasterHeaderSid]">
+                                        <i-feather class="feather-sm" name="eye"></i-feather>
+                                    </a>
+                                    <a class="text-danger mx-2 ps-3 border-start" (click)="deleteSchedule(schedule.VoyageMasterHeaderSid)">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </a>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{schedule.vesselMaster?.VesselName}}</div>
+                            </td>
+                            <td>
+                                <!-- <div class="text-center bg-warning-subtle rounded">
+                                    Add POL on Sailing Schedule Details
+                                </div> -->
+                            </td>
+                            <td>
+                                <!-- <div class="text-center bg-warning-subtle rounded">
+                                    Add POD on Sailing Schedule Details
+                                </div> -->
+                            </td>
+                            <td>
+                                <!-- <div class="text-center bg-warning-subtle rounded">
+                                    Add ETA on Sailing Schedule Details
+                                </div> -->
+                            </td>
+                            <td>
+                                <!-- <div class="text-center bg-warning-subtle rounded">
+                                    Add ETA on Sailing Schedule Details
+                                </div> -->
+                            </td>
+                            <td>
+                                <div class="text-truncate">
+                                    <button type=button class="btn btn-sm btn-info" [routerLink]="['/crm/rate-request']" disabled>
+                                        Get Rate
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
                     }
                 </tbody>
             </table>
         </div>
     </div>
+    <div>
+        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalAmountOfCollections" [pageSize]="pageSize"
+            [(page)]="page" (pageChange)="updatePaginationData()" [rotate]="true" [ellipses]="false" [maxSize]="5">
+        </ngb-pagination>
     </div>
-  
+    </div>
+    <div class="col-12" *ngIf="totalAmountOfCollections === 0">
+        <div>No records found</div>
+    </div>
 </div>

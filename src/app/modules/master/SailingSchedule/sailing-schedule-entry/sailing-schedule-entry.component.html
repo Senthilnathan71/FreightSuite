@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0"> Sailing Schedule</h4>
+                <h4 class="page-title mb-0"> {{isEditMode ? 'Edit Sailing Schedule':'Sailing Schedule'}}</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -12,128 +12,254 @@
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="scheduleForm.invalid">
                         <i class="fas fa-save me-1"></i>
-                        Save
+                        {{isEditMode ? 'Update' : 'Save' }}
                     </button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-12">
+    <div class="col-md-12" [formGroup]="scheduleForm">
         <div class="card h-100">
             <div class="card-body">
                 <div class="row">
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" formControlName="VesselMasterSid" [items]="vesselList" bindValue="VesselMasterSid" bindLabel="VesselName">
+                            </ng-select>
+                            <label for="text-input" class="input-label">Vessel <span class="text-danger">*</span></label>
+                            @if(scheduleForm.get('VesselMasterSid').touched && scheduleForm.get('VesselMasterSid').invalid){
+                                <div class="error-message">
+                                    @if(scheduleForm.get('VesselMasterSid').hasError('required')){
+                                        <span>Vessel is required</span>
+                                    }
+                                </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Voy No <span class="text-danger"></span></label>
+                                formControlName="VoyageNo" [textWithNumbers]="10">
+                            <label for="text-input" class="input-label">Voy No <span class="text-danger">*</span></label>
+                            @if(scheduleForm.get('VoyageNo').touched && scheduleForm.get('VoyageNo').invalid){
+                                <div class="error-message">
+                                    @if(scheduleForm.get('VoyageNo').hasError('required')){
+                                        <span>Voyage No is required</span>
+                                    } @else if(scheduleForm.get('VoyageNo').hasError('maxlength')){
+                                        <span>Max 10 Characters</span>
+                                    }
+                                </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                                formControlName="RotationNumber" [textWithNumbers]="10">
                             <label for="text-input" class="input-label">Rotation No <span
-                                    class="text-danger"></span></label>
+                                    class="text-danger">*</span></label>
+                            @if(scheduleForm.get('RotationNumber').touched && scheduleForm.get('RotationNumber').invalid){
+                                <div class="error-message">
+                                    @if(scheduleForm.get('RotationNumber').hasError('required')){
+                                        <span>Rotation No is required</span>
+                                    } @else if(scheduleForm.get('RotationNumber').hasError('maxlength')){
+                                        <span>Max 10 Characters</span>
+                                    }
+                                </div>
+                            }
 
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                                formControlName="ShipIRN" [textWithNumbers]="10">
                             <label for="text-input" class="input-label">Shipr IRN <span
-                                    class="text-danger"></span></label>
-
+                                    class="text-danger">*</span></label>
+                            @if(scheduleForm.get('ShipIRN').touched && scheduleForm.get('ShipIRN').invalid){
+                                <div class="error-message">
+                                    @if(scheduleForm.get('ShipIRN').hasError('required')){
+                                        <span>Ship IRN is required</span>
+                                    } @else if(scheduleForm.get('ShipIRN').hasError('maxlength')){
+                                        <span>Max 10 Characters</span>
+                                    }
+                                </div>
+                            }
                         </div>
                     </aside>
 
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                                formControlName="CrewIRN" [textWithNumbers]="10">
                             <label for="text-input" class="input-label">Crew IRN <span
-                                    class="text-danger"></span></label>
-
+                                    class="text-danger">*</span></label>
+                            @if(scheduleForm.get('CrewIRN').touched && scheduleForm.get('CrewIRN').invalid){
+                                <div class="error-message">
+                                    @if(scheduleForm.get('CrewIRN').hasError('required')){
+                                        <span>Crew IRN is required</span>
+                                    } @else if(scheduleForm.get('CrewIRN').hasError('maxlength')){
+                                        <span>Max 10 Characters</span>
+                                    }
+                                </div>
+                            }
                         </div>
                     </aside>
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                        <div class="custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input 
+                                    class="form-control" 
+                                    placeholder="yyyy-mm-dd" 
+                                    name="dp" ngbDatepicker 
+                                    #d1="ngbDatepicker" 
+                                    [footerTemplate]="footerTemplateSCMETA" 
+                                    (click)="d1.toggle()" 
+                                    formControlName="SCMETA" 
+                                    [maxDate]="scheduleForm.get('SCMETD').value"
+                                    readonly
+                                />
+                                <button class="btn btn-info bi bi-calendar3" (click)="d1.toggle()" type="button">
+                                    <i-feather class="feather-sm" name="calendar"></i-feather>
+                                </button>
+                            </div>
                             <label for="text-input" class="input-label">SCM ETA <span
-                                    class="text-danger"></span></label>
-
+                                    class="text-danger">*</span></label>
+                            @if(scheduleForm.get('SCMETA').touched && scheduleForm.get('SCMETA').invalid){
+                                <div class="error-message">
+                                    @if(scheduleForm.get('SCMETA').hasError('required')){
+                                        <span>SCM ETA is required</span>
+                                    } @else if(scheduleForm.get('SCMETA').hasError('ngbDate')){
+                                        <span>SCMETA must be a date before SCMETD</span>
+                                    }
+                                </div>
+                            }
                         </div>
                     </aside>
+                    <ng-template #footerTemplateSCMETD>
+                        <hr class="my-0" />
+                        <button class="btn btn-primary btn-sm m-2 float-start" (click)="scheduleForm.get('SCMETD').setValue(today); d1.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">
+                            Close
+                        </button>
+                    </ng-template>
 
                     <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #d="ngbDatepicker" [footerTemplate]="footerTemplateSCMETD" (click)="d.toggle()" formControlName="SCMETD" readonly
+                                [minDate]="scheduleForm.get('SCMETA').value"/>
+                                <button class="btn btn-info bi bi-calendar3" (click)="d.toggle()" type="button">
+                                    <i-feather class="feather-sm" name="calendar"></i-feather>
+                                </button>
+                            </div>
+                            <label for="text-input" class="input-label">SCM ETD <span
+                                    class="text-danger">*</span></label>
+                            @if(scheduleForm.get('SCMETD').touched && scheduleForm.get('SCMETD').invalid){
+                                <div class="error-message">
+                                    @if(scheduleForm.get('SCMETD').hasError('required')){
+                                        <span>SCM ETD is required</span>
+                                    } @else if(scheduleForm.get('SCMETD').hasError('ngbDate')){
+                                        <span>SCMETD must be a date after SCMETA</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <ng-template #footerTemplateSCMETA>
+                        <hr class="my-0" />
+                        <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleForm.get('SCMETA').setValue(today); d.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d.close()">
+                            Close
+                        </button>
+                    </ng-template>
+
+                    
+                    <!-- <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                                formControlName="SCMETD">
                             <label for="text-input" class="input-label">SCM ETD <span
                                     class="text-danger"></span></label>
 
                         </div>
-                    </aside>
+                    </aside> -->
 
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                                formControlName="SCMTCargoDescription" [textWithNumbers]="200">
                             <label for="text-input" class="input-label">SCM Cargo Description <span
-                                    class="text-danger"></span></label>
-
+                                    class="text-danger">*</span></label>
+                            @if(scheduleForm.get('SCMTCargoDescription').touched && scheduleForm.get('SCMTCargoDescription').invalid){
+                                <div class="error-message">
+                                    @if(scheduleForm.get('SCMTCargoDescription').hasError('required')){
+                                        <span>SCMT Cargo Description is required</span>
+                                    } @else if(scheduleForm.get('SCMTCargoDescription').hasError('maxlength')){
+                                        <span>Max 200 Characters</span>
+                                    }
+                                </div>
+                            }
                         </div>
                     </aside>
 
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                                formControlName="Remarks" [textWithNumbers]="200">
                             <label for="text-input" class="input-label">Remarks <span
-                                    class="text-danger"></span></label>
+                                    class="text-danger">*</span></label>
+                            @if(scheduleForm.get('Remarks').touched && scheduleForm.get('Remarks').invalid){
+                                <div class="error-message">
+                                    @if(scheduleForm.get('Remarks').hasError('required')){
+                                        <span>Remarks is required</span>
+                                    } @else if(scheduleForm.get('Remarks').hasError('maxlength')){
+                                        <span>Max 200 Characters</span>
+                                    }
+                                </div>
+                            }
 
                         </div>
                     </aside>
 
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
-                                bindValue="name">
-
+                            @if(isEditMode){
+                            <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
+                                bindValue="name" placeholder="Select status" class="ng-select">
                             </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger"></span></label>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
+                                id="text-input" readonly>
+                            }
+                            <label for="text-input" class="input-label">Status<span class="text-danger"></span></label>
                         </div>
                     </aside>
 
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Co lead <span
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check">
+                            <input type="checkbox" id="text-input" placeholder="" class="form-check-input"
+                                formControlName="CoLoad">
+                            <label for="text-input" class="form-check-label">Co load <span
                                     class="text-danger"></span></label>
 
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfVoyageType" bindLabel="name"
+                            <ng-select formControlName="VoyageType" [items]="modeOfVoyageType" bindLabel="name"
                                 bindValue="name">
 
                             </ng-select>
@@ -142,9 +268,10 @@
                     </aside>
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" [items]="carrierList" bindValue="CustomerMasterSid" bindLabel="CustomerName" formControlName="Carrier">
+
+                            </ng-select>
                             <label for="text-input" class="input-label">Carrier <span
                                     class="text-danger"></span></label>
 
@@ -157,12 +284,34 @@
 
 
     <div class="row bg-white py-2 rounded shadow-sm mx-0 my-3">
-          <div class="col-12 p-0">
-        <div class="table-responsive">
+        <div class="col-12">
+            <div class="row">
+                <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
+                    <li [ngbNavItem]="1">
+                        <button ngbNavLink (click)="openDetailEntryModal(DetailEntryTemplate)">
+                            <i-feather name="plus-circle" class="feather-sm pt-1 text-info"></i-feather>
+                            Details
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="row">
+                <div *ngIf="totalAmountOfCollections > 0">
+                    <ng-container *ngTemplateOutlet="DetailListTemplate"></ng-container>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+        <!--Sailing Schedule Details List Template -->
+<ng-template #DetailListTemplate>
+    <div class="table-responsive mt-3">
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
+                        <th class="bg-transparent text-light" scope="col" width="8%">Action</th>
                         <th class="bg-transparent text-light" scope="col">POL</th>
                         <th class="bg-transparent text-light" scope="col">POD</th>
                         <th class="bg-transparent text-light" scope="col">ETA</th>
@@ -178,54 +327,412 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of [0,1,2,3]; track $index) {
+                    @for (item of slicedScheduleDetailList; track $index) {
                     <tr>
                         <td>
-                            <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
+                            <div class="d-flex align-items-center">
+                                <a class="text-info mx-2 ps-3" (click)="openDetailEntryModal(DetailEntryTemplate,item)">
+                                    <i-feather class="feather-sm" name="eye"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start" (click)="deleteSailingScheduleDetail(item.VoyageMasterDetailSid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
                         </td>
                         <td>
-                            <div class="text-truncate">OMR</div>
+                            <div class="text-truncate">{{item.portMasterPOL?.PortCode}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">RO</div>
+                            <div class="text-truncate">{{item.portMasterPOD?.PortCode}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Rial</div>
+                            <div class="text-truncate">{{item.ETA | date:'dd-MMM-YY'}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item.ETD | date:'dd-MMM-YY'}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item.PortCutoff | date:'dd-MMM-YY'}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item.TransitDays}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item.RotationNo}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item.RotationDate | date:'dd-MMM-YY'}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item.IGMNo}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item.IGMDate | date:'dd-MMM-YY'}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item.EGMNo}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item.EGMDate | date:'dd-MMM-YY'}}</div>
                         </td>
 
                     </tr>
                     }
                 </tbody>
             </table>
+            <div>
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalAmountOfCollections" [pageSize]="pageSize"
+                    [(page)]="page" (pageChange)="updatePaginationData()">
+                </ngb-pagination>
+            </div>
+        </div>
+</ng-template>
+<ng-template #DetailEntryTemplate>
+    <div [formGroup]="scheduleDetailForm">
+        <div class="modal-header">
+            <h4 class="modal-title">
+                {{isModalEditMode ? 'Edit Sailing Schedule Detail' : 'Sailing Schedule Detail'}}
+            </h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="closeDetailForm()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="col-12">
+                <div class="row">
+                    <aside class="col-md-6">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="POLSid" [items]="filteredPOLList" bindLabel="PortCode" bindValue="PortMasterSid" placeholder="Select POL" >
+                                <ng-template ng-option-tmp let-item="item">
+                                    {{ item.PortName | uppercase }} - {{ item.PortCode }}
+                                </ng-template>
+                            </ng-select>
+                            <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
+                            @if(scheduleDetailForm.get('POLSid').touched && scheduleDetailForm.get('POLSid').invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('POLSid').hasError('required')){
+                                        <span>POL is required</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                
+                    <aside class="col-md-6">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PODSid" [items]="filteredPODList" bindLabel="PortCode" bindValue="PortMasterSid" placeholder="Select POD" >
+                                <ng-template ng-option-tmp let-item="item">
+                                    {{ item.PortName | uppercase }} - {{ item.PortCode }}
+                                </ng-template>
+                            </ng-select>
+                            <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
+                            @if(scheduleDetailForm.get('PODSid').touched && scheduleDetailForm.get('PODSid').invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('PODSid').hasError('required')){
+                                        <span>POD is required</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input 
+                                    class="form-control" 
+                                    placeholder="yyyy-mm-dd" 
+                                    name="dp" ngbDatepicker 
+                                    #d4="ngbDatepicker" 
+                                    [footerTemplate]="footerTemplatePortCutOff" 
+                                    (click)="d4.toggle()" 
+                                    formControlName="PortCutoff"
+                                    [maxDate]="scheduleDetailForm.get('ETA').value" 
+                                    readonly
+                                />
+                                <button class="btn btn-info bi bi-calendar3" (click)="d4.toggle()" type="button">
+                                    <i-feather class="feather-sm" name="calendar"></i-feather>
+                                </button>
+                            </div>
+                            <label for="text-input" class="input-label">Port Cut Off <span
+                                    class="text-danger">*</span></label>
+                            @if(scheduleDetailForm.get('PortCutoff').touched && scheduleDetailForm.get('PortCutoff').invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('PortCutoff').hasError('required')){
+                                        <span>Port Cut off is required</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <ng-template #footerTemplatePortCutOff>
+                        <hr class="my-0" />
+                        <button class="btn btn-primary btn-sm m-2 float-start" (click)="scheduleDetailForm.get('PortCutoff').setValue(today); d4.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d4.close()">
+                            Close
+                        </button>
+                    </ng-template>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input 
+                                    class="form-control" 
+                                    placeholder="yyyy-mm-dd" 
+                                    name="dp" ngbDatepicker 
+                                    #d3="ngbDatepicker" 
+                                    [footerTemplate]="footerTemplateETA" 
+                                    (click)="d3.toggle()" 
+                                    formControlName="ETA" 
+                                    [minDate]="scheduleDetailForm.get('PortCutoff').value"
+                                    [maxDate]="scheduleDetailForm.get('ETD').value"
+                                    readonly
+                                />
+                                <button class="btn btn-info bi bi-calendar3" (click)="d3.toggle()" type="button">
+                                    <i-feather class="feather-sm" name="calendar"></i-feather>
+                                </button>
+                            </div>
+                            <label for="text-input" class="input-label">ETA <span
+                                    class="text-danger">*</span></label>
+                            @if(scheduleDetailForm.get('ETA').touched && scheduleDetailForm.get('ETA').invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('ETA').hasError('required')){
+                                        <span>ETA is required</span>
+                                    }@else if(scheduleDetailForm.get('ETA').hasError('ngbDate')){
+                                        <span>ETA must be a date after PortCutOff and before ETD</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <ng-template #footerTemplateETA>
+                        <hr class="my-0" />
+                        <button class="btn btn-primary btn-sm m-2 float-start" (click)="scheduleDetailForm.get('ETA').setValue(today); d3.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d3.close()">
+                            Close
+                        </button>
+                    </ng-template>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input 
+                                    class="form-control" 
+                                    placeholder="yyyy-mm-dd" 
+                                    name="dp" ngbDatepicker 
+                                    #d2="ngbDatepicker" 
+                                    [footerTemplate]="footerTemplateETD" 
+                                    (click)="d2.toggle()" 
+                                    formControlName="ETD" 
+                                    [minDate]="scheduleDetailForm.get('ETA').value"
+                                    readonly
+                                />
+                                <button class="btn btn-info bi bi-calendar3" (click)="d2.toggle()" type="button">
+                                    <i-feather class="feather-sm" name="calendar"></i-feather>
+                                </button>
+                            </div>
+                            <label for="text-input" class="input-label">ETD <span
+                                    class="text-danger">*</span></label>
+                            @if(scheduleDetailForm.get('ETD').touched && scheduleDetailForm.get('ETD').invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('ETD').hasError('required')){
+                                        <span>ETD is required</span>
+                                    }@else if(scheduleDetailForm.get('ETD').hasError('ngbDate')){
+                                        <span>ETD must be a date after ETA</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <ng-template #footerTemplateETD>
+                        <hr class="my-0" />
+                        <button class="btn btn-primary btn-sm m-2 float-start" (click)="scheduleDetailForm.get('ETD').setValue(today); d2.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d2.close()">
+                            Close
+                        </button>
+                    </ng-template>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="TransitDays" readonly>
+                            <label for="text-input" class="input-label">Transit Days <span
+                                    class="text-danger">*</span></label>
+                            @if(scheduleDetailForm.get('TransitDays').touched && scheduleDetailForm.get('TransitDays').invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('TransitDays').hasError('required')){
+                                        <span>Transit Days is required</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="RotationNo" [textWithNumbers]="10">
+                            <label for="text-input" class="input-label">Rotation No <span
+                                    class="text-danger">*</span></label>
+                            @if(scheduleDetailForm.get('RotationNo').touched && scheduleDetailForm.get('RotationNo').invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('RotationNo').hasError('required')){
+                                        <span>Rotation No is required</span>
+                                    }@else if(scheduleDetailForm.get('RotationNo').hasError('maxlength')){
+                                        <span>Max 10 Characters</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input 
+                                    class="form-control" 
+                                    placeholder="yyyy-mm-dd" 
+                                    name="dp" ngbDatepicker 
+                                    #d5="ngbDatepicker" 
+                                    [footerTemplate]="footerTemplateRotationDate" 
+                                    (click)="d5.toggle()" 
+                                    formControlName="RotationDate" 
+                                    [minDate]="scheduleDetailForm.get('PortCutoff').value"
+                                    [maxDate]="scheduleDetailForm.get('ETA').value"
+                                    readonly
+                                />
+                                <button class="btn btn-info bi bi-calendar3" (click)="d5.toggle()" type="button">
+                                    <i-feather class="feather-sm" name="calendar"></i-feather>
+                                </button>
+                            </div>
+                            <label for="text-input" class="input-label">Rotation Date <span
+                                    class="text-danger">*</span></label>
+                            @if(scheduleDetailForm.get('RotationDate').touched && scheduleDetailForm.get('RotationDate').invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('RotationDate').hasError('required')){
+                                        <span>Rotation Date is required</span>
+                                    }@else if(scheduleDetailForm.get('RotationDate').hasError('ngbDate')){
+                                        <span>Rotation Date must be a date after PortCutOff and before ETA</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <ng-template #footerTemplateRotationDate>
+                        <hr class="my-0" />
+                        <button class="btn btn-primary btn-sm m-2 float-start" (click)="scheduleDetailForm.get('RotationDate').setValue(today); d5.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d5.close()">
+                            Close
+                        </button>
+                    </ng-template>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="IGMNo" [textWithNumbers]="10">
+                            <label for="text-input" class="input-label">IGM No <span
+                                    class="text-danger">*</span></label>
+                            @if(scheduleDetailForm.get('IGMNo').touched && scheduleDetailForm.get('IGMNo').invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('IGMNo').hasError('required')){
+                                        <span>IGM No is required</span>
+                                    }@else if(scheduleDetailForm.get('IGMNo').hasError('maxlength')){
+                                        <span>Max 10 Characters</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #d7="ngbDatepicker"
+                                    [footerTemplate]="footerTemplateIGMDate" (click)="d7.toggle()" formControlName="IGMDate"
+                                    [minDate]="scheduleDetailForm.get('ETA').value" [maxDate]="scheduleDetailForm.get('ETD').value" readonly />
+                                <button class="btn btn-info bi bi-calendar3" (click)="d7.toggle()" type="button">
+                                    <i-feather class="feather-sm" name="calendar"></i-feather>
+                                </button>
+                            </div>
+                            <label for="text-input" class="input-label">IGM Date <span class="text-danger">*</span></label>
+                            @if(scheduleDetailForm.get('IGMDate').touched && scheduleDetailForm.get('IGMDate').invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('IGMDate').hasError('required')){
+                                        <span>IGM Date is required</span>
+                                    }@else if(scheduleDetailForm.get('EGMDate').hasError('ngbDate')){
+                                        <span>IGM must be a date after ETA and before ETD</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <ng-template #footerTemplateIGMDate>
+                        <hr class="my-0" />
+                        <button class="btn btn-primary btn-sm m-2 float-start"
+                            (click)="scheduleDetailForm.get('IGMDate').setValue(today); d6.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d6.close()">
+                            Close
+                        </button>
+                    </ng-template>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="EGMNo" [textWithNumbers]="10">
+                            <label for="text-input" class="input-label">EGM No <span
+                                    class="text-danger">*</span></label>
+                            @if(scheduleDetailForm.get('EGMNo').touched && scheduleDetailForm.get('EGMNo').invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('EGMNo').hasError('required')){
+                                        <span>EGM No is required</span>
+                                    }@else if(scheduleDetailForm.get('EGMNo').hasError('maxlength')){
+                                        <span>Max 10 Characters</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #d6="ngbDatepicker"
+                                    [footerTemplate]="footerTemplateEGMDate" (click)="d6.toggle()" formControlName="EGMDate"
+                                    [minDate]="scheduleDetailForm.get('ETD').value" readonly />
+                                <button class="btn btn-info bi bi-calendar3" (click)="d6.toggle()" type="button">
+                                    <i-feather class="feather-sm" name="calendar"></i-feather>
+                                </button>
+                            </div>
+                            <label for="text-input" class="input-label">EGM Date <span class="text-danger"></span></label>
+                            @if(scheduleDetailForm.get('EGMDate').touched && scheduleDetailForm.get('EGMDate').invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('EGMDate').hasError('required')){
+                                        <span>EGM Date is required</span>
+                                    }@else if(scheduleDetailForm.get('EGMDate').hasError('ngbDate')){
+                                        <span>EGM must be a date after ETD</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    <ng-template #footerTemplateEGMDate>
+                        <hr class="my-0" />
+                        <button class="btn btn-primary btn-sm m-2 float-start"
+                            (click)="scheduleDetailForm.get('EGMDate').setValue(today); d6.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d6.close()">
+                            Close
+                        </button>
+                    </ng-template>
+                    
+
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onModalSubmit()">
+                <i class="fas fa-save me-1"></i>
+                {{isModalEditMode ? 'Update' : 'Create'}}
+            </button>
         </div>
     </div>
-    </div>
-
-</div>
+</ng-template>

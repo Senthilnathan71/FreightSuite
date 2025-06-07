@@ -60,7 +60,7 @@ export class ChargeListComponent implements OnInit {
   /** Load all lookup data */
   loadMasterData(): void {
     this.masterService.getAllChargeGroups().subscribe(groups => {
-      this.chargeGroupOptions = groups;
+      this.chargeGroupOptions = groups.data;
     });
 
     this.masterService.getAllCompanies().subscribe(companies => {
