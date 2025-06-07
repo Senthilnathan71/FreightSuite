@@ -8,6 +8,7 @@ import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-department-list',
@@ -28,7 +29,7 @@ export class DepartmentListComponent {
   pageSize = 10;
   totalLengthOfCollection: number;
 
-  constructor(private masterService: MasterService, private router: Router,
+  constructor(private masterService: MasterService, private excelReportService:ExcelExportService, private router: Router,
     private appSettingService: AppSettingsService, private dialog: MatDialog
   ) { }
   ngOnInit() { }
@@ -80,6 +81,28 @@ export class DepartmentListComponent {
     this.totalLengthOfCollection = 0
   }
 
-  report() { }
+  report(): void {
+  const formattedData = this.departmentList.map(item => ({
+    ...item,
+    Status: item.Status === 'A' ? 'Active' : 'Suspended'
+  }));
+
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: [
+      { key: 'departmentCode', label: 'Dept Code' },
+      { key: 'departmentName', label: 'Dept Name' },
+      { key: 'departmentType', label: 'Dept Type' },
+      { key: 'ExportImport', label: 'Exp/Imp' },
+      { key: 'FCLLCL', label: 'FCL/LCL' },
+      { key: 'Division', label: 'Division' },
+      { key: 'Status', label: 'Status' }
+    ],
+    fileName: 'Department-Report'
+  });
+}
 
 }
+
+
+
