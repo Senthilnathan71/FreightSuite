@@ -115,7 +115,7 @@
         </div>
     </div>
     <div class="col-12" *ngIf="searchPerformed && totalAmountOfCollection === 0">
-        <div class="alert alert-info text-center">No records found</div>
+        <div >No records found</div>
     </div>
 </div>
 
@@ -196,7 +196,7 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-        <button type="button" class="btn btn-primary" 
+        <button type="button" class="btn btn-info" 
             (click)="onSubmit()" 
             [disabled]="moduleForm.invalid">
             {{ isEditMode ? 'Update' : 'Save' }}

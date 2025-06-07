@@ -59,16 +59,21 @@ export class ModuleComponent implements OnInit {
     this.moduleForm = this.fb.group({
       ModuleName: ['', [Validators.required, Validators.maxLength(50)]],
       ModuleCode: ['', [Validators.required, Validators.maxLength(20)]],
-      status: ['Active', Validators.required],
+      status: [{value: 'Active', disabled: false}, Validators.required],
       Remarks: ['', [Validators.required, Validators.maxLength(300)]]
+    });
+  }
+  resetForm(): void {
+    
+    this.moduleForm.get('status')?.disable();
+    this.moduleForm.reset({
+      status: 'Active'
     });
   }
 
   openModal(content: any): void {
     this.isEditMode = false;
-    this.moduleForm.reset({
-      status: 'Active'
-    });
+    this.resetForm();
     this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
   }
 
@@ -78,6 +83,7 @@ export class ModuleComponent implements OnInit {
     this.masterService.getModuleById(id).subscribe({
       next: (response: any) => {
         const module = response.data;
+        this.moduleForm.get('status')?.enable();
         this.moduleForm.patchValue({
           ModuleName: module.ModuleName,
           ModuleCode: module.ModuleCode,
@@ -94,6 +100,9 @@ export class ModuleComponent implements OnInit {
   }
 
   onSubmit() {
+    if (this.moduleForm.get('status')?.disabled) {
+      this.moduleForm.get('status')?.enable();
+    }
     if (this.moduleForm.invalid) {
       this.moduleForm.markAllAsTouched();
       this.moduleForm.updateValueAndValidity();

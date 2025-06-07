@@ -106,7 +106,7 @@
     </div>
   </div>
   <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
-    <div class="alert alert-info text-center">No records found</div>
+    <div>No records found</div>
   </div>
   <ng-template #content let-modal>
     <div class="modal-header">
@@ -153,15 +153,21 @@
                     }
                   </div>
                 </aside>
-                <aside class="col-md-6 mt-2">
-                  <div class="custom-form-group custom-form-group-select">
-                    <select class="form-select" formControlName="status"
-                      [class.is-invalid]="packageTypeForm.get('status')?.invalid && packageTypeForm.get('status')?.touched">
-                      <option *ngFor="let status of statusList" [value]="status">{{status}}</option>
-                    </select>
-                    <label class="input-label">Status <span class="text-danger">*</span></label>
-                  </div>
-                </aside>
+                <aside class="col-md-6">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select [items]="statusList" 
+              formControlName="status"
+              [class.is-invalid]="packageTypeForm.get('status')?.invalid && packageTypeForm.get('status')?.touched"
+              [disabled]="packageTypeForm.get('status')?.disabled">
+    </ng-select>
+    <label class="input-label">Status <span class="text-danger">*</span></label>
+    @if(packageTypeForm.get('status')?.touched && packageTypeForm.get('status')?.invalid){
+    <div class="error-message">
+      <span>Status is required</span>
+    </div>
+    }
+  </div>
+</aside>
               </div>
             </div>
           </div>
@@ -170,7 +176,7 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-      <button type="button" class="btn btn-primary" (click)="onSubmit()"
+      <button type="button" class="btn btn-info" (click)="onSubmit()"
         [disabled]="btnDisable || packageTypeForm.invalid">
         {{ isEditMode ? 'Update' : 'Save' }}
       </button>

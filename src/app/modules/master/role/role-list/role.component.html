@@ -117,8 +117,8 @@
             </div>
         </div>
     </div>
-    <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
-        <div class="alert alert-info text-center">No records found</div>
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0">
+        <div>No records found</div>
     </div>
     <ng-template #content let-modal>
         <div class="modal-header">
@@ -193,7 +193,7 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-            <button type="button" class="btn btn-primary" (click)="onSubmit()"
+            <button type="button" class="btn btn-info" (click)="onSubmit()"
                 [disabled]="btnDisable || roleForm.invalid">
                 {{ isEditMode ? 'Update' : 'Save' }}
             </button>

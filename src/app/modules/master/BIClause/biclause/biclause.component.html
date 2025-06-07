@@ -104,8 +104,9 @@
 
     <!-- No records message -->
     <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
-        <div class="alert alert-info text-center">No records found</div>
+        <div>No records found</div>
     </div>
+    
 
     <!-- Modal for Create/Edit -->
     <ng-template #content let-modal>
@@ -186,21 +187,22 @@
                                     </div>
                                 </aside>
                                 <aside class="col-md-6">
-                                    <div class="custom-form-group custom-form-group-select">
-                                        <ng-select formControlName="status" [items]="statusOptions" 
-                                            bindLabel="name" bindValue="id" placeholder="Select Status"
-                                            [class.is-invalid]="biclauseForm.get('status')?.invalid && 
-                                                biclauseForm.get('status')?.touched">
-                                        </ng-select>
-                                        <label class="input-label">Status <span class="text-danger">*</span></label>
-                                        <div *ngIf="biclauseForm.get('status')?.touched && 
-                                            biclauseForm.get('status')?.errors" class="invalid-feedback d-block">
-                                            <span *ngIf="biclauseForm.get('status')?.hasError('required')">
-                                                Status is required
-                                            </span>
-                                        </div>
-                                    </div>
-                                </aside>
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select formControlName="status" [items]="statusOptions" 
+               bindLabel="name" bindValue="id" placeholder="Select Status"
+               [class.is-invalid]="biclauseForm.get('status')?.invalid && 
+               biclauseForm.get('status')?.touched"
+               [disabled]="biclauseForm.get('status')?.disabled">
+    </ng-select>
+    <label class="input-label">Status <span class="text-danger">*</span></label>
+    <div *ngIf="biclauseForm.get('status')?.touched && 
+               biclauseForm.get('status')?.errors" class="invalid-feedback d-block">
+      <span *ngIf="biclauseForm.get('status')?.hasError('required')">
+        Status is required
+      </span>
+    </div>
+  </div>
+</aside>
                             </div>
                         </div>
                     </div>
@@ -209,7 +211,7 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-            <button type="button" class="btn btn-primary" 
+            <button type="button" class="btn btn-info" 
                 (click)="onSubmit()" 
                 [disabled]="btnDisable || biclauseForm.invalid">
                 {{ isEditMode ? 'Update' : 'Save' }}

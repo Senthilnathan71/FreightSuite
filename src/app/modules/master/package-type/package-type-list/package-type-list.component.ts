@@ -65,15 +65,16 @@ export class PackageTypeListComponent {
     this.packageTypeForm = this.fb.group({
       PackageName: ['', [Validators.required, Validators.maxLength(100)]],
       PackageCode: ['', [Validators.required, Validators.maxLength(3)]],
-      status: ['Active', Validators.required],
+      status: [{value: 'Active', disabled: false}, Validators.required],
       CompanyMasterSid: [2]
     });
   }
 
   resetForm(): void {
+    
+    this.packageTypeForm.get('status')?.disable();
     this.packageTypeForm.reset({
-      status: 'Active',
-      CompanyMasterSid: 2
+      status: 'Active'
     });
   }
 
@@ -88,6 +89,7 @@ export class PackageTypeListComponent {
     this.PackageTypeMasterSid = id;
     this.masterService.getPackageTypeById(id).pipe(take(1)).subscribe({
       next: (response: any) => {
+        this.packageTypeForm.get('status')?.enable();
         this.packageTypeForm.patchValue({
           PackageName: response.PackageName,
           PackageCode: response.PackageCode,
@@ -110,6 +112,9 @@ export class PackageTypeListComponent {
   }
 
   onSubmit() {
+     if (this.packageTypeForm.get('status')?.disabled) {
+      this.packageTypeForm.get('status')?.enable();
+    }
     if (this.packageTypeForm.invalid) {
       this.packageTypeForm.markAllAsTouched();
       this.packageTypeForm.updateValueAndValidity();

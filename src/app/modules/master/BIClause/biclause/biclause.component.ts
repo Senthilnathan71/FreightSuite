@@ -60,7 +60,7 @@ export class BIclauseComponent implements OnInit {
       Keyword: ['', [Validators.required, Validators.maxLength(5)]],
       Sortorder: ['', [Validators.pattern('^[0-9]*$')]],
       DefaultClause: ['', [Validators.pattern('^[0-9]*$')]],
-      status: ['A', Validators.required]
+      status: [{value: 'A', disabled: false}, Validators.required]
     });
   }
   
@@ -132,6 +132,7 @@ export class BIclauseComponent implements OnInit {
     this.currentClauseId = clause?.BLClauseMasterSid || null;
     
     if (this.isEditMode) {
+      this.biclauseForm.get('status')?.enable();
       this.biclauseForm.patchValue({
         ClauseDescription: clause.ClauseDescription,
         Keyword: clause.Keyword,
@@ -140,6 +141,7 @@ export class BIclauseComponent implements OnInit {
         status: clause.status || 'A'
       });
     } else {
+       this.biclauseForm.get('status')?.disable();
       this.biclauseForm.reset({
         ClauseDescription: '',
         Keyword: '',
@@ -153,6 +155,9 @@ export class BIclauseComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.biclauseForm.get('status')?.disabled) {
+      this.biclauseForm.get('status')?.enable();
+    }
     if (this.biclauseForm.invalid) {
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
@@ -217,9 +222,9 @@ export class BIclauseComponent implements OnInit {
   }
 
   resetPage(): void {
-    this.filterValue = '';
-    this.searchType = 'ClauseDescription';
-    this.page = 1;
+    // this.filterValue = '';
+    // this.searchType = 'ClauseDescription';
+    // this.page = 1;
     this.searchPerformed = false;
     this.allClauses = [];
     this.clauseList = [];

@@ -60,29 +60,26 @@
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Action</th>
                             <th class="bg-transparent text-light" scope="col">Company</th>
                             <th class="bg-transparent text-light" scope="col">Group Name</th>
                             <th class="bg-transparent text-light" scope="col">Remarks</th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of chargeGroupList; trackBy: trackByIndex">
+                        
                             <td>
-                               <div class="d-flex gap-2 align-items-center justify-content-center">
-                                    <button class="btn btn-sm btn-link text-info p-0" 
-                                        (click)="editChargeGroup(item.ChargeGroupSid, content)"
-                                        title="Edit">
-                                        <i-feather class="feather-sm" name="eye"></i-feather>
-                                    </button>
-                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" 
-                                        (click)="deleteChargeGroupById(item.ChargeGroupSid)"
-                                        title="Delete">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </button>
-                                </div>
-                            </td>
+                <div class="d-flex align-items-center justify-content-center">
+                  <a class="text-info mx-2" (click)="editChargeGroup(item.ChargeGroupSid, content)" >
+                    <i-feather class="feather-sm" name="eye"></i-feather>
+                  </a>
+                  <a class="text-danger mx-2 ps-3 border-start"  (click)="deleteChargeGroupById(item.ChargeGroupSid)">
+                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                  </a>
+                </div>
+              </td>
                             <td>
                                 <div class="text-truncate">{{item.companyMaster?.companyName || '-'}}</div>
                             </td>
@@ -93,18 +90,18 @@
                                 <div class="text-truncate">{{item.Remarks || '-'}}</div>
                             </td>
                             <td>
-                                @if(item.status === "A"){
-                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Active
-                                </div>
-                                } @else {
-                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                    Suspended
-                                </div>
-                                }
-                            </td>
+  @if(item.status === "A"){
+  <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+    Active
+  </div>
+  } @else {
+  <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+    Suspended
+  </div>
+  }
+</td>
                         </tr>
                     </tbody>
                 </table>
@@ -117,8 +114,8 @@
             </div>
         </div>
     </div>
-    <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
-        <div class="alert alert-info text-center">No records found</div>
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0">
+        <div>No records found</div>
     </div>
     <div class="col-12" *ngIf="isLoading">
         <div class="text-center py-4">
@@ -189,12 +186,13 @@
     }
   </div>
 </aside>
-                               <aside class="col-md-6">
+                              
+<aside class="col-md-6">
   <div class="custom-form-group custom-form-group-select">
     <ng-select [items]="statusList" 
+              bindLabel="name" 
+              bindValue="id"
               formControlName="status"
-              placeholder="Select status"
-              [disabled]="isEditMode"
               [class.is-invalid]="chargeGroupForm.get('status')?.invalid && chargeGroupForm.get('status')?.touched">
     </ng-select>
     <label class="input-label">Status <span class="text-danger">*</span></label>
@@ -213,7 +211,7 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-            <button type="button" class="btn btn-primary" 
+            <button type="button" class="btn btn-info" 
                 (click)="onSubmit()" 
                 [disabled]="btnDisable || chargeGroupForm.invalid || isLoading">
                 <span *ngIf="!isLoading">{{ isEditMode ? 'Update' : 'Save' }}</span>

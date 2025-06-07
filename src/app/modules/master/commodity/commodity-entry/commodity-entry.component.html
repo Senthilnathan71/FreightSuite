@@ -45,28 +45,7 @@
             <div class="card-body">
                 <form [formGroup]="commodityForm">
                     <div class="row">
-                        <!-- <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="commodityName" formControlName="CommodityName"
-                                    class="custom-input-field sm"
-                                    [class.is-invalid]="commodityForm.get('CommodityName')?.invalid && 
-                                    (commodityForm.get('CommodityName')?.touched || commodityForm.get('CommodityName')?.dirty)">
-                                <label for="commodityName" class="input-label"> Commodity Name <span
-                                        class="text-danger">*</span></label>
-                                <div *ngIf="commodityForm.get('CommodityName')?.invalid && 
-                                           (commodityForm.get('CommodityName')?.touched || 
-                                           commodityForm.get('CommodityName')?.dirty)"
-                                    class="invalid-feedback d-block">
-                                    <span *ngIf="commodityForm.get('CommodityName')?.hasError('pattern')">
-                                        Please enter a valid Commodity Name (letters only).
-                                    </span>
-                                    <span *ngIf="commodityForm.get('CommodityName')?.hasError('maxlength')">
-                                        Maximum 50 characters allowed.
-                                    </span>
-                                </div>
-                            </div>
-                        </aside> -->
-                        <aside class="col-md-12">
+                       <aside class="col-md-12">
                             <div class="custom-form-group">
                                 <input type="text" id="commodityName" formControlName="CommodityName" placeholder=""
                                     class="custom-input-field sm" [class.is-invalid]="
@@ -91,36 +70,6 @@
                         </aside>
 
 
-
-
-
-
-
-
-                        <!-- <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="commodityCode" formControlName="CommodityCode"
-                                    class="custom-input-field sm"
-                                    [class.is-invalid]="commodityForm.get('CommodityCode')?.invalid && 
-                                    (commodityForm.get('CommodityCode')?.touched || commodityForm.get('CommodityCode')?.dirty)">
-                                <label for="commodityCode" class="input-label">Commodity Code <span
-                                        class="text-danger">*</span></label>
-                                <div *ngIf="commodityForm.get('CommodityCode')?.invalid && 
-                                           (commodityForm.get('CommodityCode')?.touched || 
-                                           commodityForm.get('CommodityCode')?.dirty)"
-                                    class="invalid-feedback d-block">
-                                    <span *ngIf="commodityForm.get('CommodityCode')?.hasError('required')">
-                                        Commodity Code is required
-                                    </span>
-                                    <span *ngIf="commodityForm.get('CommodityCode')?.hasError('pattern')">
-                                        Commodity Code must be 5-12 characters (letters and numbers).\
-                                    </span>
-                                    <span *ngIf="commodityForm.get('CommodityCode')?.hasError('maxlength')">
-                                        Maximum 10 characters allowed.
-                                    </span>
-                                </div>
-                            </div>
-                        </aside> -->
                         <aside class="col-md-12">
                             <div class="custom-form-group">
                                 <input type="text" id="commodityCode" formControlName="CommodityCode" placeholder=""
@@ -148,36 +97,29 @@
                             </div>
                         </aside>
 
-
-                        <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select id="HSSACCode" [items]="hssacOptions" bindLabel="HSSACCode"
-                                    bindValue="HSSACCode" placeholder="" formControlName="HSSACCode" [class.is-invalid]="commodityForm.get('HSSACCode')?.invalid && 
-                         (commodityForm.get('HSSACCode')?.touched || 
-                          commodityForm.get('HSSACCode')?.dirty)">
-                                    <ng-template ng-option-tmp let-item="item">
-                                        {{ item.code }} - {{ item.description }}
-                                    </ng-template>
-                                </ng-select>
-                                <label for="HSSACCode" class="input-label">HS/SAC Code</label>
-                            </div>
-                        </aside>
-
-                        <!-- <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="number" id="uomSid" formControlName="UOMSid" class="custom-input-field sm"
-                                    [class.is-invalid]="commodityForm.get('UOMSid')?.invalid && 
-                                    (commodityForm.get('UOMSid')?.touched || commodityForm.get('UOMSid')?.dirty)">
-                                <label for="uomSid" class="input-label">Unit</label>
-                                <div *ngIf="commodityForm.get('UOMSid')?.invalid && 
-                                           (commodityForm.get('UOMSid')?.touched || 
-                                           commodityForm.get('UOMSid')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="commodityForm.get('UOMSid')?.hasError('pattern')">
-                                        Only numbers are allowed
-                                    </span>
-                                </div>
-                            </div>
-                        </aside> -->
+                        <!-- Replace the existing HSSACCode input with this ng-select -->
+<aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select 
+      id="hssacCode" 
+      formControlName="HSSACCode"
+      [items]="hssacOptions"
+      bindLabel="code"
+      bindValue="id"
+      placeholder="Select HS Code"
+      [clearable]="true"
+      [searchable]="true"
+      notFoundText="No HS-SAC codes available">
+      <ng-template ng-label-tmp let-item="item">
+        {{item.code}} - {{item.name}}
+      </ng-template>
+      <ng-template ng-option-tmp let-item="item">
+        {{item.code}} - {{item.name}}
+      </ng-template>
+    </ng-select>
+    <label for="hssacCode" class="input-label">HS Code</label>
+  </div>
+</aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -199,26 +141,6 @@
                                 </div>
                             </div>
                         </aside>
-
-                        <!-- <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="commodityType" formControlName="CommodityType"
-                                    class="custom-input-field sm" [class.is-invalid]="commodityForm.get('CommodityType')?.invalid && 
-           (commodityForm.get('CommodityType')?.touched || commodityForm.get('CommodityType')?.dirty)">
-                                <label for="commodityType" class="input-label">Commodity Type <span
-                                        class="text-danger">*</span></label>
-                                <div *ngIf="commodityForm.get('CommodityType')?.invalid && 
-           (commodityForm.get('CommodityType')?.touched || 
-           commodityForm.get('CommodityType')?.dirty)" class="invalid-feedback d-block">
-                                    <span *ngIf="commodityForm.get('CommodityType')?.hasError('required')">
-                                        Commodity Type is required
-                                    </span>
-                                    <span *ngIf="commodityForm.get('CommodityType')?.hasError('maxlength')">
-                                        Commodity Type cannot exceed 100 characters
-                                    </span>
-                                </div>
-                            </div>
-                        </aside> -->
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -243,9 +165,6 @@
                                 </div>
                             </div>
                         </aside>
-
-
-
                     </div>
                 </form>
             </div>
@@ -254,17 +173,9 @@
 
     <div class="col-md-6" [formGroup]="commodityForm">
         <div class="card h-100">
-            <div class="card-body">
+            <div class="card-body" >
                 <div class="row">
-                    <!-- <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="minTemp" formControlName="MinTemp" class="custom-input-field sm"
-                                [class.is-invalid]="commodityForm.get('MinTemp')?.invalid && 
-                                (commodityForm.get('MinTemp')?.touched || commodityForm.get('MinTemp')?.dirty)">
-                            <label for="minTemp" class="input-label">Min Temp</label>
-                        </div>
-                    </aside> -->
-                    <aside class="col-md-6">
+                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="number" id="minTemp" formControlName="MinTemp" placeholder=""
                                 class="custom-input-field sm"   [class.is-invalid]="commodityForm.get('MinTemp')?.invalid && 
@@ -276,16 +187,8 @@
                     </aside>
 
 
-                    <!-- <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="maxTemp" formControlName="MaxTemp" class="custom-input-field sm"
-                                [class.is-invalid]="commodityForm.get('MaxTemp')?.invalid && 
-                                (commodityForm.get('MaxTemp')?.touched || commodityForm.get('MaxTemp')?.dirty)">
-                            <label for="maxTemp" class="input-label">Max Temp</label>
-                        </div>
-                    </aside> -->
-
-                     <aside class="col-md-6">
+                    
+                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="number" id="maxTemp" formControlName="MaxTemp" placeholder=""
                                 class="custom-input-field sm"    [class.is-invalid]="commodityForm.get('MaxTemp')?.invalid && 
@@ -296,16 +199,25 @@
                         </div>
                     </aside>
 
-                    <!-- Status -->
-                    <aside class="col-md-6">
-                        <div *ngIf="isEditMode" class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="statusOptions" bindLabel="name" bindValue="id"
-                                formControlName="status"></ng-select>
-                            <label class="input-label">Status</label>
-                        </div>
 
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                    
+                            @if(isEditMode){
+                            <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
+                                <ng-option value="Active">Active</ng-option>
+                                <ng-option value="Suspended">Suspended</ng-option>
+                            </ng-select>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status" id="text-input"
+                                readonly>
+                            }
+                            <label for="text-input" class="input-label">Status <span class="text-danger">*</span></label>
+                    
+                        </div>
                     </aside>
 
+                    
                     <aside class="col-md-12 pt-2">
                         <div class="custom-form-group">
                             <textarea id="remarks" formControlName="Remarks" rows="3" class="input-field sm"
@@ -314,6 +226,7 @@
                             <label for="remarks" class="input-label">Remarks</label>
                         </div>
                     </aside>
+
                 </div>
             </div>
         </div>
