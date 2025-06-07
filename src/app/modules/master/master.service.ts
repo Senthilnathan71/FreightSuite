@@ -25,6 +25,14 @@ import { Product } from '../crm-mobile/Interfaces/product.interface';
 export class MasterService {
   constructor(private http: HttpClient) { }
   //vessel-master
+  getAllVessels() {
+    return this.http.get<{ data: Vessel }>('vessel').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response
+      })
+    )
+  }
   searchVesselList(payload) {
     return this.http.post("vessel/search-list", payload).pipe(
       map((res: any) => {
@@ -1852,4 +1860,290 @@ searchChargeGroups(payload: any) {
     })
   );
 }
+
+  // Terms And Conditions
+
+  getAllTandC(){
+    return this.http.get<{data:any[]}>('terms-and-conditions').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewTandC(payload){
+    return this.http.post<{data:any}>('terms-and-conditions/create',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getTandCById(TermsAndConditionsMasterSid){
+    return this.http.get<{data:any}>(`terms-and-conditions/fetch/${TermsAndConditionsMasterSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateTandCById(TermsAndConditionsMasterSid,payload){
+    return this.http.patch<{data:any}>(`terms-and-conditions/update/${TermsAndConditionsMasterSid}`,payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteTandCById(TermsAndConditionsMasterSid){
+    return this.http.delete<{data:any}>(`terms-and-conditions/delete/${TermsAndConditionsMasterSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchTandC(payload){
+    return this.http.post<{data:any[]}>('terms-and-conditions/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+  // Terms And Conditions Details
+
+  getAllTandCDetail(){
+    return this.http.get<{data:any[]}>('terms-and-conditions-detail').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewTandCDetail(payload){
+    return this.http.post<{data:any}>('terms-and-conditions-detail/create',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getTandCDetailById(TermsAndConditionsDetailSid){
+    return this.http.get<{data:any}>(`terms-and-conditions-detail/fetch/${TermsAndConditionsDetailSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateTandCDetailById(TermsAndConditionsDetailSid,payload){
+    return this.http.patch<{data:any}>(`terms-and-conditions-detail/update/${TermsAndConditionsDetailSid}`,payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteTandCDetailById(TermsAndConditionsDetailSid){
+    return this.http.delete<{data:any}>(`terms-and-conditions-detail/delete/${TermsAndConditionsDetailSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchTandCDetail(payload){
+    return this.http.post<{data:any[]}>('terms-and-conditions-detail/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getAllMenu(){
+    return this.http.get<{data:any[]}>('menu').pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  createNewMenu(payload){
+    return this.http.post<{data:any}>('menu/create',payload).pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  getMenuById(MenuMasterSid){
+    return this.http.get<{data:any}>(`menu/fetch/${MenuMasterSid}`).pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  updateMenuById(MenuMasterSid,payload){
+    return this.http.patch<{data:any}>(`menu/update/${MenuMasterSid}`,payload).pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  deleteMenuById(MenuMasterSid){
+    return this.http.delete<{data:any}>(`menu/delete/${MenuMasterSid}`).pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  searchMenu(payload){
+    return this.http.post<{data:any[]}>('menu/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  // Sailing Schedule Header
+  
+  getAllSailingSchedule(){
+    return this.http.get<{data:any[]}>('voyage').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewSailingSchedule(payload){
+    return this.http.post<{data:any}>('voyage/create',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getSailingScheduleById(VoyageMasterHeaderSid){
+    return this.http.get<{data:any}>(`voyage/fetch/${VoyageMasterHeaderSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateSailingScheduleById(VoyageMasterHeaderSid,payload){
+    return this.http.patch<{data:any}>(`voyage/update/${VoyageMasterHeaderSid}`,payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteSailingScheduleById(VoyageMasterHeaderSid){
+    return this.http.delete<{data:any}>(`voyage/delete/${VoyageMasterHeaderSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchSailingSchedule(payload){
+    return this.http.post<{data:any[]}>('voyage/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  specialScheduleSearch(payload){
+    return this.http.post<{data:any[]}>('voyage/searchBy',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // Sailing Schedule Detail
+
+  getAllSailingScheduleDetail(){
+    return this.http.get<{data:any[]}>('voyage-detail').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewSailingScheduleDetail(payload){
+    return this.http.post<{data:any}>('voyage-detail/create',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getSailingScheduleDetailById(VoyageMasterDetailSid){
+    return this.http.get<{data:any}>(`voyage-detail/fetch/${VoyageMasterDetailSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateSailingScheduleDetailById(VoyageMasterDetailSid,payload){
+    return this.http.patch<{data:any}>(`voyage-detail/update/${VoyageMasterDetailSid}`,payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteSailingScheduleDetailById(VoyageMasterDetailSid){
+    return this.http.delete<{data:any}>(`voyage-detail/delete/${VoyageMasterDetailSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchSailingScheduleDetail(payload){
+    return this.http.post<{data:any[]}>('voyage-detail/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
 }

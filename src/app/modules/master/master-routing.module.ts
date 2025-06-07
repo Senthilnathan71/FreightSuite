@@ -611,6 +611,17 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: 'terms-condition/entry/:id',
+        component: TermsConditionEntryComponent,
+        data: {
+          title: 'Terms and Condition',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Terms and Condition' },
+          ],
+        },
+      },
+      {
         path: 'hs-sac',
         component: HSSACComponent,
         data: {
@@ -843,6 +854,17 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+      path: 'sailing-schedule/entry/:id',
+        component: SailingScheduleEntryComponent,
+        data: {
+          title: 'Sailing Schedule',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Sailing Schedule' },
+          ],
+        },
+      },
+      {
         path: 'user/list',
         component: UserListComponent,
         data: {
@@ -861,8 +883,8 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: 'Master', url: '/master' },
             { title: 'User' },
-          ],
-        },
+          ]
+        }
       },
     ],
   },
