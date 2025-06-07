@@ -160,14 +160,20 @@
                             </div>
                             </aside>
                             <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <select formControlName="status" class="form-select">
-                                        <option value="">Status</option>
-                                        <option *ngFor="let option of statusList" [value]="option">{{ option }}</option>
-                                    </select>
-                                    <label for="text-input" class="input-label">Status <span class="text-danger fw-bold">*</span></label>
-                                </div>
-                            </aside>
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select [items]="statusList" 
+              formControlName="status"
+              [class.is-invalid]="zoneForm.get('status')?.invalid && zoneForm.get('status')?.touched"
+              [disabled]="zoneForm.get('status')?.disabled">
+    </ng-select>
+    <label class="input-label">Status <span class="text-danger">*</span></label>
+    @if(zoneForm.get('status')?.touched && zoneForm.get('status')?.invalid){
+    <div class="error-message">
+      <span>Status is required</span>
+    </div>
+    }
+  </div>
+</aside>
                             </div>
                         </div>
                     </div>

@@ -96,16 +96,14 @@ export class DivisionComponent {
       // address: ['', [Validators.required]],
       CompanyMasterSid: ['',[Validators.required]],
       Remarks: ['', [Validators.required]],
-      status: ['Active',[Validators.required]]
+      status: [{value: 'Active', disabled: false}, Validators.required],
     });
   }
 
   resetForm(): void {
+    // Disable status field and set to 'Active' for create mode
+    this.divisionForm.get('status')?.disable();
     this.divisionForm.reset({
-      DivisionName: '',
-      DivisionCode: '',
-      CompanyMasterSid: '',
-      Remarks: '',
       status: 'Active'
     });
   }
@@ -129,6 +127,7 @@ export class DivisionComponent {
     this.DivisionMasterSid = DivisionMasterSid;
     this.masterService.getDivisionById(DivisionMasterSid).pipe(take(1)).subscribe({
       next: (division: any) => {
+        this.divisionForm.get('status')?.enable();
         this.divisionForm.patchValue({
           DivisionName: division.DivisionName,
           DivisionCode: division.DivisionCode,
@@ -171,6 +170,9 @@ export class DivisionComponent {
   }
 
   onSubmit() {
+    if (this.divisionForm.get('status')?.disabled) {
+      this.divisionForm.get('status')?.enable();
+    }
     if (this.divisionForm.invalid) {
       this.divisionForm.markAllAsTouched();
       this.divisionForm.updateValueAndValidity();

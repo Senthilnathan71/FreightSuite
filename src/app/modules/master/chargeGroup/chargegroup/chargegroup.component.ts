@@ -45,7 +45,8 @@ export class ChargegroupComponent implements OnInit {
   pageSize = 10;
   totalLengthOfCollection = 0;
   isLoading = false;
- companyOptions: any[] = [];
+  companyOptions: any[] = [];
+
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -64,77 +65,68 @@ export class ChargegroupComponent implements OnInit {
       if (this.ChargeGroupSid) {
         this.isEditMode = true;
         this.loadChargeGroupData(this.ChargeGroupSid);
+        
       }
     });
-    
     this.loadCompanies();
+  }
 
-  }
-  
-toggleStatusControl() {
-  const statusControl = this.chargeGroupForm.get('status');
-  if (this.isEditMode) {
-    statusControl?.enable();
-  } else {
-    statusControl?.disable();
-  }
-}
   loadCompanies(): void {
-  this.masterService.getAllCompanies().subscribe({
-    next: (companies) => {
-      this.companyOptions = companies.data || companies;
-    },
-    error: (error) => {
-      console.error('Error loading companies:', error);
-      this.appSettingService.showError('Failed to load companies');
-    }
-  });
-}
+    this.masterService.getAllCompanies().subscribe({
+      next: (companies) => {
+        this.companyOptions = companies.data || companies;
+      },
+      error: (error) => {
+        console.error('Error loading companies:', error);
+        this.appSettingService.showError('Failed to load companies');
+      }
+    });
+  }
 
   initForm() {
     this.chargeGroupForm = this.fb.group({
       CompanyMasterSid: ['', Validators.required],
       GroupName: ['', [Validators.required, Validators.maxLength(100)]],
       Remarks: ['', [Validators.required, Validators.maxLength(100)]],
-      status: ['Active', Validators.required]
+      status: [{value: 'Active', disabled: false}, Validators.required]
     });
   }
 
   resetForm(): void {
+    this.chargeGroupForm.get('status')?.disable();
     this.chargeGroupForm.reset({
       status: 'Active'
     });
-    this.toggleStatusControl(); 
   }
 
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.toggleStatusControl();
     this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
   }
 
   editChargeGroup(id: number, content: any) {
-  this.isEditMode = true;
-  this.ChargeGroupSid = id;
-  this.masterService.getChargeGroupById(id).pipe(take(1)).subscribe({
-    next: (response: any) => {
-      const chargeGroup = response.data;
-      this.chargeGroupForm.patchValue({
-        CompanyMasterSid: chargeGroup.CompanyMasterSid,
-        GroupName: chargeGroup.GroupName,
-        Remarks: chargeGroup.Remarks || '',
-        status: chargeGroup.status === 'A' ? 'Active' : 'Suspended'
-      });
-      this.toggleStatusControl(); // Add this line
-      this.modalRef = this.modalService.open(content, {centered: true, size: 'lg', backdrop: 'static'});
-    },
-    error: (err) => {
-      console.error('Error fetching Charge Group', err);
-      this.appSettingService.showError('Error fetching data for editing');
-    }
-  });
-}
+    this.isEditMode = true;
+    this.ChargeGroupSid = id;
+    this.masterService.getChargeGroupById(id).pipe(take(1)).subscribe({
+      next: (response: any) => {
+        const chargeGroup = response.data;
+        this.chargeGroupForm.get('status')?.enable();
+        this.chargeGroupForm.patchValue({
+          CompanyMasterSid: chargeGroup.CompanyMasterSid,
+          GroupName: chargeGroup.GroupName,
+          Remarks: chargeGroup.Remarks || '',
+          status: chargeGroup.status === 'A' ? 'Active' : 'Suspended'
+        });
+        this.modalRef = this.modalService.open(content, {centered: true, size: 'lg', backdrop: 'static'});
+      },
+      error: (err) => {
+        console.error('Error fetching Charge Group', err);
+        this.appSettingService.showError('Error fetching data for editing');
+      }
+    });
+  }
+
   closeModal(): void {
     if (this.modalRef) {
       this.modalRef.close();
@@ -159,6 +151,9 @@ toggleStatusControl() {
   }
 
   onSubmit() {
+    if (this.chargeGroupForm.get('status')?.disabled) {
+      this.chargeGroupForm.get('status')?.enable();
+    }
     if (this.chargeGroupForm.invalid) {
       this.chargeGroupForm.markAllAsTouched();
       this.chargeGroupForm.updateValueAndValidity();

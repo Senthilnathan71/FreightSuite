@@ -104,20 +104,14 @@ export class HSSACComponent {
       TaxType: ['', [Validators.required]],
       EffectiveFrom: ['', [Validators.required]],
       Remarks: ['', [Validators.required]],
-      status: ['Active', [Validators.required]],
+      status: [{value: 'Active', disabled: false}, Validators.required], 
     });
   }
 
   resetForm(): void {
+    this.hssacForm.get('status')?.disable();
     this.hssacForm.reset({
-    HSSACCode: '',
-    HSSACName: '',
-    ServiceName: '',
-    TaxRate: '',
-    TaxType: 'Default',     
-    EffectiveFrom: '',
-    Remarks: '',
-    status: 'Active'
+      status: 'Active'
     });
   }
 
@@ -140,6 +134,7 @@ editHssac(id: number, content: any) {
   this.HSSACMasterSid = id;
   this.masterService.getHssacById(id).pipe(take(1)).subscribe({
     next: (hssac: any) => {
+      this.hssacForm.get('status')?.enable();
       this.hssacForm.patchValue({
         HSSACCode: hssac.HSSACCode,
         HSSACName: hssac.HSSACName,
@@ -189,6 +184,9 @@ editHssac(id: number, content: any) {
 }
 
   onSubmit() {
+    if (this.hssacForm.get('status')?.disabled) {
+      this.hssacForm.get('status')?.enable();
+    }
     if (this.hssacForm.invalid) {
       this.hssacForm.markAllAsTouched();
       this.hssacForm.updateValueAndValidity();

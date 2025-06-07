@@ -135,7 +135,7 @@
         </div>
     </div>
     <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
-        <div class="alert alert-info text-center">No records found</div>
+        <div >No records found</div>
     </div>
     <ng-template #content let-modal>
         <div class="modal-header">
@@ -188,20 +188,48 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" class="custom-input-field sm" formControlName="ServiceName" placeholder="">
                                     <label for="text-input" class="input-label">Service Name <span class="text-danger">*</span></label>
-                                </div>
-                            </aside>
+                               @if(hssacForm.get('ServiceName')?.touched && hssacForm.get('ServiceName')?.invalid){
+      <div class="error-message">
+        @if(hssacForm.get('ServiceName')?.hasError('required')){
+          <span>Service Name is required</span>
+        } @else if(hssacForm.get('ServiceName')?.hasError('maxlength')){
+          <span>Max 100 Characters</span>
+        }
+      </div>
+    }
+  </div>
+</aside>
+
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="number" class="custom-input-field sm" formControlName="TaxRate" placeholder="">
                                     <label for="" class="input-label">Tax Rate<span class="text-danger">*</span></label>
-                                </div>
-                            </aside>
+                                 @if(hssacForm.get('TaxRate')?.touched && hssacForm.get('TaxRate')?.invalid){
+      <div class="error-message">
+        @if(hssacForm.get('TaxRate')?.hasError('required')){
+          <span>Tax Rate is required</span>
+        } @else if(hssacForm.get('TaxRate')?.hasError('min') || hssacForm.get('TaxRate')?.hasError('max')){
+          <span>Tax Rate must be between 0 and 100</span>
+        }
+      </div>
+    }
+  </div>
+</aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select formControlName="TaxType" [items]="modeOfTaxType" bindLabel="name" bindValue="name"></ng-select>
                                     <label class="input-label">Tax Type <span class="text-danger">*</span></label>
-                                </div>                                    
-                            </aside>
+                                 @if(hssacForm.get('TaxRate')?.touched && hssacForm.get('TaxRate')?.invalid){
+      <div class="error-message">
+        @if(hssacForm.get('TaxRate')?.hasError('required')){
+          <span>Tax Rate is required</span>
+        } @else if(hssacForm.get('TaxRate')?.hasError('min') || hssacForm.get('TaxRate')?.hasError('max')){
+          <span>Tax Rate must be between 0 and 100</span>
+        }
+      </div>
+    }
+  </div>
+</aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="date" id="EffectiveFrom" class="custom-input-field sm" formControlName="EffectiveFrom">
@@ -212,17 +240,36 @@
                                 <div class="custom-form-group">
                                     <input type="textarea" id="text-input" class="custom-input-field sm" formControlName="Remarks" placeholder="">
                                     <label for="text-input" class="input-label">Remarks <span class="text-danger">*</span></label>
-                                </div>
-                            </aside>
-                            <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <select formControlName="status" class="form-select">
-                                        <option value="">Status</option>
-                                        <option *ngFor="let option of statusList" [value]="option">{{ option }}</option>
-                                    </select>
-                                    <label for="text-input" class="input-label">Status <span class="text-danger fw-bold">*</span></label>
-                                </div>
-                            </aside>
+                                 @if(hssacForm.get('Remarks')?.touched && hssacForm.get('Remarks')?.invalid){
+      <div class="error-message">
+        @if(hssacForm.get('Remarks')?.hasError('required')){
+          <span>Remarks is required</span>
+        } @else if(hssacForm.get('Remarks')?.hasError('maxlength')){
+          <span>Max 500 Characters</span>
+        }
+      </div>
+    }
+  </div>
+</aside>
+                            <!-- ... (keep all existing HTML until the status field) -->
+
+<aside class="col-md-6">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select [items]="statusList" 
+              formControlName="status"
+              [class.is-invalid]="hssacForm.get('status')?.invalid && hssacForm.get('status')?.touched"
+              [disabled]="hssacForm.get('status')?.disabled">
+    </ng-select>
+    <label class="input-label">Status <span class="text-danger">*</span></label>
+    @if(hssacForm.get('status')?.touched && hssacForm.get('status')?.invalid){
+    <div class="error-message">
+      <span>Status is required</span>
+    </div>
+    }
+  </div>
+</aside>
+
+
                             </div>
                         </div>
                     </div>
@@ -231,7 +278,7 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-            <button type="button" class="btn btn-primary" 
+            <button type="button" class="btn btn-info" 
                 (click)="onSubmit()" 
                 [disabled]="btnDisable || hssacForm.invalid">
                 {{ isEditMode ? 'Update' : 'Save' }}

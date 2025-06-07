@@ -73,7 +73,7 @@ export class RoleComponent implements OnInit {
       UserRoleName: ['', [Validators.required, Validators.maxLength(50)]],
       UserRoleCode: ['', [Validators.required, Validators.maxLength(3), this.alphaNumericValidator()]],
       LicenseType: ['', [Validators.maxLength(50)]],
-      status: ['Active', Validators.required]
+      status: [{value: 'Active', disabled: false}, Validators.required]
     });
   }
 
@@ -86,6 +86,7 @@ export class RoleComponent implements OnInit {
   }
 
   resetForm(): void {
+    this.roleForm.get('status')?.disable();
     this.roleForm.reset({
       status: 'Active'
     });
@@ -102,7 +103,8 @@ export class RoleComponent implements OnInit {
   this.RoleMasterSid = id;
   this.masterService.getRoleById(id).pipe(take(1)).subscribe({
     next: (response: any) => {
-      const role = response.data; // Access the data property from the response
+      const role = response.data; 
+      this.roleForm.get('status')?.enable();
       this.roleForm.patchValue({
         UserRoleName: role.UserRoleName,
         UserRoleCode: role.UserRoleCode,
@@ -142,6 +144,9 @@ export class RoleComponent implements OnInit {
 }
 
   onSubmit() {
+    if (this.roleForm.get('status')?.disabled) {
+      this.roleForm.get('status')?.enable();
+    }
     if (this.roleForm.invalid) {
       this.roleForm.markAllAsTouched();
       this.roleForm.updateValueAndValidity();
