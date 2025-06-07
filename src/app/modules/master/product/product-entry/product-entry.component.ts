@@ -175,7 +175,9 @@ export class ProductEntryComponent implements OnInit{
     }
 
     resetForm(){
-        this.productForm.reset();
+        this.productForm.reset({
+            status : 'Active'
+        });
     }
 
 

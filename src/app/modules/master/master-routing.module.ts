@@ -851,6 +851,17 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
+      {
+        path: 'sailing-schedule/entry/:id',
+        component: SailingScheduleEntryComponent,
+        data: {
+          title: 'Sailing Schedule',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Sailing Schedule' },
+          ],
+        },
+      },
     ],
   },
 

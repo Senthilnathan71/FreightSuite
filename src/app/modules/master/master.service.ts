@@ -25,6 +25,14 @@ import { Product } from '../crm-mobile/Interfaces/product.interface';
 export class MasterService {
   constructor(private http: HttpClient) { }
   //vessel-master
+  getAllVessels() {
+    return this.http.get<{ data: Vessel }>('vessel').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response
+      })
+    )
+  }
   searchVesselList(payload) {
     return this.http.post("vessel/search-list", payload).pipe(
       map((res: any) => {
@@ -1965,6 +1973,127 @@ export class MasterService {
     return this.http.post<{data:any[]}>('menu/search-list',payload).pipe(
       map((resp)=>{
         let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  // Sailing Schedule Header
+  
+  getAllSailingSchedule(){
+    return this.http.get<{data:any[]}>('voyage').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewSailingSchedule(payload){
+    return this.http.post<{data:any}>('voyage/create',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getSailingScheduleById(VoyageMasterHeaderSid){
+    return this.http.get<{data:any}>(`voyage/fetch/${VoyageMasterHeaderSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateSailingScheduleById(VoyageMasterHeaderSid,payload){
+    return this.http.patch<{data:any}>(`voyage/update/${VoyageMasterHeaderSid}`,payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteSailingScheduleById(VoyageMasterHeaderSid){
+    return this.http.delete<{data:any}>(`voyage/delete/${VoyageMasterHeaderSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchSailingSchedule(payload){
+    return this.http.post<{data:any[]}>('voyage/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  specialScheduleSearch(payload){
+    return this.http.post<{data:any[]}>('voyage/searchBy',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // Sailing Schedule Detail
+
+  getAllSailingScheduleDetail(){
+    return this.http.get<{data:any[]}>('voyage-detail').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewSailingScheduleDetail(payload){
+    return this.http.post<{data:any}>('voyage-detail/create',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getSailingScheduleDetailById(VoyageMasterDetailSid){
+    return this.http.get<{data:any}>(`voyage-detail/fetch/${VoyageMasterDetailSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateSailingScheduleDetailById(VoyageMasterDetailSid,payload){
+    return this.http.patch<{data:any}>(`voyage-detail/update/${VoyageMasterDetailSid}`,payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteSailingScheduleDetailById(VoyageMasterDetailSid){
+    return this.http.delete<{data:any}>(`voyage-detail/delete/${VoyageMasterDetailSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchSailingScheduleDetail(payload){
+    return this.http.post<{data:any[]}>('voyage-detail/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp;
         return response;
       })
     )
