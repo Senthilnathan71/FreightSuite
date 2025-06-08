@@ -8,6 +8,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-unit-list',
@@ -30,6 +31,7 @@ export class UnitListComponent {
   allUnits: any[] = [];
   searchPerformed = false;
   loading: boolean = false;
+  userData: any;
 
   // pagination
   page = 1;
@@ -40,10 +42,17 @@ export class UnitListComponent {
     private masterService: MasterService,
     private router: Router,
     private dialog: MatDialog,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private excelReportService: ExcelExportService
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() { 
+    this.appSettingService.getUser().subscribe(user => {
+    if (user) {
+      this.userData = user;
+    }
+  });
+  }
 
   search() {
     this.loading = true;
@@ -140,7 +149,31 @@ export class UnitListComponent {
   getStatusText(status: string): string {
     return status === 'A' ? 'Active' : 'Suspended';
   }
-  report(){
-    
-  }
+ report(): void {
+ 
+  const formattedData = this.unitList.map(item => ({
+    ...item,
+    status: this.getStatusText(item.status) // Convert 'A'/'S' to 'Active'/'Suspended'
+  }));
+
+  
+  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: [
+      { key: 'unitName', label: 'Unit Name' },
+      { key: 'unitCode', label: 'Unit Code' },
+      { key: 'jobType', label: 'Job Type' },
+      { key: 'containerType', label: 'Container Type' },
+      { key: 'measurementType', label: 'Measurement Type' },
+      { key: 'Remarks', label: 'Remarks' },
+      { key: 'status', label: 'Status' }
+
+    ],
+    fileName: 'Unit-Report',
+    title: companyName
+  });
+}
+
+ 
 }

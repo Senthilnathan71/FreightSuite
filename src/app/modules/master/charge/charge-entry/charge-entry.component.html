@@ -59,13 +59,17 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="UOM" [items]="uomOptions"
-                                bindLabel="uomName" bindValue="uomId"> 
-                                </ng-select>
-                                <label class="input-label">UOM</label>
-                            </div>
-                        </aside>
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select 
+      formControlName="UOM" 
+      [items]="uomOptions" 
+      bindLabel="UOMCode" 
+      bindValue="UOMCode"
+      placeholder="Select UOM">
+    </ng-select>
+    <label class="input-label">UOM</label>
+  </div>
+</aside>
                        <!-- Update the charge group dropdown section -->
 <aside class="col-md-4">
   <div class="custom-form-group custom-form-group-select">
@@ -124,7 +128,7 @@
                                         {{item.code}} - {{item.description}}
                                     </ng-template>
                                 </ng-select>
-                                <label class="input-label">HSN/SAC Code <span class="text-danger fw-semibold">*</span></label>
+                                <label class="input-label">SAC Code <span class="text-danger fw-semibold">*</span></label>
                                 <div *ngIf="chargeForm.get('HSNSAC')?.touched && chargeForm.get('HSNSAC')?.invalid">
                                     <p *ngIf="chargeForm.get('HSNSAC')?.errors?.['required']" class="error-message">HSN/SAC code is required.</p>
                                 </div>

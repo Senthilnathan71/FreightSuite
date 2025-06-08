@@ -9,6 +9,8 @@ import { MasterService } from '../../master.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { forkJoin } from 'rxjs';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { authService } from 'src/app/modules/authentication/auth.service';
 
 @Component({
   selector: 'app-post-master-list',
@@ -29,6 +31,8 @@ export class PostMasterListComponent implements OnInit {
   searchType = 'PortName';
   filterValue = '';
   searchPerformed = false;
+  userData: any;
+
 
   // raw + paged data
   results: any[] = [];
@@ -48,12 +52,19 @@ export class PostMasterListComponent implements OnInit {
     private masterService: MasterService,
     private router: Router,
     private dialog: MatDialog,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private excelReportService: ExcelExportService, 
+    private userService: authService 
   ) { }
 
   ngOnInit(): void {
     // this.loadMasterData();
     this.loadAllRegions();
+    this.appSettingService.getUser().subscribe(user => {
+      if (user) {
+        this.userData = user;
+      }
+    });
   }
 
   /** Load all countries and sectors for lookup */
@@ -145,5 +156,30 @@ export class PostMasterListComponent implements OnInit {
     this.portList = [];
     this.totalLengthOfCollection = 0;
   }
-  report() { }
+  report(): void {
+    const formattedData = this.portList.map(item => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended',
+      countryName: item.countryMaster?.countryName || '—',
+      regionName: this.getRegionNameById(item.ZoneMasterSid)
+    }));
+
+    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'PortName', label: 'Port Name' },
+        { key: 'PortCode', label: 'Port Code' },
+        { key: 'countryName', label: 'Country' },
+        { key: 'regionName', label: 'Region' },
+        { key: 'PortType', label: 'Port Type' },
+        { key: 'TerminalCode', label: 'Terminal Code' },
+        { key: 'status', label: 'Status' }
+      ],
+      fileName: 'Port-Report',
+      title: companyName
+    });
+  }
+
 }

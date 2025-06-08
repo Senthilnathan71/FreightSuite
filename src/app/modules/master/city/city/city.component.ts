@@ -13,6 +13,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
 import { forkJoin, take } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-city',
@@ -52,8 +53,9 @@ export class CityComponent {
   filterValue = '';
   searchPerformed = false;
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   totalLengthOfCollection = 0;
+  userData: any;
 
   
   constructor(
@@ -63,10 +65,16 @@ export class CityComponent {
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private excelReportService: ExcelExportService
   ) { }
 
   ngOnInit(): void {
+     this.appSettingService.getUser().subscribe(user => {
+    if (user) {
+      this.userData = user;
+    }
+  });
     this.getAllCountries();
     this.getAllState();
     // this.loadCity();
@@ -133,16 +141,13 @@ export class CityComponent {
       cityCode: ['', [Validators.required]],
       StateMasterSid: ['', [Validators.required]],
       CountryMasterSid: ['', [Validators.required]], // Dropdown
-      status: ['Active']
+       status: [{value: 'Active', disabled: false}, Validators.required],
     });
   }
 
   resetForm(): void {
+    this.cityForm.get('status')?.disable();
     this.cityForm.reset({
-      cityName: '',
-      cityCode: '',
-      StateMasterSid: '',
-      CountryMasterSid: '',
       status: 'Active'
     });
   }
@@ -166,6 +171,7 @@ export class CityComponent {
     this.CityMasterSid = id;
     this.masterService.getCityById(id).pipe(take(1)).subscribe({
       next: (city: any) => {
+        this.cityForm.get('status')?.enable();
         this.cityForm.patchValue({
           cityName: city.cityName,
           cityCode: city.cityCode,
@@ -207,6 +213,9 @@ export class CityComponent {
   }
 
   onSubmit() {
+    if (this.cityForm.get('status')?.disabled) {
+      this.cityForm.get('status')?.enable();
+    }
     if (this.cityForm.invalid) {
       this.cityForm.markAllAsTouched(); // Force validation messages to show
       this.cityForm.updateValueAndValidity(); // Ensure validation is refreshed
@@ -363,6 +372,26 @@ export class CityComponent {
     this.searchPerformed = false;
   }
 
-  report() {  }
+  report(): void {
+  const formattedData = this.cityList.map(item => ({
+    ...item,
+    status: item.status === 'A' ? 'Active' : 'Suspended'
+  }));
+
+  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: [
+      { key: 'cityName', label: 'City Name' },
+      { key: 'cityCode', label: 'City Code' },
+      { key: 'countryName', label: 'Country' },
+      { key: 'stateName', label: 'State' },
+      { key: 'status', label: 'Status' }
+    ],
+    fileName: 'City-Report',
+    title: companyName
+  });
+}
   
 }
