@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -8,6 +8,8 @@ import { CommonModule } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { authService } from 'src/app/modules/authentication/auth.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
     selector: 'app-terms-condition-list',
@@ -22,13 +24,14 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
     templateUrl: './terms-condition-list.component.html',
     styleUrl: './terms-condition-list.component.scss'
 })
-export class TermsConditionListComponent {
+export class TermsConditionListComponent implements OnInit {
 
     searchType : string ='status';
     filterValue : any;
     TandCList : any[];
     slicedTandCList : any[];
     searchPerformed : boolean;
+    userData : any;
 
     page = 1;
     pageSize = 10;
@@ -39,7 +42,19 @@ export class TermsConditionListComponent {
         private masterService:MasterService,
         private appSettingService:AppSettingsService,
         private dialog:MatDialog,
+        private userService : authService,
+        private excelReportService : ExcelExportService
     ) { }
+
+    ngOnInit(): void {
+        this.appSettingService.getUser().subscribe(
+            user=>{
+                if(user){
+                    this.userData = user;
+                }
+            }
+        )
+    }
 
 
     onSearch(){
@@ -105,12 +120,29 @@ export class TermsConditionListComponent {
         this.router.navigate(['master/terms-condition/entry'])
     }
 
-    report(){
+    report(): void {
+        const formattedData = this.TandCList.map(item => ({
+            ...item,
+            status: item.status === 'A' ? 'Active' : 'Suspended',
+            menu : item.menu?.MenuName,
+            branch : item.branch?.branchName
+        }));
 
+        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+        this.excelReportService.exportAsExcel({
+            data: formattedData,
+            headers: [
+                { key: 'branch', label: 'Branch' },
+                { key: 'menu', label: 'Menu' },
+                { key: 'status', label: 'Status' }
+            ],
+            fileName: 'Terms-and-Condition-Report', 
+            title: companyName
+        });
     }
-
     reset(){
-        this.TandCList =[];
+        this.slicedTandCList =[];
         this.totalAmountOfCollections = 0;
         this.searchPerformed = false;
     }

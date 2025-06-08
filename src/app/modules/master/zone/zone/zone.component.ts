@@ -13,6 +13,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { take } from 'rxjs';
+import { authService } from 'src/app/modules/authentication/auth.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-zone',
@@ -47,8 +49,9 @@ export class ZoneComponent {
   filterValue = '';
   searchPerformed = false;
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   totalLengthOfCollection = 0;
+  userData : any;
 
   constructor(
    private modalService: NgbModal,
@@ -57,11 +60,18 @@ export class ZoneComponent {
    private route: ActivatedRoute,
    private router: Router,
    private appSettingService: AppSettingsService,
-   private dialog: MatDialog
+   private dialog: MatDialog,
+   private userService : authService,
+   private excelReportService : ExcelExportService
   ) {}
 
   ngOnInit(): void {
     // this.loadZone();
+    this.appSettingService.getUser().subscribe(user=>{
+      if (user) {
+        this.userData = user;
+      }
+    })
     this.initForm();
     this.route.paramMap.subscribe(params => {
       this.ZoneMasterSid = +params.get('id');
@@ -288,6 +298,23 @@ export class ZoneComponent {
     this.searchPerformed = false;
   }
 
-  report() {  }
+  report() {
+    const formattedData = this.zoneList.map(item => ({
+      ...item,
+      status : item.status === 'A' ? "Active" : "Suspended"
+    }));
+    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'ZoneName', label: 'Zone Name' },
+        { key: 'ZoneCode', label: 'Zone Code' },
+        { key: 'status', label: 'Status' }
+      ],
+      fileName: 'Zone-Report', 
+      title: companyName
+    });
+  }
 
 }

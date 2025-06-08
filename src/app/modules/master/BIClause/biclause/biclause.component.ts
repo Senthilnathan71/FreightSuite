@@ -10,6 +10,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { BLClause } from 'src/app/modules/crm-mobile/Interfaces/biclause.interface';
 import { FeatherModule } from 'angular-feather';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { authService } from 'src/app/modules/authentication/auth.service';
 
 @Component({
   selector: 'app-biclause',
@@ -37,7 +39,7 @@ export class BIclauseComponent implements OnInit {
   btnDisable = false;
   isEditMode = false;
   currentClauseId: number | null = null;
-
+  userData : any;
   // Pagination
   page = 1;
   pageSize = 10;
@@ -53,7 +55,9 @@ export class BIclauseComponent implements OnInit {
     private fb: FormBuilder,
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private userService: authService,
+    private excelReportService: ExcelExportService
   ) {
     this.biclauseForm = this.fb.group({
       ClauseDescription: ['', [Validators.required, Validators.maxLength(500)]],
@@ -66,8 +70,14 @@ export class BIclauseComponent implements OnInit {
   
 
   ngOnInit(): void {
-    // Don't load all clauses initially - wait for search
-  }
+        this.appSettingService.getUser().subscribe(
+            user=>{
+                if(user){
+                    this.userData = user;
+                }
+            }
+        )
+    }
 
   search(): void {
     this.loading = true;
@@ -243,7 +253,25 @@ export class BIclauseComponent implements OnInit {
     return item.BLClauseMasterSid;
   }
 
-  report() {
-    // Report implementation
-  }
+  report(): void {
+        const formattedData = this.clauseList.map(item => ({
+            ...item,
+            status : this.getStatusText(item.status)
+        }));
+
+        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+        this.excelReportService.exportAsExcel({
+            data: formattedData,
+            headers: [
+                { key: 'ClauseDescription', label: 'Clause Description' },
+                { key: 'Keyword', label: 'Keyword' },
+                { key: 'Sortorder', label: 'Sort Order' },
+                { key: 'status', label: 'Status' }
+            ],
+            fileName: 'Blclause-Report', 
+            title: companyName
+        });
+    }
+
 }

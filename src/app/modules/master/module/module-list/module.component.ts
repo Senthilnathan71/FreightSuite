@@ -10,6 +10,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { authService } from 'src/app/modules/authentication/auth.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-module',
@@ -35,6 +37,7 @@ export class ModuleComponent implements OnInit {
   moduleList: any[] = [];
   statusList = ["Active", "Suspended"];
   modalRef!: any;
+  userData : any;
   
   searchType = 'ModuleName';
   filterValue = '';
@@ -48,11 +51,20 @@ export class ModuleComponent implements OnInit {
     private fb: FormBuilder,
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private userService: authService,
+    private excelReportService: ExcelExportService
   ) { }
 
   ngOnInit(): void {
     this.initForm();
+    this.appSettingService.getUser().subscribe(
+      user => {
+        if (user) {
+          this.userData = user;
+        }
+      }
+    )
   }
 
   initForm() {
@@ -202,7 +214,24 @@ export class ModuleComponent implements OnInit {
   return index; // or return item.ModuleMasterSid if you want to track by ID
 }
 
-  report() {
-    // Implement report functionality
+  report(): void {
+    const formattedData = this.moduleList.map(item => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
+
+    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'ModuleName', label: 'Module Name' },
+        { key: 'ModuleCode', label: 'Module Code' },
+        { key: 'Remarks', label: 'Remarks' },
+        { key: 'status', label: 'Status' },
+      ],
+      fileName: 'Module-Report',
+      title: companyName
+    });
   }
 }

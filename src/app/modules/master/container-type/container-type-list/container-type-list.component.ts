@@ -9,6 +9,8 @@ import { forkJoin } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { authService } from 'src/app/modules/authentication/auth.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-container-type-list',
@@ -30,6 +32,8 @@ export class ContainerTypeListComponent {
   containerList: any[] = [];
   searchPerformed = false;
   companyMap: { [id: number]: string} = {};
+  userData : any;
+  
 
   // Pagination 
   page = 1;
@@ -40,11 +44,20 @@ export class ContainerTypeListComponent {
     private masterService: MasterService,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private userService: authService,
+    private excelReportService: ExcelExportService
   ) { }
 
   ngOnInit() { 
     this.getAllCompanies();
+    this.appSettingService.getUser().subscribe(
+      user => {
+        if (user) {
+          this.userData = user;
+        }
+      }
+    )
   }
 
   getAllCompanies() {
@@ -103,5 +116,26 @@ export class ContainerTypeListComponent {
     this.searchPerformed = false;
   }
 
-  report() { }
+  report(): void {
+    const formattedData = this.containerList.map(item => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
+
+        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+        this.excelReportService.exportAsExcel({
+            data: formattedData,
+            headers: [
+                { key: 'ContainerName', label: 'Container Name' },
+                { key: 'ContainerCode', label: 'Container Code' },
+                { key: 'ContainerIsoCode', label: 'ISO Code' },
+                { key: 'ContainerCategory', label: 'Category' },
+                { key: 'NoOfTeu', label: 'No of TEU' },
+                { key: 'status', label: 'Status' },
+            ],
+            fileName: 'Container-Type-Report', 
+            title: companyName
+        });
+    }
 }

@@ -123,29 +123,25 @@ export class CompanyEntryComponent implements OnInit {
 
 	initBranchForm() {
 		this.branchForm = this.fb.group({
+			branchCompanyMasterSid: [''],
 			branchName: ['', [Validators.required, Validators.maxLength(100)]],
 			branchCode: ['', [Validators.required, Validators.maxLength(10)]],
-			branchCompanyMasterSid: [''],
-			branchTaxRegistrationNo: ['', [Validators.maxLength(50)]],
-			branchCISN: ['', [Validators.maxLength(50)]],
 			branchAddressLine1: ['', [Validators.required, Validators.maxLength(500)]],
 			branchAddressLine2: ['', [Validators.maxLength(500)]],
+			branchPostalCode: ['', [Validators.required, Validators.maxLength(10)]],
 			branchCityMasterSid: ['', [Validators.required]],
 			branchStateMasterSid: ['', [Validators.required]],
 			branchCountryMasterSid: ['', [Validators.required]],
-			branchPostalCode: ['', [Validators.required, Validators.maxLength(10)]],
 			branchWebSite: ['', [Validators.maxLength(100)]],
 			branchPhoneNumber: ['', [Validators.maxLength(20)]],
 			branchEmail: ['', [Validators.maxLength(100), Validators.email]],
-			branchCurrencyMasterSid: ['', [Validators.required]],
 			branchTimeZone: ['', [Validators.maxLength(6)]],
 			branchRemarks: ['', [Validators.maxLength(500)]],
 			branchStatus: ['Active'],
-
-			// These fields needs to be taken care
+			branchTaxRegistrationNo: ['', [Validators.maxLength(50)]],
 			branchCompanyLogo: [],
 			branchReportLogo: [],
-			branchLoginSid: [1],
+			
 			company: [{}],
 			cityMaster: [{}],
 		})

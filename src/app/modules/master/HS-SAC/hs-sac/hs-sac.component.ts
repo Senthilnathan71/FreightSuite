@@ -13,6 +13,8 @@ import { HSSAC } from 'src/app/modules/crm-mobile/Interfaces/hs-sac.interfaces';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { take } from 'rxjs';
+import { authService } from 'src/app/modules/authentication/auth.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-hs-sac',
@@ -57,6 +59,7 @@ export class HSSACComponent {
   page = 1;
   pageSize = 5;
   totalLengthOfCollection = 0;
+	userData : any;
 
 
   constructor(
@@ -67,12 +70,21 @@ export class HSSACComponent {
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private userService: authService,
+    private excelReportService: ExcelExportService
   ) { }
 
   ngOnInit(): void {
     // this.loadHssac()
     this.initForm();
+    this.appSettingService.getUser().subscribe(
+      user => {
+        if (user) {
+          this.userData = user;
+        }
+      }
+    )
     this.route.paramMap.subscribe(params => {
       this.HSSACMasterSid = +params.get('id');
       if (this.HSSACMasterSid) {
@@ -314,5 +326,27 @@ editHssac(id: number, content: any) {
   }
 
   report(): void {
+    const formattedData = this.hssacList.map(item => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
+
+    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'HSSACCode', label: 'HS-SAC Code' },
+        { key: 'HSSACName', label: 'HS-SAC Name' },
+        { key: 'ServiceName', label: 'Service Name' },
+        { key: 'TaxRate', label: 'Tax Rate' },
+        { key: 'TaxType', label: 'Tax Type' },
+        { key: 'EffectiveFrom', label: 'Effective From' },
+        { key: 'Remarks', label: 'Remarks' },
+        { key: 'status', label: 'Status' },
+      ],
+      fileName: 'HSSAC-Report',
+      title: companyName
+    });
   }
 }

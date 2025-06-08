@@ -9,6 +9,8 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { authService } from 'src/app/modules/authentication/auth.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
     selector: 'app-sailing-schedule-lsit',
@@ -35,6 +37,7 @@ export class SailingScheduleLsitComponent implements OnInit {
     slicedScheduleList : any[];
     portOfLoading :"" ;
     portOfDeparture :"";
+    userData : any;
 
     page = 1;
     pageSize = 10;
@@ -44,11 +47,20 @@ export class SailingScheduleLsitComponent implements OnInit {
         private router: Router,
         private masterService:MasterService,
         private appSettingService : AppSettingsService,
-        private dialog : MatDialog        
+        private dialog : MatDialog ,
+        private userService : authService,
+        private excelReportService : ExcelExportService      
     ) { }
 
     ngOnInit(): void {
         this.loadAllPorts();
+        this.appSettingService.getUser().subscribe(
+            user=>{
+                if(user){
+                    this.userData = user;
+                }
+            }
+        )
     }
 
     onSearch(){
@@ -161,14 +173,47 @@ export class SailingScheduleLsitComponent implements OnInit {
         )
     }
 
+    report(): void {
+        const formattedData = this.scheduleList.flatMap(item => {
+            if (!item.voyageMasterDetail || item.voyageMasterDetail.length === 0) {
+                return [{
+                    vessel: item.vesselMaster?.VesselName,
+                    POL: '',
+                    POD: '',
+                    ETA: '',
+                    ETD: ''
+                }];
+            }
+            return item.voyageMasterDetail.map(detail => ({
+                vessel: item.vesselMaster?.VesselName,
+                POL: detail?.portMasterPOL?.PortCode || '',
+                POD: detail?.portMasterPOD?.PortCode  || '',
+                ETA: detail?.ETA || '',
+                ETD: detail?.ETD || ''
+            }));
+        });
+
+        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+        this.excelReportService.exportAsExcel({
+            data: formattedData,
+            headers: [
+                { key: 'vessel', label: 'Vsl/Voy' },
+                { key: 'POL', label: 'POL' },
+                { key: 'POD', label: 'POD' },
+                { key: 'ETA', label: 'ETA' },
+                { key: 'ETD', label: 'ETD' },
+            ],
+            fileName: 'Sailing-Schedule-Report', 
+            title: companyName
+        });
+    }
+
     reset(){
         this.searchPerformed = false;
         this.scheduleList = [];
         this.slicedScheduleList = [];
         this.totalAmountOfCollections = 0;
-    }
-    report(){
-
     }
 
 }

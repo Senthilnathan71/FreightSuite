@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -8,6 +8,8 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { authService } from 'src/app/modules/authentication/auth.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
 	selector: 'app-imco-list',
@@ -16,13 +18,14 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 	templateUrl: './imco-list.component.html',
 	styleUrl: './imco-list.component.scss'
 })
-export class ImcoListComponent {
+export class ImcoListComponent implements OnInit{
 
 	searchType: string = "ImcoClass";
 	filterValue: any;
 	searchPerformed: boolean;
 	imcoList: any[];
 	searchResults: any[];
+	userData : any;
 
 	// Pagination Data
 	page = 1;
@@ -33,8 +36,20 @@ export class ImcoListComponent {
 		private masterService: MasterService,
 		private appSettingService: AppSettingsService,
 		private matdial: MatDialog,
-		private route: Router
+		private route: Router,
+		private userService : authService,
+        private excelReportService : ExcelExportService
 	) { }
+
+	ngOnInit(): void {
+        this.appSettingService.getUser().subscribe(
+            user=>{
+                if(user){
+                    this.userData = user;
+                }
+            }
+        )
+    }
 
 	onSearch() {
 		const payload = {
@@ -93,7 +108,24 @@ export class ImcoListComponent {
 		this.totalAmountOfCollection = 0;
 	}
 
-	report() {
+	report(): void {
+        const formattedData = this.imcoList.map(item => ({
+            ...item,
+			status : item.status === 'A' ? 'Active':'Suspended'
+        }));
 
-	}
+        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+        this.excelReportService.exportAsExcel({
+            data: formattedData,
+            headers: [
+                { key: 'ImcoClass', label: 'Imco Class' },
+                { key: 'ImcoUn', label: 'UN No' },
+                { key: 'PackingGroup', label: 'Packing Group' },
+                { key: 'status', label: 'Status' },
+            ],
+            fileName: 'Imco-Report', 
+            title: companyName
+        });
+    }
 }

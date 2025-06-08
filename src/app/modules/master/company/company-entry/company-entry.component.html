@@ -317,12 +317,12 @@
                         
                        <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="PAN" [textWithNumbers]="20">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Pan" [textWithNumbers]="20">
                                 <label for="text-input" class="input-label">PAN </label>
                         
-                                @if(companyForm.get('PAN')?.touched && companyForm.get('PAN')?.invalid){
+                                @if(companyForm.get('Pan')?.touched && companyForm.get('Pan')?.invalid){
                                     <div class="error-message">
-                                        @if(companyForm.get('PAN')?.hasError('maxlength')){
+                                        @if(companyForm.get('Pan')?.hasError('maxlength')){
                                             <span>Max 20 Characters</span>
                                         }
                                     </div>
@@ -435,7 +435,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchName" [onlyText]="100">
@@ -455,7 +455,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchCode" [textWithNumbers]="10">
@@ -490,10 +490,10 @@
                                 </div>
                             </aside>
                             } -->
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="branchTaxRegistrationNo" [textWithNumbers]="50">
-                                    <label for="text-input" class="input-label">Tax Registration No</label>
+                                    <label for="text-input" class="input-label">GST/VAT no</label>
                                     @if(branchForm.get('branchTaxRegistrationNo')?.touched &&
                                     branchForm.get('branchTaxRegistrationNo')?.invalid){
                                     <div class="error-message">
@@ -504,7 +504,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
+                            <!-- <aside class="col-md-3">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchCISN" [textWithNumbers]="50">
@@ -518,12 +518,12 @@
                                     </div>
                                     }
                                 </div>
-                            </aside>
+                            </aside> -->
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchAddressLine1" [textWithNumbers]="500">
-                                    <label for="text-input" class="input-label">Address 1 <span
+                                    <label for="text-input" class="input-label">Address <span
                                             class="text-danger">*</span></label>
                                     @if(branchForm.get('branchAddressLine1')?.touched &&
                                     branchForm.get('branchAddressLine1')?.invalid){
@@ -697,7 +697,7 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="row">
-                            <aside class="col-md-3">
+                            <!-- <aside class="col-md-3">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select id="text-input" class="ng-select" formControlName="branchCurrencyMasterSid">
                                         <ng-option value="">Currency</ng-option>
@@ -716,8 +716,8 @@
                                     </div>
                                     }
                                 </div>
-                            </aside>
-                            <aside class="col-md-3">
+                            </aside> -->
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchTimeZone" [textWithNumbers]="6">
@@ -732,7 +732,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchRemarks" [textWithNumbers]="500">
@@ -747,7 +747,7 @@
                                     }
                                 </div>
                             </aside>
-                             <aside class="col-md-3">
+                             <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select">
 
                                     @if(isModalEditMode){

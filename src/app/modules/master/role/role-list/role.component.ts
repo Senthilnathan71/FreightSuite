@@ -10,6 +10,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { FeatherModule } from 'angular-feather';
 import { take } from 'rxjs';
+import { authService } from 'src/app/modules/authentication/auth.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-role',
@@ -45,6 +47,7 @@ export class RoleComponent implements OnInit {
   pageSize = 10;
   totalLengthOfCollection = 0;
   isLoading = false;
+  userData : any;
 
   constructor(
     private modalService: NgbModal,
@@ -54,10 +57,20 @@ export class RoleComponent implements OnInit {
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private userService: authService,
+    private excelReportService: ExcelExportService
   ) { }
 
   ngOnInit(): void {
+    this.appSettingService.getUser().subscribe(
+      user => {
+        if (user) {
+          this.userData = user;
+        }
+      }
+    )
+
     this.initForm();
     this.route.paramMap.subscribe(params => {
       this.RoleMasterSid = +params.get('id');
@@ -246,6 +259,23 @@ export class RoleComponent implements OnInit {
   }
 
   report(): void {
-    // Implement report functionality
-  }
+    const formattedData = this.roleList.map(item => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
+
+        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+        this.excelReportService.exportAsExcel({
+            data: formattedData,
+            headers: [
+                { key: 'UserRoleName', label: 'Role Name' },
+                { key: 'UserRoleCode', label: 'Role Code' },
+                { key: 'LicenseType', label: 'License Type' },
+                { key: 'status', label: 'Status' },
+            ],
+            fileName: 'Role-Report', 
+            title: companyName
+        });
+    }
 }
