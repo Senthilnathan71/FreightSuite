@@ -1796,15 +1796,8 @@ export class MasterService {
   }
 
 
-  // Charge - tax
-  getAllChargeTax(){
-    return this.http.get<{data:any[]}>('charge-tax').pipe(
-      map((resp)=>{
-        let response = resp;
-        return response;
-      })
-    )
-  }
+  
+  
   // Charge Group Master
 
 getAllChargeGroups() {
@@ -2146,4 +2139,60 @@ searchChargeGroups(payload: any) {
       })
     )
   }
+ 
+
+// Charge Tax Master
+getAllChargeTax() {
+  return this.http.get<{data: any[]}>('charge-tax').pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+getChargeTaxById(ChargeTaxMasterSid: number) {
+  return this.http.get<{data: any}>(`charge-tax/fetch/${ChargeTaxMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+createNewChargeTax(payload: any) {
+  return this.http.post<{data: any}>('charge-tax/create', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+updateChargeTaxById(ChargeTaxMasterSid: number, payload: any) {
+  return this.http.patch<{data: any}>(`charge-tax/update/${ChargeTaxMasterSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+deleteChargeTaxById(ChargeTaxMasterSid: number) {
+  return this.http.delete<{data: any}>(`charge-tax/delete/${ChargeTaxMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+searchChargeTax(payload: any) {
+  return this.http.post<{data: any[]}>('charge-tax/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
 }
