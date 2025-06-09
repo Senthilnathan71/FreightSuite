@@ -112,76 +112,79 @@
                             }
                         </div>
                     </aside>
-
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                            <div class="input-group">
+                        <div class="d-flex mb-2 my-lg-0">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
                                 <input 
-                                    class="form-control" 
-                                    placeholder="yyyy-mm-dd" 
+                                    class="form-control mb-0" 
+                                    placeholder="dd-mm-yyyy" 
                                     name="dp" ngbDatepicker 
-                                    #d1="ngbDatepicker" 
+                                    #d="ngbDatepicker" 
                                     [footerTemplate]="footerTemplateSCMETA" 
-                                    (click)="d1.toggle()" 
+                                    (click)="d.toggle()" 
                                     formControlName="SCMETA" 
-                                    [maxDate]="scheduleForm.get('SCMETD').value"
+                                    [maxDate]="toNgbDateStruct(scheduleForm.get('SCMETD').value)"
                                     readonly
                                 />
-                                <button class="btn btn-info bi bi-calendar3" (click)="d1.toggle()" type="button">
-                                    <i-feather class="feather-sm" name="calendar"></i-feather>
-                                </button>
-                            </div>
-                            <label for="text-input" class="input-label">SCM ETA <span
+                                <label for="text-input" class="input-label">SCM ETA <span
                                     class="text-danger">*</span></label>
-                            @if(scheduleForm.get('SCMETA').touched && scheduleForm.get('SCMETA').invalid){
+                                @if(scheduleForm.get('SCMETA').touched && scheduleForm.get('SCMETA').invalid){
                                 <div class="error-message">
                                     @if(scheduleForm.get('SCMETA').hasError('required')){
-                                        <span>SCM ETA is required</span>
+                                    <span>SCM ETA is required</span>
                                     } @else if(scheduleForm.get('SCMETA').hasError('ngbDate')){
-                                        <span>SCMETA must be a date before SCMETD</span>
+                                    <span>SCMETA must be a date before SCMETD</span>
                                     }
                                 </div>
-                            }
-                        </div>
-                    </aside>
-                    <ng-template #footerTemplateSCMETD>
-                        <hr class="my-0" />
-                        <button class="btn btn-primary btn-sm m-2 float-start" (click)="scheduleForm.get('SCMETD').setValue(today); d1.close()">
-                            Today
-                        </button>
-                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">
-                            Close
-                        </button>
-                    </ng-template>
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                            <div class="input-group">
-                                <input class="form-control" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #d="ngbDatepicker" [footerTemplate]="footerTemplateSCMETD" (click)="d.toggle()" formControlName="SCMETD" readonly
-                                [minDate]="scheduleForm.get('SCMETA').value"/>
-                                <button class="btn btn-info bi bi-calendar3" (click)="d.toggle()" type="button">
-                                    <i-feather class="feather-sm" name="calendar"></i-feather>
-                                </button>
+                                }
                             </div>
-                            <label for="text-input" class="input-label">SCM ETD <span
-                                    class="text-danger">*</span></label>
-                            @if(scheduleForm.get('SCMETD').touched && scheduleForm.get('SCMETD').invalid){
-                                <div class="error-message">
-                                    @if(scheduleForm.get('SCMETD').hasError('required')){
-                                        <span>SCM ETD is required</span>
-                                    } @else if(scheduleForm.get('SCMETD').hasError('ngbDate')){
-                                        <span>SCMETD must be a date after SCMETA</span>
-                                    }
-                                </div>
-                            }
+                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d.toggle()" type="button">
+                                <i-feather class="feather-sm" name="calendar"></i-feather>
+                            </button>
                         </div>
                     </aside>
                     <ng-template #footerTemplateSCMETA>
                         <hr class="my-0" />
-                        <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleForm.get('SCMETA').setValue(today); d.close()">
+                        <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleForm.get('SCMETA').setValue(todayDate); d.close()">
                             Today
                         </button>
                         <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d.close()">
+                            Close
+                        </button>
+                    </ng-template>
+                    <aside class="col-md-3">
+                        <div class="d-flex mb-2 my-lg-0">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                <input 
+                                    class="form-control mb-0" placeholder="dd-mm-yyyy" 
+                                    name="dp" ngbDatepicker #d1="ngbDatepicker" 
+                                    [footerTemplate]="footerTemplateSCMETD" (click)="d1.toggle()" formControlName="SCMETD" 
+                                    [minDate]="toNgbDateStruct(scheduleForm.get('SCMETA').value)"
+                                    readonly
+                                />
+                                <label for="text-input" class="input-label">SCM ETD <span
+                                    class="text-danger">*</span></label>
+                                @if(scheduleForm.get('SCMETD').touched && scheduleForm.get('SCMETD').invalid){
+                                <div class="error-message">
+                                    @if(scheduleForm.get('SCMETD').hasError('required')){
+                                    <span>SCM ETD is required</span>
+                                    } @else if(scheduleForm.get('SCMETD').hasError('ngbDate')){
+                                    <span>SCMETD must be a date after SCMETA</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d1.toggle()" type="button">
+                                <i-feather class="feather-sm" name="calendar"></i-feather>
+                            </button>
+                        </div>
+                    </aside>
+                    <ng-template #footerTemplateSCMETD>
+                        <hr class="my-0" />
+                        <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleForm.get('SCMETD').setValue(todayDate); d1.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">
                             Close
                         </button>
                     </ng-template>
@@ -346,13 +349,13 @@
                             <div class="text-truncate">{{item.portMasterPOD?.PortCode}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item.ETA | date:'dd-MMM-YY'}}</div>
+                            <div class="text-truncate">{{item.ETA | formatDate }}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item.ETD | date:'dd-MMM-YY'}}</div>
+                            <div class="text-truncate">{{item.ETD | formatDate }}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item.PortCutoff | date:'dd-MMM-YY'}}</div>
+                            <div class="text-truncate">{{item.PortCutoff | formatDate}}</div>
                         </td>
                         <td>
                             <div class="text-truncate">{{item.TransitDays}}</div>
@@ -361,19 +364,19 @@
                             <div class="text-truncate">{{item.RotationNo}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item.RotationDate | date:'dd-MMM-YY'}}</div>
+                            <div class="text-truncate">{{item.RotationDate | formatDate}}</div>
                         </td>
                         <td>
                             <div class="text-truncate">{{item.IGMNo}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item.IGMDate | date:'dd-MMM-YY'}}</div>
+                            <div class="text-truncate">{{item.IGMDate | formatDate}}</div>
                         </td>
                         <td>
                             <div class="text-truncate">{{item.EGMNo}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item.EGMDate | date:'dd-MMM-YY'}}</div>
+                            <div class="text-truncate">{{item.EGMDate | formatDate}}</div>
                         </td>
 
                     </tr>
@@ -433,122 +436,118 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <div class="input-group">
+                     <aside class="col-md-6 mb-1">
+                        <div class="d-flex mb-2 my-lg-0">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
                                 <input 
                                     class="form-control" 
-                                    placeholder="yyyy-mm-dd" 
+                                    placeholder="dd-mm-yyyy" 
                                     name="dp" ngbDatepicker 
-                                    #d4="ngbDatepicker" 
+                                    #d3="ngbDatepicker" 
                                     [footerTemplate]="footerTemplatePortCutOff" 
-                                    (click)="d4.toggle()" 
+                                    (click)="d3.toggle()" 
                                     formControlName="PortCutoff"
-                                    [maxDate]="scheduleDetailForm.get('ETA').value" 
+                                    [maxDate]="toNgbDateStruct(scheduleDetailForm.get('ETA').value)" 
                                     readonly
                                 />
-                                <button class="btn btn-info bi bi-calendar3" (click)="d4.toggle()" type="button">
-                                    <i-feather class="feather-sm" name="calendar"></i-feather>
-                                </button>
-                            </div>
-                            <label for="text-input" class="input-label">Port Cut Off <span
+                                <label for="text-input" class="input-label">Port Cut Off <span
                                     class="text-danger">*</span></label>
-                            @if(scheduleDetailForm.get('PortCutoff').touched && scheduleDetailForm.get('PortCutoff').invalid){
+                                @if(scheduleDetailForm.get('PortCutoff')?.touched && scheduleDetailForm.get('PortCutoff')?.invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('PortCutoff').hasError('required')){
                                         <span>Port Cut off is required</span>
                                     }
                                 </div>
-                            }
+                                }
+                            </div>
+                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d3.toggle()" type="button">
+                                <i-feather class="feather-sm" name="calendar"></i-feather>
+                            </button>
                         </div>
                     </aside>
                     <ng-template #footerTemplatePortCutOff>
                         <hr class="my-0" />
-                        <button class="btn btn-primary btn-sm m-2 float-start" (click)="scheduleDetailForm.get('PortCutoff').setValue(today); d4.close()">
-                            Today
-                        </button>
-                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d4.close()">
-                            Close
-                        </button>
-                    </ng-template>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <div class="input-group">
-                                <input 
-                                    class="form-control" 
-                                    placeholder="yyyy-mm-dd" 
-                                    name="dp" ngbDatepicker 
-                                    #d3="ngbDatepicker" 
-                                    [footerTemplate]="footerTemplateETA" 
-                                    (click)="d3.toggle()" 
-                                    formControlName="ETA" 
-                                    [minDate]="scheduleDetailForm.get('PortCutoff').value"
-                                    [maxDate]="scheduleDetailForm.get('ETD').value"
-                                    readonly
-                                />
-                                <button class="btn btn-info bi bi-calendar3" (click)="d3.toggle()" type="button">
-                                    <i-feather class="feather-sm" name="calendar"></i-feather>
-                                </button>
-                            </div>
-                            <label for="text-input" class="input-label">ETA <span
-                                    class="text-danger">*</span></label>
-                            @if(scheduleDetailForm.get('ETA').touched && scheduleDetailForm.get('ETA').invalid){
-                                <div class="error-message">
-                                    @if(scheduleDetailForm.get('ETA').hasError('required')){
-                                        <span>ETA is required</span>
-                                    }@else if(scheduleDetailForm.get('ETA').hasError('ngbDate')){
-                                        <span>ETA must be a date after PortCutOff and before ETD</span>
-                                    }
-                                </div>
-                            }
-                        </div>
-                    </aside>
-                    <ng-template #footerTemplateETA>
-                        <hr class="my-0" />
-                        <button class="btn btn-primary btn-sm m-2 float-start" (click)="scheduleDetailForm.get('ETA').setValue(today); d3.close()">
+                        <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleDetailForm.get('PortCutoff').setValue(todayDate); d3.close()">
                             Today
                         </button>
                         <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d3.close()">
                             Close
                         </button>
                     </ng-template>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <div class="input-group">
+                    <aside class="col-md-6 mb-1">
+                        <div class="d-flex mb-2 my-lg-0">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
                                 <input 
                                     class="form-control" 
-                                    placeholder="yyyy-mm-dd" 
+                                    placeholder="dd-mm-yyyy" 
                                     name="dp" ngbDatepicker 
-                                    #d2="ngbDatepicker" 
-                                    [footerTemplate]="footerTemplateETD" 
-                                    (click)="d2.toggle()" 
-                                    formControlName="ETD" 
-                                    [minDate]="scheduleDetailForm.get('ETA').value"
+                                    #d4="ngbDatepicker" 
+                                    [footerTemplate]="footerTemplateETA" 
+                                    (click)="d4.toggle()" 
+                                    formControlName="ETA"
+                                    [minDate]="toNgbDateStruct(scheduleDetailForm.get('PortCutoff')?.value)"
+                                    [maxDate]="toNgbDateStruct(scheduleDetailForm.get('ETD')?.value)"
                                     readonly
                                 />
-                                <button class="btn btn-info bi bi-calendar3" (click)="d2.toggle()" type="button">
-                                    <i-feather class="feather-sm" name="calendar"></i-feather>
-                                </button>
-                            </div>
-                            <label for="text-input" class="input-label">ETD <span
+                                <label for="text-input" class="input-label">ETA <span
                                     class="text-danger">*</span></label>
-                            @if(scheduleDetailForm.get('ETD').touched && scheduleDetailForm.get('ETD').invalid){
+                                @if(scheduleDetailForm.get('ETA')?.touched && scheduleDetailForm.get('ETA')?.invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('ETA')?.hasError('required')){
+                                        <span>ETA is required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d4.toggle()" type="button">
+                                <i-feather class="feather-sm" name="calendar"></i-feather>
+                            </button>
+                        </div>
+                    </aside>
+                    <ng-template #footerTemplateETA>
+                        <hr class="my-0" />
+                        <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleDetailForm.get('ETA')?.setValue(todayDate); d4.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d4.close()">
+                            Close
+                        </button>
+                    </ng-template>
+                    <aside class="col-md-6 mb-1">
+                        <div class="d-flex mb-2 my-lg-0">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                <input 
+                                    class="form-control" 
+                                    placeholder="dd-mm-yyyy" 
+                                    name="dp" ngbDatepicker 
+                                    #d5="ngbDatepicker" 
+                                    [footerTemplate]="footerTemplateETD" 
+                                    (click)="d5.toggle()" 
+                                    formControlName="ETD" 
+                                    [minDate]="toNgbDateStruct(scheduleDetailForm?.get('ETA').value)"
+                                    readonly
+                                />
+                                <label for="text-input" class="input-label">ETD <span
+                                    class="text-danger">*</span></label>
+                                @if(scheduleDetailForm.get('ETD')?.touched && scheduleDetailForm.get('ETD')?.invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('ETD').hasError('required')){
                                         <span>ETD is required</span>
-                                    }@else if(scheduleDetailForm.get('ETD').hasError('ngbDate')){
-                                        <span>ETD must be a date after ETA</span>
                                     }
                                 </div>
-                            }
+                                }
+                            </div>
+                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d5.toggle()" type="button">
+                                <i-feather class="feather-sm" name="calendar"></i-feather>
+                            </button>
                         </div>
                     </aside>
                     <ng-template #footerTemplateETD>
                         <hr class="my-0" />
-                        <button class="btn btn-primary btn-sm m-2 float-start" (click)="scheduleDetailForm.get('ETD').setValue(today); d2.close()">
+                        <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleDetailForm.get('ETD').setValue(todayDate); d5.close()">
                             Today
                         </button>
-                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d2.close()">
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d5.close()">
                             Close
                         </button>
                     </ng-template>
@@ -584,44 +583,44 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <div class="input-group">
+                    <aside class="col-md-6 mb-1">
+                        <div class="d-flex mb-2 my-lg-0">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
                                 <input 
                                     class="form-control" 
-                                    placeholder="yyyy-mm-dd" 
+                                    placeholder="dd-mm-yyyy" 
                                     name="dp" ngbDatepicker 
-                                    #d5="ngbDatepicker" 
+                                    #d6="ngbDatepicker" 
                                     [footerTemplate]="footerTemplateRotationDate" 
-                                    (click)="d5.toggle()" 
+                                    (click)="d6.toggle()" 
                                     formControlName="RotationDate" 
-                                    [minDate]="scheduleDetailForm.get('PortCutoff').value"
-                                    [maxDate]="scheduleDetailForm.get('ETA').value"
+                                    [minDate]="toNgbDateStruct(scheduleDetailForm.get('PortCutoff').value)"
+                                    [maxDate]="toNgbDateStruct(scheduleDetailForm.get('ETA').value)"
                                     readonly
                                 />
-                                <button class="btn btn-info bi bi-calendar3" (click)="d5.toggle()" type="button">
-                                    <i-feather class="feather-sm" name="calendar"></i-feather>
-                                </button>
-                            </div>
-                            <label for="text-input" class="input-label">Rotation Date <span
+                                 <label for="text-input" class="input-label">Rotation Date <span
                                     class="text-danger">*</span></label>
-                            @if(scheduleDetailForm.get('RotationDate').touched && scheduleDetailForm.get('RotationDate').invalid){
+                                @if(scheduleDetailForm.get('RotationDate').touched && scheduleDetailForm.get('RotationDate').invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('RotationDate').hasError('required')){
-                                        <span>Rotation Date is required</span>
+                                    <span>Rotation Date is required</span>
                                     }@else if(scheduleDetailForm.get('RotationDate').hasError('ngbDate')){
-                                        <span>Rotation Date must be a date after PortCutOff and before ETA</span>
+                                    <span>Rotation Date must be a date after PortCutOff and before ETA</span>
                                     }
                                 </div>
-                            }
+                                }
+                            </div>
+                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d6.toggle()" type="button">
+                                <i-feather class="feather-sm" name="calendar"></i-feather>
+                            </button>
                         </div>
                     </aside>
                     <ng-template #footerTemplateRotationDate>
                         <hr class="my-0" />
-                        <button class="btn btn-primary btn-sm m-2 float-start" (click)="scheduleDetailForm.get('RotationDate').setValue(today); d5.close()">
+                        <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleDetailForm.get('RotationDate').setValue(todayDate); d6.close()">
                             Today
                         </button>
-                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d5.close()">
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d6.close()">
                             Close
                         </button>
                     </ng-template>
@@ -642,35 +641,45 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <div class="input-group">
-                                <input class="form-control" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #d7="ngbDatepicker"
-                                    [footerTemplate]="footerTemplateIGMDate" (click)="d7.toggle()" formControlName="IGMDate"
-                                    [minDate]="scheduleDetailForm.get('ETA').value" [maxDate]="scheduleDetailForm.get('ETD').value" readonly />
-                                <button class="btn btn-info bi bi-calendar3" (click)="d7.toggle()" type="button">
-                                    <i-feather class="feather-sm" name="calendar"></i-feather>
-                                </button>
-                            </div>
-                            <label for="text-input" class="input-label">IGM Date <span class="text-danger">*</span></label>
-                            @if(scheduleDetailForm.get('IGMDate').touched && scheduleDetailForm.get('IGMDate').invalid){
+                    <aside class="col-md-6 mb-1">
+                        <div class="d-flex mb-2 my-lg-0">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                <input 
+                                    class="form-control" 
+                                    placeholder="dd-mm-yyyy" 
+                                    name="dp" ngbDatepicker 
+                                    #d7="ngbDatepicker"
+                                    [footerTemplate]="footerTemplateIGMDate" 
+                                    (click)="d7.toggle()" 
+                                    formControlName="IGMDate"
+                                    [minDate]="toNgbDateStruct(scheduleDetailForm.get('ETA').value)" 
+                                    [maxDate]="toNgbDateStruct(scheduleDetailForm.get('ETD').value)" 
+                                    readonly 
+                                />
+                                 <label for="text-input" class="input-label">IGM Date <span
+                                    class="text-danger">*</span></label>
+                                @if(scheduleDetailForm.get('IGMDate').touched && scheduleDetailForm.get('IGMDate').invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('IGMDate').hasError('required')){
-                                        <span>IGM Date is required</span>
-                                    }@else if(scheduleDetailForm.get('EGMDate').hasError('ngbDate')){
-                                        <span>IGM must be a date after ETA and before ETD</span>
+                                    <span>IGM is required</span>
+                                    }@else if(scheduleDetailForm.get('IGMDate').hasError('ngbDate')){
+                                    <span>IGM Date must between ETA and ETD</span>
                                     }
                                 </div>
-                            }
+                                }
+                            </div>
+                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d7.toggle()" type="button">
+                                <i-feather class="feather-sm" name="calendar"></i-feather>
+                            </button>
                         </div>
                     </aside>
                     <ng-template #footerTemplateIGMDate>
                         <hr class="my-0" />
-                        <button class="btn btn-primary btn-sm m-2 float-start"
-                            (click)="scheduleDetailForm.get('IGMDate').setValue(today); d6.close()">
+                        <button class="btn btn-info btn-sm m-2 float-start"
+                            (click)="scheduleDetailForm.get('IGMDate').setValue(todayDate); d7.close()">
                             Today
                         </button>
-                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d6.close()">
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d7.close()">
                             Close
                         </button>
                     </ng-template>
@@ -691,35 +700,44 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <div class="input-group">
-                                <input class="form-control" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #d6="ngbDatepicker"
-                                    [footerTemplate]="footerTemplateEGMDate" (click)="d6.toggle()" formControlName="EGMDate"
-                                    [minDate]="scheduleDetailForm.get('ETD').value" readonly />
-                                <button class="btn btn-info bi bi-calendar3" (click)="d6.toggle()" type="button">
-                                    <i-feather class="feather-sm" name="calendar"></i-feather>
-                                </button>
-                            </div>
-                            <label for="text-input" class="input-label">EGM Date <span class="text-danger"></span></label>
-                            @if(scheduleDetailForm.get('EGMDate').touched && scheduleDetailForm.get('EGMDate').invalid){
+                    <aside class="col-md-6 mb-1">
+                        <div class="d-flex mb-2 my-lg-0">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                <input 
+                                    class="form-control" 
+                                    placeholder="dd-mm-yyyy" 
+                                    name="dp" ngbDatepicker 
+                                    #d8="ngbDatepicker"
+                                    [footerTemplate]="footerTemplateEGMDate" 
+                                    (click)="d8.toggle()" 
+                                    formControlName="EGMDate"
+                                    [minDate]="toNgbDateStruct(scheduleDetailForm.get('ETD').value)" 
+                                    readonly 
+                                />
+                                 <label for="text-input" class="input-label">EGM Date <span
+                                    class="text-danger">*</span></label>
+                                @if(scheduleDetailForm.get('EGMDate').touched && scheduleDetailForm.get('EGMDate').invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('EGMDate').hasError('required')){
-                                        <span>EGM Date is required</span>
+                                    <span>EGM is required</span>
                                     }@else if(scheduleDetailForm.get('EGMDate').hasError('ngbDate')){
-                                        <span>EGM must be a date after ETD</span>
+                                    <span>EGM Date must between ETA and ETD</span>
                                     }
                                 </div>
-                            }
+                                }
+                            </div>
+                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d8.toggle()" type="button">
+                                <i-feather class="feather-sm" name="calendar"></i-feather>
+                            </button>
                         </div>
                     </aside>
                     <ng-template #footerTemplateEGMDate>
                         <hr class="my-0" />
-                        <button class="btn btn-primary btn-sm m-2 float-start"
-                            (click)="scheduleDetailForm.get('EGMDate').setValue(today); d6.close()">
+                        <button class="btn btn-info btn-sm m-2 float-start"
+                            (click)="scheduleDetailForm.get('EGMDate').setValue(todayDate); d8.close()">
                             Today
                         </button>
-                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d6.close()">
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d8.close()">
                             Close
                         </button>
                     </ng-template>

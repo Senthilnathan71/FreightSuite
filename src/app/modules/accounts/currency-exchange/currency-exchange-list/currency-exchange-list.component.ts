@@ -9,6 +9,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AccountsService } from '../../accounts.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 
 @Component({
   selector: 'app-currency-exchange-list',
@@ -18,7 +19,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     FeatherModule, 
     FormsModule, 
     RouterModule,
-    NgbPaginationModule
+    NgbPaginationModule,
+    CustomDatePipe
   ],
   templateUrl: './currency-exchange-list.component.html',
   styleUrl: './currency-exchange-list.component.scss'

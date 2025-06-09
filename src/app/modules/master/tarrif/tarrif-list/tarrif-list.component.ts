@@ -11,6 +11,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 
 @Component({
   selector: 'app-tarrif-list',
@@ -20,7 +21,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     CommonModule,
     FormsModule,
     RouterModule,
-    NgbPaginationModule
+    NgbPaginationModule,
+    CustomDatePipe
   ],
   templateUrl: './tarrif-list.component.html',
   styleUrl: './tarrif-list.component.scss'

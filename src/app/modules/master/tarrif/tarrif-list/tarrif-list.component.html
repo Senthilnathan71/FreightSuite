@@ -109,7 +109,7 @@
                             <td>{{tariff.PODTerminal}}</td>
                             <td>{{tariff.customerCarrier.CustomerName}}</td>
                             <td>{{tariff.customerAgent.CustomerName}}</td>
-                            <td>{{tariff.EffectiveDate | date:'dd-MMM-YY'}}</td>
+                            <td>{{tariff.EffectiveDate | formatDate}}</td>
                             <td>
                                 @if(tariff.status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">

@@ -105,7 +105,7 @@
                                 <div class="text-truncate">{{item.TaxType}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">{{item.EffectiveFrom | date: 'yyyy-MM-dd'}}</div>
+                                <div class="text-truncate">{{item.EffectiveFrom | formatDate}}</div>
                             </td>
                             <td>
                                 <div class="text-truncate">{{item.Remarks}}</div>
@@ -230,12 +230,32 @@
     }
   </div>
 </aside>
-                            <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <input type="date" id="EffectiveFrom" class="custom-input-field sm" formControlName="EffectiveFrom">
-                                    <label for="EffectiveFrom" class="input-label">Effective From <span class="text-danger">*</span></label>
+                    <aside class="col-md-6">
+                        <div class="d-flex">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                                    (click)="d2.toggle()" formControlName="EffectiveFrom" [footerTemplate]="footerTemplate2" readonly/>
+                                <label class="input-label" for="dp">Effective From <span class="text-danger">*</span></label>
+                                <div *ngIf="hssacForm.get('EffectiveFrom')?.touched && hssacForm.get('EffectiveFrom')?.invalid">
+                                    <p *ngIf="hssacForm.get('EffectiveFrom')?.errors?.['required']" class="error-message">Effective From date is required.</p>
                                 </div>
-                            </aside>
+                            </div>
+                            <button class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2" (click)="d2.toggle()"
+                                type="button">
+                                <i-feather name="calendar" class="feather-sm"></i-feather>
+                            </button>
+                        </div>
+                    </aside>
+                    <ng-template #footerTemplate2>
+                        <hr class="my-0" />
+                        <button class="btn btn-info btn-sm m-2 float-start"
+                            (click)="hssacForm.get('EffectiveFrom')?.setValue(todayDate); d2.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d2.close()">
+                            Close
+                        </button>
+                    </ng-template>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="textarea" id="text-input" class="custom-input-field sm" formControlName="Remarks" placeholder="">

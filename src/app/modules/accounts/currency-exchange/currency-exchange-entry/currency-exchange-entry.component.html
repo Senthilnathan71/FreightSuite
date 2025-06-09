@@ -32,6 +32,40 @@
         <form [formGroup]="currencyExchangeForm">
           <div class="row">
             <aside class="col-md-4">
+              <div class="d-flex">
+                <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                  <input 
+                    class="form-control mb-0" 
+                    placeholder="dd-mm-yyyy" 
+                    name="dp" ngbDatepicker #d2="ngbDatepicker"
+                    (click)="d2.toggle()" 
+                    readonly 
+                    formControlName="EffectiveFrom" 
+                    [footerTemplate]="footerTemplate2" 
+                  />
+                  <label class="input-label" for="dp">Effective From <span class="text-danger">*</span></label>
+                  <div *ngIf="currencyExchangeForm.get('EffectiveFrom')?.touched && currencyExchangeForm.get('EffectiveFrom')?.invalid">
+                    <p *ngIf="currencyExchangeForm.get('EffectiveFrom')?.errors?.['required']" class="error-message">Effective From date is
+                      required.</p>
+                  </div>
+                </div>
+                <button class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2" (click)="d2.toggle()"
+                  type="button">
+                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                </button>
+              </div>
+            </aside>
+            <ng-template #footerTemplate2>
+              <hr class="my-0" />
+              <button class="btn btn-info btn-sm m-2 float-start"
+                (click)="currencyExchangeForm.get('EffectiveFrom')?.setValue(todayDate); d2.close()">
+                Today
+              </button>
+              <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d2.close()">
+                Close
+              </button>
+            </ng-template>
+            <!-- <aside class="col-md-4">
               <div class="custom-form-group">
                 <input type="date" id="EffectiveFrom" formControlName="EffectiveFrom" class="custom-input-field sm">
                 <label for="EffectiveFrom" class="input-label">Effective From <span class="text-danger fw-bold">*</span></label>
@@ -39,7 +73,7 @@
                   <div *ngIf="currencyExchangeForm.get('EffectiveFrom').errors['required']">Effective From is required</div>
                 </div>
               </div>
-            </aside>
+            </aside> -->
             
             <aside class="col-md-4">
               <div class="custom-form-group">

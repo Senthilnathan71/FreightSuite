@@ -8,6 +8,7 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { AppService } from 'src/app/service/app.service';
 import { FormsModule } from '@angular/forms';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 
 @Component({
@@ -23,7 +24,7 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './view.component.scss'
 })
 export class ViewComponent implements OnInit {
-  leads: Lead[] = [];        // Array to store the leads
+  leads: any[] = [];        // Array to store the leads
   errorMessage: string = '';  // To store any error messages
   // pagination
   page = 1;
@@ -33,7 +34,7 @@ export class ViewComponent implements OnInit {
   filteredLeads: Lead[] = [];
   isMobile: boolean = false;
 
-  constructor(private leadService: LeadService, private route: Router, private appService: AppService) { }
+  constructor(private leadService: LeadService, private route: Router, private appService: AppService,private appSettingService:AppSettingsService) { }
 
   ngOnInit(): void {
     this.loadLeads();
@@ -41,20 +42,20 @@ export class ViewComponent implements OnInit {
   }
 
   // Method to load the leads
-  loadLeads(): void {
-    this.leadService.getAllLeads().subscribe(
-      (resp: Lead[]) => {
-        this.leads = resp['data'];  // On success, store the leads data in the component
-        this.filteredLeads = [...this.leads]; // Ensure filteredLeads starts with all data
-        this.updatePaginatedData();  // Update paginated data
-        this.totalLengthOfCollection = this.leads.length || 0;
-      },
-      (error) => {
-        this.errorMessage = error.message;  // On error, store the error message
-        console.error('Error loading leads:', error);  // Optionally log the error
-      }
-    );
-  }
+  // loadLeads(): void {
+  //   this.leadService.getAllLeads().subscribe(
+  //     (resp: Lead[]) => {
+  //       this.leads = resp['data'];  // On success, store the leads data in the component
+  //       this.filteredLeads = [...this.leads]; // Ensure filteredLeads starts with all data
+  //       this.updatePaginatedData();  // Update paginated data
+  //       this.totalLengthOfCollection = this.leads.length || 0;
+  //     },
+  //     (error) => {
+  //       this.errorMessage = error.message;  // On error, store the error message
+  //       console.error('Error loading leads:', error);  // Optionally log the error
+  //     }
+  //   );
+  // }
 
 
   updatePaginatedData(): void {
@@ -83,7 +84,22 @@ export class ViewComponent implements OnInit {
     this.totalLengthOfCollection = this.filteredLeads.length;
   }
 
-
+  loadLeads(){
+    this.leadService.fetchAllLeads().subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          this.leads = resp.data;
+          this.filteredLeads = this.leads;
+          this.updatePaginatedData();
+          this.totalLengthOfCollection = this.leads.length;
+        } else {
+          this.appSettingService.showError('Error Loading Leads');
+        }
+      },(error)=>{
+        console.log('Error Loading Leads',error);
+      }
+    )
+  }
 
   createNew() {
     this.route.navigate(['crm/lead'])

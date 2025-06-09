@@ -7,6 +7,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
 import { formatDate } from '@angular/common';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 
 @Component({
   selector: 'app-charge-entry',
@@ -15,10 +18,15 @@ import { formatDate } from '@angular/common';
     CommonModule,
     FeatherModule,
     NgSelectModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgbDatepickerModule
   ],
   templateUrl: './charge-entry.component.html',
-  styleUrls: ['./charge-entry.component.scss']
+  styleUrls: ['./charge-entry.component.scss'],
+  providers: [
+      { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+      { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    ],
 })
 export class ChargeEntryComponent implements OnInit {
   chargeForm!: FormGroup;
@@ -35,13 +43,16 @@ export class ChargeEntryComponent implements OnInit {
   uomOptions: any[] = [];
   hsnsacOptions: any[] = [];
   tdsOptions: any[] = [];
+	today = this.calendar.getToday();
+	todayDate = new Date(this.today.year,this.today.month,this.today.day);
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private masterService: MasterService
+    private masterService: MasterService,
+    private calendar : NgbCalendar
   ) { }
 
   ngOnInit(): void {
@@ -84,7 +95,7 @@ export class ChargeEntryComponent implements OnInit {
       GSTDescription: [''],
       TaxRate: [null],
       // TDS fields
-      EffectiveFrom: [formatDate(new Date(), 'yyyy-MM-dd', 'en'), Validators.required],
+      EffectiveFrom: [, Validators.required],
       Remarks: ['']
     });
   }
@@ -154,7 +165,7 @@ loadLookupData(): void {
       (resp) => {
         const chargeData = {
           ...resp,
-          // EffectiveFrom: resp.EffectiveFrom ? formatDate(new Date(resp.EffectiveFrom), 'yyyy-MM-dd', 'en') : ''
+          // EffectiveFrom: new Date(resp.EffectiveFrom)
         };
         this.chargeForm.patchValue(chargeData);
       },

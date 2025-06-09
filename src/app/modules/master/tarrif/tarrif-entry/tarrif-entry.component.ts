@@ -1,5 +1,5 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
-import { NgbAlertModule, NgbCalendar, NgbDate, NgbDateAdapter, NgbDateNativeAdapter, NgbDatepickerModule, NgbDateStruct, NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModule, NgbPopoverModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAlertModule, NgbCalendar, NgbDate, NgbDateAdapter, NgbDateNativeAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModule, NgbPopoverModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -15,6 +15,9 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 
 @Component({
 	selector: 'app-tarrif-entry',
@@ -36,11 +39,15 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 		DatePipe,
 		DecimalPrecisionDirective,
 		NgbPopoverModule,
-		NgbPaginationModule
+		NgbPaginationModule,
+		CustomDatePipe
 	],
 	templateUrl: './tarrif-entry.component.html',
 	styleUrl: './tarrif-entry.component.scss',
-	providers: [{ provide: NgbDateAdapter, useClass: NgbDateNativeAdapter }]
+	providers: [
+		{ provide: NgbDateAdapter, useClass: CustomDateAdapter },
+		{ provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+	],
 })
 export class TarrifEntryComponent implements OnInit {
 
@@ -70,6 +77,8 @@ export class TarrifEntryComponent implements OnInit {
 	page=1;
 	pageSize=5;
 	totalNumberOfCollection:number;
+	today = this.calendar.getToday();
+	todayDate = new Date(this.today.year,this.today.month,this.today.day);
 
 	constructor(
 		private masterServ: MasterService,
@@ -78,7 +87,8 @@ export class TarrifEntryComponent implements OnInit {
 		private route: Router,
 		private fb: FormBuilder,
 		private modalService: NgbModal,
-		private matdial : MatDialog
+		private matdial : MatDialog,
+		private calendar: NgbCalendar
 	) { }
 	ngOnInit(): void {
 		this.initHeaderForm();
@@ -458,5 +468,12 @@ export class TarrifEntryComponent implements OnInit {
 		)
 	}
 	
-	
+	toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+		if (!date) return null;
+		return {
+			year: date.getFullYear(),
+			month: date.getMonth() + 1,
+			day: date.getDate()
+		};
+	}
 }

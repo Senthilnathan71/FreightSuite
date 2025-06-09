@@ -97,16 +97,16 @@
                         <tr *ngFor="let item of currencyExchangeList; let i = index; trackBy: trackByExchangeId">
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <a class="mx-2 ps-3" [routerLink]="['/accounts/currency-exchange/entry', item.ExchangeRateSid]" title="Edit">
+                                    <a class="mx-2 ps-3" [routerLink]="['/accounts/currency-exchange/entry', item.CurrencyExchangeSid]" title="Edit">
                                         <i-feather name="eye" class="feather-sm"></i-feather>
                                     </a>
-                                    <a class="text-danger mx-2 ps-3 border-start" (click)="deleteCurrencyExchange(item.ExchangeRateSid)" title="Delete">
+                                    <a class="text-danger mx-2 ps-3 border-start" (click)="deleteCurrencyExchange(item.CurrencyExchangeSid)" title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
                                 </div>
                             </td>
                             <td>
-                                <div class="text-truncate">{{item.EffectiveFrom | date:'dd-MMM-yy'}}</div>
+                                <div class="text-truncate">{{item.EffectiveFrom | formatDate}}</div>
                             </td>
                             <td>
                                 <div class="text-truncate">{{item.FromCurrency}}</div>

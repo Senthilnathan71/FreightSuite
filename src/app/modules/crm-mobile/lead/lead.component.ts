@@ -12,6 +12,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { forkJoin } from 'rxjs';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 
 @Component({
@@ -23,7 +27,10 @@ import { NgSelectModule } from '@ng-select/ng-select';
     ReactiveFormsModule,
     FeatherModule,
     PreventMultiClickDirective,
-    NgSelectModule
+    NgSelectModule,
+    OnlyNumbersDirective,
+    OnlyTextDirective,
+    TextWithNumbersDirective
     // NgxIntlTelInputModule
   ],
   templateUrl: './lead.component.html',
@@ -36,6 +43,10 @@ export class LeadComponent implements OnInit {
   errorMessage: string = '';  // To store any error messages
   btnDisable: boolean = false;
   PreCustomerMasterSid: number;
+  companyList : any[];
+  countryList : any[];
+  stateList : any[];
+  cityList : any[];
 
   customerByOptions = ['Email', 'Advertisement', 'Website', 'Others'];
   statusList = ["Active", "Suspend"];
@@ -76,7 +87,7 @@ export class LeadComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.loadCity()
+    this.loadAllFields()
     this.initForm();
 
     // Subscribe to route params and load lead if ID exists
@@ -89,36 +100,44 @@ export class LeadComponent implements OnInit {
     });
   }
 
-  // Method to load the city data
-  loadCity(): void {
-    this.leadService.getAllCity().subscribe(
-      (resp: City[]) => {
-        console.log(resp, 'Cities')
-        this.citys = resp['data'];  // On success, store the leads data in the component
-      },
-      (error) => {
-        this.errorMessage = error.message;  // On error, store the error message
-        console.error('Error loading leads:', error);  // Optionally log the error
-      }
-    );
-  }
+  // // Method to load the city data
+  // loadCity(): void {
+  //   this.leadService.getAllCity().subscribe(
+  //     (resp: City[]) => {
+  //       console.log(resp, 'Cities')
+  //       this.citys = resp['data'];  // On success, store the leads data in the component
+  //     },
+  //     (error) => {
+  //       this.errorMessage = error.message;  // On error, store the error message
+  //       console.error('Error loading leads:', error);  // Optionally log the error
+  //     }
+  //   );
+  // }
 
   // Initialize the Form
   initForm() {
     this.leadForm = this.fb.group({
-      preCustomerName: ['', [Validators.required, Validators.minLength(5)]],
-      leadFrom: ['',],
-      leadReferredBy: ['', [Validators.required]], // Dropdown
-      preCustomerAddress1: ['', [Validators.required, Validators.minLength(10)]],
-      preCustomerAddress2: [''],
-      CityMasterSid: Number(['', [Validators.required]]), // Dropdown
-      contactPerson: ['', [Validators.required, Validators.minLength(5)]],
-      email: ['', [Validators.required, this.customEmailValidator()]],
-      phone: ['', [Validators.required]], //, Validators.pattern('^[0-9]{10,15}$')
-      StateMasterSid: [''],
-      CountryMasterSid: [''],
-      status: ['A', [Validators.required]],
-      PreCustomerMasterSid: [''],
+      CompanyMasterSid : [,[Validators.required]],
+      leadFrom : ['',[Validators.required]],
+      leadReferredBy : ['',[Validators.required]],
+      preCustomerAddress1 : ['',[Validators.required]],
+      preCustomerAddress2 : [''],
+      POBOX : [''],
+      CountryMasterSid : [,[Validators.required]],
+      StateMasterSid : [,[Validators.required]],
+      CityMasterSid : [,[Validators.required]],
+      contactPerson : ['',[Validators.required]],
+      email : ['',[Validators.required,this.customEmailValidator]],
+      phone : ['',[Validators.required]],
+      PreferredContactMode : ['Email'],
+      LanguagePreferrence : [''],
+      ServiceOfInterest : [''],
+      PurchaseTimeline : [''],
+      SpecificRequirements : [''],
+      Industry : [''],
+      CompanySize : [''],
+      AnnualRevenue : [''],
+      Notes : ['']
     });
   }
 
@@ -130,59 +149,119 @@ export class LeadComponent implements OnInit {
       this.appSettingService.showWarning('Please fill all required fields correctly.')
       return;
     }
-    let formData: any = {
-      ...this.leadForm.value,
-      phone: this.leadForm.value.phone.e164Number
-    }
-    if (this.isEditMode) {
-      formData = {
-        ...this.leadForm.value,
-        phone: this.leadForm.value.phone.e164Number,
-        status: this.leadForm.value.status === 'Active' ? 'A' : this.leadForm.value.status === 'Suspend' ? 'S' : ''
-      };
-    }
 
     this.btnDisable = true;
-    this.leadService.createPreCustomer(formData).subscribe(
-      resp => {
-        if (resp.data && resp.status) {
-          // this.appSettingService.showSuccess(resp.message);
-          this.modalService.openSuccessModal(resp.message);
+    const updatedBy = this.appSettingService.userSettingSource.value['UserEmail'];
+    const createdBy = this.appSettingService.userSettingSource.value['UserEmail'];
+    const formData = this.leadForm.value;
+    const payload = {
+      ...formData,
+      CompanySize : parseInt(formData.CompanySize),
+      AnnualRevenue : parseInt(formData.AnnualRevenue),
+      status : 'A',
+      ...(this.isEditMode ? {updatedBy : updatedBy}:{createdBy : createdBy})
+    }
 
-          this.btnDisable = false;
-          this.leadForm.patchValue(resp.data);
-          this.router.navigate([`/crm/lead/list`]);
-        } else {
-          // this.appSettingService.showError(resp.message);
-          this.modalService.openErrorModal(resp.message);
+    if(this.isEditMode){
+      this.leadService.updateLeadById(this.PreCustomerMasterSid,payload).subscribe(
+        (resp:any)=>{
+          if(resp.status){
+            this.appSettingService.showSuccess('Lead Updated Successfully');
+            this.router.navigate(['crm/lead/list']);
+          } else {
+            this.appSettingService.showError('Error Updating Lead');
+          }
+        },
+        (error)=>{
+          console.error('Error Updating Lead',error)
         }
-      }
-    )
-    console.log('Creating Lead:', this.leadForm.value);
-    this.btnDisable = false;
+      )
+    } else {
+      this.leadService.createNewLead(payload).subscribe(
+        (resp:any)=>{
+          if(resp.status){
+            this.appSettingService.showSuccess('Lead Created Successfully');
+            this.router.navigate(['crm/lead/list']);
+          } else {
+            this.appSettingService.showError('Error Creating Lead');
+          }
+        },
+        (error)=>{
+          console.error('Error Creating Lead',error)
+        }
+      )
+    }
   }
 
   // Mapping for API status values
   statusMap: { [key: string]: string } = {
     A: 'Active',
-    S: 'Suspend'
+    S: 'Suspended'
   };
 
 
   // Fetch lead data and patch the form
   loadLeadData(leadId: number) {
-    this.leadService.getPrecustomerById(leadId).subscribe(
-      (leadData) => {
-        console.log(leadData)
-        // Convert API status (A/IA) to display status (Active/Inactive)
-        const formattedStatus = this.statusMap[leadData.status] || '';
-        this.leadForm.patchValue({ ...leadData, status: formattedStatus, emitEvent: false },
-        );
+    this.leadService.getLeadById(leadId).subscribe(
+      (resp:any) => {
+          if(resp.status){
+            let response = resp.data;
+            console.log(response.CountryMasterSid);
+            this.filterStateByCountryId(response);
+            this.filterCityByStateId(response);
+            this.leadForm.patchValue({
+               ...response,
+             })
+          } else { 
+            this.appSettingService.showError('Error Loading Lead Data')
+          }
       },
       (error) => {
-        this.appSettingService.showError('Error loading lead data.');
+        console.log('Error Loading Lead Data',error);
       }
     );
+  }
+
+  loadAllFields(){
+    forkJoin({
+      companies : this.leadService.getAllCompanies(),
+      countries : this.leadService.fetchAllCountries(),
+    }).subscribe(({companies,countries})=>{
+      this.companyList = companies.data;
+      this.countryList = countries
+      console.log(this.countryList);
+    })
+  }
+
+  filterStateByCountryId(country){
+      const countryId = country.CountryMasterSid;
+      this.leadService.getStateByCountryId(countryId).subscribe(
+        (resp:any)=>{
+          if(resp.status){
+            this.stateList = resp.data;
+          } else {
+            this.appSettingService.showError('Error Loading States')
+          }
+        },
+        (error)=>{
+          console.error('Error Loading States',error)
+        }
+      )
+  }
+  filterCityByStateId(state){
+      const stateId = state.StateMasterSid;
+      this.leadService.getCityByStateId(stateId).subscribe(
+        (resp:any)=>{
+          if(resp.status){
+            this.cityList = resp.data;
+          } else {
+            this.appSettingService.showError('Error Loading City')
+          }
+        },
+        (error)=>{
+          console.error('Error Loading City',error)
+        }
+      )
   }
 
   // Handle city selection change

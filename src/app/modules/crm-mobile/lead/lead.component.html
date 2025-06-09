@@ -221,11 +221,11 @@
 </form> -->
 
 
-<div class="row py-3">
+<div class="row py-3" [formGroup]="leadForm">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0"> Lead</h4>
+                <h4 class="page-title mb-0"> {{isEditMode ? 'Update Lead' : 'Lead'}} </h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -236,12 +236,12 @@
                         Back
                     </button>
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1"></i>
+                        <i class="fas fa-sync-alt me-1" (click)="reset()"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="leadForm.invalid">
                         <i class="fas fa-save me-1"></i>
-                        Save
+                        {{isEditMode ? 'Update' : 'Save' }} 
                     </button>
                 </div>
             </div>
@@ -531,24 +531,38 @@
                                 <div class="card-body">
                                     <div class="row">
                                         <aside class="col-md-4">
-                                            <div class="custom-form-group">
-                                                <input type="text" id="company-name" placeholder=""
-                                                    class="custom-input-field sm">
+                                            <div class="custom-form-group custom-form-group-select">
+                                                <ng-select class="ng-select" formControlName="CompanyMasterSid" placeholder="Select Company" [items]="companyList" bindLabel="companyName" bindValue="CompanyMasterSid">
+                                                </ng-select>
                                                 <label for="company-name" class="input-label">Company Name <span
                                                         class="text-danger">*</span></label>
+                                                @if(leadForm.get('CompanyMasterSid')?.touched && leadForm.get('CompanyMasterSid')?.invalid){
+                                                    <div class="error-message">
+                                                        @if(leadForm.get('CompanyMasterSid')?.hasError('required')){
+                                                            <span>Company Name is required</span>
+                                                        }
+                                                    </div>
+                                                }
                                             </div>
                                         </aside>
                                         <aside class="col-md-4">
                                             <div class="custom-form-group">
                                                 <input type="text" id="lead-source" placeholder=""
-                                                    class="custom-input-field sm">
+                                                    class="custom-input-field sm" formControlName="leadFrom">
                                                 <label for="lead-source" class="input-label">Lead Source</label>
                                             </div>
+                                            @if(leadForm.get('CompanyMasterSid')?.touched && leadForm.get('CompanyMasterSid')?.invalid){
+                                                    <div class="error-message">
+                                                        @if(leadForm.get('CompanyMasterSid')?.hasError('required')){
+                                                            <span>Company Name is required</span>
+                                                        }
+                                                    </div>
+                                                }
                                         </aside>
                                         <aside class="col-md-4">
                                             <div class="custom-form-group">
                                                 <input type="text" id="customer-ref" placeholder=""
-                                                    class="custom-input-field sm">
+                                                    class="custom-input-field sm" formControlName="leadReferredBy">
                                                 <label for="customer-ref" class="input-label">Customer Reference</label>
                                             </div>
                                         </aside>
@@ -574,7 +588,7 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="preCustomerAddress1" >
                                             <label for="text-input" class="input-label">Address1 <span
                                                     class="text-danger"></span></label>
                                         </div>
@@ -582,7 +596,7 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="preCustomerAddress2"  >
                                             <label for="text-input" class="input-label">Address2 <span
                                                     class="text-danger"></span></label>
                                         </div>
@@ -590,63 +604,63 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm">
+                                                class="custom-input-field sm" formControlName="POBOX">
                                             <label for="text-input" class="input-label">P.O Box <span
                                                     class="text-danger"></span></label>
 
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group">
-                                            <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm">
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <ng-select formControlName="CountryMasterSid" [items]="countryList" bindLabel="countryName" bindValue="CountryMasterSid" placeholder="Select Country" (change)="filterStateByCountryId($event)"></ng-select>
                                             <label for="text-input" class="input-label">Country <span
-                                                    class="text-danger"></span></label>
+                                                    class="text-danger">*</span></label>
 
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group">
-                                            <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm">
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <ng-select class="ng-select" [items]="stateList" bindLabel="stateName" bindValue="StateMasterSid" formControlName="StateMasterSid" placeholder="Select State" (change)="filterCityByStateId($event)">
+
+                                            </ng-select>
                                             <label for="text-input" class="input-label">State <span
-                                                    class="text-danger"></span></label>
+                                                    class="text-danger">*</span></label>
 
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group">
-                                            <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <ng-select class="ng-select" [items]="cityList" bindValue="CityMasterSid" bindLabel="cityName" formControlName="CityMasterSid" placeholder="Select City">
+
+                                            </ng-select>
                                             <label for="text-input" class="input-label">City <span
-                                                    class="text-danger"></span></label>
+                                                    class="text-danger">*</span></label>
 
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm">
-                                            <label for="text-input" class="input-label">Contact Person <span
-                                                    class="text-danger"></span></label>
+                                                class="custom-input-field sm" formControlName="contactPerson">
+                                            <label for="text-input" class="input-label">Contact Person <span class="text-danger"></span></label>
 
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="email">
                                             <label for="text-input" class="input-label">E-mail <span
-                                                    class="text-danger"></span></label>
+                                                    class="text-danger">*</span></label>
 
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="phone">
                                             <label for="text-input" class="input-label">Mobile <span
-                                                    class="text-danger"></span></label>
+                                                    class="text-danger">*</span></label>
 
                                         </div>
                                     </aside>
@@ -662,7 +676,7 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group custom-form-group-select">
                                             <ng-select [items]="modeOfPreferredContactMode"
-                                                bindLabel="name" bindValue="name">
+                                                bindLabel="name" bindValue="name" formControlName="PreferredContactMode">
 
                                             </ng-select>
                                             <label for="" class="input-label">Preferred Contact Mode <span
@@ -672,8 +686,8 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm">
-                                            <label for="text-input" class="input-label">Language Perferenece <span
+                                                class="custom-input-field sm" formControlName="LanguagePreferrence">
+                                            <label for="text-input" class="input-label">Language Preference <span
                                                     class="text-danger"></span></label>
 
                                         </div>
@@ -702,7 +716,7 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="ServiceOfInterest">
                                             <label for="text-input" class="input-label">Service of Interest <span
                                                     class="text-danger"></span></label>
                                         </div>
@@ -710,7 +724,7 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="PurchaseTimeline">
                                             <label for="text-input" class="input-label">Purchase Timeline <span
                                                     class="text-danger"></span></label>
                                         </div>
@@ -718,7 +732,7 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm">
+                                                class="custom-input-field sm" formControlName="SpecificRequirements">
                                             <label for="text-input" class="input-label">Specific Requirement <span
                                                     class="text-danger"></span></label>
 
@@ -755,7 +769,7 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="Industry">
                                             <label for="text-input" class="input-label">Industry <span
                                                     class="text-danger"></span></label>
                                         </div>
@@ -763,7 +777,7 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="CompanySize" [onlyNumbers]>
                                             <label for="text-input" class="input-label">Company Size <span
                                                     class="text-danger"></span></label>
                                         </div>
@@ -771,7 +785,7 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="AnnualRevenue" >
                                             <label for="text-input" class="input-label">Annual Revenue <span
                                                     class="text-danger"></span></label>
 
@@ -780,7 +794,7 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="Notes">
                                             <label for="text-input" class="input-label">Notes <span
                                                     class="text-danger"></span></label>
 

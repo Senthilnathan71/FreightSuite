@@ -255,7 +255,7 @@ export class OrganizationEntryComponent {
       this.isModalEditMode = false;
     }
 
-    this.modalRef = this.modalService.open(content, { centered: true });
+    this.modalRef1 = this.modalService.open(content, { centered: true });
 
     // ✅ open the template
     this.loadCustomerBranchContact();
@@ -344,6 +344,7 @@ export class OrganizationEntryComponent {
     this.modalRef = this.modalService.open(content, { size: 'lg', centered: true }); // ✅ open the template
   }
   modalRef: NgbModalRef;
+  modalRef1: NgbModalRef;
   stateList: any;
   customerForm!: FormGroup;
   customerBranchForm!: FormGroup;
@@ -1278,7 +1279,7 @@ export class OrganizationEntryComponent {
   modalClose(){
     this.cityList = [];
     this.stateList =[];
-    this.modalRef.close();
+    this.modalRef1.close();
   }
 
   reset() {

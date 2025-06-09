@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, } from '@angular/forms';
-import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination, } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination, } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
 import { MasterService } from '../../master.service';
@@ -15,6 +15,9 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 
 @Component({
   selector: 'app-hs-sac',
@@ -29,11 +32,16 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     RouterModule,
     FormsModule,
     OnlyTextDirective,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    CustomDatePipe,
+    NgbDatepickerModule
   ],
   templateUrl: './hs-sac.component.html',
   styleUrl: './hs-sac.component.scss',
-  providers: [DatePipe]
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+  ],
 })
 export class HSSACComponent {
   hssacForm!: FormGroup;
@@ -60,6 +68,8 @@ export class HSSACComponent {
   pageSize = 5;
   totalLengthOfCollection = 0;
 	userData : any;
+	today = this.calendar.getToday();
+	todayDate = new Date(this.today.year,this.today.month,this.today.day);
 
 
   constructor(
@@ -70,9 +80,9 @@ export class HSSACComponent {
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
-    private datePipe: DatePipe,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private calendar : NgbCalendar
   ) { }
 
   ngOnInit(): void {
@@ -153,7 +163,7 @@ editHssac(id: number, content: any) {
         ServiceName: hssac.ServiceName,
         TaxRate: hssac.TaxRate,
         TaxType: hssac.TaxType,
-        EffectiveFrom: this.datePipe.transform(hssac.EffectiveFrom, 'yyyy-MM-dd'),
+        EffectiveFrom: new Date(hssac.EffectiveFrom),
         Remarks: hssac.Remarks,
         status: hssac.status === 'A' ? 'Active' : 'Suspended'
       });
@@ -184,7 +194,7 @@ editHssac(id: number, content: any) {
         ServiceName: hssac.ServiceName,
         TaxRate: hssac.TaxRate,
         TaxType: hssac.TaxType,
-        EffectiveFrom: this.datePipe.transform(hssac.EffectiveFrom, 'yyyy-MM-dd'),
+        EffectiveFrom: hssac.EffectiveFrom,
         Remarks: hssac.Remarks,
         status: hssac.status === 'A' ? 'Active' : 'Suspended'
       });

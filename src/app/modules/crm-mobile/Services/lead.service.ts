@@ -302,4 +302,95 @@ export class LeadService {
     )
   }
 
+  // LEAD
+  fetchAllLeads() {
+    return this.http.get<{ data: any[] }>('lead').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getLeadById(PreCustomerMasterSid) {
+    return this.http.get<{ data: any }>(`lead/fetch/${PreCustomerMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewLead(payload) {
+    return this.http.post<{ data: any }>('lead/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateLeadById(PreCustomerMasterSid: number, payload) {
+    return this.http.patch<{ data: any }>(`lead/update/${PreCustomerMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteLeadById(PreCustomerMasterSid: number) {
+    return this.http.delete<{ data: any }>(`lead/delete/${PreCustomerMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchLead(payload) {
+    return this.http.post<{ data: any[] }>('lead/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getAllCompanies(){
+    return this.http.get<{data:any[]}>('company').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  fetchAllCountries(){
+    return this.http.get<{data:any[]}>('country').pipe(
+      map((resp:any)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  getStateByCountryId(CountryMasterSid){
+    return this.http.get<{data:any}>(`state/fetchByCountry/${CountryMasterSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+  
+  getCityByStateId(StateMasterSid:number){
+    return this.http.get<{data:any[]}>(`city/fetchByState/${StateMasterSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
 }

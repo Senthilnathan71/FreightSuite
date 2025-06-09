@@ -6,6 +6,9 @@ import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { AccountsService } from '../../accounts.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-currency-exchange-entry',
@@ -14,10 +17,15 @@ import { MasterService } from 'src/app/modules/master/master.service';
     FeatherModule,
     CommonModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgbDatepickerModule
   ],
   templateUrl: './currency-exchange-entry.component.html',
-  styleUrls: ['./currency-exchange-entry.component.scss']
+  styleUrls: ['./currency-exchange-entry.component.scss'],
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+  ],
 })
 export class CurrencyExchangeEntryComponent implements OnInit {
   currencyExchangeForm!: FormGroup;
@@ -27,6 +35,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
   companies: any[] = [];
   branches: any[] = [];
   loading = false;
+	today = this.calendar.getToday();
+	todayDate = new Date(this.today.year,this.today.month,this.today.day);
 
   constructor(
     private fb: FormBuilder,
@@ -34,7 +44,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
     private router: Router,
-    private masterService: MasterService
+    private masterService: MasterService,
+    private calendar : NgbCalendar
   ) { }
 
   ngOnInit(): void {
@@ -135,12 +146,10 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     this.loading = true;
     this.accountService.getCurrencyExchangeById(id).subscribe({
       next: (data) => {
-        const effectiveFrom = data.EffectiveFrom ?
-          new Date(data.EffectiveFrom).toISOString().split('T')[0] : '';
 
         this.currencyExchangeForm.patchValue({
           ...data,
-          EffectiveFrom: effectiveFrom,
+          EffectiveFrom: new Date(data.EffectiveFrom),
           status: data.status === 'A' ? 'Active' : 'Suspended'
         });
         this.loading = false;
@@ -165,7 +174,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
 
     const payload = {
       ...formValue,
-      EffectiveFrom: new Date(formValue.EffectiveFrom).toISOString(),
+      EffectiveFrom: formValue.EffectiveFrom,
       SellRate: parseFloat(formValue.SellRate),
       BuyRate: parseFloat(formValue.BuyRate),
       status: formValue.status === "Active" ? "A" : "S",

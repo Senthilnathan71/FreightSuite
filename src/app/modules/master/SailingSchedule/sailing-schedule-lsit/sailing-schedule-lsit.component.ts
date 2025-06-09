@@ -11,6 +11,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { NgSelectModule } from '@ng-select/ng-select';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 
 @Component({
     selector: 'app-sailing-schedule-lsit',
@@ -23,6 +24,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
         DatePipe,
         NgbPaginationModule,
         NgSelectModule,
+        CustomDatePipe
     ],
     templateUrl: './sailing-schedule-lsit.component.html',
     styleUrl: './sailing-schedule-lsit.component.scss'
