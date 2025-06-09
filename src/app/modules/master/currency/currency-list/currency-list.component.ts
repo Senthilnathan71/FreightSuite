@@ -8,6 +8,7 @@ import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from '../../master.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-currency-list',
@@ -30,6 +31,7 @@ export class CurrencyListComponent {
   currencyList: any[] = [];
   searchPerformed = false;
   loading: boolean = false;
+  userData: any;
 
   // pagination
   page = 1;
@@ -44,10 +46,17 @@ export class CurrencyListComponent {
     private masterService: MasterService,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private excelReportService: ExcelExportService
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.appSettingService.getUser().subscribe(user => {
+    if (user) {
+      this.userData = user;
+    }
+  });
+   }
 
   search() {
     this.loading = true;
@@ -159,7 +168,28 @@ export class CurrencyListComponent {
     return status === 'A' ? 'Active' : 'Suspended';
   }
 
-  report() {
-    // Implement report functionality here
-  }
+  report(): void {
+  const formattedData = this.currencyList.map(item => ({
+    ...item,
+    status: item.status === 'A' ? 'Active' : 'Suspended'
+  }));
+
+  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: [
+      { key: 'currencyName', label: 'Currency Name' },
+      { key: 'currencyCode', label: 'Currency Code' },
+      { key: 'ShortCode', label: 'Short Code' },
+      { key: 'CurrencyUnit', label: 'Unit' },
+      { key: 'CurrencySubUnit', label: 'Sub Unit' },
+      { key: 'SubUnitIn', label: 'Sub Unit In' },
+      { key: 'RoundOf', label: 'Round Off' },
+      { key: 'status', label: 'Status' }
+    ],
+    fileName: 'Currency-Report', 
+    title: companyName
+  });
+}
 }

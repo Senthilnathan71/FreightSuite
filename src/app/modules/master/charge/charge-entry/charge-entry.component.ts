@@ -56,6 +56,17 @@ export class ChargeEntryComponent implements OnInit {
       }
     });
   }
+  onHsnsacSelect(event: any): void {
+  if (event) {
+    const selectedHsnsac = this.hsnsacOptions.find(item => item.code === event);
+    if (selectedHsnsac) {
+      this.chargeForm.patchValue({
+        TaxRate: selectedHsnsac.rate,
+        GSTDescription: selectedHsnsac.description
+      });
+    }
+  }
+}
 
   initForm(): void {
     this.chargeForm = this.fb.group({
@@ -111,27 +122,29 @@ loadLookupData(): void {
     }
   });
 
-  this.masterService.getAllUom().subscribe({
-  next: (response: any) => {
-    // Handle different response structures
-    if (Array.isArray(response)) {
-      this.uomOptions = response;
-    } else if (response.data && Array.isArray(response.data)) {
-      this.uomOptions = response.data;
-    } else {
+  this.masterService.getAllUom().subscribe(
+    (resp: any) => {
+      // Handle both array response and data.array response
+      this.uomOptions = resp.data || resp;
+    },
+    (error) => {
+      console.error('Error loading UOM', error);
       this.uomOptions = [];
-      console.warn('Unexpected UOM response format:', response);
     }
-  },
-  error: (error) => {
-    console.error('Error loading UOMs:', error);
-    this.uomOptions = [];
-  }
-});
-  this.masterService.getAllHssac().subscribe(hsnsac => {
-    this.hsnsacOptions = hsnsac.data || hsnsac;
+  );
+  this.masterService.getAllHssac().subscribe({
+    next: (resp: any) => {
+      this.hsnsacOptions = resp.data || resp;
+      // If editing, trigger the selection change to populate tax rate
+      if (this.isEditMode && this.chargeForm.value.HSNSAC) {
+        this.onHsnsacSelect(this.chargeForm.value.HSNSAC);
+      }
+    },
+    error: (error) => {
+      console.error('Error loading HSN/SAC codes:', error);
+      this.hsnsacOptions = [];
+    }
   });
-  
     // this.masterService.getAllTdsSets().subscribe(tdsSets => {
     //   this.tdsOptions = tdsSets.data || tdsSets;
     // });

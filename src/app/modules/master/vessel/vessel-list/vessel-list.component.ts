@@ -8,6 +8,7 @@ import { MasterService } from '../../master.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-vessel-list',
@@ -29,6 +30,7 @@ export class VesselListComponent {
   results: any[] = [];
   vesselList: any[] = []
   searchPerformed = false;
+  userData: any;
 
   // pagination
   page = 1;
@@ -36,9 +38,16 @@ export class VesselListComponent {
   totalLengthOfCollection: number;
 
   constructor(private masterService: MasterService, private router: Router,
-    private appSettingService: AppSettingsService, private dialog: MatDialog
+    private appSettingService: AppSettingsService, private dialog: MatDialog,
+    private excelReportService: ExcelExportService
   ) { }
-  ngOnInit() { }
+  ngOnInit() {
+    this.appSettingService.getUser().subscribe(user => {
+    if (user) {
+      this.userData = user;
+    }
+  });
+   }
 
   search() {
     const intSearch = [
@@ -91,6 +100,29 @@ export class VesselListComponent {
     this.totalLengthOfCollection = 0
   }
 
-  report() { }
+  report(): void {
+  const formattedData = this.vesselList.map(item => ({
+    ...item,
+    status: item.status === 'A' ? 'Active' : 'Suspended'
+  }));
+
+  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: [
+      { key: 'VesselName', label: 'Vessel Name' },
+      // { key: 'VesselShortCode', label: 'Vessel Code' },
+      { key: 'VesselType', label: 'Vessel Type' },
+      { key: 'YearofBuilt', label: 'Year of Built' },
+      // { key: 'IMOCode', label: 'IMO Code' },
+      { key: 'VesselOperator', label: 'Vessel Operator' },
+      // { key: 'NRT', label: 'Net Register Ton' },
+      { key: 'status', label: 'Status' }
+    ],
+    fileName: 'Vessel-Report', 
+    title: companyName
+  });
+}
 
 }

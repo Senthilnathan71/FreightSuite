@@ -8,6 +8,7 @@ import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AccountsService } from '../../accounts.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-currency-exchange-list',
@@ -29,6 +30,7 @@ export class CurrencyExchangeListComponent {
   currencyExchangeList: any[] = []; // Store paginated results
   searchPerformed = false;
   loading: boolean = false;
+  userData: any;
 
   // pagination
   page = 1;
@@ -43,8 +45,16 @@ export class CurrencyExchangeListComponent {
     private accountService: AccountsService, 
     private router: Router,
     private appSettingService: AppSettingsService, 
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private excelReportService: ExcelExportService
   ) { }
+  ngOnInit(): void {
+     this.appSettingService.getUser().subscribe(user => {
+    if (user) {
+      this.userData = user;
+    }
+  });
+}
 
   search() {
     this.loading = true;
@@ -180,7 +190,46 @@ export class CurrencyExchangeListComponent {
     return status === 'A' ? 'Active' : 'Suspended';
   }
 
-  report() {
-    // Implement report functionality here
-  }
+  report(): void {
+  const formattedData = this.currencyExchangeList.map(item => ({
+    ...item,
+    status: item.status === 'A' ? 'Active' : 'Suspended',
+    EffectiveFrom: this.formatDateForExport(item.EffectiveFrom),
+    SellRate: this.formatNumberForExport(item.SellRate),
+    BuyRate: this.formatNumberForExport(item.BuyRate)
+  }));
+
+  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: [
+      { key: 'EffectiveFrom', label: 'Effective From' },
+      { key: 'FromCurrency', label: 'From Currency' },
+      { key: 'ToCurrency', label: 'To Currency' },
+      { key: 'SellRate', label: 'Sell Rate' },
+      { key: 'BuyRate', label: 'Buy Rate' },
+      { key: 'BankName', label: 'Bank Name' },
+      { key: 'status', label: 'Status' }
+    ],
+    fileName: 'Currency-Exchange-Report',
+    title: companyName
+  });
+}
+
+private formatDateForExport(date: string | Date): string {
+  if (!date) return '';
+  const d = new Date(date);
+  return d.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+}
+
+private formatNumberForExport(value: number | string): string {
+  if (value === null || value === undefined) return '';
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  return num.toFixed(2);
+}
 }

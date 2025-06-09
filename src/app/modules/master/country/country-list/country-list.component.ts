@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from '../../master.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-country-list',
@@ -35,6 +36,7 @@ export class CountryListComponent {
   loading: boolean = false;
   zoneOptions: any[] = [];
   currencyOptions: any[] = [];
+  userData: any;
 
   // pagination
   page = 1;
@@ -46,10 +48,16 @@ export class CountryListComponent {
     private route: Router,
     private appService: AppService,
     private dialog: MatDialog,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private excelReportService: ExcelExportService
   ) { }
 
   ngOnInit(): void {
+    this.appSettingService.getUser().subscribe(user => {
+    if (user) {
+      this.userData = user;
+    }
+  });
     this.loadZones();
     this.loadCurrencies();
   }
@@ -165,7 +173,25 @@ export class CountryListComponent {
     this.totalLengthOfCollection = 0;
   }
 
-  report() {
-    // Report functionality implementation
-  }
+  report(): void {
+  const formattedData = this.countryList.map(item => ({
+    ...item,
+    status: item.status === 'A' ? 'Active' : 'Suspended'
+  }));
+
+  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: [
+      { key: 'countryName', label: 'Country Name' },
+      { key: 'countryCode', label: 'Country Code' },
+      { key: 'zoneName', label: 'Zone' },
+      { key: 'currencyName', label: 'Currency' },
+      { key: 'status', label: 'Status' }
+    ],
+    fileName: 'Country-Report', 
+    title: companyName
+  });
+}
 }
