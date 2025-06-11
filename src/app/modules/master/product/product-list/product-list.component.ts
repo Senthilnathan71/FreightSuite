@@ -90,6 +90,10 @@ export class ProductListComponent {
         this.slicedProductList = [];
         this.totalAmountOfCollection = 0;
         this.searchPerformed = false;
+        this.filterValue = '';
+        this.searchType = 'ProductName';
+        this.page = 1;
+        
     }
 
     deleteProductById(ProductMasterSid){

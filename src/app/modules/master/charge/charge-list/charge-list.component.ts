@@ -89,6 +89,9 @@ export class ChargeListComponent {
     this.searchPerformed = false;
     this.chargeList = [];
     this.totalLengthOfCollection = 0;
+    this.filterValue = '';
+    this.searchType = 'chargeName';
+    this.page = 1;
   }
 
   report(): void {

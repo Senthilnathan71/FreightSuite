@@ -216,6 +216,10 @@ export class SailingScheduleLsitComponent implements OnInit {
         this.scheduleList = [];
         this.slicedScheduleList = [];
         this.totalAmountOfCollections = 0;
+        this.filterValue = '';
+        this.searchType = 'VoyageNo';
+        this.page = 1;
+        
     }
 
 }

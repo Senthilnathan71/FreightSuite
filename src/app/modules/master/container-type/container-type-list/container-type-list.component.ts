@@ -114,6 +114,9 @@ export class ContainerTypeListComponent {
     this.containerList = [];
     this.totalLengthOfCollection = 0;
     this.searchPerformed = false;
+    this.filterValue = '';
+    this.searchType = 'ContainerName';
+    this.page = 1;
   }
 
   report(): void {

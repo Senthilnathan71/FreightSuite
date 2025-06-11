@@ -232,9 +232,9 @@ export class BIclauseComponent implements OnInit {
   }
 
   resetPage(): void {
-    // this.filterValue = '';
-    // this.searchType = 'ClauseDescription';
-    // this.page = 1;
+    this.filterValue = '';
+    this.searchType = 'ClauseDescription';
+    this.page = 1;
     this.searchPerformed = false;
     this.allClauses = [];
     this.clauseList = [];
