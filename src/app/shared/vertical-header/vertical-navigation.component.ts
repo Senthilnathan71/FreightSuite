@@ -1,7 +1,7 @@
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CommonModule } from '@angular/common';
-import { Component, AfterViewInit, EventEmitter, Output } from '@angular/core';
-import { NgbAccordionModule, NgbCarouselModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Component, AfterViewInit, EventEmitter, Output, ViewChild, TemplateRef } from '@angular/core';
+import { NgbAccordionModule, NgbCarouselModule, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateService } from '@ngx-translate/core';
 import { FeatherModule } from 'angular-feather';
 import { NgScrollbarModule } from 'ngx-scrollbar';
@@ -34,6 +34,9 @@ export class VerticalNavigationComponent implements AfterViewInit {
   @Output() toggleSidebar = new EventEmitter<void>();
 
   public showSearch = false;
+
+    @ViewChild('addNewModal') addNewModal: any;
+     @ViewChild('editModal') editModal!: TemplateRef<any>;
 
   constructor(private modalService: NgbModal, private appSettingsService: AppSettingsService, private translate: TranslateService) {
 
@@ -146,4 +149,22 @@ export class VerticalNavigationComponent implements AfterViewInit {
     this.translate.use(lang.code)
     this.selectedLanguage = lang;
   }
+
+   openModal(content: any) {
+    this.modalService.open(content, { size: 'lg',centered: true });
+  }
+
+   openAddNew(currentModal: NgbModalRef) {
+      currentModal.close();
+      setTimeout(() => {
+        this.modalService.open(this.addNewModal, {size: 'lg' , centered: true});
+      }, 100);
+    }
+   openEditModal(currentModal: any) {
+      currentModal.dismiss(); 
+      setTimeout(() => {
+        this.modalService.open(this.editModal, {size: 'lg', centered: true});
+      }, 200); 
+    }
+  
 }
