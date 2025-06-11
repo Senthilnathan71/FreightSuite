@@ -201,7 +201,18 @@
                                         </select>
                                     </div>
                                 </div>
-
+                                     <aside class="col-md-3">
+                           <div class="mb-2">
+                                <label for="" class="form-label">Sell Rate </label>
+                                <input type="text" class="form-control" id="" formControlName="">
+                            </div>
+                        </aside>
+                             <aside class="col-md-3">
+                           <div class="mb-2">
+                                <label for="" class="form-label">Buy Rate </label>
+                                <input type="text" class="form-control" id="" formControlName="">
+                            </div>
+                        </aside>
                                 <div class="col-6 col-md-3">
                                     <div class="mb-1">
                                         <label for="effDate" class="form-label">Eff. Date:
@@ -275,6 +286,8 @@
                             <div *ngIf="routes.controls[routeIndex].hasError('expDateInvalid')" class="text-danger">
                                 Expiry Date must be greater than Effective Date!
                             </div>
+                        
+
                             <div class="row">
                                 <div class="col-12">
                                     <!-- #region LCL -->
