@@ -333,6 +333,10 @@ editHssac(id: number, content: any) {
     this.hssacList = [];
     this.totalLengthOfCollection = 0;
     this.searchPerformed = false;
+    this.filterValue = '';
+    this.searchType = 'HSSACCode';
+    this.page = 1;
+    this.hssacs = [];
   }
 
   report(): void {

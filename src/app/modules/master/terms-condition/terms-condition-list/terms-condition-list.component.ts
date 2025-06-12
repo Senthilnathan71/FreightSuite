@@ -145,5 +145,8 @@ export class TermsConditionListComponent implements OnInit {
         this.slicedTandCList =[];
         this.totalAmountOfCollections = 0;
         this.searchPerformed = false;
+        this.filterValue = '';
+        this.searchType = 'status';
+        this.page = 1;
     }
 }

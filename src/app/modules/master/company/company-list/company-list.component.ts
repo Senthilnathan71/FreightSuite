@@ -86,8 +86,12 @@ export class CompanyListComponent implements OnInit {
   }
 
   resetPage() {
-    this.companyList = []
-    this.totalLengthOfCollection = 0
+    this.companyList = [];
+    this.totalLengthOfCollection = 0;
+    this.filterValue = '';
+    this.searchType = 'companyName';
+    this.page = 1;
+    this.searchPerformed = false;
   }
 
   report(): void {

@@ -85,8 +85,11 @@ this.appSettingService.getUser().subscribe(user => {
 
   resetPage() {
     this.searchPerformed = false;
-    this.departmentList = []
-    this.totalLengthOfCollection = 0
+    this.departmentList = [];
+    this.totalLengthOfCollection = 0;
+    this.filterValue = '';
+    this.searchType = 'departmantName';
+    this.page = 1;
   }
 
   report(): void {

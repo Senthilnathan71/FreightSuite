@@ -106,6 +106,9 @@ export class ImcoListComponent implements OnInit{
 		this.searchPerformed = false;
 		this.imcoList = [];
 		this.totalAmountOfCollection = 0;
+		this.filterValue = '';
+		this.searchType = 'ImcoClass';
+		this.page = 1;
 	}
 
 	report(): void {
