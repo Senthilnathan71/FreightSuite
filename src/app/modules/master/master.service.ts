@@ -98,7 +98,7 @@ export class MasterService {
 
 
   getCustomerById(id: number) {
-    return this.http.get<{ data: Uom }>(`customer/fetch/${id}`).pipe(
+    return this.http.get<{ data: any }>(`customer/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -145,7 +145,7 @@ export class MasterService {
 
 
   getCustomerBranchById(id: number) {
-    return this.http.get<{ data: Uom }>(`customer-branch/fetch/${id}`).pipe(
+    return this.http.get<{ data: any }>(`customer-branch/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -192,7 +192,7 @@ export class MasterService {
 
 
   getCustomerBranchContactById(id: number) {
-    return this.http.get<{ data: Uom }>(`customer-branch-contact/fetch/${id}`).pipe(
+    return this.http.get<{ data: any }>(`customer-branch-contact/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -239,7 +239,7 @@ export class MasterService {
 
 
   getCustomerBranchEmailById(id: number) {
-    return this.http.get<{ data: Uom }>(`customer-branch-email/fetch/${id}`).pipe(
+    return this.http.get<{ data: any }>(`customer-branch-email/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -287,7 +287,7 @@ export class MasterService {
 
 
   getCustomerLoginById(id: number) {
-    return this.http.get<{ data: Uom }>(`customer-login/fetch/${id}`).pipe(
+    return this.http.get<{ data: any }>(`customer-login/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;

@@ -5,6 +5,7 @@ import { FullComponent } from './layouts/full/full.component';
 import { BlankComponent } from './layouts/blank/blank.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { DashboardComponent } from './modules/crm-mobile/dashboard/dashboard.component';
+import { ShortcutComponent } from './modules/shortcut/shortcut.component';
 
 export const Approutes: Routes = [
   {
@@ -35,6 +36,10 @@ export const Approutes: Routes = [
       {
         path: 'accounts',
         loadChildren: () => import('./modules/accounts/accounts.module').then(m => m.AccountsModule)
+      },
+      {
+        path: 'shortcut',
+        component: ShortcutComponent
       },
       {
         path: 'starter',

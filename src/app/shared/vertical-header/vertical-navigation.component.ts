@@ -5,6 +5,8 @@ import { NgbAccordionModule, NgbCarouselModule, NgbDropdownModule, NgbModal, Ngb
 import { TranslateService } from '@ngx-translate/core';
 import { FeatherModule } from 'angular-feather';
 import { NgScrollbarModule } from 'ngx-scrollbar';
+import { ShortcutComponent } from 'src/app/modules/shortcut/shortcut.component';
+import { Router, RouterModule } from '@angular/router';
 
 declare var $: any;
 
@@ -27,7 +29,7 @@ interface messages {
 @Component({
   selector: 'app-vertical-navigation',
   standalone: true,
-  imports: [NgbDropdownModule, FeatherModule, NgScrollbarModule, CommonModule, NgbAccordionModule, NgbCarouselModule],
+  imports: [NgbDropdownModule,RouterModule, FeatherModule, NgScrollbarModule, CommonModule, NgbAccordionModule, NgbCarouselModule],
   templateUrl: './vertical-navigation.component.html'
 })
 export class VerticalNavigationComponent implements AfterViewInit {
@@ -35,10 +37,9 @@ export class VerticalNavigationComponent implements AfterViewInit {
 
   public showSearch = false;
 
-    @ViewChild('addNewModal') addNewModal: any;
-     @ViewChild('editModal') editModal!: TemplateRef<any>;
 
-  constructor(private modalService: NgbModal, private appSettingsService: AppSettingsService, private translate: TranslateService) {
+
+  constructor(private router: Router, private appSettingsService: AppSettingsService, private translate: TranslateService) {
 
     // translate.setDefaultLang('en');
 
@@ -150,21 +151,8 @@ export class VerticalNavigationComponent implements AfterViewInit {
     this.selectedLanguage = lang;
   }
 
-   openModal(content: any) {
-    this.modalService.open(content, { size: 'lg',centered: true });
-  }
-
-   openAddNew(currentModal: NgbModalRef) {
-      currentModal.close();
-      setTimeout(() => {
-        this.modalService.open(this.addNewModal, {size: 'lg' , centered: true});
-      }, 100);
-    }
-   openEditModal(currentModal: any) {
-      currentModal.dismiss(); 
-      setTimeout(() => {
-        this.modalService.open(this.editModal, {size: 'lg', centered: true});
-      }, 200); 
-    }
+ navigateShortcut(){
+    this.router.navigate(['shortcut']);
+ }
   
 }
