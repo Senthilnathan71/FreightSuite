@@ -8,13 +8,13 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="mb-2">
-                                <label for="quoteNo" class="form-label">Quote No: </label>
+                                <label for="quoteNo" class="form-label">Quote No : </label>
                                 <input type="text" class="form-control" id="quoteNo" formControlName="quoteNo">
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="mb-2">
-                                <label for="quoteDate" class="form-label">Quote Date:
+                                <label for="quoteDate" class="form-label">Quote Date :
                                 </label>
                                 <input type="date" id="quoteDate" formControlName="quoteDate" class="form-control" />
                                 <small *ngIf="f['quoteDate'].touched && f['quoteDate'].invalid" class="text-danger">
@@ -22,6 +22,12 @@
                                 </small>
                             </div>
                         </div>
+                         <aside class="col-md-4">
+                           <div class="mb-2">
+                                <label for="" class="form-label">Enquiry No : </label>
+                                <input type="text" class="form-control" id="" formControlName="">
+                            </div>
+                        </aside>
 
                         <div class="col-md-4">
                             <div class="mb-2">
@@ -195,7 +201,18 @@
                                         </select>
                                     </div>
                                 </div>
-
+                                     <aside class="col-md-3">
+                           <div class="mb-2">
+                                <label for="" class="form-label">Sell Rate </label>
+                                <input type="text" class="form-control" id="" formControlName="">
+                            </div>
+                        </aside>
+                             <aside class="col-md-3">
+                           <div class="mb-2">
+                                <label for="" class="form-label">Buy Rate </label>
+                                <input type="text" class="form-control" id="" formControlName="">
+                            </div>
+                        </aside>
                                 <div class="col-6 col-md-3">
                                     <div class="mb-1">
                                         <label for="effDate" class="form-label">Eff. Date:
@@ -269,6 +286,8 @@
                             <div *ngIf="routes.controls[routeIndex].hasError('expDateInvalid')" class="text-danger">
                                 Expiry Date must be greater than Effective Date!
                             </div>
+                        
+
                             <div class="row">
                                 <div class="col-12">
                                     <!-- #region LCL -->

@@ -454,6 +454,16 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
+       {
+        path: '/accounts/modal',
+        title: 'Modal',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
     ]
   },
   {

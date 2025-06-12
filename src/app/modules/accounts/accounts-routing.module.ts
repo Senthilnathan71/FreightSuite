@@ -5,6 +5,7 @@ import { CurrencyExchangeEntryComponent } from './currency-exchange/currency-exc
 import { TaxGroupListComponent } from './tax-group/tax-group-list/tax-group-list.component';
 import { TaxGroupComponent } from './tax-group/tax-group.component';
 import { ApprovalComponent } from './approval/approval/approval.component';
+import { ModalComponent } from './modal/modal/modal.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -77,6 +78,17 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "Approval", url: "/approval" },
             { title: "Approval" },
+          ],
+        },
+      },
+       {
+        path: "modal",
+        component: ModalComponent,
+        data: {
+          title: "modal",
+          urls: [
+            { title: "accounts", url: "/modal" },
+            { title: "modal" },
           ],
         },
       },
