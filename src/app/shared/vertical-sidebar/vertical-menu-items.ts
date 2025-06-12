@@ -486,6 +486,16 @@ export const ROUTES: RouteInfo[] = [
         submenu: []
       },
       {
+        path: '/crm/meeting-update',
+        title: 'Meeting Update',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
         path: '/crm/calendar',
         title: 'Calender',
         icon: 'mdi mdi-stackexchange',
