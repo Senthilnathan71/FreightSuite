@@ -392,5 +392,66 @@ export class LeadService {
       })
     )
   }
+   // Get all pre-customer meetings
+  getAllPreCustomerMeetings() {
+    return this.http.get<{ data: any[] }>('pre-customer-meeting').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // Get pre-customer meeting by ID
+  getPreCustomerMeetingById(PreCustomerMeetingSid: number) {
+    return this.http.get<{ data: any }>(`pre-customer-meeting/fetch/${PreCustomerMeetingSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // Create new pre-customer meeting
+  createNewPreCustomerMeeting(payload: any) {
+    return this.http.post<{ data: any }>('pre-customer-meeting/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // Update pre-customer meeting by ID
+  updatePreCustomerMeetingById(PreCustomerMeetingSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`pre-customer-meeting/update/${PreCustomerMeetingSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // Delete pre-customer meeting by ID
+  deletePreCustomerMeetingById(PreCustomerMeetingSid: number) {
+    return this.http.delete<{ data: any }>(`pre-customer-meeting/delete/${PreCustomerMeetingSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // Search pre-customer meetings
+  searchPreCustomerMeeting(payload: any) {
+    return this.http.post<{ data: any[] }>('pre-customer-meeting/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  
 
 }

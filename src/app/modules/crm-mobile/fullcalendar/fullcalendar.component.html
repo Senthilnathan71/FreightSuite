@@ -6,6 +6,7 @@
         <ng-container *ngTemplateOutlet="templateMobile"></ng-container>
       </div>
     </div>
+    
 
 
     <!-- ============================================================== -->
@@ -192,19 +193,24 @@
                 </div>
               </div>
               <div class="col-12 col-md-12">
-                <div class="mb-2">
-                  <label class="control-label col-form-label">Meeting Note</label>
-                  <textarea type="text" formControlName="meetingNote" class="form-control"></textarea>
-                  <small *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="text-danger">
-                    Meeting Note is required.
-                  </small>
-                </div>
-              </div>
+  <div class="mb-2">
+    <label class="control-label col-form-label">Meeting Note 
+      <span *ngIf="meetingForm.get('meetingStatus')?.value === 'on hold'" class="text-danger">*</span>
+    </label>
+    <textarea type="text" formControlName="meetingNote" class="form-control"></textarea>
+    <small *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="text-danger">
+      <span *ngIf="f['meetingNote'].errors?.['required']">
+        Meeting Note is required when status is "On Hold"
+      </span>
+    </small>
+  </div>
+</div>
               <div class="col-12 col-md-6">
                 <div class="mb-2">
                   <label class="control-label col-form-label">Meeting Status</label>
                   <select formControlName="meetingStatus" class="form-select">
                     <option value="">Select</option>
+                    <option value="scheduled" selected>Scheduled</option>
                     <option value="confirmed">Confirmed</option>
                     <option value="pending">In Progress</option>
                     <option value="on hold">On Hold</option>
@@ -359,6 +365,7 @@
                   <label class="control-label col-form-label">Meeting Status <span class="text-danger">*</span></label>
                   <select formControlName="meetingStatus" class="form-select">
                     <option value="">Select</option>
+                    <option value="scheduled">Scheduled</option>
                     <option value="confirmed">Confirmed</option>
                     <option value="pending">In Progress</option>
                     <option value="on hold">On Hold</option>
