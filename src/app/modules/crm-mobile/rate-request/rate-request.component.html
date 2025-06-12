@@ -15,8 +15,8 @@
                                 <select formControlName="customerName" (change)="onCustomerChange($event)"
                                     class="form-select">
                                     <option value="">Select</option>
-                                    <option *ngFor="let item of customers" [value]="item.CustomerMasterSid">
-                                        {{ item.CustomerName }}
+                                    <option *ngFor="let item of customers" [value]="item.PreCustomerMasterSid">
+                                        {{ item.preCustomerName }}
                                     </option>
                                 </select>
                                 <small *ngIf="f['customerName'].touched && f['customerName'].invalid"
@@ -125,7 +125,7 @@
                                         <label class="form-label">POO</label>
                                         <select formControlName="POO" class="form-select">
                                             <option value="">Select</option>
-                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                            <option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
                                                 {{ item.PortCode }}
                                             </option>
                                         </select>

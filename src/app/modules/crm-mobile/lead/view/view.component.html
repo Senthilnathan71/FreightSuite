@@ -82,6 +82,13 @@
                 </div>
             </div>
         </div>
+        <div class="card-body">
+            <!-- #region Pagination -->
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection" [pageSize]="pageSize"
+                [(page)]="page" (pageChange)="updatePaginatedData()">
+            </ngb-pagination>
+            <!-- #endregion -->
+        </div>
     </div>
 </ng-template>
 
@@ -101,10 +108,10 @@
                         <table class="table table-hover align-middle no-wrap table-bordered">
                             <thead>
                                 <tr class="bg-info">
-                                    <th class="bg-transparent text-light" scope="col">Customer Name</th>
-                                    <th class="bg-transparent text-light" scope="col">Address</th>
-                                    <th class="bg-transparent text-light" scope="col">Contact</th>
+                                    <th class="bg-transparent text-light" scope="col">Lead Name</th>
                                     <th class="bg-transparent text-light" scope="col">Phone</th>
+                                    <th class="bg-transparent text-light" scope="col">Type</th>
+                                    <th class="bg-transparent text-light" scope="col">Schedule</th>
                                     <!-- <th class="bg-transparent text-light" scope="col">Last Met</th>
                                     <th class="bg-transparent text-light" scope="col">Last Booking</th> -->
                                     <th class="bg-transparent text-light" scope="col">Status</th>
@@ -120,17 +127,20 @@
                                     </td>
                                     <td data-label="Company">
                                         <div class="text-truncate">
-                                            {{ lead.preCustomerAddress1 }}
+                                             <i-feather name="phone" class="feather-sm"></i-feather> {{ lead.phone }}
                                         </div>
                                     </td>
                                     <td data-label="Company">
                                         <div class="text-truncate">
-                                            {{ lead.contactPerson }}
+                                            {{ lead.preCustomerType }}
                                         </div>
                                     </td>
                                     <td data-label="Phone">
                                         <div class="text-truncate">
-                                            <i-feather name="phone" class="feather-sm"></i-feather> {{ lead.phone }}
+                                            <button class="btn btn-sm btn-light-success" (click)="createMeeting(lead.PreCustomerMasterSid)">
+                                                <i-feather name="calendar" class="feather-sm"></i-feather>Schedule Meeting
+                                            </button>
+                                            <!-- <i-feather name="phone" class="feather-sm"></i-feather> {{ lead.phone }} -->
                                         </div>
                                     </td>
                                     <!-- <td data-label="Type"> -- </td> -->
@@ -143,7 +153,8 @@
                                     </td> -->
                                     <td data-label="status">
                                         <div class="text-truncate">
-                                            {{ lead.status === 'A' ? 'Active' : 'Suspend' }}
+                                            <!-- {{ lead.status === 'A' ? 'Active' : 'Suspended' }} -->
+                                              {{findStatus(lead.status)}}
                                         </div>
                                     </td>
                                     <td data-label="Action">

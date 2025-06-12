@@ -33,6 +33,7 @@ export class ViewComponent implements OnInit {
   searchText: string = '';
   filteredLeads: Lead[] = [];
   isMobile: boolean = false;
+  statusList = ["Active", "Pending","Success","No Progress","Closed"];
 
   constructor(private leadService: LeadService, private route: Router, private appService: AppService,private appSettingService:AppSettingsService) { }
 
@@ -106,6 +107,30 @@ export class ViewComponent implements OnInit {
   }
   viewLead(id) {
     this.route.navigate(['crm/lead', id])
+  }
+  createMeeting(PreCustomerMasterSid: number) {
+    this.route.navigate([`/crm/lead-schedule-meeting/${PreCustomerMasterSid}`]);
+  }
+
+  findStatus(value){
+    switch (value) {
+      case 'A':
+        return 'Active'
+        break;
+      case 'P':
+        return 'Pending'
+        break;
+      case 'S':
+        return 'Success'
+        break;
+      case 'N':
+        return 'No Progress'
+        break;
+    
+      default:
+        return 'Closed'
+        break;
+    }
   }
 
 }

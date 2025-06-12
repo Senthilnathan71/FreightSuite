@@ -4,7 +4,7 @@ import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
@@ -18,6 +18,7 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 @Component({
 	selector: 'app-tarrif-entry',
@@ -40,7 +41,8 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 		DecimalPrecisionDirective,
 		NgbPopoverModule,
 		NgbPaginationModule,
-		CustomDatePipe
+		CustomDatePipe,
+		SearchableDropdown
 	],
 	templateUrl: './tarrif-entry.component.html',
 	styleUrl: './tarrif-entry.component.scss',
@@ -63,12 +65,15 @@ export class TarrifEntryComponent implements OnInit {
 	TariffDetailsList : any[];
 	filteredTariffDetail : any[];
 	portList: Port[];
+	polList: Port[];
+	podList: Port[];
 	chargeList: any[];
 	UOMList: any[];
 	departmentList: any[];
 	customerList: any[];
 	companyList: any[];
 	currencyList : any[];
+	isDataLoading : boolean = true;
 
 
 	cargoTypes = ['General', 'Haz', 'Reefer', 'Flexi', 'ODC', 'Empty', 'RORO', 'OOG', 'Tanker'];
@@ -107,11 +112,11 @@ export class TarrifEntryComponent implements OnInit {
 		this.tariffHeaderForm = this.fb.group({
 
 			DepartmentMasterSid: ['', [Validators.required]],
-			POOSid: [''],
-			POLSid: ['', [Validators.required]],
-			PODSid: ['', [Validators.required]],
-			FDCSid: [''],
-			ViaPortSid: [''],
+			POOSid: [,],
+			POLSid: [, [Validators.required]],
+			PODSid: [, [Validators.required]],
+			FDCSid: [],
+			ViaPortSid: [],
 			POLTerminal: [''],
 			PODTerminal: [''],
 			Carrier: [''],
@@ -242,10 +247,13 @@ export class TarrifEntryComponent implements OnInit {
 			currencies : this.masterServ.getAllCurrencies()
 		}).subscribe(({ ports, customers, departments, companies,currencies}) => {
 			this.portList = ports.data,
+			this.polList = ports.data,
+			this.podList = ports.data,
 			this.customerList = customers,
 			this.departmentList = departments,
 			this.companyList = companies,
-			this.currencyList = currencies
+			this.currencyList = currencies,
+			this.isDataLoading = false;
 		})
 	}
 
@@ -476,4 +484,16 @@ export class TarrifEntryComponent implements OnInit {
 			day: date.getDate()
 		};
 	}
+
+	filterPodList(port){
+		this.tariffHeaderForm.get('POLTerminal').setValue(port.PortCode)
+		this.podList = this.portList.filter(each => each.PortMasterSid !== port.PortMasterSid);
+	}
+
+	filterPolList(port){
+		this.tariffHeaderForm.get('PODTerminal').setValue(port.PortCode)
+		this.polList = this.portList.filter(each => each.PortMasterSid !== port.PortMasterSid);
+	}
+
+
 }

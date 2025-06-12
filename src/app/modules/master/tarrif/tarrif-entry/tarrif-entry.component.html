@@ -73,13 +73,19 @@
                     </aside> -->
                     <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="POOSid">
-                                <ng-option value="">Select POO</ng-option>
-                                @for (port of portList; track port) {
-                                <ng-option [value]="port.PortMasterSid">{{ port.PortName }} -
-                                    {{port.PortCode}}</ng-option>
-                                }
-                            </ng-select>
+                            <dofi-searchable-dropdown 
+                                [items]="portList" 
+                                formControlName="POOSid"
+                                [placeholder]="'Select POO'"
+                                [displayFields]="['PortCode', 'PortName']" 
+                                [displayLabels]="['Port Code', 'Port Name']" 
+                                [labelFields]="['PortName','PortCode']"
+                                [bindLabel]="'PortCode'"
+                                [bindValue]="'PortMasterSid'"
+                                [isLoading]="isDataLoading" 
+                                >
+                            </dofi-searchable-dropdown>
+                            <!-- (itemSelected)="onItemSelected($event)" -->
                             <label for="text-input" class="input-label">POO <span class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('POOSid')?.touched && tariffHeaderForm.get('POOSid')?.errors){
                             <div class="error-message">
@@ -92,7 +98,19 @@
                     </aside>
                     <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="POLSid" (change)="setPOLTerminal($event)">
+                            <dofi-searchable-dropdown 
+                                [items]="polList" 
+                                formControlName="POLSid"
+                                [placeholder]="'Select POL'"
+                                [displayFields]="['PortCode', 'PortName']" 
+                                [displayLabels]="['Port Code', 'Port Name']" 
+                                [labelFields]="['PortName','PortCode']"
+                                [bindValue]="'PortMasterSid'"
+                                [isLoading]="isDataLoading" 
+                                (itemSelected)="filterPodList($event)"
+                                >
+                            </dofi-searchable-dropdown>
+                            <!-- <ng-select class="ng-select" formControlName="POLSid" (change)="setPOLTerminal($event)">
                                 <ng-option value="">Select POL</ng-option>
                                 @for (port of portList; track port) {
                                 @if(port.PortMasterSid !== tariffHeaderForm.get('PODSid').value){
@@ -100,7 +118,7 @@
                                     {{port.PortCode}}</ng-option>
                                 }
                                 }
-                            </ng-select>
+                            </ng-select> -->
                             <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
                             @if(tariffHeaderForm.get('POLSid')?.touched && tariffHeaderForm.get('POLSid')?.errors){
                             <div class="error-message">
@@ -113,7 +131,19 @@
                     </aside>
                     <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="PODSid" (change)="setPODTerminal($event)">
+                            <dofi-searchable-dropdown 
+                                [items]="podList" 
+                                formControlName="PODSid"
+                                [placeholder]="'Select POD'"
+                                [displayFields]="['PortCode', 'PortName']" 
+                                [displayLabels]="['Port Code', 'Port Name']" 
+                                [labelFields]="['PortName','PortCode']"
+                                [bindValue]="'PortMasterSid'"
+                                [isLoading]="isDataLoading" 
+                                (itemSelected)="filterPolList($event)"
+                                >
+                            </dofi-searchable-dropdown>
+                            <!-- <ng-select class="ng-select" formControlName="PODSid" (change)="setPODTerminal($event)">
                                 <ng-option value="">Select POD</ng-option>
                                 @for (port of portList; track port) {
                                 @if(port.PortMasterSid !== tariffHeaderForm.get('POLSid').value){
@@ -121,7 +151,7 @@
                                     {{port.PortCode}}</ng-option>
                                 }
                                 }
-                            </ng-select>
+                            </ng-select> -->
                             <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
                             @if(tariffHeaderForm.get('PODSid')?.touched && tariffHeaderForm.get('PODSid')?.errors){
                             <div class="error-message">
@@ -134,13 +164,24 @@
                     </aside>
                     <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="FDCSid">
+                            <dofi-searchable-dropdown 
+                                [items]="portList" 
+                                formControlName="FDCSid"
+                                [placeholder]="'Select FDC'"
+                                [displayFields]="['PortCode', 'PortName']" 
+                                [displayLabels]="['Port Code', 'Port Name']" 
+                                [labelFields]="['PortName','PortCode']"
+                                [bindValue]="'PortMasterSid'"
+                                [isLoading]="isDataLoading" 
+                                >
+                            </dofi-searchable-dropdown>
+                            <!-- <ng-select class="ng-select" formControlName="FDCSid">
                                 <ng-option value="">Select FDC</ng-option>
                                 @for (port of portList; track port) {
                                 <ng-option [value]="port.PortMasterSid">{{ port.PortName }} -
                                     {{port.PortCode}}</ng-option>
                                 }
-                            </ng-select>
+                            </ng-select> -->
                             <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('FDCSid')?.touched && tariffHeaderForm.get('FDCSid')?.errors){
                             <div class="error-message">
@@ -153,12 +194,23 @@
                     </aside>
                     <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="ViaPortSid">
+                            <dofi-searchable-dropdown 
+                                [items]="portList" 
+                                formControlName="ViaPortSid"
+                                [placeholder]="'Select Via Port'"
+                                [displayFields]="['PortCode', 'PortName']" 
+                                [displayLabels]="['Port Code', 'Port Name']" 
+                                [labelFields]="['PortName','PortCode']"
+                                [bindValue]="'PortMasterSid'"
+                                [isLoading]="isDataLoading" 
+                                >
+                            </dofi-searchable-dropdown>
+                            <!-- <ng-select class="ng-select" formControlName="ViaPortSid">
                                 <ng-option value="">Select Via Port</ng-option>
                                 @for (port of portList; track port) {
                                     <ng-option [value]="port.PortMasterSid" >{{ port.PortName }}</ng-option>
                                 }
-                            </ng-select>
+                            </ng-select> -->
                             <label for="text-input" class="input-label">Via Port <span
                                     class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('ViaPortSid')?.touched && tariffHeaderForm.get('ViaPortSid')?.errors){

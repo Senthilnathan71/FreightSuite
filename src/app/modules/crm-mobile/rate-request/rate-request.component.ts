@@ -276,6 +276,16 @@ export class RateRequestComponent implements OnInit {
       });
     });
 
+
+    console.log('Selected Department',selectedDept);
+    if(selectedDept.FCLLCL==='AIR'){
+      this.filteredPorts = this.ports.filter(port => port.PortType === 'Air')
+      console.log('Air Selected',this.filteredPorts);
+    } else if(selectedDept.FCLLCL === 'FCL' || selectedDept.FCLLCL === 'LCL'){
+      this.filteredPorts = this.ports.filter(port => port.PortType === 'Sea')
+      console.log('FCL / LCL Selected',this.filteredPorts);
+    }
+
     setTimeout(() => {
       this.cdr.detectChanges(); // Ensure Angular detects the change
     }, 100);
@@ -294,8 +304,8 @@ export class RateRequestComponent implements OnInit {
   }
 
   loadCustomers(): void {
-    this.leadService.getAllCustomers().subscribe((resp: any) => {
-      this.customers = resp;
+    this.leadService.getAllLeads().subscribe((resp: any) => {
+      this.customers = resp.data;
     });
   }
 

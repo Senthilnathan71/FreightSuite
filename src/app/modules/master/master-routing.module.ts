@@ -887,6 +887,17 @@ export const MasterRoutes: Routes = [
           ]
         }
       },
+      {
+        path: 'user/entry/:id',
+        component: UserEntryComponent,
+        data: {
+          title: 'User',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'User' },
+          ]
+        }
+      },
     ],
   },
   {

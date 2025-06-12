@@ -2195,4 +2195,59 @@ searchChargeTax(payload: any) {
     })
   );
 }
+// User Master
+getAllFfUser() {
+  return this.http.get<{data: any[]}>('ff-user').pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+getFfUserById(UserMasterSid: number) {
+  return this.http.get<{data: any}>(`ff-user/fetch/${UserMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+createNewFfUser(payload: any) {
+  return this.http.post<{data: any}>('ff-user/create', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+updateFfUserById(UserMasterSid: number, payload: any) {
+  return this.http.patch<{data: any}>(`ff-user/update/${UserMasterSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+deleteFfUserById(UserMasterSid: number) {
+  return this.http.delete<{data: any}>(`ff-user/delete/${UserMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+searchFfUser(payload: any) {
+  return this.http.post<{data: any[]}>('ff-user/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
 }

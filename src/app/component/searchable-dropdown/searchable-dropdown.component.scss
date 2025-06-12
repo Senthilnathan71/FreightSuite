@@ -1,0 +1,80 @@
+/* Ensure ng-select container matches input width */
+:host .ng-select {
+  width: 100%;
+  font-size: 14px;
+}
+
+/* ng-dropdown-panel must match input width but allow internal scrolling */
+:host ::ng-deep .ng-dropdown-panel {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  max-height: 300px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 0;
+}
+
+/* Make child wider than panel to allow scroll */
+:host ::ng-deep .ng-dropdown-panel-items-wrapper {
+  min-width: 800px; /* Increased to ensure enough space for all columns */
+  display: block;
+}
+
+/* Header and each row */
+:host ::ng-deep .dropdown-header,
+:host ::ng-deep .dropdown-row {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  box-sizing: border-box;
+  align-items: center;
+  padding: 8px 0;
+}
+
+/* Style columns */
+:host ::ng-deep .dropdown-header > div,
+:host ::ng-deep .dropdown-row > div {
+  padding: 0 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 0 auto;
+  border-right: 1px solid #ccc;
+  min-width: fit-content; /* Ensure the column doesn't shrink below its content */
+}
+
+/* Remove border from last column */
+:host ::ng-deep .dropdown-header > div:last-child,
+:host ::ng-deep .dropdown-row > div:last-child {
+  border-right: none;
+}
+
+/* Sticky header */
+:host ::ng-deep .dropdown-header {
+  font-weight: bold;
+  background-color: #f8f9fa;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Selected row */
+:host ::ng-deep .ng-option-selected .dropdown-row {
+  background-color: #05608D !important;
+  color : white
+}
+
+/* Option container fix */
+:host ::ng-deep .ng-option {
+  padding: 0 !important;
+  display: block;
+}
+
+/* Ensure scrollable content respects the width */
+:host ::ng-deep .ng-dropdown-panel .scroll-host {
+  padding-left: 5px;
+  min-width: max-content !important;
+  overflow-x: auto !important;
+}

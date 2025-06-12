@@ -30,7 +30,9 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
     NgSelectModule,
     OnlyNumbersDirective,
     OnlyTextDirective,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    OnlyTextDirective,
+    OnlyNumbersDirective
     // NgxIntlTelInputModule
   ],
   templateUrl: './lead.component.html',
@@ -49,7 +51,8 @@ export class LeadComponent implements OnInit {
   cityList : any[];
 
   customerByOptions = ['Email', 'Advertisement', 'Website', 'Others'];
-  statusList = ["Active", "Suspend"];
+  leadSourceList = ['Email', 'Advertisement','Website', 'Inquiries', 'Referrals',"Trade shows", "Cold calls", "Social media", 'Others']
+  statusList = ["Active", "Pending","Success","No Progress","Closed"];
   // CountryISO = CountryISO;
   // PhoneNumberFormat = PhoneNumberFormat;
   // SearchCountryField = SearchCountryField;
@@ -117,9 +120,10 @@ export class LeadComponent implements OnInit {
   // Initialize the Form
   initForm() {
     this.leadForm = this.fb.group({
-      CompanyMasterSid : [,[Validators.required]],
-      leadFrom : ['',[Validators.required]],
-      leadReferredBy : ['',[Validators.required]],
+      preCustomerName : [,[Validators.required]],
+      leadReferredBy : [,[Validators.required]],
+      leadFrom : [],
+      preCustomerType : [],
       preCustomerAddress1 : ['',[Validators.required]],
       preCustomerAddress2 : [''],
       POBOX : [''],
@@ -127,7 +131,7 @@ export class LeadComponent implements OnInit {
       StateMasterSid : [,[Validators.required]],
       CityMasterSid : [,[Validators.required]],
       contactPerson : ['',[Validators.required]],
-      email : ['',[Validators.required,this.customEmailValidator]],
+      email : ['',[Validators.required,this.customEmailValidator()]],
       phone : ['',[Validators.required]],
       PreferredContactMode : ['Email'],
       LanguagePreferrence : [''],
@@ -137,7 +141,8 @@ export class LeadComponent implements OnInit {
       Industry : [''],
       CompanySize : [''],
       AnnualRevenue : [''],
-      Notes : ['']
+      Notes : [''],
+      status : ['Active',[Validators.required]]
     });
   }
 
@@ -153,13 +158,15 @@ export class LeadComponent implements OnInit {
     this.btnDisable = true;
     const updatedBy = this.appSettingService.userSettingSource.value['UserEmail'];
     const createdBy = this.appSettingService.userSettingSource.value['UserEmail'];
+    const companyId = this.appSettingService.userSettingSource.value['userBranchMaster'][0]?.CompanyMasterSid;
     const formData = this.leadForm.value;
     const payload = {
       ...formData,
       CompanySize : parseInt(formData.CompanySize),
       AnnualRevenue : parseInt(formData.AnnualRevenue),
-      status : 'A',
-      ...(this.isEditMode ? {updatedBy : updatedBy}:{createdBy : createdBy})
+      ...(this.isEditMode ? {updatedBy : updatedBy}:{createdBy : createdBy}),
+      status : formData.status.charAt(0),
+      CompanyMasterSid : companyId
     }
 
     if(this.isEditMode){
@@ -206,11 +213,12 @@ export class LeadComponent implements OnInit {
       (resp:any) => {
           if(resp.status){
             let response = resp.data;
-            console.log(response.CountryMasterSid);
             this.filterStateByCountryId(response);
             this.filterCityByStateId(response);
+            let formattedStatus = this.findStatus(response.status);
             this.leadForm.patchValue({
                ...response,
+               status : formattedStatus
              })
           } else { 
             this.appSettingService.showError('Error Loading Lead Data')
@@ -298,7 +306,26 @@ export class LeadComponent implements OnInit {
     };
   }
 
-
+  findStatus(value){
+    switch (value) {
+      case 'A':
+        return 'Active'
+        break;
+      case 'P':
+        return 'Pending'
+        break;
+      case 'S':
+        return 'Success'
+        break;
+      case 'N':
+        return 'No Progress'
+        break;
+    
+      default:
+        return 'Closed'
+        break;
+    }
+  }
 
 
 
