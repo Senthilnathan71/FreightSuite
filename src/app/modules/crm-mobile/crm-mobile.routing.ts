@@ -9,6 +9,7 @@ import { FullcalendarComponent } from './fullcalendar/fullcalendar.component';
 import { TodoComponent } from './todo/todo.component';
 import { MeetingComponent } from './lead-schedule/meeting/meeting.component';
 import { PendingComponent } from './lead-schedule/pending/pending.component';
+import { MeetingUpdateListComponent } from './Meeting-Update/meeting-update-list/meeting-update-list.component';
 
 
 export const CrmMobileRoutes: Routes = [
@@ -154,10 +155,27 @@ export const CrmMobileRoutes: Routes = [
                     backOption: [
                         { title: 'Back', url: '/crm' },
                     ],
-                    // urls: [
-                    //     { title: "CRM", url: "/crm" },
-                    //     { title: "Calendar" },
-                    // ],
+                },
+            },
+            { path: 'calendar/update/:id', component: FullcalendarComponent },
+            {
+                path: "meeting-update",
+                component: MeetingUpdateListComponent,
+                data: {
+                    title: "Meeting Update",
+                    backOption: [
+                        { title: 'Back', url: '/crm' },
+                    ],
+                },
+            },
+            {
+                path: "calendar/update/:eventId",  
+                component: FullcalendarComponent,  
+                data: {
+                    title: "Update Calendar Event",
+                    backOption: [
+                        { title: 'Back', url: '/crm/calendar' },
+                    ],
                 },
             },
             {

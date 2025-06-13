@@ -98,7 +98,7 @@ export class MasterService {
 
 
   getCustomerById(id: number) {
-    return this.http.get<{ data: Uom }>(`customer/fetch/${id}`).pipe(
+    return this.http.get<{ data: any }>(`customer/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -145,7 +145,7 @@ export class MasterService {
 
 
   getCustomerBranchById(id: number) {
-    return this.http.get<{ data: Uom }>(`customer-branch/fetch/${id}`).pipe(
+    return this.http.get<{ data: any }>(`customer-branch/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -192,7 +192,7 @@ export class MasterService {
 
 
   getCustomerBranchContactById(id: number) {
-    return this.http.get<{ data: Uom }>(`customer-branch-contact/fetch/${id}`).pipe(
+    return this.http.get<{ data: any }>(`customer-branch-contact/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -239,7 +239,7 @@ export class MasterService {
 
 
   getCustomerBranchEmailById(id: number) {
-    return this.http.get<{ data: Uom }>(`customer-branch-email/fetch/${id}`).pipe(
+    return this.http.get<{ data: any }>(`customer-branch-email/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -287,7 +287,7 @@ export class MasterService {
 
 
   getCustomerLoginById(id: number) {
-    return this.http.get<{ data: Uom }>(`customer-login/fetch/${id}`).pipe(
+    return this.http.get<{ data: any }>(`customer-login/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1796,15 +1796,8 @@ export class MasterService {
   }
 
 
-  // Charge - tax
-  getAllChargeTax(){
-    return this.http.get<{data:any[]}>('charge-tax').pipe(
-      map((resp)=>{
-        let response = resp;
-        return response;
-      })
-    )
-  }
+  
+  
   // Charge Group Master
 
 getAllChargeGroups() {
@@ -1871,7 +1864,6 @@ searchChargeGroups(payload: any) {
       })
     )
   }
-
   createNewTandC(payload){
     return this.http.post<{data:any}>('terms-and-conditions/create',payload).pipe(
       map((resp)=>{
@@ -2146,4 +2138,117 @@ searchChargeGroups(payload: any) {
       })
     )
   }
+ 
+
+// Charge Tax Master
+getAllChargeTax() {
+  return this.http.get<{data: any[]}>('charge-tax').pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+getChargeTaxById(ChargeTaxMasterSid: number) {
+  return this.http.get<{data: any}>(`charge-tax/fetch/${ChargeTaxMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+createNewChargeTax(payload: any) {
+  return this.http.post<{data: any}>('charge-tax/create', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+updateChargeTaxById(ChargeTaxMasterSid: number, payload: any) {
+  return this.http.patch<{data: any}>(`charge-tax/update/${ChargeTaxMasterSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+deleteChargeTaxById(ChargeTaxMasterSid: number) {
+  return this.http.delete<{data: any}>(`charge-tax/delete/${ChargeTaxMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+searchChargeTax(payload: any) {
+  return this.http.post<{data: any[]}>('charge-tax/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+// User Master
+getAllFfUser() {
+  return this.http.get<{data: any[]}>('ff-user').pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+getFfUserById(UserMasterSid: number) {
+  return this.http.get<{data: any}>(`ff-user/fetch/${UserMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+createNewFfUser(payload: any) {
+  return this.http.post<{data: any}>('ff-user/create', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+updateFfUserById(UserMasterSid: number, payload: any) {
+  return this.http.patch<{data: any}>(`ff-user/update/${UserMasterSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+deleteFfUserById(UserMasterSid: number) {
+  return this.http.delete<{data: any}>(`ff-user/delete/${UserMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+searchFfUser(payload: any) {
+  return this.http.post<{data: any[]}>('ff-user/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+
+
 }

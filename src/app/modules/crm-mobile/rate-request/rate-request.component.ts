@@ -4,11 +4,21 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { AppService } from 'src/app/service/app.service';
 import { LeadService } from '../Services/lead.service';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-rate-request',
@@ -17,33 +27,37 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
     FeatherModule,
     CommonModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    NgSelectModule,
   ],
   templateUrl: './rate-request.component.html',
   styleUrl: './rate-request.component.scss',
-  providers: [DatePipe]  // Add DatePipe here
+  providers: [DatePipe], // Add DatePipe here
 })
 export class RateRequestComponent implements OnInit {
-  selectedDepartment: any
+  selectedDepartment: any;
   isMobile: boolean = false;
   rateRequestForm!: FormGroup;
-  EnquiryHeaderSid: any
+  EnquiryHeaderSid: any;
   isEditMode = false; // Flag for edit mode
-  customers: any
-  packageTypes: any
-  containerTypes: any
-  ports: any
-  departments: any
+  customers: any;
+  packageTypes: any;
+  containerTypes: any;
+  // ports: any
+  departments: any;
   enquiryForm: FormGroup;
-  errorMessage: string = '';  // To store any error messages
+  errorMessage: string = ''; // To store any error messages
   btnDisable: boolean = false;
-  enquiry: any
+  enquiry: any;
   selectedFCLLCL: string = ''; // Store selected segment's FCL/LCL type
   selectedCustomerName: any;
-  statusList = ["Active", "Suspend"];
+  statusList = ['Active', 'Suspend'];
   minDate: string = '';
-  rateRequest: boolean = false
-
+  rateRequest: boolean = false;
+  ports = [];
+  filteredPorts = [];
+  searchText = '';
+  selectedPort: any;
 
   constructor(
     private appService: AppService,
@@ -55,19 +69,19 @@ export class RateRequestComponent implements OnInit {
     private fb: FormBuilder,
     private datePipe: DatePipe,
     private modalService: ModalService,
-    private toaster: ToastrService) { }
-
+    private toaster: ToastrService
+  ) {}
 
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice();
-    this.loadCustomers()
-    this.loadDepartment()
-    this.loadCargoTypes()
-    this.loadContainerTypes()
-    this.loadPorts()
+    this.loadCustomers();
+    this.loadDepartment();
+    this.loadCargoTypes();
+    this.loadContainerTypes();
+    this.loadPorts();
     this.initializeForm();
 
-    this.activatedRoute.paramMap.subscribe(params => {
+    this.activatedRoute.paramMap.subscribe((params) => {
       this.EnquiryHeaderSid = +params.get('id');
       if (this.EnquiryHeaderSid) {
         this.isEditMode = true;
@@ -84,13 +98,17 @@ export class RateRequestComponent implements OnInit {
     // Loop through all routes to check for the error
     this.routes.controls.forEach((route, index) => {
       if (route.hasError('polPodSame')) {
-        this.toaster.error(`Route ${index + 1}: POL & POD should not be the same!`, "Error", {
-          closeButton: true, timeOut: 2000
-        });
+        this.toaster.error(
+          `Route ${index + 1}: POL & POD should not be the same!`,
+          'Error',
+          {
+            closeButton: true,
+            timeOut: 2000,
+          }
+        );
       }
     });
   }
-
 
   initializeForm() {
     this.rateRequestForm = this.fb.group({
@@ -119,18 +137,19 @@ export class RateRequestComponent implements OnInit {
 
   // Add New Route
   addRoute() {
-    const routeForm = this.fb.group({
-      POO: ['', Validators.required],
-      POL: ['', Validators.required],
-      POD: ['', Validators.required],
-      FDC: ['', Validators.required],
-      cargo: this.fb.array([]),
-    },
+    const routeForm = this.fb.group(
+      {
+        POO: ['', Validators.required],
+        POL: ['', Validators.required],
+        POD: ['', Validators.required],
+        FDC: ['', Validators.required],
+        cargo: this.fb.array([]),
+      },
       { validator: this.validatePOLPOD } // Attach the custom validator
     );
 
     // Subscribe to POD changes and update FDC automatically
-    routeForm.get('POD')?.valueChanges.subscribe(selectedPOD => {
+    routeForm.get('POD')?.valueChanges.subscribe((selectedPOD) => {
       if (selectedPOD) {
         routeForm.patchValue({ FDC: selectedPOD }, { emitEvent: false });
       }
@@ -146,8 +165,11 @@ export class RateRequestComponent implements OnInit {
       contentType: [''],
       product: ['', Validators.required],
       Qty: ['', [Validators.required, Validators.pattern('^\\d{1,5}$')]],
-      Weight: ['', [Validators.required, Validators.pattern('^\\d{1,5}(\\.\\d{1,3})?$')]],
-      cbm: ['', Validators.pattern('^\\d{1,3}(\\.\\d{1,3})?$')]
+      Weight: [
+        '',
+        [Validators.required, Validators.pattern('^\\d{1,5}(\\.\\d{1,3})?$')],
+      ],
+      cbm: ['', Validators.pattern('^\\d{1,3}(\\.\\d{1,3})?$')],
     });
 
     this.routeCargo(routeIndex).push(cargoForm);
@@ -174,7 +196,6 @@ export class RateRequestComponent implements OnInit {
     return pol && pod && pol === pod ? { polPodSame: true } : null;
   }
 
-
   // Create a single row FormGroup
   createRow(): FormGroup {
     return this.fb.group({
@@ -183,7 +204,7 @@ export class RateRequestComponent implements OnInit {
       Qty: ['', Validators.required],
       Weight: ['', Validators.required],
       Volume: ['', Validators.required],
-      contentType: ['', Validators.required]
+      contentType: ['', Validators.required],
     });
   }
   // Access the cargoRoutes FormArray
@@ -191,11 +212,9 @@ export class RateRequestComponent implements OnInit {
     return this.rateRequestForm.get('cargoRoutes') as FormArray;
   }
 
-
   getRows(routeIndex: number): FormArray {
     return this.routes.at(routeIndex).get('cargo') as FormArray;
   }
-
 
   get f(): { [key: string]: AbstractControl<any, any> } {
     return this.rateRequestForm.controls;
@@ -210,8 +229,6 @@ export class RateRequestComponent implements OnInit {
     return now.toISOString().slice(0, 16); // Format as 'YYYY-MM-DDTHH:mm'
   }
 
-
-
   // onSegmentChange(event: Event) {
   //   const selectedDepartmentName = (event.target as HTMLSelectElement).value
   //   this.rateRequestForm.get('DepartmentMasterSid')?.setValue(Number((event.target as HTMLSelectElement).value));
@@ -225,10 +242,16 @@ export class RateRequestComponent implements OnInit {
 
   // }
   onSegmentChange(event: Event) {
-    const selectedDepartmentId = Number((event.target as HTMLSelectElement).value);
-    this.rateRequestForm.get('DepartmentMasterSid')?.setValue(selectedDepartmentId);
+    const selectedDepartmentId = Number(
+      (event.target as HTMLSelectElement).value
+    );
+    this.rateRequestForm
+      .get('DepartmentMasterSid')
+      ?.setValue(selectedDepartmentId);
 
-    const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === selectedDepartmentId);
+    const selectedDept = this.departments.find(
+      (dept) => dept.DepartmentMasterSid === selectedDepartmentId
+    );
     console.log(selectedDept);
 
     this.selectedDepartment = selectedDept?.departmentName;
@@ -253,91 +276,110 @@ export class RateRequestComponent implements OnInit {
       });
     });
 
+
+    console.log('Selected Department',selectedDept);
+    if(selectedDept.FCLLCL==='AIR'){
+      this.filteredPorts = this.ports.filter(port => port.PortType === 'Air')
+      console.log('Air Selected',this.filteredPorts);
+    } else if(selectedDept.FCLLCL === 'FCL' || selectedDept.FCLLCL === 'LCL'){
+      this.filteredPorts = this.ports.filter(port => port.PortType === 'Sea')
+      console.log('FCL / LCL Selected',this.filteredPorts);
+    }
+
     setTimeout(() => {
       this.cdr.detectChanges(); // Ensure Angular detects the change
     }, 100);
   }
 
-
   onCustomerChange(event: Event): void {
-    const selectedCustomerId = Number((event.target as HTMLSelectElement).value);
+    const selectedCustomerId = Number(
+      (event.target as HTMLSelectElement).value
+    );
     this.rateRequestForm.get('CustomerMasterSid')?.setValue(selectedCustomerId);
 
-    const selectedCustomer = this.customers.find(cust => cust.CustomerMasterSid === selectedCustomerId);
+    const selectedCustomer = this.customers.find(
+      (cust) => cust.CustomerMasterSid === selectedCustomerId
+    );
     this.selectedCustomerName = selectedCustomer?.CustomerName; // Store customer name if needed
   }
 
-
-
   loadCustomers(): void {
-    this.leadService.getAllCustomers().subscribe(
-      (resp: any) => {
-        this.customers = resp
-      });
+    this.leadService.getAllLeads().subscribe((resp: any) => {
+      this.customers = resp.data;
+    });
   }
 
   loadDepartment(): void {
-    this.leadService.getAllDepartments().subscribe(
-      (resp: any) => {
-        this.departments = resp
-      });
+    this.leadService.getAllDepartments().subscribe((resp: any) => {
+      this.departments = resp;
+    });
   }
-
 
   loadCargoTypes(): void {
-    this.leadService.getAllCargoTypes().subscribe(
-      (resp: any) => {
-        console.log(resp)
-        this.packageTypes = resp
-      });
+    this.leadService.getAllCargoTypes().subscribe((resp: any) => {
+      console.log(resp);
+      this.packageTypes = resp;
+    });
   }
-
-
 
   loadContainerTypes(): void {
-    this.leadService.getAllContainerTypes().subscribe(
-      (resp: any) => {
-        console.log(resp)
-        this.containerTypes = resp
-      });
+    this.leadService.getAllContainerTypes().subscribe((resp: any) => {
+      console.log(resp);
+      this.containerTypes = resp;
+    });
   }
 
+  // loadPorts(): void {
+  //   this.leadService.getAllPorts().subscribe(
+  //     (resp: any) => {
+  //       this.ports = resp
+  //     });
+  // }
+
   loadPorts(): void {
-    this.leadService.getAllPorts().subscribe(
-      (resp: any) => {
-        this.ports = resp
-      });
+    this.leadService.getAllPorts().subscribe((resp: any) => {
+      this.ports = resp;
+      this.filteredPorts = [...this.ports];
+    });
   }
+
+ 
+onFilter(search: string) {
+  const normalizedSearch = search.toLocaleLowerCase();
+  this.filteredPorts = this.ports.filter(port =>
+    port.PortCode?.toLocaleLowerCase().includes(normalizedSearch)
+  );
+}
 
 
   loadEnquiry(id): void {
-    this.leadService.getEnquiryById(id).subscribe(
-      (resp: any) => {
-        if (resp) {
-          this.patchValues(resp)
-
-        }
-      });
+    this.leadService.getEnquiryById(id).subscribe((resp: any) => {
+      if (resp) {
+        this.patchValues(resp);
+      }
+    });
   }
 
-  quotationCustomerId: number
-  quotationDepartmentId: number
-  quotationPOL: number
-  quotationPOD: number
+  quotationCustomerId: number;
+  quotationDepartmentId: number;
+  quotationPOL: number;
+  quotationPOD: number;
 
   patchValues(response: any) {
     this.selectedDepartment = response.ShipmentType;
     this.selectedFCLLCL = response.ShipmentType.includes('FCL') ? 'FCL' : 'LCL';
     // Patch header fields
 
-    this.quotationCustomerId = response.CustomerMasterSid
-    this.quotationDepartmentId = response.DepartmentMasterSid
+    this.quotationCustomerId = response.CustomerMasterSid;
+    this.quotationDepartmentId = response.DepartmentMasterSid;
 
     this.rateRequestForm.patchValue({
       customerName: response.CustomerMasterSid,
-      shipmentDate: this.datePipe.transform(response.ShipmentExpectedDate, 'yyyy-MM-dd') || '',
+      shipmentDate:
+        this.datePipe.transform(response.ShipmentExpectedDate, 'yyyy-MM-dd') ||
+        '',
       Segment: response.DepartmentMasterSid,
-      status: response.status === "A" ? "Active" : "Suspend"
+      status: response.status === 'A' ? 'Active' : 'Suspend',
     });
     this.rateRequestForm.get('Segment')?.disable();
     // Get the FormArray for routes and clear existing data
@@ -345,32 +387,34 @@ export class RateRequestComponent implements OnInit {
     routesArray.clear();
 
     // Loop through enquiryRoute and add routes dynamically
-    response.enquiryRoute.forEach(route => {
-      this.quotationPOL = route.POLSid
-      this.quotationPOD = route.PODSid
+    response.enquiryRoute.forEach((route) => {
+      this.quotationPOL = route.POLSid;
+      this.quotationPOD = route.PODSid;
       const routeFormGroup = this.fb.group({
         EnquiryRouteSid: [route.EnquiryRouteSid || null], // Ensure Route ID is captured
         POO: [route.PORSid, Validators.required],
         POL: [route.POLSid, Validators.required],
         POD: [route.PODSid, Validators.required],
         FDC: [route.FDPSid, Validators.required],
-        cargo: this.fb.array([]) // Initialize cargo array
+        cargo: this.fb.array([]), // Initialize cargo array
       });
 
       // Get the cargo array inside the route
       const cargoArray = routeFormGroup.get('cargo') as FormArray;
 
       // Loop through enquiryCargo and add cargo rows dynamically
-      route.enquiryCargo.forEach(cargo => {
-        cargoArray.push(this.fb.group({
-          EnquiryCargoSid: [cargo.EnquiryCargoSid || null], // Ensure Cargo ID is captured
-          cargoType: [cargo.CargoType, Validators.required],
-          contentType: [cargo.ContainerType || '', Validators.required], // Default empty if null
-          product: [cargo.ProductName, Validators.required],
-          Qty: [cargo.Qty, Validators.required],
-          Weight: [cargo.GrossWeight, Validators.required],
-          cbm: [cargo.Volume, Validators.required]
-        }));
+      route.enquiryCargo.forEach((cargo) => {
+        cargoArray.push(
+          this.fb.group({
+            EnquiryCargoSid: [cargo.EnquiryCargoSid || null], // Ensure Cargo ID is captured
+            cargoType: [cargo.CargoType, Validators.required],
+            contentType: [cargo.ContainerType || '', Validators.required], // Default empty if null
+            product: [cargo.ProductName, Validators.required],
+            Qty: [cargo.Qty, Validators.required],
+            Weight: [cargo.GrossWeight, Validators.required],
+            cbm: [cargo.Volume, Validators.required],
+          })
+        );
       });
 
       // Push the route to the FormArray
@@ -385,7 +429,6 @@ export class RateRequestComponent implements OnInit {
   }
 
   onSubmit() {
-
     this.btnDisable = true;
 
     if (this.EnquiryHeaderSid) {
@@ -394,55 +437,55 @@ export class RateRequestComponent implements OnInit {
         CustomerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value,
         Segment: this.selectedDepartment,
         EnquiryHeaderSid: this.EnquiryHeaderSid,
-        status: this.rateRequestForm.get('status')?.value === "Active" ? "A" : "S",
-        routes: this.rateRequestForm.value.routes.map(route => ({
+        status:
+          this.rateRequestForm.get('status')?.value === 'Active' ? 'A' : 'S',
+        routes: this.rateRequestForm.value.routes.map((route) => ({
           ...route,
           EnquiryRouteSid: route.EnquiryRouteSid,
-          cargo: route.cargo.map(cargo => ({
+          cargo: route.cargo.map((cargo) => ({
             ...cargo,
-            EnquiryCargoSid: cargo.EnquiryCargoSid
-          }))
-        }))
+            EnquiryCargoSid: cargo.EnquiryCargoSid,
+          })),
+        })),
       };
-      this.leadService.updateEnquiryById(this.EnquiryHeaderSid, updatePayload).subscribe(
-        resp => {
+      this.leadService
+        .updateEnquiryById(this.EnquiryHeaderSid, updatePayload)
+        .subscribe((resp) => {
           console.log('API Response:', resp); // Debugging step
 
           if (resp) {
             // this.appSettingsService.showSuccess("Enquiry Updated SuccessFully");
-            this.modalService.openSuccessModal("Enquiry Updated Successfully");
+            this.modalService.openSuccessModal('Enquiry Updated Successfully');
             this.btnDisable = false;
             // this.rateRequestForm.patchValue(resp.data);
-            this.router.navigate(['crm/rate-request/list'])
+            this.router.navigate(['crm/rate-request/list']);
           } else {
             // this.appSettingsService.showError("Enquiry Update Failed");
-            this.modalService.openErrorModal("Enquiry Update Failed");
+            this.modalService.openErrorModal('Enquiry Update Failed');
           }
-        }
-      )
+        });
     } else {
       const createPayload = {
         ...this.rateRequestForm.value,
-        DepartmentMasterSid: this.rateRequestForm.get('DepartmentMasterSid')?.value,
+        DepartmentMasterSid: this.rateRequestForm.get('DepartmentMasterSid')
+          ?.value,
         CustomerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value,
         CustomerName: this.selectedCustomerName, // Store customer name
-        Segment: this.selectedDepartment // Ensure the segment name is included
-      }
-      console.log(createPayload)
-      this.leadService.createEnquiry(createPayload).subscribe(
-        resp => {
-          if (resp.status) {
-            // this.appSettingsService.showSuccess("Enquiry Created SuccessFully");
-            this.modalService.openSuccessModal("Enquiry Created Successfully");
-            this.btnDisable = false;
-            // this.rateRequestForm.patchValue(resp.data);
-            this.router.navigate(['crm/rate-request/list'])
-          } else {
-            // this.appSettingsService.showError("Enquiry Creation Failed");
-            this.modalService.openErrorModal("Enquiry Creation Failed");
-          }
+        Segment: this.selectedDepartment, // Ensure the segment name is included
+      };
+      console.log(createPayload);
+      this.leadService.createEnquiry(createPayload).subscribe((resp) => {
+        if (resp.status) {
+          // this.appSettingsService.showSuccess("Enquiry Created SuccessFully");
+          this.modalService.openSuccessModal('Enquiry Created Successfully');
+          this.btnDisable = false;
+          // this.rateRequestForm.patchValue(resp.data);
+          this.router.navigate(['crm/rate-request/list']);
+        } else {
+          // this.appSettingsService.showError("Enquiry Creation Failed");
+          this.modalService.openErrorModal('Enquiry Creation Failed');
         }
-      )
+      });
     }
     this.btnDisable = false;
   }
@@ -452,31 +495,28 @@ export class RateRequestComponent implements OnInit {
   }
 
   goBack() {
-    history.back()
+    history.back();
   }
 
-
   navigateQuotation() {
-    const polList = this.rateRequestForm.value.routes.map(route => route.POL);
-    const podList = this.rateRequestForm.value.routes.map(route => route.POD);
+    const polList = this.rateRequestForm.value.routes.map((route) => route.POL);
+    const podList = this.rateRequestForm.value.routes.map((route) => route.POD);
     // Extract all cargoType values from each route
-    const cargoTypeList = this.rateRequestForm.value.routes.flatMap(route =>
-      route.cargo.map(cargoItem => cargoItem.cargoType)
+    const cargoTypeList = this.rateRequestForm.value.routes.flatMap((route) =>
+      route.cargo.map((cargoItem) => cargoItem.cargoType)
     );
-    this.leadService.clearQuotationData();  // <-- Add this line to clear previous data
+    this.leadService.clearQuotationData(); // <-- Add this line to clear previous data
 
     this.leadService.setQuotationData({
       customerId: this.quotationCustomerId,
       departmentId: this.quotationDepartmentId,
-      polList: polList,  // Sending as an array
-      podList: podList,  // Sending as an array
+      polList: polList, // Sending as an array
+      podList: podList, // Sending as an array
       cargoTypeList: cargoTypeList,
       rateRequest: true,
-      active: 2
+      active: 2,
     });
 
     this.router.navigate(['crm/quotation/view']);
   }
-
-
 }

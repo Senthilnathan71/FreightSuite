@@ -302,4 +302,156 @@ export class LeadService {
     )
   }
 
+  // LEAD
+  fetchAllLeads() {
+    return this.http.get<{ data: any[] }>('lead').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getLeadById(PreCustomerMasterSid) {
+    return this.http.get<{ data: any }>(`lead/fetch/${PreCustomerMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewLead(payload) {
+    return this.http.post<{ data: any }>('lead/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateLeadById(PreCustomerMasterSid: number, payload) {
+    return this.http.patch<{ data: any }>(`lead/update/${PreCustomerMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteLeadById(PreCustomerMasterSid: number) {
+    return this.http.delete<{ data: any }>(`lead/delete/${PreCustomerMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchLead(payload) {
+    return this.http.post<{ data: any[] }>('lead/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getAllCompanies(){
+    return this.http.get<{data:any[]}>('company').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  fetchAllCountries(){
+    return this.http.get<{data:any[]}>('country').pipe(
+      map((resp:any)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  getStateByCountryId(CountryMasterSid){
+    return this.http.get<{data:any}>(`state/fetchByCountry/${CountryMasterSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+  
+  getCityByStateId(StateMasterSid:number){
+    return this.http.get<{data:any[]}>(`city/fetchByState/${StateMasterSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+   // Get all pre-customer meetings
+  getAllPreCustomerMeetings() {
+    return this.http.get<{ data: any[] }>('pre-customer-meeting').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // Get pre-customer meeting by ID
+  getPreCustomerMeetingById(PreCustomerMeetingSid: number) {
+    return this.http.get<{ data: any }>(`pre-customer-meeting/fetch/${PreCustomerMeetingSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // Create new pre-customer meeting
+  createNewPreCustomerMeeting(payload: any) {
+    return this.http.post<{ data: any }>('pre-customer-meeting/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // Update pre-customer meeting by ID
+  updatePreCustomerMeetingById(PreCustomerMeetingSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`pre-customer-meeting/update/${PreCustomerMeetingSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // Delete pre-customer meeting by ID
+  deletePreCustomerMeetingById(PreCustomerMeetingSid: number) {
+    return this.http.delete<{ data: any }>(`pre-customer-meeting/delete/${PreCustomerMeetingSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // Search pre-customer meetings
+  searchPreCustomerMeeting(payload: any) {
+    return this.http.post<{ data: any[] }>('pre-customer-meeting/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  
+
 }

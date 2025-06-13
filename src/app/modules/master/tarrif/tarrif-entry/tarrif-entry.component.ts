@@ -1,10 +1,10 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
-import { NgbAlertModule, NgbCalendar, NgbDate, NgbDateAdapter, NgbDateNativeAdapter, NgbDatepickerModule, NgbDateStruct, NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModule, NgbPopoverModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAlertModule, NgbCalendar, NgbDate, NgbDateAdapter, NgbDateNativeAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModule, NgbPopoverModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
@@ -15,6 +15,10 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 @Component({
 	selector: 'app-tarrif-entry',
@@ -36,11 +40,16 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 		DatePipe,
 		DecimalPrecisionDirective,
 		NgbPopoverModule,
-		NgbPaginationModule
+		NgbPaginationModule,
+		CustomDatePipe,
+		SearchableDropdown
 	],
 	templateUrl: './tarrif-entry.component.html',
 	styleUrl: './tarrif-entry.component.scss',
-	providers: [{ provide: NgbDateAdapter, useClass: NgbDateNativeAdapter }]
+	providers: [
+		{ provide: NgbDateAdapter, useClass: CustomDateAdapter },
+		{ provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+	],
 })
 export class TarrifEntryComponent implements OnInit {
 
@@ -56,12 +65,15 @@ export class TarrifEntryComponent implements OnInit {
 	TariffDetailsList : any[];
 	filteredTariffDetail : any[];
 	portList: Port[];
+	polList: Port[];
+	podList: Port[];
 	chargeList: any[];
 	UOMList: any[];
 	departmentList: any[];
 	customerList: any[];
 	companyList: any[];
 	currencyList : any[];
+	isDataLoading : boolean = true;
 
 
 	cargoTypes = ['General', 'Haz', 'Reefer', 'Flexi', 'ODC', 'Empty', 'RORO', 'OOG', 'Tanker'];
@@ -70,6 +82,8 @@ export class TarrifEntryComponent implements OnInit {
 	page=1;
 	pageSize=5;
 	totalNumberOfCollection:number;
+	today = this.calendar.getToday();
+	todayDate = new Date(this.today.year,this.today.month,this.today.day);
 
 	constructor(
 		private masterServ: MasterService,
@@ -78,7 +92,8 @@ export class TarrifEntryComponent implements OnInit {
 		private route: Router,
 		private fb: FormBuilder,
 		private modalService: NgbModal,
-		private matdial : MatDialog
+		private matdial : MatDialog,
+		private calendar: NgbCalendar
 	) { }
 	ngOnInit(): void {
 		this.initHeaderForm();
@@ -97,11 +112,11 @@ export class TarrifEntryComponent implements OnInit {
 		this.tariffHeaderForm = this.fb.group({
 
 			DepartmentMasterSid: ['', [Validators.required]],
-			POOSid: [''],
-			POLSid: ['', [Validators.required]],
-			PODSid: ['', [Validators.required]],
-			FDCSid: [''],
-			ViaPortSid: [''],
+			POOSid: [,],
+			POLSid: [, [Validators.required]],
+			PODSid: [, [Validators.required]],
+			FDCSid: [],
+			ViaPortSid: [],
 			POLTerminal: [''],
 			PODTerminal: [''],
 			Carrier: [''],
@@ -232,10 +247,13 @@ export class TarrifEntryComponent implements OnInit {
 			currencies : this.masterServ.getAllCurrencies()
 		}).subscribe(({ ports, customers, departments, companies,currencies}) => {
 			this.portList = ports.data,
+			this.polList = ports.data,
+			this.podList = ports.data,
 			this.customerList = customers,
 			this.departmentList = departments,
 			this.companyList = companies,
-			this.currencyList = currencies
+			this.currencyList = currencies,
+			this.isDataLoading = false;
 		})
 	}
 
@@ -458,5 +476,24 @@ export class TarrifEntryComponent implements OnInit {
 		)
 	}
 	
-	
+	toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+		if (!date) return null;
+		return {
+			year: date.getFullYear(),
+			month: date.getMonth() + 1,
+			day: date.getDate()
+		};
+	}
+
+	filterPodList(port){
+		this.tariffHeaderForm.get('POLTerminal').setValue(port.PortCode)
+		this.podList = this.portList.filter(each => each.PortMasterSid !== port.PortMasterSid);
+	}
+
+	filterPolList(port){
+		this.tariffHeaderForm.get('PODTerminal').setValue(port.PortCode)
+		this.polList = this.portList.filter(each => each.PortMasterSid !== port.PortMasterSid);
+	}
+
+
 }

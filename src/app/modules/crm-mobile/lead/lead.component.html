@@ -221,11 +221,11 @@
 </form> -->
 
 
-<div class="row py-3">
+<div class="row py-3" [formGroup]="leadForm">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0"> Lead</h4>
+                <h4 class="page-title mb-0"> {{isEditMode ? 'Update Lead' : 'Lead'}} </h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -236,12 +236,12 @@
                         Back
                     </button>
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1"></i>
+                        <i class="fas fa-sync-alt me-1" (click)="reset()"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="leadForm.invalid">
                         <i class="fas fa-save me-1"></i>
-                        Save
+                        {{isEditMode ? 'Update' : 'Save' }} 
                     </button>
                 </div>
             </div>
@@ -533,25 +533,82 @@
                                         <aside class="col-md-4">
                                             <div class="custom-form-group">
                                                 <input type="text" id="company-name" placeholder=""
-                                                    class="custom-input-field sm">
-                                                <label for="company-name" class="input-label">Company Name <span
+                                                    class="custom-input-field sm" formControlName="preCustomerName" [onlyText]="100">
+                                                <label for="company-name" class="input-label">Customer Name <span
                                                         class="text-danger">*</span></label>
+                                                @if(leadForm.get('preCustomerName')?.touched && leadForm.get('preCustomerName')?.invalid){
+                                                    <div class="error-message">
+                                                        @if(leadForm.get('preCustomerName')?.hasError('required')){
+                                                            <span>Customer Name is required</span>
+                                                        } @else if(leadForm.get('preCustomerName')?.hasError('numberNotAllowed')){
+                                                            <span>Only Alphabets are allowed</span>
+                                                        } @else if(leadForm.get('preCustomerName')?.hasError('maxlength')){
+                                                            <span>Max 100 Characters</span>
+                                                        }
+                                                    </div>
+                                                }
                                             </div>
                                         </aside>
                                         <aside class="col-md-4">
-                                            <div class="custom-form-group">
-                                                <input type="text" id="lead-source" placeholder=""
-                                                    class="custom-input-field sm">
-                                                <label for="lead-source" class="input-label">Lead Source</label>
+                                            <div class="custom-form-group custom-form-group-select">
+                                                <ng-select class="ng-select" formControlName="leadReferredBy" [items]="leadSourceList" placeholder="Select Lead From"></ng-select>
+                                                <label for="lead-source" class="input-label">Lead From <span class="text-danger">*</span></label>
+                                                @if(leadForm.get('leadReferredBy')?.touched && leadForm.get('leadReferredBy')?.invalid){
+                                                        <div class="error-message">
+                                                            @if(leadForm.get('leadReferredBy')?.hasError('required')){
+                                                                <span>Lead From is required</span>
+                                                            }
+                                                        </div>
+                                                    }
                                             </div>
                                         </aside>
                                         <aside class="col-md-4">
                                             <div class="custom-form-group">
                                                 <input type="text" id="customer-ref" placeholder=""
-                                                    class="custom-input-field sm">
-                                                <label for="customer-ref" class="input-label">Customer Reference</label>
+                                                    class="custom-input-field sm" formControlName="leadFrom" [textWithNumbers]="20">
+                                                <label for="customer-ref" class="input-label">Lead By</label>
+                                                @if(leadForm.get('leadFrom')?.touched && leadForm.get('leadFrom')?.invalid){
+                                                <div class="error-message">
+                                                    @if(leadForm.get('leadFrom')?.hasError('required')){
+                                                    <span>Customer Reference is required</span>
+                                                    } @else if(leadForm.get('leadFrom')?.hasError('maxlength')){
+                                                        <span>Max 20 Characters</span>
+                                                    } 
+                                                </div>
+                                                }
                                             </div>
                                         </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="customer-ref" placeholder=""
+                                                    class="custom-input-field sm" formControlName="preCustomerType" [textWithNumbers]="10">
+                                                <label for="customer-ref" class="input-label">Customer Type</label>
+                                                @if(leadForm.get('preCustomerType')?.touched && leadForm.get('preCustomerType')?.invalid){
+                                                <div class="error-message">
+                                                    @if(leadForm.get('preCustomerType')?.hasError('required')){
+                                                    <span>Customer Type is required</span>
+                                                    } @else if(leadForm.get('preCustomerType')?.hasError('maxlength')){
+                                                        <span>Max 10 Characters</span>
+                                                    } 
+                                                </div>
+                                                }
+                                            </div>
+                                        </aside>
+                                        @if(isEditMode){
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group custom-form-group-select">
+                                                <ng-select class="ng-select" formControlName="status" [items]="statusList" placeholder="Select Status"></ng-select>
+                                                <label for="lead-status" class="input-label">Status <span class="text-danger">*</span></label>
+                                                @if(leadForm.get('status')?.touched && leadForm.get('status')?.invalid){
+                                                        <div class="error-message">
+                                                            @if(leadForm.get('status')?.hasError('required')){
+                                                                <span>Status is required</span>
+                                                            }
+                                                        </div>
+                                                    }
+                                            </div>
+                                        </aside>
+                                    } 
                                     </div>
                                 </div>
                             </ng-template>
@@ -574,80 +631,151 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
-                                            <label for="text-input" class="input-label">Address1 <span
-                                                    class="text-danger"></span></label>
+                                            class="custom-input-field sm" formControlName="preCustomerAddress1" [textWithNumbers]="300">
+                                            <label for="text-input" class="input-label">Address1 <span class="text-danger">*</span></label>
+                                            <!-- <div class="error-message" *ngIf="leadForm.get('preCustomerAddress1') && leadForm.get('preCustomerAddress1')?.touched && leadForm.get('preCustomerAddress1')?.invalid">     
+                                                <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('required')">Address 1 is required</span>
+                                                <span *ngIf="leadForm.get('preCustomerAddress1')?.hasError('maxlength')">Max 300 Characters</span> 
+                                            </div> -->
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="preCustomerAddress2"  [textWithNumbers]="300">
                                             <label for="text-input" class="input-label">Address2 <span
                                                     class="text-danger"></span></label>
+                                            @if(leadForm.get('preCustomerAddress2')?.touched && leadForm.get('preCustomerAddress2')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('preCustomerAddress2')?.hasError('maxlength')){
+                                                <span>Max 300 Characters</span>
+                                                }
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="POBOX" [onlyNumbers]="100">
                                             <label for="text-input" class="input-label">P.O Box <span
                                                     class="text-danger"></span></label>
-
+                                            @if(leadForm.get('POBOX')?.touched && leadForm.get('POBOX')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('POBOX')?.hasError('onlyNumbers')){
+                                                    <span>Only Digits are allowed</span>
+                                                }
+                                                @else if(leadForm.get('POBOX')?.hasError('maxlength')){
+                                                <span>Max 100 Characters</span>
+                                                }
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group">
-                                            <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm">
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <ng-select formControlName="CountryMasterSid" [items]="countryList" bindLabel="countryName" bindValue="CountryMasterSid" placeholder="Select Country" (change)="filterStateByCountryId($event)"></ng-select>
                                             <label for="text-input" class="input-label">Country <span
-                                                    class="text-danger"></span></label>
+                                                    class="text-danger">*</span></label>
+                                            @if(leadForm.get('CountryMasterSid')?.touched && leadForm.get('CountryMasterSid')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('CountryMasterSid')?.hasError('required')){
+                                                <span>Country is required</span>
+                                                } 
+                                            </div>
+                                            }
 
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group">
-                                            <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <ng-select class="ng-select" [items]="stateList" bindLabel="stateName" bindValue="StateMasterSid" formControlName="StateMasterSid" placeholder="Select State" (change)="filterCityByStateId($event)">
+
+                                            </ng-select>
                                             <label for="text-input" class="input-label">State <span
-                                                    class="text-danger"></span></label>
-
+                                                    class="text-danger">*</span></label>
+                                                @if(leadForm.get('StateMasterSid')?.touched && leadForm.get('StateMasterSid')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('StateMasterSid')?.hasError('required')){
+                                                <span>State is required</span>
+                                                } 
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
-                                        <div class="custom-form-group">
-                                            <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                        <div class="custom-form-group custom-form-group-select">
+                                            <ng-select class="ng-select" [items]="cityList" bindValue="CityMasterSid" bindLabel="cityName" formControlName="CityMasterSid" placeholder="Select City">
+
+                                            </ng-select>
                                             <label for="text-input" class="input-label">City <span
-                                                    class="text-danger"></span></label>
-
+                                                    class="text-danger">*</span></label>
+                                            @if(leadForm.get('CityMasterSid')?.touched && leadForm.get('CityMasterSid')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('CityMasterSid')?.hasError('required')){
+                                                <span>City is required</span>
+                                                } 
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
-                                            <label for="text-input" class="input-label">Contact Person <span
-                                                    class="text-danger"></span></label>
-
+                                                class="custom-input-field sm" formControlName="contactPerson" [onlyText]="50">
+                                            <label for="text-input" class="input-label">Contact Person <span class="text-danger">*</span></label>
+                                            @if(leadForm.get('contactPerson')?.touched && leadForm.get('contactPerson')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('contactPerson')?.hasError('required')){
+                                                <span>Contact Person is required</span>
+                                                } @else if(leadForm.get('contactPerson')?.hasError('numberNotAllowed')){
+                                                <span>Only Alphabets are allowed</span>
+                                                } @else if(leadForm.get('contactPerson')?.hasError('maxlength')){
+                                                <span>Max 50 Characters</span>
+                                                }
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="email" [textWithNumbers]="100">
                                             <label for="text-input" class="input-label">E-mail <span
-                                                    class="text-danger"></span></label>
+                                                    class="text-danger">*</span></label>
+                                            @if(leadForm.get('email')?.touched && leadForm.get('email')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('email')?.hasError('required')){
+                                                <span>Email is required</span>
+                                                } @else if(leadForm.get('email')?.hasError('emailInvalid')){
+                                                <span>Invalid Email Address</span>
+                                                } @else if(leadForm.get('email')?.hasError('maxlength')){
+                                                <span>Max 100 Characters</span>
+                                                }
+                                            </div>
+                                            }
 
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
-                                            <label for="text-input" class="input-label">Mobile <span
-                                                    class="text-danger"></span></label>
-
+                                                class="custom-input-field sm" formControlName="phone" [onlyNumbers]="50">
+                                            <label for="text-input" class="input-label">Phone <span
+                                                    class="text-danger">*</span></label>
+                                            @if(leadForm.get('phone')?.touched && leadForm.get('phone')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('phone')?.hasError('required')){
+                                                    <span>Phone Number is required</span>
+                                                }
+                                                @else if(leadForm.get('phone')?.hasError('onlyNumbers')){
+                                                    <span>Only Digits are allowed</span>
+                                                }
+                                                @else if(leadForm.get('phone')?.hasError('maxlength')){
+                                                <span>Max 50 Characters</span>
+                                                }
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
                                     <!-- <aside class="col-md-4">
@@ -662,7 +790,7 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group custom-form-group-select">
                                             <ng-select [items]="modeOfPreferredContactMode"
-                                                bindLabel="name" bindValue="name">
+                                                bindLabel="name" bindValue="name" formControlName="PreferredContactMode">
 
                                             </ng-select>
                                             <label for="" class="input-label">Preferred Contact Mode <span
@@ -672,10 +800,16 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
-                                            <label for="text-input" class="input-label">Language Perferenece <span
+                                                class="custom-input-field sm" formControlName="LanguagePreferrence" [textWithNumbers]="100">
+                                            <label for="text-input" class="input-label">Language Preference <span
                                                     class="text-danger"></span></label>
-
+                                            @if(leadForm.get('LanguagePreferrence')?.touched && leadForm.get('LanguagePreferrence')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('LanguagePreferrence')?.hasError('maxlength')){
+                                                <span>Max 100 Characters</span>
+                                                }
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
 
@@ -702,26 +836,46 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="ServiceOfInterest" [textWithNumbers]="100">
                                             <label for="text-input" class="input-label">Service of Interest <span
                                                     class="text-danger"></span></label>
+                                            @if(leadForm.get('ServiceOfInterest')?.touched && leadForm.get('ServiceOfInterest')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('ServiceOfInterest')?.hasError('maxlength')){
+                                                <span>Max 100 Characters</span>
+                                                }
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="PurchaseTimeline" [textWithNumbers]="100">
                                             <label for="text-input" class="input-label">Purchase Timeline <span
                                                     class="text-danger"></span></label>
+                                            @if(leadForm.get('PurchaseTimeline')?.touched && leadForm.get('PurchaseTimeline')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('PurchaseTimeline')?.hasError('maxlength')){
+                                                <span>Max 100 Characters</span>
+                                                }
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="SpecificRequirements" [textWithNumbers]="100">
                                             <label for="text-input" class="input-label">Specific Requirement <span
                                                     class="text-danger"></span></label>
-
+                                            @if(leadForm.get('SpecificRequirements')?.touched && leadForm.get('SpecificRequirements')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('SpecificRequirements')?.hasError('maxlength')){
+                                                <span>Max 100 Characters</span>
+                                                }
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
                                     <!-- <aside class="col-md-4 mt-2">
@@ -755,35 +909,61 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="Industry" [textWithNumbers]="100">
                                             <label for="text-input" class="input-label">Industry <span
                                                     class="text-danger"></span></label>
+                                            @if(leadForm.get('Industry')?.touched && leadForm.get('Industry')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('Industry')?.hasError('maxlength')){
+                                                <span>Max 100 Characters</span>
+                                                }
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="CompanySize" [onlyNumbers]>
                                             <label for="text-input" class="input-label">Company Size <span
                                                     class="text-danger"></span></label>
+                                            @if(leadForm.get('CompanySize')?.touched && leadForm.get('CompanySize')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('CompanySize')?.hasError('onlyNumbers')){
+                                                <span>Only Digits are allowed</span>
+                                                }
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" >
+                                                class="custom-input-field sm" formControlName="AnnualRevenue" [onlyNumbers] >
                                             <label for="text-input" class="input-label">Annual Revenue <span
                                                     class="text-danger"></span></label>
-
+                                            @if(leadForm.get('AnnualRevenue')?.touched && leadForm.get('AnnualRevenue')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('AnnualRevenue')?.hasError('onlyNumbers')){
+                                                <span>Only Digits are allowed</span>
+                                                }
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm">
+                                                class="custom-input-field sm" formControlName="Notes" [textWithNumbers]="100">
                                             <label for="text-input" class="input-label">Notes <span
                                                     class="text-danger"></span></label>
-
+                                            @if(leadForm.get('Notes')?.touched && leadForm.get('Notes')?.invalid){
+                                            <div class="error-message">
+                                                @if(leadForm.get('Notes')?.hasError('maxlength')){
+                                                <span>Max 100 Characters</span>
+                                                }
+                                            </div>
+                                            }
                                         </div>
                                     </aside>
                                     <!-- <aside class="col-md-4 mt-2">

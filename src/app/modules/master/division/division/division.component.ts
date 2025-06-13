@@ -13,6 +13,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { take } from 'rxjs';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-division',
@@ -51,6 +52,7 @@ export class DivisionComponent {
   page = 1;
   pageSize = 5;
   totalLengthOfCollection = 0;
+  userData: any;
 
   constructor(
    private modalService: NgbModal,
@@ -59,10 +61,16 @@ export class DivisionComponent {
    private route: ActivatedRoute,
    private router: Router,
    private appSettingService: AppSettingsService,
-   private dialog: MatDialog
+   private dialog: MatDialog,
+   private excelReportService: ExcelExportService
   ) {}
 
   ngOnInit(): void {
+    this.appSettingService.getUser().subscribe(user => {
+    if (user) {
+      this.userData = user;
+    }
+  });
     this.getAllCompanies();
     this.loadCompanies();
     // this.loadDivision();
@@ -316,6 +324,27 @@ export class DivisionComponent {
     this.searchPerformed = false;
   }
 
-  report() {  }
+  report(): void {
+  const formattedData = this.divisionList.map(item => ({
+    ...item,
+    status: item.status === 'A' ? 'Active' : 'Suspended',
+    CompanyName: this.companyMap[item.CompanyMasterSid] || item.CompanyMasterSid
+  }));
+
+  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: [
+      { key: 'DivisionName', label: 'Division Name' },
+      { key: 'DivisionCode', label: 'Division Code' },
+      { key: 'CompanyName', label: 'Company' },
+      { key: 'Remarks', label: 'Remarks' },
+      { key: 'status', label: 'Status' }
+    ],
+    fileName: 'Division-Report', 
+    title: companyName
+  });
+}
 
 }

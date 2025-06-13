@@ -8,6 +8,7 @@ import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from '../../master.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-uom-list',
@@ -28,7 +29,7 @@ export class UOMListComponent {
   results: any[] = [];
   uomList: any[] = [];
   searchPerformed = false;
-
+  userData: any;
   // pagination
   page = 1;
   pageSize = 10;
@@ -38,10 +39,16 @@ export class UOMListComponent {
     private masterService: MasterService, 
     private router: Router,
     private appSettingService: AppSettingsService, 
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private excelReportService: ExcelExportService
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() { this.appSettingService.getUser().subscribe(user => {
+    if (user) {
+      this.userData = user;
+    }
+  });
+}
 
   search() {
     const payload = {
@@ -91,9 +98,26 @@ export class UOMListComponent {
     this.page = 1;
   }
 
-  report() { 
-    // Implement report functionality if needed
-  }
+  report(): void {
+ 
+  const formattedData = this.uomList.map(item => ({
+    ...item,
+    status: this.getStatusText(item.status) 
+  }));
+
+  
+  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: [
+      { key: 'UOMName', label: 'UOM Name' },
+      { key: 'UOMCode', label: 'UOM Code' },
+      { key: 'status', label: 'Status' }
+    ],
+    fileName: 'UOM-Report', 
+    title: companyName
+  });
+}
 
   getStatusText(status: string): string {
     return status === 'A' ? 'Active' : 'Suspended';

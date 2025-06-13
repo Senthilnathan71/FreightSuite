@@ -138,7 +138,6 @@ export class TermsConditionEntryComponent implements OnInit{
                 status : formValue.status === 'Active' ? 'A' : 'S',
                 ...(this.isEditMode ? {updatedBy:updatedBy,DepartmentOnTermSid:this.departmentOnTermsId}: {createdBy:createdBy})
             }
-            console.log(payload);
             if(this.isEditMode){
                 this.masterService.updateTandCById(this.TermsAndConditionsMasterSid,payload).subscribe(
                     (resp:any)=>{
@@ -190,7 +189,6 @@ export class TermsConditionEntryComponent implements OnInit{
                 status: formValue.detailstatus === 'Active' ? 'A' : 'S',
                 ...(this.isEditMode ? { updatedBy: updatedBy } : { createdBy: createdBy })
             }
-            console.log(payload);
             if(this.isModalEditMode){
                 this.masterService.updateTandCDetailById(this.TermsAndConditionsDetailSid,payload).subscribe(
                     (resp:any)=>{
@@ -278,8 +276,6 @@ export class TermsConditionEntryComponent implements OnInit{
                         status : response.status === 'A' ? 'Active':'Suspended'    
                     })
                     this.departmentOnTermsId = response.departments[0].DepartmentOnTermSid;
-                    console.log(this.termsAndConditionForm.value)
-                    console.log(response)
                     this.loadTandCDetails();
                 } else {
                     this.appSettingService.showError('Error Loading Terms and Conditions');
@@ -316,9 +312,12 @@ export class TermsConditionEntryComponent implements OnInit{
         this.termsAndConditionDetailForm.reset();
     }
 
-    consoleLog(){
-        console.log(this.termsAndConditionForm.value);
+    resetForm(){
+        this.termsAndConditionForm.reset({
+            status : 'Active'
+        })
     }
+
 
     navigateBack() {
         history.back();

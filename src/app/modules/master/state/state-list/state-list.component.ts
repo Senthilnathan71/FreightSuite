@@ -9,6 +9,7 @@ import { MasterService } from '../../master.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { forkJoin } from 'rxjs';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-state-list',
@@ -32,6 +33,7 @@ export class StateListComponent {
   loading: boolean = false;
   countryOptions: any[] = [];
   zoneOptions: any[] = [];
+  userData: any;
 
   // pagination
   page = 1;
@@ -46,10 +48,16 @@ export class StateListComponent {
     private masterService: MasterService,
     private router: Router,
     private dialog: MatDialog,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private excelReportService: ExcelExportService
   ) { }
 
   ngOnInit() {
+    this.appSettingService.getUser().subscribe(user => {
+    if (user) {
+      this.userData = user;
+    }
+  });
     this.loadCountries();
     this.loadZones();
   }
@@ -210,7 +218,27 @@ export class StateListComponent {
     return status === 'A' ? 'Active' : 'Suspended';
   }
 
-  report() {
-    // Implement report functionality here
-  }
+  report(): void {
+  const formattedData = this.stateList.map(item => ({
+    ...item,
+    status: item.status === 'A' ? 'Active' : 'Suspended'
+  }));
+
+  
+  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: [
+      { key: 'stateName', label: 'State Name' },
+      { key: 'stateCode', label: 'State Code' },
+      { key: 'stateGSTCode', label: 'GST Code' },
+      { key: 'countryName', label: 'Country' },
+      { key: 'zoneName', label: 'Zone' },
+      { key: 'status', label: 'Status' }
+    ],
+    fileName: 'State-Report',
+    title: companyName
+  });
+}
 }

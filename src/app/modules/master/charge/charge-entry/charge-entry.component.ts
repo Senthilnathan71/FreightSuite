@@ -7,6 +7,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
 import { formatDate } from '@angular/common';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 
 @Component({
   selector: 'app-charge-entry',
@@ -15,10 +18,15 @@ import { formatDate } from '@angular/common';
     CommonModule,
     FeatherModule,
     NgSelectModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgbDatepickerModule
   ],
   templateUrl: './charge-entry.component.html',
-  styleUrls: ['./charge-entry.component.scss']
+  styleUrls: ['./charge-entry.component.scss'],
+  providers: [
+      { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+      { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    ],
 })
 export class ChargeEntryComponent implements OnInit {
   chargeForm!: FormGroup;
@@ -35,13 +43,16 @@ export class ChargeEntryComponent implements OnInit {
   uomOptions: any[] = [];
   hsnsacOptions: any[] = [];
   tdsOptions: any[] = [];
+	today = this.calendar.getToday();
+	todayDate = new Date(this.today.year,this.today.month,this.today.day);
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private masterService: MasterService
+    private masterService: MasterService,
+    private calendar : NgbCalendar
   ) { }
 
   ngOnInit(): void {
@@ -56,6 +67,17 @@ export class ChargeEntryComponent implements OnInit {
       }
     });
   }
+  onHsnsacSelect(event: any): void {
+  if (event) {
+    const selectedHsnsac = this.hsnsacOptions.find(item => item.code === event);
+    if (selectedHsnsac) {
+      this.chargeForm.patchValue({
+        TaxRate: selectedHsnsac.rate,
+        GSTDescription: selectedHsnsac.description
+      });
+    }
+  }
+}
 
   initForm(): void {
     this.chargeForm = this.fb.group({
@@ -73,7 +95,7 @@ export class ChargeEntryComponent implements OnInit {
       GSTDescription: [''],
       TaxRate: [null],
       // TDS fields
-      EffectiveFrom: [formatDate(new Date(), 'yyyy-MM-dd', 'en'), Validators.required],
+      EffectiveFrom: [, Validators.required],
       Remarks: ['']
     });
   }
@@ -111,27 +133,29 @@ loadLookupData(): void {
     }
   });
 
-  this.masterService.getAllUom().subscribe({
-  next: (response: any) => {
-    // Handle different response structures
-    if (Array.isArray(response)) {
-      this.uomOptions = response;
-    } else if (response.data && Array.isArray(response.data)) {
-      this.uomOptions = response.data;
-    } else {
+  this.masterService.getAllUom().subscribe(
+    (resp: any) => {
+      // Handle both array response and data.array response
+      this.uomOptions = resp.data || resp;
+    },
+    (error) => {
+      console.error('Error loading UOM', error);
       this.uomOptions = [];
-      console.warn('Unexpected UOM response format:', response);
     }
-  },
-  error: (error) => {
-    console.error('Error loading UOMs:', error);
-    this.uomOptions = [];
-  }
-});
-  this.masterService.getAllHssac().subscribe(hsnsac => {
-    this.hsnsacOptions = hsnsac.data || hsnsac;
+  );
+  this.masterService.getAllHssac().subscribe({
+    next: (resp: any) => {
+      this.hsnsacOptions = resp.data || resp;
+      // If editing, trigger the selection change to populate tax rate
+      if (this.isEditMode && this.chargeForm.value.HSNSAC) {
+        this.onHsnsacSelect(this.chargeForm.value.HSNSAC);
+      }
+    },
+    error: (error) => {
+      console.error('Error loading HSN/SAC codes:', error);
+      this.hsnsacOptions = [];
+    }
   });
-  
     // this.masterService.getAllTdsSets().subscribe(tdsSets => {
     //   this.tdsOptions = tdsSets.data || tdsSets;
     // });
@@ -141,7 +165,7 @@ loadLookupData(): void {
       (resp) => {
         const chargeData = {
           ...resp,
-          // EffectiveFrom: resp.EffectiveFrom ? formatDate(new Date(resp.EffectiveFrom), 'yyyy-MM-dd', 'en') : ''
+          // EffectiveFrom: new Date(resp.EffectiveFrom)
         };
         this.chargeForm.patchValue(chargeData);
       },

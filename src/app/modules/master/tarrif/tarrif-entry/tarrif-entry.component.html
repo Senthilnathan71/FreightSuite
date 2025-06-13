@@ -30,7 +30,7 @@
         <div class="card h-100">
             <div class="card-body">
                 <div class="row">
-                    <aside class="col-md-12">
+                    <aside class="col-md-12 mt-2">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="DepartmentMasterSid">
                                 <ng-option value="">Select Department</ng-option>
@@ -71,15 +71,21 @@
                             }
                         </div>
                     </aside> -->
-                    <aside class="col-md-6">
+                    <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="POOSid">
-                                <ng-option value="">Select POO</ng-option>
-                                @for (port of portList; track port) {
-                                <ng-option [value]="port.PortMasterSid">{{ port.PortName }} -
-                                    {{port.PortCode}}</ng-option>
-                                }
-                            </ng-select>
+                            <dofi-searchable-dropdown 
+                                [items]="portList" 
+                                formControlName="POOSid"
+                                [placeholder]="'Select POO'"
+                                [displayFields]="['PortCode', 'PortName']" 
+                                [displayLabels]="['Port Code', 'Port Name']" 
+                                [labelFields]="['PortName','PortCode']"
+                                [bindLabel]="'PortCode'"
+                                [bindValue]="'PortMasterSid'"
+                                [isLoading]="isDataLoading" 
+                                >
+                            </dofi-searchable-dropdown>
+                            <!-- (itemSelected)="onItemSelected($event)" -->
                             <label for="text-input" class="input-label">POO <span class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('POOSid')?.touched && tariffHeaderForm.get('POOSid')?.errors){
                             <div class="error-message">
@@ -90,9 +96,21 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6 ">
+                    <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="POLSid" (change)="setPOLTerminal($event)">
+                            <dofi-searchable-dropdown 
+                                [items]="polList" 
+                                formControlName="POLSid"
+                                [placeholder]="'Select POL'"
+                                [displayFields]="['PortCode', 'PortName']" 
+                                [displayLabels]="['Port Code', 'Port Name']" 
+                                [labelFields]="['PortName','PortCode']"
+                                [bindValue]="'PortMasterSid'"
+                                [isLoading]="isDataLoading" 
+                                (itemSelected)="filterPodList($event)"
+                                >
+                            </dofi-searchable-dropdown>
+                            <!-- <ng-select class="ng-select" formControlName="POLSid" (change)="setPOLTerminal($event)">
                                 <ng-option value="">Select POL</ng-option>
                                 @for (port of portList; track port) {
                                 @if(port.PortMasterSid !== tariffHeaderForm.get('PODSid').value){
@@ -100,7 +118,7 @@
                                     {{port.PortCode}}</ng-option>
                                 }
                                 }
-                            </ng-select>
+                            </ng-select> -->
                             <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
                             @if(tariffHeaderForm.get('POLSid')?.touched && tariffHeaderForm.get('POLSid')?.errors){
                             <div class="error-message">
@@ -113,7 +131,19 @@
                     </aside>
                     <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="PODSid" (change)="setPODTerminal($event)">
+                            <dofi-searchable-dropdown 
+                                [items]="podList" 
+                                formControlName="PODSid"
+                                [placeholder]="'Select POD'"
+                                [displayFields]="['PortCode', 'PortName']" 
+                                [displayLabels]="['Port Code', 'Port Name']" 
+                                [labelFields]="['PortName','PortCode']"
+                                [bindValue]="'PortMasterSid'"
+                                [isLoading]="isDataLoading" 
+                                (itemSelected)="filterPolList($event)"
+                                >
+                            </dofi-searchable-dropdown>
+                            <!-- <ng-select class="ng-select" formControlName="PODSid" (change)="setPODTerminal($event)">
                                 <ng-option value="">Select POD</ng-option>
                                 @for (port of portList; track port) {
                                 @if(port.PortMasterSid !== tariffHeaderForm.get('POLSid').value){
@@ -121,7 +151,7 @@
                                     {{port.PortCode}}</ng-option>
                                 }
                                 }
-                            </ng-select>
+                            </ng-select> -->
                             <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
                             @if(tariffHeaderForm.get('PODSid')?.touched && tariffHeaderForm.get('PODSid')?.errors){
                             <div class="error-message">
@@ -134,13 +164,24 @@
                     </aside>
                     <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="FDCSid">
+                            <dofi-searchable-dropdown 
+                                [items]="portList" 
+                                formControlName="FDCSid"
+                                [placeholder]="'Select FDC'"
+                                [displayFields]="['PortCode', 'PortName']" 
+                                [displayLabels]="['Port Code', 'Port Name']" 
+                                [labelFields]="['PortName','PortCode']"
+                                [bindValue]="'PortMasterSid'"
+                                [isLoading]="isDataLoading" 
+                                >
+                            </dofi-searchable-dropdown>
+                            <!-- <ng-select class="ng-select" formControlName="FDCSid">
                                 <ng-option value="">Select FDC</ng-option>
                                 @for (port of portList; track port) {
                                 <ng-option [value]="port.PortMasterSid">{{ port.PortName }} -
                                     {{port.PortCode}}</ng-option>
                                 }
-                            </ng-select>
+                            </ng-select> -->
                             <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('FDCSid')?.touched && tariffHeaderForm.get('FDCSid')?.errors){
                             <div class="error-message">
@@ -153,12 +194,23 @@
                     </aside>
                     <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="ViaPortSid">
+                            <dofi-searchable-dropdown 
+                                [items]="portList" 
+                                formControlName="ViaPortSid"
+                                [placeholder]="'Select Via Port'"
+                                [displayFields]="['PortCode', 'PortName']" 
+                                [displayLabels]="['Port Code', 'Port Name']" 
+                                [labelFields]="['PortName','PortCode']"
+                                [bindValue]="'PortMasterSid'"
+                                [isLoading]="isDataLoading" 
+                                >
+                            </dofi-searchable-dropdown>
+                            <!-- <ng-select class="ng-select" formControlName="ViaPortSid">
                                 <ng-option value="">Select Via Port</ng-option>
                                 @for (port of portList; track port) {
                                     <ng-option [value]="port.PortMasterSid" >{{ port.PortName }}</ng-option>
                                 }
-                            </ng-select>
+                            </ng-select> -->
                             <label for="text-input" class="input-label">Via Port <span
                                     class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('ViaPortSid')?.touched && tariffHeaderForm.get('ViaPortSid')?.errors){
@@ -188,7 +240,7 @@
                         </div>
                     </aside>
                       
-                    <aside class="col-md-12 mt-md-2">
+                    <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="PODTerminal" placeholder=""
                                 class="custom-input-field sm" [textWithNumbers]="5" readonly>
@@ -205,7 +257,7 @@
                             }
                         </div>
                     </aside>
-                    <!-- <aside class="col-md-6">
+                    <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="MovementType" [textWithNumbers]="10">
                             <label for="text-input" class="input-label">Movement Type <span class="text-danger"></span></label>
@@ -218,7 +270,7 @@
                             </div>
                             }
                         </div>
-                    </aside> -->
+                    </aside>
 
                     
                 </div>
@@ -252,7 +304,7 @@
                             }
                         </div>
                     </aside> -->
-                    <aside class="col-md-6">
+                    <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="Carrier">
                                 <ng-option value="">Select Carrier</ng-option>
@@ -273,14 +325,14 @@
                             }
                         </div>
                     </aside>
-                     <aside class="col-md-6">
+                     <!-- <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder=""
                             class="custom-input-field sm" formControlName="">
                                 <label for="text-input" class="input-label">Cargo Type <span class="text-danger">*</span></label>
                         </div>
-                    </aside>
-                    <aside class="col-md-6 ">
+                    </aside> -->
+                    <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="AgentSid">
                                 <ng-option value="">Select Agent</ng-option>
@@ -302,7 +354,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-6 mt-md-2">
                         <div class="custom-form-group">
                             <input type="text" formControlName="IncoTerms" id="text-input" placeholder=""
                                 class="custom-input-field sm" [textWithNumbers]="10">
@@ -324,8 +376,8 @@
                     <aside class="col-md-6">
                         <div class="d-flex my-2">
                             <div class="custom-form-group custom-form-group-select w-100 mb-0">
-                                <input class="form-control mb-0" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #d="ngbDatepicker"
-                                    (click)="d.toggle()" readonly formControlName="EffectiveDate" />
+                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                                    (click)="d2.toggle()" readonly formControlName="EffectiveDate" [footerTemplate]="footerTemplate2" />
                                 <label class="input-label" for="dp">Effective Date <span class="text-danger">*</span></label>
                                 @if(tariffHeaderForm.get('EffectiveDate')?.touched &&
                                 tariffHeaderForm.get('EffectiveDate')?.invalid){
@@ -336,12 +388,22 @@
                                 </div>
                                 }
                             </div>
-                            <button class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2" (click)="d.toggle()"
+                            <button class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2" (click)="d2.toggle()"
                                 type="button">
                                 <i-feather name="calendar" class="feather-sm"></i-feather>
                             </button>
                         </div>
                     </aside>
+                    <ng-template #footerTemplate2>
+                        <hr class="my-0" />
+                        <button class="btn btn-info btn-sm m-2 float-start"
+                            (click)="tariffHeaderForm.get('EffectiveDate').setValue(todayDate); d2.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d2.close()">
+                            Close
+                        </button>
+                    </ng-template>
                     <aside class="col-md-6 mt-2">
                         <div class="custom-form-group custom-form-group-select">
                             <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"> -->
@@ -401,17 +463,17 @@
                             }
                         </div>
                     </aside> 
-                     <aside class="col-md-6 mt-md-2" >
+                     <!-- <aside class="col-md-6 mt-md-2" >
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder=""
                             class="custom-input-field sm" formControlName="">
                                 <label for="text-input" class="input-label">Service level <span class="text-danger"></span></label>
                         </div>
-                    </aside>
+                    </aside> -->
                     <aside class="col-md-12">
                         <div class="custom-form-group">
                             <textarea type="text" formControlName="Remarks" id="text-input" placeholder=""
-                                class="custom-input-field sm" [textWithNumbers]="100" rows="1"></textarea>
+                                class="custom-input-field" [textWithNumbers]="100" rows="1"></textarea>
                             <label for="text-input" class="input-label">Remarks <span
                                     class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('Remarks')?.touched && tariffHeaderForm.get('Remarks')?.errors){
@@ -505,10 +567,10 @@
                         }
                     </td>
                     <td>
-                        {{tariffDetail.EffectiveDate | date:"dd-MMM-YY"}}
+                        {{tariffDetail.EffectiveDate | formatDate}}
                     </td>
                     <td>
-                        {{tariffDetail.ExpiredOn | date:"dd-MMM-YY"}}
+                        {{tariffDetail.ExpiredOn | formatDate}}
                     </td>
                     <td>
                         {{tariffDetail.ChargeCode}}
@@ -631,9 +693,9 @@
                             <aside class="col-md-6 col-lg-4">
                                 <div class="d-flex mb-2 my-lg-0">
                                     <div class="custom-form-group custom-form-group-select w-100 mb-0">
-                                        <input class="form-control mb-0" placeholder="yyyy-mm-dd" name="dp"
+                                        <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp"
                                             ngbDatepicker #d="ngbDatepicker" (click)="d.toggle()" readonly
-                                            formControlName="detailEffectiveDate" />
+                                            formControlName="detailEffectiveDate" [footerTemplate]="footerTemplate" [maxDate]="toNgbDateStruct(tariffDetailsForm.get('detailExpiredOn').value)"/>
                                         <label class="input-label" for="dp">Effective From <span
                                                 class="text-danger">*</span></label>
                                         @if(tariffDetailsForm.get('detailEffectiveDate')?.touched &&
@@ -652,12 +714,21 @@
                                     </button>
                                 </div>
                             </aside>
+                            <ng-template #footerTemplate>
+                                <hr class="my-0" />
+                                <button class="btn btn-info btn-sm m-2 float-start" (click)="tariffDetailsForm.get('detailEffectiveDate').setValue(todayDate); d.close()">
+                                    Today
+                                </button>
+                                <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d.close()">
+                                    Close
+                                </button>
+                            </ng-template>
                             <aside class="col-md-6 col-lg-4">
                                 <div class="d-flex mb-2 my-lg-0">
                                     <div class="custom-form-group custom-form-group-select w-100 mb-0">
-                                        <input class="form-control mb-0" placeholder="yyyy-mm-dd" name="dp"
+                                        <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp"
                                             ngbDatepicker #d1="ngbDatepicker" (click)="d1.toggle()" readonly
-                                            formControlName="detailExpiredOn" />
+                                            formControlName="detailExpiredOn" [minDate]="toNgbDateStruct(tariffDetailsForm.get('detailEffectiveDate').value)" [footerTemplate]="footerTemplate1"/>
                                         <label class="input-label" for="dp">Expired On <span
                                                 class="text-danger">*</span></label>
                                         @if(tariffDetailsForm.get('detailExpiredOn')?.touched &&
@@ -676,6 +747,15 @@
                                     </button>
                                 </div>
                             </aside>
+                            <ng-template #footerTemplate1>
+                                <hr class="my-0" />
+                                <button class="btn btn-info btn-sm m-2 float-start" (click)="tariffDetailsForm.get('detailExpiredOn').setValue(todayDate); d1.close()">
+                                    Today
+                                </button>
+                                <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">
+                                    Close
+                                </button>
+                            </ng-template>
                             
                             <aside class="col-md-6 col-lg-4">
                                 <div class="custom-form-group custom-form-group-select">

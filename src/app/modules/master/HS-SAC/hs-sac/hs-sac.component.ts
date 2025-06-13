@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, } from '@angular/forms';
-import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination, } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination, } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
 import { MasterService } from '../../master.service';
@@ -13,6 +13,11 @@ import { HSSAC } from 'src/app/modules/crm-mobile/Interfaces/hs-sac.interfaces';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { take } from 'rxjs';
+import { authService } from 'src/app/modules/authentication/auth.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 
 @Component({
   selector: 'app-hs-sac',
@@ -27,11 +32,16 @@ import { take } from 'rxjs';
     RouterModule,
     FormsModule,
     OnlyTextDirective,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    CustomDatePipe,
+    NgbDatepickerModule
   ],
   templateUrl: './hs-sac.component.html',
   styleUrl: './hs-sac.component.scss',
-  providers: [DatePipe]
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+  ],
 })
 export class HSSACComponent {
   hssacForm!: FormGroup;
@@ -57,6 +67,9 @@ export class HSSACComponent {
   page = 1;
   pageSize = 5;
   totalLengthOfCollection = 0;
+	userData : any;
+	today = this.calendar.getToday();
+	todayDate = new Date(this.today.year,this.today.month,this.today.day);
 
 
   constructor(
@@ -67,12 +80,21 @@ export class HSSACComponent {
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
-    private datePipe: DatePipe
+    private userService: authService,
+    private excelReportService: ExcelExportService,
+    private calendar : NgbCalendar
   ) { }
 
   ngOnInit(): void {
     // this.loadHssac()
     this.initForm();
+    this.appSettingService.getUser().subscribe(
+      user => {
+        if (user) {
+          this.userData = user;
+        }
+      }
+    )
     this.route.paramMap.subscribe(params => {
       this.HSSACMasterSid = +params.get('id');
       if (this.HSSACMasterSid) {
@@ -141,7 +163,7 @@ editHssac(id: number, content: any) {
         ServiceName: hssac.ServiceName,
         TaxRate: hssac.TaxRate,
         TaxType: hssac.TaxType,
-        EffectiveFrom: this.datePipe.transform(hssac.EffectiveFrom, 'yyyy-MM-dd'),
+        EffectiveFrom: new Date(hssac.EffectiveFrom),
         Remarks: hssac.Remarks,
         status: hssac.status === 'A' ? 'Active' : 'Suspended'
       });
@@ -172,7 +194,7 @@ editHssac(id: number, content: any) {
         ServiceName: hssac.ServiceName,
         TaxRate: hssac.TaxRate,
         TaxType: hssac.TaxType,
-        EffectiveFrom: this.datePipe.transform(hssac.EffectiveFrom, 'yyyy-MM-dd'),
+        EffectiveFrom: hssac.EffectiveFrom,
         Remarks: hssac.Remarks,
         status: hssac.status === 'A' ? 'Active' : 'Suspended'
       });
@@ -311,8 +333,34 @@ editHssac(id: number, content: any) {
     this.hssacList = [];
     this.totalLengthOfCollection = 0;
     this.searchPerformed = false;
+    this.filterValue = '';
+    this.searchType = 'HSSACCode';
+    this.page = 1;
+    this.hssacs = [];
   }
 
   report(): void {
+    const formattedData = this.hssacList.map(item => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
+
+    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'HSSACCode', label: 'HS-SAC Code' },
+        { key: 'HSSACName', label: 'HS-SAC Name' },
+        { key: 'ServiceName', label: 'Service Name' },
+        { key: 'TaxRate', label: 'Tax Rate' },
+        { key: 'TaxType', label: 'Tax Type' },
+        { key: 'EffectiveFrom', label: 'Effective From' },
+        { key: 'Remarks', label: 'Remarks' },
+        { key: 'status', label: 'Status' },
+      ],
+      fileName: 'HSSAC-Report',
+      title: companyName
+    });
   }
 }

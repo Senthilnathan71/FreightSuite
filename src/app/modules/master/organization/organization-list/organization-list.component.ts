@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
@@ -9,6 +9,8 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatDialog } from '@angular/material/dialog';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { authService } from 'src/app/modules/authentication/auth.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-organization-list',
@@ -17,7 +19,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
   templateUrl: './organization-list.component.html',
   styleUrl: './organization-list.component.scss'
 })
-export class OrganizationListComponent {
+export class OrganizationListComponent implements OnInit {
 
    modeOfStatus =[
         { value:'Active',name:'Active'},
@@ -29,6 +31,7 @@ export class OrganizationListComponent {
   results: any[] = [];
   organizationList: any[] = []
   searchPerformed = false;
+  userData : any;
 
   // pagination
   page = 1;
@@ -36,9 +39,19 @@ export class OrganizationListComponent {
   totalLengthOfCollection: number;
 
   constructor(private masterService: MasterService, private router: Router,
-    private dialog: MatDialog, private appSettingService: AppSettingsService
+    private dialog: MatDialog, private appSettingService: AppSettingsService,
+    private userService: authService,
+    private excelReportService: ExcelExportService
   ) { }
-  ngOnInit() { }
+  ngOnInit() {
+    this.appSettingService.getUser().subscribe(
+      user => {
+        if (user) {
+          this.userData = user;
+        }
+      }
+    )
+   }
 
   search() {
     const payload = {
@@ -84,7 +97,26 @@ export class OrganizationListComponent {
     this.totalLengthOfCollection=0;
   }
 
-  report() {
-    // Report functionality implementation
-  }
+  report(): void {
+    const formattedData = this.organizationList.map(item => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
+
+        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+        this.excelReportService.exportAsExcel({
+            data: formattedData,
+            headers: [
+                { key: 'CustomerName', label: 'Customer Name' },
+                { key: 'CustomerShortCode', label: 'Type' },
+                { key: 'CustomerAliasName', label: 'Short Name' },
+                { key: 'Website', label: 'PAN/Vat' },
+                { key: 'LocalLanguage', label: 'Country' },
+                { key: 'status', label: 'Status' },
+            ],
+            fileName: 'Organization-Report', 
+            title: companyName
+        });
+    }
 }

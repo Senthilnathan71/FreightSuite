@@ -8,6 +8,8 @@ import { MasterService } from '../../master.service';
 import { Commodity } from 'src/app/modules/crm-mobile/Interfaces/commodity.interface';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { authService } from 'src/app/modules/authentication/auth.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-commodity-list',
@@ -28,6 +30,7 @@ export class CommodityListComponent {
   results: Commodity[] = [];
   commodityList: Commodity[] = [];
   searchPerformed = false;
+  userData : any;
   
   // Pagination
   page = 1;
@@ -38,9 +41,21 @@ export class CommodityListComponent {
   constructor(
     private masterService: MasterService,
     private router: Router,
-    private modalService: NgbModal, 
-    private appSettingService: AppSettingsService
-  ) {}
+    private modalService: NgbModal,
+    private appSettingService: AppSettingsService,
+    private userService: authService,
+    private excelReportService: ExcelExportService
+  ) { }
+
+  ngOnInit(): void {
+    this.appSettingService.getUser().subscribe(
+      user => {
+        if (user) {
+          this.userData = user;
+        }
+      }
+    )
+  }
 
   search() {
     const payload = {
@@ -120,7 +135,25 @@ export class CommodityListComponent {
   trackByFn(index: number, item: any): number {
     return item.CommodityMasterSid;
   }
-  report(){
-    
-  }
+  report(): void {
+    const formattedData = this.commodityList.map(item => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
+
+        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+        this.excelReportService.exportAsExcel({
+            data: formattedData,
+            headers: [
+                { key: 'CommodityName', label: 'Commodity Name' },
+                { key: 'CommodityCode', label: 'Commodity Code' },
+                { key: 'CommodityType', label: 'Type' },
+                { key: 'HSSACCode', label: 'HS Code' },
+                { key: 'status', label: 'Status' },
+            ],
+            fileName: 'Commodity-Report', 
+            title: companyName
+        });
+    }
 }

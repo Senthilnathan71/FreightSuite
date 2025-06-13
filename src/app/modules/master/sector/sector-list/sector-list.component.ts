@@ -11,6 +11,8 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { FeatherModule } from 'angular-feather';
 import { take } from 'rxjs';
 import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
+import { authService } from 'src/app/modules/authentication/auth.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-sector',
@@ -48,6 +50,7 @@ export class SectorComponent implements OnInit {
   pageSize = 10;
   totalLengthOfCollection = 0;
   isLoading = false;
+  userData : any;
 
   constructor(
     private modalService: NgbModal,
@@ -57,12 +60,21 @@ export class SectorComponent implements OnInit {
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private userService :authService,
+    private excelReportService : ExcelExportService
   ) { }
 
   ngOnInit(): void {
     this.initForm();
     this.loadZones();
+    this.appSettingService.getUser().subscribe(
+      user => {
+        if (user) {
+          this.userData = user;
+        }
+      }
+    )
     this.route.paramMap.subscribe(params => {
       this.SectorMasterSid = +params.get('id');
       if (this.SectorMasterSid) {
@@ -296,6 +308,24 @@ export class SectorComponent implements OnInit {
   }
 
   report(): void {
-    // Implement report functionality
-  }
+    const formattedData = this.sectorList.map(item => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
+
+        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+        this.excelReportService.exportAsExcel({
+            data: formattedData,
+            headers: [
+                { key: 'sectorName', label: 'Sector Name' },
+                { key: 'sectorCode', label: 'Sector Code' },
+                { key: 'RegionName', label: 'Region Name' },
+                { key: 'RegionCode', label: 'Region Code' },
+                { key: 'status', label: 'Status' },
+            ],
+            fileName: 'Sector-Report', 
+            title: companyName
+        });
+    }
 }

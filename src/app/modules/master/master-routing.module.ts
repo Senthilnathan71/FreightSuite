@@ -64,6 +64,7 @@ import { SailingScheduleEntryComponent } from './SailingSchedule/sailing-schedul
 import { SectorComponent } from './sector/sector-list/sector-list.component';
 import { UserListComponent } from './user/user-list/user-list.component';
 import { UserEntryComponent } from './user/user-entry/user-entry.component';
+import { ChargeTaxComponent } from './charge-tax/charge-tax/charge-tax.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -886,7 +887,29 @@ export const MasterRoutes: Routes = [
           ]
         }
       },
+      {
+        path: 'user/entry/:id',
+        component: UserEntryComponent,
+        data: {
+          title: 'User',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'User' },
+          ]
+        }
+      },
     ],
   },
+  {
+        path: 'Charge-tax',
+        component: ChargeTaxComponent,
+        data: {
+          title: 'Charge-tax',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Charge-tax' },
+          ],
+        },
+      }
 
 ];

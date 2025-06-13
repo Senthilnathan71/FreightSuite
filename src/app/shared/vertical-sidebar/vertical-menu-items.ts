@@ -401,6 +401,16 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
+      {
+        path: '/master/Charge-tax',
+        title: 'Charge-tax',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
     ]
   },
 
@@ -443,7 +453,7 @@ export const ROUTES: RouteInfo[] = [
         label: '',
         labelClass: '',
         submenu: []
-      },
+      }
     ]
   },
   {
@@ -468,6 +478,16 @@ export const ROUTES: RouteInfo[] = [
       {
         path: '/crm/lead-schedule-pending',
         title: 'Lead Schedule Pending',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/crm/meeting-update',
+        title: 'Meeting Update',
         icon: 'mdi mdi-stackexchange',
         class: '',
         extralink: false,

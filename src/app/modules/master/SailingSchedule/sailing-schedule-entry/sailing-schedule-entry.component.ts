@@ -4,7 +4,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
-import { NgbCalendar, NgbDate, NgbDatepickerModule, NgbDateStruct, NgbModal, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDate, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbModal, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatDialog } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -13,6 +13,9 @@ import { CommonModule, UpperCasePipe } from '@angular/common';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 
 @Component({
     selector: 'app-sailing-schedule-entry',
@@ -29,10 +32,15 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
         NgbPaginationModule,
         OnlyNumbersDirective,
         OnlyTextDirective,
-        TextWithNumbersDirective
+        TextWithNumbersDirective,
+        CustomDatePipe
     ],
     templateUrl: './sailing-schedule-entry.component.html',
-    styleUrl: './sailing-schedule-entry.component.scss'
+    styleUrl: './sailing-schedule-entry.component.scss',
+    providers: [
+        { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+        { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    ],
 })
 export class SailingScheduleEntryComponent implements OnInit {
 
@@ -56,6 +64,7 @@ export class SailingScheduleEntryComponent implements OnInit {
     modalRef: NgbModalRef
     model: NgbDateStruct;
     today = this.calendar.getToday();
+	todayDate = new Date(this.today.year,this.today.month,this.today.day);
 
     modeOfStatus = [
         { id: "Active", name: "Active" },
@@ -133,13 +142,14 @@ export class SailingScheduleEntryComponent implements OnInit {
         this.scheduleDetailForm.get('POLSid')?.valueChanges.subscribe(() => {
             this.updatePODList();
         });
-        this.scheduleDetailForm.get('ETD').valueChanges.subscribe((value:NgbDate)=>{
-            const ETA:NgbDate = this.scheduleDetailForm.get('ETA').value;
+        this.scheduleDetailForm.get('ETD').valueChanges.subscribe((value:Date)=>{
+            if(!value){
+                return;
+            }
+            const ETA : Date = this.scheduleDetailForm.get('ETA').value;
             if(ETA){
                 const msPerDay = 1000 * 60 * 60 * 24;
-                const etaDate = Date.UTC(ETA.year,ETA.month,ETA.day);
-                const etdDate = Date.UTC(value.year,value.month,value.day);
-                const dayDifference = (etdDate - etaDate)/msPerDay;
+                const dayDifference = Math.trunc((value.getTime() - ETA.getTime())/msPerDay);
                 this.scheduleDetailForm.get('TransitDays').setValue(dayDifference);
             }
         })
@@ -162,8 +172,8 @@ export class SailingScheduleEntryComponent implements OnInit {
                     const scheduleData = resp.data;
                     this.scheduleForm.patchValue({
                         ...scheduleData,
-                        SCMETA: this.toNgbDate(scheduleData.SCMETA),
-                        SCMETD: this.toNgbDate(scheduleData.SCMETD),
+                        SCMETA: new Date(scheduleData.SCMETA),
+                        SCMETD: new Date(scheduleData.SCMETD),
                         CoLoad : scheduleData.CoLoad === 'Y' ? true : false,
                         status : scheduleData.status === 'A' ? 'Active' : 'Suspended'
                     })
@@ -229,8 +239,8 @@ export class SailingScheduleEntryComponent implements OnInit {
         const payload = {
             ...formValue,
             VesselMasterSid : parseInt(formValue.VesselMasterSid),
-            SCMETA : this.toIsoDateString(formValue.SCMETA),
-            SCMETD : this.toIsoDateString(formValue.SCMETD),
+            SCMETA : formValue.SCMETA,
+            SCMETD : formValue.SCMETD,
             Carrier : parseInt(formValue.Carrier),
             CoLoad : formValue.CoLoad ? 'Y' : 'N',
             status : formValue.status === 'Active' ? 'A' : 'S',
@@ -277,16 +287,16 @@ export class SailingScheduleEntryComponent implements OnInit {
             this.scheduleDetailForm.patchValue({
                 POLSid: data.POLSid || '',
                 PODSid: data.PODSid || '',
-                ETA: this.toNgbDate(data.ETA) || '',
-                ETD: this.toNgbDate(data.ETD) || '',
-                PortCutoff: this.toNgbDate(data.PortCutoff) || '' ,
+                ETA: new Date(data.ETA) || '',
+                ETD: new Date(data.ETD) || '',
+                PortCutoff: new Date(data.PortCutoff) || '' ,
                 TransitDays: data.TransitDays || '',
                 RotationNo: data.RotationNo || '',
-                RotationDate: this.toNgbDate(data.RotationDate) || '',
+                RotationDate: new Date(data.RotationDate) || '',
                 IGMNo: data.IGMNo || '' ,
-                IGMDate: this.toNgbDate(data.IGMDate) || '',
+                IGMDate: new Date(data.IGMDate) || '',
                 EGMNo: data.EGMNo || '',
-                EGMDate: this.toNgbDate(data.EGMDate) || '',
+                EGMDate: new Date(data.EGMDate) || '',
                 detailstatus: data.status === 'A' ? 'Active' : 'Suspended'
             })
             this.VoyageMasterDetailSid = data.VoyageMasterDetailSid;
@@ -309,16 +319,16 @@ export class SailingScheduleEntryComponent implements OnInit {
         const payload = {
             POLSid: parseInt(formValue.POLSid),
             PODSid: parseInt(formValue.PODSid),
-            ETA: this.toIsoDateString(formValue.ETA),
-            ETD: this.toIsoDateString(formValue.ETD),
-            PortCutoff: this.toIsoDateString(formValue.PortCutoff),
+            ETA: formValue.ETA,
+            ETD: formValue.ETD,
+            PortCutoff: formValue.PortCutoff,
             TransitDays: parseInt(formValue.TransitDays),
             RotationNo: formValue.RotationNo,
-            RotationDate: this.toIsoDateString(formValue.RotationDate),
+            RotationDate: formValue.RotationDate,
             IGMNo: formValue.IGMNo,
-            IGMDate: this.toIsoDateString(formValue.IGMDate),
+            IGMDate: formValue.IGMDate,
             EGMNo: formValue.EGMNo,
-            EGMDate: this.toIsoDateString(formValue.EGMDate),
+            EGMDate: formValue.EGMDate,
             status: formValue.detailstatus === 'Active' ? 'A' : 'S',
             VoyageMasterHeaderSid : this.VoyageMasterHeaderSid ,
             ...(this.isModalEditMode ? { updatedBy: updatedBy} : { createdBy: createdBy })
@@ -375,27 +385,27 @@ export class SailingScheduleEntryComponent implements OnInit {
         )
     }
 
-    toNgbDate(isoDateString: string): NgbDate | null {
-        if (!isoDateString) return null;
+    // toNgbDate(isoDateString: string): NgbDate | null {
+    //     if (!isoDateString) return null;
 
-        const date = new Date(isoDateString);
+    //     const date = new Date(isoDateString);
 
-        if (isNaN(date.getTime())) return null;
+    //     if (isNaN(date.getTime())) return null;
 
-        return NgbDate.from({
-            year: date.getFullYear(),
-            month: date.getMonth() + 1,
-            day: date.getDate()
-        });
-    }
+    //     return NgbDate.from({
+    //         year: date.getFullYear(),
+    //         month: date.getMonth() + 1,
+    //         day: date.getDate()
+    //     });
+    // }
 
-    toIsoDateString(ngbDate: NgbDate | null): string | null {
-        if (!ngbDate) return null;
+    // toIsoDateString(ngbDate: NgbDate | null): string | null {
+    //     if (!ngbDate) return null;
 
-        // Create a JS Date (Note: month - 1 because JS months are 0-based)
-        const jsDate = new Date(ngbDate.year, ngbDate.month - 1, ngbDate.day,12,0,0);
-        return jsDate.toISOString();
-    }
+    //     // Create a JS Date (Note: month - 1 because JS months are 0-based)
+    //     const jsDate = new Date(ngbDate.year, ngbDate.month - 1, ngbDate.day,12,0,0);
+    //     return jsDate.toISOString();
+    // }
 
 
     updatePOLList() {
@@ -443,5 +453,14 @@ export class SailingScheduleEntryComponent implements OnInit {
     navigateBack() {
         history.back();
     }
+
+    toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+		if (!date) return null;
+		return {
+			year: date.getFullYear(),
+			month: date.getMonth() + 1,
+			day: date.getDate()
+		};
+	}
 }
 

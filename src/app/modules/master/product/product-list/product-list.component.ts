@@ -9,6 +9,8 @@ import { FormsModule } from '@angular/forms';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { authService } from 'src/app/modules/authentication/auth.service';
 
 @Component({
   selector: 'app-product-list',
@@ -30,6 +32,12 @@ export class ProductListComponent {
     productList : Product[];
     slicedProductList: Product[];
     searchPerformed : boolean;
+    userData:any;
+    modeOfProductType = [
+        { id: "1", name: "General" },
+        { id: "2", name: "Haz" },
+        { id: "3", name: "Frozen" },
+    ]
 
 
     // Pagination Related Data
@@ -42,8 +50,20 @@ export class ProductListComponent {
         private masterService: MasterService,
         private appSettingService: AppSettingsService,
         private dialog: MatDialog,
+        private userService : authService,
+        private excelReportService : ExcelExportService
     ) { }
 
+    ngOnInit(): void {
+        this.appSettingService.getUser().subscribe(
+            user=>{
+                if(user){
+                    this.userData = user;
+                    console.log(this.userData,'UserData')
+                }
+            }
+        )
+    }
 
     onSearch(){        
         const payload = {
@@ -64,15 +84,16 @@ export class ProductListComponent {
         this.router.navigate(["master/product/entry"])
     }
 
-    report(){
-
-    }
 
     reset(){
         this.productList =[];
         this.slicedProductList = [];
         this.totalAmountOfCollection = 0;
         this.searchPerformed = false;
+        this.filterValue = '';
+        this.searchType = 'ProductName';
+        this.page = 1;
+        
     }
 
     deleteProductById(ProductMasterSid){
@@ -103,6 +124,36 @@ export class ProductListComponent {
         let start = (this.page-1)*this.pageSize;
         let end = start + this.pageSize;
         this.slicedProductList = this.productList.slice(start,end);
+    }
+
+    report(): void {
+        const formattedData = this.productList.map(item => ({
+            ...item,
+            type : this.getProductType(item.ProductType),
+            status: item.status === 'A' ? 'Active' : 'Suspended',
+            
+        }));
+
+        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+        this.excelReportService.exportAsExcel({
+            data: formattedData,
+            headers: [
+                { key: 'ProductName', label: 'Product Name' },
+                { key: 'ProductCode', label: 'Product Code' },
+                { key: 'type', label: 'Type' },
+                { key: 'UOMCode', label: 'UOM' },
+                { key: 'HSNCode', label: 'HSN Code' },
+                { key: 'status', label: 'Status' }
+                
+            ],
+            fileName: 'Product-Report', 
+            title: companyName
+        });
+    }
+    
+    getProductType(id){
+        return this.modeOfProductType.find(type => type.id === id).name;
     }
 
 }

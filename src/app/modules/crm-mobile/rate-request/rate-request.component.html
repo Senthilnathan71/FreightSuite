@@ -15,8 +15,8 @@
                                 <select formControlName="customerName" (change)="onCustomerChange($event)"
                                     class="form-select">
                                     <option value="">Select</option>
-                                    <option *ngFor="let item of customers" [value]="item.CustomerMasterSid">
-                                        {{ item.CustomerName }}
+                                    <option *ngFor="let item of customers" [value]="item.PreCustomerMasterSid">
+                                        {{ item.preCustomerName }}
                                     </option>
                                 </select>
                                 <small *ngIf="f['customerName'].touched && f['customerName'].invalid"
@@ -125,7 +125,7 @@
                                         <label class="form-label">POO</label>
                                         <select formControlName="POO" class="form-select">
                                             <option value="">Select</option>
-                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                            <option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
                                                 {{ item.PortCode }}
                                             </option>
                                         </select>
@@ -135,9 +135,10 @@
                                             </small> -->
                                     </div>
                                 </div>
-                                <div class="col-6 col-md-3">
+                                <!-- <div class="col-6 col-md-3">
                                     <div class="mb-1">
                                         <label class="form-label">POL <span class="text-danger">*</span></label>
+                                        
                                         <select formControlName="POL" class="form-select">
                                             <option value="">Select</option>
                                             <option *ngFor="let item of ports" [value]="item.PortMasterSid">
@@ -150,8 +151,38 @@
                                         </small>
 
                                     </div>
-                                </div>
+                                </div> -->
                                 <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label class="form-label">POL <span class="text-danger">*</span></label>
+
+                                        <ng-select [items]="filteredPorts" bindLabel="PortCode"
+                                            bindValue="PortMasterSid" [searchable]="false" placeholder="Select"
+                                            formControlName="POL">
+
+                                            <ng-template ng-header-tmp>
+                                                <input type="text" [(ngModel)]="searchText"
+                                                    (ngModelChange)="onFilter(searchText)" placeholder="Search..."
+                                                    class="form-control" style="width: 100%; padding: 5px;" />
+                                            </ng-template>
+
+                                            <ng-template ng-option-tmp let-item="item">
+                                                {{ item.PortCode }}
+                                            </ng-template>
+
+                                        </ng-select>
+
+                                        <small *ngIf="route.get('POL')?.touched && route.get('POL')?.invalid"
+                                            class="text-danger">
+                                            POL is required.
+                                        </small>
+
+                                    </div>
+                                </div>
+
+
+
+                                <!-- <div class="col-6 col-md-3">
                                     <div class="mb-1">
                                         <label class="form-label">POD <span class="text-danger">*</span></label>
                                         <select formControlName="POD" class="form-select">
@@ -165,7 +196,33 @@
                                             POD is required.
                                         </small>
                                     </div>
+                                </div> -->
+                                <div class="col-6 col-md-3">
+                                    <div class="mb-1">
+                                        <label class="form-label">POD <span class="text-danger">*</span></label>
+
+                                        <ng-select [items]="filteredPorts" bindLabel="PortCode"
+                                            bindValue="PortMasterSid" [searchable]="false" placeholder="Select"
+                                            [(ngModel)]="selectedPort" formControlName="POD">
+                                            <ng-template ng-header-tmp>
+                                                <input type="text" [(ngModel)]="searchText"
+                                                    (ngModelChange)="onFilter(searchText)" placeholder="Search..."
+                                                    class="form-control" style="width: 100%; padding: 5px;" />
+                                            </ng-template>
+
+                                            <ng-template ng-option-tmp let-item="item">
+                                                {{ item.PortCode }}
+                                            </ng-template>
+                                        </ng-select>
+
+                                        <small *ngIf="route.get('POD')?.touched && route.get('POD')?.invalid"
+                                            class="text-danger">
+                                            POD is required.
+                                        </small>
+                                    </div>
                                 </div>
+
+
                                 <div class="col-6 col-md-3">
                                     <div class="mb-1">
                                         <label class="form-label">FPOD</label>
