@@ -108,6 +108,7 @@
                         <table class="table table-hover align-middle no-wrap table-bordered">
                             <thead>
                                 <tr class="bg-info">
+                                    <th class="bg-transparent text-light" scope="col">Action</th>
                                     <th class="bg-transparent text-light" scope="col">Lead Name</th>
                                     <th class="bg-transparent text-light" scope="col">Phone</th>
                                     <th class="bg-transparent text-light" scope="col">Type</th>
@@ -115,11 +116,19 @@
                                     <!-- <th class="bg-transparent text-light" scope="col">Last Met</th>
                                     <th class="bg-transparent text-light" scope="col">Last Booking</th> -->
                                     <th class="bg-transparent text-light" scope="col">Status</th>
-                                    <th class="bg-transparent text-light" scope="col">Action</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let lead of filteredLeads">
+                                     <td data-label="Action">
+                                        <section class="action-items">
+                                            <a class="text-info mx-2" (click)="viewLead(lead.PreCustomerMasterSid)">
+                                                <!-- <i-feather name="edit" class="feather-sm"></i-feather> -->
+                                                <i-feather name="eye" class="feather-sm"></i-feather>
+                                            </a>
+                                        </section>
+                                    </td>
                                     <td data-label="Company">
                                         <div class="text-truncate">
                                             {{ lead.preCustomerName }}
@@ -157,14 +166,7 @@
                                               {{findStatus(lead.status)}}
                                         </div>
                                     </td>
-                                    <td data-label="Action">
-                                        <section class="action-items">
-                                            <a class="text-info mx-2" (click)="viewLead(lead.PreCustomerMasterSid)">
-                                                <!-- <i-feather name="edit" class="feather-sm"></i-feather> -->
-                                                <i-feather name="eye" class="feather-sm"></i-feather>
-                                            </a>
-                                        </section>
-                                    </td>
+                                   
                                 </tr>
                             </tbody>
                         </table>
