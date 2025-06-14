@@ -56,6 +56,11 @@
             <div class="card-body">
                 <div class="d-flex flex-column gap-2 position-relative">
                     <div class="d-flex align-items-start fw-bold dofi-font-16 text-uppercase">
+                        <div class="ms-auto d-flex align-items-center gap-1">
+                            <a class="text-info" (click)="editEnquiry(enq.QuoteHeaderSid)">
+                                <i-feather name="eye" class="feather-sm"></i-feather>
+                            </a>
+                        </div>
                         <i-feather class="feather-sm me-1" name="hash"></i-feather>
                         <div class="text-truncate">
                             {{ enq.QuoteNumber }}
@@ -72,11 +77,7 @@
                     <div class="d-flex align-items-center">
                         <i-feather class="feather-sm me-1" name="user"></i-feather>
                         <div class="ms-2">{{ enq.CustomerName }}</div>
-                        <div class="ms-auto d-flex align-items-center gap-1">
-                            <a class="text-info" (click)="editEnquiry(enq.QuoteHeaderSid)">
-                                <i-feather name="eye" class="feather-sm"></i-feather>
-                            </a>
-                        </div>
+                        
                     </div>
                     <div class="d-flex align-items-center">
                         <i-feather class="feather-sm me-1" name="map-pin"></i-feather>
@@ -109,17 +110,25 @@
                         <table class="table table-hover align-middle no-wrap table-bordered">
                             <thead>
                                 <tr class="bg-info">
+                                    <th class="bg-transparent text-light" scope="col">Action</th>
                                     <th class="bg-transparent text-light" scope="col">Quote Number</th>
                                      <th class="bg-transparent text-light" scope="col">Enquiry No</th>
                                     <th class="bg-transparent text-light" scope="col">Customer Name</th>
                                     <th class="bg-transparent text-light" scope="col">Customer Address</th>
                                     <th class="bg-transparent text-light" scope="col">Quote Date</th>
                                     <th class="bg-transparent text-light" scope="col">Status</th>
-                                    <th class="bg-transparent text-light" scope="col">Action</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let enq of quoteItems">
+                                     <td data-label="Action">
+                                        <section class="ms-auto d-flex align-items-center gap-1">
+                                            <a class="text-info" (click)="editEnquiry(enq.QuoteHeaderSid)">
+                                                <i-feather name="eye" class="feather-sm"></i-feather>
+                                            </a>
+                                        </section>
+                                    </td>
                                     <td data-label="Company">
                                         <div class="text-truncate">
                                             {{ enq.QuoteNumber }}
@@ -148,13 +157,7 @@
                                             {{ enq.status ==="A"? "Active":"Suspend" }}
                                         </div>
                                     </td>
-                                    <td data-label="Action">
-                                        <section class="action-items">
-                                            <a class="text-info mx-2" (click)="editEnquiry(enq.QuoteHeaderSid)">
-                                                <i-feather name="eye" class="feather-sm"></i-feather>
-                                            </a>
-                                        </section>
-                                    </td>
+                                   
                                 </tr>
                             </tbody>
                         </table>
@@ -243,17 +246,26 @@
                         <table class="table table-hover align-middle no-wrap table-bordered">
                             <thead>
                                 <tr class="bg-info">
+                                    <th class="bg-transparent text-light" scope="col">Action</th>
                                     <th class="bg-transparent text-light" scope="col">Rate Request No:</th>
                                     <th class="bg-transparent text-light" scope="col">Customer</th>
                                    
                                     <th class="bg-transparent text-light" scope="col">Department</th>
                                     <th class="bg-transparent text-light" scope="col">POL</th>
                                     <th class="bg-transparent text-light" scope="col">POD</th>
-                                    <th class="bg-transparent text-light" scope="col">Action</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let enq of enquiryItems">
+                                    <td data-label="Action" style="width: 100px;">
+
+                                        <section class="action-items">
+                                            <a class="quote-text-info mx-2" (click)="createQuotation(enq)">
+                                                <i-feather name="eye" class="feather-sm"></i-feather>
+                                            </a>
+                                        </section>
+                                    </td>
                                     <td data-label="Company">
                                         <div class="text-truncate">
                                             {{ enq.EnquiryNumber }}
@@ -279,14 +291,7 @@
                                             {{ enq.PODCode }}
                                         </div>
                                     </td>
-                                    <td data-label="Action" style="width: 100px;">
-
-                                        <section class="action-items">
-                                            <a class="quote-text-info mx-2" (click)="createQuotation(enq)">
-                                                <span>Create Quotation</span>
-                                            </a>
-                                        </section>
-                                    </td>
+                                    
                                 </tr>
                             </tbody>
                         </table>

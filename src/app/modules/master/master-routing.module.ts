@@ -33,7 +33,6 @@ import { ContainerTypeEntryComponent } from './container-type/container-type-ent
 import { CommodityListComponent } from './commodity/commodity-list/commodity-list.component';
 import { CommodityEntryComponent } from './commodity/commodity-entry/commodity-entry.component';
 import { PackageTypeListComponent } from './package-type/package-type-list/package-type-list.component';
-import { MenuEntryComponent } from './menu/menu-entry/menu-entry.component';
 import { ServiceLevelListComponent } from './service-level/service-level-list/service-level-list.component';
 import { ServiceLevelComponent } from './service-level/service-level.component';
 import { TimeZoneComponent } from './time-zone/time-zone.component';
@@ -348,14 +347,6 @@ export const MasterRoutes: Routes = [
         component: MenuListComponent,
         data: {
           title: 'Menu List',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Menu' }],
-        },
-      },
-      {
-        path: 'menu/entry',
-        component: MenuEntryComponent,
-        data: {
-          title: 'Menu Entry',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Menu' }],
         },
       },
