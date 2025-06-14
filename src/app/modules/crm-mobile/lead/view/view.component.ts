@@ -33,7 +33,7 @@ export class ViewComponent implements OnInit {
   searchText: string = '';
   filteredLeads: Lead[] = [];
   isMobile: boolean = false;
-  statusList = ["Active", "Pending","Success","No Progress","Closed"];
+  statusList = ["Active", "Suspended"];
 
   constructor(private leadService: LeadService, private route: Router, private appService: AppService,private appSettingService:AppSettingsService) { }
 
@@ -117,18 +117,9 @@ export class ViewComponent implements OnInit {
       case 'A':
         return 'Active'
         break;
-      case 'P':
-        return 'Pending'
-        break;
-      case 'S':
-        return 'Success'
-        break;
-      case 'N':
-        return 'No Progress'
-        break;
-    
+      
       default:
-        return 'Closed'
+        return 'Suspended'
         break;
     }
   }
