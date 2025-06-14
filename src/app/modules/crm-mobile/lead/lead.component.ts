@@ -52,7 +52,7 @@ export class LeadComponent implements OnInit {
 
   customerByOptions = ['Email', 'Advertisement', 'Website', 'Others'];
   leadSourceList = ['Email', 'Advertisement','Website', 'Inquiries', 'Referrals',"Trade shows", "Cold calls", "Social media", 'Others']
-  statusList = ["Active", "Pending","Success","No Progress","Closed"];
+  statusList = ["Active", "Suspended"];
   // CountryISO = CountryISO;
   // PhoneNumberFormat = PhoneNumberFormat;
   // SearchCountryField = SearchCountryField;

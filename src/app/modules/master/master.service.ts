@@ -23,6 +23,9 @@ import { Product } from '../crm-mobile/Interfaces/product.interface';
   providedIn: 'root',
 })
 export class MasterService {
+  searchMenu(payload: { searchType: string; filterValue: string; }) {
+    throw new Error('Method not implemented.');
+  }
   constructor(private http: HttpClient) { }
   //vessel-master
   getAllVessels() {
@@ -1974,7 +1977,7 @@ searchChargeGroups(payload: any) {
     )
   }
 
-  createNewMenu(payload){
+  createMenu(payload: any){
     return this.http.post<{data:any}>('menu/create',payload).pipe(
       map((resp)=>{
         let response = resp.data;
@@ -1983,16 +1986,17 @@ searchChargeGroups(payload: any) {
     )
   }
 
-  getMenuById(MenuMasterSid){
-    return this.http.get<{data:any}>(`menu/fetch/${MenuMasterSid}`).pipe(
-      map((resp)=>{
-        let response = resp.data;
-        return response;
-      })
-    )
-  }
+  getMenuById(MenuMasterSid: number) {
+  return this.http.get<{ data: any }>(`menu/fetch/${MenuMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
 
-  updateMenuById(MenuMasterSid,payload){
+
+  updateMenuById(MenuMasterSid: number, payload: any){
     return this.http.patch<{data:any}>(`menu/update/${MenuMasterSid}`,payload).pipe(
       map((resp)=>{
         let response = resp.data;
@@ -2001,7 +2005,7 @@ searchChargeGroups(payload: any) {
     )
   }
 
-  deleteMenuById(MenuMasterSid){
+  deleteMenuById(MenuMasterSid: number){
     return this.http.delete<{data:any}>(`menu/delete/${MenuMasterSid}`).pipe(
       map((resp)=>{
         let response = resp.data;
@@ -2010,14 +2014,13 @@ searchChargeGroups(payload: any) {
     )
   }
 
-  searchMenu(payload){
-    return this.http.post<{data:any[]}>('menu/search-list',payload).pipe(
-      map((resp)=>{
-        let response = resp.data;
-        return response;
-      })
-    )
-  }
+  searchMenuList(payload: any) {
+  return this.http.post("menu/search-list", payload).pipe(
+    map((res: any) => {
+      return res.data;
+    })
+  );
+}
 
   // Sailing Schedule Header
   
