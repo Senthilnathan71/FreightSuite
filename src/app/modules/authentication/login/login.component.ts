@@ -40,7 +40,10 @@ export class LoginComponent implements OnInit {
   }
 
   login() {
-    let param = this.loginform.value;
+    let param = {
+      ...this.loginform.value,
+      projectType:'freight-forwarding'
+    }
     this.isSubmitted = true;
 
     if (this.loginform.invalid) {
