@@ -4,7 +4,6 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, A
 import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
-import { MasterService } from '../../master.service';
 import { ActivatedRoute, Router, RouterLink, RouterModule } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
@@ -12,6 +11,7 @@ import { FeatherModule } from 'angular-feather';
 import { take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { SettingsService } from '../../settings.service';
 
 @Component({
   selector: 'app-role',
@@ -52,7 +52,7 @@ export class RoleComponent implements OnInit {
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
-    private masterService: MasterService,
+    private settingsService: SettingsService,
     private route: ActivatedRoute,
     private router: Router,
     private appSettingService: AppSettingsService,
@@ -114,7 +114,7 @@ export class RoleComponent implements OnInit {
   editRole(id: number, content: any) {
   this.isEditMode = true;
   this.RoleMasterSid = id;
-  this.masterService.getRoleById(id).pipe(take(1)).subscribe({
+  this.settingsService.getRoleById(id).pipe(take(1)).subscribe({
     next: (response: any) => {
       const role = response.data; 
       this.roleForm.get('status')?.enable();
@@ -140,7 +140,7 @@ export class RoleComponent implements OnInit {
   }
 
   loadRoleData(id: number) {
-  this.masterService.getRoleById(id).subscribe(
+  this.settingsService.getRoleById(id).subscribe(
     (response: any) => {
       const data = response.data; // Access the data property from the response
       this.roleForm.patchValue({
@@ -177,7 +177,7 @@ export class RoleComponent implements OnInit {
   };
 
       if (this.isEditMode) {
-        this.masterService.updateRoleById(this.RoleMasterSid, payload).subscribe(
+        this.settingsService.updateRoleById(this.RoleMasterSid, payload).subscribe(
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
@@ -193,7 +193,7 @@ export class RoleComponent implements OnInit {
           }
         );
       } else {
-        this.masterService.createNewRole(payload).subscribe(
+        this.settingsService.createNewRole(payload).subscribe(
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
@@ -220,7 +220,7 @@ export class RoleComponent implements OnInit {
         : this.filterValue
     };
 
-    this.masterService.searchRole(payload).subscribe((res: any) => {
+    this.settingsService.searchRole(payload).subscribe((res: any) => {
       this.results = res.data || res;
       this.searchPerformed = true;
       this.updatePaginationData();
@@ -242,7 +242,7 @@ export class RoleComponent implements OnInit {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
-        this.masterService.deleteRoleById(id).subscribe((resp: any) => {
+        this.settingsService.deleteRoleById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
           this.search();
         });

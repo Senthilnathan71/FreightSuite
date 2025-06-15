@@ -6,12 +6,11 @@ import { FeatherModule } from 'angular-feather';
 import { NgbModal, NgbModalModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
-
-import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { SettingsService } from '../../settings.service';
 
 @Component({
   selector: 'app-module',
@@ -49,7 +48,7 @@ export class ModuleComponent implements OnInit {
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
-    private masterService: MasterService,
+    private settingsService: SettingsService,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
     private userService: authService,
@@ -92,7 +91,7 @@ export class ModuleComponent implements OnInit {
   editModule(id: number, content: any) {
     this.isEditMode = true;
     this.ModuleMasterSid = id;
-    this.masterService.getModuleById(id).subscribe({
+    this.settingsService.getModuleById(id).subscribe({
       next: (response: any) => {
         const module = response.data;
         this.moduleForm.get('status')?.enable();
@@ -131,8 +130,8 @@ export class ModuleComponent implements OnInit {
     };
 
     const operation = this.isEditMode 
-      ? this.masterService.updateModuleById(this.ModuleMasterSid, payload)
-      : this.masterService.createNewModule(payload);
+      ? this.settingsService.updateModuleById(this.ModuleMasterSid, payload)
+      : this.settingsService.createNewModule(payload);
 
     operation.subscribe({
       next: (resp: any) => {
@@ -165,7 +164,7 @@ export class ModuleComponent implements OnInit {
         : this.filterValue
     };
 
-    this.masterService.searchModule(payload).subscribe({
+    this.settingsService.searchModule(payload).subscribe({
       next: (res: any) => {
         this.results = res.data || res;
         this.searchPerformed = true;
@@ -188,7 +187,7 @@ export class ModuleComponent implements OnInit {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.masterService.deleteModuleById(id).subscribe({
+        this.settingsService.deleteModuleById(id).subscribe({
           next: (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess('Module deleted successfully');

@@ -548,6 +548,58 @@ export const ROUTES: RouteInfo[] = [
     ]
   },
 
+  {
+    path: '',
+    title: 'Settings',
+    icon: 'mdi mdi-view-dashboard',
+    class: '',
+    extralink: false,
+    label: '',
+    labelClass: '',
+    submenu: [
+      {
+        path: '/settings/module/list',
+        title: 'Module',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/settings/menu/list',
+        title: 'Menu',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/settings/role/list',
+        title: 'Role',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/settings/rolemenu',
+        title: 'Role Menu',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+    ]
+  }
+
 
 
 
