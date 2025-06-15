@@ -8,19 +8,25 @@ import { AppService } from 'src/app/service/app.service';
 import { authService } from '../auth.service';
 import { ReactiveFormsModule } from '@angular/forms';
 import * as $ from 'jquery';
+import { FeatherModule } from 'angular-feather';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterModule, CommonModule, ReactiveFormsModule],
+  imports: [RouterModule, CommonModule, ReactiveFormsModule,FeatherModule],
   templateUrl: './login.component.html',
 })
 export class LoginComponent implements OnInit {
   loginform!: FormGroup;
+  forgotPasswordForm!: FormGroup;
   recoverform = false;
   isMobile: boolean = false;
   errorMessage = "";
   isSubmitted: boolean = false;
+  isLoading: boolean = false;
+  token: any
+  passwordView : boolean;
+  successMessage: any;
   constructor(
     private appService: AppService,
     private router: Router,
@@ -35,8 +41,25 @@ export class LoginComponent implements OnInit {
     this.isMobile = this.appService.getDevice();
     this.loginform = this.formBuilder.group({
       email: ["", [this.emailValidator]],
-      password: ["", Validators.required]
+      password: ["", Validators.required],
+      rememberMe : [false]
     });
+
+    this.forgotPasswordForm = this.formBuilder.group({
+      email: ["", [this.emailValidator]],
+    });
+
+    // Auto-fill credentials if saved in localStorage
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    const savedPassword = localStorage.getItem('rememberedPassword');
+
+    if (savedEmail && savedPassword) {
+      this.loginform.patchValue({
+        email: savedEmail,
+        password: savedPassword,
+        rememberMe: true
+      });
+    }
   }
 
   login() {
@@ -53,14 +76,43 @@ export class LoginComponent implements OnInit {
     this.authService.login(param).subscribe(async (resp: any) => {
       if (!resp.status) {
         this.errorMessage = resp.message || "Login failed"
+        return;
       }
+      this.isLoading = false;
       let userData = resp.data.user;
+
+      if (this.loginform.get('rememberMe')?.value) {
+          localStorage.setItem('rememberedEmail', param.email);
+          localStorage.setItem('rememberedPassword', param.password);
+        } else {
+          localStorage.removeItem('rememberedEmail');
+          localStorage.removeItem('rememberedPassword');
+        }
 
       if (resp.status) {
         this.router.navigate(['dashboard']);
       }
     })
 
+  }
+
+  sendResetLink() {
+    let param = this.forgotPasswordForm.value;
+    this.isLoading = true;
+
+    try {
+      this.authService.forgotPassword(param).subscribe((resp) => {
+        if (resp.status) {
+          this.successMessage = resp.message;
+          this.isLoading = false;
+        } else {
+          this.errorMessage = resp.message;
+          this.isLoading = false;
+        }
+      })
+    } catch (err) {
+      this.errorMessage = "Something went wrong while processing your request. Please try again"
+    }
   }
 
 
@@ -87,6 +139,16 @@ export class LoginComponent implements OnInit {
     }
 
     return { pattern: true }
+  }
+
+  togglePassword(input: HTMLInputElement): void {
+    this.passwordView = true;
+    input.type = 'text'; // Show password on mousedown
+  }
+
+  resetPassword(input: HTMLInputElement): void {
+    this.passwordView = false;
+    input.type = 'password'; // Hide password on mouseup or mouseleave
   }
 
 }
