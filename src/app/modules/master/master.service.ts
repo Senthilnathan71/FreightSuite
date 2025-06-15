@@ -2087,4 +2087,67 @@ searchFfUser(payload: any) {
   );
 }
 
+
+getAllSalesperson() {
+  return this.http.get<{data: any[]}>('customer-salesteam/salesperson').pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+getAllSalesteam() {
+  return this.http.get<{data: any[]}>('customer-salesteam').pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+getSalesteamById(CustomerSalesSid: number) {
+  return this.http.get<{data: any}>(`customer-salesteam/fetch/${CustomerSalesSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+createNewSalesteam(payload: any) {
+  return this.http.post<{data: any}>('customer-salesteam/create', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+updateSalesteamById(CustomerSalesSid: number, payload: any) {
+  return this.http.patch<{data: any}>(`customer-salesteam/update/${CustomerSalesSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+deleteSalesteamById(CustomerSalesSid: number) {
+  return this.http.delete<{data: any}>(`customer-salesteam/delete/${CustomerSalesSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+searchSalesteam(payload: any) {
+  return this.http.post<{data: any[]}>('customer-salesteam/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
 }
