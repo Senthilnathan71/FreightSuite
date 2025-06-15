@@ -17,7 +17,6 @@ import { CurrencyEntryComponent } from './currency/currency-entry/currency-entry
 import { CurrencyListComponent } from './currency/currency-list/currency-list.component';
 import { TarrifEntryComponent } from './tarrif/tarrif-entry/tarrif-entry.component';
 import { TarrifListComponent } from './tarrif/tarrif-list/tarrif-list.component';
-import { MenuListComponent } from './menu/menu-list/menu-list.component';
 import { ReportListComponent } from './report/report-list/report-list.component';
 import { ReportEntryComponent } from './report/report-entry/report-entry.component';
 import { CompanyListComponent } from './company/company-list/company-list.component';
@@ -46,10 +45,7 @@ import { TermsConditionEntryComponent } from './terms-condition/terms-condition-
 import { HSSACComponent } from './HS-SAC/hs-sac/hs-sac.component';
 import { ZoneComponent } from './zone/zone/zone.component';
 import { CityComponent } from './city/city/city.component';
-import { ModuleComponent } from './module/module-list/module.component';
-import { RoleComponent } from './role/role-list/role.component';
 import { ChargegroupComponent } from './chargeGroup/chargegroup/chargegroup.component';
-import { RolemenuComponent } from './rolemenu/rolemenu/rolemenu.component';
 import { TdsSetListComponent } from './TDS-Set/tds-set-list/tds-set-list.component';
 import { TdsSetEntryComponent } from './TDS-Set/tds-set-entry/tds-set-entry.component';
 import { ImcoListComponent } from './Imco/imco-list/imco-list.component';
@@ -342,14 +338,7 @@ export const MasterRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'sector' }],
         },
       },
-      {
-        path: 'menu/list',
-        component: MenuListComponent,
-        data: {
-          title: 'Menu List',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Menu' }],
-        },
-      },
+      
       {
         path: 'report/list',
         component: ReportListComponent,
@@ -689,33 +678,6 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
-      {
-        path: 'module/list',
-        component: ModuleComponent,
-        data: {
-          title: 'Module',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Module' }],
-        },
-      },
-      
-      {
-        path: 'role/list',
-        component: RoleComponent,
-        data: {
-          title: 'Role',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Role' }],
-        },
-      },
-      
-      {
-        path: 'rolemenu',
-        component: RolemenuComponent,
-        data: {
-          title: 'Role Menu',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Role Menu' }],
-        },
-      },
-
       {
         path: 'chargegroup',
         component: ChargegroupComponent,

@@ -4,7 +4,6 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, A
 import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
-import { MasterService } from '../../master.service';
 import { ActivatedRoute, Router, RouterLink, RouterModule } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
@@ -12,6 +11,7 @@ import { FeatherModule } from 'angular-feather';
 import { take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { SettingsService } from '../../settings.service';
 
 @Component({
   selector: 'app-menu-list',
@@ -53,7 +53,7 @@ export class MenuListComponent implements OnInit {
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
-    private masterService: MasterService,
+    private settingsService: SettingsService,
     private route: ActivatedRoute,
     private router: Router,
     private appSettingService: AppSettingsService,
@@ -79,7 +79,7 @@ export class MenuListComponent implements OnInit {
 
   // Load all modules for dropdown
   loadModules() {
-    this.masterService.getAllModule().subscribe({
+    this.settingsService.getAllModule().subscribe({
       next: (response: any) => {
         this.moduleList = response.data.map((module: any) => ({
           ModuleMasterSid: module.ModuleMasterSid,
@@ -127,7 +127,7 @@ export class MenuListComponent implements OnInit {
   editMenu(id: number, content: TemplateRef<any>) {
     this.isEditMode = true;
     this.MenuMasterSid = id;
-    this.masterService.getMenuById(id).pipe(take(1)).subscribe({
+    this.settingsService.getMenuById(id).pipe(take(1)).subscribe({
       next: (response: any) => {
         const menu = response.data; 
         this.menuForm.get('status')?.enable();
@@ -156,7 +156,7 @@ export class MenuListComponent implements OnInit {
   }
 
   loadMenuData(id: number) {
-    this.masterService.getMenuById(id).subscribe(
+    this.settingsService.getMenuById(id).subscribe(
       (response: any) => {
         const data = response.data;
         this.menuForm.patchValue({
@@ -201,7 +201,7 @@ export class MenuListComponent implements OnInit {
       };
 
       if (this.isEditMode) {
-        this.masterService.updateMenuById(this.MenuMasterSid, payload).subscribe(
+        this.settingsService.updateMenuById(this.MenuMasterSid, payload).subscribe(
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
@@ -217,7 +217,7 @@ export class MenuListComponent implements OnInit {
           }
         );
       } else {
-        this.masterService.createMenu(payload).subscribe(
+        this.settingsService.createMenu(payload).subscribe(
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
@@ -245,7 +245,7 @@ export class MenuListComponent implements OnInit {
         : this.filterValue
     };
 
-    this.masterService.searchMenuList(payload).subscribe((res: any) => {
+    this.settingsService.searchMenuList(payload).subscribe((res: any) => {
       this.results = res.data || res;
       this.searchPerformed = true;
       this.updatePaginationData();
@@ -267,7 +267,7 @@ export class MenuListComponent implements OnInit {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
-        this.masterService.deleteMenuById(id).subscribe((resp: any) => {
+        this.settingsService.deleteMenuById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
           this.search();
         });

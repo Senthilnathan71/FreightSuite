@@ -1,6 +1,6 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { map, mergeMap } from "rxjs";
+import { catchError,map, mergeMap } from "rxjs";
 import { AppSettingsService } from "src/app/core/services/app-settings.service";
 
 @Injectable({
@@ -31,5 +31,23 @@ export class authService {
                 )
             })
         )
+    }
+
+    public forgotPassword(email: string) {
+        const body = { email }
+        return this.http.post('auth/forgot-password', body).pipe(map((resp: any) => {
+            return resp
+        }))
+    }
+
+    public resetPassword(payload: any, token: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`).set('Content-Type', 'application/json')
+        return this.http.patch('auth/reset-password', payload, { headers }).pipe
+            (map((resp: any) => {
+                return resp;
+            }), catchError((err) => {
+                throw err
+            })
+            )
     }
 }

@@ -12,6 +12,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { SettingsService } from 'src/app/modules/settings/settings.service';
 
 @Component({
     selector: 'app-terms-condition-entry',
@@ -55,6 +56,7 @@ export class TermsConditionEntryComponent implements OnInit{
 
     constructor(
         private masterService : MasterService,
+        private settingsService: SettingsService,
         private appSettingService : AppSettingsService,
         private route : Router,
         private currentRoute : ActivatedRoute,
@@ -109,7 +111,7 @@ export class TermsConditionEntryComponent implements OnInit{
 
     loadAllFields(){
         forkJoin({
-            menus : this.masterService.getAllMenu(),
+            menus : this.settingsService.getAllMenu(),
             ports : this.masterService.getAllPorts(),
             carriers : this.masterService.getAllCustomers(),
             branches : this.masterService.getAllBranches(),

@@ -705,14 +705,14 @@
                     </li>
                     <li [ngbNavItem]="3">
                         <button ngbNavLink>  
-                                <i-feather name="plus-circle" class="feather-sm pt-1 text-info" (click)="openModal(content3)"></i-feather> Milestoe</button>
+                                <i-feather name="plus-circle" class="feather-sm pt-1 text-info" (click)="openModal(content3)"></i-feather> Milestone</button>
                         <ng-template ngbNavContent>
                             <ng-container *ngTemplateOutlet="TabMilestone"></ng-container>
                         </ng-template>
                     </li>
                      <li [ngbNavItem]="4">
                         <button ngbNavLink>  
-                                <i-feather name="plus-circle" class="feather-sm pt-1 text-info" (click)="openModal(content6)"></i-feather> Salesman</button>
+                                <i-feather name="plus-circle" class="feather-sm pt-1 text-info" (click)="openSalespersonModal(content6)"></i-feather> Salesman</button>
                         <ng-template ngbNavContent>
                             <ng-container *ngTemplateOutlet="salesperson"></ng-container>
                         </ng-template>
@@ -860,32 +860,65 @@
 
 <ng-template #content6 let-modal>
     <div class="modal-header">
-        <h4 class="modal-title">Salesman</h4>
+        <h4 class="modal-title">{{isSalespersonEdit ? 'Edit Salesman' : 'Salesman'}}</h4>
         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body" [formGroup]="salespersonForm">
         <div class="col-md-12">
             <div class="card h-100">
                 <div class="card-body">
                     <div class="row">
 
                         <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="City">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select 
+                                    class="ng-select" 
+                                    multiple=true 
+                                    formControlName="DepartmentMasterSid"
+                                    [items]="spDepartmentList"
+                                    bindLabel = departmentName
+                                    bindValue = departmentName   
+                                    placeholder="Select Department"
+                                    closeOnSelect = false
+                                >
+                                </ng-select>
+                                <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="City"> -->
                                 <label for="text-input" class="input-label">Department <span
                                         class="text-danger">*</span></label>
+                                @if(salespersonForm.get('DepartmentMasterSid').touched && salespersonForm.get('DepartmentMasterSid').invalid){
+                                    <div class="error-message">
+                                        @if(salespersonForm.get('DepartmentMasterSid').hasError('required')){
+                                            <span>Department is required</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
                         <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchName">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select
+                                    class="ng-select"
+                                    formControlName="Salesman"
+                                    [items]="salesPersonList"
+                                    bindLabel = userName
+                                    bindValue = UserMasterSid   
+                                    placeholder="Select Salesperson"
+                                ></ng-select>
+                                <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="BranchName"> -->
                                 <label for="text-input" class="input-label">Sales Person <span
-                                        class="text-danger"></span></label>
+                                        class="text-danger">*</span></label>
+                                @if(salespersonForm.get('Salesman').touched && salespersonForm.get('Salesman').invalid){
+                                    <div class="error-message">
+                                        @if(salespersonForm.get('Salesman').hasError('required')){
+                                            <span>Salesperson is required</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
-                        <aside class="col-md-6">
+                        <!-- <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                     formControlName="BranchType">
@@ -900,35 +933,103 @@
                                 <label for="text-input" class="input-label">Doc Person <span
                                         class="text-danger"></span></label>
                             </div>
-                        </aside>
+                        </aside> -->
                           <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchCode">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select
+                                    class="ng-select"
+                                    formControlName="CustomerBranchSid"
+                                    [items]="spBranchList"
+                                    bindLabel = BranchName
+                                    bindValue = CustomerBranchSid   
+                                    placeholder="Select Branch"
+                                ></ng-select>
+                                <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="BranchCode"> -->
                                 <label for="text-input" class="input-label">Branch <span
-                                        class="text-danger"></span></label>
+                                        class="text-danger">*</span></label>
+                                @if(salespersonForm.get('CustomerBranchSid').touched && salespersonForm.get('CustomerBranchSid').invalid){
+                                    <div class="error-message">
+                                        @if(salespersonForm.get('CustomerBranchSid').hasError('required')){
+                                            <span>Branch is required</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
                         <aside class="col-md-6">
+                        <div class="d-flex mb-2 my-lg-0">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                <input 
+                                    class="form-control mb-0" 
+                                    placeholder="dd-mm-yyyy" 
+                                    name="dp" ngbDatepicker 
+                                    #d="ngbDatepicker" 
+                                    [footerTemplate]="footerTemplateEff" 
+                                    (click)="d.toggle()" 
+                                    formControlName="spEffectiveFrom"
+                                    readonly
+                                />
+                                <label for="text-input" class="input-label">Effective From <span
+                                    class="text-danger">*</span></label>
+                                @if(salespersonForm.get('spEffectiveFrom').touched && salespersonForm.get('spEffectiveFrom').invalid){
+                                    <div class="error-message">
+                                        @if(salespersonForm.get('spEffectiveFrom').hasError('required')){
+                                            <span>Effective From is required</span>
+                                        }
+                                    </div>
+                                }
+                                <!-- @if(salespersonForm.get('spEffectiveFrom').touched && salespersonForm.get('spEffectiveFrom').invalid){
+                                <div class="error-message">
+                                    @if(salespersonForm.get('spEffectiveFrom').hasError('required')){
+                                    <span>Effective From is required</span>
+                                    } 
+                                </div>
+                                } -->
+                            </div>
+                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d.toggle()" type="button">
+                                <i-feather class="feather-sm" name="calendar"></i-feather>
+                            </button>
+                        </div>
+                    </aside>
+                    <ng-template #footerTemplateEff>
+                        <hr class="my-0" />
+                        <button class="btn btn-info btn-sm m-2 float-start" (click)="salespersonForm.get('spEffectiveFrom').setValue(todayDate); d.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d.close()">
+                            Close
+                        </button>
+                    </ng-template>
+                    <aside class="col-md-6">
+                        <div class="custom-form-group custom-form-group-select">
+                            @if(isSalespersonEdit){
+                            <ng-select formControlName="spstatus" [items]="modeOfStatus" bindLabel="name"
+                                bindValue="name" placeholder="Select status" class="ng-select">
+                            </ng-select>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="spstatus"
+                                id="text-input" readonly>
+                            }
+                            <label for="text-input" class="input-label">Status<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                        <!-- <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="BranchCode">
-                                <label for="text-input" class="input-label">Effective Form <span
+                                    formControlName="spEffectiveFrom">
+                                <label for="text-input" class="input-label">Effective From <span
                                         class="text-danger">*</span></label>
                             </div>
-                        </aside>
-                       
-
-
-
-
-
+                        </aside> -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
+    <div class="modal-footer">
+        <button class="btn btn-sm btn-info" (click)="onSpSubmit()">{{ isSalespersonEdit ? 'Update' : 'Submit' }}</button>
+    </div>
 </ng-template>
 
 <ng-template #content let-modal>
@@ -1831,7 +1932,17 @@
                             <div class="text-truncate">{{item.CustomerGstType}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item.status==='A'? "Active":"Suspended"}}</div>
+                            @if(item.status === "A"){
+                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                Active
+                            </div>
+                            } @else {
+                            <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                Suspended
+                            </div>
+                            }
                         </td>
                         
                     </tr>
@@ -1895,7 +2006,17 @@
                             <div class="text-truncate">{{item.Email}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item.status==='A'?"Active":"Suspended"}}</div>
+                            @if(item.status === "A"){
+                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                Active
+                            </div>
+                            } @else {
+                            <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                Suspended
+                            </div>
+                            }
                         </td>
                         
                     </tr>
@@ -1959,7 +2080,17 @@
                             <div class="text-truncate">{{item.CCemail}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item.status==='A'?"Active":"Suspended"}}</div>
+                            @if(item.status === "A"){
+                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                Active
+                            </div>
+                            } @else {
+                            <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                Suspended
+                            </div>
+                            }
                         </td>
                         
                     </tr>
@@ -2046,40 +2177,65 @@
             <table class="table table-hover align-middle no-wrap table-bordered">
                 <thead>
                     <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                         <th class="bg-transparent text-light" scope="col">Department</th>
                         <th class="bg-transparent text-light" scope="col">Salesperson</th>
-                        <th class="bg-transparent text-light" scope="col">CS Person</th>
-                        <th class="bg-transparent text-light" scope="col"> Doc Person</th>
+                        <!--<th class="bg-transparent text-light" scope="col"> Doc Person</th> -->
                         <th class="bg-transparent text-light" scope="col"> Branch</th>
                         <th class="bg-transparent text-light" scope="col">Effective From</th>
+                        <th class="bg-transparent text-light" scope="col">Status</th>
                         <!-- <th class="bg-transparent text-light" scope="col">Address Line 3</th>
                             <th class="bg-transparent text-light" scope="col">City</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            
                             <th class="bg-transparent text-light" scope="col">Phone</th>
                             <th class="bg-transparent text-light" scope="col">Email</th> -->
 
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of [0,1,2,3]; track $index) {
+                    @for (item of salesTeamList; track $index) {
                     <tr>
+                        
+                        <ng-template #descriptionTemplate>{{formatDepartment(item.DepartmentMasterSid)}}</ng-template>
                         <td>
-                            <div class="text-truncate">Oman Rials</div>
+                            <div class="d-flex align-items-center">
+                                <a class="text-info mx-2" class="link mx-2 ps-3"
+                                    (click)="openSalespersonModal(content6, item)">
+                                    <i-feather class="feather-sm" name="eye"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start"
+                                    (click)="deleteSalesman(item.CustomerSalesSid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
                         </td>
                         <td>
-                            <div class="text-truncate">OMR</div>
+                            <div class="dofi-max-w-600 text-truncate" [ngbTooltip]=descriptionTemplate>
+                                {{formatDepartment(item.DepartmentMasterSid)}}
+                            </div>
+                            <!-- <div class="text-truncate">{{formatDepartment(item.DepartmentMasterSid)}}</div> -->
                         </td>
                         <td>
-                            <div class="text-truncate">RO</div>
+                            <div class="text-truncate">{{findSalesmanName(item.Salesman)}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Rial</div>
+                            <div class="text-truncate">{{item.customerBranch?.BranchName || ''}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">Baizas</div>
+                            <div class="text-truncate">{{item.EffectiveFrom | formatDate}}</div>
                         </td>
                          <td>
-                            <div class="text-truncate">Baizas</div>
+                            @if(item.status === "A"){
+                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                Active
+                            </div>
+                            } @else {
+                            <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                Suspended
+                            </div>
+                            }
                         </td>
                         <!-- <td>
                                 <div class="text-truncate">Baizas</div>
@@ -2210,7 +2366,17 @@
                             <div class="text-truncate">{{item.LoginPassword}}</div>
                         </td>
                         <td>
-                            <div class="text-truncate">{{item.status==='A'?"Active":"Suspended"}}</div>
+                            @if(item.status === "A"){
+                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                Active
+                            </div>
+                            } @else {
+                            <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                Suspended
+                            </div>
+                            }
                         </td>
                         
                     </tr>

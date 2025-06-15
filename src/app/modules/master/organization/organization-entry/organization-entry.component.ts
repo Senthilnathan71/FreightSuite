@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, JsonPipe } from '@angular/common';
 import {
   ChangeDetectorRef,
   Component,
@@ -15,11 +15,16 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  NgbCalendar,
+  NgbDateAdapter,
+  NgbDateParserFormatter,
+  NgbDatepickerModule,
   NgbModal,
   NgbModalModule,
   NgbModalRef,
   NgbNavModule,
   NgbPaginationModule,
+  NgbTooltipModule
 } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -29,6 +34,11 @@ import { MasterService } from '../../master.service';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { forkJoin } from 'rxjs';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 
 @Component({
   selector: 'app-organization-entry',
@@ -45,9 +55,16 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
     OnlyTextDirective,
     OnlyNumbersDirective,
     TextWithNumbersDirective,
+    NgbDatepickerModule,
+    CustomDatePipe,
+    NgbTooltipModule
   ],
   templateUrl: './organization-entry.component.html',
   styleUrl: './organization-entry.component.scss',
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+  ],
 })
 export class OrganizationEntryComponent {
   // pagination
@@ -118,6 +135,20 @@ export class OrganizationEntryComponent {
 
   //   this.selectedStatus = [...this.selectedStatus];
   // }
+
+
+  // Salesperson Related Variables
+  salesTeamList : any[]
+  CustomerSalesSid : number;
+  salespersonForm !:FormGroup;
+  spDepartmentList : any[];
+  spBranchList : any[];
+  salesPersonList : any[];
+  branchList : any[];
+  isSalespersonEdit : boolean;
+  modalRef10: NgbModalRef;
+  today = this.calendar.getToday();
+  todayDate = new Date(this.today.year, this.today.month, this.today.day);
 
   updateCustomerType(): void {
     const result: any = {};
@@ -369,7 +400,8 @@ export class OrganizationEntryComponent {
     private route: ActivatedRoute,
     private router: Router,
     private modalService: NgbModal,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    private calendar : NgbCalendar
   ) { }
 
   ngOnInit(): void {
@@ -383,6 +415,7 @@ export class OrganizationEntryComponent {
         this.isEditMode = true;
         this.loadCustomerData(this.CustomerMasterSid);
         this.loadCustomerBranch();
+        this.loadCustomerSalesperson();
       }
     });
     this.initForm();
@@ -1311,4 +1344,157 @@ export class OrganizationEntryComponent {
 
     return null;
   }
+
+  initSalesPersonForm(){
+    this.salespersonForm = this.fb.group({
+      Salesman : [,[Validators.required]],
+      DepartmentMasterSid : [,[Validators.required]],
+      CustomerBranchSid : [,[Validators.required]],
+      spEffectiveFrom : [,[Validators.required]],
+      spstatus : ['Active']
+    })
+  }
+
+  openSalespersonModal(content:TemplateRef<any>,data ?:any){
+    this.initSalesPersonForm();
+    this.getAllSpCustomerBranch();
+    this.loadAllSpfields();
+    if(data){
+      this.isSalespersonEdit = true;
+      this.salespersonForm.patchValue({
+        ...data,
+        spEffectiveFrom:new Date(data.EffectiveFrom),
+        spstatus : data.status === 'A' ? 'Active' : 'Suspended'
+      })
+      if(data.CustomerSalesSid){
+        this.CustomerSalesSid = data.CustomerSalesSid
+      }
+    }
+    this.modalRef10 = this.modalService.open(content,{size : 'lg',centered:true});
+  }
+
+  getAllSpCustomerBranch(): void {
+    this.masterService.getAllCustomerBranches().subscribe((resp: any[]) => {
+      
+      this.spBranchList = resp.filter(
+        (item) => item.CustomerMasterSid === this.CustomerMasterSid
+      );
+    });
+  }
+  
+  loadAllSpfields(){
+    forkJoin({
+      departments : this.masterService.getAllDepartments(),
+      salesman : this.masterService.getAllSalesperson(),
+    }).subscribe(({departments,salesman})=>{
+      this.spDepartmentList = departments;
+      this.salesPersonList = salesman.data;
+    })
+  }
+
+  onSpSubmit(){
+    if(this.salespersonForm.invalid){
+      this.salespersonForm.markAllAsTouched();
+      this.salespersonForm.updateValueAndValidity();
+      this.appSettingService.showWarning('Please fill all the required fields')
+      return;
+    }
+    let createdBy = this.appSettingService.userSettingSource.value['userEmail'];
+    let updatedBy = this.appSettingService.userSettingSource.value['userEmail']
+    const formValue = this.salespersonForm.value;
+
+    const payload = {
+      Salesman : formValue.Salesman,
+      DepartmentMasterSid : formValue.DepartmentMasterSid,
+      CustomerBranchSid : formValue.CustomerBranchSid,
+      EffectiveFrom : formValue.spEffectiveFrom,
+      status : formValue.spstatus === 'Active' ? 'A' : 'S',
+      ...(this.isSalespersonEdit ?{updatedBy : updatedBy} : {createdBy : createdBy} )
+    }
+
+    if (this.isSalespersonEdit && this.CustomerSalesSid) {
+      this.masterService
+        .updateSalesteamById(this.CustomerSalesSid, payload)
+        .subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.appSettingService.showSuccess('Salesteam successfully updated');
+              this.salespersonForm.reset();
+              this.modalRef10.close();
+              this.loadCustomerSalesperson();
+            } else {
+              this.appSettingService.showError('Error Updating Salesteam');
+            }
+          },
+          (error) => {
+            console.error('Error Updating Salesteam:', error);
+          }
+        );
+    } else {
+      this.masterService.createNewSalesteam(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess("New Salesteam successfully created");
+            this.salespersonForm.reset();
+            this.modalRef10.close();
+            this.loadCustomerSalesperson();
+          } else {
+            this.appSettingService.showError('Error Creating Salesteam');
+          }
+        },
+        (error) => {
+          console.error('Error Creating Salesteam:', error);
+        }
+      );
+    }
+  }
+
+  loadCustomerSalesperson(){
+    this.masterService.getAllSalesteam().subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          this.salesTeamList = resp.data;
+        } else {
+          this.appSettingService.showError('Error loading Customer Salesman')
+        }
+      }
+    )
+    this.masterService.getAllSalesperson().subscribe(
+      (resp : any)=>{
+        if(resp.status){
+          this.salesPersonList = resp.data;
+        } else { 
+          this.appSettingService.showError('Error loading All Salesperson')
+        }
+      }
+    )
+  }
+
+  findSalesmanName(id : number){
+    const user = this.salesPersonList.find(person => person.UserMasterSid === id );
+    return user.userName;
+  }
+
+  deleteSalesman(CustomerSalesSid : number){
+    this.masterService.deleteSalesteamById(CustomerSalesSid).subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          this.appSettingService.showSuccess('Salesman Deleted Successfully')
+          this.loadCustomerSalesperson();
+        } else {
+          this.appSettingService.showError('Error Deleting Salesman');
+        }
+      },
+      (error)=>{
+        console.error('Error Deleting Salesman',error);
+      }
+    )
+  }
+
+  formatDepartment(depart : any[]){
+    
+    return depart.join(" , ")
+  }
+
+  
 }
