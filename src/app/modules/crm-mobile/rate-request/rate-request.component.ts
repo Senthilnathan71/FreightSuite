@@ -19,6 +19,9 @@ import { DatePipe } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 
 @Component({
   selector: 'app-rate-request',
@@ -29,10 +32,14 @@ import { NgSelectModule } from '@ng-select/ng-select';
     ReactiveFormsModule,
     FormsModule,
     NgSelectModule,
+    NgbDatepickerModule
   ],
   templateUrl: './rate-request.component.html',
   styleUrl: './rate-request.component.scss',
-  providers: [DatePipe], // Add DatePipe here
+    providers: [
+      { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+      { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    ],
 })
 export class RateRequestComponent implements OnInit {
   selectedDepartment: any;
@@ -58,6 +65,9 @@ export class RateRequestComponent implements OnInit {
   filteredPorts = [];
   searchText = '';
   selectedPort: any;
+  quotationEnquiryNumber: any;
+	today = this.calendar.getToday();
+	todayDate = new Date(this.today.year,this.today.month,this.today.day);
 
   constructor(
     private appService: AppService,
@@ -67,9 +77,9 @@ export class RateRequestComponent implements OnInit {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private fb: FormBuilder,
-    private datePipe: DatePipe,
     private modalService: ModalService,
-    private toaster: ToastrService
+    private toaster: ToastrService,
+    private calendar: NgbCalendar
   ) {}
 
   ngOnInit(): void {
@@ -257,7 +267,11 @@ export class RateRequestComponent implements OnInit {
     this.selectedDepartment = selectedDept?.departmentName;
     this.selectedFCLLCL = selectedDept ? selectedDept.FCLLCL : 'LCL';
 
-    this.routes.controls.forEach((routeGroup: FormGroup) => {
+    this.routes.controls.forEach((routeGroup: FormGroup) => {  
+      routeGroup.get('POO')?.setValue('');
+      routeGroup.get('POL')?.setValue('');
+      routeGroup.get('POD')?.setValue('');
+      routeGroup.get('FDC')?.setValue('');
       const cargoArray = routeGroup.get('cargo') as FormArray; // Explicitly cast as FormArray
 
       cargoArray.controls.forEach((cargoControl, cargoIndex: number) => {
@@ -304,8 +318,8 @@ export class RateRequestComponent implements OnInit {
   }
 
   loadCustomers(): void {
-    this.leadService.getAllLeads().subscribe((resp: any) => {
-      this.customers = resp.data;
+    this.leadService.getAllCustomers().subscribe((resp: any) => {
+      this.customers = resp;
     });
   }
 
@@ -369,15 +383,13 @@ onFilter(search: string) {
     this.selectedDepartment = response.ShipmentType;
     this.selectedFCLLCL = response.ShipmentType.includes('FCL') ? 'FCL' : 'LCL';
     // Patch header fields
-
+    this.quotationEnquiryNumber = response.EnquiryNumber;
     this.quotationCustomerId = response.CustomerMasterSid;
     this.quotationDepartmentId = response.DepartmentMasterSid;
 
     this.rateRequestForm.patchValue({
       customerName: response.CustomerMasterSid,
-      shipmentDate:
-        this.datePipe.transform(response.ShipmentExpectedDate, 'yyyy-MM-dd') ||
-        '',
+      shipmentDate:new Date(response.ShipmentExpectedDate),
       Segment: response.DepartmentMasterSid,
       status: response.status === 'A' ? 'Active' : 'Suspend',
     });
@@ -510,6 +522,8 @@ onFilter(search: string) {
     this.leadService.setQuotationData({
       customerId: this.quotationCustomerId,
       departmentId: this.quotationDepartmentId,
+      EnquirySid : this.EnquiryHeaderSid,
+      EnquiryNumber : this.quotationEnquiryNumber,
       polList: polList, // Sending as an array
       podList: podList, // Sending as an array
       cargoTypeList: cargoTypeList,
@@ -519,4 +533,35 @@ onFilter(search: string) {
 
     this.router.navigate(['crm/quotation/view']);
   }
+
+  getFilteredPOLPorts(routeIndex: number): any[] {
+    if(!this.ports){
+      return [];
+    }
+    const currentPOD = this.routes.at(routeIndex).get('POD')?.value;
+    this.filterPortBySegment();
+    return this.filteredPorts.filter(port => port.PortMasterSid != currentPOD);
+  }
+
+  getFilteredPODPorts(routeIndex: number): any[] {
+    if(!this.ports){
+      return [];
+    }
+    const currentPOL = this.routes.at(routeIndex).get('POL')?.value;
+    this.filterPortBySegment();
+    return this.filteredPorts.filter(port => port.PortMasterSid != currentPOL);
+  }
+
+  filterPortBySegment(){
+    if(!this.ports){
+      return;
+    }
+    if(this.selectedFCLLCL==='AIR'){
+      this.filteredPorts = this.ports.filter(port => port.PortType === 'Air')
+    } else if(this.selectedFCLLCL === 'FCL' || this.selectedFCLLCL === 'LCL'){
+      this.filteredPorts = this.ports.filter(port => port.PortType === 'Sea')
+    }
+  }
+
+
 }
