@@ -7,6 +7,7 @@ import { AppService } from 'src/app/service/app.service';
 import { FormsModule } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { DateFormatPipe } from 'src/app/core/pipes/date-format.pipe';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 
 @Component({
   selector: 'app-quotation-view',
@@ -17,7 +18,7 @@ import { DateFormatPipe } from 'src/app/core/pipes/date-format.pipe';
     NgbPaginationModule,
     FormsModule,
     NgbNavModule,
-    DateFormatPipe
+    CustomDatePipe
   ],
   templateUrl: './quotation-view.component.html',
   styleUrl: './quotation-view.component.scss'
@@ -30,6 +31,9 @@ export class QuotationViewComponent {
   page = 1;
   pageSize = 5;
   totalLengthOfCollection: number;
+  page1 = 1;
+  pageSize1 = 5;
+  totalLengthOfCollection1: number;
   searchText: string = '';
   quoteItems: any[] = [];
   isMobile: boolean = false;
@@ -98,7 +102,7 @@ export class QuotationViewComponent {
         this.enquiryData = resp['data'];  // On success, store the leads data in the component
 
         this.enquiryItems = [...this.enquiryData]
-        this.totalLengthOfCollection = this.enquiryData.length || 0;
+        this.totalLengthOfCollection1 = this.enquiryData.length || 0;
         this.updateEnquiryPaginatedData();  // Update paginated data
         this.mapPortsToEnquiries();
 
@@ -138,8 +142,8 @@ export class QuotationViewComponent {
   }
 
   updateEnquiryPaginatedData(): void {
-    const startIndex = (this.page - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
+    const startIndex = (this.page1 - 1) * this.pageSize1;
+    const endIndex = startIndex + this.pageSize1;
     this.enquiryItems = this.enquiryData.slice(startIndex, endIndex);
     this.mapPortsToEnquiries()
   }
@@ -195,5 +199,11 @@ export class QuotationViewComponent {
 
     this.route.navigate(['crm/quotation/view']);
   }
+
+    findEnquiryName(EnquiryId : number){
+      if(!EnquiryId) return;
+      return (this.enquiryData.find(data => data.EnquiryHeaderSid === EnquiryId )).EnquiryNumber;
+    }
+  
 
 }

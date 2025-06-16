@@ -1,0 +1,47 @@
+<div class="multiselect-dropdown">
+  <ng-select 
+    [items]="items"
+    [formControl]="internalControl"
+    [multiple]="true"
+    [clearable]="true"
+    [placeholder]="placeholder"
+    [bindLabel]="bindLabel"
+    [bindValue]="bindValue"
+    [loading]="isLoading"
+    (change)="onSelectionChange($event)"
+  >
+    <!-- Label Template -->
+    <ng-template ng-label-tmp let-item="item">
+      {{ getLabel(item) }}
+    </ng-template>
+
+    <!-- Header Template -->
+    <ng-template ng-header-tmp>
+      <div class="dropdown-header">
+        <div 
+          *ngFor="let label of displayLabels; let i = index"
+          [ngStyle]="getColumnStyle(i)"
+        >
+          {{ label }}
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Option Template -->
+    <ng-template ng-option-tmp let-item="item">
+      <div class="dropdown-row">
+        <div 
+          *ngFor="let field of displayFields; let i = index"
+          [ngStyle]="getColumnStyle(i)"
+        >
+          {{ item[field] }}
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Loading Template -->
+    <ng-template ng-loading-tmp>
+      <div class="loading-spinner">Loading...</div>
+    </ng-template>
+  </ng-select>
+</div>

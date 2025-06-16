@@ -14,6 +14,31 @@
                         </div>
                         <div class="col-md-4">
                             <div class="mb-2">
+                                <label for="shipmentDateExpected" class="form-label">Quote Date
+                                </label>
+                                <div class="input-group">
+                                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
+                                        (click)="d1.toggle()" formControlName="quoteDate" readonly 
+                                        [footerTemplate]="footerTemplateQuo" [minDate]="minQuoteDate"/>
+                                    <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()" type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                                </div>
+                                <small *ngIf="f['quoteDate'].touched && f['quoteDate'].invalid" class="text-danger">
+                                    Quote Date is required.
+                                </small>
+                            </div>
+                        </div>
+                        <ng-template #footerTemplateQuo>
+                            <hr class="my-0" />
+                            <button class="btn btn-info btn-sm m-2 float-start"
+                                (click)="f['quoteDate'].setValue(todayDate); d1.close()">
+                                Today
+                            </button>
+                            <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">
+                                Close
+                            </button>
+                        </ng-template>
+                        <!-- <div class="col-md-4">
+                            <div class="mb-2">
                                 <label for="quoteDate" class="form-label">Quote Date :
                                 </label>
                                 <input type="date" id="quoteDate" formControlName="quoteDate" class="form-control" />
@@ -21,11 +46,11 @@
                                     Quote Date is required.
                                 </small>
                             </div>
-                        </div>
+                        </div> -->
                          <aside class="col-md-4">
                            <div class="mb-2">
                                 <label for="" class="form-label">Enquiry No : </label>
-                                <input type="text" class="form-control" id="" formControlName="">
+                                <input type="text" class="form-control" id="" [value]="rateEnquiryNumber" disabled>
                             </div>
                         </aside>
 
@@ -34,7 +59,7 @@
                                 <label class="form-label">Customer</label>
                                 <select formControlName="customerName" (change)="onCustomerChange($event)"
                                     class="form-select">
-                                    <option value="">Select</option>
+                                    <option value="" disabled>Select Customer</option>
                                     <option *ngFor="let item of customers" [value]="item.CustomerMasterSid">
                                         {{ item.CustomerName }}
                                     </option>
@@ -120,7 +145,7 @@
                                         <label for="Segment" class="form-label">Dept Name</label>
                                         <select formControlName="Segment" class="form-select"
                                             (change)="onSegmentChange($event,routeIndex)">
-                                            <option value="">Select</option>
+                                            <option value="" disabled>Select Department</option>
                                             <option *ngFor="let item of departments" [value]="item.DepartmentMasterSid">
                                                 {{ item.departmentName }}
                                             </option>
@@ -136,7 +161,7 @@
                                         <label for="CarrierMasterSid" class="form-label">Carrier: </label>
                                         <select formControlName="CarrierMasterSid" class="form-select"
                                             (change)="onCarrierChange($event,routeIndex)">
-                                            <option value="">Select</option>
+                                            <option value="" disabled>Select Carrier</option>
                                             <option *ngFor="let item of carriers" [value]="item.CustomerMasterSid">
                                                 {{ item.CustomerName }}
                                             </option>
@@ -148,7 +173,7 @@
                                     <div class="mb-1">
                                         <label for="cargoType" class="form-label">Cargo Type </label>
                                         <select formControlName="cargoType" class="form-select">
-                                            <option value="">Select</option>
+                                            <option value="" disabled>Select Cargo Type</option>
                                             <option *ngFor="let item of packageTypes" [value]="item.PackageName">
                                                 {{ item.PackageName }}
                                             </option>
@@ -160,8 +185,8 @@
                                     <div class="mb-1">
                                         <label class="form-label">POR</label>
                                         <select formControlName="POR" class="form-select">
-                                            <option value="">Select</option>
-                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                            <option value="" disabled>Select POR</option>
+                                            <option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
                                                 {{ item.PortCode }}
                                             </option>
                                         </select>
@@ -171,8 +196,8 @@
                                     <div class="mb-1">
                                         <label class="form-label">POL <span class="text-danger">*</span></label>
                                         <select formControlName="POL" class="form-select">
-                                            <option value="">Select</option>
-                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                            <option value="" disabled>Select POL</option>
+                                            <option *ngFor="let item of getFilteredPOLPorts(routeIndex)" [value]="item.PortMasterSid">
                                                 {{ item.PortCode }}
                                             </option>
                                         </select>
@@ -183,8 +208,8 @@
                                     <div class="mb-1">
                                         <label class="form-label">POD <span class="text-danger">*</span></label>
                                         <select formControlName="POD" class="form-select">
-                                            <option value="">Select</option>
-                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                            <option value="" disabled>Select POD</option>
+                                            <option *ngFor="let item of getFilteredPODPorts(routeIndex)" [value]="item.PortMasterSid">
                                                 {{ item.PortCode }}
                                             </option>
                                         </select>
@@ -194,14 +219,14 @@
                                     <div class="mb-1">
                                         <label class="form-label">FPOD</label>
                                         <select formControlName="FPOD" class="form-select">
-                                            <option value="">Select</option>
-                                            <option *ngFor="let item of ports" [value]="item.PortMasterSid">
+                                            <option value="" disabled>Select FPOD</option>
+                                            <option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
                                                 {{ item.PortCode }}
                                             </option>
                                         </select>
                                     </div>
                                 </div>
-                                     <aside class="col-md-3">
+                                     <!-- <aside class="col-md-3">
                            <div class="mb-2">
                                 <label for="" class="form-label">Sell Rate </label>
                                 <input type="text" class="form-control" id="" formControlName="">
@@ -212,23 +237,73 @@
                                 <label for="" class="form-label">Buy Rate </label>
                                 <input type="text" class="form-control" id="" formControlName="">
                             </div>
-                        </aside>
-                                <div class="col-6 col-md-3">
+                        </aside> -->
+                        <div class="col-6 col-md-3">
+                            <div class="mb-2">
+                                <label for="effectiveDate" class="form-label">Eff. Date:
+                                </label>
+                                <div class="input-group">
+                                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                                        (click)="d2.toggle()" formControlName="effDate" readonly 
+                                        [footerTemplate]="footerTemplateEff" [maxDate]="toNgbDateStruct(routes.controls.at(routeIndex).get('expDate').value)"/>
+                                    <button class="btn btn-info text-white" (click)="d2.toggle()" type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                                </div>
+                                <small *ngIf="routes.controls.at(routeIndex).get('effDate').touched && routes.controls.at(routeIndex).get('effDate').invalid" class="text-danger">
+                                    Effective Date is required.
+                                </small>
+                            </div>
+                        </div>
+                        <ng-template #footerTemplateEff>
+                            <hr class="my-0" />
+                            <button class="btn btn-info btn-sm m-2 float-start"
+                                (click)="routes.controls.at(routeIndex).get('effDate').setValue(todayDate); d2.close()">
+                                Today
+                            </button>
+                            <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d2.close()">
+                                Close
+                            </button>
+                        </ng-template>
+                                <!-- <div class="col-6 col-md-3">
                                     <div class="mb-1">
                                         <label for="effDate" class="form-label">Eff. Date:
                                         </label>
                                         <input type="date" id="effDate" formControlName="effDate" class="form-control"
                                             [min]="minExpDate" />
                                     </div>
+                                </div> -->
+                        <div class="col-6 col-md-3">
+                            <div class="mb-2">
+                                <label for="expiredDate" class="form-label">Exp. Date:
+                                </label>
+                                <div class="input-group">
+                                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d3="ngbDatepicker"
+                                        (click)="d3.toggle()" formControlName="expDate" readonly 
+                                        [footerTemplate]="footerTemplateExp" [minDate]="toNgbDateStruct(routes.controls.at(routeIndex).get('effDate').value)" />
+                                    <button class="btn btn-info text-white" (click)="d3.toggle()" type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                                 </div>
-                                <div class="col-6 col-md-3">
+                                <small *ngIf="routes.controls.at(routeIndex).get('expDate').touched && routes.controls.at(routeIndex).get('expDate').invalid" class="text-danger">
+                                    Expired Date is required.
+                                </small>
+                            </div>
+                        </div>
+                        <ng-template #footerTemplateExp>
+                            <hr class="my-0" />
+                            <button class="btn btn-info btn-sm m-2 float-start"
+                                (click)="routes.controls.at(routeIndex).get('expDate').setValue(todayDate); d3.close()">
+                                Today
+                            </button>
+                            <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d3.close()">
+                                Close
+                            </button>
+                        </ng-template>
+                                <!-- <div class="col-6 col-md-3">
                                     <div class="mb-1">
                                         <label for="expDate" class="form-label">Exp. Date:
                                         </label>
                                         <input type="date" id="expDate" formControlName="expDate" class="form-control"
                                             [min]="minExpDate" />
                                     </div>
-                                </div>
+                                </div> -->
                                 @if(routes.controls[routeIndex].get('segmentType')?.value === 'FCL'){
                                 <div class="col-6 col-md-3">
                                     <div class="mb-1">
@@ -271,7 +346,7 @@
                                     <div class="mb-2">
                                         <label for="routeStatus" class="form-label">Status</label>
                                         <select formControlName="routeStatus" class="form-select">
-                                            <option value="">Status</option>
+                                            <option value="" disabled>Select Status</option>
                                             <option *ngFor="let option of statusList" [value]="option">{{
                                                 option }}
                                             </option>
@@ -296,46 +371,44 @@
                                             <table class="table table-hover align-middle no-wrap table-bordered">
                                                 <thead>
                                                     <tr class="bg-info">
-                                                        <td class="bg-transparent text-light"
+                                                        <td class="bg-transparent text-light" rowspan="2"
                                                             [ngClass]="{ 'dofi-min-w-120 dofi-max-w-120': isMobile, '': !isMobile }">
-                                                            <label for="" class="form-label mb-0">Charge<span
-                                                                    class="text-danger">*</span></label>
+                                                            <label for="" class="form-label mb-0">Charge<span class="text-danger">*</span></label>
                                                         </td>
-                                                        <td class="bg-transparent text-light"
+                                                        <td class="bg-transparent text-light text-center" colspan="3"
                                                             [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                            <label for="" class="form-label mb-0">Unit <span
-                                                                    class="text-danger">*</span></label>
+                                                            <label class="form-label mb-0">Sales</label>
                                                         </td>
-                                                        <td class="bg-transparent text-light"
+                                                        <td class="bg-transparent text-light text-center" colspan="3"
                                                             [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                            <label for="" class="form-label mb-0">Currency
-                                                                <span class="text-danger">*</span></label>
+                                                            <label class="form-label mb-0">Cost</label>
                                                         </td>
-                                                        <td class="bg-transparent text-light"
-                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                            <label for="" class="form-label mb-0">Per Unit
-                                                                <span class="text-danger">*</span></label>
-                                                        </td>
-                                                        <td class="bg-transparent text-light"
-                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                            <label for="" class="form-label mb-0">Cost Curr
-                                                                <span class="text-danger">*</span></label>
-                                                        </td>
-
-                                                        <td class="bg-transparent text-light"
-                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                            <label for="" class="form-label mb-0">Cost Unit
-                                                                <span class="text-danger">*</span></label>
-                                                        </td>
-                                                        <td class="bg-transparent text-light"
-                                                            [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                            <label for="" class="form-label mb-0">Cost Per
-                                                                Unit
-                                                                <span class="text-danger">*</span></label>
-                                                        </td>
-                                                        <td class="bg-transparent text-light"
+                                                        
+                                                        @if(routeCargo(routeIndex).controls.length > 1) {
+                                                        <td class="bg-transparent text-light" rowspan="2"
                                                             [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
                                                             <label for="" class="form-label mb-0">Action</label>
+                                                        </td>
+                                                        }
+                                                    </tr>
+                                                    <tr class="bg-info">
+                                                        <td class="bg-transparent text-light" [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Unit <span class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light" [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Currency <span class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light" [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Per Unit <span class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light" [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Cost Unit <span class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light" [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Cost Curr <span class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light" [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Cost Per Unit <span class="text-danger">*</span></label>
                                                         </td>
                                                     </tr>
                                                 </thead>
@@ -344,59 +417,62 @@
                                                         [formGroupName]="cargoIndex">
                                                         <td>
                                                             <select formControlName="charge" class="form-select">
-                                                                <option value="">Select</option>
-                                                                <option *ngFor="let item of chargeMaster"
-                                                                    [value]="item.chargeName">
+                                                                <option value="" disabled>Select Charge</option>
+                                                                <option *ngFor="let item of chargeMaster" [value]="item.chargeName">
                                                                     {{ item.chargeCode }}
                                                                 </option>
                                                             </select>
                                                         </td>
                                                         <td>
                                                             <select formControlName="unit" class="form-select">
-                                                                <option value="">Select</option>
-                                                                <option *ngFor="let item of unitMaster"
-                                                                    [value]="item.UnitMasterSid">
+                                                                <option value="" disabled>Select Unit</option>
+                                                                <option *ngFor="let item of unitMaster" [value]="item.UnitMasterSid">
                                                                     {{ item.unitCode }}
                                                                 </option>
                                                             </select>
                                                         </td>
                                                         <td>
                                                             <select formControlName="currency" class="form-select">
-                                                                <option value="">Select</option>
-                                                                <option *ngFor="let item of currencyMaster"
-                                                                    [value]="item.CurrencyMasterSid">
+                                                                <option value="" disabled>Select Currency</option>
+                                                                <option *ngFor="let item of currencyMaster" [value]="item.CurrencyMasterSid">
                                                                     {{ item.currencyCode }}
                                                                 </option>
                                                             </select>
                                                         </td>
                                                         <td>
-                                                            <input type="number" min="0" formControlName="perUnit"
-                                                                class="form-control">
+                                                            <input type="number" min="0" formControlName="perUnit" class="form-control">
                                                         </td>
                                                         <td>
-                                                            <input type="text" formControlName="costUnit"
-                                                                class="form-control">
+                                                            <select formControlName="costUnit" class="form-select">
+                                                                <option value="" disabled>Select Unit</option>
+                                                                <option *ngFor="let item of unitMaster" [value]="item.UnitMasterSid">
+                                                                    {{ item.unitCode }}
+                                                                </option>
+                                                            </select>
+                                                            <!-- <input type="text" formControlName="costUnit" class="form-control"> -->
                                                         </td>
                                                         <td>
-                                                            <input type="text" formControlName="costCurrency"
-                                                                class="form-control">
+                                                            <select formControlName="currency" class="form-select">
+                                                                <option value="" disabled>Select Currency</option>
+                                                                <option *ngFor="let item of currencyMaster" [value]="item.CurrencyMasterSid">
+                                                                    {{ item.currencyCode }}
+                                                                </option>
+                                                            </select>
+                                                            <!-- <input type="text" formControlName="costCurrency" class="form-control"> -->
                                                         </td>
                                                         <td>
-                                                            <input type="number" min="0" formControlName="costPerUnit"
-                                                                class="form-control">
+                                                            <input type="number" min="0" formControlName="costPerUnit" class="form-control">
                                                         </td>
+                                                        @if(routeCargo(routeIndex).controls.length > 1) {
                                                         <td data-label="Action">
                                                             <section class="action-items">
-                                                                @if( routeCargo(routeIndex).controls.length
-                                                                > 1){
                                                                 <a class="text-info mx-2"
-                                                                    (click)="deleteCargo(routeIndex,cargoIndex,cargo.value.QuoteChargeSid)">
-                                                                    <i-feather name="trash-2"
-                                                                        class="feather-sm"></i-feather>
+                                                                    (click)="deleteCargo(routeIndex, cargoIndex, cargo.value.QuoteChargeSid)">
+                                                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
                                                                 </a>
-                                                                }
                                                             </section>
                                                         </td>
+                                                        }
                                                     </tr>
                                                 </tbody>
                                             </table>

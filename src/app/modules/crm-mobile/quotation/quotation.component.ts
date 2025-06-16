@@ -2,7 +2,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbDropdownModule, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AppService } from 'src/app/service/app.service';
 import { LeadService } from '../Services/lead.service';
@@ -10,6 +10,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { catchError, forkJoin, of } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 
 
 @Component({
@@ -21,11 +23,15 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
     NgbDropdownModule,
     ReactiveFormsModule,
     FeatherModule,
-    NgbPaginationModule
+    NgbPaginationModule,
+    NgbDatepickerModule
   ],
   templateUrl: './quotation.component.html',
   styleUrl: './quotation.component.scss',
-  providers: [DatePipe]
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+  ],
 })
 export class QuotationComponent implements OnInit {
   active = 1;
@@ -45,6 +51,7 @@ export class QuotationComponent implements OnInit {
   carriers: any
   packageTypes: any
   ports: any
+  filteredPorts : any[]
   departments: any
   enquiryForm: FormGroup;
   errorMessage: string = '';  // To store any error messages
@@ -64,7 +71,12 @@ export class QuotationComponent implements OnInit {
   rateRequestPOLSid: number;
   rateRequestPODSid: number;
   rateRequestCargoTypes: any;
-  rateRequestActive: number
+  rateRequestActive: number;
+  rateEnquirySid : number;
+  rateEnquiryNumber = "";
+	today = this.calendar.getToday();
+	todayDate = new Date(this.today.year,this.today.month,this.today.day);
+  minQuoteDate :any;
   constructor(
     private appService: AppService,
     private appSettingsService: AppSettingsService,
@@ -75,7 +87,7 @@ export class QuotationComponent implements OnInit {
     private fb: FormBuilder,
     private toaster: ToastrService,
     private modalService: ModalService,
-    private datePipe: DatePipe) { }
+    private calendar:NgbCalendar) { }
 
   ngOnInit(): void {
     const quotationData = this.leadService.getQuotationData();
@@ -86,10 +98,13 @@ export class QuotationComponent implements OnInit {
       this.rateRequestPOLSid = quotationData.polList;
       this.rateRequestPODSid = quotationData.podList
       this.rateRequestCargoTypes = quotationData.cargoTypeList || []; // Store cargo types
-      this.active = quotationData.active
+      this.rateEnquirySid = quotationData.EnquirySid;
+      this.rateEnquiryNumber = quotationData.EnquiryNumber || '';
+      this.active = quotationData.active;
     }
 
     console.log(quotationData, 'quotationData')
+    console.log(this.rateEnquirySid,'EnquirySid');
     this.setMinDate();
     this.initializeForm();
     this.isMobile = this.appService.getDevice();
@@ -114,7 +129,10 @@ export class QuotationComponent implements OnInit {
         this.QuoteHeaderSid = +params.get('id');
         if (this.QuoteHeaderSid) {
           this.isEditMode = true;
+          this.minQuoteDate = undefined;
           this.loadEnquiry(this.QuoteHeaderSid);
+        } else{
+          this.minQuoteDate = this.today;
         }
       });
       // Now patch the form after data is available
@@ -135,6 +153,7 @@ export class QuotationComponent implements OnInit {
     // Find customer name by ID
     const selectedCustomer = this.customers.find(cust => cust.CustomerMasterSid === this.rateRequestCustomerMasterSid);
     this.selectedCustomerName = selectedCustomer?.CustomerName || '';
+    this.selectCustomerAddress = selectedCustomer.CustomerAddress1 || '';
 
     // Find department name by ID
     const selectedDepartment = this.departments.find(dep => dep.DepartmentMasterSid === this.rateRequestDepartmentMasterSid);
@@ -183,9 +202,9 @@ export class QuotationComponent implements OnInit {
     this.quotationForm.patchValue({
       customerName: selectedCustomer?.CustomerMasterSid || '',
       CustomerMasterSid: selectedCustomer?.CustomerMasterSid || '',
+      EnquirySid : this.rateEnquirySid
     });
-
-    console.log('quotationDefaultValues');
+    this.quotationForm.get('customerName').setValue(selectedCustomer?.CustomerMasterSid);
   }
 
 
@@ -199,8 +218,9 @@ export class QuotationComponent implements OnInit {
     this.quotationForm = this.fb.group({
       // Header Data
       customerName: ['', Validators.required],
-      quoteDate: [today, Validators.required],
+      quoteDate: [, Validators.required],
       quoteNo: [''],
+      EnquirySid : [],
       status: [''], // Default
       // DepartmentMasterSid: [this.rateRequestDepartmentMasterSid ||''],
       CustomerMasterSid: [''],
@@ -242,7 +262,7 @@ export class QuotationComponent implements OnInit {
       routeStatus: [''],
       cargo: this.fb.array([]),
     },
-      { validator: [this.validatePOLPOD, this.validateEffExpDates] } // Attach the custom validator
+      // { validator: [this.validatePOLPOD, this.validateEffExpDates] } // Attach the custom validator
     );
     // Subscribe to POD changes and update FDC automatically
     routeForm.get('POD')?.valueChanges.subscribe(selectedPOD => {
@@ -361,11 +381,15 @@ export class QuotationComponent implements OnInit {
       this.selectedDepartment = selectedDept;
       this.selectedFCLLCL = selectedDept.departmentName.includes('FCL') ? 'FCL' : 'LCL';
     }
+    this.getEnquiryName(response.EnquirySid);
+    console.log('Enquiry Number',this.rateEnquiryNumber)
     // Patch header fields
     this.quotationForm.patchValue({
       customerName: selectCustomer.CustomerMasterSid,
+      CustomerAddress: selectCustomer.CustomerAddress1,
+      EnquirySid : response.EnquirySid,
       quoteNo: response.QuoteNumber,
-      quoteDate: this.datePipe.transform(response.QuoteDate, 'yyyy-MM-dd') || '',
+      quoteDate: new Date(response.QuoteDate),
       Segment: response.DepartmentMasterSid,
       status: response.status === "A" ? "Active" : "Suspend"
     });
@@ -385,8 +409,8 @@ export class QuotationComponent implements OnInit {
         Segment: [route.DepartmentMasterSid, Validators.required],
         segmentType: [route.segmentType, Validators.required],
         CarrierMasterSid: [route.CarrierMasterSid, Validators.required],
-        effDate: [this.datePipe.transform(route.effDate, 'yyyy-MM-dd') || ''],
-        expDate: [this.datePipe.transform(route.expdate, 'yyyy-MM-dd') || ''],
+        effDate: [new Date(route.effDate)],
+        expDate: [new Date(route.expdate)],
         cargoType: [route.cargoType, Validators.required],
         transit: [route.TransitDays, Validators.required],
         fortyft: [route.fortyft],
@@ -428,6 +452,13 @@ export class QuotationComponent implements OnInit {
     // Get the specific route form group
     const routeForm = this.routes.at(routeIndex) as FormGroup;
     routeForm.get('DepartmentMasterSid')?.setValue(selectedDepartmentId);
+
+    // Once it is initialized and then made a segment change. The Value of previously selected segment will be still there.
+    // So remove it
+    routeForm.get('POR').reset();
+    routeForm.get('POL').reset();
+    routeForm.get('POD').reset();
+    routeForm.get('FPOD').reset();
 
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === selectedDepartmentId);
     const selectedFCLLCL = selectedDept ? selectedDept.FCLLCL : 'LCL';
@@ -551,7 +582,7 @@ export class QuotationComponent implements OnInit {
         Segment: this.selectedDepartment, // Ensure the segment name is included
         CustomerAddress: this.selectCustomerAddress
       }
-      console.log(createPayload)
+      console.log(createPayload,'createPayload')
       this.leadService.createQuotation(createPayload).subscribe(
         resp => {
           if (resp.status) {
@@ -620,6 +651,58 @@ export class QuotationComponent implements OnInit {
       this.quotationForm.updateValueAndValidity();
       this.cdr.detectChanges();
     }
+  }
+
+ 
+  getEnquiryName(EnquirySid:number){
+    if(!EnquirySid) return;
+    this.leadService.getAllEnquiries().subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          let enquiryData = resp.data;
+          this.rateEnquiryNumber =  enquiryData.find(data => data.EnquiryHeaderSid === EnquirySid).EnquiryNumber;
+        } else {
+          this.appSettingsService.showError('Error Loading Enquiry Data');
+        }
+      }
+    )
+
+  }
+
+  getFilteredPOLPorts(routeIndex: number): any[] {
+    if(!this.ports){
+      return null;
+    }
+    const currentPOD = this.routes.at(routeIndex).get('POD')?.value;
+    this.filterPortBySegment(routeIndex);
+    return this.filteredPorts.filter(port => port.PortMasterSid != currentPOD);
+  }
+
+  getFilteredPODPorts(routeIndex: number): any[] {
+    if(!this.ports){
+      return null;
+    }
+    const currentPOL = this.routes.at(routeIndex).get('POL')?.value;
+    this.filterPortBySegment(routeIndex);
+    return this.filteredPorts.filter(port => port.PortMasterSid != currentPOL);
+  }
+
+  filterPortBySegment(routeIndex){
+    const segmentType =this.routes.controls[routeIndex].get('segmentType')?.value
+    if(segmentType==='AIR'){
+      this.filteredPorts = this.ports.filter(port => port.PortType === 'Air')
+    } else if(segmentType === 'FCL' || segmentType === 'LCL'){
+      this.filteredPorts = this.ports.filter(port => port.PortType === 'Sea')
+    }
+  }
+
+  toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+    if (!date) return null;
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate()
+    };
   }
 
 }
