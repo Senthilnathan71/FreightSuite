@@ -433,7 +433,7 @@ export const MasterRoutes: Routes = [
         path: 'milestone/entry',
         component: MilestoneEntryComponent,
         data: {
-          title: 'Container Type',
+          title: 'Milestone',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Milestone' }],
         },
       },
