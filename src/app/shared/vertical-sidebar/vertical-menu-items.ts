@@ -421,6 +421,16 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
+      {
+        path: '/master/authority/list',
+        title: 'Authority',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
     ]
   },
 
@@ -600,6 +610,26 @@ export const ROUTES: RouteInfo[] = [
       {
         path: '/settings/rolemenu',
         title: 'Role Menu',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+       {
+        path: '/settings/edoc',
+        title: 'Edoc',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+       {
+        path: '/settings/email',
+        title: 'Email',
         icon: 'mdi mdi-stackexchange',
         class: '',
         extralink: false,
