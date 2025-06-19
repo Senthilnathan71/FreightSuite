@@ -438,6 +438,15 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: 'milestone/entry/:id',
+        component: MilestoneEntryComponent,
+        data: {
+          title: 'Milestone',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Milestone' }],
+        },
+      },
+
+      {
         path: 'organization/list',
         component: OrganizationListComponent,
         data: {

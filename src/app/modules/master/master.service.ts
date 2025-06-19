@@ -2149,5 +2149,59 @@ searchSalesteam(payload: any) {
     })
   );
 }
+// milestone-master
 
+getAllMilestones() {
+  return this.http.get<{ data: any[] }>('milestone').pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+searchMilestoneList(payload: any) {
+  return this.http.post<{ data: any[] }>('milestone/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+getMilestoneById(MilestoneMasterSid: number) {
+  return this.http.get<{ data: any }>(`milestone/fetch/${MilestoneMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+createMilestone(payload: any) {
+  return this.http.post<{ data: any }>('milestone/create', payload).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+updateMilestoneById(MilestoneMasterSid: number, payload: any) {
+  return this.http.patch<{ data: any }>(`milestone/update/${MilestoneMasterSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+deleteMilestoneById(MilestoneMasterSid: number) {
+  return this.http.delete<{ data: any }>(`milestone/delete/${MilestoneMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
 }
