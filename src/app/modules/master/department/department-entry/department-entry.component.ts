@@ -1,15 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interface';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-department-entry',
@@ -23,6 +25,7 @@ import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interfa
     OnlyNumbersDirective,
     OnlyTextDirective,
     TextWithNumbersDirective,
+    DatePipe
   ],
   templateUrl: './department-entry.component.html',
   styleUrl: './department-entry.component.scss'
@@ -34,6 +37,7 @@ export class DepartmentEntryComponent {
   btnDisable: boolean = false;
   DepartmentMasterSid: number;
   divisionList : Division[];
+  departmentData : any;
 
   countryList: any
   stateList: any
@@ -43,7 +47,8 @@ export class DepartmentEntryComponent {
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private modalService : NgbModal
   ) { }
 
   ngOnInit(): void {
@@ -159,6 +164,7 @@ export class DepartmentEntryComponent {
   loadDepartmentData(deptId: number) {
     this.masterService.getDepartmentById(deptId).subscribe(
       (deptData: any) => {
+        this.departmentData = deptData;
         this.departmentForm.patchValue({
           ...deptData,
           Status: deptData.Status === 'A' ? 'Active' : 'Suspended'
@@ -177,5 +183,13 @@ export class DepartmentEntryComponent {
   }
   goBack() {
     history.back()
+  }
+
+  showInfo() {
+    if(!this.departmentData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.departmentData;
+    modalRef.componentInstance.idLabel = 'Department Id';
+    modalRef.componentInstance.idValue = this.departmentData?.DepartmentMasterSid;
   }
 }

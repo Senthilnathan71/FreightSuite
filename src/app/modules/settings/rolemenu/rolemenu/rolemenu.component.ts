@@ -12,6 +12,7 @@ import { debounceTime, forkJoin } from 'rxjs';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { TogglerComponent } from 'src/app/component/simple-toggler/toggle.component';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-rolemenu',
@@ -47,6 +48,7 @@ export class RolemenuComponent implements OnInit {
     roleMenuList : any[];
 
     modalRef: NgbModalRef;
+	roleMenuData : any;
 
 	modeOfStatus = [
 		{value : 'A',name: "Active"},
@@ -244,9 +246,9 @@ export class RolemenuComponent implements OnInit {
 
     openModal(content: TemplateRef<any>,data ?:any) {
 		this.initRoleMenuForm();
-		console.log(data);
 		if(data){
 			this.isEditMode = true;
+			this.roleMenuData = data;
 			const ourModule = this.moduleList.find(module => module.ModuleName === data.Module);
 			this.filterMenuByModule(ourModule);
 			this.roleMenuForm.patchValue({
@@ -342,5 +344,13 @@ export class RolemenuComponent implements OnInit {
 		this.isEditMode = false;
 		this.modalRef.close()
 	}
+
+	showInfo() {
+    if(!this.roleMenuData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.roleMenuData;
+    modalRef.componentInstance.idLabel = 'Role Menu Id';
+    modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
+  }
 
 } 

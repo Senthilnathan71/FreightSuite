@@ -10,6 +10,7 @@ import { LeadService } from '../../Services/lead.service';
 import { forkJoin } from 'rxjs';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -40,6 +41,7 @@ export class MeetingUpdateListComponent implements OnInit {
   salesPersons: any;
   btnDisable: boolean = false;
   selectedMeeting: any;
+  meetingData : any;
 
   constructor(
     private router: Router,
@@ -112,7 +114,6 @@ export class MeetingUpdateListComponent implements OnInit {
               const salesPerson = this.salesPersons?.find(
                 (person: any) => person.UserMasterSid === meeting.leadAssignTo
               );
-
               return {
                 id: meeting.PreCustomerMeetingSid,
                 customerName: meeting.preCustomerMaster?.preCustomerName || 'N/A',
@@ -129,7 +130,11 @@ export class MeetingUpdateListComponent implements OnInit {
                 followUp: meeting.followUpDate || meeting.followUpNote,
                 followUpDate: meeting.followUpDate,
                 followUpNote: meeting.followUpNote,
-                meetingNote: meeting.meetingNote
+                meetingNote: meeting.meetingNote,
+                createdBy : meeting.createdBy,
+                createdOn : meeting.createdOn,
+                updatedBy : meeting.updatedBy,
+                updatedOn : meeting.updatedOn
               };
             });
 
@@ -176,7 +181,7 @@ export class MeetingUpdateListComponent implements OnInit {
   openModal(content: TemplateRef<any>, meeting: any) {
     this.initMeetingForm();
     if (meeting) {
-      console.log(meeting);
+      this.meetingData = meeting
       const ourSalesperson = this.salesPersons.find(person => person.UserMasterSid === meeting.leadAssignTo);
       this.meetingForm.patchValue({
         ...meeting,
@@ -309,5 +314,13 @@ export class MeetingUpdateListComponent implements OnInit {
     if (!isChecked) {
       this.meetingForm.patchValue({ followUpDate: null, followUpNote: '' });
     }
+  }
+
+  showInfo() {
+    if (!this.meetingData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.meetingData;
+    modalRef.componentInstance.idLabel = 'Meeting Id';
+    modalRef.componentInstance.idValue = this.meetingData?.id;
   }
 }

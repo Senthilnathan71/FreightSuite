@@ -109,13 +109,17 @@
             </div>
             <!-- #endregion -->
             <div class="col-12 mb-3 d-flex align-items-center justify-content-end">
+                <div class="ms-auto me-1" *ngIf="isEditMode">
+                    <button class="btn btn-outline-info btn-sm" (click)="showInfo()">
+                        <i class="fas fs-4 fa-info-circle"></i> Details</button>
+                </div>
                 @if (isMobile) {
                 <button class="btn btn-info btn-sm" (click)="addRoute()" type="button"><i-feather
                         class="feather-sm ms-2" name="plus"></i-feather> New
                     Route</button>
                 }
                 @if (!isMobile) {
-                <button class="btn btn-info btn-sm ms-auto" type="button" (click)="addRoute()"><i-feather
+                <button class="btn btn-info btn-sm" type="button" (click)="addRoute()"><i-feather
                         class="feather-sm ms-2" name="plus"></i-feather> Add
                     Route</button>
                 <!-- (click)="addNewRoute()" -->

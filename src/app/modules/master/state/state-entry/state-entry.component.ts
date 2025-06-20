@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { State } from 'src/app/modules/crm-mobile/Interfaces/state.interface';
@@ -9,6 +9,8 @@ import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-state-entry',
@@ -17,7 +19,8 @@ import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
     CommonModule,
     ReactiveFormsModule,
     FeatherModule,
-    NgSelectModule
+    NgSelectModule,
+    DatePipe
   ],
   templateUrl: './state-entry.component.html',
   styleUrls: ['./state-entry.component.scss']
@@ -28,7 +31,8 @@ export class StateEntryComponent implements OnInit {
   btnDisable = false;
   stateId: number;
   countries: Country[] = [];
-  zones: Zone[] = []; 
+  zones: Zone[] = [];
+  stateData: any;
   
   statusMap: { [key: string]: string } = {
     A: 'Active',
@@ -45,7 +49,8 @@ export class StateEntryComponent implements OnInit {
     private masterService: MasterService,
     private route: ActivatedRoute,
     private router: Router,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private modalService : NgbModal
   ) {
     this.initForm();
   }
@@ -164,6 +169,7 @@ export class StateEntryComponent implements OnInit {
     this.stateForm.reset();
     this.masterService.getStateById(id).subscribe({
       next: (state: State) => {
+        this.stateData = state
         this.stateForm.patchValue({
           stateName: state.stateName,
           stateCode: state.stateCode,
@@ -261,5 +267,13 @@ export class StateEntryComponent implements OnInit {
         this.markFormGroupTouched(control);
       }
     });
+  }
+
+  showInfo() {
+    if (!this.stateData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.stateData;
+    modalRef.componentInstance.idLabel = 'State Id';
+    modalRef.componentInstance.idValue = this.stateData?.StateMasterSid;
   }
 }

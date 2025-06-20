@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MasterService } from '../../master.service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -12,6 +12,7 @@ import { BLClause } from 'src/app/modules/crm-mobile/Interfaces/biclause.interfa
 import { FeatherModule } from 'angular-feather';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { authService } from 'src/app/modules/authentication/auth.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-biclause',
@@ -23,7 +24,8 @@ import { authService } from 'src/app/modules/authentication/auth.service';
     RouterModule,
     FormsModule,
     NgbPaginationModule,
-    FeatherModule
+    FeatherModule,
+    DatePipe
   ],
   templateUrl: './biclause.component.html',
   styleUrls: ['./biclause.component.scss']
@@ -39,7 +41,8 @@ export class BIclauseComponent implements OnInit {
   btnDisable = false;
   isEditMode = false;
   currentClauseId: number | null = null;
-  userData : any;
+  userData: any;
+  blclauseData: any;
   // Pagination
   page = 1;
   pageSize = 10;
@@ -143,6 +146,7 @@ export class BIclauseComponent implements OnInit {
     
     if (this.isEditMode) {
       this.biclauseForm.get('status')?.enable();
+      this.blclauseData = clause;
       this.biclauseForm.patchValue({
         ClauseDescription: clause.ClauseDescription,
         Keyword: clause.Keyword,
@@ -177,14 +181,13 @@ export class BIclauseComponent implements OnInit {
     const formValue = this.biclauseForm.value;
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
     
-    const payload: BLClause = {
+    const payload = {
       ClauseDescription: formValue.ClauseDescription,
       Keyword: formValue.Keyword,
       Sortorder: formValue.Sortorder ? parseInt(formValue.Sortorder) : null,
       DefaultClause: formValue.DefaultClause ? parseInt(formValue.DefaultClause) : null,
       status: formValue.status,
-      createdBy: this.isEditMode ? '' : userEmail,
-      updatedBy: this.isEditMode ? userEmail : undefined
+      ...(this.isEditMode ? {updatedBy : userEmail} : {createdBy : userEmail})
     };
 
     const operation = this.isEditMode && this.currentClauseId
@@ -273,5 +276,13 @@ export class BIclauseComponent implements OnInit {
             title: companyName
         });
     }
+
+  showInfo() {
+    if(!this.blclauseData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.blclauseData;
+    modalRef.componentInstance.idLabel = 'BlClause Id';
+    modalRef.componentInstance.idValue = this.blclauseData?.BLClauseMasterSid;
+  }
 
 }

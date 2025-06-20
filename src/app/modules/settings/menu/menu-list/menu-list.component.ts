@@ -12,6 +12,7 @@ import { take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { SettingsService } from '../../settings.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-menu-list',
@@ -49,6 +50,7 @@ export class MenuListComponent implements OnInit {
   totalLengthOfCollection = 0;
   isLoading = false;
   userData: any;
+  menuData : any;
 
   constructor(
     private modalService: NgbModal,
@@ -130,6 +132,7 @@ export class MenuListComponent implements OnInit {
     this.settingsService.getMenuById(id).pipe(take(1)).subscribe({
       next: (response: any) => {
         const menu = response.data; 
+        this.menuData = menu;
         this.menuForm.get('status')?.enable();
         this.menuForm.patchValue({
           MenuName: menu.MenuName,
@@ -303,5 +306,13 @@ export class MenuListComponent implements OnInit {
       fileName: 'Menu-Report', 
       title: companyName
     });
+  }
+
+  showInfo() {
+    if(!this.menuData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.menuData;
+    modalRef.componentInstance.idLabel = 'Menu Id';
+    modalRef.componentInstance.idValue = this.menuData?.MenuMasterSid;
   }
 }

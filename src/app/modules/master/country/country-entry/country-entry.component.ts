@@ -1,13 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
 import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interface';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-country-entry',
@@ -16,7 +18,8 @@ import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interfa
     CommonModule,
     ReactiveFormsModule,
     FeatherModule,
-    NgSelectModule
+    NgSelectModule,
+    DatePipe
   ],
   templateUrl: './country-entry.component.html',
   styleUrls: ['./country-entry.component.scss']
@@ -26,7 +29,8 @@ export class CountryEntryComponent implements OnInit {
   isEditMode = false;
   btnDisable = false;
   countryId: number;
-  
+  countryData: any;
+
   zones: Zone[] = [];
   currencies: Currency[] = [];
 
@@ -45,7 +49,8 @@ export class CountryEntryComponent implements OnInit {
     private masterService: MasterService,
     private route: ActivatedRoute,
     private router: Router,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private modalService : NgbModal
   ) {
     this.initForm();
   }
@@ -108,6 +113,7 @@ export class CountryEntryComponent implements OnInit {
     this.countryForm.reset();
     this.masterService.getCountryById(id).subscribe({
       next: (country: any) => {
+        this.countryData = country;
         this.countryForm.patchValue({
           countryName: country.countryName,
           countryCode: country.countryCode,
@@ -197,5 +203,12 @@ export class CountryEntryComponent implements OnInit {
         this.markFormGroupTouched(control);
       }
     });
+  }
+  showInfo() {
+    if(!this.countryData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.countryData;
+    modalRef.componentInstance.idLabel = 'Country Id';
+    modalRef.componentInstance.idValue = this.countryData?.CountryMasterSid;
   }
 }

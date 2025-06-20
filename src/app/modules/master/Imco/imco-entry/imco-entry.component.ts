@@ -8,11 +8,14 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { MasterService } from '../../master.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { DatePipe } from '@angular/common';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
     selector: 'app-imco-entry',
     standalone: true,
-    imports: [FeatherModule, OnlyTextDirective, OnlyNumbersDirective, TextWithNumbersDirective, NgSelectModule, ReactiveFormsModule],
+    imports: [FeatherModule, OnlyTextDirective, OnlyNumbersDirective, TextWithNumbersDirective, NgSelectModule, ReactiveFormsModule,DatePipe],
     templateUrl: './imco-entry.component.html',
     styleUrl: './imco-entry.component.scss'
 })
@@ -21,6 +24,7 @@ export class ImcoEntryComponent implements OnInit {
     ImcoMasterSid: number;
     isEditMode: boolean;
     ImcoForm: FormGroup;
+    imcoData: any;
 
     modeOfStatus = [
         { value: 'Active', name: 'Active' },
@@ -38,6 +42,7 @@ export class ImcoEntryComponent implements OnInit {
         private route: Router,
         private currRoute: ActivatedRoute,
         private appSettingService: AppSettingsService,
+        private modalService : NgbModal
     ) { }
 
     ngOnInit() {
@@ -121,6 +126,7 @@ export class ImcoEntryComponent implements OnInit {
         this.masterService.getIMCOById(ImcoMasterSid).subscribe(
             (resp: any) => {
                 if (resp.status) {
+                    this.imcoData = resp.data;
                     this.ImcoForm.patchValue({
                         ...resp.data,
                         status: resp.data.status === 'A' ? 'Active' : 'Suspended',
@@ -140,6 +146,14 @@ export class ImcoEntryComponent implements OnInit {
 
     resetForm() {
         this.ImcoForm.reset();
+    }
+
+    showInfo() {
+        if (!this.imcoData) return;
+        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.componentInstance.item = this.imcoData;
+        modalRef.componentInstance.idLabel = 'Imco Id';
+        modalRef.componentInstance.idValue = this.imcoData?.ImcoMasterSid;
     }
 
 }

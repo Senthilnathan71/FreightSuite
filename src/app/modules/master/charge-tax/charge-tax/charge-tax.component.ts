@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -11,6 +11,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { FeatherModule } from 'angular-feather';
 import { take } from 'rxjs';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-charge-tax',
@@ -23,7 +24,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     ReactiveFormsModule,
     NgbPagination,
     RouterModule,
-    FormsModule
+    FormsModule,
+    DatePipe
   ],
   templateUrl: './charge-tax.component.html',
   styleUrl: './charge-tax.component.scss',
@@ -49,6 +51,7 @@ export class ChargeTaxComponent implements OnInit {
   userData:any;
   companyList: any[] = [];
   selectedCompanyId: number;
+  chargeTaxData : any;
 
   constructor(
     private modalService: NgbModal,
@@ -121,6 +124,7 @@ export class ChargeTaxComponent implements OnInit {
     this.masterService.getChargeTaxById(id).pipe(take(1)).subscribe({
       next: (response: any) => {
         const chargeTax = response.data; 
+        this.chargeTaxData = chargeTax;
         this.chargeTaxForm.get('status')?.enable();
         this.chargeTaxForm.patchValue({
           HSNCode: chargeTax.HSNCode,
@@ -172,8 +176,7 @@ export class ChargeTaxComponent implements OnInit {
     return;
   }
 
-  const currentUserEmail = this.userData?.userEmail || 'admin@crm.com'; // Fallback if userData not available
-  const currentDate = new Date();
+  const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
   const formValue = this.chargeTaxForm.value;
 
   // Prepare the payload
@@ -185,18 +188,9 @@ export class ChargeTaxComponent implements OnInit {
     Remarks: formValue.Remarks || '',
     Status: formValue.status === "Active" ? "A" : "S",
     CompanyMasterSid: formValue.CompanyMasterSid,
-    UpdatedBy: currentUserEmail,
-    CreatedBy: currentUserEmail
+    ...(this.isEditMode ? {UpdatedBy : currentUserEmail} : {CreatedBy : currentUserEmail})
   };
 
-  // Only include CreatedBy and createdOn for new records
-  if (!this.isEditMode) {
-    payload.CreatedBy = currentUserEmail;
-    payload.createdOn = currentDate;
-  }
-
-  // Remove fields that shouldn't be sent to the backend
-  delete payload.status;
 
   if (this.isEditMode) {
     this.masterService.updateChargeTaxById(this.ChargeTaxMasterSid, payload).subscribe(
@@ -308,4 +302,13 @@ export class ChargeTaxComponent implements OnInit {
       this.modalRef.close();
     }
   }
+
+  showInfo() {
+    if(!this.chargeTaxData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.chargeTaxData;
+    modalRef.componentInstance.idLabel = 'ChargeTax Id';
+    modalRef.componentInstance.idValue = this.chargeTaxData?.ChargeTaxMasterSid;
+  }
+
 }

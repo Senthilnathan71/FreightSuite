@@ -12,6 +12,7 @@ import { FeatherModule } from 'angular-feather';
 import { take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-package-type-list',
@@ -24,7 +25,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     ReactiveFormsModule,
     NgbPagination,
     RouterModule,
-    FormsModule
+    FormsModule,
+    DatePipe
   ],
   templateUrl: './package-type-list.component.html',
   styleUrl: './package-type-list.component.scss',
@@ -48,6 +50,7 @@ export class PackageTypeListComponent {
   totalLengthOfCollection = 0;
   isLoading = false;
   userData : any;
+  packageData : any;
 
   constructor(
     private modalService: NgbModal,
@@ -101,6 +104,7 @@ export class PackageTypeListComponent {
     this.PackageTypeMasterSid = id;
     this.masterService.getPackageTypeById(id).pipe(take(1)).subscribe({
       next: (response: any) => {
+        this.packageData = response;
         this.packageTypeForm.get('status')?.enable();
         this.packageTypeForm.patchValue({
           PackageName: response.PackageName,
@@ -244,4 +248,12 @@ export class PackageTypeListComponent {
             title: companyName
         });
     }
+
+  showInfo() {
+    if(!this.packageData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.packageData;
+    modalRef.componentInstance.idLabel = 'Package Type Id';
+    modalRef.componentInstance.idValue = this.packageData?.PackageTypeMasterSid;
+  }
 }

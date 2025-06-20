@@ -7,8 +7,13 @@
     </div> -->
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 pb-2">
+            <div class="col-md-4 d-flex pb-2">
                 <h4 class="page-title mb-0"> Organization</h4>
+                @if(isEditMode){
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showCustomerInfo()">
+                         <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
+                }
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -861,6 +866,11 @@
 <ng-template #content6 let-modal>
     <div class="modal-header">
         <h4 class="modal-title">{{isSalespersonEdit ? 'Edit Salesman' : 'Salesman'}}</h4>
+        @if(isSalespersonEdit && CustomerSalesSid){
+        <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showSalesmanInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+        </a>
+        }
         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body" [formGroup]="salespersonForm">
@@ -1038,6 +1048,11 @@
         <div class="modal-content custom-modal">
     <div class="modal-header">
         <h4 class="modal-title">Branch</h4>
+        @if(customerBranchId){
+        <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showBranchInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+        </a>
+        }
         <button type="button" class="btn-close" aria-label="Close" (click)="modalClose()"></button>
     </div>
     <div class="modal-body">
@@ -1393,6 +1408,11 @@
 <ng-template #content1 let-modal>
     <div class="modal-header">
         <h4 class="modal-title">Branch Contact</h4>
+        @if(CusBranchContactSid){
+        <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showBrContactInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+        </a>
+        }
         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
     <form [formGroup]="customerBranchContactForm">
@@ -1498,7 +1518,12 @@
 
 <ng-template #content2 let-modal>
     <div class="modal-header">
-        <h4 class="modal-title">email</h4>
+        <h4 class="modal-title">Email</h4>
+        @if(CustomerBrEmailSid){
+        <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showBrEmailInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+        </a>
+        }
         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
     <form [formGroup]="customerBranchEmailForm">
@@ -1710,6 +1735,11 @@
 <ng-template #content5 let-modal>
     <div class="modal-header">
         <h4 class="modal-title">eLogin</h4>
+        @if(CustomerLoginSid){
+        <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showBrLoginInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+        </a>
+        }
         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
     <form [formGroup]="customerBranchLoginForm">
@@ -2759,6 +2789,67 @@
                     }
                 </tbody>
             </table>
+        </div>
+    </div>
+</ng-template>
+<ng-template #salesmanInfoContent let-modal5>
+    <div class="container">
+        <div class="modal-header">
+            <h4 class="modal-title">Details</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal5.dismiss('Cross click')"></button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="d-flex justify-content-center align-items-center">
+                    <label class="">Salesman Id : </label>
+                    <div class="bg-light-secondary ms-2 px-2 py-1 rounded d-inline-flex align-items-center">
+                        {{salesmanData.CustomerSalesSid || ''}}
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive mt-3">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="50%">Created By</th>
+                            <th class="bg-transparent text-light" scope="col" width="50%">Created Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="text-truncate">{{salesmanData.createdBy || ''}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{salesmanData.createdOn | date:'dd/MM/yyyy, h:mm a' || ''}}
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="50%">Last Updated By</th>
+                            <th class="bg-transparent text-light" scope="col" width="50%">Last Updated Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="text-truncate">{{salesmanData.updatedBy || ''}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{salesmanData.updatedOn | date:'dd/MM/yyyy, h:mm a' || ''}}
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" (click)="modal5.close('Close click')">Close</button>
         </div>
     </div>
 </ng-template>

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
@@ -7,9 +7,10 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
 import { formatDate } from '@angular/common';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-charge-entry',
@@ -19,7 +20,8 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
     FeatherModule,
     NgSelectModule,
     ReactiveFormsModule,
-    NgbDatepickerModule
+    NgbDatepickerModule,
+    DatePipe
   ],
   templateUrl: './charge-entry.component.html',
   styleUrls: ['./charge-entry.component.scss'],
@@ -34,6 +36,7 @@ export class ChargeEntryComponent implements OnInit {
   btnDisable = false;
   errorMessage: any;
   idParam: number;
+  chargeData: any;
 
   // Lookup options
   companyOptions: any[] = [];
@@ -52,7 +55,8 @@ export class ChargeEntryComponent implements OnInit {
     private router: Router,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
-    private calendar : NgbCalendar
+    private calendar : NgbCalendar,
+    private modalService : NgbModal
   ) { }
 
   ngOnInit(): void {
@@ -163,6 +167,7 @@ loadLookupData(): void {
   loadCharge(ChargeMasterSid: number): void {
     this.masterService.getChargeById(ChargeMasterSid).subscribe(
       (resp) => {
+        this.chargeData = resp;
         const chargeData = {
           ...resp,
           // EffectiveFrom: new Date(resp.EffectiveFrom)
@@ -238,4 +243,13 @@ loadLookupData(): void {
       );
     }
   }
+
+  showInfo() {
+    if(!this.chargeData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.chargeData;
+    modalRef.componentInstance.idLabel = 'Charge Id';
+    modalRef.componentInstance.idValue = this.chargeData?.ChargeMasterSid;
+  }
+
 }

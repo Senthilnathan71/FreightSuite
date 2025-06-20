@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, TemplateRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { FormsModule, FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { NgSelectConfig, NgSelectModule } from '@ng-select/ng-select';
@@ -7,6 +7,8 @@ import { RouterModule } from '@angular/router';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-uom-view',
@@ -18,6 +20,7 @@ import { MasterService } from '../../master.service';
     NgSelectModule,
     FormsModule,
     ReactiveFormsModule,
+    DatePipe
   ],
   templateUrl: './uom-view.component.html',
   styleUrl: './uom-view.component.scss'
@@ -27,6 +30,7 @@ export class UOMViewComponent {
   isEditMode = false;
   selectedShipmentType: number;
   btnDisable: boolean = false;
+  uomData: any;
 
 
   shipmenttypes = [
@@ -50,7 +54,7 @@ statusOptions = [
 
   constructor(private config: NgSelectConfig, private fb: FormBuilder,
     private route: ActivatedRoute,
-    private router: Router, private appSettingService: AppSettingsService, private masterService: MasterService) {
+    private router: Router, private appSettingService: AppSettingsService, private masterService: MasterService,private modalService:NgbModal) {
     this.config.notFoundText = 'Custom not found';
     this.config.appendTo = 'body';
     this.config.bindValue = 'value';
@@ -88,6 +92,7 @@ statusOptions = [
   this.masterService.getUomById(UomMasterSid).subscribe(
     (resp) => {
       console.log(resp, 'uomdata')
+      this.uomData = resp;
       this.uomForm.patchValue(resp);
       this.uomForm.patchValue({ 
         WeightReq: (resp.WeightReq == 'Y' ? true : false),
@@ -178,5 +183,12 @@ statusOptions = [
         );
       }
     }
+  }
+  showInfo() {
+      if(!this.uomData) return;
+      const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+      modalRef.componentInstance.item = this.uomData;
+      modalRef.componentInstance.idLabel = 'UOM Id';
+      modalRef.componentInstance.idValue = this.uomData?.UOMMasterSid;
   }
 }

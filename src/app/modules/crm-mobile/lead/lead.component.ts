@@ -1,6 +1,6 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { LeadService } from '../Services/lead.service';
 import { City } from '../Interfaces/city.interface';
@@ -16,6 +16,7 @@ import { forkJoin } from 'rxjs';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 
 @Component({
@@ -32,7 +33,8 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
     OnlyTextDirective,
     TextWithNumbersDirective,
     OnlyTextDirective,
-    OnlyNumbersDirective
+    OnlyNumbersDirective,
+    DatePipe
     // NgxIntlTelInputModule
   ],
   templateUrl: './lead.component.html',
@@ -49,6 +51,7 @@ export class LeadComponent implements OnInit {
   countryList : any[];
   stateList : any[];
   cityList : any[];
+  leadData : any;
 
   customerByOptions = ['Email', 'Advertisement', 'Website', 'Others'];
   leadSourceList = ['Email', 'Advertisement','Website', 'Inquiries', 'Referrals',"Trade shows", "Cold calls", "Social media", 'Others']
@@ -85,7 +88,7 @@ export class LeadComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
     private router: Router,
-    private modalService: ModalService
+    private modalService: NgbModal
   ) { }
 
   ngOnInit(): void {
@@ -156,8 +159,8 @@ export class LeadComponent implements OnInit {
     }
 
     this.btnDisable = true;
-    const updatedBy = this.appSettingService.userSettingSource.value['UserEmail'];
-    const createdBy = this.appSettingService.userSettingSource.value['UserEmail'];
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
+    const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
     const companyId = this.appSettingService.userSettingSource.value['userBranchMaster'][0]?.CompanyMasterSid;
     const formData = this.leadForm.value;
     const payload = {
@@ -213,6 +216,7 @@ export class LeadComponent implements OnInit {
       (resp:any) => {
           if(resp.status){
             let response = resp.data;
+            this.leadData = response;
             this.filterStateByCountryId(response);
             this.filterCityByStateId(response);
             let formattedStatus = this.findStatus(response.status);
@@ -310,23 +314,28 @@ export class LeadComponent implements OnInit {
     switch (value) {
       case 'A':
         return 'Active'
-        break;
+
       case 'P':
         return 'Pending'
-        break;
+
       case 'S':
         return 'Success'
-        break;
+
       case 'N':
         return 'No Progress'
-        break;
     
       default:
         return 'Closed'
-        break;
     }
   }
 
+  showInfo() {
+    if(!this.leadData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.leadData;
+    modalRef.componentInstance.idLabel = 'Lead Id';
+    modalRef.componentInstance.idValue = this.leadData?.PreCustomerMasterSid;
+  }
 
 
 }

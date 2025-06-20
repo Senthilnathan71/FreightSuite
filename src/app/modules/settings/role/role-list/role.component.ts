@@ -12,6 +12,7 @@ import { take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { SettingsService } from '../../settings.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-role',
@@ -24,7 +25,8 @@ import { SettingsService } from '../../settings.service';
     ReactiveFormsModule,
     NgbPagination,
     RouterModule,
-    FormsModule
+    FormsModule,
+    DatePipe
   ],
   templateUrl: './role.component.html',
   styleUrl: './role.component.scss',
@@ -48,6 +50,7 @@ export class RoleComponent implements OnInit {
   totalLengthOfCollection = 0;
   isLoading = false;
   userData : any;
+  roleData : any;
 
   constructor(
     private modalService: NgbModal,
@@ -117,6 +120,7 @@ export class RoleComponent implements OnInit {
   this.settingsService.getRoleById(id).pipe(take(1)).subscribe({
     next: (response: any) => {
       const role = response.data; 
+      this.roleData = role;
       this.roleForm.get('status')?.enable();
       this.roleForm.patchValue({
         UserRoleName: role.UserRoleName,
@@ -278,4 +282,12 @@ export class RoleComponent implements OnInit {
             title: companyName
         });
     }
+
+  showInfo() {
+    if (!this.roleData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.roleData;
+    modalRef.componentInstance.idLabel = 'Role Id';
+    modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
+  }
 }

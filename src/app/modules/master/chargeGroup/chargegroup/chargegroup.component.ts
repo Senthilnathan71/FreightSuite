@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -12,6 +12,7 @@ import { FeatherModule } from 'angular-feather';
 import { take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-chargegroup',
@@ -24,7 +25,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     ReactiveFormsModule,
     NgbPagination,
     RouterModule,
-    FormsModule
+    FormsModule,
+    DatePipe
   ],
   templateUrl: './chargegroup.component.html',
   styleUrl: './chargegroup.component.scss',
@@ -49,6 +51,7 @@ export class ChargegroupComponent implements OnInit {
   isLoading = false;
   companyOptions: any[] = [];
   userData : any;
+  chargeGroupData : any;
 
   constructor(
     private modalService: NgbModal,
@@ -124,6 +127,7 @@ export class ChargegroupComponent implements OnInit {
     this.masterService.getChargeGroupById(id).pipe(take(1)).subscribe({
       next: (response: any) => {
         const chargeGroup = response.data;
+        this.chargeGroupData = chargeGroup;
         this.chargeGroupForm.get('status')?.enable();
         this.chargeGroupForm.patchValue({
           CompanyMasterSid: chargeGroup.CompanyMasterSid,
@@ -287,4 +291,13 @@ export class ChargegroupComponent implements OnInit {
             title: companyName
         });
     }
+
+  showInfo() {
+    if (!this.chargeGroupData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.chargeGroupData;
+    modalRef.componentInstance.idLabel = 'Charge Group Id';
+    modalRef.componentInstance.idValue = this.chargeGroupData?.ChargeGroupSid;
+  }
+    
 }

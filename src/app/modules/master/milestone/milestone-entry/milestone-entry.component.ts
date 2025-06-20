@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-milestone-entry',
@@ -14,7 +16,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
     CommonModule,
     ReactiveFormsModule,
     FeatherModule,
-    NgSelectModule
+    NgSelectModule,
+    DatePipe
   ],
   templateUrl: './milestone-entry.component.html',
   styleUrls: ['./milestone-entry.component.scss']
@@ -26,6 +29,7 @@ export class MilestoneEntryComponent implements OnInit {
   milestoneId: number;
   departmentList: any[] = [];
   userData: any;
+  milestoneData : any
   
   shipmentTypeOptions = [
     { value: 'Export', label: 'Export' },
@@ -43,7 +47,8 @@ export class MilestoneEntryComponent implements OnInit {
     private masterService: MasterService,
     private route: ActivatedRoute,
     private router: Router,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private modalService : NgbModal
   ) {
     this.initForm();
   }
@@ -93,6 +98,7 @@ export class MilestoneEntryComponent implements OnInit {
     this.milestoneForm.reset();
     this.masterService.getMilestoneById(id).subscribe({
       next: (milestone: any) => {
+        this.milestoneData = milestone;
         this.milestoneForm.patchValue({
           MilestoneName: milestone.MilestoneName,
           MilestoneCode: milestone.MilestoneCode,
@@ -195,5 +201,13 @@ export class MilestoneEntryComponent implements OnInit {
         this.markFormGroupTouched(control);
       }
     });
+  }
+
+  showInfo() {
+    if (!this.milestoneData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.milestoneData;
+    modalRef.componentInstance.idLabel = 'Milestone Id';
+    modalRef.componentInstance.idValue = this.milestoneData?.MilestoneMasterSid;
   }
 }

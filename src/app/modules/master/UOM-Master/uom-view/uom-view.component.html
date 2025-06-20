@@ -25,8 +25,13 @@
         </div> -->
         <div class="col-12">
              <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0"> UOM Master</h4>
+            <div class="col-md-4 d-flex pb-2">
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit UOM Master' :'UOM Master'}}</h4>
+                @if(isEditMode){
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                         <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
+                }
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -250,3 +255,66 @@
         </div>
     </ng-template>
 </form>
+<ng-template #infoContent let-modal>
+    <div class="container">
+        <div class="modal-header">
+            <h4 class="modal-title">Details</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="d-flex justify-content-center align-items-center">
+                    <label class="">UOM Id : </label>
+                    <!-- <input type="text" class="form-control form-control-sm text-center rounded" style="max-width: fit-content;"
+                        [value]="departmentData.DepartmentMasterSid" disabled> -->
+                    <div class="bg-light-secondary ms-2 px-2 py-1 rounded d-inline-flex align-items-center">
+                        {{uomData.UOMMasterSid || ''}}
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive mt-3">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="50%">Created By</th>
+                            <th class="bg-transparent text-light" scope="col" width="50%">Created Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="text-truncate">{{uomData.createdBy || ''}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{uomData.createdOn | date:'dd/MM/yyyy, h:mm a' || ''}}
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="50%">Last Updated By</th>
+                            <th class="bg-transparent text-light" scope="col" width="50%">Last Updated Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="text-truncate">{{uomData.updatedBy || ''}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{uomData.updatedOn | date:'dd/MM/yyyy, h:mm a' || ''}}
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" (click)="modal.close('Close click')">Close</button>
+        </div>
+    </div>
+</ng-template>

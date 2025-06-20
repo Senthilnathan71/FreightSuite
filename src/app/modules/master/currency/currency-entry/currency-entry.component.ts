@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interface';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-currency-entry',
@@ -13,7 +15,8 @@ import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interfa
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    FeatherModule
+    FeatherModule,
+    DatePipe
   ],
   templateUrl: './currency-entry.component.html',
   styleUrls: ['./currency-entry.component.scss']
@@ -24,6 +27,7 @@ export class CurrencyEntryComponent implements OnInit {
   btnDisable = false;
   currencyID: number;
   loading = false;
+  currencyData: any;
   
   statusOptions = [
     { id: 'A', name: 'Active' },
@@ -35,7 +39,8 @@ export class CurrencyEntryComponent implements OnInit {
     private masterService: MasterService,
     private route: ActivatedRoute,
     private router: Router,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private modalService : NgbModal
   ) {
     this.initForm();
   }
@@ -142,7 +147,7 @@ export class CurrencyEntryComponent implements OnInit {
         if (this.isEditMode) {
           this.currencyForm.get('status')?.enable();
         }
-        
+        this.currencyData = currency;
         this.currencyForm.patchValue({
           currencyName: currency.currencyName,
           currencyCode: currency.currencyCode,
@@ -174,6 +179,8 @@ export class CurrencyEntryComponent implements OnInit {
   
     this.btnDisable = true;
     this.loading = true;
+
+    const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     
     const payload = {
       currencyName: this.currencyForm.value.currencyName,
@@ -188,7 +195,8 @@ export class CurrencyEntryComponent implements OnInit {
       amountDecimal: Number(this.currencyForm.value.amountDecimal),
       exchangeDecimal: Number(this.currencyForm.value.exchangeDecimal),
       RoundOf: this.currencyForm.value.RoundOf,
-      status: this.currencyForm.value.status
+      status: this.currencyForm.value.status,
+      ...(this.isEditMode ? {updatedBy : currentUserEmail} : {createdBy : currentUserEmail})
     };
   
     const operation = this.isEditMode 
@@ -250,5 +258,13 @@ export class CurrencyEntryComponent implements OnInit {
         this.markFormGroupTouched(control);
       }
     });
+  }
+
+  showInfo() {
+    if (!this.currencyData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.currencyData;
+    modalRef.componentInstance.idLabel = 'Currency Id';
+    modalRef.componentInstance.idValue = this.currencyData?.CurrencyMasterSid;
   }
 }

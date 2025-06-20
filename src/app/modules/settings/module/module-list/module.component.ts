@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
@@ -11,6 +11,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { SettingsService } from '../../settings.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-module',
@@ -23,7 +24,8 @@ import { SettingsService } from '../../settings.service';
     FeatherModule,
     NgbModalModule,
     NgbPaginationModule,
-    NgSelectModule
+    NgSelectModule,
+    DatePipe
   ],
   templateUrl: './module.component.html',
   styleUrls: ['./module.component.scss']
@@ -37,6 +39,7 @@ export class ModuleComponent implements OnInit {
   statusList = ["Active", "Suspended"];
   modalRef!: any;
   userData : any;
+  moduleData : any
   
   searchType = 'ModuleName';
   filterValue = '';
@@ -94,6 +97,7 @@ export class ModuleComponent implements OnInit {
     this.settingsService.getModuleById(id).subscribe({
       next: (response: any) => {
         const module = response.data;
+        this.moduleData = module;
         this.moduleForm.get('status')?.enable();
         this.moduleForm.patchValue({
           ModuleName: module.ModuleName,
@@ -232,5 +236,13 @@ export class ModuleComponent implements OnInit {
       fileName: 'Module-Report',
       title: companyName
     });
+  }
+
+  showInfo() {
+    if(!this.moduleData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.moduleData;
+    modalRef.componentInstance.idLabel = 'Module Id';
+    modalRef.componentInstance.idValue = this.moduleData?.ModuleMasterSid;
   }
 }

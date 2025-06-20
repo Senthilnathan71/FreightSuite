@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -9,6 +9,8 @@ import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-container-type-entry',
@@ -20,7 +22,8 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
     ReactiveFormsModule,
     OnlyTextDirective,
     TextWithNumbersDirective,
-    NgSelectModule
+    NgSelectModule,
+    DatePipe
   ],
   templateUrl: './container-type-entry.component.html',
   styleUrl: './container-type-entry.component.scss'
@@ -33,6 +36,7 @@ export class ContainerTypeEntryComponent {
   errorMessage: string = '';
   btnDisable: boolean = false;
   ContainerTypeMasterSid: number;
+  containerData : any;
 
   statusList = [
     { id: 'A', name: 'Active' },
@@ -47,7 +51,8 @@ export class ContainerTypeEntryComponent {
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private modalService : NgbModal
   ) { }
 
   ngOnInit(): void {
@@ -229,6 +234,7 @@ resetForm(): void {
   loadContainerData(id: number) {
     this.masterService.getContainerTypeById(id).subscribe(
       (data) => {
+        this.containerData = data;
         this.containertypeForm.patchValue({
           ...data,
           CompanyMasterSid: data.CompanyMasterSid,
@@ -254,6 +260,14 @@ resetForm(): void {
 
   goBack() {
     this.router.navigate(['master/container-type/list']);
+  }
+
+  showInfo() {
+    if(!this.containerData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.containerData;
+    modalRef.componentInstance.idLabel = 'Container Type Id';
+    modalRef.componentInstance.idValue = this.containerData?.ContainerTypeMasterSid;
   }
 
 }

@@ -2,8 +2,13 @@
 
       <div class="col-12">
              <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 pb-2">
+            <div class="col-md-4 d-flex pb-2">
                 <h4 class="page-title mb-0">{{isEditMode ? 'Edit Company' :' Company'}}</h4>
+                @if(isEditMode){
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showCompanyInfo()">
+                         <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
+                }
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -427,6 +432,11 @@
           <div [formGroup]="branchForm" >
         <div class="modal-header">
             <h4 class="modal-title" id="modal-basic-title">{{isModalEditMode ? 'Edit Branch' : 'Add Branch'}}</h4>
+            @if(isModalEditMode){
+            <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showBranchInfo()">
+                <i class="fas fs-6 fa-info-circle"></i>
+            </a>
+            }
             <button type="button" class="btn-close" aria-label="Close" (click)="closeBranchForm()"></button>
 	    </div>
 
@@ -964,7 +974,13 @@
     <div>
         <div>
             <div class="modal-header">
-                    <h4 class="modal-title" id="modal-basic-title">{{isBankModalEdit ? 'Edit Bank' : 'Add Bank'}}</h4>
+                    <h4 class="modal-title" id="modal-basic-title">{{isBankModalEdit ? 'Edit Bank' : 'Add Bank'}}
+                    @if(isBankModalEdit){
+                    <a class="text-info ps-2 w-2 h-2" (click)="showBranchBankInfo()">
+                        <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
+                    }
+                    </h4>
                         <button type="button" class="btn-close" aria-label="Close" (click)="closeBranchBankForm()"></button>
             </div>
             <div  [formGroup]="branchBankForm">

@@ -2,7 +2,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AppService } from 'src/app/service/app.service';
 import { LeadService } from '../Services/lead.service';
@@ -12,6 +12,7 @@ import { ToastrService } from 'ngx-toastr';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 
 @Component({
@@ -77,6 +78,7 @@ export class QuotationComponent implements OnInit {
 	today = this.calendar.getToday();
 	todayDate = new Date(this.today.year,this.today.month,this.today.day);
   minQuoteDate :any;
+  quotationData : any;
   constructor(
     private appService: AppService,
     private appSettingsService: AppSettingsService,
@@ -87,6 +89,7 @@ export class QuotationComponent implements OnInit {
     private fb: FormBuilder,
     private toaster: ToastrService,
     private modalService: ModalService,
+    private ngbModal : NgbModal,
     private calendar:NgbCalendar) { }
 
   ngOnInit(): void {
@@ -365,6 +368,7 @@ export class QuotationComponent implements OnInit {
       (resp: any) => {
         if (resp) {
           this.patchValues(resp)
+          this.quotationData = resp;
         }
       });
   }
@@ -703,6 +707,14 @@ export class QuotationComponent implements OnInit {
       month: date.getMonth() + 1,
       day: date.getDate()
     };
+  }
+
+  showInfo() {
+    if(!this.quotationData) return;
+    const modalRef = this.ngbModal.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.quotationData;
+    modalRef.componentInstance.idLabel = 'Quotation Id';
+    modalRef.componentInstance.idValue = this.quotationData?.QuoteHeaderSid;
   }
 
 }
