@@ -11,6 +11,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-country-list',
@@ -22,7 +23,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     FormsModule,
     RouterModule,
     MatDialogModule,
-    MatButtonModule
+    MatButtonModule,
+    ListpageComponent
   ],
   templateUrl: './country-list.component.html',
   styleUrl: './country-list.component.scss'
@@ -90,6 +92,13 @@ export class CountryListComponent {
       }
     });
   }
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     this.loading = true;

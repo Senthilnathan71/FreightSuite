@@ -10,6 +10,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { forkJoin } from 'rxjs';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-state-list',
@@ -19,7 +20,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     FeatherModule,
     FormsModule,
     NgbPaginationModule,
-    RouterModule
+    RouterModule,
+    ListpageComponent
   ],
   templateUrl: './state-list.component.html',
   styleUrl: './state-list.component.scss'
@@ -89,6 +91,13 @@ export class StateListComponent {
       }
     });
   }
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     this.loading = true;

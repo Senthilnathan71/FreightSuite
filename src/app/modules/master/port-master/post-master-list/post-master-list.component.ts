@@ -11,6 +11,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { forkJoin } from 'rxjs';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { authService } from 'src/app/modules/authentication/auth.service';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-post-master-list',
@@ -21,7 +22,8 @@ import { authService } from 'src/app/modules/authentication/auth.service';
     FormsModule,
     NgbPaginationModule,
     RouterModule,
-    MatDialogModule
+    MatDialogModule,
+    ListpageComponent
   ],
   templateUrl: './post-master-list.component.html',
   styleUrls: ['./post-master-list.component.scss']
@@ -79,6 +81,15 @@ export class PostMasterListComponent implements OnInit {
   // }
 
   /** Triggered when user clicks “Search” */
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
+
+
   search(): void {
   const payload = {
     searchType: 
