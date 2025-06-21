@@ -44,8 +44,9 @@ this.appSettingService.getUser().subscribe(user => {
   }
 
   onSearch(event: { type: string, value: string }) {
-  const { type, value } = event;
-  console.log('Searching with:', type, value);
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
   this.search();
 }
 
