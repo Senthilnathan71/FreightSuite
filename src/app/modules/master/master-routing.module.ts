@@ -62,6 +62,8 @@ import { UserEntryComponent } from './user/user-entry/user-entry.component';
 import { ChargeTaxComponent } from './charge-tax/charge-tax/charge-tax.component';
 import { AuthorityListComponent } from './authority/authority-list/authority-list.component';
 import { AuthorityEntryComponent } from './authority/authority-entry/authority-entry.component';
+import { YearListComponent } from './year/year-list/year-list.component';
+import { YearEntryComponent } from './year/year-entry/year-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -894,6 +896,28 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: 'Master', url: '/master' },
             { title: 'Authority' },
+          ],
+        },
+      },
+        {
+        path: 'year/list',
+        component: YearListComponent,
+        data: {
+          title: 'Year',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Year' },
+          ],
+        },
+      },
+      {
+        path: 'year/entry',
+        component: YearEntryComponent,
+        data: {
+          title: 'Year',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Year' },
           ],
         },
       },
