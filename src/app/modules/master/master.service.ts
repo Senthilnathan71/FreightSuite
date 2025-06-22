@@ -2095,6 +2095,61 @@ searchFfUser(payload: any) {
   );
 }
 
+//  User Type
+getAllUserType() {
+  return this.http.get<{data: any[]}>('user-type').pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+getUserTypeById(UserMasterSid: number) {
+  return this.http.get<{data:any}>(`user-type/fetch/${UserMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+createNewUserType(payload: any) {
+  return this.http.post<{data: any}>('user-type/create', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+updateUserTypeById(UserMasterSid: number, payload: any) {
+  return this.http.patch<{data: any}>(`user-type/update/${UserMasterSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+deleteUserTypeById(UserMasterSid: number) {
+  return this.http.delete<{data: any}>(`user-type/delete/${UserMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+searchUserType(payload: any) {
+  return this.http.post<{data: any[]}>('user-type/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
 
 getAllSalesperson() {
   return this.http.get<{data: any[]}>('customer-salesteam/salesperson').pipe(
