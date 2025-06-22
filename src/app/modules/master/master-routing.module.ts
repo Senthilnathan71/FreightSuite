@@ -62,8 +62,6 @@ import { UserEntryComponent } from './user/user-entry/user-entry.component';
 import { ChargeTaxComponent } from './charge-tax/charge-tax/charge-tax.component';
 import { AuthorityListComponent } from './authority/authority-list/authority-list.component';
 import { AuthorityEntryComponent } from './authority/authority-entry/authority-entry.component';
-import { YearListComponent } from './year/year-list/year-list.component';
-import { YearEntryComponent } from './year/year-entry/year-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -108,7 +106,7 @@ export const MasterRoutes: Routes = [
         path: 'currency/list',
         component: CurrencyListComponent,
         data: {
-          title: 'Currency- List',
+          title: 'Currency',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Currency' }],
         },
       },
@@ -338,7 +336,7 @@ export const MasterRoutes: Routes = [
         path: 'sector/list',
         component: SectorComponent,
         data: {
-          title: 'Sector List',
+          title: 'Sector ',
           urls: [{ title: 'Master', url: '/master' }, { title: 'sector' }],
         },
       },
@@ -899,27 +897,16 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
-        {
-        path: 'year/list',
-        component: YearListComponent,
-        data: {
-          title: 'Year',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Year' },
-          ],
-        },
-      },
       {
-        path: 'year/entry',
-        component: YearEntryComponent,
+        path: 'authority/entry/:id',
+        component: AuthorityEntryComponent,
         data: {
-          title: 'Year',
+          title: 'Authority',
           urls: [
             { title: 'Master', url: '/master' },
-            { title: 'Year' },
-          ],
-        },
+            { title: 'Authority' },
+          ]
+        }
       },
 
 ];

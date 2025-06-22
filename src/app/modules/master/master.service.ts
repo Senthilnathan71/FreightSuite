@@ -987,6 +987,14 @@ export class MasterService {
       })
     )
   }
+  getBranchesByCompanyId(CompanyMasterID: number) {
+  return this.http.get<{ data: Branch[] }>(`branch/company/${CompanyMasterID}`).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
 
   deleteBranchById(BranchMasterSid: number) {
     return this.http.delete<{ data: Branch }>(`branch/delete/${BranchMasterSid}`).pipe(
@@ -2200,6 +2208,115 @@ deleteMilestoneById(MilestoneMasterSid: number) {
   return this.http.delete<{ data: any }>(`milestone/delete/${MilestoneMasterSid}`).pipe(
     map((resp) => {
       let response = resp.data;
+      return response;
+    })
+  );
+}
+// Authority Master Methods
+getAllAuthorities() {
+  return this.http.get<{ data: any[] }>('authority').pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+getAuthorityById(AuthorityMasterSid: number) {
+  return this.http.get<{ data: any }>(`authority/fetch/${AuthorityMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+
+createAuthority(payload: any) {
+  return this.http.post<{ data: any }>('authority/create', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+updateAuthorityById(AuthorityMasterSid: number, payload: any) {
+  return this.http.patch<{ data: any }>(`authority/update/${AuthorityMasterSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+deleteAuthorityById(AuthorityMasterSid: number) {
+  return this.http.delete<{ data: any }>(`authority/delete/${AuthorityMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+searchAuthority(payload: any) {
+  return this.http.post<{ data: any[] }>('authority/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
+// Authority Detail Master
+
+getAllAuthorityDetails() {
+  return this.http.get<{ data: any[] }>('authority-detail').pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+getAuthorityDetailById(AuthorityDetailSid: number) {
+  return this.http.get<{ data: any }>(`authority-detail/fetch/${AuthorityDetailSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+createNewAuthorityDetail(payload: any) {
+  return this.http.post<{ data: any }>('authority-detail/create', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+updateAuthorityDetailById(AuthorityDetailSid: number, payload: any) {
+  return this.http.patch<{ data: any }>(`authority-detail/update/${AuthorityDetailSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+deleteAuthorityDetailById(AuthorityDetailSid: number) {
+  return this.http.delete<{ data: any }>(`authority-detail/delete/${AuthorityDetailSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+searchAuthorityDetails(payload: any) {
+  return this.http.post<{ data: any[] }>('authority-detail/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp;
       return response;
     })
   );

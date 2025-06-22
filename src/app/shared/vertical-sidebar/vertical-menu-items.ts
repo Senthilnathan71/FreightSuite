@@ -151,16 +151,7 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-      {
-        path: '/master/menu/list',
-        title: 'Menu',
-        icon: 'fas fa-dot-circle',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
+      
       {
         path: '/master/report/list',
         title: 'Report',
@@ -171,16 +162,7 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-      {
-        path: '/master/region/list',
-        title: 'Region',
-        icon: 'fas fa-dot-circle',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
+      
       {
         path: '/master/division/list',
         title: 'division',
@@ -301,36 +283,8 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-      {
-        path: '/master/module/list',
-        title: 'Module',
-        icon: 'fas fa-dot-circle',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
-      {
-        path: '/master/role/list',
-        title: 'Role',
-        icon: 'fas fa-dot-circle',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
-      {
-        path: '/master/rolemenu',
-        title: 'Role Menu',
-        icon: 'fas fa-dot-circle',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
+      
+      
       {
         path: '/master/chargegroup',
         title: 'Charge Group',
