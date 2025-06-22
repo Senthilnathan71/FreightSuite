@@ -47,6 +47,16 @@ export class ModuleComponent implements OnInit {
   page = 1;
   pageSize = 10;
   totalAmountOfCollection = 0;
+   iconOptions = [
+    { value: 'home', label: 'Home' },
+    { value: 'settings', label: 'Settings' },
+    { value: 'users', label: 'Users' },
+    { value: 'file-text', label: 'Documents' },
+    { value: 'bar-chart-2', label: 'Reports' },
+    { value: 'calendar', label: 'Calendar' },
+    { value: 'mail', label: 'Mail' },
+    { value: 'shopping-cart', label: 'Shopping' }
+  ];
 
   constructor(
     private modalService: NgbModal,
@@ -73,6 +83,7 @@ export class ModuleComponent implements OnInit {
     this.moduleForm = this.fb.group({
       ModuleName: ['', [Validators.required, Validators.maxLength(50)]],
       ModuleCode: ['', [Validators.required, Validators.maxLength(20)]],
+      icon: [''],
       status: [{value: 'Active', disabled: false}, Validators.required],
       Remarks: ['', [Validators.required, Validators.maxLength(300)]]
     });
@@ -81,7 +92,8 @@ export class ModuleComponent implements OnInit {
     
     this.moduleForm.get('status')?.disable();
     this.moduleForm.reset({
-      status: 'Active'
+      status: 'Active',
+      icon: ''
     });
   }
 
@@ -102,6 +114,7 @@ export class ModuleComponent implements OnInit {
         this.moduleForm.patchValue({
           ModuleName: module.ModuleName,
           ModuleCode: module.ModuleCode,
+          icon: module.icon || '',
           Remarks: module.Remarks,
           status: module.status === 'A' ? 'Active' : 'Suspended'
         });
@@ -220,7 +233,8 @@ export class ModuleComponent implements OnInit {
   report(): void {
     const formattedData = this.moduleList.map(item => ({
       ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended'
+      status: item.status === 'A' ? 'Active' : 'Suspended',
+      icon: item.icon || 'N/A'
     }));
 
     const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
@@ -230,6 +244,7 @@ export class ModuleComponent implements OnInit {
       headers: [
         { key: 'ModuleName', label: 'Module Name' },
         { key: 'ModuleCode', label: 'Module Code' },
+        { key: 'icon', label: 'Icon' },
         { key: 'Remarks', label: 'Remarks' },
         { key: 'status', label: 'Status' },
       ],

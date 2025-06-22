@@ -172,23 +172,26 @@
                                     </div>
                                 </aside>
                                 <aside class="col-md-6">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="MenuType" formControlName="MenuType"
-                                            class="custom-input-field sm">
-                                        <label for="MenuType" class="input-label">Menu Type<span
-                                                class="text-danger fw-bold">*</span></label>
-                                        
-                                        @if(menuForm.get('MenuType')?.touched && menuForm.get('MenuType')?.invalid){
-<div class="error-message">
-  @if(menuForm.get('MenuType')?.hasError('maxlength')){
-  <span>Max 50 Characters</span>
-  } @else if(menuForm.get('MenuType')?.hasError('pattern')){
-  <span>Only letters and spaces allowed</span>
-  }
-</div>
-}
-                                    </div>
-                                </aside>
+    <div class="custom-form-group">
+        <input type="text" id="MenuType" formControlName="MenuType"
+               class="custom-input-field sm">
+        <label for="MenuType" class="input-label">Menu Type <span class="text-danger fw-bold">*</span></label>
+        
+        @if(menuForm.get('MenuType')?.touched && menuForm.get('MenuType')?.invalid){
+        <div class="error-message">
+            @if(menuForm.get('MenuType')?.hasError('required')){
+            <span>Menu Type is required</span>
+            }
+            @if(menuForm.get('MenuType')?.hasError('maxlength')){
+            <span>Maximum 50 characters allowed</span>
+            }
+            @if(menuForm.get('MenuType')?.hasError('pattern')){
+            <span>Only alphabets and spaces are allowed</span>
+            }
+        </div>
+        }
+    </div>
+</aside>
                                 <aside class="col-md-6">
                                     <div class="custom-form-group custom-form-group-select">
                                         <ng-select 
@@ -208,6 +211,42 @@
                                         }
                                     </div>
                                 </aside>
+                                <aside class="col-md-6">
+    <div class="custom-form-group">
+        <input type="text" id="path" formControlName="path" 
+               placeholder="" class="custom-input-field sm">
+        <label for="path" class="input-label">Path <span class="text-danger fw-bold">*</span></label>
+        @if(menuForm.get('path')?.touched && menuForm.get('path')?.invalid){
+        <div class="error-message">
+            @if(menuForm.get('path')?.hasError('required')){
+            <span>Path is required</span>
+            } @else if(menuForm.get('path')?.hasError('pattern')){
+            <span>Only lowercase letters, hyphens and slashes allowed (e.g., dashboard/list)</span>
+            }
+        </div>
+        }
+    </div>
+</aside>
+
+<aside class="col-md-6">
+    <div class="custom-form-group custom-form-group-select">
+        <ng-select [items]="iconOptions" 
+                   bindLabel="label" 
+                   bindValue="value" 
+                   formControlName="icon"
+                   placeholder="Select an icon">
+            <ng-template ng-label-tmp let-item="item">
+                <i-feather class="feather-sm me-2" [name]="item.value"></i-feather>
+                {{item.label}}
+            </ng-template>
+            <ng-template ng-option-tmp let-item="item">
+                <i-feather class="feather-sm me-2" [name]="item.value"></i-feather>
+                {{item.label}}
+            </ng-template>
+        </ng-select>
+        <label class="input-label">Icon</label>
+    </div>
+</aside>
                                 <aside class="col-md-6 mt-2">
                                     <div class="custom-form-group custom-form-group-select">
                                         <ng-select [items]="statusList" bindLabel="name" bindValue="id"

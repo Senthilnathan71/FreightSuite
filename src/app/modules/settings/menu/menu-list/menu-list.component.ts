@@ -51,6 +51,16 @@ export class MenuListComponent implements OnInit {
   isLoading = false;
   userData: any;
   menuData : any;
+  iconOptions = [
+  { value: 'home', label: 'Home' },
+  { value: 'settings', label: 'Settings' },
+  { value: 'users', label: 'Users' },
+  { value: 'file-text', label: 'Documents' },
+  { value: 'bar-chart-2', label: 'Reports' },
+  { value: 'calendar', label: 'Calendar' },
+  { value: 'mail', label: 'Mail' },
+  { value: 'shopping-cart', label: 'Shopping' }
+];
 
   constructor(
     private modalService: NgbModal,
@@ -98,9 +108,11 @@ export class MenuListComponent implements OnInit {
     this.menuForm = this.fb.group({
       MenuName: ['', [Validators.required, Validators.maxLength(50)]],
       MenuCode: ['', [Validators.required, Validators.maxLength(3), this.uppercaseValidator()]],
-     MenuType: ['', [Validators.maxLength(50), Validators.pattern('^[a-zA-Z ]*$')]], 
+      MenuType: ['', [Validators.required,Validators.maxLength(50),Validators.pattern('^[a-zA-Z ]*$')]],
       ModuleMasterSid: ['', Validators.required], 
       ModuleName: [''], 
+      path: ['', [Validators.required]], 
+      icon: [''], 
       status: [{value: 'Active', disabled: false}, Validators.required]
     });
   }
@@ -140,6 +152,8 @@ export class MenuListComponent implements OnInit {
           MenuType: menu.MenuType || '',
           ModuleMasterSid: menu.ModuleMasterSid|| '',
           ModuleName: menu.ModuleName || '',
+          path: menu.path || '', 
+          icon: menu.icon || '', 
           status: menu.status === 'A' ? 'Active' : 'Suspended'
         });
         // this.menuForm.get('status')?.enable();
@@ -289,7 +303,9 @@ export class MenuListComponent implements OnInit {
   report(): void {
     const formattedData = this.menuList.map(item => ({
       ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended'
+      status: item.status === 'A' ? 'Active' : 'Suspended',
+      path: item.path || 'N/A',
+      icon: item.icon || 'N/A'
     }));
 
     const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
@@ -301,6 +317,8 @@ export class MenuListComponent implements OnInit {
         { key: 'MenuCode', label: 'Menu Code' },
         { key: 'MenuType', label: 'Menu Type' },
         { key: 'ModuleName', label: 'Module Name' },
+        { key: 'path', label: 'Path' },
+        { key: 'icon', label: 'Icon' },
         { key: 'status', label: 'Status' },
       ],
       fileName: 'Menu-Report', 
