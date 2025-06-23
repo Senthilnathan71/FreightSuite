@@ -10,6 +10,10 @@ import { NgSelectModule } from '@ng-select/ng-select';
 })
 export class DoctypeComponent {
 
+
+    navigateBack() {
+    history.back();
+  }
     modeOfStatus = [
     { id: '1', name: 'Active' },
     { id: '2', name: 'Suspended' },

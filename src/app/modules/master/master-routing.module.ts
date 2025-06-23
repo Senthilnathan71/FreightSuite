@@ -65,6 +65,7 @@ import { AuthorityEntryComponent } from './authority/authority-entry/authority-e
 import { YearListComponent } from './year/year-list/year-list.component';
 import { YearEntryComponent } from './year/year-entry/year-entry.component';
 import { DoctypeComponent } from './docunmentType/doctype/doctype.component';
+import { DoctypeListComponent } from './docunmentType/doctype-list/doctype-list.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -934,8 +935,19 @@ export const MasterRoutes: Routes = [
         }
       },
         {
-        path: 'doctype',
+        path: 'doctype/entry',
         component: DoctypeComponent,
+        data: {
+          title: 'DocunmentType',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'DocunmentType' },
+          ]
+        }
+      },
+       {
+        path: 'doctype/list',
+        component: DoctypeListComponent,
         data: {
           title: 'DocunmentType',
           urls: [
