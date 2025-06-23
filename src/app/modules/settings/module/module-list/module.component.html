@@ -169,6 +169,30 @@
                                         }
                                 </div>
                             </aside>
+
+                            <!-- In your modal template (inside the form) -->
+<aside class="col-md-6">
+    <div class="custom-form-group custom-form-group-select">
+        <ng-select [items]="iconOptions" 
+                   bindLabel="label" 
+                   bindValue="value" 
+                   formControlName="icon"
+                   placeholder="Select an icon">
+            <ng-template ng-label-tmp let-item="item">
+                <i-feather class="feather-sm me-2" [name]="item.value"></i-feather>
+                {{item.label}}
+            </ng-template>
+            <ng-template ng-option-tmp let-item="item">
+                <i-feather class="feather-sm me-2" [name]="item.value"></i-feather>
+                {{item.label}}
+            </ng-template>
+        </ng-select>
+        <label class="input-label">Icon</label>
+    </div>
+</aside>
+
+
+
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"
