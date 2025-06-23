@@ -64,8 +64,8 @@ import { AuthorityListComponent } from './authority/authority-list/authority-lis
 import { AuthorityEntryComponent } from './authority/authority-entry/authority-entry.component';
 import { YearListComponent } from './year/year-list/year-list.component';
 import { YearEntryComponent } from './year/year-entry/year-entry.component';
-import { DoctypeComponent } from './docunmentType/doctype/doctype.component';
-import { DoctypeListComponent } from './docunmentType/doctype-list/doctype-list.component';
+import { DoctypeComponent } from './document-type/doctype-entry/doctype.component';
+import { DoctypeListComponent } from './document-type/doctype-list/doctype-list.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -938,10 +938,21 @@ export const MasterRoutes: Routes = [
         path: 'doctype/entry',
         component: DoctypeComponent,
         data: {
-          title: 'DocunmentType',
+          title: 'Document Type',
           urls: [
             { title: 'Master', url: '/master' },
-            { title: 'DocunmentType' },
+            { title: 'Docunment Type' },
+          ]
+        }
+      },
+        {
+        path: 'doctype/entry/:id',
+        component: DoctypeComponent,
+        data: {
+          title: 'Document Type',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Docunment Type' },
           ]
         }
       },
@@ -949,10 +960,10 @@ export const MasterRoutes: Routes = [
         path: 'doctype/list',
         component: DoctypeListComponent,
         data: {
-          title: 'DocunmentType',
+          title: 'Document Type',
           urls: [
             { title: 'Master', url: '/master' },
-            { title: 'DocunmentType' },
+            { title: 'Document Type' },
           ]
         }
       },

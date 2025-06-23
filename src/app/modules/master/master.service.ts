@@ -2376,4 +2376,61 @@ searchAuthorityDetails(payload: any) {
     })
   );
 }
+
+// Document Type Master
+
+getAllDocType() {
+  return this.http.get<{ data: any[] }>('document-type').pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+getDocTypeById(DocumentTypeMasterSid: number) {
+  return this.http.get<{ data: any }>(`document-type/fetch/${DocumentTypeMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+createNewDocType(payload: any) {
+  return this.http.post<{ data: any }>('document-type/create', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+updateDocTypeById(DocumentTypeMasterSid: number, payload: any) {
+  return this.http.patch<{ data: any }>(`document-type/update/${DocumentTypeMasterSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+deleteDocTypeById(DocumentTypeMasterSid: number) {
+  return this.http.delete<{ data: any }>(`document-type/delete/${DocumentTypeMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+searchDocTypes(payload: any) {
+  return this.http.post<{ data: any[] }>('document-type/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
 }

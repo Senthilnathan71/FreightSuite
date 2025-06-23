@@ -254,7 +254,7 @@ export class UserEntryComponent implements OnInit {
 		if (!this.userData) return;
 		const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
 		modalRef.componentInstance.item = this.userData;
-		modalRef.componentInstance.idLabel = 'Department Id';
+		modalRef.componentInstance.idLabel = 'User Id';
 		modalRef.componentInstance.idValue = this.userData?.UserMasterSid;
 	}
 
