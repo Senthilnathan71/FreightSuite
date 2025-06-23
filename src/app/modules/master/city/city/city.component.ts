@@ -15,6 +15,7 @@ import { forkJoin, take } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ListpageComponent} from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-city',
@@ -30,7 +31,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     RouterModule,
     NgbModalModule,
     NgSelectModule,
-    DatePipe
+    DatePipe,
+    ListpageComponent
   ],
   templateUrl: './city.component.html',
   styleUrl: './city.component.scss'
@@ -306,6 +308,12 @@ export class CityComponent {
     );
   }
 
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     const payload = {
