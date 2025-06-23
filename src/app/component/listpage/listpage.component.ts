@@ -30,4 +30,10 @@ export class ListpageComponent {
   emitSearch() {
     this.onSearchClick.emit({ type: this.searchType, value: this.filterValue });
   } 
+
+  emitReset() {
+    this.filterValue = '';
+    this.searchType = this.defaultSearchType || (this.searchOptions.length > 0 ? this.searchOptions[0].value : '');
+    this.onResetClick.emit();
+  }
 }

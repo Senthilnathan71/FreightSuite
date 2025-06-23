@@ -16,6 +16,7 @@ import { take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-zone',
@@ -31,7 +32,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     ReactiveFormsModule,
     OnlyTextDirective,
     TextWithNumbersDirective,
-    DatePipe
+    DatePipe,
+    ListpageComponent
   ],
   templateUrl: './zone.component.html',
   styleUrl: './zone.component.scss'
@@ -253,6 +255,13 @@ export class ZoneComponent {
       }
     );
   }
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     const payload = {

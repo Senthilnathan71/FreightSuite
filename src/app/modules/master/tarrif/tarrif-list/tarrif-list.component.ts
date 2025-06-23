@@ -12,6 +12,7 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-tarrif-list',
@@ -22,7 +23,8 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
     FormsModule,
     RouterModule,
     NgbPaginationModule,
-    CustomDatePipe
+    CustomDatePipe,
+    ListpageComponent
   ],
   templateUrl: './tarrif-list.component.html',
   styleUrl: './tarrif-list.component.scss'
@@ -59,7 +61,14 @@ export class TarrifListComponent implements OnInit {
         }
       }
     )
-   }
+  }
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     const intFields = ['Carrier', 'AgentSid'];

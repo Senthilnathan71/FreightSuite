@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-vessel-list',
@@ -19,7 +20,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     FormsModule,
     ReactiveFormsModule,
     NgbPaginationModule,
-    RouterModule
+    RouterModule,
+    ListpageComponent
   ],
   templateUrl: './vessel-list.component.html',
   styleUrl: './vessel-list.component.scss'
@@ -46,8 +48,14 @@ export class VesselListComponent {
     if (user) {
       this.userData = user;
     }
-  });
-   }
+  });}
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     const intSearch = [
