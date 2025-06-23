@@ -1,0 +1,266 @@
+<form>
+    <div class="row py-3">
+        <div class="col-12">
+            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+                <div class="col-md-4 pb-2">
+                    <h4 class="page-title mb-0">DocunmentType</h4>
+                </div>
+                <div class="col-md-8 pb-2">
+                    <div
+                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Reset
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-save me-1"></i>
+                            Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row">
+
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Branch <span
+                                        class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Name <span
+                                        class="text-danger">*</span></label>
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Code <span
+                                        class="text-danger">*</span></label>
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Type <span
+                                        class="text-danger">*</span></label>
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Currency <span
+                                        class="text-danger"></span></label>
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group d-flex">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">COA Name <span
+                                        class="text-danger"></span></label>
+                                <button class="btn btn-info"><i class="fas fa-search"></i></button>
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="custom-form-group d-flex">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Subledger <span
+                                        class="text-danger"></span></label>
+                                <button class="btn btn-info"><i class="fas fa-search"></i></button>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Report Title <span
+                                        class="text-danger"></span></label>
+
+                            </div>
+                        </aside>
+                       
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <textarea id="" class="custom-input-field sm" placeholder="" rows="1"
+                                    formControlName="" ></textarea>
+                                <label for="" class="input-label">Report Footer</label>
+
+                            </div>
+                        </aside>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row">
+
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="Name">
+                                <label for="text-input" class="input-label">Starting No <span
+                                        class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="Status" [items]="modeOfSeparator" bindLabel="name"
+                                    bindValue="name">
+                                </ng-select>
+                                <label for="" class="input-label">Separator <span class="text-danger"></span></label>
+
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="Status" [items]="modeOfSerialNo" bindLabel="name"
+                                    bindValue="name">
+                                </ng-select>
+                                <label for="" class="input-label">Serial No Len <span
+                                        class="text-danger"></span></label>
+
+                            </div>
+                        </aside>
+
+
+
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="Status" [items]="modeOfResetValue" bindLabel="name"
+                                    bindValue="name">
+                                </ng-select>
+                                <label for="" class="input-label">Reset Value <span class="text-danger">*</span></label>
+
+                            </div>
+                        </aside>
+
+
+
+
+
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <textarea id="Remarks" class="custom-input-field sm" placeholder="" rows="1"
+                                    formControlName="Remarks" maxlength="500"></textarea>
+                                <label for="Remarks" class="input-label">Remarks</label>
+
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
+                                    bindValue="name">
+                                </ng-select>
+                                <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+
+                            </div>
+                        </aside>
+
+
+                        <aside class="col-md-6 mt-3">
+                            <div class=" form-check">
+                                <label for="text-input" class="form-check-label">Company Flag Required <span
+                                        class="text-danger"></span></label>
+                                <input type="checkbox" id="text-input" placeholder="" class="form-check-input"
+                                    formControlName="">
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Flag <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-6 mt-3">
+                            <div class=" form-check">
+                                <label for="text-input" class="form-check-label">Branch Flag Required <span
+                                        class="text-danger"></span></label>
+                                <input type="checkbox" id="text-input" placeholder="" class="form-check-input"
+                                    formControlName="">
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Flag <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6 mt-3">
+                            <div class=" form-check">
+                                <label for="text-input" class="form-check-label">Book Flag Required <span
+                                        class="text-danger"></span></label>
+                                <input type="checkbox" id="text-input" placeholder="" class="form-check-input"
+                                    formControlName="">
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">JNV <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-6 mt-3">
+                            <div class=" form-check">
+                                <label for="text-input" class="form-check-label">Month Flag Required <span
+                                        class="text-danger"></span></label>
+                                <input type="checkbox" id="text-input" placeholder="" class="form-check-input"
+                                    formControlName="">
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-6 mt-3">
+                            <div class=" form-check">
+                                <label for="text-input" class="form-check-label">Year Flag Required <span
+                                        class="text-danger"></span></label>
+                                <input type="checkbox" id="text-input" placeholder="" class="form-check-input"
+                                    formControlName="">
+
+                            </div>
+                        </aside>
+                        <div class="d-flex justify-content-center mt-3">
+                            <button type="button" class="btn btn-info btn-sm dofi-min-w-full dofi-max-w-full">
+                                Sample Voucher Number
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

@@ -395,6 +395,16 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
+        {
+        path: '/master/doctype',
+        title: 'DocunmentType',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
     ]
   },
 
