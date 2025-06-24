@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppService } from 'src/app/service/app.service';
+import {SettingsService} from 'src/app/modules/settings/settings.service'
 
 
 @Component({
@@ -27,21 +28,41 @@ export class VerticalSidebarComponent implements OnInit {
 
   constructor(
     private menuServise: VerticalSidebarService, 
+    private settingsService:SettingsService,
     private router: Router, private appService:AppService) {
-    this.menuServise.items.subscribe(menuItems => {
+  }
+
+
+  ngOnInit() {
+
+    this.isMobile = this.appService.getDevice()
+
+    this.getModules();
+
+    // Subscribe to menu state
+    this.menuServise.items$.subscribe(menuItems => {
       this.sidebarnavItems = menuItems;
 
-      // Active menu 
-      this.sidebarnavItems.filter(m => m.submenu.filter(
-        (s) => {
+      // Detect current active menu
+      this.sidebarnavItems.forEach(m => {
+        m.submenu.forEach(s => {
           if (s.path === this.router.url) {
             this.path = m.title;
           }
-        }
-      ));
+        });
+      });
+
       this.addExpandClass(this.path);
     });
   }
+
+  getModules() {
+    this.settingsService.getAllModules().subscribe((resp) => {
+      console.log(resp.data, 'respOfMenu');
+      this.menuServise.updateMenuItems(resp.data || []);
+    });
+  }
+  
 
   addExpandClass(element: any) {
     if (element === this.showMenu) {
@@ -68,8 +89,5 @@ export class VerticalSidebarComponent implements OnInit {
     this.notify.emit(!this.showClass);
   }
 
-  ngOnInit(): void {
-    this.isMobile = this.appService.getDevice()
-  }
 
 }

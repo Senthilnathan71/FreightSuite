@@ -1,80 +1,54 @@
 <div class="row">
-    <!-- <div class="col-12">
-        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
-            <form class="d-flex align-items-center gap-2">
-                <div class="form-outline col">
-                    <input type="search" class="form-control ps-5"  name="search" placeholder="Search Type">
-                    <i class="fas fa-search ms-3"></i>
-                </div>
-                <div class="form-outline col">
-                    <input type="search" class="form-control"  name="search" placeholder="Enter Name">
-                </div>
-                <button type="button" class="btn btn-info btn-sm">
-                    <i class="fas fa-search"></i>
-                    Search
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm">
-                    <i class="mdi mdi-plus"></i>
-                    Create
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm d-flex align-items-center gap-1">
-                    <i-feather name="arrow-down-right" class="feather-sm "></i-feather>
-                    Report
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm d-flex align-items-center gap-1">
-                    <i-feather name="arrow-down-right" class="feather-sm"></i-feather>
-                    Reset
-                </button>
-            </form>
-        </div>
-    </div> -->
-      <div class="col-12">
+    <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col-md-4 pb-2">
                 <h4 class="page-title mb-0">Milestone</h4>
             </div>
             <div class="col-md-8 pb-2">
                 <div class="" data-bs-theme="light">
-                    <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-search me-1"></i>
-                            Search
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="navigateToCreateMilestone()">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="report()"
+                            [disabled]="!searchPerformed || totalLengthOfCollection === 0">
                             <i class="fas fa-file-alt me-1"></i>
                             Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            (click)="resetPage()"
+                            [disabled]="!searchPerformed">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
                     </form>
                 </div>
             </div>
-            <div class="col-md-12  border-top">
+            <div class="col-md-12 border-top">
                 <div class="row mx-0 py-2">
                     <div class="col-md-8 mx-auto px-0">
-                        <form
-                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="form-outline col-12 col-md px-0">
-                               <select name="searchType" class="form-select">
-                                <option value="departmentName">Department Name</option>
-                                <option value="departmentCode">Department Code</option>
-                                <option value="departmentType">Department Type</option>
-                                <option value="ExportImport">Export/Import</option>
-                                <option value="FCLLCL">FCLLCL</option>
-                                <option value="status">Status</option>
-                            </select>
+                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
+                                    <option value="MilestoneName">Milestone Name</option>
+                                    <option value="MilestoneCode">Milestone Code</option>
+                                    <option value="departmentName">Department</option>
+                                    <option value="ShipmentType">Shipment Type</option>
+                                    <option value="status">Status</option>
+                                </select>
                             </div>
-                            <div class="form-outline col-12 col-md px-0">
-                                <input name="filterValue" type="text" class="form-control"
-                                    placeholder="Enter filter value">
-                                <i
-                                    class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
+                                <div class="form-outline flex-grow-1">
+                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
+                                        placeholder="Enter filter value">
+                                    <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                                </div>
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="search()">
+                                    <i class="fas fa-search me-1"></i>
+                                    Search
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -82,107 +56,81 @@
             </div>
         </div>
     </div>
-     <!-- <div class="col-12">
-        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <div class="col-8 mx-auto">
-                <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
-                    <form class="d-flex align-items-center gap-2">
-                        <div class="form-outline col">
-                            <select name="searchType" class="form-select">
-                                <option value="departmentName">Department Name</option>
-                                <option value="departmentCode">Department Code</option>
-                                <option value="departmentType">Department Type</option>
-                                <option value="ExportImport">Export/Import</option>
-                                <option value="FCLLCL">FCLLCL</option>
-                                <option value="status">Status</option>
-                            </select>
-                        </div>
-                        <div class="form-outline col">
-                            <input  name="filterValue" type="text" class="form-control"
-                                placeholder="Enter filter value">
-                            <i
-                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                        </div>
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Milestone Name</th>
+                            <th class="bg-transparent text-light" scope="col">Milestone Code</th>
+                            <th class="bg-transparent text-light" scope="col">Shipment Type</th>
+                            <th class="bg-transparent text-light" scope="col">Department</th>
+                            <th class="bg-transparent text-light" scope="col">Sort By</th>
+                            <th class="bg-transparent text-light" scope="col">Auto Capture</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of milestoneList; let i = index; trackBy: trackByMilestoneId">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <a class="mx-2 ps-3" 
+   [routerLink]="['/master/milestone/entry', item.MilestoneMasterSid]" 
+   title="Edit">
+   <i-feather name="eye" class="feather-sm"></i-feather>
+</a>
 
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" >
-                            <i class="fas fa-search"></i>
-                            Search
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80"
-                            >
-                            <i class="mdi mdi-plus"></i> Create
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" >
-                           
-                            Report
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80">
-                           
-                            Reset
-                        </button>
-                    </form>
-                </div>
+                                    <a class="text-danger mx-2 ps-3 border-start" (click)="softDelete(item.MilestoneMasterSid)"
+                                        title="Delete">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </a>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.MilestoneName}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.MilestoneCode}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.ShipmentType}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.departmentMaster.departmentName || '-'}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.SortBy || '-'}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.AutoCapture || '-'}}</div>
+                            </td>
+                            <td>
+                                @if(item.status === "A"){
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active
+                                </div>
+                                } @else {
+                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Suspended
+                                </div>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+                </ngb-pagination>
             </div>
         </div>
-    </div> -->
-    
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
-         <div class="col-12 p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Name</th>
-                        <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Shipment Type</th>
-                        <th class="bg-transparent text-light" scope="col">Department</th>
-                        <th class="bg-transparent text-light" scope="col">Order By</th>
-                        <th class="bg-transparent text-light" scope="col">Auto Capture</th>
-                        <th class="bg-transparent text-light" scope="col">Remarks</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                        <tr>
-                            <td>
-                                <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
-                            </td>
-                            <td>
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">RO</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Baizas</div>
-                            </td>
-                            <td>
-                                <span
-                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Approved</span>
-                            </td>
-                           
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
     </div>
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0">
+        <div>No records found</div>
     </div>
-   
 </div>

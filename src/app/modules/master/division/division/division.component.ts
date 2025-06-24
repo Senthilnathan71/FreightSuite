@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, TemplateRef } from '@angular/core';
 import { FormsModule, FormGroup, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -14,6 +14,7 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { take } from 'rxjs';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-division',
@@ -28,7 +29,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     NgSelectModule,
     ReactiveFormsModule,
     OnlyTextDirective,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    DatePipe
   ],
   templateUrl: './division.component.html',
   styleUrl: './division.component.scss'
@@ -53,6 +55,7 @@ export class DivisionComponent {
   pageSize = 5;
   totalLengthOfCollection = 0;
   userData: any;
+  divisionData : any;
 
   constructor(
    private modalService: NgbModal,
@@ -136,6 +139,7 @@ export class DivisionComponent {
     this.masterService.getDivisionById(DivisionMasterSid).pipe(take(1)).subscribe({
       next: (division: any) => {
         this.divisionForm.get('status')?.enable();
+        this.divisionData = division;
         this.divisionForm.patchValue({
           DivisionName: division.DivisionName,
           DivisionCode: division.DivisionCode,
@@ -346,5 +350,13 @@ export class DivisionComponent {
     title: companyName
   });
 }
+
+  showInfo() {
+    if(!this.divisionData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.divisionData;
+    modalRef.componentInstance.idLabel = 'Division Id';
+    modalRef.componentInstance.idValue = this.divisionData?.DivisionMasterSid;
+  }
 
 }

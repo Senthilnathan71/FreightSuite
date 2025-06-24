@@ -60,6 +60,12 @@ import { SectorComponent } from './sector/sector-list/sector-list.component';
 import { UserListComponent } from './user/user-list/user-list.component';
 import { UserEntryComponent } from './user/user-entry/user-entry.component';
 import { ChargeTaxComponent } from './charge-tax/charge-tax/charge-tax.component';
+import { AuthorityListComponent } from './authority/authority-list/authority-list.component';
+import { AuthorityEntryComponent } from './authority/authority-entry/authority-entry.component';
+import { YearListComponent } from './year/year-list/year-list.component';
+import { YearEntryComponent } from './year/year-entry/year-entry.component';
+import { DoctypeComponent } from './document-type/doctype-entry/doctype.component';
+import { DoctypeListComponent } from './document-type/doctype-list/doctype-list.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -104,7 +110,7 @@ export const MasterRoutes: Routes = [
         path: 'currency/list',
         component: CurrencyListComponent,
         data: {
-          title: 'Currency- List',
+          title: 'Currency',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Currency' }],
         },
       },
@@ -334,7 +340,7 @@ export const MasterRoutes: Routes = [
         path: 'sector/list',
         component: SectorComponent,
         data: {
-          title: 'Sector List',
+          title: 'Sector ',
           urls: [{ title: 'Master', url: '/master' }, { title: 'sector' }],
         },
       },
@@ -433,10 +439,19 @@ export const MasterRoutes: Routes = [
         path: 'milestone/entry',
         component: MilestoneEntryComponent,
         data: {
-          title: 'Container Type',
+          title: 'Milestone',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Milestone' }],
         },
       },
+      {
+        path: 'milestone/entry/:id',
+        component: MilestoneEntryComponent,
+        data: {
+          title: 'Milestone',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Milestone' }],
+        },
+      },
+
       {
         path: 'organization/list',
         component: OrganizationListComponent,
@@ -863,6 +878,94 @@ export const MasterRoutes: Routes = [
             { title: 'Charge-tax' },
           ],
         },
-      }
+      },
+      {
+        path: 'authority/list',
+        component: AuthorityListComponent,
+        data: {
+          title: 'Authority',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Authority' },
+          ],
+        },
+      },
+      {
+        path: 'authority/entry',
+        component: AuthorityEntryComponent,
+        data: {
+          title: 'Authority',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Authority' },
+          ],
+        },
+      },
+      {
+        path: 'authority/entry/:id',
+        component: AuthorityEntryComponent,
+        data: {
+          title: 'Authority',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Authority' },
+          ]
+        }
+      },
+        {
+        path: 'year/list',
+        component: YearListComponent,
+        data: {
+          title: 'Year',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Year' },
+          ],
+        },
+      },
+      {
+        path: 'year/entry',
+        component: YearEntryComponent,
+        data: {
+          title: 'Year',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Year' },
+          ]
+        }
+      },
+        {
+        path: 'doctype/entry',
+        component: DoctypeComponent,
+        data: {
+          title: 'Document Type',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Docunment Type' },
+          ]
+        }
+      },
+        {
+        path: 'doctype/entry/:id',
+        component: DoctypeComponent,
+        data: {
+          title: 'Document Type',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Docunment Type' },
+          ]
+        }
+      },
+       {
+        path: 'doctype/list',
+        component: DoctypeListComponent,
+        data: {
+          title: 'Document Type',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Document Type' },
+          ]
+        }
+      },
 
 ];

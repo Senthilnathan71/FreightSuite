@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -8,11 +8,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { DatePipe } from '@angular/common';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
     selector: 'app-product-entry',
     standalone: true,
-    imports: [FeatherModule, NgSelectModule,ReactiveFormsModule,OnlyTextDirective,OnlyNumbersDirective,TextWithNumbersDirective],
+    imports: [FeatherModule, NgSelectModule,ReactiveFormsModule,OnlyTextDirective,OnlyNumbersDirective,TextWithNumbersDirective,DatePipe],
     templateUrl: './product-entry.component.html',
     styleUrl: './product-entry.component.scss',
 })
@@ -22,7 +25,8 @@ export class ProductEntryComponent implements OnInit{
     isEditMode : boolean;
     ProductMasterSId : number;
     UOMList : any[];
-    hsnList : any[];
+    hsnList: any[];
+    productData: any;
 
     // modeOfUOM = [
     //     { id: '1', name: 'Days' },
@@ -50,7 +54,8 @@ export class ProductEntryComponent implements OnInit{
         private appSettingService:AppSettingsService,
         private currentRoute : ActivatedRoute,
         private route:Router,
-        private fb:FormBuilder
+        private fb:FormBuilder,
+        private modalService : NgbModal
     ){}
 
     ngOnInit(): void {
@@ -95,6 +100,7 @@ export class ProductEntryComponent implements OnInit{
         let ourProduct :any;
         this.masterService.getProductById(this.ProductMasterSId).subscribe(
             (resp:any)=>{
+                this.productData = resp.data;
                 this.productForm.patchValue({
                     ...resp.data,
                     status : resp.data.status === 'A' ? 'Active' : 'Suspended'
@@ -128,8 +134,8 @@ export class ProductEntryComponent implements OnInit{
             return;
         }
         else {
-            const createdBy = this.appSettingService.userSettingSource.value['UserEmail'];
-            const updatedBy = this.appSettingService.userSettingSource.value['UserEmail'];
+            const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
+            const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
             const formValue = this.productForm.value;
             const payload = this.isEditMode ? {
                 ...formValue,
@@ -194,6 +200,14 @@ export class ProductEntryComponent implements OnInit{
                 console.error('Error Loading Charge Tax',error);
             }
         )
+    }
+
+    showInfo() {
+        if (!this.productData) return;
+        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.componentInstance.item = this.productData;
+        modalRef.componentInstance.idLabel = 'Product Id';
+        modalRef.componentInstance.idValue = this.productData?.ProductMasterSId;
     }
 
 }

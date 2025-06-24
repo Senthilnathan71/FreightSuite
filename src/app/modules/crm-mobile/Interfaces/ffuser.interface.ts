@@ -1,0 +1,60 @@
+export interface FfUser {
+    "userCode": string,
+    "userName": string,
+    "userEmail": string,
+    "userPassword": string,
+    "isSalesperson"?: string,
+    "contactNumber"?: string,
+    "department": string[],
+    "designation"?: string,
+    "DefaultDept"?: string,
+    "Principal": number,
+    "isLoginUser"?: string,
+    "CostRevenue"?: string,
+    "DeptHead"?: number,
+    "createdBy"?: string,
+    "createdOn": Date,
+    "updatedOn": Date,
+    "deletedAt"?: Date,
+    "updatedBy"?: string,
+    "status"?: string,
+    "CountryMasterSid": number,
+    "LoginSid"?: number,
+    "userTypeId": number,
+    "UserMasterSid"?: number,
+    "userBranchMaster"?: any[],
+    "enquiryHeader"?: any[],
+    "customerSupport"?: any[],
+    "userCompanyMaster"?: any[],
+    "userRoleMaster"?: any[],
+    "shortCut"?: any[],
+    "userHistory"?: any[],
+    "authorityDetail"?: any[]
+}
+
+export interface UserCompany {
+    "UserCompanyMasterSid"?: number,
+    "UserMasterSid": number,
+    "CompanyMasterSid": any,
+    "createdOn": Date,
+    "updatedOn"?: Date,
+    "deletedAt"?: Date,
+    "createdBy": string,
+    "updatedBy"?: string,
+    "status"?: string,
+    "GiveAccess"?: string,
+    "IsDefault"?: string
+}
+
+export interface UserRole {
+    "UserRoleMasterSid"?: number,
+    "UserMasterSid": number,
+    "RoleMasterSid": any,
+    "createdOn": Date,
+    "updatedOn"?: Date,
+    "deletedAt"?: Date,
+    "createdBy": string,
+    "updatedBy"?: string,
+    "status"?: string,
+    "Remarks"?: string
+}

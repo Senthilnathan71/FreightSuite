@@ -1,4 +1,4 @@
-import { CommonModule, JsonPipe } from '@angular/common';
+import { CommonModule, DatePipe, JsonPipe } from '@angular/common';
 import {
   ChangeDetectorRef,
   Component,
@@ -39,6 +39,7 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-organization-entry',
@@ -57,7 +58,8 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
     TextWithNumbersDirective,
     NgbDatepickerModule,
     CustomDatePipe,
-    NgbTooltipModule
+    NgbTooltipModule,
+    DatePipe
   ],
   templateUrl: './organization-entry.component.html',
   styleUrl: './organization-entry.component.scss',
@@ -149,6 +151,16 @@ export class OrganizationEntryComponent {
   modalRef10: NgbModalRef;
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month, this.today.day);
+
+
+  // Info Related Variables
+  customerData : any;
+  branchData : any;
+  branchContactData : any;
+  branchEmailData : any;
+  branchLoginData : any;
+  salesmanData : any;
+
 
   updateCustomerType(): void {
     const result: any = {};
@@ -254,6 +266,7 @@ export class OrganizationEntryComponent {
     this.getStatesByCountryId();
     if (data) {
       this.isModalEditMode = true;
+      this.branchData = data;
       this.getCitiesByStateId(data.StateMasterSid);
       // Patch form #1
       this.customerBranchForm.patchValue({
@@ -298,6 +311,7 @@ export class OrganizationEntryComponent {
     this.initCustomerBranchContactForm();
     if (data) {
       // Patch form #2
+      this.branchContactData = data;
       this.customerBranchContactForm.patchValue({
         ContactType: data.ContactType || '',
         ContactName: data.ContactName || '',
@@ -325,6 +339,7 @@ export class OrganizationEntryComponent {
     this.initCustomerBranchEmailForm();
     if (data) {
       // Patch form #2
+      this.branchEmailData = data;
       this.customerBranchEmailForm.patchValue({
         CustomerBranchSid: data.CustomerBranchSid,
         DepartmentMasterSid: data.DepartmentMasterSid || '',
@@ -351,6 +366,7 @@ export class OrganizationEntryComponent {
   openBranchLoginModal(content: TemplateRef<any>, data?: any) {
     this.initCustomerBranchLoginForm();
     if (data) {
+      this.branchLoginData = data;
       // Patch form #2
       this.customerBranchLoginForm.patchValue({
         CustomerMasterSid: data.CustomerMasterSid,
@@ -675,6 +691,7 @@ export class OrganizationEntryComponent {
   loadCustomerData(customerId: number) {
     this.masterService.getCustomerById(customerId).subscribe(
       (customerData: any) => {
+        this.customerData = customerData;
         this.customerName = customerData.CustomerName;
         this.status = customerData.status;
         // Convert API status (A/IA) to display status (Active/Inactive)
@@ -1361,6 +1378,7 @@ export class OrganizationEntryComponent {
     this.loadAllSpfields();
     if(data){
       this.isSalespersonEdit = true;
+      this.salesmanData = data;
       this.salespersonForm.patchValue({
         ...data,
         spEffectiveFrom:new Date(data.EffectiveFrom),
@@ -1495,6 +1513,54 @@ export class OrganizationEntryComponent {
     
     return depart.join(" , ")
   }
+
+
+  // Info Functions
+
+  showCustomerInfo() {
+    if (!this.customerData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.customerData;
+    modalRef.componentInstance.idLabel = 'Customer Id';
+    modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
+  }
+  showBranchInfo() {
+    if (!this.branchData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.branchData;
+    modalRef.componentInstance.idLabel = 'Branch Id';
+    modalRef.componentInstance.idValue = this.branchData?.CustomerBranchSid;
+  }
+  showBrContactInfo() {
+    if (!this.branchContactData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.branchContactData;
+    modalRef.componentInstance.idLabel = 'Branch Contact Id';
+    modalRef.componentInstance.idValue = this.branchContactData?.CusBranchContactSid;
+  }
+  showBrEmailInfo() {
+    if (!this.branchEmailData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.branchEmailData;
+    modalRef.componentInstance.idLabel = 'Branch Email Id';
+    modalRef.componentInstance.idValue = this.branchEmailData?.CustomerBrEmailSid;
+  }
+  showBrLoginInfo() {
+    if (!this.branchLoginData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.branchLoginData;
+    modalRef.componentInstance.idLabel = 'Branch Login Id';
+    modalRef.componentInstance.idValue = this.branchLoginData?.CustomerLoginSid;
+  }
+  showSalesmanInfo() {
+    if (!this.salesmanData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.salesmanData;
+    modalRef.componentInstance.idLabel = 'Salesman Id';
+    modalRef.componentInstance.idValue = this.salesmanData?.CustomerSalesSid;
+  }
+
+
 
   
 }

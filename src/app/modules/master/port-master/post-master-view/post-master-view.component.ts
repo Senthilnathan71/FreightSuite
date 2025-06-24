@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, TemplateRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { FormsModule, FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { NgSelectConfig, NgSelectModule } from '@ng-select/ng-select';
 import { RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface';
@@ -14,6 +14,8 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { forkJoin } from 'rxjs';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 
 
@@ -29,7 +31,8 @@ import { forkJoin } from 'rxjs';
     ReactiveFormsModule,
     OnlyNumbersDirective,
     OnlyTextDirective,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    DatePipe
   ],
   templateUrl: './post-master-view.component.html',
   styleUrl: './post-master-view.component.scss'
@@ -42,6 +45,7 @@ export class PostMasterViewComponent {
   stateList: State[] = [];
   filteredStateList: State[];
   regionList: any[] = [];
+  portData: any;
 
   modeOfStatus = [
     { name: 'Active', value: 'Active' },
@@ -57,7 +61,7 @@ export class PostMasterViewComponent {
 
   constructor(private config: NgSelectConfig, private fb: FormBuilder,
     private route: ActivatedRoute,
-    private router: Router, private appSettingService: AppSettingsService, private masterService: MasterService) {
+    private router: Router, private appSettingService: AppSettingsService, private masterService: MasterService, private modalService : NgbModal) {
     this.config.notFoundText = 'Custom not found';
     this.config.appendTo = 'body';
     this.config.bindValue = 'value';
@@ -98,6 +102,7 @@ export class PostMasterViewComponent {
     this.masterService.getPortById(PortMasterSid).subscribe(
       (resp) => {
         console.log(resp, 'portdata')
+        this.portData = resp;
         this.filterStateByCountry(resp.CountryMasterSid);
         this.portForm.patchValue({
           ...resp,
@@ -265,4 +270,13 @@ export class PostMasterViewComponent {
 
     }
   }
+
+  showInfo() {
+    if(!this.portData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.portData;
+    modalRef.componentInstance.idLabel = 'Port Id';
+    modalRef.componentInstance.idValue = this.portData?.PortMasterSid;
+  }
+
 }

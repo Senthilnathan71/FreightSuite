@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { City } from 'src/app/modules/crm-mobile/Interfaces/city.interface';
@@ -14,6 +14,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { forkJoin, take } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ListpageComponent} from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-city',
@@ -29,6 +31,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     RouterModule,
     NgbModalModule,
     NgSelectModule,
+    DatePipe,
+    ListpageComponent
   ],
   templateUrl: './city.component.html',
   styleUrl: './city.component.scss'
@@ -56,6 +60,7 @@ export class CityComponent {
   pageSize = 10;
   totalLengthOfCollection = 0;
   userData: any;
+  cityData : any;
 
   
   constructor(
@@ -171,6 +176,7 @@ export class CityComponent {
     this.CityMasterSid = id;
     this.masterService.getCityById(id).pipe(take(1)).subscribe({
       next: (city: any) => {
+        this.cityData = city;
         this.cityForm.get('status')?.enable();
         this.cityForm.patchValue({
           cityName: city.cityName,
@@ -302,6 +308,12 @@ export class CityComponent {
     );
   }
 
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     const payload = {
@@ -393,5 +405,13 @@ export class CityComponent {
     title: companyName
   });
 }
+
+  showInfo() {
+    if (!this.cityData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.cityData;
+    modalRef.componentInstance.idLabel = 'City Id';
+    modalRef.componentInstance.idValue = this.cityData?.CountryMasterSid;
+  }
   
 }

@@ -1,17 +1,6 @@
 import { RouteInfo } from './vertical-sidebar.metadata';
 
 export const ROUTES: RouteInfo[] = [
-
-  // {
-  //   path: '/crm',
-  //   title: 'Dashboard',
-  //   icon: 'mdi mdi-view-dashboard',
-  //   class: '',
-  //   extralink: false,
-  //   label: '',
-  //   labelClass: '',
-  //   submenu: []
-  // },
   {
     path: '',
     title: 'Master',
@@ -151,16 +140,7 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-      {
-        path: '/master/menu/list',
-        title: 'Menu',
-        icon: 'fas fa-dot-circle',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
+      
       {
         path: '/master/report/list',
         title: 'Report',
@@ -171,16 +151,7 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-      {
-        path: '/master/region/list',
-        title: 'Region',
-        icon: 'fas fa-dot-circle',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
+      
       {
         path: '/master/division/list',
         title: 'division',
@@ -301,36 +272,8 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
-      {
-        path: '/master/module/list',
-        title: 'Module',
-        icon: 'fas fa-dot-circle',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
-      {
-        path: '/master/role/list',
-        title: 'Role',
-        icon: 'fas fa-dot-circle',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
-      {
-        path: '/master/rolemenu',
-        title: 'Role Menu',
-        icon: 'fas fa-dot-circle',
-        class: '',
-        extralink: false,
-        label: '',
-        labelClass: '',
-        submenu: []
-      },
+      
+      
       {
         path: '/master/chargegroup',
         title: 'Charge Group',
@@ -404,6 +347,46 @@ export const ROUTES: RouteInfo[] = [
       {
         path: '/master/Charge-tax',
         title: 'Charge-tax',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+       {
+        path: '/master/milestone/list',
+        title: 'Milestone',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+      {
+        path: '/master/authority/list',
+        title: 'Authority',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+        {
+        path: '/master/year/list',
+        title: 'Year',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+        {
+        path: '/master/doctype/list',
+        title: 'Document Type',
         icon: 'fas fa-dot-circle',
         class: '',
         extralink: false,
@@ -580,6 +563,26 @@ export const ROUTES: RouteInfo[] = [
       {
         path: '/settings/rolemenu',
         title: 'Role Menu',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+       {
+        path: '/settings/edoc',
+        title: 'Edoc',
+        icon: 'mdi mdi-stackexchange',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
+       {
+        path: '/settings/email',
+        title: 'Email',
         icon: 'mdi mdi-stackexchange',
         class: '',
         extralink: false,

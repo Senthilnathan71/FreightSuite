@@ -122,6 +122,11 @@
 <ng-template #content let-modal>
     <div class="modal-header">
         <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Module</h4>
+        @if(isEditMode){
+        <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+        </a>
+        }
         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
@@ -164,6 +169,30 @@
                                         }
                                 </div>
                             </aside>
+
+                            <!-- In your modal template (inside the form) -->
+<aside class="col-md-6">
+    <div class="custom-form-group custom-form-group-select">
+        <ng-select [items]="iconOptions" 
+                   bindLabel="label" 
+                   bindValue="value" 
+                   formControlName="icon"
+                   placeholder="Select an icon">
+            <ng-template ng-label-tmp let-item="item">
+                <i-feather class="feather-sm me-2" [name]="item.value"></i-feather>
+                {{item.label}}
+            </ng-template>
+            <ng-template ng-option-tmp let-item="item">
+                <i-feather class="feather-sm me-2" [name]="item.value"></i-feather>
+                {{item.label}}
+            </ng-template>
+        </ng-select>
+        <label class="input-label">Icon</label>
+    </div>
+</aside>
+
+
+
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"

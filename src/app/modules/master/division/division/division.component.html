@@ -125,6 +125,11 @@
     <ng-template #content let-modal>
         <div class="modal-header">
             <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Division</h4>
+            @if(isEditMode){
+            <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
+                <i class="fas fs-6 fa-info-circle"></i>
+            </a>
+            }
             <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
         </div>
         <div class="modal-body">

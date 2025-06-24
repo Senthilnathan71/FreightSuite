@@ -7,12 +7,13 @@ import { NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModul
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
     selector: 'app-terms-condition-entry',
@@ -26,7 +27,8 @@ import { SettingsService } from 'src/app/modules/settings/settings.service';
         NgbModalModule,
         CommonModule,
         OnlyTextDirective,
-        TextWithNumbersDirective
+        TextWithNumbersDirective,
+        DatePipe
     ],
     templateUrl: './terms-condition-entry.component.html',
     styleUrl: './terms-condition-entry.component.scss'
@@ -52,7 +54,9 @@ export class TermsConditionEntryComponent implements OnInit{
     modalRef : NgbModalRef;
     page = 1;
     pageSize = 5;
-    totalAmountOfCollections : number;
+    totalAmountOfCollections: number;
+    tandCHeaderData: any;
+    tandCDetailData: any;
 
     constructor(
         private masterService : MasterService,
@@ -132,8 +136,8 @@ export class TermsConditionEntryComponent implements OnInit{
             this.appSettingService.showWarning('Please fill all the required fields');
         }
         else {
-            const createdBy = this.appSettingService.userSettingSource.value['UserEmail'];
-            const updatedBy = this.appSettingService.userSettingSource.value['UserEmail'];
+            const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
+            const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
             const formValue = this.termsAndConditionForm.value;
             const payload = {
                 ...formValue,
@@ -179,8 +183,8 @@ export class TermsConditionEntryComponent implements OnInit{
             this.appSettingService.showWarning('Please fill all the required fields');
         }
         else {
-            const createdBy = this.appSettingService.userSettingSource.value['UserEmail'];
-            const updatedBy = this.appSettingService.userSettingSource.value['UserEmail'];
+            const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
+            const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
             const formValue = this.termsAndConditionDetailForm.value;
             const payload = {
                 TermsAndConditionsMasterSid: this.TermsAndConditionsMasterSid || formValue.TermsAndConditionsMasterSid,
@@ -229,6 +233,7 @@ export class TermsConditionEntryComponent implements OnInit{
         this.initTandDetailForm();
         if(data){
             this.isModalEditMode = true;
+            this.tandCDetailData = data;
             this.termsAndConditionDetailForm.patchValue({
                 ...data,
                 IsDefaut : data.IsDefaut === 'Y' ? true : false,
@@ -272,6 +277,7 @@ export class TermsConditionEntryComponent implements OnInit{
             (resp:any)=>{
                 if(resp.status){
                     const response = resp.data;
+                    this.tandCHeaderData = response;
                     this.termsAndConditionForm.patchValue({
                         ...response,
                         departmentId : response.departments[0].departmentId,
@@ -324,4 +330,20 @@ export class TermsConditionEntryComponent implements OnInit{
     navigateBack() {
         history.back();
     }
+
+    showHeaderInfo() {
+        if (!this.tandCHeaderData) return;
+        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.componentInstance.item = this.tandCHeaderData;
+        modalRef.componentInstance.idLabel = 'Terms and Condition Header Id';
+        modalRef.componentInstance.idValue = this.tandCHeaderData?.TermsAndConditionsMasterSid;
+    }
+    showDetailInfo() {
+        if (!this.tandCDetailData) return;
+        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.componentInstance.item = this.tandCDetailData;
+        modalRef.componentInstance.idLabel = 'Terms and Condition Detail Id';
+        modalRef.componentInstance.idValue = this.tandCDetailData?.TermsAndConditionsDetailSid;
+    }
+
 }

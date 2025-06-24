@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { map } from "rxjs";
+import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.metadata";
 
  @Injectable({
    providedIn: 'root',
@@ -65,6 +66,14 @@ import { map } from "rxjs";
   );
 }
 
+  getMenuByModuleId(ModuleMasterSid){
+    return this.http.get<{data:any[]}>(`menu/fetchByModule/${ModuleMasterSid}`).pipe(
+      map((res:any)=>{
+        return res.data;
+      })
+    )
+  }
+
 
 
   // MODULE MASTER
@@ -76,6 +85,17 @@ import { map } from "rxjs";
       })
     )
   }
+
+  getAllModules() {
+      return this.http.get<{ data: RouteInfo[] }>('module/navigation-list').pipe(
+        map(resp => {
+          return resp;
+        })
+      );
+    }
+
+
+  
 
   getModuleById(ModuleMasterSid) {
     return this.http.get<{ data: any }>(`module/fetch/${ModuleMasterSid}`).pipe(
@@ -171,6 +191,71 @@ import { map } from "rxjs";
   searchRole(payload) {
     return this.http.post<{ data: any[] }>('role/search-list', payload).pipe(
       map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+  // ROLEMENU MASTER
+
+  getAllRoleMenu() {
+    return this.http.get<{ data: any[] }>('role-menu').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getRoleMenuById(RoleMenuMasterSid) {
+    return this.http.get<{ data: any }>(`role-menu/fetch/${RoleMenuMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewRoleMenu(payload) {
+    return this.http.post<{ data: any }>('role-menu/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateRoleMenuById(RoleMenuMasterSid: number, payload) {
+    return this.http.patch<{ data: any }>(`role-menu/update/${RoleMenuMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteRoleMenuById(RoleMenuMasterSid: number) {
+    return this.http.delete<{ data: any }>(`role-menu/delete/${RoleMenuMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchRoleMenu(payload) {
+    return this.http.post<{ data: any[] }>('role-menu/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+
+  goSpecialSearch(payload){
+    return this.http.post<{data:any[]}>('role-menu/special-search',payload).pipe(
+      map((resp)=>{
         let response = resp;
         return response;
       })

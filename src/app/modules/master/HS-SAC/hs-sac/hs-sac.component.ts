@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, } from '@angular/forms';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination, } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -18,6 +18,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-hs-sac',
@@ -34,7 +35,8 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
     OnlyTextDirective,
     TextWithNumbersDirective,
     CustomDatePipe,
-    NgbDatepickerModule
+    NgbDatepickerModule,
+    DatePipe
   ],
   templateUrl: './hs-sac.component.html',
   styleUrl: './hs-sac.component.scss',
@@ -70,6 +72,7 @@ export class HSSACComponent {
 	userData : any;
 	today = this.calendar.getToday();
 	todayDate = new Date(this.today.year,this.today.month,this.today.day);
+  hssacData : any;
 
 
   constructor(
@@ -156,6 +159,7 @@ editHssac(id: number, content: any) {
   this.HSSACMasterSid = id;
   this.masterService.getHssacById(id).pipe(take(1)).subscribe({
     next: (hssac: any) => {
+      this.hssacData = hssac;
       this.hssacForm.get('status')?.enable();
       this.hssacForm.patchValue({
         HSSACCode: hssac.HSSACCode,
@@ -363,4 +367,13 @@ editHssac(id: number, content: any) {
       title: companyName
     });
   }
+
+  showInfo() {
+    if(!this.hssacData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.hssacData;
+    modalRef.componentInstance.idLabel = 'HSSAC Id';
+    modalRef.componentInstance.idValue = this.hssacData?.HSSACMasterSid;
+  }
+
 }

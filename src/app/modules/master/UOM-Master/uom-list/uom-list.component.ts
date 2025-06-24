@@ -9,6 +9,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-uom-list',
@@ -18,7 +19,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     FeatherModule,
     FormsModule,
     NgbPaginationModule,
-    RouterModule
+    RouterModule,
+    ListpageComponent
   ],
   templateUrl: './uom-list.component.html',
   styleUrl: './uom-list.component.scss'
@@ -48,6 +50,13 @@ export class UOMListComponent {
       this.userData = user;
     }
   });
+}
+
+onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
 }
 
   search() {

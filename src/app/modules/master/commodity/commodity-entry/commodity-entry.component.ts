@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MasterService } from '../../master.service';
@@ -10,6 +10,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { take } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-commodity-entry',
@@ -18,7 +19,8 @@ import { map } from 'rxjs/operators';
     CommonModule,
     ReactiveFormsModule,
     FeatherModule,
-    NgSelectModule
+    NgSelectModule,
+    DatePipe
   ],
   templateUrl: './commodity-entry.component.html',
   styleUrls: ['./commodity-entry.component.scss']
@@ -29,6 +31,7 @@ export class CommodityEntryComponent implements OnInit {
   commodityId: number;
   hssacOptions: any[] = [];
   loadingHSSAC = false;
+  commodityData: any;
 
   statusOptions = [
     { id: 'Active', name: 'Active' },
@@ -131,7 +134,7 @@ export class CommodityEntryComponent implements OnInit {
       next: (commodity) => {
         // Enable status field for editing
         this.commodityForm.get('status')?.enable();
-        
+        this.commodityData = commodity;
         this.commodityForm.patchValue({
           ...commodity,
           status: commodity.status === 'A' ? 'Active' : 'Suspended',
@@ -215,5 +218,13 @@ export class CommodityEntryComponent implements OnInit {
 
   goBack() {
     this.router.navigate(['/master/commodity/list']);
+  }
+
+  showInfo() {
+    if(!this.commodityData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.commodityData;
+    modalRef.componentInstance.idLabel = 'Commodity Id';
+    modalRef.componentInstance.idValue = this.commodityData?.CommodityMasterSid;
   }
 }

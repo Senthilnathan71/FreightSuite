@@ -13,6 +13,7 @@ import { take } from 'rxjs';
 import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-sector',
@@ -25,7 +26,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     ReactiveFormsModule,
     NgbPagination,
     RouterModule,
-    FormsModule
+    FormsModule,
+    DatePipe
   ],
   templateUrl: './sector-list.component.html',
   styleUrl: './sector-list.component.scss',
@@ -51,6 +53,7 @@ export class SectorComponent implements OnInit {
   totalLengthOfCollection = 0;
   isLoading = false;
   userData : any;
+  sectorData : any;
 
   constructor(
     private modalService: NgbModal,
@@ -162,6 +165,7 @@ export class SectorComponent implements OnInit {
     this.SectorMasterSid = id;
     this.masterService.getSectorById(id).pipe(take(1)).subscribe({
       next: (sector: any) => {
+        this.sectorData = sector;
         this.sectorForm.patchValue({
           sectorName: sector.sectorName,
           sectorCode: sector.sectorCode,
@@ -328,4 +332,12 @@ export class SectorComponent implements OnInit {
             title: companyName
         });
     }
+
+  showInfo() {
+    if(!this.sectorData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.sectorData;
+    modalRef.componentInstance.idLabel = 'Sector Id';
+    modalRef.componentInstance.idValue = this.sectorData?.SectorMasterSid;
+  }
 }

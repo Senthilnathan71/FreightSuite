@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, TemplateRef } from '@angular/core';
 import { FormsModule, FormGroup, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -15,6 +15,8 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-zone',
@@ -29,7 +31,9 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     NgSelectModule,
     ReactiveFormsModule,
     OnlyTextDirective,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    DatePipe,
+    ListpageComponent
   ],
   templateUrl: './zone.component.html',
   styleUrl: './zone.component.scss'
@@ -52,6 +56,7 @@ export class ZoneComponent {
   pageSize = 10;
   totalLengthOfCollection = 0;
   userData : any;
+  zoneData : any;
 
   constructor(
    private modalService: NgbModal,
@@ -130,6 +135,7 @@ export class ZoneComponent {
     this.ZoneMasterSid = id;
     this.masterService.getZoneById(id).pipe(take(1)).subscribe({
       next: (zone: any) => {
+        this.zoneData = zone;
         this.zoneForm.get('status')?.enable();
         this.zoneForm.patchValue({
           ZoneName: zone.ZoneName,
@@ -250,6 +256,13 @@ export class ZoneComponent {
     );
   }
 
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
+
   search() {
     const payload = {
       searchType: this.searchType,
@@ -315,6 +328,14 @@ export class ZoneComponent {
       fileName: 'Zone-Report', 
       title: companyName
     });
+  }
+
+  showInfo() {
+    if (!this.zoneData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.zoneData;
+    modalRef.componentInstance.idLabel = 'Zone Id';
+    modalRef.componentInstance.idValue = this.zoneData?.ZoneMasterSid;
   }
 
 }

@@ -19,9 +19,10 @@ import { DatePipe } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-rate-request',
@@ -32,7 +33,8 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
     ReactiveFormsModule,
     FormsModule,
     NgSelectModule,
-    NgbDatepickerModule
+    NgbDatepickerModule,
+    DatePipe
   ],
   templateUrl: './rate-request.component.html',
   styleUrl: './rate-request.component.scss',
@@ -68,6 +70,7 @@ export class RateRequestComponent implements OnInit {
   quotationEnquiryNumber: any;
 	today = this.calendar.getToday();
 	todayDate = new Date(this.today.year,this.today.month,this.today.day);
+  rateRequestData : any;
 
   constructor(
     private appService: AppService,
@@ -79,7 +82,8 @@ export class RateRequestComponent implements OnInit {
     private fb: FormBuilder,
     private modalService: ModalService,
     private toaster: ToastrService,
-    private calendar: NgbCalendar
+    private calendar: NgbCalendar,
+    private ngbModal : NgbModal
   ) {}
 
   ngOnInit(): void {
@@ -370,6 +374,7 @@ onFilter(search: string) {
     this.leadService.getEnquiryById(id).subscribe((resp: any) => {
       if (resp) {
         this.patchValues(resp);
+        this.rateRequestData = resp;
       }
     });
   }
@@ -561,6 +566,14 @@ onFilter(search: string) {
     } else if(this.selectedFCLLCL === 'FCL' || this.selectedFCLLCL === 'LCL'){
       this.filteredPorts = this.ports.filter(port => port.PortType === 'Sea')
     }
+  }
+
+  showInfo() {
+    if(!this.rateRequestData) return;
+    const modalRef = this.ngbModal.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.rateRequestData;
+    modalRef.componentInstance.idLabel = 'Rate Request Id';
+    modalRef.componentInstance.idValue = this.rateRequestData?.EnquiryHeaderSid;
   }
 
 

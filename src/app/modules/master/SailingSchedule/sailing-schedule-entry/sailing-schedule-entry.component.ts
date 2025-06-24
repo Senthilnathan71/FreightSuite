@@ -9,13 +9,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
-import { CommonModule, UpperCasePipe } from '@angular/common';
+import { CommonModule, DatePipe, UpperCasePipe } from '@angular/common';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
     selector: 'app-sailing-schedule-entry',
@@ -33,7 +34,8 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
         OnlyNumbersDirective,
         OnlyTextDirective,
         TextWithNumbersDirective,
-        CustomDatePipe
+        CustomDatePipe,
+        DatePipe
     ],
     templateUrl: './sailing-schedule-entry.component.html',
     styleUrl: './sailing-schedule-entry.component.scss',
@@ -64,7 +66,10 @@ export class SailingScheduleEntryComponent implements OnInit {
     modalRef: NgbModalRef
     model: NgbDateStruct;
     today = this.calendar.getToday();
-	todayDate = new Date(this.today.year,this.today.month,this.today.day);
+    todayDate = new Date(this.today.year, this.today.month, this.today.day);
+    sailHeadData: any;
+    sailDetailData: any;
+
 
     modeOfStatus = [
         { id: "Active", name: "Active" },
@@ -169,6 +174,7 @@ export class SailingScheduleEntryComponent implements OnInit {
         this.masterService.getSailingScheduleById(this.VoyageMasterHeaderSid).subscribe(
             (resp:any)=>{
                 if(resp.status){
+                    this.sailHeadData = resp.data;
                     const scheduleData = resp.data;
                     this.scheduleForm.patchValue({
                         ...scheduleData,
@@ -232,8 +238,8 @@ export class SailingScheduleEntryComponent implements OnInit {
             return;
         } 
 
-        const createdBy = this.appSettingService.userSettingSource.value['UserEmail'];
-        const updatedBy = this.appSettingService.userSettingSource.value['UserEmail'];
+        const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
+        const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
         const formValue = this.scheduleForm.value;
 
         const payload = {
@@ -244,7 +250,7 @@ export class SailingScheduleEntryComponent implements OnInit {
             Carrier : parseInt(formValue.Carrier),
             CoLoad : formValue.CoLoad ? 'Y' : 'N',
             status : formValue.status === 'Active' ? 'A' : 'S',
-            ...(this.isEditMode ? {createdBy : createdBy} : {updatedBy : updatedBy})
+            ...(this.isEditMode ? {updatedBy : updatedBy} :{createdBy : createdBy} )
         }
         console.log(payload);
         if(this.isEditMode){
@@ -283,6 +289,7 @@ export class SailingScheduleEntryComponent implements OnInit {
         this.initScheduleDetailForm();
         this.loadAllDetailFields();
         if(data){
+            this.sailDetailData = data;
             this.isModalEditMode = true;
             this.scheduleDetailForm.patchValue({
                 POLSid: data.POLSid || '',
@@ -301,7 +308,7 @@ export class SailingScheduleEntryComponent implements OnInit {
             })
             this.VoyageMasterDetailSid = data.VoyageMasterDetailSid;
         } 
-        this.modalRef = this.modalService.open(content, { size: 'lg',centered:true });
+        this.modalRef = this.modalService.open(content, { size: 'lg',centered:true , backdrop : 'static' });
     }
 
     onModalSubmit(){
@@ -312,8 +319,8 @@ export class SailingScheduleEntryComponent implements OnInit {
             return;
         } 
 
-        const createdBy = this.appSettingService.userSettingSource.value['UserEmail'];
-        const updatedBy = this.appSettingService.userSettingSource.value['UserEmail'];
+        const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
+        const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
         const formValue = this.scheduleDetailForm.value;
 
         const payload = {
@@ -462,5 +469,20 @@ export class SailingScheduleEntryComponent implements OnInit {
 			day: date.getDate()
 		};
 	}
+
+    showHeaderInfo() {
+        if (!this.sailHeadData) return;
+        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.componentInstance.item = this.sailHeadData;
+        modalRef.componentInstance.idLabel = 'Sailing Schedule Header Id';
+        modalRef.componentInstance.idValue = this.sailHeadData?.VoyageMasterHeaderSid;
+    }
+    showDetailInfo() {
+        if (!this.sailDetailData) return;
+        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.componentInstance.item = this.sailDetailData;
+        modalRef.componentInstance.idLabel = 'Sailing Schedule Detail Id';
+        modalRef.componentInstance.idValue = this.sailDetailData?.VoyageMasterDetailSid;
+    }
 }
 

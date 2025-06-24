@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, TemplateRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { FormsModule, FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectConfig, NgSelectModule } from '@ng-select/ng-select';
@@ -10,6 +10,8 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { ContainerType } from 'src/app/modules/crm-mobile/Interfaces/container-type.interface';
 import { Unit } from 'src/app/modules/crm-mobile/Interfaces/unit.interface';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 
 @Component({
@@ -23,7 +25,8 @@ import { Unit } from 'src/app/modules/crm-mobile/Interfaces/unit.interface';
     FormsModule,
     ReactiveFormsModule,
     OnlyTextDirective,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    DatePipe
   ],
   templateUrl: './unit-entry.component.html',
   styleUrls: ['./unit-entry.component.scss']
@@ -35,6 +38,7 @@ export class UnitEntryComponent {
   containerTypes: ContainerType[] = [];
   idParam: number;
   errorMessage: string;
+  unitData: any;
 
   jobType = [
     { id: 'FCL', name: 'FCL' },
@@ -60,7 +64,8 @@ export class UnitEntryComponent {
     private route: ActivatedRoute,
     private router: Router, 
     private appSettingService: AppSettingsService, 
-    private masterService: MasterService
+    private masterService: MasterService,
+    private modalService: NgbModal
   ) {
     this.config.notFoundText = 'No items found';
     this.config.appendTo = 'body';
@@ -111,6 +116,7 @@ export class UnitEntryComponent {
   loadUnit(UnitMasterSid: number): void {
     this.masterService.getUnitById(UnitMasterSid).subscribe({
       next: (unit: Unit) => {
+        this.unitData = unit;
         this.unitForm.patchValue({
           unitName: unit.unitName,
           unitCode: unit.unitCode,
@@ -186,5 +192,13 @@ export class UnitEntryComponent {
         this.appSettingService.showError('Operation failed');
       }
     });
+  }
+
+  showInfo() {
+    if (!this.unitData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.unitData;
+    modalRef.componentInstance.idLabel = 'Unit Id';
+    modalRef.componentInstance.idValue = this.unitData?.UnitMasterSid;
   }
 }

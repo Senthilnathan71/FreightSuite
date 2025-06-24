@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 import { RouteInfo } from './vertical-sidebar.metadata';
 import { ROUTES } from './vertical-menu-items';
+import { HttpClient } from '@angular/common/http';
+import { SettingsService } from 'src/app/modules/settings/settings.service';
 
 
 @Injectable({
@@ -13,10 +15,15 @@ export class VerticalSidebarService {
     public collapseSidebar: boolean = false;
     public fullScreen: boolean = false;
 
-    MENUITEMS: RouteInfo[] = ROUTES;
+   private MENUITEMS: RouteInfo[] = [];
+  private itemsSubject = new BehaviorSubject<RouteInfo[]>([]);
+  public items$ = this.itemsSubject.asObservable();
 
-    items = new BehaviorSubject<RouteInfo[]>(this.MENUITEMS);
+  constructor() {}
 
-    constructor() {
-    }
+  updateMenuItems(data: RouteInfo[]) {
+    this.MENUITEMS = data || [];
+    this.itemsSubject.next(this.MENUITEMS);
+  }
+
 }

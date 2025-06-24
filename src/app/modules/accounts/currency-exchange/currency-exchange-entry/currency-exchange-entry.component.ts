@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,7 +8,8 @@ import { AccountsService } from '../../accounts.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-currency-exchange-entry',
@@ -18,7 +19,8 @@ import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModul
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    NgbDatepickerModule
+    NgbDatepickerModule,
+    DatePipe
   ],
   templateUrl: './currency-exchange-entry.component.html',
   styleUrls: ['./currency-exchange-entry.component.scss'],
@@ -37,6 +39,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
   loading = false;
 	today = this.calendar.getToday();
 	todayDate = new Date(this.today.year,this.today.month,this.today.day);
+  currencyExchangeData : any;
 
   constructor(
     private fb: FormBuilder,
@@ -45,7 +48,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private masterService: MasterService,
-    private calendar : NgbCalendar
+    private calendar : NgbCalendar,
+    private modalService : NgbModal
   ) { }
 
   ngOnInit(): void {
@@ -146,7 +150,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     this.loading = true;
     this.accountService.getCurrencyExchangeById(id).subscribe({
       next: (data) => {
-
+        this.currencyExchangeData = data;
         this.currencyExchangeForm.patchValue({
           ...data,
           EffectiveFrom: new Date(data.EffectiveFrom),
@@ -237,5 +241,13 @@ export class CurrencyExchangeEntryComponent implements OnInit {
 
   goBack() {
     this.router.navigate(['accounts/currency-exchange/list']);
+  }
+
+  showInfo() {
+    if(!this.currencyExchangeData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.currencyExchangeData;
+    modalRef.componentInstance.idLabel = 'Currency Exchange Id';
+    modalRef.componentInstance.idValue = this.currencyExchangeData?.CurrencyExchangeSid;
   }
 }

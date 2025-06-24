@@ -1,14 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Vessel } from 'src/app/modules/crm-mobile/Interfaces/vessel.interface';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
     selector: 'app-vessel-entry',
@@ -19,7 +21,8 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
         CommonModule,
         OnlyNumbersDirective,
         OnlyTextDirective,
-        TextWithNumbersDirective
+        TextWithNumbersDirective,
+        DatePipe
     ],
     templateUrl: './vessel-entry.component.html',
     styleUrl: './vessel-entry.component.scss'
@@ -29,6 +32,7 @@ export class VesselEntryComponent implements OnInit {
     vesselForm !: FormGroup;
     VesselMasterSid: number;
     isEditMode: boolean;
+    vesselData: any;
 
     vesselTypes = [
         "Container", "Tank", "Bulk", "General"
@@ -39,7 +43,8 @@ export class VesselEntryComponent implements OnInit {
         private appSettingService: AppSettingsService,
         private currRoute: ActivatedRoute,
         private fb: FormBuilder,
-        private route: Router
+        private route: Router,
+        private modalService : NgbModal
     ) { }
 
     ngOnInit() {
@@ -78,6 +83,7 @@ export class VesselEntryComponent implements OnInit {
     loadVessel() {
         this.masterServ.loadVesselById(this.VesselMasterSid).subscribe(
             (vesselData: Vessel) => {
+                this.vesselData = vesselData;
                 this.vesselForm.patchValue({
                     ...vesselData,
                     status: vesselData.status === 'A' ? "Active" : "Suspended"
@@ -160,6 +166,14 @@ export class VesselEntryComponent implements OnInit {
             status: formValue.status === 'Active' ? 'A' : 'S',
             createdBy: createdBy
         }
+    }
+
+    showInfo() {
+        if (!this.vesselData) return;
+        const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.componentInstance.item = this.vesselData;
+        modalRef.componentInstance.idLabel = 'Vessel Id';
+        modalRef.componentInstance.idValue = this.vesselData?.VesselMasterSid;
     }
 
 

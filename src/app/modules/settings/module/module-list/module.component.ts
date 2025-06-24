@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
@@ -11,6 +11,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { SettingsService } from '../../settings.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-module',
@@ -23,7 +24,8 @@ import { SettingsService } from '../../settings.service';
     FeatherModule,
     NgbModalModule,
     NgbPaginationModule,
-    NgSelectModule
+    NgSelectModule,
+    DatePipe
   ],
   templateUrl: './module.component.html',
   styleUrls: ['./module.component.scss']
@@ -37,6 +39,7 @@ export class ModuleComponent implements OnInit {
   statusList = ["Active", "Suspended"];
   modalRef!: any;
   userData : any;
+  moduleData : any
   
   searchType = 'ModuleName';
   filterValue = '';
@@ -44,6 +47,16 @@ export class ModuleComponent implements OnInit {
   page = 1;
   pageSize = 10;
   totalAmountOfCollection = 0;
+   iconOptions = [
+    { value: 'home', label: 'Home' },
+    { value: 'settings', label: 'Settings' },
+    { value: 'users', label: 'Users' },
+    { value: 'file-text', label: 'Documents' },
+    { value: 'bar-chart-2', label: 'Reports' },
+    { value: 'calendar', label: 'Calendar' },
+    { value: 'mail', label: 'Mail' },
+    { value: 'shopping-cart', label: 'Shopping' }
+  ];
 
   constructor(
     private modalService: NgbModal,
@@ -70,6 +83,7 @@ export class ModuleComponent implements OnInit {
     this.moduleForm = this.fb.group({
       ModuleName: ['', [Validators.required, Validators.maxLength(50)]],
       ModuleCode: ['', [Validators.required, Validators.maxLength(20)]],
+      icon: [''],
       status: [{value: 'Active', disabled: false}, Validators.required],
       Remarks: ['', [Validators.required, Validators.maxLength(300)]]
     });
@@ -78,7 +92,8 @@ export class ModuleComponent implements OnInit {
     
     this.moduleForm.get('status')?.disable();
     this.moduleForm.reset({
-      status: 'Active'
+      status: 'Active',
+      icon: ''
     });
   }
 
@@ -94,10 +109,12 @@ export class ModuleComponent implements OnInit {
     this.settingsService.getModuleById(id).subscribe({
       next: (response: any) => {
         const module = response.data;
+        this.moduleData = module;
         this.moduleForm.get('status')?.enable();
         this.moduleForm.patchValue({
           ModuleName: module.ModuleName,
           ModuleCode: module.ModuleCode,
+          icon: module.icon || '',
           Remarks: module.Remarks,
           status: module.status === 'A' ? 'Active' : 'Suspended'
         });
@@ -216,7 +233,8 @@ export class ModuleComponent implements OnInit {
   report(): void {
     const formattedData = this.moduleList.map(item => ({
       ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended'
+      status: item.status === 'A' ? 'Active' : 'Suspended',
+      icon: item.icon || 'N/A'
     }));
 
     const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
@@ -226,11 +244,20 @@ export class ModuleComponent implements OnInit {
       headers: [
         { key: 'ModuleName', label: 'Module Name' },
         { key: 'ModuleCode', label: 'Module Code' },
+        { key: 'icon', label: 'Icon' },
         { key: 'Remarks', label: 'Remarks' },
         { key: 'status', label: 'Status' },
       ],
       fileName: 'Module-Report',
       title: companyName
     });
+  }
+
+  showInfo() {
+    if(!this.moduleData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.moduleData;
+    modalRef.componentInstance.idLabel = 'Module Id';
+    modalRef.componentInstance.idValue = this.moduleData?.ModuleMasterSid;
   }
 }

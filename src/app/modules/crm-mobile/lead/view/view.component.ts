@@ -116,11 +116,9 @@ export class ViewComponent implements OnInit {
     switch (value) {
       case 'A':
         return 'Active'
-        break;
       
       default:
         return 'Suspended'
-        break;
     }
   }
 

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgbAlertModule, NgbModal, NgbModalModule, NgbModalRef, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
@@ -17,6 +17,7 @@ import { forkJoin } from 'rxjs';
 import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interface';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 @Component({
 	selector: 'app-company-entry',
 	standalone: true,
@@ -31,7 +32,8 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 		OnlyTextDirective,
 		TextWithNumbersDirective,
 		FormsModule,
-		ReactiveFormsModule
+		ReactiveFormsModule,
+		DatePipe
 	],
 	templateUrl: './company-entry.component.html',
 	styleUrl: './company-entry.component.scss'
@@ -68,6 +70,9 @@ export class CompanyEntryComponent implements OnInit {
 	stateResults: State[];
 	countryResults: Country[];
 	currencyResults: Currency[];
+	companyData : any;
+	branchData : any;
+	bankData : any;
 
 	// CONSTRUCTOR
 
@@ -170,6 +175,7 @@ export class CompanyEntryComponent implements OnInit {
 		this.initBranchForm();
 		if (data) {
 			this.isModalEditMode = true;
+			this.branchData = data;
 			this.getStatesByCountry(data.CountryMasterSid);
 			this.getCitiesByState(data.StateMasterSid);
 			this.branchForm.patchValue({
@@ -204,7 +210,7 @@ export class CompanyEntryComponent implements OnInit {
 			}
 			this.loadBranchBanks()
 		}
-		this.modalRef = this.modalService.open(content, { size: 'lg' });
+		this.modalRef = this.modalService.open(content, { size: 'lg',centered : true , backdrop : 'static' });
 
 	}
 
@@ -212,6 +218,7 @@ export class CompanyEntryComponent implements OnInit {
 		this.initBranchBankForm();
 		if (data) {
 			this.isBankModalEdit = true;
+			this.bankData = data;
 			this.branchBankForm.patchValue({
 				BankName: data.BankName || '',
 				BankCode: data.BankCode || '',
@@ -228,7 +235,7 @@ export class CompanyEntryComponent implements OnInit {
 				this.BranchBankSid = data.BranchBankSid;
 			}
 		}
-		this.modalRef = this.modalService.open(content, { size: 'lg' });
+		this.modalRef = this.modalService.open(content, { size: 'lg' ,centered : true , backdrop : 'static' });
 	}
 
 
@@ -417,6 +424,7 @@ export class CompanyEntryComponent implements OnInit {
 	loadCompanyData() {
 		this.masterService.getCompanyById(this.CompanyMasterSid).subscribe(
 			(resp) => {
+				this.companyData = resp;
 				this.companyForm.patchValue({
 					...resp,
 					isHo: resp.isHo === 'Y' ? true : false,
@@ -588,5 +596,26 @@ export class CompanyEntryComponent implements OnInit {
 		this.modalService.dismissAll()
 	}
 
+	showCompanyInfo() {
+    if(!this.companyData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.companyData;
+    modalRef.componentInstance.idLabel = 'Company Id';
+    modalRef.componentInstance.idValue = this.companyData?.CompanyMasterSid;
+  }
+	showBranchInfo() {
+    if(!this.branchData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.branchData;
+    modalRef.componentInstance.idLabel = 'Branch Id';
+    modalRef.componentInstance.idValue = this.branchData?.BranchMasterSid;
+  }
+	showBranchBankInfo() {
+    if(!this.bankData) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.bankData;
+    modalRef.componentInstance.idLabel = 'Branch Bank Id';
+    modalRef.componentInstance.idValue = this.bankData?.BranchBankSid;
+  }
 
 }

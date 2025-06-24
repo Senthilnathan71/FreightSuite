@@ -1,6 +1,6 @@
 <div class="row">
     <!-- #region Rate Request Form -->
-    <form [formGroup]="rateRequestForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="rateRequestForm">
 
 
 
@@ -96,6 +96,10 @@
             <!-- #endregion -->
             <div class="col-12 mb-3 d-flex align-items-center justify-content-end gap-2">
                 @if (isMobile) {
+                <!-- <button *ngIf="EnquiryHeaderSid" class="btn btn-outline-info btn-sm" (click)="showInfo()" type="button">
+                    <i class="fas fs-6 fa-info-circle"></i> 
+                    Details
+                </button> -->
                 <button class="btn btn-info btn-sm" (click)="addRoute()" type="button"><i-feather
                         class="feather-sm ms-2" name="plus"></i-feather> New
                     Route</button>
@@ -104,7 +108,7 @@
                     Quotation</button>
                 }
                 @if (!isMobile) {
-                <button class="btn btn-info btn-sm ms-auto" type="button" (click)="addRoute()"><i-feather
+                <button class="btn btn-info btn-sm" type="button" (click)="addRoute()"><i-feather
                         class="feather-sm ms-2" name="plus"></i-feather> Add
                     Route</button>
                 <button *ngIf="EnquiryHeaderSid" class="btn btn-info btn-sm" (click)="navigateQuotation()"
@@ -524,8 +528,12 @@
                 (click)="goBack()">
                 <i-feather class="feather-sm me-1" name="arrow-left"></i-feather> Back
             </button>
-            <div class="ms-auto">
-                <button class="btn btn-outline-info btn-sm" type="submit">
+            <div class="ms-auto me-1" *ngIf="isEditMode">
+                <button class="btn btn-outline-info btn-sm" (click)="showInfo()">
+                    <i class="fas fs-4 fa-info-circle"></i> Details</button>
+            </div>
+            <div [class.ms-auto]="!isEditMode">
+                <button class="btn btn-outline-info btn-sm" type="submit" (click)="onSubmit()">
                     <i-feather class="feather-sm me-2" name="upload-cloud"></i-feather>Save</button>
             </div>
         </div>

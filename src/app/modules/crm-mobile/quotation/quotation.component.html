@@ -535,8 +535,12 @@
                 (click)="goBack()">
                 <i-feather class="feather-sm me-1" name="arrow-left"></i-feather> Back
             </button>
-            <div class="ms-auto">
-                <button class="btn btn-outline-info btn-sm" (click)="onSubmit()">
+            <div class="ms-auto me-1" *ngIf="isEditMode">
+                <button class="btn btn-outline-info btn-sm" (click)="showInfo()">
+                    <i class="fas fs-4 fa-info-circle"></i> Details</button>
+            </div>
+            <div [class.ms-auto]="!isEditMode">
+                <button class="btn btn-outline-info btn-sm" type="submit" (click)="onSubmit()">
                     <i-feather class="feather-sm me-2" name="upload-cloud"></i-feather>Save</button>
             </div>
         </div>

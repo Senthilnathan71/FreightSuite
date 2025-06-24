@@ -16,14 +16,14 @@
                             Search
                         </button> -->
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="openModal(content)">
+                            (click)="openModal(entrycontent)">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" [disabled]="!searchPerformed" (click)="report()">
                             <i class="fas fa-file-alt me-1"></i>
                             Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" [disabled]="!searchPerformed" (click)="reset()">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
@@ -36,12 +36,12 @@
                         <form
                             class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="form-outline col-12 col-md px-0">
-                                <select name="searchType" class="form-select">
-                                    <option value="departmentName">Department Name</option>
-                                    <option value="departmentCode">Department Code</option>
-                                    <option value="departmentType">Department Type</option>
-                                    <option value="ExportImport">Export/Import</option>
-                                    <option value="FCLLCL">FCLLCL</option>
+                                <select name="searchType" class="form-select" [(ngModel)]="searchType">
+                                    <option value="MenuMasterSid">Menu Name</option>
+                                    <option value="InsertRole">Allow Add</option>
+                                    <option value="UpdateRole">Allow Modify</option>
+                                    <option value="ViewRole">Allow View</option>
+                                    <option value="DeleteRole">Allow Delete</option>
                                     <option value="status">Status</option>
                                 </select>
                             </div>
@@ -54,12 +54,12 @@
                             <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
                                 <div class="form-outline flex-grow-1">
                                     <input name="filterValue" type="text" class="form-control"
-                                        placeholder="Enter filter value">
+                                        placeholder="Enter filter value" [(ngModel)]="filterValue">
                                     <i
                                         class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
                                 </div>
 
-                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSearch()">
                                     <i class="fas fa-search me-1"></i>
                                     Search
                                 </button>
@@ -70,100 +70,310 @@
             </div>
         </div>
     </div>
-    <ng-template #content let-modal>
+    <ng-template #entrycontent let-modal>
         <div class="modal-header">
-            <h4 class="modal-title">Role Menu</h4>
-            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+            <h4 class="modal-title">{{isEditMode ? 'Update Role Menu' : 'Role Menu'}}</h4>
+            @if(isEditMode){
+            <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
+                <i class="fas fs-6 fa-info-circle"></i>
+            </a>
+            }
+            <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
         </div>
         <div class="modal-body">
-            <form>
+            <form  [formGroup]="roleMenuForm">
                 <div class="col-md-12 p-0">
                     <div class="card h-100">
-                        <div class="card-body">
-                            <div class="row">
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="Name">
+                        <section class="card-body">
+                            <section class="row">
+                                <h6 class="card-title">Role Access Details</h6>
+                                <aside class="col-md-6">
+                                    <div class="custom-form-group custom-form-group-select">
+                                        <ng-select 
+                                            class="ng-select" 
+                                            [items]="moduleList" 
+                                            bindLabel="ModuleName"
+                                            bindValue="ModuleName" 
+                                            (change)="filterMenuByModule($event)"
+                                            placeholder="Select Module" 
+                                            formControlName="Module"
+                                        >
+                                        </ng-select>
                                         <label for="text-input" class="input-label">Module <span
+                                                class="text-danger">*</span></label>
+                                        @if(f['Module']?.touched && f['Module']?.invalid ){
+                                            <div class="error-message">
+                                                @if(f['Module']?.hasError('required')){
+                                                    <span>Module is required</span>
+                                                } @else if(f['Module'].hasError('maxlength')){
+                                                    <span>Max 50 Characters</span>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                    <div class="custom-form-group custom-form-group-select">
+                                        <ng-select 
+                                            class="ng-select" 
+                                            [items]="menuList" 
+                                            bindLabel="MenuName"
+                                            bindValue="MenuMasterSid" 
+                                            placeholder="Select Menu"
+                                            formControlName="MenuMasterSid"
+                                        >
+                                        </ng-select>
+                                        <label for="text-input" class="input-label">Menu <span
+                                                class="text-danger">*</span></label>
+                                        @if(f['MenuMasterSid']?.touched && f['MenuMasterSid']?.invalid ){
+                                            <div class="error-message">
+                                                @if(f['MenuMasterSid']?.hasError('required')){
+                                                    <span>Menu is required</span>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                    <div class="custom-form-group custom-form-group-select">
+                                        <ng-select 
+                                            class="ng-select" 
+                                            [items]="roleList" 
+                                            bindLabel="UserRoleName"
+                                            bindValue="RoleMasterSid" 
+                                            placeholder="Select Role"
+                                            formControlName="RoleMasterSid"
+                                        >
+                                        </ng-select>
+                                        <label for="text-input" class="input-label">Role Name <span class="text-danger">*</span></label>
+                                        @if(f['RoleMasterSid']?.touched && f['RoleMasterSid']?.invalid ){
+                                            <div class="error-message">
+                                                @if(f['RoleMasterSid']?.hasError('required')){
+                                                    <span>Role Name is required</span>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                    <div class="custom-form-group">
+                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Remarks" [textWithNumbers]="100">
+                                        <label for="text-input" class="input-label">Remarks <span class="text-danger">*</span></label>
+                                        @if(f['Remarks']?.touched && f['Remarks']?.invalid ){
+                                            <div class="error-message">
+                                                @if(f['Remarks']?.hasError('required')){
+                                                    <span>Remarks is required</span>
+                                                } @else if(f['Remarks']?.hasError('maxlength')){
+                                                    <span>Max 100 Characters</span>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                    <div class="custom-form-group custom-form-group-select">
+                                        @if(isEditMode){
+                                        <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="name"
+                                            placeholder="Select Status" class="ng-select" formControlName="status">
+                                        </ng-select>
+                                        } @else {
+                                        <input type="text" name="status" class="custom-input-field sm" id="text-input" formControlName="status" readonly>
+                                        }
+                                        <label for="text-input" class="input-label">Status<span
                                                 class="text-danger"></span></label>
                                     </div>
                                 </aside>
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="displayName">
-                                        <label for="text-input" class="input-label">Role Name </label>
-                                    </div>
+                            </section>
+                        </section>
+                        <section class="card-body">
+                            <section class="row">
+                                <h6 class="card-title">Role Access Permissions</h6>
+                                <aside class="col-md-6 d-flex align-items-center my-2">
+                                    <dofi-toggler formControlName="InsertRole" onLabel="Allowed" offLabel="Restricted"></dofi-toggler>
+                                    <label class="form-check-label ms-2">Allow Add</label>
                                 </aside>
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="displayName">
-                                        <label for="text-input" class="input-label">Remarks </label>
-                                    </div>
+                                <aside class="col-md-6 d-flex align-items-center my-2">
+                                    <dofi-toggler formControlName="UpdateRole" onLabel="Allowed" offLabel="Restricted"></dofi-toggler>
+                                    <label class="form-check-label ms-2">Allow Modify</label>
                                 </aside>
-                            </div>
-                        </div>
+                                <aside class="col-md-6 d-flex align-items-center my-2">
+                                    <dofi-toggler formControlName="ViewRole" onLabel="Allowed" offLabel="Restricted"></dofi-toggler>
+                                    <label class="form-check-label ms-2">Allow View</label>
+                                </aside>
+                                <aside class="col-md-6 d-flex align-items-center my-2">
+                                    <dofi-toggler formControlName="DeleteRole" onLabel="Allowed" offLabel="Restricted"></dofi-toggler>
+                                    <label class="form-check-label ms-2">Allow Delete</label>
+                                </aside>
+                            </section>
+                        </section>
                     </div>
                 </div>
             </form>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+            <button type="button" class="btn btn-info" (click)="onSubmit()" [disabled]="roleMenuForm.invalid">{{isEditMode ?'Update':'Save'}}</button>
         </div>
     </ng-template>
 
-
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+    <div class="col-12">
+        <div class="row bg-white align-items-center rounded-top shadow-sm">
+            <div class="col-md-12  border-bottom">
+                <div class="row mx-0 py-2">
+                    <div class="col-md-11 mx-auto px-0">
+                        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0" [formGroup]="searchForm">
+                            <aside class="col-md-3">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select 
+                                    name = "Module"
+                                    class="ng-select" 
+                                    [items]="moduleList" 
+                                    bindLabel="ModuleName" 
+                                    bindValue="ModuleName"
+                                    placeholder = "Select Module"
+                                    formControlName="Module"
+                                    (clear)="reset()"
+                                >
+                                </ng-select>
+                                <label for="" class="input-label">Module</label>
+                            </div>
+                            </aside>
+                            <aside class="col-md-3">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select 
+                                    name = "Role"
+                                    class="ng-select" 
+                                    [items]="roleList" 
+                                    bindLabel="UserRoleName" 
+                                    bindValue="RoleMasterSid"
+                                    placeholder="Select Role"
+                                    formControlName="RoleMasterSid"
+                                    (clear)="reset()"
+                                >
+                                </ng-select>
+                                <label for="" class="input-label">Role Name</label>
+                            </div>
+                            </aside>
+                            <aside class="col-md-3">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Remarks">
+                                    <label for="text-input" class="input-label">Remarks </label>
+                                </div>
+                            </aside>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row bg-white py-2 rounded-bottom shadow-sm mx-auto" *ngIf="totalAmountOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <!-- <th class="bg-transparent text-light" scope="col">Action</th> -->
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                             <th class="bg-transparent text-light" scope="col"> Menu Name</th>
                             <th class="bg-transparent text-light" scope="col">Allow Add</th>
                             <th class="bg-transparent text-light" scope="col">Allow Modify</th>
                             <th class="bg-transparent text-light" scope="col">Allow View</th>
                             <th class="bg-transparent text-light" scope="col">Allow Delete</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        @for (item of roleMenuList; track item) {
                         <tr>
-                            <!-- <td>
-                            <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
-                        </td> -->
                             <td>
-                                <div class="text-truncate">OMR</div>
+                               <div class="d-flex gap-2 ms-2">
+                                    <button class="btn btn-sm btn-link text-info p-0" 
+                                        (click)="openModal(entrycontent,item)"
+                                        title="Edit">
+                                        <i-feather class="feather-sm" name="eye"></i-feather>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" 
+                                        (click)="deleteRoleMenuById(item.RoleMenuMasterSid)"
+                                        title="Delete">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
                             </td>
                             <td>
-                                <div class="text-truncate">RO</div>
+                                <div class="text-truncate">
+                                    {{item.menuMaster?.MenuName}}
+                                </div>
                             </td>
                             <td>
-                                <div class="text-truncate">Rial</div>
+                                 @if(item.InsertRole === 'Y'){
+                                <div class="text-success ms-2">
+                                    <i-feather name="check"></i-feather>
+                                </div>
+                                } @else {
+                                <div class="text-danger ms-2">
+                                    <i-feather name="slash"></i-feather>
+                                </div>
+                                } 
                             </td>
                             <td>
-                                <div class="text-truncate">Rial</div>
+                                @if(item.UpdateRole === 'Y'){
+                                <div class="text-success ms-2">
+                                    <i-feather name="check"></i-feather>
+                                </div>
+                                } @else {
+                                <div class="text-danger ms-2">
+                                    <i-feather name="slash"></i-feather>
+                                </div>
+                                }
                             </td>
                             <td>
-                                <div class="text-truncate">Rial</div>
+                                @if(item.ViewRole === 'Y'){
+                                <div class="text-success ms-2">
+                                    <i-feather name="check"></i-feather>
+                                </div>
+                                } @else {
+                                <div class="text-danger ms-2">
+                                    <i-feather name="slash"></i-feather>
+                                </div>
+                                }
                             </td>
-                            <!-- <td>
-                            <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                Approved</span>
-                        </td> -->
-
-
-
+                            <td>
+                                @if(item.DeleteRole === 'Y'){
+                                <div class="text-success ms-2">
+                                    <i-feather name="check"></i-feather>
+                                </div>
+                                } @else {
+                                <div class="text-danger ms-2">
+                                    <i-feather name="slash"></i-feather>
+                                </div>
+                                }
+                                
+                            </td>
+                            <td>
+                                @if(item.status === "A"){
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active
+                                </div>
+                                } @else {
+                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Suspended
+                                </div>
+                                }
+                            </td>
                         </tr>
                         }
                     </tbody>
                 </table>
             </div>
         </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalAmountOfCollection" [pageSize]="pageSize"
+                [(page)]="page" (pageChange)="updatePaginationData()" [rotate]="true" [ellipses]="false" [maxSize]="5">
+            </ngb-pagination>
+        </div>
     </div>
-
+    <div class="col-12" *ngIf="totalAmountOfCollection === 0">
+            <div>No records found</div>
+    </div>
 </div>

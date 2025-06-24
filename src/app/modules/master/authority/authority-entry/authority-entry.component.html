@@ -1,0 +1,313 @@
+<div class="row py-3">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-2">
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Authority' : 'Create Authority'}}</h4>
+                @if(isEditMode){
+                <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showAuthorityInfo()">
+                    <i class="fas fs-6 fa-info-circle"></i>
+                </a>
+                }
+            </div>
+            <div class="col-md-8 pb-2">
+                <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetAuthorityForm()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                        [disabled]="authorityForm.invalid" (click)="submitAuthorityForm()">
+                        <i class="fas fa-save me-1"></i>
+                        {{isEditMode ? 'Update' : 'Save'}}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+   
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body" [formGroup]="authorityForm">
+                <div class="row">
+                    <aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select formControlName="CompanyMasterSid" 
+      [items]="companyList" 
+      bindLabel="companyName"
+      bindValue="CompanyMasterSid"
+      (change)="filterBranchByCompany($event)"
+      >
+      <ng-option value="">Select Company</ng-option>
+    </ng-select>
+    <label class="input-label">Company <span class="text-danger">*</span></label>
+  </div>
+</aside>
+
+<aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select formControlName="BranchMasterSid" 
+      [items]="branchList" 
+      bindLabel="branchName"
+      bindValue="BranchMasterSid"
+      [disabled]="!selectedCompanyId">
+      <ng-option value="">Select Branch</ng-option>
+    </ng-select>
+    <label class="input-label">Branch <span class="text-danger">*</span></label>
+    @if(authorityForm.get('BranchMasterSid')?.touched && authorityForm.get('BranchMasterSid')?.invalid){
+    <div class="error-message">
+      @if(authorityForm.get('BranchMasterSid')?.hasError('required')){
+      <span>Branch is required</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                             <ng-select 
+                                            class="ng-select" 
+                                            [items]="menuResults" 
+                                            bindLabel="MenuName"
+                                            bindValue="MenuMasterSid" 
+                                            placeholder="Select Menu"
+                                            formControlName="MenuMaster"
+                                        >
+                                        
+                                <ng-option value="">Select Menu</ng-option>
+                            </ng-select>
+                            <label class="input-label">Menu/Screen <span class="text-danger">*</span></label>
+                            @if(authorityForm.get('MenuMaster')?.touched && authorityForm.get('MenuMaster')?.invalid){
+                            <div class="error-message">
+                                @if(authorityForm.get('MenuMaster')?.hasError('required')){
+                                <span>Menu is required</span>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-6">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select 
+      formControlName="DepartmentMaster" 
+      [items]="departmentResults" 
+      bindLabel="departmentName"
+      bindValue="departmentName"
+      [multiple]="true"
+      placeholder="Select Departments">
+    </ng-select>
+    <label class="input-label">Departments <span class="text-danger">*</span></label>
+    @if(authorityForm.get('DepartmentMaster')?.touched && authorityForm.get('DepartmentMaster')?.invalid){
+      <div class="error-message">
+        @if(authorityForm.get('DepartmentMaster')?.hasError('required')){
+          <span>At least one department is required</span>
+        }
+      </div>
+    }
+  </div>
+</aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            @if(isEditMode){
+                            <select name="status" class="form-select" formControlName="status" id="text-input">
+                                <option value="Active">Active</option>
+                                <option value="Suspended">Suspended</option>
+                            </select>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
+                                id="text-input" readonly>
+                            }
+                            <label for="text-input" class="input-label">Status<span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+
+                    <!-- <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
+                                formControlName="Remarks" [textWithNumbers]="500"></textarea>
+                            <label for="text-input" class="input-label">Remarks</label>
+                        </div>
+                    </aside> -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 mt-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="row">
+                    <ul ngbNav #nav1="ngbNav" [(activeId)]="active" class="nav-tabs">
+                        <li [ngbNavItem]="1">
+                            <button ngbNavLink (click)="openAuthorityDetailModal(authorityDetailContent)">
+                                <i-feather name="plus-circle" class="feather-sm pt-1 text-info"></i-feather>
+                                Authority Detail
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="row">
+                    @if(authorityDetailsLength){
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle no-wrap table-bordered">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="bg-transparent text-light" scope="col">Action</th>
+                                    <th class="bg-transparent text-light" scope="col">Approval Level</th>
+                                    <th class="bg-transparent text-light" scope="col">Authorizer</th>
+                                    <th class="bg-transparent text-light" scope="col">Final Level</th>
+                                    <th class="bg-transparent text-light" scope="col">Status</th>
+                                </tr>
+                            </thead>
+                           <tbody>
+      @for(detail of authorityDetailsList; track $index){
+    <tr>
+        <td>
+            <div class="d-flex align-items-center">
+                <a class="text-info mx-2" (click)="openAuthorityDetailModal(authorityDetailContent, detail)">
+                    <i-feather class="feather-sm" name="eye"></i-feather>
+                </a>
+                <a class="text-danger mx-2 ps-3 border-start" (click)="deleteAuthorityDetail(detail.AuthorityDetailSid)">
+                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                </a>
+            </div>
+        </td>
+        <td>
+            <div class="text-truncate">{{detail.AuthorityLevel}}</div>
+        </td>
+        <td>
+            <div class="text-truncate">{{ findusersName(detail.UserMasterSid) }}</div>
+        </td>
+        <td>
+            <div class="text-truncate">{{detail.FinalAuthority === 'Y' ? 'Yes' : 'No'}}</div>
+        </td>
+        <td>
+            <span class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1"
+                *ngIf="detail.status==='A'">
+                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                Active</span>
+            <span class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1"
+                *ngIf="detail.status!=='A'">
+                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                Suspended</span>
+        </td>
+    </tr>
+    }
+</tbody>
+                        </table>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #authorityDetailContent let-modal>
+    <div class="modal-container"> 
+        <div class="modal-responsive-wrapper">
+            <div class="modal-content custom-modal">
+                <div [formGroup]="authorityDetailForm">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="modal-basic-title">{{isModalEditMode ? 'Edit Authority Detail' : 'Add Authority Detail'}}</h4>
+                        @if(isModalEditMode){
+                        <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showAuthorityDetailInfo()">
+                            <i class="fas fs-6 fa-info-circle"></i>
+                        </a>
+                        }
+                        <button type="button" class="btn-close" aria-label="Close" (click)="closeAuthorityDetailForm()"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="col-md-12 mt-md-0 mt-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group custom-form-group-select">
+                                                <ng-select formControlName="UserMasterSid" 
+                                                    [items]="userResults" 
+                                                    bindLabel="userName"
+                                                    bindValue="UserMasterSid">
+                                                    <ng-option value="">Select User</ng-option>
+                                                </ng-select>
+                                                <label class="input-label">Authorizer <span class="text-danger">*</span></label>
+                                                @if(authorityDetailForm.get('UserMasterSid')?.touched && authorityDetailForm.get('UserMasterSid')?.invalid){
+                                                <div class="error-message">
+                                                    @if(authorityDetailForm.get('UserMasterSid')?.hasError('required')){
+                                                    <span>User is required</span>
+                                                    }
+                                                </div>
+                                                }
+                                            </div>
+                                        </aside>
+
+                                        <aside class="col-md-3">
+                                            <div class="custom-form-group">
+                                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                                    formControlName="AuthorityLevel">
+                                                <label for="text-input" class="input-label">Approval Level <span class="text-danger">*</span></label>
+                                                @if(authorityDetailForm.get('AuthorityLevel')?.touched && authorityDetailForm.get('AuthorityLevel')?.invalid){
+                                                <div class="error-message">
+                                                    @if(authorityDetailForm.get('AuthorityLevel')?.hasError('required')){
+                                                    <span>Approval Level is required</span>
+                                                    }
+                                                </div>
+                                                }
+                                            </div>
+                                        </aside>
+
+                                        <aside class="col-md-3">
+                                            <div class="custom-form-group custom-form-group-select">
+                                                <select name="FinalAuthority" class="form-select" formControlName="FinalAuthority">
+                                                    <option value="Y">Yes</option>
+                                                    <option value="N">No</option>
+                                                </select>
+                                                <label class="input-label">Final Level <span class="text-danger">*</span></label>
+                                            </div>
+                                        </aside>
+
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                @if(isModalEditMode){
+                                                <select name="status" class="form-select" formControlName="status">
+                                                    <option value="Active">Active</option>
+                                                    <option value="Suspended">Suspended</option>
+                                                </select>
+                                                } @else {
+                                                <input type="text" name="status" class="custom-input-field sm" formControlName="status" readonly>
+                                                }
+                                                <label class="input-label">Status <span class="text-danger">*</span></label>
+                                            </div>
+                                        </aside>
+
+                                        <aside class="col-md-8">
+                                            <div class="custom-form-group">
+                                                <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
+                                                    formControlName="Remarks"></textarea>
+                                                <label class="input-label">Remarks</label>
+                                            </div>
+                                        </aside>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                            [disabled]="authorityDetailForm.invalid" (click)="submitAuthorityDetailForm()">
+                            <i class="fas fa-save me-1"></i>
+                            {{isModalEditMode ? 'Update' : 'Create'}}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</ng-template>

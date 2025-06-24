@@ -19,6 +19,7 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
 	selector: 'app-tarrif-entry',
@@ -74,6 +75,8 @@ export class TarrifEntryComponent implements OnInit {
 	companyList: any[];
 	currencyList : any[];
 	isDataLoading : boolean = true;
+	tariffData : any;
+	tariffDetailData : any;
 
 
 	cargoTypes = ['General', 'Haz', 'Reefer', 'Flexi', 'ODC', 'Empty', 'RORO', 'OOG', 'Tanker'];
@@ -191,6 +194,7 @@ export class TarrifEntryComponent implements OnInit {
 		this.loadModalFields();
 		if(data){
 			this.isModalEditMode= true;
+			this.tariffDetailData = data;
 			this.tariffDetailsForm.patchValue({
 				detailisSlabApplicable: data.IsSlabApplicable ==='Y' ? true : false || false,
 				detailSlabFrom: data.SlabFrom || '',
@@ -217,13 +221,14 @@ export class TarrifEntryComponent implements OnInit {
 			this.isModalEditMode = false;
 		}
 
-		this.modalRef = this.modalService.open(content, { size: 'lg' })
+		this.modalRef = this.modalService.open(content, { size: 'lg',centered : true,backdrop : 'static' })
 	}
 
 	loadTariff(TariffHeaderSid) {
 		this.masterServ.getTariffById(TariffHeaderSid).subscribe(
 			(tariffData) => {
 				if(tariffData.data.status){
+					this.tariffData = tariffData.data;
 					this.tariffHeaderForm.patchValue({
 						...tariffData.data,
 						DepartmentMasterSid: Number(tariffData.data.DepartmentMasterSid),
@@ -493,6 +498,21 @@ export class TarrifEntryComponent implements OnInit {
 	filterPolList(port){
 		this.tariffHeaderForm.get('PODTerminal').setValue(port.PortCode)
 		this.polList = this.portList.filter(each => each.PortMasterSid !== port.PortMasterSid);
+	}
+
+	showHeaderInfo() {
+		if (!this.tariffData) return;
+		const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+		modalRef.componentInstance.item = this.tariffData;
+		modalRef.componentInstance.idLabel = 'Tariff Header Id';
+		modalRef.componentInstance.idValue = this.tariffData?.TariffHeaderSid;
+	}
+	showDetailInfo() {
+		if (!this.tariffDetailData) return;
+		const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+		modalRef.componentInstance.item = this.tariffDetailData;
+		modalRef.componentInstance.idLabel = 'Tariff Detail Id';
+		modalRef.componentInstance.idValue = this.tariffDetailData?.TariffDetailSid;
 	}
 
 

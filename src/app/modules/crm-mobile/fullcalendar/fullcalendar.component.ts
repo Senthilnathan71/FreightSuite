@@ -17,6 +17,7 @@ import { forkJoin } from 'rxjs';
 import { ChangeDetectorRef } from '@angular/core'; // Import ChangeDetectorRef
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 
 const colors: any = {
@@ -56,6 +57,7 @@ export class FullcalendarComponent implements OnInit {
   // Declare modalRef with type NgbModalRef
   modalRef!: NgbModalRef;
   modalAddFormRef!: NgbModalRef;
+  calendarEventData : any;
 
 
   viewDate: Date = new Date();
@@ -140,7 +142,7 @@ export class FullcalendarComponent implements OnInit {
     action: string;
     event: CalendarEvent | any;
   };
-  constructor(private modalService: ModalService, private cdr: ChangeDetectorRef, private appSettingService: AppSettingsService, private fb: FormBuilder, private leadService: LeadService, private modal: NgbModal, private appService: AppService) { }
+  constructor(private modalService: ModalService, private cdr: ChangeDetectorRef, private appSettingService: AppSettingsService, private fb: FormBuilder, private leadService: LeadService, private modal: NgbModal, private appService: AppService,private ngbModal: NgbModal) { }
 
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice()
@@ -485,7 +487,7 @@ private meetingNoteValidator(control: AbstractControl) {
         const followUp = !!(this.preCustomerMeetingData.followUpDate || this.preCustomerMeetingData.followUpNote);
 
 
-
+        this.calendarEventData = this.preCustomerMeetingData;
         this.meetingForm.patchValue({
           customerName: this.preCustomerMeetingData.preCustomerMaster?.preCustomerName || '',
           contactPerson: this.preCustomerMeetingData.preCustomerMaster?.contactPerson || '',
@@ -547,4 +549,13 @@ private meetingNoteValidator(control: AbstractControl) {
   resetForm() {
     this.meetingForm.reset();
   }
+
+  showInfo() {
+    if (!this.calendarEventData) return;
+    const modalRef = this.ngbModal.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.calendarEventData;
+    modalRef.componentInstance.idLabel = 'Meeting Id';
+    modalRef.componentInstance.idValue = this.calendarEventData?.PreCustomerMeetingSid;
+  }
+
 }

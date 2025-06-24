@@ -1,0 +1,59 @@
+<div class="container">
+        <div class="modal-header">
+            <h4 class="modal-title">Details</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="d-flex justify-content-center align-items-center">
+                    <label class="">{{idLabel}} : </label>
+                    <div class="bg-light-secondary ms-2 px-2 py-1 rounded d-inline-flex align-items-center">
+                        {{idValue}}
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive mt-3">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="50%">Created By</th>
+                            <th class="bg-transparent text-light" scope="col" width="50%">Created Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="text-truncate">{{item.createdBy || item.CreatedBy || ''}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.createdOn | date:'dd/MM/yyyy, h:mm a' || ''}}
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="50%">Last Updated By</th>
+                            <th class="bg-transparent text-light" scope="col" width="50%">Last Updated Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="text-truncate">{{item.updatedBy || item.UpdatedBy  || ''}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.updatedOn | date:'dd/MM/yyyy, h:mm a' || ''}}
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Close</button>
+        </div>
+    </div>
