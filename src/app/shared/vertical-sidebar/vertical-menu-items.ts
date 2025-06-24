@@ -1,17 +1,6 @@
 import { RouteInfo } from './vertical-sidebar.metadata';
 
 export const ROUTES: RouteInfo[] = [
-
-  // {
-  //   path: '/crm',
-  //   title: 'Dashboard',
-  //   icon: 'mdi mdi-view-dashboard',
-  //   class: '',
-  //   extralink: false,
-  //   label: '',
-  //   labelClass: '',
-  //   submenu: []
-  // },
   {
     path: '',
     title: 'Master',

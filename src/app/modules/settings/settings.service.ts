@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { map } from "rxjs";
+import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.metadata";
 
  @Injectable({
    providedIn: 'root',
@@ -84,6 +85,17 @@ import { map } from "rxjs";
       })
     )
   }
+
+  getAllModules() {
+      return this.http.get<{ data: RouteInfo[] }>('module/navigation-list').pipe(
+        map(resp => {
+          return resp;
+        })
+      );
+    }
+
+
+  
 
   getModuleById(ModuleMasterSid) {
     return this.http.get<{ data: any }>(`module/fetch/${ModuleMasterSid}`).pipe(
