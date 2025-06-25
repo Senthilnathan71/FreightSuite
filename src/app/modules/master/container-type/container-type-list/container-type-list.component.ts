@@ -11,6 +11,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-container-type-list',
@@ -20,7 +21,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     RouterModule,
     FormsModule,
     FeatherModule,
-    NgbPaginationModule
+    NgbPaginationModule,
+    ListpageComponent
   ],
   templateUrl: './container-type-list.component.html',
   styleUrl: './container-type-list.component.scss'
@@ -68,6 +70,13 @@ export class ContainerTypeListComponent {
       });
     });
   }
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     const payload = {

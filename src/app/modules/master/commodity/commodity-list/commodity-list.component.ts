@@ -10,6 +10,8 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+
 
 @Component({
   selector: 'app-commodity-list',
@@ -19,7 +21,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     FeatherModule,
     FormsModule,
     RouterModule,
-    NgbPaginationModule
+    NgbPaginationModule,
+    ListpageComponent
   ],
   templateUrl: './commodity-list.component.html',
   styleUrls: ['./commodity-list.component.scss']
@@ -56,6 +59,13 @@ export class CommodityListComponent {
       }
     )
   }
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     const payload = {

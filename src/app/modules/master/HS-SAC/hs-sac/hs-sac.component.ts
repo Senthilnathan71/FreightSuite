@@ -19,6 +19,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-hs-sac',
@@ -36,7 +37,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     TextWithNumbersDirective,
     CustomDatePipe,
     NgbDatepickerModule,
-    DatePipe
+    DatePipe,
+    ListpageComponent
   ],
   templateUrl: './hs-sac.component.html',
   styleUrl: './hs-sac.component.scss',
@@ -294,6 +296,13 @@ editHssac(id: number, content: any) {
       }
     );
   }
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     const payload = {

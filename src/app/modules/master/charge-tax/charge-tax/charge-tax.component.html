@@ -1,59 +1,20 @@
 <div class="row">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
-            <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Charge Tax</h4>
-            </div>
-            <div class="col-md-8 pb-2">
-                <div class="" data-bs-theme="light">
-                    <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="openModal(content)">
-                            <i class="fas fa-plus me-1"></i> Create
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
-                            [disabled]="!searchPerformed || totalLengthOfCollection === 0">
-                            <i class="fas fa-file-alt me-1"></i> Report
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="resetPage()" [disabled]="!searchPerformed">
-                            <i class="fas fa-sync-alt me-1"></i> Reset
-                        </button>
-                    </form>
-                </div>
-            </div>
-            <div class="col-md-12 border-top">
-                <div class="row mx-0 py-2">
-                    <div class="col-md-8 mx-auto px-0">
-                        <form
-                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                            <div class="form-outline col-12 col-md px-0">
-                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
-                                    <option value="HSNCode">HSN Code</option>
-                                    <option value="description">Description</option>
-                                    <option value="TaxGroup">Tax Group</option>
-                                    <option value="status">Status</option>
-                                </select>
-                            </div>
-                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                                <div class="form-outline flex-grow-1">
-                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
-                                        placeholder="Enter filter value">
-                                    <i
-                                        class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                                </div>
-                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                                    (click)="search()">
-                                    <i class="fas fa-search me-1"></i> Search
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <app-listpage
+  [title]="'Charge Tax'"
+  [searchOptions]="[
+    { value: 'HSNCode', label: 'HSN Code' },
+    { value: 'description', label: 'Description' },
+    { value: 'TaxGroup', label: 'Tax Group' },
+    { value: 'status', label: 'Status' }
+  ]"
+  [searchPerformed]="searchPerformed"
+  [defaultSearchType]="'HSNCode'"
+  (onCreateClick)="openModal(content)"
+  (onReportClick)="report()"
+  (onResetClick)="resetPage()"
+  (onSearchClick)="onSearch($event)">
+    </app-listpage>
+
     <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">

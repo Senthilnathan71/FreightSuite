@@ -15,6 +15,7 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { take } from 'rxjs';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-division',
@@ -30,7 +31,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     ReactiveFormsModule,
     OnlyTextDirective,
     TextWithNumbersDirective,
-    DatePipe
+    DatePipe,
+    ListpageComponent
   ],
   templateUrl: './division.component.html',
   styleUrl: './division.component.scss'
@@ -264,6 +266,13 @@ export class DivisionComponent {
       }
     );
   }
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     const payload = {

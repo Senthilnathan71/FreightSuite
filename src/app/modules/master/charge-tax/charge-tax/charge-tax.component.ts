@@ -12,6 +12,7 @@ import { FeatherModule } from 'angular-feather';
 import { take } from 'rxjs';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-charge-tax',
@@ -25,7 +26,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     NgbPagination,
     RouterModule,
     FormsModule,
-    DatePipe
+    DatePipe,
+    ListpageComponent
   ],
   templateUrl: './charge-tax.component.html',
   styleUrl: './charge-tax.component.scss',
@@ -227,6 +229,13 @@ export class ChargeTaxComponent implements OnInit {
       }
     );
   }
+}
+
+onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
 }
   search() {
     const payload = {

@@ -13,6 +13,7 @@ import { take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-chargegroup',
@@ -26,7 +27,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     NgbPagination,
     RouterModule,
     FormsModule,
-    DatePipe
+    DatePipe,
+    ListpageComponent
   ],
   templateUrl: './chargegroup.component.html',
   styleUrl: './chargegroup.component.scss',
@@ -223,6 +225,13 @@ export class ChargegroupComponent implements OnInit {
       }
     }
   }
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     const payload = {
