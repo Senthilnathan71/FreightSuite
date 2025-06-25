@@ -193,7 +193,7 @@ export class TermsConditionEntryComponent implements OnInit{
                 TypeValue: formValue.TypeValue,
                 IsDefaut: formValue.IsDefaut ? 'Y' : 'N',
                 status: formValue.detailstatus === 'Active' ? 'A' : 'S',
-                ...(this.isEditMode ? { updatedBy: updatedBy } : { createdBy: createdBy })
+                ...(this.isModalEditMode ? { updatedBy: updatedBy } : { createdBy: createdBy })
             }
             if(this.isModalEditMode){
                 this.masterService.updateTandCDetailById(this.TermsAndConditionsDetailSid,payload).subscribe(

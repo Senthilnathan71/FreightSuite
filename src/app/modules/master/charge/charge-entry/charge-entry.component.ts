@@ -149,11 +149,10 @@ loadLookupData(): void {
   );
   this.masterService.getAllHssac().subscribe({
     next: (resp: any) => {
-      this.hsnsacOptions = resp.data || resp;
-      // If editing, trigger the selection change to populate tax rate
-      if (this.isEditMode && this.chargeForm.value.HSNSAC) {
-        this.onHsnsacSelect(this.chargeForm.value.HSNSAC);
-      }
+      this.hsnsacOptions = resp;
+      // if (this.isEditMode && this.chargeForm.value.HSNSAC) {
+      //   this.onHsnsacSelect(this.chargeForm.value.HSNSAC);
+      // }
     },
     error: (error) => {
       console.error('Error loading HSN/SAC codes:', error);

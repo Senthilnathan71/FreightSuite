@@ -45,6 +45,11 @@ export class CommodityEntryComponent implements OnInit {
     { id: 'Haz', name: 'Haz' },
     { id: 'ContainerVentRequired', name: 'Container Vent Required' }
   ];
+  commodityTypeOptions = [
+  { value: 'General', label: 'General' },
+  { value: 'Haz', label: 'Hazardous' },
+  { value: 'Reefer', label: 'Reefer' }
+];
 
   constructor(
     private fb: FormBuilder,
@@ -109,10 +114,7 @@ export class CommodityEntryComponent implements OnInit {
       ]],
       CommodityCode: ['', [Validators.required, Validators.maxLength(10), Validators.pattern(/^[a-zA-Z0-9]{5,12}$/)]],
       CommodityNameLL: ['', [Validators.maxLength(50)]],
-      CommodityType: ['', [
-        Validators.required,
-        Validators.maxLength(100)  
-      ]],
+      CommodityType: ['General', [Validators.required]],
       // UOMSid: [null],
       // ImcoName: ['', [Validators.maxLength(10)]],
       // UNNo: ['', [Validators.maxLength(10)]],

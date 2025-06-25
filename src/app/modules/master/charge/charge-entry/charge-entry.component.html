@@ -125,13 +125,13 @@
                         <h4>GST</h4>
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="HSNSAC" [items]="hsnsacOptions" bindLabel="code" bindValue="code">
-                                    <ng-template ng-label-tmp let-item="item">
+                                <ng-select formControlName="HSNSAC" [items]="hsnsacOptions" bindLabel="HSSACCode" bindValue="HSSACCode">
+                                    <!-- <ng-template ng-label-tmp let-item="item">
                                         {{item.code}} - {{item.description}}
                                     </ng-template>
                                     <ng-template ng-option-tmp let-item="item">
                                         {{item.code}} - {{item.description}}
-                                    </ng-template>
+                                    </ng-template> -->
                                 </ng-select>
                                 <label class="input-label">SAC Code <span class="text-danger fw-semibold">*</span></label>
                                 <div *ngIf="chargeForm.get('HSNSAC')?.touched && chargeForm.get('HSNSAC')?.invalid">

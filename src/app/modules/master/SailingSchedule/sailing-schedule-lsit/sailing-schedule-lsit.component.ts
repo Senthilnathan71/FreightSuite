@@ -218,6 +218,8 @@ export class SailingScheduleLsitComponent implements OnInit {
         this.totalAmountOfCollections = 0;
         this.filterValue = '';
         this.searchType = 'VoyageNo';
+        this.portOfLoading = '';
+        this.portOfDeparture = '';
         this.page = 1;
         
     }
