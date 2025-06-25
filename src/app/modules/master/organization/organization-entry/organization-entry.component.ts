@@ -457,7 +457,7 @@ export class OrganizationEntryComponent {
       RegistrationNo: [{ value: '', disabled: true }],
       CompanyType: [{ value: '', disabled: true }],
       Remarks: ['', [Validators.required]],
-      status: [''],
+      status: [{value: 'Active', disabled: !this.isEditMode}, Validators.required],
       CustomerType: [{}],
       Network:['', [Validators.required]]
     });
@@ -503,7 +503,7 @@ export class OrganizationEntryComponent {
       CustBranchRegistered: ['Y', [Validators.required]], // default value if applicable
       CustBranchGSTtype: [''],
       CustBranchGSTIN: [''],
-      status: [''],
+      status: [{value: 'Active', disabled: false}, Validators.required],
     });
   }
 
@@ -590,6 +590,10 @@ export class OrganizationEntryComponent {
   // }
 
   onSubmit() {
+    if (this.customerForm.disabled) {
+    this.customerForm.enable();
+  }
+  
     let createdBy = {
       createdBy: this.appSettingService.userSettingSource.value['userEmail'],
     };

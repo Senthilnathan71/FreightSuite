@@ -148,28 +148,21 @@
                         </aside>
 
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="commodityType" formControlName="CommodityType" placeholder=""
-                                    class="custom-input-field sm" [class.is-invalid]="
-        commodityForm.get('CommodityType')?.invalid &&
-        (commodityForm.get('CommodityType')?.touched || commodityForm.get('CommodityType')?.dirty)
-      " />
-                                <label for="commodityType" class="input-label">
-                                    Commodity Type <span class="text-danger">*</span>
-                                </label>
-                                <div *ngIf="
-      (commodityForm.get('CommodityType')?.touched || commodityForm.get('CommodityType')?.dirty) &&
-      commodityForm.get('CommodityType')?.invalid
-    " class="error-message">
-                                    <span *ngIf="commodityForm.get('CommodityType')?.hasError('required')">
-                                        Commodity Type is required.
-                                    </span>
-                                    <span *ngIf="commodityForm.get('CommodityType')?.hasError('maxlength')">
-                                        Commodity Type cannot exceed 100 characters.
-                                    </span>
-                                </div>
-                            </div>
-                        </aside>
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select 
+      id="commodityType" 
+      formControlName="CommodityType"
+      [items]="commodityTypeOptions"
+      bindLabel="label"
+      bindValue="value"
+      placeholder="Select Commodity Type"
+      [clearable]="false">
+    </ng-select>
+    <label for="commodityType" class="input-label">
+      Commodity Type <span class="text-danger">*</span>
+    </label>
+  </div>
+</aside>
                     </div>
                 </form>
             </div>
