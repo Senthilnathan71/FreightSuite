@@ -1,0 +1,137 @@
+<form>
+    <div class="row py-3">
+        <div class="col-12">
+            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+                <div class="col-md-4 pb-2">
+                    <h4 class="page-title mb-0">Generation</h4>
+                </div>
+                <div class="col-md-8 pb-2">
+                    <div
+                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="navigateBack()">
+                            <i class="fas fa-chevron-left me-1"></i>
+                            Back
+                        </button>
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Reset
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-history me-1"></i>
+                            History
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-save me-1"></i>
+                            Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row">
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="Status" [items]="modeOfReceivedFrom" bindLabel="name"
+                                    bindValue="name">
+                                </ng-select>
+                                <label for="" class="input-label">Received From <span
+                                        class="text-danger"></span></label>
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">IATA Agent <span
+                                        class="text-danger"></span></label>
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">IATA Agent Address <span
+                                        class="text-danger"></span></label>
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Serial No <span
+                                        class="text-danger"></span></label>
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">No of AWB <span
+                                        class="text-danger"></span></label>
+
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="date" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Received Date <span
+                                        class="text-danger"></span></label>
+
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
+                                    bindValue="name">
+                                </ng-select>
+                                <label for="" class="input-label">Stock Status <span class="text-danger"></span></label>
+
+                            </div>
+                        </aside>
+                        <div>
+                            <button class="btn btn-info btn-sm">
+                                Generate
+                            </button>
+                        </div>
+
+                    </div>
+                    <div class="row mt-3">
+                        <h5 class="card-title">AirWay Bill</h5>
+                        <div class="row  py-2 rounded shadow-sm mx-auto">
+                            <div class="col-12 p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle no-wrap table-bordered">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="bg-transparent text-light" scope="col">AirWay BL Number</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>11</tr>
+                                            <tr>12</tr>
+                                            <tr>13</tr>
+                                            <tr>14</tr>
+                                            <tr>15</tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
