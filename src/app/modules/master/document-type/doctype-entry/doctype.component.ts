@@ -39,10 +39,10 @@ export class DoctypeComponent implements OnInit {
 	documentData: any
 
 	documentSeparators = [
-		{ separator: 'Slash (/)', value : '/' },
-		{ separator: 'Hyphen (-)', value : '-' },
-		{ separator: 'Colon (:)', value : ':' },
-		{ separator: 'Dot (.)', value : '.' }
+		{ separator: 'Slash ( / )', value : '/' },
+		{ separator: 'Hyphen ( - )', value : '-' },
+		{ separator: 'Colon ( : )', value : ':' },
+		{ separator: 'Dot ( . )', value : '.' }
 	];
 
 	resetValues = [
@@ -113,11 +113,9 @@ export class DoctypeComponent implements OnInit {
 	loadAllFields() {
 		forkJoin({
 			companies : this.masterService.getAllCompanies(),
-			branches: this.masterService.getAllBranches(),
 			currencies : this.masterService.getAllCurrencies(),
-		}).subscribe(({ companies,branches, currencies }) => {
+		}).subscribe(({ companies, currencies }) => {
 			this.companyList = companies,
-			this.branchList = branches,
 			this.currencyList = currencies
 		})
 	}
@@ -137,6 +135,7 @@ export class DoctypeComponent implements OnInit {
 						YearFlag: data.YearFlag === 'Y',
 						status: data.status === 'A' ? 'Active' : 'Suspended',
 					})
+					this.getBranchesByCompanyId({CompanyMasterSid : data.CompanyMasterSid})
 					if(data.CompanyFlag === 'Y'){
 						this.documentForm.get('CompanyValue').enable();
 					}
@@ -187,7 +186,7 @@ export class DoctypeComponent implements OnInit {
 				(resp: any) => {
 					if (resp.status) {
 						this.appSettingService.showSuccess('Document Type Successfully Updated')
-						this.router.navigate(['master/doctype'])
+						this.router.navigate(['master/doctype/list'])
 					} else {
 						this.appSettingService.showError('Error Updating Document Type');
 					}
@@ -202,7 +201,7 @@ export class DoctypeComponent implements OnInit {
 				(resp: any) => {
 					if (resp.status) {
 						this.appSettingService.showSuccess('Document Type successfully Created');
-						this.router.navigate(['master/doctype'])
+						this.router.navigate(['master/doctype/list'])
 					} else {
 						this.appSettingService.showError('Error Creating Document Type');
 					}
@@ -233,6 +232,18 @@ export class DoctypeComponent implements OnInit {
 		modalRef.componentInstance.item = this.documentData;
 		modalRef.componentInstance.idLabel = 'Document Type Id';
 		modalRef.componentInstance.idValue = this.documentData?.DocumentTypeMasterSid;
+	}
+
+	getBranchesByCompanyId(company){
+		this.masterService.getBranchesByCompanyId(company.CompanyMasterSid).subscribe(
+			(resp:any)=>{
+				if(resp){
+					this.branchList = resp;
+				} else {
+					this.appSettingService.showError('Error Loading Branches By Company')
+				}
+			}
+		)
 	}
 
 	enableValueField(field, event) {
