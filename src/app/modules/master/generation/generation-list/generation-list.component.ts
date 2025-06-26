@@ -10,6 +10,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-generation-list',
@@ -27,12 +28,13 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
   styleUrl: './generation-list.component.scss'
 })
 export class GenerationListComponent {
-  searchType = 'AirwayBillNumber';
+  searchType = 'AirwayBillType';
   filterValue = '';
   results: any[] = [];
   hawbList: any[] = [];
   searchPerformed = false;
   loading: boolean = false;
+  userData: any; 
 
   // pagination
   page = 1;
@@ -43,8 +45,16 @@ export class GenerationListComponent {
     private masterService: MasterService, 
     private router: Router,
     private appSettingService: AppSettingsService, 
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private excelReportService: ExcelExportService
   ) { }
+  ngOnInit(){
+   this.appSettingService.getUser().subscribe(user => {
+      if (user) {
+        this.userData = user;
+      }
+    });
+  }
 
   onSearch(event: { type: string, value: string }) {
     this.searchType = event.type;
@@ -117,7 +127,7 @@ export class GenerationListComponent {
     this.hawbList = [];
     this.totalLengthOfCollection = 0;
     this.filterValue = '';
-    this.searchType = 'AirwayBillNumber';
+    this.searchType = 'AirwayBillType';
     this.page = 1;
   }
 
@@ -128,4 +138,34 @@ export class GenerationListComponent {
   getStatusText(status: string): string {
     return status === 'A' ? 'Active' : 'Inactive';
   }
+  report(): void {
+    if (!this.hawbList || this.hawbList.length === 0) {
+      this.appSettingService.showWarning("No data available to generate report");
+      return;
+    }
+
+    const formattedData = this.hawbList.map(item => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Inactive',
+      ReceivedDate: new CustomDatePipe().transform(item.ReceivedDate) // Format date
+    }));
+
+    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'AirwayBillType', label: 'Received From' },
+        { key: 'HAWBSerial', label: 'Serial No' },
+        { key: 'NumberofHAWB', label: 'No of AWB' },
+        { key: 'ReceivedDate', label: 'Received Date' },
+        { key: 'status', label: 'Status' }
+      ],
+      fileName: 'HAWB-Stock-Report',
+      title: companyName,
+      sheetName: 'HAWB Stock'
+    });
+  }
+
+
 }

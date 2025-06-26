@@ -58,6 +58,7 @@ export class GenerationEntryComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    
     this.initForm();
     this.loadUserData();
     this.loadCustomers();

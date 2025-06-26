@@ -2,14 +2,15 @@
     <app-listpage
       [title]="'HAWB Stock'"
       [searchOptions]="[
-        { value: 'AirwayBillNumber', label: 'AWB Number' },
+        { value: 'AirwayBillType', label: 'Received From' },
         { value: 'HAWBSerial', label: 'Serial No' },
-        { value: 'Agent', label: 'Agent' },
-        { value: 'StockStatus', label: 'Stock Status' }
+        { value: 'NumberofHAWB', label: 'No of AWB' },
+        { value: 'ReceivedDate', label: 'Received Date' }
       ]"
       [searchPerformed]="searchPerformed"
-      [defaultSearchType]="'AirwayBillNumber'"
+      [defaultSearchType]="'AirwayBillType'"
       (onCreateClick)="navigateToCreateGeneration()"
+      (onReportClick)="report()"
       (onResetClick)="resetPage()"
       (onSearchClick)="onSearch($event)">
     </app-listpage>
