@@ -34,6 +34,10 @@ export class YearEntryComponent {
     });
   }
 
+  resetForm() {
+  this.yearForm.reset();
+}
+
   
   onSubmit() {
     if (this.yearForm.invalid) {
