@@ -13,6 +13,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { TogglerComponent } from 'src/app/component/simple-toggler/toggle.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
   selector: 'app-rolemenu',
@@ -64,6 +65,8 @@ export class RolemenuComponent implements OnInit {
 	roleMenuForm !:FormGroup;
 	searchForm !:FormGroup;
 	RoleMenuMasterSid : number;
+	currentMenuId: number;
+	TandCList: any;
 
     constructor(
 		private settingService : SettingsService,
@@ -352,5 +355,31 @@ export class RolemenuComponent implements OnInit {
     modalRef.componentInstance.idLabel = 'Role Menu Id';
     modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
   }
+
+	openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.settingService.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.RoleMenuMasterSid;
+
+				} else {
+					this.appSettingService.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingService.showError('Error loading Terms and Conditions', error);
+			}
+		);
+	}
 
 } 

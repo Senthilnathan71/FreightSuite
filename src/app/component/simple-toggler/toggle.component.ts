@@ -1,4 +1,4 @@
-import { Component, forwardRef, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, forwardRef, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 
@@ -21,6 +21,7 @@ import { FormsModule, ReactiveFormsModule, NG_VALUE_ACCESSOR, ControlValueAccess
           (change)="onChange($event)"
           (blur)="onTouched()"
           [checked]="value"
+          [disabled]="disabled"
         />
         <span class="toggler-slider"></span>
       </label>
@@ -70,12 +71,28 @@ import { FormsModule, ReactiveFormsModule, NG_VALUE_ACCESSOR, ControlValueAccess
     input:checked + .toggler-slider:before {
       transform: translateX(18px);
     }
+    input:disabled + .toggler-slider {
+      background-color: #808080; /* Gray color for disabled state */
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    input:disabled + .toggler-slider:before {
+      background-color: #e0e0e0; /* Lighter gray for the knob */
+    }
   `]
 })
 export class TogglerComponent implements ControlValueAccessor {
   @Input() controlName: string = '';
-  value: boolean = false;
+  @Input() disabled: boolean = false;
+  @Input() set toggleValue(val: boolean) {
+    if (val !== undefined && val !== null && val !== this.value) {
+      this.value = val;
+      this.onChangeFn(val);
+      this.toggleChange.emit(val);
+    }
+  }
   @Output() toggleChange = new EventEmitter<boolean>();
+  value: boolean = false;
   private onChangeFn: (value: boolean) => void = () => {};
   private onTouchedFn: () => void = () => {};
 
@@ -90,7 +107,6 @@ export class TogglerComponent implements ControlValueAccessor {
   registerOnTouched(fn: () => void): void {
     this.onTouchedFn = fn;
   }
-
 
   onChange(event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;

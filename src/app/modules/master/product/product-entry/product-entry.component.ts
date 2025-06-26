@@ -11,6 +11,7 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { DatePipe } from '@angular/common';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
     selector: 'app-product-entry',
@@ -48,6 +49,8 @@ export class ProductEntryComponent implements OnInit{
     { name: 'Active', value: 'Active' },
     { name: 'Suspended', value: 'Suspended' },
   ]
+    currentMenuId: number;
+    TandCList: any;
 
     constructor(
         private masterService:MasterService,
@@ -209,5 +212,31 @@ export class ProductEntryComponent implements OnInit{
         modalRef.componentInstance.idLabel = 'Product Id';
         modalRef.componentInstance.idValue = this.productData?.ProductMasterSId;
     }
+
+    openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.masterService.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.ProductMasterSId;
+
+				} else {
+					this.appSettingService.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingService.showError('Error loading Terms and Conditions', error);
+			}
+		);
+	}
 
 }

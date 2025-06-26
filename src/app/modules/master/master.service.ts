@@ -1808,6 +1808,16 @@ searchChargeGroups(payload: any) {
       })
     )
   }
+
+  getTandCByCondition(payload){
+    return this.http.post<{data : any[]}>('terms-and-conditions/fetchByCondition',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   // Terms And Conditions Details
 
   getAllTandCDetail(){
@@ -1857,6 +1867,17 @@ searchChargeGroups(payload: any) {
 
   searchTandCDetail(payload){
     return this.http.post<{data:any[]}>('terms-and-conditions-detail/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // T&C Transaction
+
+  createTandCTransaction(payload){
+    return this.http.post<{data:any[]}>('terms-and-conditions/transaction',payload).pipe(
       map((resp)=>{
         let response = resp;
         return response;

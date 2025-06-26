@@ -20,6 +20,8 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
 	selector: 'app-tarrif-entry',
@@ -43,7 +45,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 		NgbPopoverModule,
 		NgbPaginationModule,
 		CustomDatePipe,
-		SearchableDropdown
+		SearchableDropdown,
+		PreventMultiClickDirective
 	],
 	templateUrl: './tarrif-entry.component.html',
 	styleUrl: './tarrif-entry.component.scss',
@@ -87,6 +90,8 @@ export class TarrifEntryComponent implements OnInit {
 	totalNumberOfCollection:number;
 	today = this.calendar.getToday();
 	todayDate = new Date(this.today.year,this.today.month,this.today.day);
+	currentMenuId: number;
+	TandCList: any;
 
 	constructor(
 		private masterServ: MasterService,
@@ -513,6 +518,32 @@ export class TarrifEntryComponent implements OnInit {
 		modalRef.componentInstance.item = this.tariffDetailData;
 		modalRef.componentInstance.idLabel = 'Tariff Detail Id';
 		modalRef.componentInstance.idValue = this.tariffDetailData?.TariffDetailSid;
+	}
+
+	openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.masterServ.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.TariffHeaderSid;
+
+				} else {
+					this.appSettingServ.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingServ.showError('Error loading Terms and Conditions', error);
+			}
+		);
 	}
 
 

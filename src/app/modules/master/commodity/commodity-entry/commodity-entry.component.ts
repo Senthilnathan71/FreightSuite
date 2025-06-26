@@ -11,6 +11,8 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { take } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 
 @Component({
   selector: 'app-commodity-entry',
@@ -20,7 +22,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     ReactiveFormsModule,
     FeatherModule,
     NgSelectModule,
-    DatePipe
+    DatePipe,
+    PreventMultiClickDirective
   ],
   templateUrl: './commodity-entry.component.html',
   styleUrls: ['./commodity-entry.component.scss']
@@ -50,6 +53,8 @@ export class CommodityEntryComponent implements OnInit {
   { value: 'Haz', label: 'Hazardous' },
   { value: 'Reefer', label: 'Reefer' }
 ];
+  currentMenuId: number;
+  TandCList: any[]=[];
 
   constructor(
     private fb: FormBuilder,
@@ -228,5 +233,31 @@ export class CommodityEntryComponent implements OnInit {
     modalRef.componentInstance.item = this.commodityData;
     modalRef.componentInstance.idLabel = 'Commodity Id';
     modalRef.componentInstance.idValue = this.commodityData?.CommodityMasterSid;
+  }
+
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.commodityId;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
   }
 }

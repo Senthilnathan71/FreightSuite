@@ -12,6 +12,8 @@ import { forkJoin } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 
 @Component({
   selector: 'app-authority-entry',
@@ -23,7 +25,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
-    NgbNavModule
+    NgbNavModule,
+    PreventMultiClickDirective
   ],
   templateUrl: './authority-entry.component.html',
   styleUrls: ['./authority-entry.component.scss']
@@ -59,6 +62,8 @@ export class AuthorityEntryComponent implements OnInit {
   selectedCompanyId: number | null = null;
   branchList : any[];
   usersTeamList : any[]
+  TandCList: any[]=[];
+  currentMenuId: any;
   
 
   constructor(
@@ -424,4 +429,31 @@ filterBranchByCompany(company:any){
     modalRef.componentInstance.idLabel = 'Authority Detail Id';
     modalRef.componentInstance.idValue = this.detailData?.AuthorityDetailSid;
   }
+
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.AuthorityMasterSid;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
+
 }

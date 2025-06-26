@@ -144,6 +144,11 @@
       </form>
     </div>
     <div class="modal-footer">
+      @if(isEditMode){
+      <button appPreventMultiClick type="button" class="btn btn-outline-info me-auto" (click)="openTandC()">
+        <i class="fas fa-clipboard me-1"></i> Terms & Condition
+      </button>
+      }
       <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
       <button type="button" class="btn btn-info" (click)="onSubmit()"
         [disabled]="btnDisable || packageTypeForm.invalid">

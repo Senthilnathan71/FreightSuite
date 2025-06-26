@@ -8,6 +8,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
   selector: 'app-milestone-entry',
@@ -17,7 +19,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
     ReactiveFormsModule,
     FeatherModule,
     NgSelectModule,
-    DatePipe
+    DatePipe,
+    PreventMultiClickDirective
   ],
   templateUrl: './milestone-entry.component.html',
   styleUrls: ['./milestone-entry.component.scss']
@@ -41,6 +44,8 @@ export class MilestoneEntryComponent implements OnInit {
     { id: 'A', name: 'Active' },
     { id: 'I', name: 'Suspended' }
   ];
+  currentMenuId: any;
+  TandCList: any;
 
   constructor(
     private fb: FormBuilder,
@@ -210,4 +215,31 @@ export class MilestoneEntryComponent implements OnInit {
     modalRef.componentInstance.idLabel = 'Milestone Id';
     modalRef.componentInstance.idValue = this.milestoneData?.MilestoneMasterSid;
   }
+
+  openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.masterService.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.milestoneId;
+
+				} else {
+					this.appSettingService.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingService.showError('Error loading Terms and Conditions', error);
+			}
+		);
+	}
+
 }
