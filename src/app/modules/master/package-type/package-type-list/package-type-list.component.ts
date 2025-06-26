@@ -13,6 +13,8 @@ import { take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
   selector: 'app-package-type-list',
@@ -26,7 +28,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     NgbPagination,
     RouterModule,
     FormsModule,
-    DatePipe
+    DatePipe,
+    PreventMultiClickDirective
   ],
   templateUrl: './package-type-list.component.html',
   styleUrl: './package-type-list.component.scss',
@@ -51,6 +54,8 @@ export class PackageTypeListComponent {
   isLoading = false;
   userData : any;
   packageData : any;
+  currentMenuId: number;
+  TandCList: any;
 
   constructor(
     private modalService: NgbModal,
@@ -256,4 +261,31 @@ export class PackageTypeListComponent {
     modalRef.componentInstance.idLabel = 'Package Type Id';
     modalRef.componentInstance.idValue = this.packageData?.PackageTypeMasterSid;
   }
+
+  openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.masterService.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.PackageTypeMasterSid;
+
+				} else {
+					this.appSettingService.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingService.showError('Error loading Terms and Conditions', error);
+			}
+		);
+	}
+
 }

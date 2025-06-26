@@ -16,6 +16,8 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { ListpageComponent} from 'src/app/component/listpage/listpage.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 
 @Component({
   selector: 'app-city',
@@ -32,7 +34,8 @@ import { ListpageComponent} from 'src/app/component/listpage/listpage.component'
     NgbModalModule,
     NgSelectModule,
     DatePipe,
-    ListpageComponent
+    ListpageComponent,
+    PreventMultiClickDirective
   ],
   templateUrl: './city.component.html',
   styleUrl: './city.component.scss'
@@ -48,7 +51,9 @@ export class CityComponent {
   isViewMode = false;
   cityList: any[] = [];
   statusList = ["Active", "Suspended"]
-  countryList: any[] = [];;
+  countryList: any[] = [];
+  currentMenuId: number;
+  TandCList: any;
   stateList: any [] = [];
   countryMap: { [id: number]: string} = {};
   stateMap: { [id: number]: string} = {};
@@ -412,6 +417,32 @@ export class CityComponent {
     modalRef.componentInstance.item = this.cityData;
     modalRef.componentInstance.idLabel = 'City Id';
     modalRef.componentInstance.idValue = this.cityData?.CountryMasterSid;
+  }
+
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.CityMasterSid;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
   }
   
 }

@@ -11,6 +11,8 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
   selector: 'app-container-type-entry',
@@ -23,7 +25,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     OnlyTextDirective,
     TextWithNumbersDirective,
     NgSelectModule,
-    DatePipe
+    DatePipe,
+    PreventMultiClickDirective
   ],
   templateUrl: './container-type-entry.component.html',
   styleUrl: './container-type-entry.component.scss'
@@ -44,6 +47,8 @@ export class ContainerTypeEntryComponent {
   ];
 
   companyList: any[] =[];
+  currentMenuId: number;
+  TandCList: any;
 
 
   constructor(
@@ -268,6 +273,32 @@ resetForm(): void {
     modalRef.componentInstance.item = this.containerData;
     modalRef.componentInstance.idLabel = 'Container Type Id';
     modalRef.componentInstance.idValue = this.containerData?.ContainerTypeMasterSid;
+  }
+
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.ContainerTypeMasterSid;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
   }
 
 }

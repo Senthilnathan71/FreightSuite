@@ -13,6 +13,8 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 
 @Component({
@@ -79,6 +81,8 @@ export class QuotationComponent implements OnInit {
 	todayDate = new Date(this.today.year,this.today.month,this.today.day);
   minQuoteDate :any;
   quotationData : any;
+  TandCList : any[] = [];
+  currentMenuId : number;
   constructor(
     private appService: AppService,
     private appSettingsService: AppSettingsService,
@@ -90,11 +94,11 @@ export class QuotationComponent implements OnInit {
     private toaster: ToastrService,
     private modalService: ModalService,
     private ngbModal : NgbModal,
-    private calendar:NgbCalendar) { }
+    private calendar:NgbCalendar
+  ) { }
 
   ngOnInit(): void {
     const quotationData = this.leadService.getQuotationData();
-
     if (quotationData) {
       this.rateRequestCustomerMasterSid = quotationData.customerId
       this.rateRequestDepartmentMasterSid = quotationData.departmentId
@@ -717,4 +721,29 @@ export class QuotationComponent implements OnInit {
     modalRef.componentInstance.idValue = this.quotationData?.QuoteHeaderSid;
   }
 
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.leadService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.ngbModal.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.QuoteHeaderSid;
+
+        } else {
+          this.appSettingsService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingsService.showError('Error loading Terms and Conditions',error);
+      }
+    );
+  }
 }

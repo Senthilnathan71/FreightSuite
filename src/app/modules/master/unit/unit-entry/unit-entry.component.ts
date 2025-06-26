@@ -12,6 +12,7 @@ import { ContainerType } from 'src/app/modules/crm-mobile/Interfaces/container-t
 import { Unit } from 'src/app/modules/crm-mobile/Interfaces/unit.interface';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 
 @Component({
@@ -57,6 +58,8 @@ export class UnitEntryComponent {
     { value: 'A', name: 'Active' },
     { value: 'S', name: 'Suspended' }
   ];
+  currentMenuId: number;
+  TandCList: any;
 
   constructor(
     private config: NgSelectConfig, 
@@ -201,4 +204,31 @@ export class UnitEntryComponent {
     modalRef.componentInstance.idLabel = 'Unit Id';
     modalRef.componentInstance.idValue = this.unitData?.UnitMasterSid;
   }
+
+  openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.masterService.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.idParam;
+
+				} else {
+					this.appSettingService.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingService.showError('Error loading Terms and Conditions', error);
+			}
+		);
+	}
+
 }

@@ -536,6 +536,10 @@
                 <i-feather class="feather-sm me-1" name="arrow-left"></i-feather> Back
             </button>
             <div class="ms-auto me-1" *ngIf="isEditMode">
+                <button class="btn btn-outline-info btn-sm" (click)="openTandC()">
+                    <i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+            </div>
+            <div class="me-1" *ngIf="isEditMode">
                 <button class="btn btn-outline-info btn-sm" (click)="showInfo()">
                     <i class="fas fs-4 fa-info-circle"></i> Details</button>
             </div>

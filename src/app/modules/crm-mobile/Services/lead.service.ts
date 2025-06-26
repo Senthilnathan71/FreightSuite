@@ -453,5 +453,15 @@ export class LeadService {
   }
 
   
+  getTandCByCondition(payload){
+    return this.http.post<{data : any[]}>('terms-and-conditions/fetchByCondition',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  
 
 }

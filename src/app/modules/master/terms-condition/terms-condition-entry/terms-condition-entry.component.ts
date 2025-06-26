@@ -14,6 +14,8 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
     selector: 'app-terms-condition-entry',
@@ -28,7 +30,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
         CommonModule,
         OnlyTextDirective,
         TextWithNumbersDirective,
-        DatePipe
+        DatePipe,
+        PreventMultiClickDirective
     ],
     templateUrl: './terms-condition-entry.component.html',
     styleUrl: './terms-condition-entry.component.scss'
@@ -57,6 +60,8 @@ export class TermsConditionEntryComponent implements OnInit{
     totalAmountOfCollections: number;
     tandCHeaderData: any;
     tandCDetailData: any;
+    currentMenuId: number;
+    TandCList: any;
 
     constructor(
         private masterService : MasterService,
@@ -280,10 +285,10 @@ export class TermsConditionEntryComponent implements OnInit{
                     this.tandCHeaderData = response;
                     this.termsAndConditionForm.patchValue({
                         ...response,
-                        departmentId : response.departments[0].departmentId,
+                        departmentId : response.departments[0]?.departmentId || '',
                         status : response.status === 'A' ? 'Active':'Suspended'    
                     })
-                    this.departmentOnTermsId = response.departments[0].DepartmentOnTermSid;
+                    this.departmentOnTermsId = response.departments[0]?.DepartmentOnTermSid;
                     this.loadTandCDetails();
                 } else {
                     this.appSettingService.showError('Error Loading Terms and Conditions');
@@ -345,5 +350,31 @@ export class TermsConditionEntryComponent implements OnInit{
         modalRef.componentInstance.idLabel = 'Terms and Condition Detail Id';
         modalRef.componentInstance.idValue = this.tandCDetailData?.TermsAndConditionsDetailSid;
     }
+
+    openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.masterService.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.TermsAndConditionsMasterSid;
+
+				} else {
+					this.appSettingService.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingService.showError('Error loading Terms and Conditions', error);
+			}
+		);
+	}
 
 }

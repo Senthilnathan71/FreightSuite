@@ -8,6 +8,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interface';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
   selector: 'app-currency-entry',
@@ -33,6 +34,8 @@ export class CurrencyEntryComponent implements OnInit {
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }
   ];
+  currentMenuId: any;
+  TandCList: any;
 
   constructor(
     private fb: FormBuilder,
@@ -266,5 +269,31 @@ export class CurrencyEntryComponent implements OnInit {
     modalRef.componentInstance.item = this.currencyData;
     modalRef.componentInstance.idLabel = 'Currency Id';
     modalRef.componentInstance.idValue = this.currencyData?.CurrencyMasterSid;
+  }
+
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.currencyID;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
   }
 }

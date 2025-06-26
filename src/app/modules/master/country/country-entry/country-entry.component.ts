@@ -10,6 +10,8 @@ import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
 import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interface';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
   selector: 'app-country-entry',
@@ -19,7 +21,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     ReactiveFormsModule,
     FeatherModule,
     NgSelectModule,
-    DatePipe
+    DatePipe,
+    PreventMultiClickDirective
   ],
   templateUrl: './country-entry.component.html',
   styleUrls: ['./country-entry.component.scss']
@@ -43,6 +46,8 @@ export class CountryEntryComponent implements OnInit {
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }
   ];
+  currentMenuId: number;
+  TandCList: any[];
 
   constructor(
     private fb: FormBuilder,
@@ -210,5 +215,31 @@ export class CountryEntryComponent implements OnInit {
     modalRef.componentInstance.item = this.countryData;
     modalRef.componentInstance.idLabel = 'Country Id';
     modalRef.componentInstance.idValue = this.countryData?.CountryMasterSid;
+  }
+
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.countryId;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
   }
 }

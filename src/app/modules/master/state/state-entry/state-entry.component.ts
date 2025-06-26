@@ -11,6 +11,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
   selector: 'app-state-entry',
@@ -20,7 +22,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     ReactiveFormsModule,
     FeatherModule,
     NgSelectModule,
-    DatePipe
+    DatePipe,
+    PreventMultiClickDirective
   ],
   templateUrl: './state-entry.component.html',
   styleUrls: ['./state-entry.component.scss']
@@ -43,6 +46,8 @@ export class StateEntryComponent implements OnInit {
     { id: 'A', name: 'Active' },
     { id: 'I', name: 'Suspended' }
   ];
+  currentMenuId: number;
+  TandCList: any;
 
   constructor(
     private fb: FormBuilder,
@@ -276,4 +281,30 @@ export class StateEntryComponent implements OnInit {
     modalRef.componentInstance.idLabel = 'State Id';
     modalRef.componentInstance.idValue = this.stateData?.StateMasterSid;
   }
+
+  openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.masterService.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.stateId;
+
+				} else {
+					this.appSettingService.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingService.showError('Error loading Terms and Conditions', error);
+			}
+		);
+	}
 }

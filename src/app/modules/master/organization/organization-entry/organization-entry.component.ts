@@ -40,6 +40,7 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
   selector: 'app-organization-entry',
@@ -160,6 +161,8 @@ export class OrganizationEntryComponent {
   branchEmailData : any;
   branchLoginData : any;
   salesmanData : any;
+  currentMenuId: number;
+  TandCList: any;
 
 
   updateCustomerType(): void {
@@ -1564,7 +1567,31 @@ export class OrganizationEntryComponent {
     modalRef.componentInstance.idValue = this.salesmanData?.CustomerSalesSid;
   }
 
+  openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.masterService.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.CustomerMasterSid;
 
+				} else {
+					this.appSettingService.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingService.showError('Error loading Terms and Conditions', error);
+			}
+		);
+	}
 
   
 }
