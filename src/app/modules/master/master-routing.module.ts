@@ -991,5 +991,16 @@ export const MasterRoutes: Routes = [
           ]
         }
       },
+      {
+        path: 'generation/entry/:id',
+        component: GenerationEntryComponent,
+        data: {
+          title: 'Generation',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Generation ' },
+          ]
+        }
+      },
 
 ];
