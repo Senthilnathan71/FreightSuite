@@ -12,6 +12,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
     selector: 'app-sailing-schedule-lsit',
@@ -24,7 +25,8 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
         DatePipe,
         NgbPaginationModule,
         NgSelectModule,
-        CustomDatePipe
+        CustomDatePipe,
+        ListpageComponent
     ],
     templateUrl: './sailing-schedule-lsit.component.html',
     styleUrl: './sailing-schedule-lsit.component.scss'
@@ -65,7 +67,14 @@ export class SailingScheduleLsitComponent implements OnInit {
         )
     }
 
-    onSearch(){
+    onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
+
+    search(){
         const intFields = [
             "VesselMasterSid",
             "Carrier",
@@ -146,7 +155,7 @@ export class SailingScheduleLsitComponent implements OnInit {
                         (resp:any)=>{
                             if(resp.status){
                                 this.appSettingService.showSuccess('Sailing Schedule Deleted Successfully');
-                                this.onSearch();
+                                this.search();
                             } else {
                                 this.appSettingService.showError('Error Deleting Sailing Schedule');
                             }

@@ -10,6 +10,7 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
     selector: 'app-terms-condition-list',
@@ -19,7 +20,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
         FormsModule,
         CommonModule,
         FeatherModule,
-        NgbPaginationModule
+        NgbPaginationModule,
+        ListpageComponent
     ],
     templateUrl: './terms-condition-list.component.html',
     styleUrl: './terms-condition-list.component.scss'
@@ -56,8 +58,13 @@ export class TermsConditionListComponent implements OnInit {
         )
     }
 
-
-    onSearch(){
+    onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
+    search(){
         const intFields=[
             "BranchMasterSid",
             "MenuMasterSid",
@@ -95,7 +102,7 @@ export class TermsConditionListComponent implements OnInit {
                         (resp:any)=>{
                             if(resp.status){
                                 this.appSettingService.showSuccess('Terms and Conditions successfully deleted');
-                                this.onSearch();
+                                this.search();
                             } else {
                                 this.appSettingService.showError('Error Deleting Terms and Conditions')
                             }
