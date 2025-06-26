@@ -13,6 +13,11 @@
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    @if(isEditMode){
+                        <button appPreventMultiClick type="button" class="btn btn-outline-info btn-sm dofi-min-w-160 dofi-max-w-160" (click)="openTandC()">
+                            <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                        </button>
+                    }
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()"
                         >
                         <i class="fas fa-chevron-left me-1"></i>
@@ -64,7 +69,7 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="companyName" [onlyText]="100">
-                                <label for="text-input" class="input-label">Company Name <span class="text-danger"></span></label>
+                                <label for="text-input" class="input-label">Company Name <span class="text-danger">*</span></label>
 
                                 <!--  Validation -->
                                 @if(companyForm.get('companyName')?.touched && companyForm.get('companyName')?.invalid){
@@ -86,7 +91,7 @@
                         <aside class="col-md-4 ">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="companyCode" [textWithNumbers]="10">
-                                <label for="text-input" class="input-label">Company Code <span class="text-danger"></span></label>
+                                <label for="text-input" class="input-label">Company Code <span class="text-danger">*</span></label>
 
                                 <!--  Validation -->
                                 @if(companyForm.get('companyCode')?.touched && companyForm.get('companyCode')?.invalid){
@@ -106,7 +111,7 @@
                                     <option value="">Select Country</option>
                                     <option *ngFor="let country of countryResults" [value]="country.CountryMasterSid">{{country.countryName}}</option>
                                 </select>
-                                <label for="text-input" class="input-label">Country <span class="text-danger"></span></label>
+                                <label for="text-input" class="input-label">Country <span class="text-danger">*</span></label>
                         
                                 <!--  Validation -->
                                 @if(companyForm.get('CountryMasterSid')?.touched && companyForm.get('CountryMasterSid')?.invalid){
@@ -124,7 +129,7 @@
                                     <option value="">Select Currency</option>
                                     <option *ngFor="let currency of currencyResults" [value]="currency.CurrencyMasterSid">{{currency.currencyName}}</option>
                                 </select>
-                                <label for="text-input" class="input-label">Currency <span class="text-danger"></span></label>
+                                <label for="text-input" class="input-label">Currency <span class="text-danger">*</span></label>
                         
                                 
                                 @if(companyForm.get('CurrencyMasterSid')?.touched && companyForm.get('CurrencyMasterSid')?.invalid){
@@ -142,7 +147,7 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="addressLine1" [textWithNumbers]="500">
-                                <label for="text-input" class="input-label">Address  <span class="text-danger"></span></label>
+                                <label for="text-input" class="input-label">Address  <span class="text-danger">*</span></label>
                                 
                                 <!--  Validation -->
                                 @if(companyForm.get('addressLine1')?.touched && companyForm.get('addressLine1')?.invalid){

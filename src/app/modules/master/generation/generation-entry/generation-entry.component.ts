@@ -1,0 +1,305 @@
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NgbModal, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { MasterService } from '../../master.service';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { FeatherModule } from 'angular-feather';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+
+@Component({
+  selector: 'app-generation-entry',
+  standalone: true,
+  imports: [
+    CommonModule, 
+    FeatherModule, 
+    NgSelectModule, 
+    ReactiveFormsModule,
+    NgbDatepickerModule,
+    DatePipe
+  ],
+  templateUrl: './generation-entry.component.html',
+  styleUrls: ['./generation-entry.component.scss'],
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+  ],
+})
+export class GenerationEntryComponent implements OnInit {
+  hawbForm!: FormGroup;
+  isEditMode = false;
+  HawbStockSid: number | null = null;
+  userData: any;
+  today = this.calendar.getToday();
+  todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
+  
+  // Updated company and branch handling
+  companyList: any[] = [];
+  branchesByCompany: {[key: number]: any[]} = {};
+  selectedCompanyId: number | null = null;
+  branchList: any[] = [];
+  generatedAWBList: string[] = [];
+  customerList: any[] = [];
+  statusList = ["Active", "Suspended"];
+  stockStatusList = ["Free", "Used", "Cancelled"];
+
+  constructor(
+    private fb: FormBuilder,
+    private masterService: MasterService,
+    private appSettingsService: AppSettingsService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private modalService: NgbModal,
+    private calendar: NgbCalendar
+  ) {}
+
+  ngOnInit(): void {
+    
+    this.initForm();
+    this.loadUserData();
+    this.loadCustomers();
+    this.loadCompanies();
+    
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.HawbStockSid = +id;
+        this.isEditMode = true;
+        this.loadHawbData(this.HawbStockSid);
+      }
+    });
+  }
+
+  loadCompanies(): void {
+  this.masterService.getAllCompanies().subscribe(
+    (companies: any) => {
+      this.companyList = companies;
+      // Initialize branches for each company
+      companies.forEach(company => {
+        this.branchesByCompany[company.CompanyMasterSid] = [];
+      });
+    },
+    (error) => {
+      console.error('Error loading companies:', error);
+    }
+  );
+}
+
+  onCompanySelect(companyId: number): void {
+  this.selectedCompanyId = companyId;
+  this.hawbForm.get('BranchMasterSid').reset();
+  
+  if (companyId && !this.branchesByCompany[companyId]?.length) {
+    this.masterService.getBranchesByCompanyId(companyId).subscribe(
+      (branches: any) => {
+        this.branchesByCompany[companyId] = branches;
+        this.branchList = branches;
+      },
+      (error) => {
+        console.error('Error loading branches:', error);
+      }
+    );
+  } else if (companyId) {
+    this.branchList = this.branchesByCompany[companyId];
+  } else {
+    this.branchList = [];
+  }
+}
+
+  loadCustomers(): void {
+    this.masterService.getAllCustomers().subscribe(
+      (resp: any) => {
+        this.customerList = resp;
+      },
+      (error) => {
+        console.error('Error loading customers:', error);
+      }
+    );
+  }
+
+  initForm(): void {
+    this.hawbForm = this.fb.group({
+      AirwayBillType: ['Airline', Validators.required],
+      AirwayBillNumber: ['', Validators.required],
+      Agent: [null],
+      HAWBSerial: ['', Validators.required],
+      NumberofHAWB: ['', Validators.required],
+      ReceivedDate: [this.todayDate, Validators.required],
+      StockStatus: ['Free', Validators.required],
+      status: ['Active'],
+      CompanyMasterSid: [null, Validators.required],
+      BranchMasterSid: [null, Validators.required]
+    });
+     this.hawbForm.get('AirwayBillType').valueChanges.subscribe(value => {
+    this.updateFormValidation(value);
+  });
+  }
+  updateFormValidation(awbType: string): void {
+  const agentControl = this.hawbForm.get('Agent');
+  if (awbType === 'Other') {
+    agentControl.setValidators([Validators.required]);
+  } else {
+    agentControl.clearValidators();
+  }
+  agentControl.updateValueAndValidity();
+}
+generateAWB(): void {
+  if (this.hawbForm.invalid) {
+    this.hawbForm.markAllAsTouched();
+    this.appSettingsService.showWarning('Please fill all required fields correctly.');
+    return;
+  }
+
+  const baseAWB = this.hawbForm.get('AirwayBillNumber').value;
+  const serial = this.hawbForm.get('HAWBSerial').value;
+  const count = this.hawbForm.get('NumberofHAWB').value;
+
+  this.generatedAWBList = [];
+  for (let i = 1; i <= count; i++) {
+    // Customize this pattern based on your AWB numbering requirements
+    this.generatedAWBList.push(`${baseAWB}-${serial}-${i.toString().padStart(3, '0')}`);
+  }
+}
+  
+  filterBranchByCompany(company: any) {
+  if (company) {
+    this.selectedCompanyId = company.CompanyMasterSid;
+    this.masterService.getBranchesByCompanyId(company.CompanyMasterSid).subscribe(
+      (resp) => {
+        this.branchList = resp;
+      },
+      (error) => {
+        console.error('Error loading branches:', error);
+      }
+    );
+  } else {
+    this.selectedCompanyId = null;
+    this.branchList = [];
+    this.hawbForm.get('BranchMasterSid').reset();
+  }
+}
+
+  loadUserData(): void {
+    this.appSettingsService.getUser().subscribe(user => {
+      if (user) {
+        this.userData = user;
+        if (user.companyMaster) {
+          this.hawbForm.patchValue({
+            CompanyMasterSid: user.companyMaster.CompanyMasterSid
+          });
+          this.onCompanySelect(user.companyMaster.CompanyMasterSid);
+        }
+      }
+    });
+  }
+
+  loadHawbData(id: number): void {
+    this.masterService.fetchHawbStockById(id).subscribe(
+      (data: any) => {
+        const receivedDate = data.data.ReceivedDate ? new Date(data.data.ReceivedDate) : this.todayDate;
+        this.hawbForm.patchValue({
+          ...data.data,
+          ReceivedDate: receivedDate,
+          status: data.data.status === 'A' ? 'Active' : 'Suspended'
+        });
+        if (data.data.CompanyMasterSid) {
+          this.onCompanySelect(data.data.CompanyMasterSid);
+        }
+      },
+      error => {
+        this.appSettingsService.showError('Error loading HAWB data.');
+      }
+    );
+  }
+
+  preparePayload(): any {
+    const formValue = this.hawbForm.value;
+    return {
+      ...formValue,
+      status: formValue.status === "Active" ? "A" : "S",
+      createdBy: this.isEditMode ? undefined : this.userData?.userEmail,
+      updatedBy: this.isEditMode ? this.userData?.userEmail : undefined
+    };
+  }
+
+  onSubmit(): void {
+    if (this.hawbForm.invalid) {
+      this.hawbForm.markAllAsTouched();
+      this.appSettingsService.showWarning('Please fill all required fields correctly.');
+      return;
+    }
+
+    const payload = this.preparePayload();
+    
+    if (this.isEditMode && this.HawbStockSid) {
+      this.masterService.updateHawbStockById(this.HawbStockSid, payload).subscribe(
+        (resp: any) => {
+          this.handleResponse(resp);
+        },
+        (error: any) => {
+          this.handleError(error);
+        }
+      );
+    } else {
+      this.masterService.createNewHawbStock(payload).subscribe(
+        (resp: any) => {
+          this.handleResponse(resp);
+        },
+        (error: any) => {
+          this.handleError(error);
+        }
+      );
+    }
+  }
+
+  handleResponse(resp: any): void {
+    if (resp.status) {
+      this.appSettingsService.showSuccess(resp.message);
+      this.router.navigate(['master/generation/list']);
+    } else {
+      this.appSettingsService.showError(resp.message);
+    }
+  }
+
+  handleError(error: any): void {
+    this.appSettingsService.showError(error.message);
+    console.error('Error:', error);
+  }
+
+  showInfo(): void {
+    if (!this.HawbStockSid) return;
+    const modalRef = this.modalService.open(DetailsComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.hawbForm.value;
+    modalRef.componentInstance.idLabel = 'HAWB Stock Id';
+    modalRef.componentInstance.idValue = this.HawbStockSid;
+  }
+
+  navigateBack(): void {
+    history.back();
+  }
+
+  resetForm(): void {
+    if (this.isEditMode && this.HawbStockSid) {
+      this.loadHawbData(this.HawbStockSid);
+    } else {
+      this.hawbForm.reset({
+        AirwayBillType: 'Airline',
+        StockStatus: 'Free',
+        status: 'Active',
+        ReceivedDate: this.todayDate,
+        CompanyMasterSid: this.userData?.companyMaster?.CompanyMasterSid || null
+      });
+      if (this.userData?.companyMaster?.CompanyMasterSid) {
+        this.onCompanySelect(this.userData.companyMaster.CompanyMasterSid);
+      }
+    }
+  }
+}

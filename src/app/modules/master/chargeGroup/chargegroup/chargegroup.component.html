@@ -1,70 +1,29 @@
 <div class="row">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
-            <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Charge Group</h4>
-            </div>
-            <div class="col-md-8 pb-2">
-                <div class="" data-bs-theme="light">
-                    <form class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openModal(content)">
-                            <i class="fas fa-plus me-1"></i> Create
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                            (click)="report()"
-                            [disabled]="!searchPerformed || totalLengthOfCollection === 0">
-                            <i class="fas fa-file-alt me-1"></i> Report
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                            (click)="resetPage()"
-                            [disabled]="!searchPerformed">
-                            <i class="fas fa-sync-alt me-1"></i> Reset
-                        </button>
-                    </form>
-                </div>
-            </div>
-            <div class="col-md-12 border-top">
-                <div class="row mx-0 py-2">
-                    <div class="col-md-8 mx-auto px-0">
-                        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                            <div class="form-outline col-12 col-md px-0">
-                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
-                                    <option value="GroupName">Group Name</option>
-                                    <option value="Remarks">Remarks</option>
-                                    <option value="status">Status</option>
-                                </select>
-                            </div>
-                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                                <div class="form-outline flex-grow-1 position-relative">
-                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" 
-                                        class="form-control pe-4" placeholder="Enter filter value">
-                                    <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                                </div>
-                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                                    (click)="search()"
-                                    [disabled]="isLoading">
-                                    <i class="fas fa-search me-1"></i> 
-                                    <span *ngIf="!isLoading">Search</span>
-                                    <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+   <app-listpage
+  [title]="'Charge Group'"
+  [searchOptions]="[
+    { value: 'GroupName', label: 'Group Name' },
+    { value: 'Remarks', label: 'Remarks' },
+    { value: 'status', label: 'Status' }
+  ]"
+  [searchPerformed]="searchPerformed"
+  [defaultSearchType]="'GroupName'"
+  (onCreateClick)="openModal(content)"
+  (onReportClick)="report()"
+  (onResetClick)="resetPage()"
+  (onSearchClick)="onSearch($event)">
+    </app-listpage>
     <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                             <th class="bg-transparent text-light" scope="col">Company</th>
                             <th class="bg-transparent text-light" scope="col">Group Name</th>
                             <th class="bg-transparent text-light" scope="col">Remarks</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -114,7 +73,7 @@
             </div>
         </div>
     </div>
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0">
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
         <div>No records found</div>
     </div>
     <div class="col-12" *ngIf="isLoading">
@@ -215,6 +174,11 @@
             </form>
         </div>
         <div class="modal-footer">
+            @if(isEditMode){
+                <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto" (click)="openTandC()">
+                    <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                </button>
+            }
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-info" 
                 (click)="onSubmit()" 

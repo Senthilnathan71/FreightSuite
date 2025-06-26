@@ -13,6 +13,11 @@
                 <div class="col-md-8 pb-2">
                     <div
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                            @if(isEditMode){
+                            <button appPreventMultiClick type="button" class="btn btn-outline-info btn-sm dofi-min-w-160 dofi-max-w-160" (click)="openTandC()">
+                                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                            </button>
+                            }
                            <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="navigateBack()">
                             <i class="fas fa-chevron-left me-1"></i>
@@ -38,7 +43,7 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="CompanyMasterSid" [items]="companyList" bindLabel="companyName"
-                                    bindValue="CompanyMasterSid" placeholder="Select Company">
+                                    bindValue="CompanyMasterSid" placeholder="Select Company" (change)="getBranchesByCompanyId($event)">
                                 </ng-select>
                                 <label for="text-input" class="input-label">Company <span
                                         class="text-danger">*</span></label>
@@ -237,7 +242,7 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="DocumentSLNoLength">
+                                    formControlName="DocumentSLNoLength" [onlyNumbers]>
                                 <label for="" class="input-label">Serial No Len <span
                                         class="text-danger"></span></label>
                                 @if(documentForm.get('DocumentSLNoLength').touched && documentForm.get('DocumentSLNoLength').invalid){
@@ -296,8 +301,9 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
                                 @if(isEditMode){
-                                <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name" bindValue="name"
-                                    placeholder="Select status" class="ng-select">
+                                <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
+                                    <ng-option value="Active">Active</ng-option>
+                                    <ng-option value="Suspended">Suspended</ng-option>
                                 </ng-select>
                                 } @else {
                                 <input type="text" name="status" class="custom-input-field sm" formControlName="status" id="text-input" readonly>

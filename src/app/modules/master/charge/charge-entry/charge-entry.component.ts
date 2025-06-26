@@ -11,6 +11,8 @@ import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModul
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 
 @Component({
   selector: 'app-charge-entry',
@@ -21,7 +23,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     NgSelectModule,
     ReactiveFormsModule,
     NgbDatepickerModule,
-    DatePipe
+    DatePipe,
+    PreventMultiClickDirective
   ],
   templateUrl: './charge-entry.component.html',
   styleUrls: ['./charge-entry.component.scss'],
@@ -48,6 +51,8 @@ export class ChargeEntryComponent implements OnInit {
   tdsOptions: any[] = [];
 	today = this.calendar.getToday();
 	todayDate = new Date(this.today.year,this.today.month,this.today.day);
+  currentMenuId: any;
+  TandCList: any;
 
   constructor(
     private fb: FormBuilder,
@@ -149,11 +154,10 @@ loadLookupData(): void {
   );
   this.masterService.getAllHssac().subscribe({
     next: (resp: any) => {
-      this.hsnsacOptions = resp.data || resp;
-      // If editing, trigger the selection change to populate tax rate
-      if (this.isEditMode && this.chargeForm.value.HSNSAC) {
-        this.onHsnsacSelect(this.chargeForm.value.HSNSAC);
-      }
+      this.hsnsacOptions = resp;
+      // if (this.isEditMode && this.chargeForm.value.HSNSAC) {
+      //   this.onHsnsacSelect(this.chargeForm.value.HSNSAC);
+      // }
     },
     error: (error) => {
       console.error('Error loading HSN/SAC codes:', error);
@@ -250,6 +254,32 @@ loadLookupData(): void {
     modalRef.componentInstance.item = this.chargeData;
     modalRef.componentInstance.idLabel = 'Charge Id';
     modalRef.componentInstance.idValue = this.chargeData?.ChargeMasterSid;
+  }
+
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.idParam;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
   }
 
 }

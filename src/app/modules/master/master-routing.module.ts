@@ -66,6 +66,8 @@ import { YearListComponent } from './year/year-list/year-list.component';
 import { YearEntryComponent } from './year/year-entry/year-entry.component';
 import { DoctypeComponent } from './document-type/doctype-entry/doctype.component';
 import { DoctypeListComponent } from './document-type/doctype-list/doctype-list.component';
+import { GenerationListComponent } from './generation/generation-list/generation-list.component';
+import { GenerationEntryComponent } from './generation/generation-entry/generation-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -964,6 +966,39 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: 'Master', url: '/master' },
             { title: 'Document Type' },
+          ]
+        }
+      },
+        {
+        path: 'generation/list',
+        component: GenerationListComponent,
+        data: {
+          title: 'Generation',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Generation' },
+          ],
+        },
+      },
+      {
+        path: 'generation/entry',
+        component: GenerationEntryComponent,
+        data: {
+          title: 'Generation',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Generation' },
+          ]
+        }
+      },
+      {
+        path: 'generation/entry/:id',
+        component: GenerationEntryComponent,
+        data: {
+          title: 'Generation',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Generation ' },
           ]
         }
       },

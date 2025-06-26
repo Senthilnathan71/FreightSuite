@@ -9,6 +9,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
   selector: 'app-uom-view',
@@ -20,7 +22,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     NgSelectModule,
     FormsModule,
     ReactiveFormsModule,
-    DatePipe
+    DatePipe,
+    PreventMultiClickDirective
   ],
   templateUrl: './uom-view.component.html',
   styleUrl: './uom-view.component.scss'
@@ -51,6 +54,8 @@ statusOptions = [
   { id: 'A', name: 'Active' },
   { id: 'S', name: 'Suspended' }
 ];
+  currentMenuId: number;
+  TandCList: any;
 
   constructor(private config: NgSelectConfig, private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -191,4 +196,31 @@ statusOptions = [
       modalRef.componentInstance.idLabel = 'UOM Id';
       modalRef.componentInstance.idValue = this.uomData?.UOMMasterSid;
   }
+
+  openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.masterService.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.idParam;
+
+				} else {
+					this.appSettingService.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingService.showError('Error loading Terms and Conditions', error);
+			}
+		);
+	}
+
 }

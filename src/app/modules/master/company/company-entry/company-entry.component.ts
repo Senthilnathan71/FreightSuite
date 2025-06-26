@@ -18,6 +18,8 @@ import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interfa
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 @Component({
 	selector: 'app-company-entry',
 	standalone: true,
@@ -33,7 +35,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 		TextWithNumbersDirective,
 		FormsModule,
 		ReactiveFormsModule,
-		DatePipe
+		DatePipe,
+		PreventMultiClickDirective
 	],
 	templateUrl: './company-entry.component.html',
 	styleUrl: './company-entry.component.scss'
@@ -73,6 +76,8 @@ export class CompanyEntryComponent implements OnInit {
 	companyData : any;
 	branchData : any;
 	bankData : any;
+	currentMenuId: number;
+	TandCList: any;
 
 	// CONSTRUCTOR
 
@@ -616,6 +621,32 @@ export class CompanyEntryComponent implements OnInit {
     modalRef.componentInstance.item = this.bankData;
     modalRef.componentInstance.idLabel = 'Branch Bank Id';
     modalRef.componentInstance.idValue = this.bankData?.BranchBankSid;
+  }
+
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.CompanyMasterSid;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
   }
 
 }

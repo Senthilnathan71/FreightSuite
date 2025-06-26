@@ -1,0 +1,91 @@
+<div class="container">
+  <div class="modal-header">
+    <h4 class="modal-title">Terms and Conditions</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+  </div>
+  <div class="modal-body" style="min-height: 350px;">
+    <div class="col-12 d-flex align-items-center justify-content-end">
+      <button class="btn btn-info btn-sm ms-auto" type="button" (click)="toggleAddRow()">
+        @if(showAddRow){
+          <i-feather class="feather-sm" name="x-circle"></i-feather> Cancel
+        } @else {
+          <i-feather class="feather-sm" name="plus"></i-feather> Add
+        }
+      </button>
+    </div>
+    <div class="row">
+      <div class="table-responsive mt-3">
+        <table class="table table-hover align-middle no-wrap table-bordered">
+          <thead>
+            <tr class="bg-info">
+              <th class="bg-transparent text-light" scope="col" width="10%">Default</th>
+              <th class="bg-transparent text-light" scope="col" width="90%">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Existing terms -->
+            @for (item of terms; track $index) {
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <dofi-toggler
+                      [toggleValue]="item.IsDefaut === 'A'"
+                      [disabled]="true"
+                    ></dofi-toggler>
+                    <!-- <span>{{ item.IsDefaut === 'Y' ? 'Yes' : 'No' }}</span> -->
+                  </div>
+                </td>
+                <td>
+                  <div class="text-truncate">{{item.TandC}}</div>
+                </td>
+              </tr>
+            } @if(showEmptyTemplate) {
+              <tr>
+                <td></td>
+                <td>
+                  <div class="text-truncate">No records found</div>
+                </td>
+              </tr>
+            }
+            <!-- New input row -->
+            @if (showAddRow) {
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <form [formGroup]="addForm">
+                      <dofi-toggler
+                        formControlName="IsDefaut"
+                      ></dofi-toggler>
+                    </form>
+                    <!-- <span>{{ addForm.get('IsDefaut')?.value ? 'Yes' : 'No' }}</span> -->
+                  </div>
+                </td>
+                <td>
+                  <form [formGroup]="addForm">
+                    <div class="custom-form-group">
+                      <input type="text" class="custom-input-field sm" formControlName="newTerm" placeholder="Enter new terms">
+                      @if(addForm.get('newTerm').touched && addForm.get('newTerm').invalid){
+                        <div class="error-message">
+                          @if(addForm.get('newTerm').hasError('required')){
+                            <span>New Terms is required</span>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </form>
+                  </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <div *ngIf="showAddRow">
+          <button appPreventMultiClick class="btn btn-info btn-sm" type="submit" (click)="addNewTerm()">
+            <i-feather class="feather-sm me-2" name="upload-cloud"></i-feather>Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Close</button>
+  </div>
+</div>

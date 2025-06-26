@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
 	selector: 'app-doctype',
@@ -39,10 +40,10 @@ export class DoctypeComponent implements OnInit {
 	documentData: any
 
 	documentSeparators = [
-		{ separator: 'Slash (/)', value : '/' },
-		{ separator: 'Hyphen (-)', value : '-' },
-		{ separator: 'Colon (:)', value : ':' },
-		{ separator: 'Dot (.)', value : '.' }
+		{ separator: 'Slash ( / )', value : '/' },
+		{ separator: 'Hyphen ( - )', value : '-' },
+		{ separator: 'Colon ( : )', value : ':' },
+		{ separator: 'Dot ( . )', value : '.' }
 	];
 
 	resetValues = [
@@ -55,6 +56,8 @@ export class DoctypeComponent implements OnInit {
 		{ id: 1, name: 'Active' },
 		{ id: 2, name: 'Suspended' }
 	]
+	currentMenuId: number;
+	TandCList: any;
 
 
 	constructor(
@@ -113,11 +116,9 @@ export class DoctypeComponent implements OnInit {
 	loadAllFields() {
 		forkJoin({
 			companies : this.masterService.getAllCompanies(),
-			branches: this.masterService.getAllBranches(),
 			currencies : this.masterService.getAllCurrencies(),
-		}).subscribe(({ companies,branches, currencies }) => {
+		}).subscribe(({ companies, currencies }) => {
 			this.companyList = companies,
-			this.branchList = branches,
 			this.currencyList = currencies
 		})
 	}
@@ -137,6 +138,7 @@ export class DoctypeComponent implements OnInit {
 						YearFlag: data.YearFlag === 'Y',
 						status: data.status === 'A' ? 'Active' : 'Suspended',
 					})
+					this.getBranchesByCompanyId({CompanyMasterSid : data.CompanyMasterSid})
 					if(data.CompanyFlag === 'Y'){
 						this.documentForm.get('CompanyValue').enable();
 					}
@@ -187,7 +189,7 @@ export class DoctypeComponent implements OnInit {
 				(resp: any) => {
 					if (resp.status) {
 						this.appSettingService.showSuccess('Document Type Successfully Updated')
-						this.router.navigate(['master/doctype'])
+						this.router.navigate(['master/doctype/list'])
 					} else {
 						this.appSettingService.showError('Error Updating Document Type');
 					}
@@ -202,7 +204,7 @@ export class DoctypeComponent implements OnInit {
 				(resp: any) => {
 					if (resp.status) {
 						this.appSettingService.showSuccess('Document Type successfully Created');
-						this.router.navigate(['master/doctype'])
+						this.router.navigate(['master/doctype/list'])
 					} else {
 						this.appSettingService.showError('Error Creating Document Type');
 					}
@@ -233,6 +235,18 @@ export class DoctypeComponent implements OnInit {
 		modalRef.componentInstance.item = this.documentData;
 		modalRef.componentInstance.idLabel = 'Document Type Id';
 		modalRef.componentInstance.idValue = this.documentData?.DocumentTypeMasterSid;
+	}
+
+	getBranchesByCompanyId(company){
+		this.masterService.getBranchesByCompanyId(company.CompanyMasterSid).subscribe(
+			(resp:any)=>{
+				if(resp){
+					this.branchList = resp;
+				} else {
+					this.appSettingService.showError('Error Loading Branches By Company')
+				}
+			}
+		)
 	}
 
 	enableValueField(field, event) {
@@ -281,6 +295,32 @@ export class DoctypeComponent implements OnInit {
 
 	openSampleModal(content : TemplateRef<any>){
 		this.modalService.open(content,{size : 'lg',centered:true,backdrop:'static'})
+	}
+
+	openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.masterService.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.DocumentTypeMasterSid;
+
+				} else {
+					this.appSettingService.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingService.showError('Error loading Terms and Conditions', error);
+			}
+		);
 	}
 
 }

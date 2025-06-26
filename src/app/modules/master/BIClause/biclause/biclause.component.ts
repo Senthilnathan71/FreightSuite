@@ -13,6 +13,9 @@ import { FeatherModule } from 'angular-feather';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 
 @Component({
   selector: 'app-biclause',
@@ -25,7 +28,9 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     FormsModule,
     NgbPaginationModule,
     FeatherModule,
-    DatePipe
+    DatePipe,
+    ListpageComponent,
+    PreventMultiClickDirective
   ],
   templateUrl: './biclause.component.html',
   styleUrls: ['./biclause.component.scss']
@@ -52,6 +57,8 @@ export class BIclauseComponent implements OnInit {
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }
   ];
+  currentMenuId: number;
+  TandCList: any[]=[];
 
   constructor(
     private modalService: NgbModal,
@@ -80,7 +87,14 @@ export class BIclauseComponent implements OnInit {
                 }
             }
         )
-    }
+      }
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search(): void {
     this.loading = true;
@@ -283,6 +297,33 @@ export class BIclauseComponent implements OnInit {
     modalRef.componentInstance.item = this.blclauseData;
     modalRef.componentInstance.idLabel = 'BlClause Id';
     modalRef.componentInstance.idValue = this.blclauseData?.BLClauseMasterSid;
+  }
+
+  
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.currentClauseId;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
   }
 
 }

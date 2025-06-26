@@ -1,75 +1,21 @@
 <div class="row">
 
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
-            <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Imco</h4>
-            </div>
-            <div class="col-md-8 pb-2">
-                <div class="" data-bs-theme="light">
-                    <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-search me-1"></i>
-                            Search
-                        </button> -->
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="navigateToCreate()">
-                            <i class="fas fa-plus me-1"></i> Create
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
-                            [disabled]="!searchPerformed">
-                            <i class="fas fa-file-alt me-1"></i>
-                            Report
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()"
-                            [disabled]="!searchPerformed">
-                            <i class="fas fa-sync-alt me-1"></i>
-                            Reset
-                        </button>
-                    </form>
-                </div>
-            </div>
-            <div class="col-md-12  border-top">
-                <div class="row mx-0 py-2">
-                    <div class="col-md-8 mx-auto px-0">
-                        <form
-                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                            <div class="form-outline col-12 col-md px-0">
-                                <select name="searchType" class="form-select" [(ngModel)]="searchType">
-                                    <option value="ImcoClass">Imco Class</option>
-                                    <option value="ImcoName">Imco Name</option>
-                                    <option value="ImcoUn">UN no</option>
-                                    <option value="PackingGroup">Packing Group</option>
-                                    <option value="status">Status</option>
-                                </select>
-                            </div>
-                            <!-- <div class="form-outline col-12 col-md px-0">
-                                <input name="filterValue" type="text" class="form-control"
-                                    placeholder="Enter filter value" [(ngModel)]="filterValue">
-                                <i
-                                    class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                            </div> -->
-                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                                <div class="form-outline flex-grow-1">
-                                   <input name="filterValue" type="text" class="form-control" placeholder="Enter filter value" [(ngModel)]="filterValue">
-
-                                    <i
-                                        class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                                </div>
-
-                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                                    (click)="onSearch()">
-                                    <i class="fas fa-search me-1"></i>
-                                    Search
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <app-listpage
+  [title]="'Imco'"
+  [searchOptions]="[
+    { value: 'ImcoClass', label: ' Imco Class' },
+    { value: 'ImcoName', label: 'Imco Name' },
+    { value: 'ImcoUn', label: 'UN no' },
+    { value: 'PackingGroup', label: 'Packing Group' },
+    { value: 'status', label: 'Status' }
+  ]"
+  [searchPerformed]="searchPerformed"
+  [defaultSearchType]="'ImcoClass'"
+  (onCreateClick)="navigateToCreate()"
+  (onReportClick)="report()"
+  (onResetClick)="reset()"
+  (onSearchClick)="onSearch($event)">
+    </app-listpage>
 
 
     <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalAmountOfCollection > 0">
@@ -82,7 +28,7 @@
                             <th class="bg-transparent text-light" scope="col">Imco Class</th>
                             <th class="bg-transparent text-light" scope="col">UN No</th>
                             <th class="bg-transparent text-light" scope="col">Packing Group</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -1,0 +1,257 @@
+<div class="row">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-2">
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit HAWB Stock' : 'HAWB Stock'}}</h4>
+                @if(isEditMode){
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                         <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
+                }
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="navigateBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="resetForm()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
+                        <i class="fas fa-save me-1"></i>
+                        {{isEditMode ? 'Update' : "Save"}}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form [formGroup]="hawbForm">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                       <aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <select class="form-select" formControlName="AirwayBillType">
+      <option value="Airline">Airline</option>
+      <option value="Other">Other</option>
+    </select>
+    <label class="input-label">Received From <span class="text-danger fw-bold">*</span></label>
+  </div>
+</aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="AirwayBillNumber" formControlName="AirwayBillNumber" 
+                                    placeholder="" class="custom-input-field sm">
+                                <label for="AirwayBillNumber" class="input-label">AWB Number <span
+                                        class="text-danger fw-bold">*</span></label>
+                                <div class="error-message">
+                                    @if(hawbForm.get('AirwayBillNumber')?.touched && 
+                                    hawbForm.get('AirwayBillNumber')?.invalid){
+                                    <span>AWB Number is required</span>
+                                    }
+                                </div>
+                            </div>
+                        </aside>
+
+                        <!-- Updated Company and Branch Selection -->
+                        <aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select formControlName="CompanyMasterSid" 
+      [items]="companyList" 
+      bindLabel="companyName"
+      bindValue="CompanyMasterSid"
+      (change)="filterBranchByCompany($event)"
+      [readonly]="!!userData?.companyMaster">
+      <ng-option value="">Select Company</ng-option>
+    </ng-select>
+    <label class="input-label">Company <span class="text-danger fw-bold">*</span></label>
+    <div class="error-message">
+      @if(hawbForm.get('CompanyMasterSid')?.touched && 
+      hawbForm.get('CompanyMasterSid')?.invalid){
+      <span>Company is required</span>
+      }
+    </div>
+  </div>
+</aside>
+
+<!-- Updated Branch Selector -->
+<aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select formControlName="BranchMasterSid" 
+      [items]="branchList" 
+      bindLabel="branchName"
+      bindValue="BranchMasterSid"
+      [disabled]="!selectedCompanyId">
+      <ng-option value="">Select Branch</ng-option>
+    </ng-select>
+    <label class="input-label">Branch <span class="text-danger fw-bold">*</span></label>
+    <div class="error-message">
+      @if(hawbForm.get('BranchMasterSid')?.touched && 
+      hawbForm.get('BranchMasterSid')?.invalid){
+      <span>Branch is required</span>
+      }
+    </div>
+  </div>
+</aside>
+
+                        @if(hawbForm.get('AirwayBillType').value === 'Other') {
+<aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select 
+      formControlName="Agent"
+      [items]="customerList"
+      bindLabel="CustomerName"
+      bindValue="CustomerMasterSid"
+      placeholder="Select Agent">
+    </ng-select>
+    <label class="input-label">Agent <span class="text-danger fw-bold">*</span></label>
+    <div class="error-message">
+      @if(hawbForm.get('Agent')?.touched && hawbForm.get('Agent')?.invalid){
+      <span>Agent is required</span>
+      }
+    </div>
+  </div>
+</aside>
+}
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="HAWBSerial" formControlName="HAWBSerial" 
+                                    placeholder="" class="custom-input-field sm">
+                                <label for="HAWBSerial" class="input-label">Serial No <span
+                                        class="text-danger fw-bold">*</span></label>
+                                <div class="error-message">
+                                    @if(hawbForm.get('HAWBSerial')?.touched && 
+                                    hawbForm.get('HAWBSerial')?.invalid){
+                                    <span>Serial No is required</span>
+                                    }
+                                </div>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="number" id="NumberofHAWB" formControlName="NumberofHAWB" 
+                                    placeholder="" class="custom-input-field sm">
+                                <label for="NumberofHAWB" class="input-label">No of AWB <span
+                                        class="text-danger fw-bold">*</span></label>
+                                <div class="error-message">
+                                    @if(hawbForm.get('NumberofHAWB')?.touched && 
+                                    hawbForm.get('NumberofHAWB')?.invalid){
+                                    <span>Number of AWB is required</span>
+                                    }
+                                </div>
+                            </div>
+                        </aside>
+
+                         <aside class="col-md-4">
+                            <div class="d-flex">
+                                <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                    <input 
+                                        class="form-control mb-0" 
+                                        placeholder="dd-mm-yyyy" 
+                                        name="dp" ngbDatepicker #d2="ngbDatepicker"
+                                        (click)="d2.toggle()" 
+                                        readonly 
+                                        formControlName="ReceivedDate" 
+                                        [footerTemplate]="footerTemplate2" 
+                                    />
+                                    <label class="input-label" for="dp">Received Date <span class="text-danger">*</span></label>
+                                    <div *ngIf="hawbForm.get('ReceivedDate')?.touched && hawbForm.get('ReceivedDate')?.invalid">
+                                        <p *ngIf="hawbForm.get('ReceivedDate')?.errors?.['required']" class="error-message">
+                                            Received Date is required.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2" 
+                                    (click)="d2.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                            </div>
+                        </aside>
+                        <ng-template #footerTemplate2>
+                            <hr class="my-0" />
+                            <button class="btn btn-info btn-sm m-2 float-start"
+                                (click)="hawbForm.get('ReceivedDate')?.setValue(todayDate); d2.close()">
+                                Today
+                            </button>
+                            <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d2.close()">
+                                Close
+                            </button>
+                        </ng-template>
+
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <select class="form-select" formControlName="StockStatus">
+                                    @for(status of stockStatusList; track status){
+                                    <option [value]="status">{{status}}</option>
+                                    }
+                                </select>
+                                <label class="input-label">Stock Status <span
+                                        class="text-danger fw-bold">*</span></label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                @if(isEditMode){
+                                <select class="form-select" formControlName="status">
+                                    <option value="Active">Active</option>
+                                    <option value="Suspended">Suspended</option>
+                                </select>
+                                } @else {
+                                <input type="text" class="custom-input-field sm" formControlName="status" readonly>
+                                }
+                                <label class="input-label">Status</label>
+                            </div>
+                        </aside>
+                        <div >
+  <button type="button" class="btn btn-info btn-sm" (click)="generateAWB()">
+    Generate
+  </button>
+</div>
+
+<!-- Update the AWB table to show generated numbers -->
+<div class="row mt-3">
+  <h5 class="card-title">AirWay Bill</h5>
+  <div class="row py-2 rounded shadow-sm mx-auto">
+    <div class="col-12 p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle no-wrap table-bordered">
+          <thead>
+            <tr class="bg-info">
+              <th class="bg-transparent text-light" scope="col">AirWay BL Number</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(awb of generatedAWBList; track awb) {
+            <tr>
+              <td>{{ awb }}</td>
+            </tr>
+            }
+            @if(generatedAWBList.length === 0) {
+            <tr>
+              <td class="text-center">No records to display</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

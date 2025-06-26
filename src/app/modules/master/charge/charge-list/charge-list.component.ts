@@ -9,11 +9,12 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-charge-list',
   standalone: true,
-  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule],
+  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule, ListpageComponent],
   templateUrl: './charge-list.component.html',
   styleUrls: ['./charge-list.component.scss']
 })
@@ -45,6 +46,13 @@ export class ChargeListComponent {
       }
     });
   }
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     const payload = {

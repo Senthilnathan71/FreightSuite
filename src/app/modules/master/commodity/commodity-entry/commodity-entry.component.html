@@ -12,6 +12,11 @@
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    @if(isEditMode){
+                        <button appPreventMultiClick type="button" class="btn btn-outline-info btn-sm dofi-min-w-160 dofi-max-w-160" (click)="openTandC()">
+                            <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                        </button>
+                    }  
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i>
@@ -148,28 +153,21 @@
                         </aside>
 
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="commodityType" formControlName="CommodityType" placeholder=""
-                                    class="custom-input-field sm" [class.is-invalid]="
-        commodityForm.get('CommodityType')?.invalid &&
-        (commodityForm.get('CommodityType')?.touched || commodityForm.get('CommodityType')?.dirty)
-      " />
-                                <label for="commodityType" class="input-label">
-                                    Commodity Type <span class="text-danger">*</span>
-                                </label>
-                                <div *ngIf="
-      (commodityForm.get('CommodityType')?.touched || commodityForm.get('CommodityType')?.dirty) &&
-      commodityForm.get('CommodityType')?.invalid
-    " class="error-message">
-                                    <span *ngIf="commodityForm.get('CommodityType')?.hasError('required')">
-                                        Commodity Type is required.
-                                    </span>
-                                    <span *ngIf="commodityForm.get('CommodityType')?.hasError('maxlength')">
-                                        Commodity Type cannot exceed 100 characters.
-                                    </span>
-                                </div>
-                            </div>
-                        </aside>
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select 
+      id="commodityType" 
+      formControlName="CommodityType"
+      [items]="commodityTypeOptions"
+      bindLabel="label"
+      bindValue="value"
+      placeholder="Select Commodity Type"
+      [clearable]="false">
+    </ng-select>
+    <label for="commodityType" class="input-label">
+      Commodity Type <span class="text-danger">*</span>
+    </label>
+  </div>
+</aside>
                     </div>
                 </form>
             </div>

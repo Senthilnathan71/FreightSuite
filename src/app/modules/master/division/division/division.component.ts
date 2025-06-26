@@ -15,6 +15,9 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { take } from 'rxjs';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
   selector: 'app-division',
@@ -30,7 +33,9 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     ReactiveFormsModule,
     OnlyTextDirective,
     TextWithNumbersDirective,
-    DatePipe
+    DatePipe,
+    ListpageComponent,
+    PreventMultiClickDirective
   ],
   templateUrl: './division.component.html',
   styleUrl: './division.component.scss'
@@ -56,6 +61,8 @@ export class DivisionComponent {
   totalLengthOfCollection = 0;
   userData: any;
   divisionData : any;
+  currentMenuId: number;
+  TandCList: any;
 
   constructor(
    private modalService: NgbModal,
@@ -265,6 +272,13 @@ export class DivisionComponent {
     );
   }
 
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
+
   search() {
     const payload = {
       searchType: this.searchType,
@@ -357,6 +371,32 @@ export class DivisionComponent {
     modalRef.componentInstance.item = this.divisionData;
     modalRef.componentInstance.idLabel = 'Division Id';
     modalRef.componentInstance.idValue = this.divisionData?.DivisionMasterSid;
+  }
+
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.DivisionMasterSid;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
   }
 
 }

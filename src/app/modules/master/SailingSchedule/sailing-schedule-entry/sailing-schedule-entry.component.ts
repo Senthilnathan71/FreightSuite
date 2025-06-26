@@ -17,6 +17,7 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
     selector: 'app-sailing-schedule-entry',
@@ -80,6 +81,8 @@ export class SailingScheduleEntryComponent implements OnInit {
         { id: "2", name: "Air" },
         { id: "3", name: "Road" }
     ]
+    currentMenuId: number;
+    TandCList: any;
 
     constructor(
         private route : Router,
@@ -484,5 +487,31 @@ export class SailingScheduleEntryComponent implements OnInit {
         modalRef.componentInstance.idLabel = 'Sailing Schedule Detail Id';
         modalRef.componentInstance.idValue = this.sailDetailData?.VoyageMasterDetailSid;
     }
+
+    openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.masterService.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.VoyageMasterHeaderSid;
+
+				} else {
+					this.appSettingService.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingService.showError('Error loading Terms and Conditions', error);
+			}
+		);
+	}
 }
 

@@ -11,6 +11,11 @@
             </div>
             <div class="col-md-8 pb-2">
                 <div class="d-flex justify-content-end gap-2">
+                    @if(isEditMode){
+                    <button appPreventMultiClick  type="button" class="btn btn-outline-info btn-sm dofi-min-w-160 dofi-max-w-160" (click)="openTandC()">
+                        <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                    </button>
+                    }
                     <button type="button" class="btn btn-light-secondary btn-sm" (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i> Back
                     </button>

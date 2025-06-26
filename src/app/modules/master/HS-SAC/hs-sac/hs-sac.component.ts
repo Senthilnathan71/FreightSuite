@@ -19,6 +19,9 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 
 @Component({
   selector: 'app-hs-sac',
@@ -36,7 +39,9 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     TextWithNumbersDirective,
     CustomDatePipe,
     NgbDatepickerModule,
-    DatePipe
+    DatePipe,
+    ListpageComponent,
+    PreventMultiClickDirective
   ],
   templateUrl: './hs-sac.component.html',
   styleUrl: './hs-sac.component.scss',
@@ -73,6 +78,8 @@ export class HSSACComponent {
 	today = this.calendar.getToday();
 	todayDate = new Date(this.today.year,this.today.month,this.today.day);
   hssacData : any;
+  currentMenuId: number;
+  TandCList: any;
 
 
   constructor(
@@ -295,6 +302,13 @@ editHssac(id: number, content: any) {
     );
   }
 
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
+
   search() {
     const payload = {
       searchType: this.searchType,
@@ -375,5 +389,31 @@ editHssac(id: number, content: any) {
     modalRef.componentInstance.idLabel = 'HSSAC Id';
     modalRef.componentInstance.idValue = this.hssacData?.HSSACMasterSid;
   }
+
+  openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.masterService.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.HSSACMasterSid;
+
+				} else {
+					this.appSettingService.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingService.showError('Error loading Terms and Conditions', error);
+			}
+		);
+	}
 
 }

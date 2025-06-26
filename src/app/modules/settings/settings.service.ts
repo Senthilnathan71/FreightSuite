@@ -262,4 +262,13 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
     )
   }
 
+  getTandCByCondition(payload){
+    return this.http.post<{data : any[]}>('terms-and-conditions/fetchByCondition',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
 }

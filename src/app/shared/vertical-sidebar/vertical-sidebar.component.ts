@@ -73,10 +73,11 @@ export class VerticalSidebarComponent implements OnInit {
   }
 
   addActiveClass(element: any) {
-    if (element === this.showSubMenu) {
+    localStorage.setItem('currentMenuId', element.id);
+    if (element.title === this.showSubMenu) {
       this.showSubMenu = '0';
     } else {
-      this.showSubMenu = element;
+      this.showSubMenu = element.title;
     }
     window.scroll({
       top: 0,

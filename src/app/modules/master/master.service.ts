@@ -1807,6 +1807,16 @@ searchChargeGroups(payload: any) {
       })
     )
   }
+
+  getTandCByCondition(payload){
+    return this.http.post<{data : any[]}>('terms-and-conditions/fetchByCondition',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   // Terms And Conditions Details
 
   getAllTandCDetail(){
@@ -1856,6 +1866,17 @@ searchChargeGroups(payload: any) {
 
   searchTandCDetail(payload){
     return this.http.post<{data:any[]}>('terms-and-conditions-detail/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  // T&C Transaction
+
+  createTandCTransaction(payload){
+    return this.http.post<{data:any[]}>('terms-and-conditions/transaction',payload).pipe(
       map((resp)=>{
         let response = resp;
         return response;
@@ -2431,5 +2452,62 @@ searchDocTypes(payload: any) {
     })
   );
 }
+
+//Hawb
+getAllHawbStocks(){
+    return this.http.get<{data:any[]}>('generation').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewHawbStock(payload){
+    return this.http.post<{data:any}>('generation/create', payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  fetchHawbStockById(HawbStockSid){
+    return this.http.get<{data:any}>(`generation/fetch/${HawbStockSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateHawbStockById(HawbStockSid,payload){
+    return this.http.patch<{data:any}>(`generation/update/${HawbStockSid}`,payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteHawbStock(HawbStockSid){
+    return this.http.delete<{data:any}>(`generation/delete/${HawbStockSid}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchHawbStock(payload){
+    return this.http.post<{data:any[]}>('generation/search-list',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+
 
 }

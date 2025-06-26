@@ -12,6 +12,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interface';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
   selector: 'app-department-entry',
@@ -42,6 +43,8 @@ export class DepartmentEntryComponent {
   countryList: any
   stateList: any
   statusList = ["Active", "Suspended"]
+  currentMenuId: any;
+  TandCList: any[]=[];
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -192,4 +195,30 @@ export class DepartmentEntryComponent {
     modalRef.componentInstance.idLabel = 'Department Id';
     modalRef.componentInstance.idValue = this.departmentData?.DepartmentMasterSid;
   }
+
+  openTandC() {
+      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+      const payload = { MenuMasterSid: this.currentMenuId };
+      this.masterService.getTandCByCondition(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.TandCList = resp.data;
+            const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+              size: 'lg',
+              backdrop: 'static',
+              centered: true
+            });
+            modalRef.componentInstance.terms = this.TandCList;
+            modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+            modalRef.componentInstance.DocumentSid = this.DepartmentMasterSid;
+  
+          } else {
+            this.appSettingService.showError('Error loading Terms and Conditions');
+          }
+        },
+        (error) => {
+          this.appSettingService.showError('Error loading Terms and Conditions',error);
+        }
+      );
+    }
 }

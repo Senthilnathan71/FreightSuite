@@ -14,6 +14,8 @@ import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+
 
 @Component({
   selector: 'app-sector',
@@ -27,7 +29,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     NgbPagination,
     RouterModule,
     FormsModule,
-    DatePipe
+    DatePipe,
+    ListpageComponent
   ],
   templateUrl: './sector-list.component.html',
   styleUrl: './sector-list.component.scss',
@@ -263,6 +266,13 @@ export class SectorComponent implements OnInit {
       }
     }
   }
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     const payload = {

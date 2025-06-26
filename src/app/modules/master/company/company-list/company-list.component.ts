@@ -10,10 +10,11 @@ import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 import { MasterService } from 'src/app/modules/master/master.service';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 @Component({
   selector: 'app-company-list',
   standalone: true,
-  imports: [FeatherModule, FormsModule, CommonModule,RouterModule],
+  imports: [FeatherModule, FormsModule, CommonModule,RouterModule, ListpageComponent],
   templateUrl: './company-list.component.html',
   styleUrl: './company-list.component.scss',
 })
@@ -44,6 +45,13 @@ export class CompanyListComponent implements OnInit {
       }
     )
    }
+
+   onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     const payload = {

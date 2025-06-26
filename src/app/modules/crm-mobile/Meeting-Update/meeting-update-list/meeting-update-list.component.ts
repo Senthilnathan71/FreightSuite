@@ -38,7 +38,7 @@ export class MeetingUpdateListComponent implements OnInit {
   isMobile: boolean = false;
   modalRef: NgbModalRef;
   meetingForm: FormGroup;
-  salesPersons: any;
+  salesPersons: any[]=[];
   btnDisable: boolean = false;
   selectedMeeting: any;
   meetingData : any;
@@ -300,9 +300,11 @@ export class MeetingUpdateListComponent implements OnInit {
   }
 
   getSalesmanById(id:number){
+    if(!id || !this.salesPersons.length) return;
+    
     const user = this.salesPersons.find(person => person.UserMasterSid === id)
-    console.log(user)
-    return user.userName
+    
+    return user?.userName
  
   }
 

@@ -9,6 +9,7 @@ import { MasterService } from '../../master.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-milestone-list',
@@ -18,7 +19,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     FeatherModule,
     FormsModule,
     NgbPaginationModule,
-    RouterModule
+    RouterModule,
+    ListpageComponent
   ],
   templateUrl: './milestone-list.component.html',
   styleUrl: './milestone-list.component.scss'
@@ -74,6 +76,13 @@ export class MilestoneListComponent {
       }
     });
   }
+
+  onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
 
   search() {
     this.loading = true;

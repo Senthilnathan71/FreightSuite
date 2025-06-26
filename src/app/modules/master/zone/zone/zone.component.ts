@@ -17,6 +17,8 @@ import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
   selector: 'app-zone',
@@ -33,7 +35,8 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     OnlyTextDirective,
     TextWithNumbersDirective,
     DatePipe,
-    ListpageComponent
+    ListpageComponent,
+    PreventMultiClickDirective
   ],
   templateUrl: './zone.component.html',
   styleUrl: './zone.component.scss'
@@ -57,6 +60,8 @@ export class ZoneComponent {
   totalLengthOfCollection = 0;
   userData : any;
   zoneData : any;
+  currentMenuId: number;
+  TandCList: any;
 
   constructor(
    private modalService: NgbModal,
@@ -337,5 +342,31 @@ export class ZoneComponent {
     modalRef.componentInstance.idLabel = 'Zone Id';
     modalRef.componentInstance.idValue = this.zoneData?.ZoneMasterSid;
   }
+
+  openTandC() {
+		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const payload = { MenuMasterSid: this.currentMenuId };
+		this.masterService.getTandCByCondition(payload).subscribe(
+			(resp: any) => {
+				if (resp.status) {
+					this.TandCList = resp.data;
+					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+						size: 'lg',
+						backdrop: 'static',
+						centered: true
+					});
+					modalRef.componentInstance.terms = this.TandCList;
+					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+					modalRef.componentInstance.DocumentSid = this.ZoneMasterSid;
+
+				} else {
+					this.appSettingService.showError('Error loading Terms and Conditions');
+				}
+			},
+			(error) => {
+				this.appSettingService.showError('Error loading Terms and Conditions', error);
+			}
+		);
+	}
 
 }
