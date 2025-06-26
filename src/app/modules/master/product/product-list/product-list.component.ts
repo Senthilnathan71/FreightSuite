@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { authService } from 'src/app/modules/authentication/auth.service';
+import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
   selector: 'app-product-list',
@@ -20,7 +21,8 @@ import { authService } from 'src/app/modules/authentication/auth.service';
     RouterModule,
     FormsModule,
     CommonModule,
-    NgbPaginationModule
+    NgbPaginationModule,
+    ListpageComponent
 ],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss'
@@ -65,7 +67,14 @@ export class ProductListComponent {
         )
     }
 
-    onSearch(){        
+    onSearch(event: { type: string, value: string }) {
+  this.searchType = event.type;
+  this.filterValue = event.value;
+  console.log('Searching with:', this.searchType, this.filterValue);
+  this.search();
+}
+
+    search(){        
         const payload = {
             searchType : this.searchType,
             filterValue : this.filterValue
@@ -105,7 +114,7 @@ export class ProductListComponent {
                         (resp:any)=>{
                             if(resp.status){
                                 this.appSettingService.showSuccess('Product Deleted Successfully');
-                                this.onSearch();
+                                this.search();
                             } else {
                                 console.error('Error Deleting Product',resp.message);
                             }
