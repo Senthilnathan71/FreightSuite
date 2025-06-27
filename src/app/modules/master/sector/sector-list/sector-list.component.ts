@@ -57,7 +57,12 @@ export class SectorComponent implements OnInit {
   isLoading = false;
   userData : any;
   sectorData : any;
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+     this.isFavorite = !this.isFavorite;
+  } 
+  
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,

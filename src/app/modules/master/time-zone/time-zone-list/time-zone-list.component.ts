@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
@@ -5,11 +6,16 @@ import { FeatherModule } from 'angular-feather';
 @Component({
   selector: 'app-time-zone-list',
   standalone: true,
-  imports: [FeatherModule,RouterModule],
+  imports: [FeatherModule,RouterModule,CommonModule],
   templateUrl: './time-zone-list.component.html',
   styleUrl: './time-zone-list.component.scss'
 })
 export class TimeZoneListComponent {
+   isFavorite: boolean = false;
+
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  } 
   constructor( private router: Router) {}
   navigateTocreateTimeZone(){
     this.router.navigate(['master/time-zone/entry'])

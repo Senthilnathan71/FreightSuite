@@ -40,7 +40,11 @@ export class AuthorityListComponent {
   page = 1;
   pageSize = 10;
   totalLengthOfCollection: number = 0;
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  }
   constructor(
     private masterService: MasterService,
     private router: Router,

@@ -38,7 +38,12 @@ export class OrganizationListComponent implements OnInit {
   page = 1;
   pageSize = 5;
   totalLengthOfCollection: number;
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  } 
+  
   constructor(private masterService: MasterService, private router: Router,
     private dialog: MatDialog, private appSettingService: AppSettingsService,
     private userService: authService,

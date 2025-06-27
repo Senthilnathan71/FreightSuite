@@ -32,7 +32,12 @@ export class ImcoListComponent implements OnInit{
 	page = 1;
 	pageSize = 10;
 	totalAmountOfCollection: number;
+	isFavorite: boolean = false;
 
+	toggleFavorite() {
+		this.isFavorite = !this.isFavorite;
+	} 
+	
 	constructor(
 		private masterService: MasterService,
 		private appSettingService: AppSettingsService,

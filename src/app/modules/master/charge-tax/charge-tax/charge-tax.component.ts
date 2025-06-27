@@ -59,7 +59,12 @@ export class ChargeTaxComponent implements OnInit {
   chargeTaxData : any;
   currentMenuId: number;
   TandCList: any[]=[];
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  }
+  
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,

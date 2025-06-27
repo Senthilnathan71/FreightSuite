@@ -1,3 +1,13 @@
+<div class="d-flex justify-content-end mb-2">
+  <i
+    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
+    (click)="toggleFavorite()"
+    data-toggle="tooltip"
+    data-placement="bottom"
+    title="Favorites"
+    style="cursor: pointer;">
+  </i>
+</div>
 <div class="row">
     <!-- <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
@@ -153,7 +163,7 @@
                         <th class="bg-transparent text-light" scope="col"> Name</th>
                         <th class="bg-transparent text-light" scope="col">Code</th>
                         <th class="bg-transparent text-light" scope="col">Remarks</th>
-                        <th class="bg-transparent text-light" scope="col">Status</th>
+                        <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                
                     </tr>
                 </thead>

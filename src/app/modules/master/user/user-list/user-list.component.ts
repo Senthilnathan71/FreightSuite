@@ -39,7 +39,11 @@ export class UserListComponent {
   page = 1;
   pageSize = 10;
   totalNumberOfCollection: number;
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  } 
 
   constructor(
     private masterServ: MasterService,

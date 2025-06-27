@@ -43,7 +43,12 @@ export class CurrencyListComponent {
   // sorting
   sortColumn: string = 'currencyName'; // default sort column
   sortDirection: string = 'asc'; // default sort direction
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  } 
+  
   constructor(
     private masterService: MasterService,
     private router: Router,

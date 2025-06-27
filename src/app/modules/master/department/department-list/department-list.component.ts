@@ -124,6 +124,13 @@ this.appSettingService.getUser().subscribe(user => {
   });
 }
 
+
+isFavorite: boolean = false;
+
+toggleFavorite() {
+  this.isFavorite = !this.isFavorite;
+}
+
 }
 
 

@@ -45,7 +45,12 @@ export class StateListComponent {
   // sorting
   sortColumn: string = 'stateName'; // default sort column
   sortDirection: string = 'asc'; // default sort direction
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  } 
+  
   constructor(
     private masterService: MasterService,
     private router: Router,

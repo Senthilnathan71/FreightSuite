@@ -1,3 +1,13 @@
+<div class="d-flex justify-content-end mb-2">
+  <i
+    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
+    (click)="toggleFavorite()"
+    data-toggle="tooltip"
+    data-placement="bottom"
+    title="Favorites"
+    style="cursor: pointer;">
+  </i>
+</div>
 <div class="row">
     <!-- <div class="col-12">
         <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
@@ -104,7 +114,7 @@
                         @for (item of slicedTandCList; track $index) {
                         <tr>
                             <td>
-                                <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center justify-content-center" >
                                     <a class="mx-2 ps-2"
                                         [routerLink]="['/master/terms-condition/entry/', item.TermsAndConditionsMasterSid]" title="Edit">
                                         <i-feather name="eye" class="feather-sm"></i-feather>

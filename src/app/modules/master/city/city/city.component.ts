@@ -66,7 +66,11 @@ export class CityComponent {
   totalLengthOfCollection = 0;
   userData: any;
   cityData : any;
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  } 
   
   constructor(
     private modalService: NgbModal,

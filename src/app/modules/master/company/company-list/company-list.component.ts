@@ -30,7 +30,12 @@ export class CompanyListComponent implements OnInit {
   page = 1;
   pageSize = 10;
   totalLengthOfCollection: number;
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  } 
+  
   constructor(private masterService: MasterService, private router: Router,
     private appSettingService: AppSettingsService, private dialog: MatDialog,
     private userService: authService,

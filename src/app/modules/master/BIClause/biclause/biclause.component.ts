@@ -52,7 +52,12 @@ export class BIclauseComponent implements OnInit {
   page = 1;
   pageSize = 10;
   totalLengthOfCollection = 0;
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  }
+  
   statusOptions = [
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }

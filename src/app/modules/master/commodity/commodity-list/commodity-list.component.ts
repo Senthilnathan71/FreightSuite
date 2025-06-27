@@ -40,7 +40,12 @@ export class CommodityListComponent {
   pageSize = 10;
   totalLengthOfCollection = 0;
   loading = false;
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  } 
+  
   constructor(
     private masterService: MasterService,
     private router: Router,

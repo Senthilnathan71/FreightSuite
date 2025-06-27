@@ -42,7 +42,12 @@ export class CurrencyExchangeListComponent {
   // sorting
   sortColumn: string = 'EffectiveFrom'; // default sort column
   sortDirection: string = 'desc'; // default sort direction (newest first)
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  }
+  
   constructor(
     private accountService: AccountsService, 
     private router: Router,

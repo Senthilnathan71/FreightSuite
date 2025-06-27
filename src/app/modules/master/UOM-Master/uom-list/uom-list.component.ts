@@ -36,7 +36,12 @@ export class UOMListComponent {
   page = 1;
   pageSize = 10;
   totalLengthOfCollection: number;
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  } 
+  
   constructor(
     private masterService: MasterService, 
     private router: Router,

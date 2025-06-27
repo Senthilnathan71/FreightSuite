@@ -1,6 +1,16 @@
+<div class="d-flex justify-content-end mb-2">
+  <i
+    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
+    (click)="toggleFavorite()"
+    data-toggle="tooltip"
+    data-placement="bottom"
+    title="Favorites"
+    style="cursor: pointer;">
+  </i>
+</div>
 <div class="row">
     <app-listpage
-  [title]="'Department'"
+  [title]="'Sector'"
   [searchOptions]="[
     { value: 'sectorName', label: 'Sector Name' },
     { value: 'sectorCode', label: 'Sector Code' },
@@ -33,7 +43,7 @@
                         <tr *ngFor="let item of sectorList; trackBy: trackByIndex">
                             <td>
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
-                                    <button class="btn btn-sm btn-link text-info p-0" 
+                                    <button class="btn btn-sm btn-link text-info p-0 mx-2" 
                                         (click)="editSector(item.SectorMasterSid, content)"
                                         title="Edit">
                                         <i-feather class="feather-sm" name="eye"></i-feather>

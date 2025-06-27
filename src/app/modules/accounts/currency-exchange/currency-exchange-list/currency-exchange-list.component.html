@@ -1,3 +1,13 @@
+<div class="d-flex justify-content-end mb-2">
+  <i
+    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
+    (click)="toggleFavorite()"
+    data-toggle="tooltip"
+    data-placement="bottom"
+    title="Favorites"
+    style="cursor: pointer;">
+  </i>
+</div>
 <div class="row">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
@@ -65,7 +75,7 @@
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col">Action</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                             <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveFrom')">
                                 Effective From
                                 <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'EffectiveFrom', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'EffectiveFrom'}"></i>
@@ -90,13 +100,13 @@
                                 Bank Name
                                 <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'BankName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'BankName'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of currencyExchangeList; let i = index; trackBy: trackByExchangeId">
                             <td>
-                                <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center justify-content-center">
                                     <a class="mx-2 ps-3" [routerLink]="['/accounts/currency-exchange/entry', item.CurrencyExchangeSid]" title="Edit">
                                         <i-feather name="eye" class="feather-sm"></i-feather>
                                     </a>

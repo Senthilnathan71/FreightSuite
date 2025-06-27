@@ -41,7 +41,12 @@ export class ContainerTypeListComponent {
   page = 1;
   pageSize = 5;
   totalLengthOfCollection = 0;
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  } 
+  
   constructor(
     private masterService: MasterService,
     private router: Router,

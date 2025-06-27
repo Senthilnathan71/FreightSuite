@@ -30,7 +30,12 @@ export class ChargeListComponent {
   pageSize = 10;
   totalLengthOfCollection: number;
   userData: any;
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  }
+  
   constructor(
     private masterService: MasterService,
     private excelReportService: ExcelExportService,
