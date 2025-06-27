@@ -7,7 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 @Component({
   selector: 'app-edoc',
   standalone: true,
@@ -17,7 +17,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
 })
 export class EdocComponent {
   edocform: FormGroup;
-  constructor(private fb: FormBuilder) {
+
+  constructor(private fb: FormBuilder,private appSettingService: AppSettingsService) {
     this.initYearForm();
   }
 
@@ -40,6 +41,7 @@ export class EdocComponent {
    onSubmit() {
     if (this.edocform.invalid) {
       this.edocform.markAllAsTouched();
+      this.appSettingService.showWarning('Please fill all the required fields');
       return;
     }
     console.log(this.edocform.value);

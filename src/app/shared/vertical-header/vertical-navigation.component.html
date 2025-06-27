@@ -178,22 +178,118 @@
       <i-feather name="home"></i-feather>
     </a>
   </li>
+   <li class="nav-item dropdown" ngbDropdown placement="bottom-end">
+  <a ngbDropdownToggle
+     class="nav-link dropdown-toggle waves-effect waves-dark"
+     href="javascript:void(0)"
+     aria-haspopup="true"
+     aria-expanded="false">
+    <i-feather name="clock"></i-feather>
+  </a>
 
-  <li class="nav-item" placement="bottom-end">
+  <div class="dropdown-menu mailbox dropdown-menu-end dropdown-menu-animate-up" ngbDropdownMenu>
+    <span class="with-arrow"><span class="bg-success"></span></span>
+
+    <ul class="list-style-none mb-0">
+      <!-- Header -->
+      <li>
+        <div class="drop-title bg-success text-white">
+          <h4 class="mb-0 mt-1">3 Recent</h4>
+          <span class="font-light">Activities</span>
+        </div>
+      </li>
+
+      <!-- Scrollable List -->
+      <li>
+        <ng-scrollbar class="message-center notifications" style="max-height: 230px;">
+          @for(item of homeActivityItems; track item) {
+          <a href="javascript:void(0)" class="message-item border-bottom d-block text-decoration-none">
+            <span class="btn btn-circle rounded-circle {{ item.btn }}">
+              <i class="{{ item.icon }}"></i>
+            </span>
+            <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+              <h5 class="message-title">{{ item.title }}</h5>
+              <span class="mail-desc fs-2 d-block text-muted text-truncate">{{ item.subject }}</span>
+              <span class="time fs-2 d-block text-muted text-truncate">{{ item.time }}</span>
+            </span>
+          </a>
+          }
+        </ng-scrollbar>
+      </li>
+
+      <!-- Footer -->
+      <li class="border-top p-3 d-grid">
+        <button class="btn btn-success">View All Activity</button>
+      </li>
+    </ul>
+  </div>
+</li>
+
+
+
+  <!-- <li class="nav-item" placement="bottom-end">
     <a class="nav-link" href="javascript:void(0);">
       <i-feather name="clock"></i-feather>
     </a>
-  </li>
+  </li> -->
   
-  <li class="nav-item">
+  <li class="nav-item dropdown" ngbDropdown placement="bottom-end">
+  <a ngbDropdownToggle
+     class="nav-link dropdown-toggle waves-effect waves-dark"
+     href="javascript:void(0)"
+     aria-haspopup="true"
+     aria-expanded="false">
+    <i-feather name="heart"></i-feather>
+  </a>
+
+  <div class="dropdown-menu mailbox dropdown-menu-end dropdown-menu-animate-up" ngbDropdownMenu>
+    <span class="with-arrow"><span class="bg-danger"></span></span>
+
+    <ul class="list-style-none mb-0">
+      <li>
+        <div class="drop-title bg-danger text-white">
+          <h4 class="mb-0 mt-1">2 Favorites</h4>
+          <span class="font-light">Loved Items</span>
+        </div>
+      </li>
+
+      <li>
+        <ng-scrollbar class="message-center notifications" style="max-height: 230px;">
+          @for(item of favoriteItems; track item) {
+          <a href="javascript:void(0)" class="message-item border-bottom d-block text-decoration-none">
+            <span class="btn btn-circle rounded-circle {{ item.btn }}">
+              <i class="{{ item.icon }}"></i>
+            </span>
+            <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+              <h5 class="message-title">{{ item.title }}</h5>
+              <span class="mail-desc fs-2 d-block text-muted text-truncate">{{ item.subject }}</span>
+              <span class="time fs-2 d-block text-muted text-truncate">{{ item.time }}</span>
+            </span>
+          </a>
+          }
+        </ng-scrollbar>
+      </li>
+
+      <li class="border-top p-3 d-grid">
+        <button class="btn btn-danger">View Favorites</button>
+      </li>
+    </ul>
+  </div>
+</li>
+  <!-- <li class="nav-item">
     <a href="javascript:void(0);" class="nav-link">
       <i-feather name="heart"></i-feather>
     </a>
-  </li>
+  </li> -->
 
-  <li class="nav-item">
+  <!-- <li class="nav-item">
     <a href="javascript:void(0);" class="nav-link">
       <i class="fas fa-outdent fs-4 " (click)="navigateShortcut()"></i>
+    </a>
+  </li> -->
+   <li class="nav-item">
+    <a href="javascript:void(0);" class="nav-link">
+      <i-feather name="align-right" (click)="navigateShortcut()"></i-feather>
     </a>
   </li>
 

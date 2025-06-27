@@ -1,3 +1,13 @@
+<div class="d-flex justify-content-end mb-2">
+  <i
+    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
+    (click)="toggleFavorite()"
+    data-toggle="tooltip"
+    data-placement="bottom"
+    title="Favorites"
+    style="cursor: pointer;">
+  </i>
+</div>
 <div class="row">
 
     <div class="col-12">
@@ -76,20 +86,28 @@
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <!-- <th class="bg-transparent text-light" scope="col">Action</th> -->
+                            <th class="bg-transparent text-light" scope="col"  width="10%">Action</th>
                             <th class="bg-transparent text-light" scope="col">TDS Name</th>
                             <th class="bg-transparent text-light" scope="col">Effective Date</th>
                             <th class="bg-transparent text-light" scope="col">Transaction Limit</th>
                             <th class="bg-transparent text-light" scope="col">Annual Limit</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col"  width="10%">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
                         <tr>
-                            <!-- <td>
-                            <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
-                        </td> -->
+                            <td>
+                                 <div class="d-flex align-items-center justify-content-center">
+                                    <a class="text-info mx-2" class="link mx-2 ps-3 ">
+                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                    </a>
+                                    <a class="text-danger mx-2 ps-3 border-start">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </a>
+                                </div>
+                            </td>
+                                
                             <td>
                                 <div class="text-truncate">OMR</div>
                             </td>

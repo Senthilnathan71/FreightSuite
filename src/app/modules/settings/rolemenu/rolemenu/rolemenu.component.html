@@ -1,5 +1,14 @@
 
-
+<div class="d-flex justify-content-end mb-2">
+  <i
+    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
+    (click)="toggleFavorite()"
+    data-toggle="tooltip"
+    data-placement="bottom"
+    title="Favorites"
+    style="cursor: pointer;">
+  </i>
+</div>
 <div class="row">
 
     <div class="col-12">
@@ -290,8 +299,8 @@
                         @for (item of roleMenuList; track item) {
                         <tr>
                             <td>
-                               <div class="d-flex gap-2 ms-2">
-                                    <button class="btn btn-sm btn-link text-info p-0" 
+                               <div class="d-flex gap-2 ms-2 align-items-center justify-content-center">
+                                    <button class="btn btn-sm btn-link text-info p-0 mx-2" 
                                         (click)="openModal(entrycontent,item)"
                                         title="Edit">
                                         <i-feather class="feather-sm" name="eye"></i-feather>

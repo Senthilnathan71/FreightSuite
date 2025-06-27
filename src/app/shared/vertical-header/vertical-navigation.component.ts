@@ -1,7 +1,7 @@
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CommonModule } from '@angular/common';
-import { Component, AfterViewInit, EventEmitter, Output, ViewChild, TemplateRef } from '@angular/core';
-import { NgbAccordionModule, NgbCarouselModule, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { Component, AfterViewInit, EventEmitter, Output, ViewChild, TemplateRef, NgModule } from '@angular/core';
+import { NgbAccordionModule, NgbCarouselModule, NgbDropdownModule,  NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateService } from '@ngx-translate/core';
 import { FeatherModule } from 'angular-feather';
 import { NgScrollbarModule } from 'ngx-scrollbar';
@@ -29,7 +29,7 @@ interface messages {
 @Component({
   selector: 'app-vertical-navigation',
   standalone: true,
-  imports: [NgbDropdownModule,RouterModule, FeatherModule, NgScrollbarModule, CommonModule, NgbAccordionModule, NgbCarouselModule],
+  imports: [NgbDropdownModule,RouterModule, FeatherModule, NgScrollbarModule, CommonModule, NgbAccordionModule, NgbCarouselModule,NgbModule],
   templateUrl: './vertical-navigation.component.html'
 })
 export class VerticalNavigationComponent implements AfterViewInit {
@@ -138,7 +138,57 @@ export class VerticalNavigationComponent implements AfterViewInit {
     icon: 'de'
   }]
 
-  ngAfterViewInit() { }
+  homeActivityItems = [
+    {
+      title: 'Visited Dashboard',
+      subject: 'Checked the performance overview.',
+      time: 'Just now',
+      icon: 'fas fa-chart-pie',
+      btn: 'btn-primary'
+    },
+    {
+      title: 'Updated Profile',
+      subject: 'Changed profile picture.',
+      time: '10 mins ago',
+      icon: 'fas fa-user',
+      btn: 'btn-warning'
+    },
+    {
+      title: 'Logged Out',
+      subject: 'You logged out from this device.',
+      time: '1 hour ago',
+      icon: 'fas fa-sign-out-alt',
+      btn: 'btn-danger'
+    }
+  ];
+ favoriteItems = [
+  {
+    btn: 'btn-danger',                  // Red circle button
+    icon: 'fas fa-heart',              // Heart icon
+    title: 'New Like',
+    subject: 'John liked your post',
+    time: '2 mins ago'
+  },
+  {
+    btn: 'btn-primary',                // Blue circle button
+    icon: 'fas fa-star',               // Star icon
+    title: 'Top Rated',
+    subject: 'Your item was featured',
+    time: '10 mins ago'
+  },
+  {
+    btn: 'btn-warning',                // Yellow circle button
+    icon: 'fas fa-gift',               // Gift icon
+    title: 'Gift Received',
+    subject: 'Anna sent you a gift',
+    time: '1 hour ago'
+  }
+];
+
+
+  ngAfterViewInit() { 
+       
+  }
 
   logout() {
     this.appSettingsService.sessionExpire().then(() => {
@@ -155,4 +205,5 @@ export class VerticalNavigationComponent implements AfterViewInit {
     this.router.navigate(['shortcut']);
  }
   
+ 
 }

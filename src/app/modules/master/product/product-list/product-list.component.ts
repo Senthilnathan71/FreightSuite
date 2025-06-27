@@ -46,7 +46,13 @@ export class ProductListComponent {
     page = 1;
     pageSize = 10;
     totalAmountOfCollection :number;
+   
+    isFavorite: boolean = false;
 
+    toggleFavorite() {
+        this.isFavorite = !this.isFavorite;
+    } 
+    
     constructor(
         private router: Router,
         private masterService: MasterService,

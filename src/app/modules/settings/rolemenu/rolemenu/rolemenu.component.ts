@@ -67,7 +67,12 @@ export class RolemenuComponent implements OnInit {
 	RoleMenuMasterSid : number;
 	currentMenuId: number;
 	TandCList: any;
+    isFavorite: boolean = false;
 
+	toggleFavorite() {
+		this.isFavorite = !this.isFavorite;
+	}
+	
     constructor(
 		private settingService : SettingsService,
 		private appSettingService: AppSettingsService,

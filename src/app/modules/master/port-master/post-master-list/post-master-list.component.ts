@@ -49,7 +49,12 @@ export class PostMasterListComponent implements OnInit {
   countryOptions: any[] = [];
   sectorOptions: any[] = [];
   regionList : any[];
+  isFavorite: boolean = false;
 
+  toggleFavorite() {
+    this.isFavorite = !this.isFavorite;
+  } 
+  
   constructor(
     private masterService: MasterService,
     private router: Router,
