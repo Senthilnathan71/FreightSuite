@@ -34,13 +34,17 @@ export class UserListComponent {
   userList: any[];
   searchPerformed: boolean;
   userData: any;
-
+  loading: boolean = false;
+  alluser: any[] = []
   // pagination values
   page = 1;
   pageSize = 10;
   totalNumberOfCollection: number;
   isFavorite: boolean = false;
 
+    // sorting
+  sortColumn: string = '=userName'; // default sort column
+  sortDirection: string = 'asc'; // default sort direction
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   } 
@@ -64,25 +68,88 @@ export class UserListComponent {
     )
   }
 
-  search(event ?: any) {
-    const payload = {
-      searchType: event.type,
-      filterValue: event.value
+  // search(event ?: any) {
+  //   const payload = {
+  //     searchType: event.type,
+  //     filterValue: event.value
+  //   }
+  //   this.masterServ.searchFfUser(payload).subscribe(
+  //     (res) => {
+  //       this.results = res.data;
+  //       this.searchPerformed = true;
+  //       this.updatePaginationData();
+  //       this.totalNumberOfCollection = this.results.length || 0;
+  //     }
+  //   )
+  // }
+  search(event?: any) {
+  const payload = {
+    searchType: event?.type || this.searchType,
+    filterValue: event?.value || this.filterValue
+  };
+
+  this.loading = true;
+  this.masterServ.searchFfUser(payload).subscribe(
+    (res) => {
+      this.alluser = Array.isArray(res) ? res : res.data || []; 
+      this.applySorting();
+      this.userList = [...this.alluser];
+      this.totalNumberOfCollection = this.userList.length || 0;
+      this.searchPerformed = true;
+      this.page = 1;
+      this.updatePaginationData();
+      this.loading = false;
+    },
+    (err) => {
+      console.error('Search error:', err);
+      this.loading = false;
     }
-    this.masterServ.searchFfUser(payload).subscribe(
-      (res) => {
-        this.results = res.data;
-        this.searchPerformed = true;
-        this.updatePaginationData();
-        this.totalNumberOfCollection = this.results.length || 0;
-      }
-    )
+  );
+}
+
+  sort(column: string) {
+    if (this.sortColumn === column) {
+      // Reverse the sort direction if clicking the same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Set new sort column and default to ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    
+    this.applySorting();
+    this.updatePaginationData();
   }
+
+  applySorting() {
+    this.alluser.sort((a, b) => {
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
+      
+      // Handle null/undefined values
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+      
+      // Convert to string for case-insensitive comparison
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+    
+      
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
 
   updatePaginationData() {
     let start = (this.page - 1) * this.pageSize;
     let end = start + this.pageSize;
-    this.userList = this.results.slice(start, end)
+     this.userList= this.alluser.slice(start, end);
   }
 
   trackByIndex(index: number, item: any): number {
