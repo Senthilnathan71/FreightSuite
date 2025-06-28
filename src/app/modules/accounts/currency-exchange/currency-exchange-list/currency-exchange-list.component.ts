@@ -10,6 +10,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { AccountsService } from '../../accounts.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-currency-exchange-list',
@@ -20,7 +21,8 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
     FormsModule, 
     RouterModule,
     NgbPaginationModule,
-    CustomDatePipe
+    CustomDatePipe,
+    FavoriteStarComponent
   ],
   templateUrl: './currency-exchange-list.component.html',
   styleUrl: './currency-exchange-list.component.scss'
