@@ -30,8 +30,14 @@
           <thead>
             <tr class="bg-info">
               <th class="bg-transparent text-light" scope="col"  width="10%">Action</th>
-              <th class="bg-transparent text-light" scope="col">Package Name</th>
-              <th class="bg-transparent text-light" scope="col">Package Code</th>
+              <th class="bg-transparent text-light" scope="col" (click)="sort('PackageName')">
+            Package Name
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PackageName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PackageName'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('PackageCode')">
+            Package Code
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PackageCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PackageCode'}"></i>
+        </th>
               <th class="bg-transparent text-light" scope="col"  width="10%">Status</th>
             </tr>
           </thead>

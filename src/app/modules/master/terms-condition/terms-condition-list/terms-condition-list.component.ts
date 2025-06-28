@@ -39,6 +39,8 @@ export class TermsConditionListComponent implements OnInit {
     pageSize = 10;
     totalAmountOfCollections : number;
     isFavorite: boolean = false;
+    sortColumn: string = 'status'; 
+sortDirection: string = 'asc';
 
     toggleFavorite() {
         this.isFavorite = !this.isFavorite;
@@ -87,6 +89,7 @@ export class TermsConditionListComponent implements OnInit {
                     this.TandCList = resp.data;
                     this.totalAmountOfCollections = this.TandCList.length;
                     this.updatePaginationData();
+                    this.applySorting();
                 }
                 else{
                     this.appSettingService.showError('Error Searching Terms and Conditions');
@@ -120,6 +123,43 @@ export class TermsConditionListComponent implements OnInit {
             }
         )
     }
+
+    sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginationData();
+}
+
+applySorting() {
+  this.TandCList.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+    
+    // Handle null/undefined values
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+    
+    // Convert to string for case-insensitive comparison
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+  
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
 
     updatePaginationData(){
         let start = (this.page - 1 ) * this.pageSize;
@@ -160,5 +200,7 @@ export class TermsConditionListComponent implements OnInit {
         this.filterValue = '';
         this.searchType = 'status';
         this.page = 1;
+        this.sortColumn = 'status';
+  this.sortDirection = 'asc';
     }
 }
