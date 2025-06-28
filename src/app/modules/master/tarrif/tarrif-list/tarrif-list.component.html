@@ -35,12 +35,30 @@
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col"  width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Dept</th>
-                            <th class="bg-transparent text-light" scope="col">POL</th>
-                            <th class="bg-transparent text-light" scope="col">POD</th>
-                            <th class="bg-transparent text-light" scope="col">Carrier</th>
-                            <th class="bg-transparent text-light" scope="col">Agent</th>
-                            <th class="bg-transparent text-light" scope="col">Effective Date</th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('DepartmentMasterSid')">
+                            Department
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'DepartmentMasterSid', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'DepartmentMasterSid'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('POLTerminal')">
+            POL
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'POLTerminal', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'POLTerminal'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('PODTerminal')">
+            POD
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PODTerminal', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PODTerminal'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('Carrier')">
+            Carrier
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Carrier', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Carrier'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('AgentSid')">
+            Agent
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'AgentSid', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'AgentSid'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveDate')">
+            Effective Date
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'EffectiveDate', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'EffectiveDate'}"></i>
+        </th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
                         </tr>
                     </thead>

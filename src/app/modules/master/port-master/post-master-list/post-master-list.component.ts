@@ -40,7 +40,8 @@ export class PostMasterListComponent implements OnInit {
   results: any[] = [];
   portList: any[] = [];
   totalLengthOfCollection = 0;
-
+  sortColumn: string = 'PortName'; 
+  sortDirection: string = 'asc'; 
   // pagination
   page = 1;
   pageSize = 10;
@@ -123,8 +124,48 @@ export class PostMasterListComponent implements OnInit {
     this.totalLengthOfCollection = this.results.length;
     this.page = 1;
     this.updatePaginatedData();
+    this.applySorting();
   });
 }
+
+sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginatedData();
+}
+
+applySorting() {
+  this.results.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+    
+    // Handle null/undefined values
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+    
+    // Convert to string for case-insensitive comparison
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+  
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
+
+
   /** Slice results for current page */
   updatePaginatedData(): void {
     const start = (this.page - 1) * this.pageSize;
@@ -171,6 +212,8 @@ export class PostMasterListComponent implements OnInit {
     this.results = [];
     this.portList = [];
     this.totalLengthOfCollection = 0;
+    this.sortColumn = 'PortName';
+  this.sortDirection = 'asc';
   }
   report(): void {
     const formattedData = this.portList.map(item => ({
