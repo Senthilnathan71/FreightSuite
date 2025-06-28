@@ -35,6 +35,8 @@ export class ContainerTypeListComponent {
   searchPerformed = false;
   companyMap: { [id: number]: string} = {};
   userData : any;
+  sortColumn: string = 'ContainerName'; 
+  sortDirection: string = 'asc';
   
 
   // Pagination 
@@ -82,6 +84,42 @@ export class ContainerTypeListComponent {
   console.log('Searching with:', this.searchType, this.filterValue);
   this.search();
 }
+sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginatedData();
+}
+
+applySorting() {
+  this.results.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+    
+    // Handle null/undefined values
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+    
+    // Convert to string for case-insensitive comparison
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+  
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
 
   search() {
     const payload = {
@@ -91,6 +129,7 @@ export class ContainerTypeListComponent {
 
     this.masterService.searchContainerType(payload).subscribe((res: any) => {
       this.results = res;
+      this.applySorting();
       this.searchPerformed = true;
       this.updatePaginatedData();
       this.totalLengthOfCollection = this.results.length || 0;
@@ -131,6 +170,8 @@ export class ContainerTypeListComponent {
     this.filterValue = '';
     this.searchType = 'ContainerName';
     this.page = 1;
+    this.sortColumn = 'ContainerName';
+    this.sortDirection = 'asc';
   }
 
   report(): void {

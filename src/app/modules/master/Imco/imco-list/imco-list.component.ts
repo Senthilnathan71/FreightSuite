@@ -27,6 +27,8 @@ export class ImcoListComponent implements OnInit{
 	imcoList: any[];
 	searchResults: any[];
 	userData : any;
+	sortColumn: string = 'ImcoClass'; 
+    sortDirection: string = 'asc';
 
 	// Pagination Data
 	page = 1;
@@ -73,12 +75,51 @@ export class ImcoListComponent implements OnInit{
 			(resp: any) => {
 				if (resp.status) {
 					this.searchResults = resp.data;
+					this.applySorting();
 					this.updatePaginationData();
 					this.totalAmountOfCollection = this.searchResults.length;
 				}
 			}
 		)
 	}
+	sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginationData();
+}
+
+applySorting() {
+  if (!this.searchResults) return;
+  
+  this.searchResults.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+    
+    // Handle null/undefined values
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+    
+    // Convert to string for case-insensitive comparison
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+    
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}	
 
 	updatePaginationData() {
 		let start = (this.page - 1) * this.pageSize;
@@ -121,6 +162,8 @@ export class ImcoListComponent implements OnInit{
 		this.filterValue = '';
 		this.searchType = 'ImcoClass';
 		this.page = 1;
+		this.sortColumn = 'ImcoClass';
+        this.sortDirection = 'asc';
 	}
 
 	report(): void {

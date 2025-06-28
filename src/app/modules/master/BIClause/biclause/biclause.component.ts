@@ -48,6 +48,8 @@ export class BIclauseComponent implements OnInit {
   currentClauseId: number | null = null;
   userData: any;
   blclauseData: any;
+  sortColumn: string = 'ClauseDescription'; 
+  sortDirection: string = 'asc';
   // Pagination
   page = 1;
   pageSize = 10;
@@ -85,6 +87,7 @@ export class BIclauseComponent implements OnInit {
   
 
   ngOnInit(): void {
+    this.sort('Sortorder');
         this.appSettingService.getUser().subscribe(
             user=>{
                 if(user){
@@ -121,6 +124,7 @@ export class BIclauseComponent implements OnInit {
       next: (res) => {
         this.allClauses = res;
         this.totalLengthOfCollection = this.allClauses.length;
+        this.applySorting();
         this.searchPerformed = true;
         this.page = 1;
         this.updatePaginatedData();
@@ -133,13 +137,64 @@ export class BIclauseComponent implements OnInit {
       }
     });
   }
+  sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginatedData();
+}
 
+applySorting() {
+  this.allClauses.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+
+    // Handle null/undefined values
+    if (valueA == null) valueA = this.sortColumn === 'Sortorder' ? 0 : '';
+    if (valueB == null) valueB = this.sortColumn === 'Sortorder' ? 0 : '';
+
+    // Numeric sorting for Sortorder
+    if (this.sortColumn === 'Sortorder') {
+      valueA = Number(valueA) || 0;
+      valueB = Number(valueB) || 0;
+      
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    } 
+    // String sorting for other columns
+    else {
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    }
+  });
+}
   loadAllClauses(): void {
     this.loading = true;
     this.masterService.getAllBlClause().subscribe({
       next: (res) => {
         this.allClauses = res;
         this.totalLengthOfCollection = this.allClauses.length;
+        this.applySorting();
         this.searchPerformed = true;
         this.page = 1;
         this.updatePaginatedData();
@@ -261,6 +316,8 @@ export class BIclauseComponent implements OnInit {
     this.allClauses = [];
     this.clauseList = [];
     this.totalLengthOfCollection = 0;
+    this.sortColumn = 'ClauseDescription';
+    this.sortDirection = 'asc';
   }
 
   getStatusClass(status: string): string {

@@ -39,6 +39,8 @@ export class CountryListComponent {
   zoneOptions: any[] = [];
   currencyOptions: any[] = [];
   userData: any;
+  sortColumn: string = 'countryName'; 
+  sortDirection: string = 'asc';
 
   // pagination
   page = 1;
@@ -104,50 +106,89 @@ export class CountryListComponent {
   console.log('Searching with:', this.searchType, this.filterValue);
   this.search();
 }
+sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginatedData();
+}
+
+applySorting() {
+  this.allCountries.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+    
+    // Handle null/undefined values
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+    
+    // Convert to string for case-insensitive comparison
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+  
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
+
 
   search() {
-    this.loading = true;
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'S'
-        : this.filterValue
-    };
+  this.loading = true;
+  const payload = {
+    searchType: this.searchType,
+    filterValue: this.searchType === 'status' 
+      ? this.filterValue === 'Active' ? 'A' : 'S'
+      : this.filterValue
+  };
 
-    this.masterService.searchCountries(payload).subscribe({
-      next: (res: any) => {
-        console.log('Country API Response:', res);
-        const countries = res.data || res;
-        // Create lookup maps for zones and currencies
-        const zoneMap = this.zoneOptions.reduce((acc, zone) => {
-          acc[zone.ZoneMasterSid] = zone.ZoneName;
-          return acc;
-        }, {});
+  this.masterService.searchCountries(payload).subscribe({
+    next: (res: any) => {
+      const countries = res.data || res;
+      
+      // Create lookup maps
+      const zoneMap = this.zoneOptions.reduce((acc, zone) => {
+        acc[zone.ZoneMasterSid] = zone.ZoneName;
+        return acc;
+      }, {});
 
-        const currencyMap = this.currencyOptions.reduce((acc, currency) => {
-          const currencyName = currency.currencyName || currency.CurrencyName;
-          acc[currency.CurrencyMasterSid] = currencyName;
-          return acc;
-        }, {});
+      const currencyMap = this.currencyOptions.reduce((acc, currency) => {
+        acc[currency.CurrencyMasterSid] = currency.currencyName || currency.CurrencyName;
+        return acc;
+      }, {});
 
-        // Map the data with zone and currency names
-        this.allCountries = countries.map(country => ({
-          ...country,
-          zoneName: zoneMap[country.ZoneMasterSid] || '-',
-          currencyName: currencyMap[country.CurrencyMasterSid] || '-'
-        }));
+      // Map data with additional fields
+      this.allCountries = countries.map(country => ({
+        ...country,
+        zoneName: zoneMap[country.ZoneMasterSid] || '-',
+        currencyName: currencyMap[country.CurrencyMasterSid] || '-'
+      }));
 
-        this.updatePaginatedData();
-        this.totalLengthOfCollection = this.allCountries.length;
-        this.searchPerformed = true;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Search error:', err);
-        this.loading = false;
-      }
-    });
-  }
+      // Apply sorting after data load
+      this.applySorting();
+      
+      this.updatePaginatedData();
+      this.totalLengthOfCollection = this.allCountries.length;
+      this.searchPerformed = true;
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Search error:', err);
+      this.loading = false;
+    }
+  });
+}
 
   updatePaginatedData() {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -185,6 +226,8 @@ export class CountryListComponent {
     this.searchPerformed = false;
     this.countryList = [];
     this.totalLengthOfCollection = 0;
+    this.sortColumn = 'countryName';
+    this.sortDirection = 'asc';
   }
 
   report(): void {

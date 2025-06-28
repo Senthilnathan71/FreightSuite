@@ -23,14 +23,20 @@ export class ChargeListComponent {
   filterValue = '';
   results: any[] = [];
   chargeList: any[] = [];
+  allCharges: any[] = [];
   searchPerformed = false;
+  loading: boolean = false;
 
   // pagination
   page = 1;
   pageSize = 10;
-  totalLengthOfCollection: number;
+  totalLengthOfCollection: number = 0;
   userData: any;
   isFavorite: boolean = false;
+
+  // sorting
+  sortColumn: string = 'chargeName'; 
+  sortDirection: string = 'asc'; 
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -53,42 +59,102 @@ export class ChargeListComponent {
   }
 
   onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
+    this.searchType = event.type;
+    this.filterValue = event.value;
+    this.search();
+  }
 
   search() {
+    this.loading = true;
     const payload = {
       searchType: this.searchType,
-      filterValue: this.filterValue,
+      filterValue: this.searchType === 'Status' 
+        ? this.filterValue === 'Active' ? 'A' : 'I'
+        : this.filterValue
     };
-    this.masterService.searchChargeList(payload).subscribe((res: any) => {
-      this.results = Array.isArray(res) ? res : res.data || [];
-      this.searchPerformed = true;
-      this.updatePaginatedData();
-      this.totalLengthOfCollection = this.results.length || 0;
+
+    this.masterService.searchChargeList(payload).subscribe({
+      next: (res: any) => {
+        this.allCharges = Array.isArray(res) ? res : res.data || [];
+        
+        // Apply sorting after loading new data
+        this.applySorting();
+        
+        this.chargeList = [...this.allCharges];
+        this.totalLengthOfCollection = this.chargeList.length;
+        this.searchPerformed = true;
+        this.page = 1;
+        this.updatePaginatedData();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Search error:', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  sort(column: string) {
+    if (this.sortColumn === column) {
+      // Reverse the sort direction if clicking the same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Set new sort column and default to ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    
+    this.applySorting();
+    this.updatePaginatedData();
+  }
+
+  applySorting() {
+    this.allCharges.sort((a, b) => {
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
+      
+      // Handle null/undefined values
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+      
+      // Convert to string for case-insensitive comparison
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+    
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
     });
   }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.chargeList = this.results.slice(startIndex, endIndex);
+    this.chargeList = this.allCharges.slice(startIndex, endIndex);
   }
 
-  trackByIndex(index: number, item: any): number {
-    return index;
+  trackByChargeId(index: number, item: any): number {
+    return item.ChargeMasterSid;
   }
 
   deleteCharge(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        this.masterService.deleteChargeById(id).subscribe(() => {
-          this.appSettingService.showSuccess("Deleted!");
-          this.search();
+        this.loading = true;
+        this.masterService.deleteChargeById(id).subscribe({
+          next: () => {
+            this.appSettingService.showSuccess("Deleted!");
+            this.search();
+          },
+          error: (err) => {
+            console.error('Delete error:', err);
+            this.loading = false;
+          }
         });
       }
     });
@@ -99,12 +165,15 @@ export class ChargeListComponent {
   }
 
   resetPage() {
-    this.searchPerformed = false;
-    this.chargeList = [];
-    this.totalLengthOfCollection = 0;
     this.filterValue = '';
     this.searchType = 'chargeName';
     this.page = 1;
+    this.searchPerformed = false;
+    this.chargeList = [];
+    this.allCharges = [];
+    this.totalLengthOfCollection = 0;
+    this.sortColumn = 'chargeName';
+    this.sortDirection = 'asc';
   }
 
   report(): void {

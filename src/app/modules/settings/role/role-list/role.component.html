@@ -69,14 +69,23 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Role Name</th>
-                            <th class="bg-transparent text-light" scope="col">Role Code</th>
-                            <th class="bg-transparent text-light" scope="col">License Type</th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
-                        </tr>
-                    </thead>
+  <tr class="bg-info">
+    <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+    <th class="bg-transparent text-light" scope="col" (click)="sort('UserRoleName')">
+      Role Name
+      <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'UserRoleName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'UserRoleName'}"></i>
+    </th>
+    <th class="bg-transparent text-light" scope="col" (click)="sort('UserRoleCode')">
+      Role Code
+      <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'UserRoleCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'UserRoleCode'}"></i>
+    </th>
+    <th class="bg-transparent text-light" scope="col" (click)="sort('LicenseType')">
+      License Type
+      <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'LicenseType', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'LicenseType'}"></i>
+    </th>
+   <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+  </tr>
+</thead>
                     <tbody>
                         <tr *ngFor="let item of roleList; trackBy: trackByIndex">
                             <tr *ngFor="let item of roleList; trackBy: trackByIndex">

@@ -41,6 +41,8 @@ export class GenerationListComponent {
   pageSize = 10;
   totalLengthOfCollection: number = 0;
   isFavorite: boolean = false;
+  sortColumn: string = 'AirwayBillType'; 
+  sortDirection: string = 'asc';
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -77,6 +79,7 @@ export class GenerationListComponent {
     this.masterService.searchHawbStock(payload).subscribe({
       next: (res: any) => {
         this.results = res.data || [];
+        this.applySorting();
         this.searchPerformed = true;
         this.totalLengthOfCollection = this.results.length;
         this.page = 1; // Reset to first page on new search
@@ -93,6 +96,51 @@ export class GenerationListComponent {
       }
     });
   }
+  sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginatedData();
+}
+
+applySorting() {
+  if (!this.results) return;
+  
+  this.results.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+    
+    // Handle null/undefined values
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+    
+    // Special handling for dates
+    if (this.sortColumn === 'ReceivedDate') {
+      valueA = new Date(valueA).getTime();
+      valueB = new Date(valueB).getTime();
+    } else {
+      // Convert to string for case-insensitive comparison
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+    }
+    
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
+
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -134,6 +182,8 @@ export class GenerationListComponent {
     this.filterValue = '';
     this.searchType = 'AirwayBillType';
     this.page = 1;
+    this.sortColumn = 'AirwayBillType';
+    this.sortDirection = 'asc';
   }
 
   getStatusClass(status: string): string {

@@ -64,6 +64,8 @@ export class DivisionComponent {
   currentMenuId: number;
   TandCList: any;
   isFavorite: boolean = false;
+  sortColumn: string = 'DivisionName'; 
+  sortDirection: string = 'asc';
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -292,12 +294,55 @@ export class DivisionComponent {
 
     this.masterService.searchDivision(payload).subscribe((res: any) => {
       this.results = res;
+      this.applySorting(); 
       console.log(this.results)
       this.searchPerformed = true;
       this.updatePaginatedData();
       this.totalLengthOfCollection = this.results.length || 0;
     });
   }
+  sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginatedData();
+}
+
+applySorting() {
+  this.results.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+    
+    // Handle null/undefined values
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+    
+    // Special handling for company names
+    if (this.sortColumn === 'CompanyMasterSid') {
+      valueA = this.companyMap[valueA] || '';
+      valueB = this.companyMap[valueB] || '';
+    }
+    
+    // Convert to string for case-insensitive comparison
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+    
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -345,6 +390,8 @@ export class DivisionComponent {
     this.divisionList = [];
     this.totalLengthOfCollection = 0;
     this.searchPerformed = false;
+    this.sortColumn = 'DivisionName';
+    this.sortDirection = 'asc';
   }
 
   report(): void {

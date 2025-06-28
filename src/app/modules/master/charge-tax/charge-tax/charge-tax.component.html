@@ -30,16 +30,28 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">HSN Code</th>
-                            <th class="bg-transparent text-light" scope="col">Description</th>
-                            <th class="bg-transparent text-light" scope="col">Tax Group</th>
-                            <th class="bg-transparent text-light" scope="col">Tax Rate (%)</th>
-                            <th class="bg-transparent text-light" scope="col">Remarks</th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
-                        </tr>
-                    </thead>
+    <tr class="bg-info">
+        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('HSNCode')">
+            HSN Code
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'HSNCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'HSNCode'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('description')">
+            Description
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'description', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'description'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('TaxGroup')">
+            Tax Group
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'TaxGroup', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'TaxGroup'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('TaxRate')">
+            Tax Rate (%)
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'TaxRate', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'TaxRate'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col">Remarks</th>
+        <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+    </tr>
+</thead>
                     <tbody>
                         <tr *ngFor="let item of chargeTaxList; trackBy: trackByIndex">
                             <td>

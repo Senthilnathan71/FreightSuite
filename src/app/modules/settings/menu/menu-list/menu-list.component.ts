@@ -54,6 +54,8 @@ export class MenuListComponent implements OnInit {
   isLoading = false;
   userData: any;
   menuData : any;
+  sortColumn: string = 'ModuleName'; 
+sortDirection: string = 'asc';
   iconOptions = [
   { value: 'home', label: 'Home' },
   { value: 'settings', label: 'Settings' },
@@ -274,11 +276,52 @@ export class MenuListComponent implements OnInit {
 
     this.settingsService.searchMenuList(payload).subscribe((res: any) => {
       this.results = res.data || res;
+      this.applySorting();
       this.searchPerformed = true;
       this.updatePaginationData();
       this.totalLengthOfCollection = this.results.length || 0;
     });
   }
+  sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginationData();
+}
+
+applySorting() {
+  this.results.sort((a, b) => {
+    // First sort by ModuleName
+    let moduleA = a.ModuleName || '';
+    let moduleB = b.ModuleName || '';
+    
+    if (moduleA < moduleB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (moduleA > moduleB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    
+    // If ModuleNames are equal, sort by MenuName
+    let menuA = a.MenuName || '';
+    let menuB = b.MenuName || '';
+    
+    if (menuA < menuB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (menuA > menuB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -308,6 +351,8 @@ export class MenuListComponent implements OnInit {
     this.searchPerformed = false;
     this.filterValue = '';
     this.searchType = 'MenuName';
+    this.sortColumn = 'ModuleName';
+    this.sortDirection = 'asc';
   }
 
   report(): void {

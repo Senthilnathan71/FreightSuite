@@ -57,6 +57,8 @@ export class RoleComponent implements OnInit {
   currentMenuId: number;
   TandCList: any;
   isFavorite: boolean = false;
+  sortColumn: string = 'UserRoleName'; 
+sortDirection: string = 'asc';
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -236,11 +238,48 @@ export class RoleComponent implements OnInit {
 
     this.settingsService.searchRole(payload).subscribe((res: any) => {
       this.results = res.data || res;
+       this.applySorting();
       this.searchPerformed = true;
       this.updatePaginationData();
       this.totalLengthOfCollection = this.results.length || 0;
     });
   }
+  sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginationData();
+}
+
+applySorting() {
+  this.results.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+    
+    // Handle null/undefined values
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+    
+    // Convert to string for case-insensitive comparison
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+  
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -270,6 +309,8 @@ export class RoleComponent implements OnInit {
     this.searchPerformed = false;
     this.filterValue = '';
     this.searchType = 'UserRoleName';
+    this.sortColumn = 'UserRoleName'; 
+    this.sortDirection = 'asc';
   }
 
   report(): void {

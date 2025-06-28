@@ -28,14 +28,23 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Company</th>
-                            <th class="bg-transparent text-light" scope="col">Group Name</th>
-                            <th class="bg-transparent text-light" scope="col">Remarks</th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
-                        </tr>
-                    </thead>
+  <tr class="bg-info">
+    <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+    <th class="bg-transparent text-light" scope="col" (click)="sort('company')">
+      Company
+      <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'company', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'company'}"></i>
+    </th>
+    <th class="bg-transparent text-light" scope="col" (click)="sort('GroupName')">
+      Group Name
+      <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'GroupName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'GroupName'}"></i>
+    </th>
+    <th class="bg-transparent text-light" scope="col" (click)="sort('Remarks')">
+      Remarks
+      <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Remarks', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Remarks'}"></i>
+    </th>
+    <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+  </tr>
+</thead>
                     <tbody>
                         <tr *ngFor="let item of chargeGroupList; trackBy: trackByIndex">
                         

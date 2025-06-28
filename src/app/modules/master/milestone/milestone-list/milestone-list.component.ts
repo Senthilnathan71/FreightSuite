@@ -34,6 +34,8 @@ export class MilestoneListComponent {
   loading: boolean = false;
   departmentOptions: any[] = [];
   userData: any;
+  sortColumn: string = 'MilestoneName'; 
+  sortDirection: string = 'asc';
 
   // pagination
   page = 1;
@@ -81,6 +83,48 @@ export class MilestoneListComponent {
       }
     });
   }
+  sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginatedData();
+}
+
+applySorting() {
+  this.allMilestones.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+    if (this.sortColumn === 'departmentName') {
+      valueA = a.departmentMaster?.departmentName || a.departmentName || '';
+      valueB = b.departmentMaster?.departmentName || b.departmentName || '';
+    } 
+
+    
+    
+    // Handle null/undefined values
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+    
+    // Convert to string for case-insensitive comparison
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+  
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
 
   onSearch(event: { type: string, value: string }) {
   this.searchType = event.type;
@@ -110,6 +154,7 @@ export class MilestoneListComponent {
             AutomailRequire: milestone.AutomailRequire === 'Y' ? 'Yes' : 'No'
           };
         });
+        this.applySorting();
         
         this.milestoneList = [...this.allMilestones];
         this.totalLengthOfCollection = this.milestoneList.length;
@@ -170,6 +215,8 @@ export class MilestoneListComponent {
     this.searchPerformed = false;
     this.milestoneList = [];
     this.totalLengthOfCollection = 0;
+    this.sortColumn = 'MilestoneName'; 
+  this.sortDirection = 'asc';
   }
 
   getStatusClass(status: string): string {

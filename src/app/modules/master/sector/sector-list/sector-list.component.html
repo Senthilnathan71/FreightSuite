@@ -30,15 +30,27 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Sector Name</th>
-                            <th class="bg-transparent text-light" scope="col">Sector Code</th>
-                            <th class="bg-transparent text-light" scope="col">Region Name</th>
-                            <th class="bg-transparent text-light" scope="col">Region Code</th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
-                        </tr>
-                    </thead>
+    <tr class="bg-info">
+        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('sectorName')">
+            Sector Name
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'sectorName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'sectorName'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('sectorCode')">
+            Sector Code
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'sectorCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'sectorCode'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('RegionName')">
+            Region Name
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'RegionName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'RegionName'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('RegionCode')">
+            Region Code
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'RegionCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'RegionCode'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+    </tr>
+</thead>
                     <tbody>
                         <tr *ngFor="let item of sectorList; trackBy: trackByIndex">
                             <td>

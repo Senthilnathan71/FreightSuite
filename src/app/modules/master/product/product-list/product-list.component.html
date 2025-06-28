@@ -37,13 +37,28 @@
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Product Name</th>
-                            <th class="bg-transparent text-light" scope="col">Product Code</th>
-                            <th class="bg-transparent text-light" scope="col">Type</th>
-                            <th class="bg-transparent text-light" scope="col">UOM</th>
-                            <th class="bg-transparent text-light" scope="col">HSN Code</th>
+                            <!-- Keep your existing table headers but ensure they match the sortable columns -->
+<th class="bg-transparent text-light" scope="col" (click)="sort('ProductName')">
+    Product Name
+    <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ProductName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ProductName'}"></i>
+</th>
+<th class="bg-transparent text-light" scope="col" (click)="sort('ProductCode')">
+    Product Code
+    <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ProductCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ProductCode'}"></i>
+</th>
+<th class="bg-transparent text-light" scope="col" (click)="sort('ProductType')">
+    Type
+    <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ProductType', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ProductType'}"></i>
+</th>
+<th class="bg-transparent text-light" scope="col" (click)="sort('UOMCode')">
+    UOM
+    <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'UOMCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'UOMCode'}"></i>
+</th>
+<th class="bg-transparent text-light" scope="col" (click)="sort('HSNCode')">
+    HSN Code
+    <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'HSNCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'HSNCode'}"></i>
+</th>
                             <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
-
                         </tr>
                     </thead>
                     <tbody>
@@ -101,6 +116,6 @@
       </div>
     </div>
     <div class="col-12" *ngIf="totalAmountOfCollection === 0">
-        <div class="alert alert-info text-center">No records found</div>
+        <div >No records found</div>
     </div>
 </div>

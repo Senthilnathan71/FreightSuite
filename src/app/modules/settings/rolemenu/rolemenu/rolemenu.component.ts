@@ -50,6 +50,8 @@ export class RolemenuComponent implements OnInit {
 
     modalRef: NgbModalRef;
 	roleMenuData : any;
+	sortColumn: string = 'MenuMasterSid'; 
+    sortDirection: string = 'asc';
 
 	modeOfStatus = [
 		{value : 'A',name: "Active"},
@@ -93,6 +95,55 @@ export class RolemenuComponent implements OnInit {
 		)
 	}
 
+	sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginationData();
+}
+
+applySorting() {
+  if (!this.results) return;
+  
+  this.results.sort((a, b) => {
+    // Handle nested properties (like menuMaster.MenuName)
+    let valueA = this.sortColumn.includes('.') 
+      ? this.getNestedProperty(a, this.sortColumn)
+      : a[this.sortColumn];
+    let valueB = this.sortColumn.includes('.') 
+      ? this.getNestedProperty(b, this.sortColumn)
+      : b[this.sortColumn];
+    
+    // Handle null/undefined values
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+    
+    // Convert to string for case-insensitive comparison
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+  
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
+
+private getNestedProperty(obj: any, path: string): any {
+  return path.split('.').reduce((o, p) => o?.[p], obj);
+}
+
+
 	onSearch(){
 		const payload = {
 			searchType : this.searchType,
@@ -102,7 +153,8 @@ export class RolemenuComponent implements OnInit {
 		this.settingService.searchRoleMenu(payload).subscribe(
 			(resp:any)=>{
 				if(resp.status){
-					this.results = resp.data;
+					this.results = resp.data || [];
+					this.applySorting();
 					this.searchPerformed = true;
 					this.totalAmountOfCollection = this.results.length;
 					this.updatePaginationData();
@@ -153,6 +205,8 @@ export class RolemenuComponent implements OnInit {
 		this.searchType = 'MenuMasterSid';
 		this.filterValue = '';
 		this.searchForm.reset();
+		this.sortColumn = 'MenuMasterSid';
+        this.sortDirection = 'asc';
 	}
 
 	report(): void {

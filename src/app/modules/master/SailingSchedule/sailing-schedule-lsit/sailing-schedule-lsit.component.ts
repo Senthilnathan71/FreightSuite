@@ -34,6 +34,8 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
 export class SailingScheduleLsitComponent implements OnInit {
 
     searchType : string = 'VoyageNo';
+    sortColumn: string = 'VoyageNo'; 
+    sortDirection: string = 'asc';
     portList : any[];
     filterValue :any;
     searchPerformed : boolean;
@@ -79,6 +81,62 @@ export class SailingScheduleLsitComponent implements OnInit {
   this.search();
 }
 
+sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginationData();
+}
+
+applySorting() {
+  this.scheduleList.sort((a, b) => {
+    let valueA = this.getSortValue(a);
+    let valueB = this.getSortValue(b);
+    
+    // Handle null/undefined values
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+    
+    // Convert to string for case-insensitive comparison
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+    
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
+
+getSortValue(item: any): any {
+  // Handle nested properties for sorting
+  switch (this.sortColumn) {
+    case 'Vsl/Voy':
+      return item.vesselMaster?.VesselName;
+    case 'POL':
+      return item.voyageMasterDetail?.[0]?.portMasterPOL?.PortCode;
+    case 'POD':
+      return item.voyageMasterDetail?.[0]?.portMasterPOD?.PortCode;
+    case 'ETA':
+      return item.voyageMasterDetail?.[0]?.ETA;
+    case 'ETD':
+      return item.voyageMasterDetail?.[0]?.ETD;
+    default:
+      return item[this.sortColumn];
+  }
+}
+
+
     search(){
         const intFields = [
             "VesselMasterSid",
@@ -94,6 +152,7 @@ export class SailingScheduleLsitComponent implements OnInit {
                 if(resp.status){
                     this.searchPerformed = true;
                     this.scheduleList = resp.data;
+                    this.applySorting();
                     this.totalAmountOfCollections = this.scheduleList.length;
                     this.updatePaginationData();
                 }
@@ -111,6 +170,7 @@ export class SailingScheduleLsitComponent implements OnInit {
                     if (resp.status) {
                         this.searchPerformed = true;
                         this.scheduleList = resp.data;
+                        this.applySorting();
                         this.totalAmountOfCollections = this.scheduleList.length;
                         this.updatePaginationData();
                     }
@@ -235,6 +295,9 @@ export class SailingScheduleLsitComponent implements OnInit {
         this.portOfLoading = '';
         this.portOfDeparture = '';
         this.page = 1;
+        this.sortColumn = 'VoyageNo';
+        this.sortDirection = 'asc';
+
         
     }
 

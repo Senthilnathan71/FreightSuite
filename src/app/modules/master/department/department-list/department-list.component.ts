@@ -25,6 +25,9 @@ export class DepartmentListComponent {
   results: any[] = [];
   departmentList: any[] = []
   searchPerformed = false;
+  allDepartments: any[] = []; 
+  sortColumn: string = 'departmentName'; 
+  sortDirection: string = 'asc';
 
   // pagination
   page = 1;
@@ -44,11 +47,10 @@ this.appSettingService.getUser().subscribe(user => {
   }
 
   onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
+    this.searchType = event.type;
+    this.filterValue = event.value;
+    this.search();
+  }
 
   search() {
     const payload = {
@@ -57,18 +59,60 @@ this.appSettingService.getUser().subscribe(user => {
     }
     this.masterService.searchDepartmentList(payload).subscribe((res: any) => {
       this.results = res;
+      this.allDepartments = [...this.results]; 
+      
+      
+      this.applySorting();
+      
       this.searchPerformed = true;
-      this.updatePaginatedData();  // Update paginated data
-      this.totalLengthOfCollection = this.results.length || 0;
+      this.totalLengthOfCollection = this.allDepartments.length;
+      this.page = 1;
+      this.updatePaginatedData();
+    });
+  }
+  sort(column: string) {
+    if (this.sortColumn === column) {
+      // Reverse the sort direction if clicking the same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Set new sort column and default to ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    
+    this.applySorting();
+    this.updatePaginatedData();
+  }
+
+  applySorting() {
+    this.allDepartments.sort((a, b) => {
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
+      
+      // Handle null/undefined values
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+      
+      // Convert to string for case-insensitive comparison
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+    
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
     });
   }
 
 
   updatePaginatedData(): void {
-    const startIndex = (this.page - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.departmentList = this.results.slice(startIndex, endIndex);
-  }
+  const startIndex = (this.page - 1) * this.pageSize;
+  const endIndex = startIndex + this.pageSize;
+  this.departmentList = this.allDepartments.slice(startIndex, endIndex);
+}
 
   trackByIndex(index: number, item: any): number {
     return index;
@@ -98,6 +142,8 @@ this.appSettingService.getUser().subscribe(user => {
     this.filterValue = '';
     this.searchType = 'departmantName';
     this.page = 1;
+    this.sortColumn = 'departmantName';
+    this.sortDirection = 'asc';
   }
 
   report(): void {

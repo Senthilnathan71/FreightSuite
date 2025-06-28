@@ -30,14 +30,32 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Department</th>
-                            <th class="bg-transparent text-light" scope="col">Screen / Menu Name</th>
-                            <th class="bg-transparent text-light" scope="col">Branch</th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
-                        </tr>
-                    </thead>
+    <tr class="bg-info">
+        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('departmentName')">
+            Department
+            <i class="fas fa-sort ms-1" [ngClass]="{
+                'fa-sort-up': sortDirection === 'asc' && sortColumn === 'departmentName', 
+                'fa-sort-down': sortDirection === 'desc' && sortColumn === 'departmentName'
+            }"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('MenuName')">
+            Screen / Menu Name
+            <i class="fas fa-sort ms-1" [ngClass]="{
+                'fa-sort-up': sortDirection === 'asc' && sortColumn === 'MenuName', 
+                'fa-sort-down': sortDirection === 'desc' && sortColumn === 'MenuName'
+            }"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('branchName')">
+            Branch
+            <i class="fas fa-sort ms-1" [ngClass]="{
+                'fa-sort-up': sortDirection === 'asc' && sortColumn === 'branchName', 
+                'fa-sort-down': sortDirection === 'desc' && sortColumn === 'branchName'
+            }"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+    </tr>
+</thead>
                     <tbody>
                         <tr *ngFor="let item of authorityList; let i = index; trackBy: trackByAuthorityId">
                             <td>
