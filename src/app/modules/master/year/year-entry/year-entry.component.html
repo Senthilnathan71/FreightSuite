@@ -170,6 +170,8 @@
   <div class="custom-form-group custom-form-group-select">
     <ng-select [items]="statusList" 
               formControlName="status"
+              bindLabel="name"
+              bindValue="name"
               [class.is-invalid]="yearForm.get('status')?.invalid && yearForm.get('status')?.touched"
               [disabled]="yearForm.get('status')?.disabled">
     </ng-select>
