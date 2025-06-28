@@ -1,95 +1,118 @@
-<form [formGroup]="yearForm">
-    <div class="row py-3">
-        <div class="col-12">
-            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-                <div class="col-md-4 pb-2">
-                    <h4 class="page-title mb-0">Year</h4>
-                </div>
-                <div class="col-md-8 pb-2">
-                    <div
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="navigateBack()">
-                            <i class="fas fa-chevron-left me-1"></i>
-                            Back
+<div class="row">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-2">
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Year' : 'Year'}}</h4>
+                @if(isEditMode){
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                         <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
+                }
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    @if(isEditMode){
+                        <button appPreventMultiClick  type="button" class="btn btn-outline-info btn-sm dofi-min-w-160 dofi-max-w-160" (click)="openTandC()">
+                            <i class="fas fa-clipboard me-1"></i> Terms & Condition
                         </button>
-                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
-                            <i class="fas fa-sync-alt me-1"></i>
-                            Reset
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="onSubmit()">
-                            <i class="fas fa-save me-1"></i>
-                            Save
-                        </button>
-                    </div>
+                    }
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="goBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                       <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
+                        <i class="fas fa-save me-1"></i>
+                        {{isEditMode ? 'Update' : "Save"}}
+                    </button>
                 </div>
             </div>
         </div>
-        <div class="col-md-12">
-            <div class="card h-100">
+    </div>
+
+
+
+    <form [formGroup]="yearForm">
+        <div class="col-12">
+            <div class="card">
                 <div class="card-body">
+
                     <div class="row">
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" formControlName="YearName" placeholder=""
+                                    class="custom-input-field sm" [onlyText]="20">
+                                <label for="text-input" class="input-label">Year Name <span
+                                        class="text-danger fw-bold">*</span></label>
+                                <div class="error-message"
+                                *ngIf="yearForm.get('Name')?.touched && yearForm.get('Name')?.hasError('required')">
+                                    Year Name is required
+                                </div>
+                            </div>
 
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="Name">
-                                <label for="text-input" class="input-label">Name <span
-                                        class="text-danger">*</span></label>
-                                <div class="error-message"
-                                    *ngIf="yearForm.get('Name')?.touched && yearForm.get('Name')?.hasError('required')">
-                                    Name is required
-                                </div>
-                            </div>
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="Code">
-                                <label for="text-input" class="input-label">Code <span
-                                        class="text-danger">*</span></label>
+                                <input type="text" formControlName="YearCode" id="text-input" placeholder=""
+                                    class="custom-input-field sm" [textWithNumbers]="5">
+
+                                <label for="text-input" class="input-label">Year Code <span
+                                        class="text-danger fw-bold">*</span></label>
                                 <div class="error-message"
-                                    *ngIf="yearForm.get('Code')?.touched && yearForm.get('Code')?.hasError('required')">
-                                    Code is required
-                                </div>
-                            </div>
-                        </aside>
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="date" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="StartDate">
-                                <label for="text-input" class="input-label">Start Date <span
-                                        class="text-danger">*</span></label>
-                                <div class="error-message"
-                                    *ngIf="yearForm.get('StartDate')?.touched && yearForm.get('StartDate')?.hasError('required')">
-                                    Start Date is required
+                                *ngIf="yearForm.get('Code')?.touched && yearForm.get('Code')?.hasError('required')">
+                                    Year Code is required
                                 </div>
                             </div>
                         </aside>
 
-
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="date" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="EndDate">
-                                <label for="text-input" class="input-label">End Date <span
-                                        class="text-danger">*</span></label>
-                                <div class="error-message"
-                                    *ngIf="yearForm.get('EndDate')?.touched && yearForm.get('EndDate')?.hasError('required')">
-                                    End Date is required
+                       <aside class="col-md-6">
+                        <div class="d-flex">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
+                                    (click)="d1.toggle()" formControlName="StartDate"  readonly/>
+                                <label class="input-label" for="dp">Start Date  <span class="text-danger">*</span></label>
+                                <div *ngIf="yearForm.get('StartDate')?.touched && yearForm.get('StartDate')?.invalid">
+                                    <p *ngIf="yearForm.get('StartDate')?.errors?.['required']" class="error-message">Start date is required.</p>
                                 </div>
                             </div>
-                        </aside>
+                            <button class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2" (click)="d1.toggle()"
+                                type="button">
+                                <i-feather name="calendar" class="feather-sm"></i-feather>
+                            </button>
+                        </div>
+                    </aside>
 
-                        <aside class="col-md-4">
+                    <aside class="col-md-6">
+                        <div class="d-flex">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                                    (click)="d2.toggle()" formControlName="EndDate"  readonly/>
+                                <label class="input-label" for="dp">End Date  <span class="text-danger">*</span></label>
+                                <div *ngIf="yearForm.get('EndDate')?.touched && yearForm.get('EndDate')?.invalid">
+                                    <p *ngIf="yearForm.get('EndDate')?.errors?.['required']" class="error-message">End date is required.</p>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2" (click)="d2.toggle()"
+                                type="button">
+                                <i-feather name="calendar" class="feather-sm"></i-feather>
+                            </button>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="CurrentYear">
+                                <input type="text" formControlName="CurrentYear" id="text-input" placeholder=""
+                                    class="custom-input-field sm">
+
                                 <label for="text-input" class="input-label">Current Year <span
-                                        class="text-danger">*</span></label>
+                                        class="text-danger fw-bold">*</span></label>
                                 <div class="error-message"
-                                    *ngIf="yearForm.get('CurrentYear')?.touched && yearForm.get('CurrentYear')?.hasError('required')">
+                                *ngIf="yearForm.get('CurrentYear')?.touched && yearForm.get('CurrentYear')?.hasError('required')">
                                     Current Year is required
                                 </div>
                             </div>
@@ -97,41 +120,70 @@
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="YearEndCompl">
-                                <label for="text-input" class="input-label">Year End Completed <span
-                                        class="text-danger">*</span></label>
+                                <input type="text" formControlName="YearEndCompleted" id="text-input" placeholder=""
+                                    class="custom-input-field sm">
+
+                                <label for="text-input" class="input-label">Year-End Completed <span
+                                        class="text-danger fw-bold">*</span></label>
                                 <div class="error-message"
-                                    *ngIf="yearForm.get('YearEndCompl')?.touched && yearForm.get('YearEndCompl')?.hasError('required')">
-                                    Year End Completed is required
+                                *ngIf="yearForm.get('YearEndCompleted')?.touched && yearForm.get('YearEndCompleted')?.hasError('required')">
+                                    Year-End Completed is required
                                 </div>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <select formControlName="CompanyMasterSid" class="form-select">
+                                    <option value="" disabled selected>Select Company</option>
+                                    <option *ngFor="let option of companyList" [value]="option.CompanyMasterSid">
+                                        {{option.companyName}}
+                                    </option>
+                                </select>
+                                <label for="text-input" class="input-label">Company <span
+                                class="text-danger fw-bold">*</span></label>
+                                @if(yearForm.get('CompanyMasterSid')?.touched && yearForm.get('CompanyMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(yearForm.get('CompanyMasterSid')?.hasError('required')){
+                                            <span>Company is required</span>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="Remarks">
-                                <label for="text-input" class="input-label">Remarks<span
-                                        class="text-danger"></span></label>
+                                <textarea formControlName="Remarks" class="custom-input-field sm" [textWithNumbers]="20" rows="1"></textarea>
+                                <label for="text-input" class="input-label">Remarks </label>
+                                <div class="error-message">
+                                    @if(yearForm.get('Remarks')?.touched &&
+                                    yearForm.get('Remarks')?.invalid){
 
-                            </div>
-                        </aside>
-
-                        <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
-                                    bindValue="name">
-                                </ng-select>
-                                <label for="" class="input-label">Status <span class="text-danger"></span></label>
-                                <div class="error-message"
-                                    *ngIf="yearForm.get('Status')?.touched && yearForm.get('Status')?.hasError('required')">
-                                    Status is required
+                                    @if(yearForm.get('Remarks')?.hasError('maxlength')){
+                                    <span>Max 20 Characters</span>
+                                    }
+                                    }
                                 </div>
                             </div>
                         </aside>
+                         <aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select [items]="statusList" 
+              formControlName="status"
+              [class.is-invalid]="yearForm.get('status')?.invalid && yearForm.get('status')?.touched"
+              [disabled]="yearForm.get('status')?.disabled">
+    </ng-select>
+    <label class="input-label">Status <span class="text-danger">*</span></label>
+    @if(yearForm.get('status')?.touched && yearForm.get('status')?.invalid){
+    <div class="error-message">
+      <span>Status is required</span>
+    </div>
+    }
+  </div>
+</aside>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</form>
+    </form>
+</div>

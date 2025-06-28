@@ -19,6 +19,7 @@ import { HSSAC } from '../crm-mobile/Interfaces/hs-sac.interfaces';
 import { Currency } from '../crm-mobile/Interfaces/currency.interface';
 import { Charge } from '../crm-mobile/Interfaces/charge.interface';
 import { Product } from '../crm-mobile/Interfaces/product.interface';
+import { Year } from '../crm-mobile/Interfaces/year.interfaces';
 @Injectable({
   providedIn: 'root',
 })
@@ -2509,6 +2510,59 @@ getAllHawbStocks(){
     )
   }
 
+  //year
+
+  getAllYears() {
+    return this.http.get<Year>('year').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+
+  searchYear(payload: any) {
+    return this.http.post<{ data: any }>(`year/search-list`, payload).pipe(
+      map((res: any) => {
+        return res|| [];
+      })
+    )
+  }
+
+  getYearById(YearMasterSid: number) {
+    return this.http.get<{ data: Year }>(`year/fetch/${YearMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+  createNewYear(payload: any) {
+    return this.http.post("year/create", payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateYearById(YearMasterSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`year/update/${YearMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+  deleteYearById(YearMasterSid: number) {
+    return this.http.delete<{ data: any }>(`year/delete/${YearMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
 
 
 }
