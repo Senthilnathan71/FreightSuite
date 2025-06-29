@@ -26,9 +26,39 @@
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">User Name</th>
+                            <!-- <th class="bg-transparent text-light" scope="col">User Name</th>
                             <th class="bg-transparent text-light" scope="col">Email</th>
-                            <th class="bg-transparent text-light" scope="col">Is Salesman</th>
+                            <th class="bg-transparent text-light" scope="col">Is Salesman</th> -->
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('userName')">
+                            User Name
+                            <i class="fas fa-sort ms-1"
+                                [ngClass]="{
+                                'fa-sort-up': sortColumn === 'userName' && sortDirection === 'asc',
+                                'fa-sort-down': sortColumn === 'userName' && sortDirection === 'desc'
+                                }">
+                            </i>
+                            </th>
+
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('email')">
+                            Email
+                            <i class="fas fa-sort ms-1"
+                                [ngClass]="{
+                                'fa-sort-up': sortColumn === 'email' && sortDirection === 'asc',
+                                'fa-sort-down': sortColumn === 'email' && sortDirection === 'desc'
+                                }">
+                            </i>
+                            </th>
+
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('isSalesman')">
+                            Is Salesman
+                            <i class="fas fa-sort ms-1"
+                                [ngClass]="{
+                                'fa-sort-up': sortColumn === 'isSalesman' && sortDirection === 'asc',
+                                'fa-sort-down': sortColumn === 'isSalesman' && sortDirection === 'desc'
+                                }">
+                            </i>
+                            </th>
+
 
                             <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                         </tr>

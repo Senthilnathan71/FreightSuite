@@ -80,14 +80,42 @@
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col"  width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Vessel Name</th>
-                            <!-- <th class="bg-transparent text-light" scope="col">Code</th>
-                            <th class="bg-transparent text-light" scope="col">MMSINo</th> -->
+                            <!-- <th class="bg-transparent text-light" scope="col">Vessel Name</th>
                             <th class="bg-transparent text-light" scope="col">Vessel Type</th>
                             <th class="bg-transparent text-light" scope="col">Year of Built</th>
-                            <!-- <th class="bg-transparent text-light" scope="col">IMOCode</th> -->
-                            <th class="bg-transparent text-light" scope="col">Vessel Operator</th>
-                            <!-- <th class="bg-transparent text-light" scope="col">Net Register Ton</th> -->
+                            <th class="bg-transparent text-light" scope="col">Vessel Operator</th> -->
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('vesselName')">
+                                    Vessel Name
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'vesselName',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'vesselName'
+                                    }"></i>
+                                    </th>
+
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('vesselType')">
+                                    Vessel Type
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'vesselType',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'vesselType'
+                                    }"></i>
+                                    </th>
+
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('yearOfBuilt')">
+                                    Year of Built
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'yearOfBuilt',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'yearOfBuilt'
+                                    }"></i>
+                                    </th>
+
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('vesselOperator')">
+                                    Vessel Operator
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'vesselOperator',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'vesselOperator'
+                                    }"></i>
+                                    </th>
+
                             <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                         </tr>
                     </thead>
