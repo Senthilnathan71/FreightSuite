@@ -11,6 +11,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { forkJoin } from 'rxjs';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-state-list',
@@ -21,7 +22,8 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     FormsModule,
     NgbPaginationModule,
     RouterModule,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent
   ],
   templateUrl: './state-list.component.html',
   styleUrl: './state-list.component.scss'
@@ -44,12 +46,7 @@ export class StateListComponent {
 
   // sorting
   sortColumn: string = 'stateName'; // default sort column
-  sortDirection: string = 'asc'; // default sort direction
-  isFavorite: boolean = false;
-
-  toggleFavorite() {
-    this.isFavorite = !this.isFavorite;
-  } 
+  sortDirection: string = 'asc'; // default sort direction 
   
   constructor(
     private masterService: MasterService,

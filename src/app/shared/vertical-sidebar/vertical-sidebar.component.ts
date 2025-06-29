@@ -84,6 +84,15 @@ export class VerticalSidebarComponent implements OnInit {
       left: 0,
       behavior: 'smooth'
     });
+    const path = element.path;
+    const screenName = element.title;
+    this.menuServise.addToRecent({ path, screenName }).subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          console.log(`${screenName} add to recent activities`)
+        }
+      }
+    );
   }
   
   handleNotify() {

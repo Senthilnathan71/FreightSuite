@@ -2509,6 +2509,30 @@ getAllHawbStocks(){
     )
   }
 
+  createFavouriteScreen(payload){
+    return this.http.post<{data:any}>('favourite-screen/create',payload).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+  deleteFavouriteScreen(path:string){
+    return this.http.delete<{data:any}>(`favourite-screen/delete?path=${encodeURIComponent(path)}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+  isPathFav(path:string){
+    return this.http.get<{data:any}>(`favourite-screen/check?path=${encodeURIComponent(path)}`).pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
 
 
 }
