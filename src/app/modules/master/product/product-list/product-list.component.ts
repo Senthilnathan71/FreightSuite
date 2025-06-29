@@ -48,6 +48,9 @@ export class ProductListComponent {
     totalAmountOfCollection :number;
    
     isFavorite: boolean = false;
+    allProducts: Product[] = [];
+    sortColumn: string = 'ProductName'; 
+    sortDirection: string = 'asc';
 
     toggleFavorite() {
         this.isFavorite = !this.isFavorite;
@@ -87,14 +90,60 @@ export class ProductListComponent {
         }
         this.masterService.searchProducts(payload).subscribe(
             (resp:any)=>{
-                this.productList = resp.data;
+                this.allProducts = resp.data;
+                this.productList = [...this.allProducts]; 
+                this.applySorting();
                 this.searchPerformed = true;
                 this.updatePaginationData();
                 this.totalAmountOfCollection = this.productList.length || 0;
             }
         )
     }
+    sort(column: string) {
+        if (this.sortColumn === column) {
+            // Reverse the sort direction if clicking the same column
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            // Set new sort column and default to ascending
+            this.sortColumn = column;
+            this.sortDirection = 'asc';
+        }
+        
+        this.applySorting();
+        this.updatePaginationData();
+    }
 
+    applySorting() {
+    this.productList.sort((a, b) => {
+        let valueA = a[this.sortColumn];
+        let valueB = b[this.sortColumn];
+        
+        // Special handling for ProductType which is numeric
+        if (this.sortColumn === 'ProductType') {
+            valueA = this.getProductType(valueA);
+            valueB = this.getProductType(valueB);
+        }
+        
+        // Handle null/undefined values
+        if (valueA == null) valueA = '';
+        if (valueB == null) valueB = '';
+        
+        // Convert to string for case-insensitive comparison
+        valueA = valueA.toString().toLowerCase();
+        valueB = valueB.toString().toLowerCase();
+    
+        if (valueA < valueB) {
+            return this.sortDirection === 'asc' ? -1 : 1;
+        }
+        if (valueA > valueB) {
+            return this.sortDirection === 'asc' ? 1 : -1;
+        }
+        return 0;
+    });
+    
+    // Update pagination after sorting
+    this.updatePaginationData();
+}
     navigateTocreateProduct(){
         this.router.navigate(["master/product/entry"])
     }
@@ -108,6 +157,8 @@ export class ProductListComponent {
         this.filterValue = '';
         this.searchType = 'ProductName';
         this.page = 1;
+        this.sortColumn = 'ProductName';
+        this.sortDirection = 'asc';
         
     }
 
@@ -135,11 +186,11 @@ export class ProductListComponent {
     }
 
 
-    updatePaginationData(){
-        let start = (this.page-1)*this.pageSize;
-        let end = start + this.pageSize;
-        this.slicedProductList = this.productList.slice(start,end);
-    }
+    updatePaginationData() {
+    let start = (this.page - 1) * this.pageSize;
+    let end = start + this.pageSize;
+    this.slicedProductList = this.productList.slice(start, end);
+}
 
     report(): void {
         const formattedData = this.productList.map(item => ({

@@ -30,17 +30,37 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Milestone Name</th>
-                            <th class="bg-transparent text-light" scope="col">Milestone Code</th>
-                            <th class="bg-transparent text-light" scope="col">Shipment Type</th>
-                            <th class="bg-transparent text-light" scope="col">Department</th>
-                            <th class="bg-transparent text-light" scope="col">Sort By</th>
-                            <th class="bg-transparent text-light" scope="col">Auto Capture</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
-                        </tr>
-                    </thead>
+    <tr class="bg-info">
+        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('MilestoneName')">
+            Milestone Name
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'MilestoneName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'MilestoneName'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('MilestoneCode')">
+            Milestone Code
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'MilestoneCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'MilestoneCode'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('ShipmentType')">
+            Shipment Type
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ShipmentType', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ShipmentType'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('departmentName')">
+            Department
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'departmentName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'departmentName'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('SortBy')">
+            Sort By
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'SortBy', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'SortBy'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('AutoCapture')">
+            Auto Capture
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'AutoCapture', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'AutoCapture'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col">
+            Status
+        </th>
+    </tr>
+</thead>
                     <tbody>
                         <tr *ngFor="let item of milestoneList; let i = index; trackBy: trackByMilestoneId">
                             <td>

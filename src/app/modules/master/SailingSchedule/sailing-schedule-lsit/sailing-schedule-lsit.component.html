@@ -78,17 +78,32 @@
           <div class="col-12 p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col" width="8%">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Vsl/Voy</th>
-                        <th class="bg-transparent text-light" scope="col">POL</th>
-                        <th class="bg-transparent text-light" scope="col">POD</th>
-                        <th class="bg-transparent text-light" scope="col">ETA</th>
-                        <th class="bg-transparent text-light" scope="col">ETD</th>
-                        <th class="bg-transparent text-light" scope="col" width="8%"></th>
-                    </tr>
-                </thead>
+               <thead>
+    <tr class="bg-info">
+        <th class="bg-transparent text-light" scope="col" width="8%">Action</th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('Vsl/Voy')">
+            Vsl/Voy
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Vsl/Voy', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Vsl/Voy'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('POL')">
+            POL
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'POL', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'POL'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('POD')">
+            POD
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'POD', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'POD'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('ETA')">
+            ETA
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ETA', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ETA'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('ETD')">
+            ETD
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ETD', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ETD'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" width="8%"></th>
+    </tr>
+</thead>
                 <tbody>
                     @for (schedule of scheduleList; track schedule) {
                     @for(scheduleDetail of schedule.voyageMasterDetail ; track scheduleDetail){

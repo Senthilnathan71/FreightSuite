@@ -28,13 +28,19 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col"  width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Zone Name</th>
-                            <th class="bg-transparent text-light" scope="col">Zone Code</th>
-                            <th class="bg-transparent text-light" scope="col"  width="10%">Status</th>
-                        </tr>
-                    </thead>
+    <tr class="bg-info">
+        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('ZoneName')">
+            Zone Name
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ZoneName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ZoneName'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('ZoneCode')">
+            Zone Code
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ZoneCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ZoneCode'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col"  width="10%">Status</th>
+    </tr>
+</thead>
                     <tbody>
                         <tr *ngFor="let item of zoneList; trackBy: trackByIndex">
                             <td>
@@ -69,7 +75,7 @@
                                         Suspended
                                     </div>
                                 }
-                            </td> 
+                              </td> 
                         </tr>
                     </tbody>
                 </table>

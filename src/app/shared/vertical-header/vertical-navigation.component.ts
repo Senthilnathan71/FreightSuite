@@ -1,12 +1,13 @@
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CommonModule } from '@angular/common';
-import { Component, AfterViewInit, EventEmitter, Output, ViewChild, TemplateRef, NgModule } from '@angular/core';
-import { NgbAccordionModule, NgbCarouselModule, NgbDropdownModule,  NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { Component, AfterViewInit, EventEmitter, Output, ViewChild, TemplateRef, NgModule, OnInit } from '@angular/core';
+import { NgbAccordionModule, NgbCarouselModule, NgbDropdown, NgbDropdownModule,  NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateService } from '@ngx-translate/core';
 import { FeatherModule } from 'angular-feather';
 import { NgScrollbarModule } from 'ngx-scrollbar';
-import { ShortcutComponent } from 'src/app/modules/shortcut/shortcut.component';
 import { Router, RouterModule } from '@angular/router';
+import { VerticalNavService } from './vertical-navigation.service';
+import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 
 declare var $: any;
 
@@ -29,21 +30,110 @@ interface messages {
 @Component({
   selector: 'app-vertical-navigation',
   standalone: true,
-  imports: [NgbDropdownModule,RouterModule, FeatherModule, NgScrollbarModule, CommonModule, NgbAccordionModule, NgbCarouselModule,NgbModule],
+  imports: [NgbDropdownModule,RouterModule, FeatherModule, NgScrollbarModule, CommonModule, NgbAccordionModule, NgbCarouselModule,NgbModule,TimeAgoPipe],
   templateUrl: './vertical-navigation.component.html'
 })
-export class VerticalNavigationComponent implements AfterViewInit {
+export class VerticalNavigationComponent implements OnInit,AfterViewInit {
+  recentList : any[] = [];
+  favouriteList : any[] = [];
+  outside = 'outside'
+  menuSearchResults : any[] =[];
+  docSearchResults : any[] = [];
   @Output() toggleSidebar = new EventEmitter<void>();
+  @ViewChild('menuSearchDropdown') menuSearchDropdown!: NgbDropdown;
 
   public showSearch = false;
 
-
-
-  constructor(private router: Router, private appSettingsService: AppSettingsService, private translate: TranslateService) {
+  constructor(private router: Router, private appSettingsService: AppSettingsService, private translate: TranslateService,private verticalNavService:VerticalNavService) {
 
     // translate.setDefaultLang('en');
 
   }
+
+  ngOnInit(): void {
+    this.loadRecentList(true);
+    this.loadFavouriteList(true);
+  }
+
+
+  loadRecentList(event : boolean) {
+    if(event){
+      this.verticalNavService.getAllRecentScreens().subscribe(
+        (resp:any)=>{
+          if(resp.status){
+            this.recentList = resp.data;
+            console.log('Recent',this.recentList)
+          } else {
+            this.appSettingsService.showError('Error loading Recent Screens')
+          }
+        }
+      )
+    }
+  }
+  loadFavouriteList(event : boolean) {
+    if(event){
+      this.verticalNavService.getAllFavouriteScreens().subscribe(
+        (resp:any)=>{
+          if(resp.status){
+            this.favouriteList = resp.data;
+            console.log('Favourite',this.favouriteList);
+          } else {
+            this.appSettingsService.showError('Error loading Favourite Screens')
+          }
+        }
+      )
+    }
+  }
+
+  deleteFavourite(path){
+    this.verticalNavService.deleteFavouriteScreen(path).subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          this.loadFavouriteList(true);
+        }
+      },
+      (error:any)=>{
+        console.error('Error Deleting Favourite Screens',error)
+      }
+    )
+  }
+
+  searchMenu(event){
+    const searchText = event.target.value;
+    const payload = {
+      searchType : 'MenuName',
+      filterValue : searchText
+    }
+    this.verticalNavService.searchMenu(payload).subscribe(
+      (resp:any)=>{
+        if(resp){
+          this.menuSearchResults = resp;
+        }
+      },
+      (error:any)=>{
+        console.error('Error Searching Menus')
+      }
+    )
+  }
+
+  toggleMenuDropdown() {
+    this.menuSearchDropdown.toggle();
+  }
+
+  ensureMenuDropdownOpen() {
+    if (!this.menuSearchDropdown.isOpen()) {
+      this.menuSearchDropdown.open();
+    }
+  }
+
+  searchDocuments(text){
+
+  }
+
+  openDocument(text){
+
+  }
+
 
   // This is for Notifications
   notifications: notifications[] = [
@@ -138,54 +228,6 @@ export class VerticalNavigationComponent implements AfterViewInit {
     icon: 'de'
   }]
 
-  homeActivityItems = [
-    {
-      title: 'Visited Dashboard',
-      subject: 'Checked the performance overview.',
-      time: 'Just now',
-      icon: 'fas fa-chart-pie',
-      btn: 'btn-primary'
-    },
-    {
-      title: 'Updated Profile',
-      subject: 'Changed profile picture.',
-      time: '10 mins ago',
-      icon: 'fas fa-user',
-      btn: 'btn-warning'
-    },
-    {
-      title: 'Logged Out',
-      subject: 'You logged out from this device.',
-      time: '1 hour ago',
-      icon: 'fas fa-sign-out-alt',
-      btn: 'btn-danger'
-    }
-  ];
- favoriteItems = [
-  {
-    btn: 'btn-danger',                  // Red circle button
-    icon: 'fas fa-heart',              // Heart icon
-    title: 'New Like',
-    subject: 'John liked your post',
-    time: '2 mins ago'
-  },
-  {
-    btn: 'btn-primary',                // Blue circle button
-    icon: 'fas fa-star',               // Star icon
-    title: 'Top Rated',
-    subject: 'Your item was featured',
-    time: '10 mins ago'
-  },
-  {
-    btn: 'btn-warning',                // Yellow circle button
-    icon: 'fas fa-gift',               // Gift icon
-    title: 'Gift Received',
-    subject: 'Anna sent you a gift',
-    time: '1 hour ago'
-  }
-];
-
-
   ngAfterViewInit() { 
        
   }
@@ -204,6 +246,5 @@ export class VerticalNavigationComponent implements AfterViewInit {
  navigateShortcut(){
     this.router.navigate(['shortcut']);
  }
-  
  
 }

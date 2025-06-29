@@ -50,6 +50,8 @@ export class ModuleComponent implements OnInit {
   page = 1;
   pageSize = 10;
   totalAmountOfCollection = 0;
+  sortColumn: string = 'ModuleName'; 
+  sortDirection: string = 'asc';
    iconOptions = [
     { value: 'home', label: 'Home' },
     { value: 'settings', label: 'Settings' },
@@ -194,6 +196,7 @@ export class ModuleComponent implements OnInit {
     this.settingsService.searchModule(payload).subscribe({
       next: (res: any) => {
         this.results = res.data || res;
+        this.applySorting();
         this.searchPerformed = true;
         this.updatePaginationData();
         this.totalAmountOfCollection = this.results.length;
@@ -203,6 +206,42 @@ export class ModuleComponent implements OnInit {
       }
     });
   }
+  sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginationData();
+}
+
+applySorting() {
+  this.results.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+    
+    // Handle null/undefined values
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+    
+    // Convert to string for case-insensitive comparison
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+  
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;

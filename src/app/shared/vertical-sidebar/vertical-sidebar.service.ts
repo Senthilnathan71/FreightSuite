@@ -20,7 +20,7 @@ export class VerticalSidebarService {
   private itemsSubject = new BehaviorSubject<RouteInfo[]>([]);
   public items$ = this.itemsSubject.asObservable();
 
-  constructor() {}
+  constructor(private http:HttpClient) {}
 
   setCurrentMenuId(menuId : number){
     this.currentMenuId = menuId;
@@ -33,6 +33,15 @@ export class VerticalSidebarService {
   updateMenuItems(data: RouteInfo[]) {
     this.MENUITEMS = data || [];
     this.itemsSubject.next(this.MENUITEMS);
+  }
+
+  addToRecent(payload){
+    return this.http.post<{data:any}>('recent-screen/create',payload).pipe(
+      map((resp)=>{
+        let response  = resp;
+        return response;
+      })
+    )
   }
 
 }

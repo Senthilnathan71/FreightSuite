@@ -31,16 +31,31 @@
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Charge Code</th>
-                            <th class="bg-transparent text-light" scope="col">Charge Name</th>
-                            <th class="bg-transparent text-light" scope="col">UOM</th>
-                            <th class="bg-transparent text-light" scope="col">HSN/SAC</th>
-                            <th class="bg-transparent text-light" scope="col">TDS Set</th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('chargeCode')">
+                                Charge Code
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'chargeCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'chargeCode'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('chargeName')">
+                                Charge Name
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'chargeName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'chargeName'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('UOM')">
+                                UOM
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'UOM', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'UOM'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('SAC')">
+                                HSN/SAC
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'SAC', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'SAC'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('TDSset')">
+                                TDS Set
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'TDSset', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'TDSset'}"></i>
+                            </th>
                             <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of chargeList; let i = index; trackBy: trackByIndex">
+                        <tr *ngFor="let item of chargeList; let i = index; trackBy: trackByChargeId">
                             <td>
                                 <div class="d-flex align-items-center justify-content-center">
                                     <a class="text-info mx-2" [routerLink]="['/master/charge/entry/', item.ChargeMasterSid]">

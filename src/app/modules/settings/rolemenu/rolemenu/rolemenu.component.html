@@ -1,14 +1,5 @@
 
-<div class="d-flex justify-content-end mb-2">
-  <i
-    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
-    (click)="toggleFavorite()"
-    data-toggle="tooltip"
-    data-placement="bottom"
-    title="Favorites"
-    style="cursor: pointer;">
-  </i>
-</div>
+
 <div class="row">
 
     <div class="col-12">
@@ -19,11 +10,14 @@
             <div class="col-md-8 pb-2">
                 <div class="" data-bs-theme="light">
                     <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                         <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                             <i class="fas fa-search me-1"></i>
                             Search
                         </button> -->
+                        <i [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
+                            (click)="toggleFavorite()" data-toggle="tooltip" data-placement="bottom" title="Favorites" style="cursor: pointer;">
+                        </i>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="openModal(entrycontent)">
                             <i class="fas fa-plus me-1"></i> Create
@@ -284,11 +278,15 @@
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col"> Menu Name</th>
-                            <th class="bg-transparent text-light" scope="col">Allow Add</th>
+                    <!-- Update the table headers in rolemenu.component.html -->
+<thead>
+    <tr class="bg-info">
+        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('menuMaster.MenuName')">
+            Menu Name
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'menuMaster.MenuName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'menuMaster.MenuName'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col">Allow Add</th>
                             <th class="bg-transparent text-light" scope="col">Allow Modify</th>
                             <th class="bg-transparent text-light" scope="col">Allow View</th>
                             <th class="bg-transparent text-light" scope="col">Allow Delete</th>

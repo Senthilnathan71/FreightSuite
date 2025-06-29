@@ -27,19 +27,41 @@
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Company Name</th>
-                            <th class="bg-transparent text-light" scope="col">Company Code</th>
-                                 <th class="bg-transparent text-light" scope="col">Branch Name</th>
-                            <th class="bg-transparent text-light" scope="col">City</th>
-                            <th class="bg-transparent text-light" scope="col">State</th>
-                            <th class="bg-transparent text-light" scope="col">Country</th>
-                            <th class="bg-transparent text-light" scope="col">Vat/GST No</th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
-                        </tr>
-                    </thead>
+                  
+<thead>
+    <tr class="bg-info">
+        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('companyName')">
+            Company Name
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'companyName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'companyName'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('companyCode')">
+            Company Code
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'companyCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'companyCode'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('branchName')">
+            Branch Name
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'branchName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'branchName'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('city')">
+            City
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'city', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'city'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('state')">
+            State
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'state', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'state'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('country')">
+            Country
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'country', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'country'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('gst')">
+            Vat/GST No
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'gst', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'gst'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+    </tr>
+</thead>
                     <tbody>
                         @for(company of companyList;track $index){
                         @for(branch of company.branchMaster;track $index){

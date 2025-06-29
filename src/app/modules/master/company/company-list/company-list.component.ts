@@ -25,6 +25,8 @@ export class CompanyListComponent implements OnInit {
   companyList: any[] = []
   searchPerformed = false;
   userData : any;
+  sortColumn: string = 'companyName'; 
+  sortDirection: string = 'asc';
 
   // pagination
   page = 1;
@@ -65,11 +67,71 @@ export class CompanyListComponent implements OnInit {
     }
     this.masterService.searchCompanyList(payload).subscribe((res: any) => {
       this.results = res;
+      this.applySorting();
       this.searchPerformed = true;
       this.updatePaginatedData();  // Update paginated data
       this.totalLengthOfCollection = this.results.length || 0;
     });
   }
+  sort(column: string) {
+  if (this.sortColumn === column) {
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginatedData();
+}
+
+applySorting() {
+  this.results.sort((a, b) => {
+    // For company-level sorting
+    if (['companyName', 'companyCode'].includes(this.sortColumn)) {
+      return this.compareValues(a[this.sortColumn], b[this.sortColumn]);
+    }
+    // For branch-level sorting
+    else {
+      const branchA = a.branchMaster?.[0] || {};
+      const branchB = b.branchMaster?.[0] || {};
+      
+      switch(this.sortColumn) {
+        case 'branchName':
+          return this.compareValues(branchA.branchName, branchB.branchName);
+        case 'city':
+          return this.compareValues(branchA.cityMaster?.cityName, branchB.cityMaster?.cityName);
+        case 'state':
+          return this.compareValues(branchA.stateMaster?.stateName, branchB.stateMaster?.stateName);
+        case 'country':
+          return this.compareValues(branchA.countryMaster?.countryName, branchB.countryMaster?.countryName);
+        case 'gst':
+          return this.compareValues(branchA.taxRegistrationNo, branchB.taxRegistrationNo);
+        default:
+          return 0;
+      }
+    }
+  });
+}
+
+private compareValues(valueA: any, valueB: any): number {
+  // Handle null/undefined values
+  if (valueA == null) valueA = '';
+  if (valueB == null) valueB = '';
+  
+  // Convert to string for case-insensitive comparison
+  valueA = valueA.toString().toLowerCase();
+  valueB = valueB.toString().toLowerCase();
+
+  if (valueA < valueB) {
+    return this.sortDirection === 'asc' ? -1 : 1;
+  }
+  if (valueA > valueB) {
+    return this.sortDirection === 'asc' ? 1 : -1;
+  }
+  return 0;
+}
+
 
 
   updatePaginatedData(): void {
@@ -105,6 +167,8 @@ export class CompanyListComponent implements OnInit {
     this.searchType = 'companyName';
     this.page = 1;
     this.searchPerformed = false;
+    this.sortColumn = 'companyName';
+    this.sortDirection = 'asc';
   }
 
   report(): void {

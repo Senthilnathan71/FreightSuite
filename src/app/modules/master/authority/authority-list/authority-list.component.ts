@@ -41,6 +41,9 @@ export class AuthorityListComponent {
   pageSize = 10;
   totalLengthOfCollection: number = 0;
   isFavorite: boolean = false;
+  sortColumn: string = 'departmentName'; 
+  sortDirection: string = 'asc'; 
+  
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -88,30 +91,28 @@ export class AuthorityListComponent {
     const payload = {
       searchType: this.searchType,
       filterValue: this.filterValue
-      // filterValue: this.searchType === 'status' 
-        // ? this.filterValue === 'Active' ? 'A' : 'S'
-        // : this.filterValue
-        
     };
 
     this.masterService.searchAuthority(payload).subscribe({
       next: (res: any) => {
         this.allAuthorities = (res.data || res).map(authority => {
-          console.log('MenuMaster:', authority.menuMaster);
-  const departmentNames = authority.DepartmentMaster?.map(code => {
-  const dept = this.departmentOptions.find(d => d.departmentCode === code);
-  return dept?.departmentName ?? code;
-}) || [];
+          const departmentNames = authority.DepartmentMaster?.map(code => {
+            const dept = this.departmentOptions.find(d => d.departmentCode === code);
+            return dept?.departmentName ?? code;
+          }) || [];
 
-return {
-  ...authority,
-  departmentName: departmentNames.join(', '),
-  branchName: authority.branchMaster?.branchName || 'N/A',
-  MenuName: authority.menuMaster?.screenMenuName || 'N/A',
-  statusText: authority.status === 'A' ? 'Active' : 'Suspended'
-};
-});
+          return {
+            ...authority,
+            departmentName: departmentNames.join(', '),
+            branchName: authority.branchMaster?.branchName || 'N/A',
+            MenuName: authority.menuMaster?.screenMenuName || 'N/A',
+            statusText: authority.status === 'A' ? 'Active' : 'Suspended'
+          };
+        });
 
+
+        
+        this.applySorting();
         
         this.authorityList = [...this.allAuthorities];
         this.totalLengthOfCollection = this.authorityList.length;
@@ -126,6 +127,45 @@ return {
       }
     });
   }
+
+  sort(column: string) {
+    if (this.sortColumn === column) {
+      // Reverse the sort direction if clicking the same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Set new sort column and default to ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    
+    this.applySorting();
+    this.updatePaginatedData();
+  }
+
+  applySorting() {
+    this.allAuthorities.sort((a, b) => {
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
+      
+      // Handle null/undefined values
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+      
+      // Convert to string for case-insensitive comparison
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+    
+      
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -167,6 +207,9 @@ return {
     this.searchPerformed = false;
     this.authorityList = [];
     this.totalLengthOfCollection = 0;
+    this.sortColumn = 'departmentName';
+    this.sortDirection = 'asc';
+
   }
 
   report(): void {

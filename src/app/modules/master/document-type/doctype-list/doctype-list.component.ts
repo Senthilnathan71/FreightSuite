@@ -25,6 +25,8 @@ export class DoctypeListComponent {
    results: any[] = [];
    docTypeList: any[] = []
    searchPerformed = false;
+   sortColumn: string = 'DocumentTypeName'; 
+   sortDirection: string = 'asc';
 
    // pagination
    page = 1;
@@ -66,11 +68,54 @@ export class DoctypeListComponent {
       }
       this.masterService.searchDocTypes(payload).subscribe((res: any) => {
          this.results = res.data;
+         this.applySorting(); 
          this.searchPerformed = true;
          this.updatePaginatedData();
          this.totalLengthOfCollection = this.results.length || 0;
       });
    }
+   sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginatedData();
+}
+
+applySorting() {
+  this.results.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+    
+    // Handle null/undefined values and nested properties
+    if (this.sortColumn === 'branch') {
+      valueA = a.branchMaster?.branchName || '';
+      valueB = b.branchMaster?.branchName || '';
+    } else {
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+    }
+    
+    // Convert to string for case-insensitive comparison
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+  
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
+
 
 
    updatePaginatedData(): void {
@@ -107,6 +152,8 @@ export class DoctypeListComponent {
       this.filterValue = '';
       this.searchType = 'DocumentTypeName';
       this.page = 1;
+      this.sortColumn = 'DocumentTypeName';
+      this.sortDirection = 'asc';
    }
 
    report(): void {

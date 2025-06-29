@@ -63,6 +63,8 @@ export class ZoneComponent {
   currentMenuId: number;
   TandCList: any;
   isFavorite: boolean = false;
+  sortColumn: string = 'ZoneName'; 
+  sortDirection: string = 'asc'; 
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -271,6 +273,43 @@ export class ZoneComponent {
   console.log('Searching with:', this.searchType, this.filterValue);
   this.search();
 }
+sort(column: string) {
+  if (this.sortColumn === column) {
+    // Reverse the sort direction if clicking the same column
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    // Set new sort column and default to ascending
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
+  }
+  
+  this.applySorting();
+  this.updatePaginatedData();
+}
+
+// Add this method to the class
+applySorting() {
+  this.results.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+    
+    // Handle null/undefined values
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+    
+    // Convert to string for case-insensitive comparison
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+  
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+}
 
   search() {
     const payload = {
@@ -281,6 +320,7 @@ export class ZoneComponent {
     this.masterService.searchZone(payload).subscribe((res: any) => {
       this.results = res;
       console.log(this.results)
+      this.applySorting();
       this.searchPerformed = true;
       this.updatePaginatedData();
       this.totalLengthOfCollection = this.results.length || 0;
@@ -318,6 +358,8 @@ export class ZoneComponent {
     this.zoneList = [];
     this.totalLengthOfCollection = 0;
     this.searchPerformed = false;
+    this.sortColumn = 'ZoneName'; 
+  this.sortDirection = 'asc';
   }
 
   report() {

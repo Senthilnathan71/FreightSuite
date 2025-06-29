@@ -35,15 +35,26 @@
                 <thead>
                     <tr class="bg-info">
                         <th class="bg-transparent text-light" scope="col"  width="10%">Action</th>
-                        <th class="bg-transparent text-light" scope="col">Customer Name</th>
-                        <!-- <th class="bg-transparent text-light" scope="col">Code</th>
-                        <th class="bg-transparent text-light" scope="col">Full Name</th>
-                        <th class="bg-transparent text-light" scope="col">Website</th>
-                        <th class="bg-transparent text-light" scope="col">Language</th> -->
-                         <th class="bg-transparent text-light" scope="col">Type</th>
-                          <th class="bg-transparent text-light" scope="col">Short Name</th>
-                           <th class="bg-transparent text-light" scope="col">PAN/Vat</th>
-                            <th class="bg-transparent text-light" scope="col">Country</th>
+                        <th class="bg-transparent text-light" scope="col" (click)="sort('CustomerName')">
+                            Customer Name
+                            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CustomerName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CustomerName'}"></i>
+                        </th>
+                        <th class="bg-transparent text-light" scope="col" (click)="sort('CustomerShortCode')">
+                            Type
+                            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CustomerShortCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CustomerShortCode'}"></i>
+                        </th>
+                        <th class="bg-transparent text-light" scope="col" (click)="sort('CustomerAliasName')">
+                            Short Name
+                            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CustomerAliasName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CustomerAliasName'}"></i>
+                        </th>
+                        <th class="bg-transparent text-light" scope="col" (click)="sort('Website')">
+                            PAN/Vat
+                            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Website', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Website'}"></i>
+                        </th>
+                        <th class="bg-transparent text-light" scope="col" (click)="sort('LocalLanguage')">
+                            Country
+                            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'LocalLanguage', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'LocalLanguage'}"></i>
+                        </th>
                         <th class="bg-transparent text-light" scope="col">Status</th>
                     </tr>
                 </thead>
