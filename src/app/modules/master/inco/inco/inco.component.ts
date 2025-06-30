@@ -255,7 +255,7 @@ export class IncoComponent{
               this.closeModal();
               this.router.navigate(['master/inco']);
             } else {
-              this.appSettingService.showError(resp.message);
+              this.appSettingService.showSuccess(resp.message);
             }
           },
           (error) => {
