@@ -19,6 +19,7 @@ import { HSSAC } from '../crm-mobile/Interfaces/hs-sac.interfaces';
 import { Currency } from '../crm-mobile/Interfaces/currency.interface';
 import { Charge } from '../crm-mobile/Interfaces/charge.interface';
 import { Product } from '../crm-mobile/Interfaces/product.interface';
+import { Inco } from '../crm-mobile/Interfaces/inco.intefaces';
 @Injectable({
   providedIn: 'root',
 })
@@ -2534,5 +2535,62 @@ getAllHawbStocks(){
     )
   }
 
+  //inco-master
+
+  getAllInco() {
+    return this.http.get<{ data: Inco[] }>('inco').pipe(
+      map((resp) => {
+       let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  getIncoById(IncoMasterSid: number) {
+    return this.http.get<{
+      Status: string;data: Inco
+}>(`inco/fetch/${IncoMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  createNewInco(payload) {
+    return this.http.post<{ data: any }>('inco/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateIncoById(IncoMasterSid: number, payload) {
+    return this.http.patch<{ data: any }>(`inco/update/${IncoMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteIncoById(IncoMasterSid: number) {
+    return this.http.delete<{ data: any }>(`inco/delete/${IncoMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchInco(payload) {
+    return this.http.post<{ data: any[] }>('inco/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp.data
+        return response;
+      })
+    )
+  }
 
 }

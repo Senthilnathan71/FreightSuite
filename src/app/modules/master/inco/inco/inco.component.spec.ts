@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { IncoListComponent } from './inco-list.component';
+import { IncoListComponent } from './inco.component';
 
 describe('IncoListComponent', () => {
   let component: IncoListComponent;
