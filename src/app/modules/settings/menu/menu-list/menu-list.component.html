@@ -93,11 +93,11 @@
         title="Edit">
     <i-feather class="feather-sm" name="eye"></i-feather>
 </button>
-                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" 
+                                    <!-- <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" 
                                         (click)="deleteMenuById(item.MenuMasterSid)"
                                         title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </button>
+                                    </button> -->
                                 </div>
                             </td>
                             <td>
@@ -151,23 +151,25 @@
                         <div class="card-body">
                             <div class="row">
                                 <aside class="col-md-6">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="MenuName" formControlName="MenuName"
-                                            placeholder="" class="custom-input-field sm">
-                                        <label for="MenuName" class="input-label">Menu Name <span
-                                                class="text-danger fw-bold">*</span></label>
-                                        @if(menuForm.get('MenuName')?.touched &&
-                                        menuForm.get('MenuName')?.invalid){
-                                        <div class="error-message">
-                                            @if(menuForm.get('MenuName')?.hasError('required')){
-                                            <span>Menu Name is required</span>
-                                            } @else if(menuForm.get('MenuName')?.hasError('maxlength')){
-                                            <span>Max 50 Characters</span>
-                                            }
-                                        </div>
-                                        }
-                                    </div>
-                                </aside>
+    <div class="custom-form-group">
+        <input type="text" id="MenuName" formControlName="MenuName"
+               placeholder="" class="custom-input-field sm">
+        <label for="MenuName" class="input-label">Menu Name <span
+                class="text-danger fw-bold">*</span></label>
+        @if(menuForm.get('MenuName')?.touched &&
+        menuForm.get('MenuName')?.invalid){
+        <div class="error-message">
+            @if(menuForm.get('MenuName')?.hasError('required')){
+            <span>Menu Name is required</span>
+            } @else if(menuForm.get('MenuName')?.hasError('maxlength')){
+            <span>Max 50 Characters</span>
+            } @else if(menuForm.get('MenuName')?.hasError('invalidChars')){
+            <span>Special characters are not allowed</span>
+            }
+        </div>
+        }
+    </div>
+</aside>
                                 <aside class="col-md-6">
                                     <div class="custom-form-group">
                                         <input type="text" formControlName="MenuCode" id="MenuCode"
@@ -187,27 +189,7 @@
 }
                                     </div>
                                 </aside>
-                                <aside class="col-md-6">
-    <div class="custom-form-group">
-        <input type="text" id="MenuType" formControlName="MenuType"
-               class="custom-input-field sm">
-        <label for="MenuType" class="input-label">Menu Type <span class="text-danger fw-bold">*</span></label>
-        
-        @if(menuForm.get('MenuType')?.touched && menuForm.get('MenuType')?.invalid){
-        <div class="error-message">
-            @if(menuForm.get('MenuType')?.hasError('required')){
-            <span>Menu Type is required</span>
-            }
-            @if(menuForm.get('MenuType')?.hasError('maxlength')){
-            <span>Maximum 50 characters allowed</span>
-            }
-            @if(menuForm.get('MenuType')?.hasError('pattern')){
-            <span>Only alphabets and spaces are allowed</span>
-            }
-        </div>
-        }
-    </div>
-</aside>
+                                
                                 <aside class="col-md-6">
                                     <div class="custom-form-group custom-form-group-select">
                                         <ng-select 
@@ -236,8 +218,8 @@
         <div class="error-message">
             @if(menuForm.get('path')?.hasError('required')){
             <span>Path is required</span>
-            } @else if(menuForm.get('path')?.hasError('pattern')){
-            <span>Only lowercase letters, hyphens and slashes allowed (e.g., dashboard/list)</span>
+            } @else if(menuForm.get('path')?.hasError('invalidPath')){
+            <span>Only lowercase letters, numbers, hyphens and slashes allowed (e.g., dashboard/list)</span>
             }
         </div>
         }
@@ -272,6 +254,88 @@
                                         <label class="input-label">Status <span class="text-danger">*</span></label>
                                     </div>
                                 </aside>
+                                <div class="col-12 mt-3">
+                <h6 class="mb-3">Permissions & Requirements</h6>
+                <div class="row">
+                  <div class="col-md-4" >
+                    <div class="form-check form-switch">
+                      <input
+  class="form-check-input "
+  type="checkbox"
+  [checked]="menuForm.get('AllowAdd')?.value === 'Y'"
+  (change)="onToggleChange('AllowAdd', $event)"
+/>
+                      <label class="form-check-label" for="AllowAdd">Allow Add</label>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-check form-switch">
+                      <input
+  class="form-check-input"
+  type="checkbox"
+  [checked]="menuForm.get('AllowModify')?.value === 'Y'"
+  (change)="onToggleChange('AllowModify', $event)"
+/>
+                      <label class="form-check-label" for="AllowModify">Allow Modify</label>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-check form-switch">
+                      <input
+  class="form-check-input"
+  type="checkbox"
+  [checked]="menuForm.get('AllowView')?.value === 'Y'"
+  (change)="onToggleChange('AllowView', $event)"
+/>
+                      <label class="form-check-label" for="AllowView">Allow View</label>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-check form-switch">
+                      <input
+  class="form-check-input"
+  type="checkbox"
+  [checked]="menuForm.get('AllowDelete')?.value === 'Y'"
+  (change)="onToggleChange('AllowDelete', $event)"
+/>
+                      <label class="form-check-label" for="AllowDelete">Allow Delete</label>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-check form-switch">
+                      <input
+  class="form-check-input"
+  type="checkbox"
+  [checked]="menuForm.get('TandCRequire')?.value === 'Y'"
+  (change)="onToggleChange('TandCRequire', $event)"
+/>
+                      <label class="form-check-label" for="TandCRequire">T&C Required</label>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-check form-switch">
+                      <input
+  class="form-check-input"
+  type="checkbox"
+  [checked]="menuForm.get('AttachmentRequire')?.value === 'Y'"
+  (change)="onToggleChange('AttachmentRequire', $event)"
+/>
+                      <label class="form-check-label" for="AttachmentRequire">Attachment Required</label>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-check form-switch">
+                     <input
+  class="form-check-input"
+  type="checkbox"
+  [checked]="menuForm.get('FollowupRequire')?.value === 'Y'"
+  (change)="onToggleChange('FollowupRequire', $event)"
+/>
+                      <label class="form-check-label" for="FollowupRequire">Followup Required</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
                             </div>
                         </div>
                     </div>

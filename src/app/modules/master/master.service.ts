@@ -2347,7 +2347,7 @@ searchAuthority(payload: any) {
 getAllAuthorityDetails() {
   return this.http.get<{ data: any[] }>('authority-detail').pipe(
     map((resp) => {
-      let response = resp;
+      let response = resp.data;
       return response;
     })
   );

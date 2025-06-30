@@ -55,7 +55,11 @@ export class MenuListComponent implements OnInit {
   userData: any;
   menuData : any;
   sortColumn: string = 'ModuleName'; 
-sortDirection: string = 'asc';
+  sortDirection: string = 'asc';
+modeOfPermissions = [
+  { value: 'Y', name: "Allowed" },
+  { value: 'N', name: "Restricted" }
+];
   iconOptions = [
   { value: 'home', label: 'Home' },
   { value: 'settings', label: 'Settings' },
@@ -118,16 +122,37 @@ sortDirection: string = 'asc';
 
   initForm() {
     this.menuForm = this.fb.group({
-      MenuName: ['', [Validators.required, Validators.maxLength(50)]],
+      MenuName: ['', [Validators.required, Validators.maxLength(50), this.noSpecialCharsValidator()]],
       MenuCode: ['', [Validators.required, Validators.maxLength(3), this.uppercaseValidator()]],
-      MenuType: ['', [Validators.required,Validators.maxLength(50),Validators.pattern('^[a-zA-Z ]*$')]],
       ModuleMasterSid: ['', Validators.required], 
       ModuleName: [''], 
-      path: ['', [Validators.required]], 
+      path: ['', [Validators.required, this.pathValidator()]], 
       icon: [''], 
-      status: [{value: 'Active', disabled: false}, Validators.required]
+      status: [{value: 'Active', disabled: false}, Validators.required],
+      AllowAdd: ['N'],
+    AllowModify: ['N'],
+    AllowView: ['N'],
+    AllowDelete: ['N'],
+    TandCRequire: ['N'],
+    AttachmentRequire: ['N'],
+    FollowupRequire: ['N']
     });
   }
+  private noSpecialCharsValidator(): ValidatorFn {
+  return (control: AbstractControl): {[key: string]: any} | null => {
+    if (!control.value) return null;
+    const valid = /^[a-zA-Z0-9\s]*$/.test(control.value); // Only alphanumeric and spaces
+    return valid ? null : { invalidChars: true };
+  };
+}
+private pathValidator(): ValidatorFn {
+  return (control: AbstractControl): {[key: string]: any} | null => {
+    if (!control.value) return null;
+    // Allows lowercase letters, numbers, hyphens, and forward slashes
+    const valid = /^[a-z0-9-/]+$/.test(control.value);
+    return valid ? null : { invalidPath: true };
+  };
+}
 
   private uppercaseValidator(): ValidatorFn {
   return (control: AbstractControl): {[key: string]: any} | null => {
@@ -136,6 +161,11 @@ sortDirection: string = 'asc';
     return valid ? null : { invalidUppercase: true };
   };
 }
+onToggleChange(controlName: string, event: Event) {
+  const isChecked = (event.target as HTMLInputElement).checked;
+  this.menuForm.get(controlName)?.setValue(isChecked ? 'Y' : 'N');
+}
+
 
   resetForm(): void {
     this.menuForm.get('status')?.disable();
@@ -161,12 +191,18 @@ sortDirection: string = 'asc';
         this.menuForm.patchValue({
           MenuName: menu.MenuName,
           MenuCode: menu.MenuCode,
-          MenuType: menu.MenuType || '',
           ModuleMasterSid: menu.ModuleMasterSid|| '',
           ModuleName: menu.ModuleName || '',
           path: menu.path || '', 
           icon: menu.icon || '', 
-          status: menu.status === 'A' ? 'Active' : 'Suspended'
+          status: menu.status === 'A' ? 'Active' : 'Suspended',
+          AllowAdd: menu.AllowAdd || 'N',
+        AllowModify: menu.AllowModify || 'N',
+        AllowView: menu.AllowView || 'N',
+        AllowDelete: menu.AllowDelete || 'N',
+        TandCRequire: menu.TandCRequire || 'N',
+        AttachmentRequire: menu.AttachmentRequire || 'N',
+        FollowupRequire: menu.FollowupRequire || 'N'
         });
         // this.menuForm.get('status')?.enable();
         this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
@@ -177,6 +213,7 @@ sortDirection: string = 'asc';
       }
     });
   }
+  
 
   closeModal(): void {
     if (this.modalRef) {
@@ -191,7 +228,6 @@ sortDirection: string = 'asc';
         this.menuForm.patchValue({
           MenuName: data.MenuName,
           MenuCode: data.MenuCode,
-          MenuType: data.MenuType,
           ModuleMasterSid: data.ModuleMasterSid,
           ModuleName: data.ModuleName,
           status: data.status === 'A' ? 'Active' : 'Suspended'
@@ -333,17 +369,17 @@ applySorting() {
     return index;
   }
 
-  deleteMenuById(id: number) {
-    const dialogRef = this.dialog.open(DeleteWarningComponent);
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === true) {
-        this.settingsService.deleteMenuById(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess('Deleted!');
-          this.search();
-        });
-      }
-    });
-  }
+  // deleteMenuById(id: number) {
+  //   const dialogRef = this.dialog.open(DeleteWarningComponent);
+  //   dialogRef.afterClosed().subscribe((result) => {
+  //     if (result === true) {
+  //       this.settingsService.deleteMenuById(id).subscribe((resp: any) => {
+  //         this.appSettingService.showSuccess('Deleted!');
+  //         this.search();
+  //       });
+  //     }
+  //   });
+  // }
 
   resetPage(): void {
     this.menuList = [];
@@ -369,11 +405,7 @@ applySorting() {
       data: formattedData,
       headers: [
         { key: 'MenuName', label: 'Menu Name' },
-        { key: 'MenuCode', label: 'Menu Code' },
-        { key: 'MenuType', label: 'Menu Type' },
         { key: 'ModuleName', label: 'Module Name' },
-        { key: 'path', label: 'Path' },
-        { key: 'icon', label: 'Icon' },
         { key: 'status', label: 'Status' },
       ],
       fileName: 'Menu-Report', 
