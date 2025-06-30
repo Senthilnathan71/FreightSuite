@@ -213,18 +213,18 @@ export class IncoComponent{
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
     } else {
-      let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
+      let CreatedBy = { CreatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
+      let UpdatedBy = { UpdatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.incoForm.value;
       
       const payload = (this.isEditMode) ? {
         ...formValue,
-        ...updatedBy,
-        status: formValue.Status === "Active" ? "A" : "S"
+        ...UpdatedBy,
+        Status: formValue.Status === "Active" ? "A" : "S"
       } : {
         ...formValue,
-        ...createdBy,
-        status: formValue.Status === "Active" ? "A" : "S"
+        ...CreatedBy,
+        Status: formValue.Status === "Active" ? "A" : "S"
       };
 
       console.log('payload', payload);
