@@ -39,18 +39,14 @@
         </div>
    
     <div class="col-12">
-        <div class="card">
-            <div class="card-body">
+       
                 <ng-container *ngTemplateOutlet="companyTemplate"></ng-container>
-            </div>
-        </div>
+           
     </div>
     <div class="col-12 mt-3">
-        <div class="card h-100">
-            <div class="card-body">
+       
                 <ng-container *ngTemplateOutlet="navTemplate"></ng-container>
-            </div>
-        </div>
+           
     </div>
 </div>
 
@@ -342,7 +338,7 @@
                         
                                                         <!-- isHO? -->
                         
-                        <aside class="col-md-3">
+                        <aside class="col-md-4">
                             <div class="form-check form-check-inline mt-3">
                                     <input type="checkbox" id="Cash" formControlName="isHo" class="form-check-input"
                                         name="HO" value="Cash" />
@@ -355,26 +351,10 @@
                         
                         
 
-                                                        <!-- STATUS -->
-
-                        <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            @if(isEditMode){
-                            <select name="status" class="form-select" formControlName="status" id="text-input">
-                                <option value="Active">Active</option>
-                                <option value="Suspended">Suspended</option>
-                            </select>
-                            } @else {
-                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
-                                id="text-input" readonly>
-                            }
-                            <label for="text-input" class="input-label">Status<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
                         
                                                         <!-- REMARKS -->
                         
-                        <aside class="col-md-6">
+                        <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
                                         formControlName="remarks" [textWithNumbers]="500"></textarea>
@@ -390,6 +370,24 @@
                                 }
                             </div>
                         </aside>
+
+                        
+                                                        <!-- STATUS -->
+
+                        <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            @if(isEditMode){
+                            <select name="status" class="form-select" formControlName="status" id="text-input">
+                                <option value="Active">Active</option>
+                                <option value="Suspended">Suspended</option>
+                            </select>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
+                                id="text-input" readonly>
+                            }
+                            <label for="text-input" class="input-label">Status<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
                     </div>
                     
                 </div>
@@ -435,20 +433,19 @@
   <div class="modal-responsive-wrapper">
          <div class="modal-content custom-modal">
           <div [formGroup]="branchForm" >
-        <div class="modal-header">
+        <div class="modal-header p-2 bg-info text-white">
             <h4 class="modal-title" id="modal-basic-title">{{isModalEditMode ? 'Edit Branch' : 'Add Branch'}}</h4>
             @if(isModalEditMode){
             <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showBranchInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
-            <button type="button" class="btn-close" aria-label="Close" (click)="closeBranchForm()"></button>
+            <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeBranchForm()"></button>
 	    </div>
 
         <div class="modal-body">
-            <div class="col-md-12 mt-md-0 mt-3">
-                <div class="card">
-                    <div class="card-body">
+            <div class="col-md-12 mt-md-0 ">
+                
                         <div class="row">
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
@@ -534,7 +531,7 @@
                                     }
                                 </div>
                             </aside> -->
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchAddressLine1" [textWithNumbers]="500">
@@ -552,7 +549,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchAddressLine2" [textWithNumbers]="500">
@@ -567,54 +564,8 @@
                                     }
                                 </div>
                             </aside>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-12 mt-md-0 mt-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="row">
-                            <aside class="col-md-3">
-                                <div class="custom-form-group custom-form-group-select">
-                                    <ng-select id="text-input" class="ng-select" formControlName="branchCityMasterSid">
-                                        <ng-option value="">Select City</ng-option>
-                                        <ng-option *ngFor="let city of cityResults" [value]="city.CityMasterSid">
-                                        {{city.cityName}} - {{ city.cityCode }}
-                                        </ng-option>
-                                    </ng-select>
-                                    <label for="text-input" class="input-label">City <span class="text-danger">*</span></label>
-                                    @if(branchForm.get('branchCityMasterSid')?.touched &&
-                                    branchForm.get('branchCityMasterSid')?.invalid){
-                                    <div class="error-message">
-                                        @if(branchForm.get('branchCityMasterSid')?.hasError('required')){
-                                        <span>City is required</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
-                            <aside class="col-md-3">
-                                <div class="custom-form-group custom-form-group-select">
-                                    <ng-select id="text-input" class="ng-select" formControlName="branchStateMasterSid" (change)="getCitiesByState($event)">
-                                        <ng-option value="">Select State</ng-option>
-                                        <ng-option *ngFor="let state of stateResults" [value]="state.StateMasterSid">
-                                            {{ state.stateName }}-{{state.stateCode}}
-                                        </ng-option>
-                                    </ng-select>
-                                    <label for="text-input" class="input-label">State <span class="text-danger">*</span></label>
-                                    @if(branchForm.get('branchStateMasterSid')?.touched &&
-                                    branchForm.get('branchStateMasterSid')?.invalid){
-                                    <div class="error-message">
-                                        @if(branchForm.get('branchStateMasterSid')?.hasError('required')){
-                                        <span>State is required</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
-                            <aside class="col-md-3">
+                             
+                            <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select id="text-input" class="ng-select" formControlName="branchCountryMasterSid" (change)="getStatesByCountry($event)">
                                         <ng-option value="">Select Country</ng-option>
@@ -634,7 +585,46 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select id="text-input" class="ng-select" formControlName="branchStateMasterSid" (change)="getCitiesByState($event)">
+                                        <ng-option value="">Select State</ng-option>
+                                        <ng-option *ngFor="let state of stateResults" [value]="state.StateMasterSid">
+                                            {{ state.stateName }}-{{state.stateCode}}
+                                        </ng-option>
+                                    </ng-select>
+                                    <label for="text-input" class="input-label">State <span class="text-danger">*</span></label>
+                                    @if(branchForm.get('branchStateMasterSid')?.touched &&
+                                    branchForm.get('branchStateMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchStateMasterSid')?.hasError('required')){
+                                        <span>State is required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                                    <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select id="text-input" class="ng-select" formControlName="branchCityMasterSid">
+                                        <ng-option value="">Select City</ng-option>
+                                        <ng-option *ngFor="let city of cityResults" [value]="city.CityMasterSid">
+                                        {{city.cityName}} - {{ city.cityCode }}
+                                        </ng-option>
+                                    </ng-select>
+                                    <label for="text-input" class="input-label">City <span class="text-danger">*</span></label>
+                                    @if(branchForm.get('branchCityMasterSid')?.touched &&
+                                    branchForm.get('branchCityMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(branchForm.get('branchCityMasterSid')?.hasError('required')){
+                                        <span>City is required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchPostalCode" [onlyNumbers]="10">
@@ -704,13 +694,14 @@
                                 </div>
                             </aside>
                         </div>
-                    </div>
-                </div>
+                
             </div>
 
-            <div class="col-md-12 mt-md-0 mt-3">
-                <div class="card h-100">
-                    <div class="card-body">
+                   
+          
+
+            <div class="col-md-12 mt-md-0 ">
+                
                         <div class="row">
                             <!-- <aside class="col-md-3">
                                 <div class="custom-form-group custom-form-group-select">
@@ -779,7 +770,7 @@
 
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="file" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchCompanyLogo">
@@ -787,7 +778,7 @@
 
                                 </div>
                             </aside>
-                            <aside class="col-md-6">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="file" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="branchReportLogo">
@@ -798,13 +789,12 @@
                            
 
                         </div>
-                    </div>
-                </div>
+                 
             </div>
             
         </div>
 
-        <div class="modal-footer">
+        <div class="modal-footer p-0">
 		<button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" [disabled]="branchForm.invalid" (click)="submitBranchForm()">
             <i class="fas fa-save me-1"></i>
             {{isModalEditMode ? 'Update' : 'Create'}}
@@ -978,7 +968,7 @@
 <ng-template #bankEntryContent let-modal>
     <div>
         <div>
-            <div class="modal-header">
+            <div class="modal-header p-2 bg-info text-white">
                     <h4 class="modal-title" id="modal-basic-title">{{isBankModalEdit ? 'Edit Bank' : 'Add Bank'}}
                     @if(isBankModalEdit){
                     <a class="text-info ps-2 w-2 h-2" (click)="showBranchBankInfo()">
@@ -986,15 +976,15 @@
                     </a>
                     }
                     </h4>
-                        <button type="button" class="btn-close" aria-label="Close" (click)="closeBranchBankForm()"></button>
+                        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeBranchBankForm()"></button>
             </div>
             <div  [formGroup]="branchBankForm">
-                    <div class="modal-body">
-                            <div class="col-md-12 mt-md-0 mt-3" >
+                    <div class="modal-body p-0">
+                            <div class="col-md-12" >
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="row">
-                                            <aside class="col-md-8">
+                                            <aside class="col-md-6">
                                                 <div class="custom-form-group">
                                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                                         formControlName="BankName" [onlyText]="100">
@@ -1014,7 +1004,7 @@
                                                     }
                                                 </div>
                                             </aside>
-                                            <aside class="col-md-4">
+                                            <aside class="col-md-6">
                                                 <div class="custom-form-group">
                                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                                         formControlName="BankCode" [textWithNumbers]="50">
