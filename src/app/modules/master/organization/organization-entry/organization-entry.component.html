@@ -52,7 +52,7 @@
                     <div class="card-body">
                         <div class="row">
 
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="CustomerName" [onlyText]="100">
@@ -73,7 +73,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="CustomerShortCode" [textWithNumbers]="50">
@@ -92,7 +92,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="CustomerAliasName" [textWithNumbers]="100">
@@ -112,7 +112,7 @@
                                 </div>
                             </aside>
 
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="GroupName" [textWithNumbers]="20">
@@ -130,7 +130,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="CustomerAddress1" [textWithNumbers]="300">
@@ -149,7 +149,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="CustomerAddress2">
@@ -208,7 +208,7 @@
 
 
 
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <select formControlName="CountryMasterSid" class="form-select">
                                         <option value="" disabled selected>Select UNO</option>
@@ -227,7 +227,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="Website" [textWithNumbers]="50">
@@ -244,7 +244,7 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select">
                                     <!-- <ng-select [items]="modeOfCustomerType" bindLabel="name" bindValue="name"
                                         [multiple]="true" [closeOnSelect]="false" [searchable]="true"
@@ -305,24 +305,27 @@
                                     }
                                 </div> -->
                             </aside>
-                            <aside class="col-md-auto">
-                                <div class="form-check form-check-inline mt-3">
+                            <aside class="col-md-4">
+                                <div class="d-flex gap-5">
+                                    <div class="form-check form-check-inline mt-3">
                                     <input type="radio" id="Cash" formControlName="paymentType" class="form-check-input"
                                         name="paymentType" value="Cash" />
                                     <label for="Cash" class="form-check-label">Cash <span
                                                 class="text-danger">*</span></label>
                                 </div>
-                                 <div class="form-check form-check-inline mt-3">
+                                 <div class="form-check form-check-inline mt-3 mx-5">
                                     <input type="radio" id="Credit" formControlName="paymentType"
                                         class="form-check-input" name="paymentType" value="Credit" />
                                     <label for="Credit" class="form-check-label">Credit <span
                                                 class="text-danger">*</span></label>
                                 </div>
+                                </div>
+                                
                             </aside>
 
                           
 
-                              <aside class="col-md-3">
+                              <aside class="col-md-4">
                                     <div class="custom-form-group">
                                         <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                             formControlName="Network">
@@ -350,8 +353,8 @@
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-auto d-flex align-items-center">
-                                <div class="form-check form-check-inline ">
+                            <aside class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-check-inline p-0">
                                     <div class="form-check d-flex align-items-center">
                                         <input type="checkbox" formControlName="IsMSME" id="IsMSME"
                                             class="form-check-input sm">
@@ -359,7 +362,7 @@
                                     </div>
                                 </div>
                             </aside>
-                            <aside class="col-md-3">
+                            <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
                                         bindValue="name">
@@ -369,7 +372,7 @@
                                 </div>
                             </aside>
 
-                            <h5 class="text-center mt-2 border-top pt-2">KYC SECTION</h5>
+                            <h5 class="text-info mt-2 border-top pt-2">KYC SECTION</h5>
                             <aside class="col-md-4 d-flex align-items-center">
                                 <div class="form-check form-check-inline ">
                                     <div class="form-check d-flex align-items-center">
@@ -1065,7 +1068,7 @@
         <form [formGroup]="customerBranchForm">
             <div class="col-md-12">
                 <div class="card h-100">
-                    <div class="card-body">
+                    <div class="card-body pb-0">
                         <div class="row">
 
                             <aside class="col-md-3">
