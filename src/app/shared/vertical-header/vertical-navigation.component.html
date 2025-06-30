@@ -169,10 +169,10 @@
 <!-- ============================================================== -->
 <!-- Right side toggle and nav items -->
 <!-- ============================================================== -->
-<ul class="navbar-nav float-end">
+<ul class="navbar-nav float-end d-flex align-items-center gap-2">
   <!-- Search Inputs with Dropdown -->
   <li class="">
-    <div class="d-flex p-3 gap-3">
+    <div class="d-flex gap-3">
       <div class="position-relative" ngbDropdown #menuSearchDropdown="ngbDropdown">
         <input type="text" 
                class="form-control ps-3 pe-5 border border-info" 
@@ -202,7 +202,7 @@
     </div>
   </li>
   <li class="nav-item">
-    <div class="d-flex p-3 gap-3">
+    <div class="d-flex gap-3">
       <div class="position-relative" ngbDropdown #docSearchDropdown="ngbDropdown" [autoClose]="outside">
         <input type="text" 
                class="form-control ps-3 pe-5 border border-info" 
