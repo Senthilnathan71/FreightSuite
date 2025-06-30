@@ -2547,11 +2547,9 @@ getAllHawbStocks(){
   }
 
   getIncoById(IncoMasterSid: number) {
-    return this.http.get<{
-      Status: string;data: Inco
-}>(`inco/fetch/${IncoMasterSid}`).pipe(
+    return this.http.get<{data: Inco}>(`inco/fetch/${IncoMasterSid}`).pipe(
       map((resp) => {
-        let response = resp;
+        let response = resp.data;
         return response;
       })
     )
@@ -2559,7 +2557,7 @@ getAllHawbStocks(){
 
   createNewInco(payload) {
     return this.http.post<{ data: any }>('inco/create', payload).pipe(
-      map((resp) => {
+      map((resp: any) => {
         let response = resp;
         return response;
       })
@@ -2585,10 +2583,9 @@ getAllHawbStocks(){
   }
 
   searchInco(payload) {
-    return this.http.post<{ data: any[] }>('inco/search-list', payload).pipe(
-      map((resp) => {
-        let response = resp.data
-        return response;
+    return this.http.post('inco/search-list', payload).pipe(
+      map((res: any) => {
+        return res.data;
       })
     )
   }
