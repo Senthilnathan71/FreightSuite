@@ -7,7 +7,8 @@
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="navigateBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
@@ -28,7 +29,7 @@
     </div>
     <div class="col-md-6">
         <div class="card h-100">
-            <div class="card-body">
+            <div class="card-body border rounded">
                 <div class="row">
                     <aside class="col-md-12">
                         <div class="custom-form-group">
@@ -44,7 +45,7 @@
                             <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="numericCode">
@@ -52,14 +53,14 @@
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="3letterCode">
                             <label for="text-input" class="input-label">3 Letter Code</label>
                         </div>
                     </aside>
-                    <aside class="col-md-12">
+                    <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="address1">
@@ -67,7 +68,7 @@
 
                         </div>
                     </aside>
-                    <aside class="col-md-12">
+                    <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="address2">
@@ -75,7 +76,7 @@
 
                         </div>
                     </aside>
-                    <aside class="col-md-12">
+                    <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="address3">
@@ -83,7 +84,7 @@
 
                         </div>
                     </aside>
-                    <aside class="col-md-8">
+                    <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="city">
@@ -91,7 +92,7 @@
 
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="postalCode">
@@ -99,7 +100,7 @@
 
                         </div>
                     </aside>
-                    <aside class="col-md-8">
+                    <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="country">
@@ -107,7 +108,7 @@
 
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="reorderedQTY">
@@ -122,7 +123,7 @@
     </div>
     <div class="col-md-6 mt-md-0 mt-3">
         <div class="card h-100">
-            <div class="card-body">
+            <div class="card-body border rounded">
                 <div class="row">
                     <!-- <h6 class="card-title mb-0">Basic Info 2</h6> -->
                     <aside class="col-md-12">
@@ -134,32 +135,35 @@
                         </div>
                     </aside>
                     <aside>
-                        <div class="col-md-12 py-2">
-                            <div class="form-check form-check-inline">
+                        <div class="row py-2">
+                            <div class="col-md-4 mb-2">
                                 <div class="form-check">
                                     <input type="checkbox" id="CASS" class="form-check-input">
                                     <label for="CASS" class="form-check-label">CASS Controlled</label>
                                 </div>
                             </div>
-                            <div class="form-check form-check-inline">
+                            <div class="col-md-4 mb-2">
                                 <div class="form-check">
                                     <input type="checkbox" id="IATA" class="form-check-input">
                                     <label for="IATA" class="form-check-label">IATA</label>
                                 </div>
                             </div>
-                            <div class="form-check form-check-inline">
+                            <div class="col-md-4 mb-2">
                                 <div class="form-check">
                                     <input type="checkbox" id="ATA" class="form-check-input">
                                     <label for="ATA" class="form-check-label">ATA</label>
                                 </div>
                             </div>
-                            <div class="form-check form-check-inline">
+                        </div>
+
+                        <div class="row py-2">
+                            <div class="col-md-4 mb-2">
                                 <div class="form-check">
                                     <input type="checkbox" id="AIRNC" class="form-check-input">
                                     <label for="AIRNC" class="form-check-label">AIRNC</label>
                                 </div>
                             </div>
-                            <div class="form-check form-check-inline">
+                            <div class="col-md-4 mb-2">
                                 <div class="form-check">
                                     <input type="checkbox" id="SITA" class="form-check-input">
                                     <label for="SITA" class="form-check-label">SITA</label>
@@ -167,14 +171,23 @@
                             </div>
                         </div>
                     </aside>
+
                     <aside class="col-md-12 pt-2">
                         <div class="custom-form-group">
-                            <textarea id="" placeholder="" rows="" class="input-field sm"
+                            <textarea id="" placeholder="" rows="1" class="input-field sm"
                                 formControlName="Remarks"></textarea>
                             <label for="text-input" class="input-label">Remarks </label>
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+
+                    <aside class="col-md-6 mt-md-3">
+                            <div class="form-check">
+                                <input type="checkbox" id="EAWB" class="form-check-input">
+                                <label for="EAWB" class="form-check-label">EAWB Agreement Signed</label>
+                            </div>
+                    </aside>
+                    
+                    <aside class="col-md-6 mt-3 mt-md-0">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
                                 bindValue="name">
@@ -183,15 +196,6 @@
                             <label for="" class="input-label">Status <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-6">
-                        <div class="form-check form-check-inline mt-3">
-                            <div class="form-check">
-                                <input type="checkbox" id="EAWB" class="form-check-input">
-                                <label for="EAWB" class="form-check-label">EAWB Agreement Signed</label>
-                            </div>
-                        </div>
-                    </aside>
-
                 </div>
             </div>
         </div>
