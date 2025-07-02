@@ -759,13 +759,13 @@ export const MasterRoutes: Routes = [
         },
       },
        {
-        path: 'BIClause',
+        path: 'blclause',
         component: BIclauseComponent,
         data: {
-          title: 'BIClause',
+          title: 'BL Clause',
           urls: [
             { title: 'Master', url: '/master' },
-            { title: 'BIClause' },
+            { title: 'BL Clause' },
           ],
         },
       },

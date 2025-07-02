@@ -3,7 +3,7 @@ export interface BLClause {
     ClauseDescription: string;
     Keyword: string;
     Sortorder?: number | null;
-    DefaultClause?: number | null;
+    DefaultClause?: string;
     createdOn?: Date;
     updatedOn?: Date | null;
     deletedAt?: Date | null;

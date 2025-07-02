@@ -98,20 +98,60 @@ sortDirection: string = 'asc';
 
   initForm() {
     this.roleForm = this.fb.group({
-      UserRoleName: ['', [Validators.required, Validators.maxLength(50)]],
-      UserRoleCode: ['', [Validators.required, Validators.maxLength(3), this.alphaNumericValidator()]],
-      LicenseType: ['', [Validators.maxLength(50)]],
+      UserRoleName: ['', [Validators.required, Validators.maxLength(50), this.alphaSpaceValidator()]],
+    UserRoleCode: ['', [
+      Validators.required,
+      Validators.maxLength(3),
+      Validators.minLength(3),
+      this.alphaValidator() 
+    ]],
+    LicenseType: ['', [
+      Validators.maxLength(50),
+      this.alphaSpaceValidator() 
+    ]],
       status: [{value: 'Active', disabled: false}, Validators.required]
     });
+    this.roleForm.get('UserRoleCode')?.valueChanges.subscribe(val => {
+      if (val) {
+        this.roleForm.get('UserRoleCode')?.setValue(val.toUpperCase(), { emitEvent: false });
+      }
+    });
   }
-
-  private alphaNumericValidator(): ValidatorFn {
+  
+  
+   private alphaValidator(): ValidatorFn {
     return (control: AbstractControl): {[key: string]: any} | null => {
       if (!control.value) return null;
-      const valid = /^[A-Za-z0-9]+$/.test(control.value);
-      return valid ? null : { invalidAlphaNumeric: true };
+      const valid = /^[A-Za-z]+$/.test(control.value);
+      return valid ? null : { invalidAlpha: true };
     };
   }
+
+   private alphaSpaceValidator(): ValidatorFn {
+    return (control: AbstractControl): {[key: string]: any} | null => {
+      if (!control.value) return null;
+      const valid = /^[A-Za-z\s]+$/.test(control.value);
+      return valid ? null : { invalidAlphaSpace: true };
+    };
+  }
+onKeyPress(event: KeyboardEvent, field: string) {
+ if (field === 'UserRoleCode') {
+      const pattern = /[A-Za-z]/;
+      if (!pattern.test(event.key)) {
+        event.preventDefault();
+      }
+  } else if (field === 'UserRoleName') {
+    const pattern = /[A-Za-z\s]/;
+    if (!pattern.test(event.key)) {
+      event.preventDefault();
+    }
+  } else if (field === 'LicenseType') {
+    const pattern = /[A-Za-z\s]/;
+    if (!pattern.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+}
 
   resetForm(): void {
     this.roleForm.get('status')?.disable();
@@ -291,17 +331,17 @@ applySorting() {
     return index;
   }
 
-  deleteRoleById(id: number) {
-    const dialogRef = this.dialog.open(DeleteWarningComponent);
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === true) {
-        this.settingsService.deleteRoleById(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess('Deleted!');
-          this.search();
-        });
-      }
-    });
-  }
+  // deleteRoleById(id: number) {
+  //   const dialogRef = this.dialog.open(DeleteWarningComponent);
+  //   dialogRef.afterClosed().subscribe((result) => {
+  //     if (result === true) {
+  //       this.settingsService.deleteRoleById(id).subscribe((resp: any) => {
+  //         this.appSettingService.showSuccess('Deleted!');
+  //         this.search();
+  //       });
+  //     }
+  //   });
+  // }
 
   resetPage(): void {
     this.roleList = [];
