@@ -80,7 +80,7 @@ export class BIclauseComponent implements OnInit {
       ClauseDescription: ['', [Validators.required, Validators.maxLength(500)]],
       Keyword: ['', [Validators.required, Validators.maxLength(5)]],
       Sortorder: ['', [Validators.pattern('^[0-9]*$')]],
-      DefaultClause: ['', [Validators.pattern('^[0-9]*$')]],
+      DefaultClause: [false],
       status: [{value: 'A', disabled: false}, Validators.required]
     });
   }
@@ -225,7 +225,7 @@ applySorting() {
         ClauseDescription: clause.ClauseDescription,
         Keyword: clause.Keyword,
         Sortorder: clause.Sortorder?.toString() || '',
-        DefaultClause: clause.DefaultClause?.toString() || '',
+        DefaultClause: clause.DefaultClause === 'Y',
         status: clause.status || 'A'
       });
     } else {
@@ -259,7 +259,7 @@ applySorting() {
       ClauseDescription: formValue.ClauseDescription,
       Keyword: formValue.Keyword,
       Sortorder: formValue.Sortorder ? parseInt(formValue.Sortorder) : null,
-      DefaultClause: formValue.DefaultClause ? parseInt(formValue.DefaultClause) : null,
+      DefaultClause: formValue.DefaultClause ? 'Y' : 'N',
       status: formValue.status,
       ...(this.isEditMode ? {updatedBy : userEmail} : {createdBy : userEmail})
     };
