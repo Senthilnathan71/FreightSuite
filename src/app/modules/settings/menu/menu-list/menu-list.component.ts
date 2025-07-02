@@ -68,7 +68,8 @@ modeOfPermissions = [
   { value: 'bar-chart-2', label: 'Reports' },
   { value: 'calendar', label: 'Calendar' },
   { value: 'mail', label: 'Mail' },
-  { value: 'shopping-cart', label: 'Shopping' }
+  { value: 'shopping-cart', label: 'Shopping' },
+  
 ];
   currentMenuId: number;
   TandCList: any;

@@ -25,7 +25,7 @@
                         Reset
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                        [disabled]="authorityForm.invalid" (click)="submitAuthorityForm()">
+                        [disabled]="authorityForm.invalid" (click)="submitAuthorityForm()"appPreventMultiClick>
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Update' : 'Save'}}
                     </button>
@@ -38,7 +38,7 @@
         <div class="card">
             <div class="card-body" [formGroup]="authorityForm">
                 <div class="row">
-                    <aside class="col-md-4">
+                    <!-- <aside class="col-md-4">
   <div class="custom-form-group custom-form-group-select">
     <ng-select formControlName="CompanyMasterSid" 
       [items]="companyList" 
@@ -50,28 +50,9 @@
     </ng-select>
     <label class="input-label">Company <span class="text-danger">*</span></label>
   </div>
-</aside>
+</aside> -->
 
 <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select">
-    <ng-select formControlName="BranchMasterSid" 
-      [items]="branchList" 
-      bindLabel="branchName"
-      bindValue="BranchMasterSid"
-      [disabled]="!selectedCompanyId">
-      <ng-option value="">Select Branch</ng-option>
-    </ng-select>
-    <label class="input-label">Branch <span class="text-danger">*</span></label>
-    @if(authorityForm.get('BranchMasterSid')?.touched && authorityForm.get('BranchMasterSid')?.invalid){
-    <div class="error-message">
-      @if(authorityForm.get('BranchMasterSid')?.hasError('required')){
-      <span>Branch is required</span>
-      }
-    </div>
-    }
-  </div>
-</aside>
-                    <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select">
                              <ng-select 
                                             class="ng-select" 
@@ -95,7 +76,47 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select 
+        formControlName="BranchMasterSid" 
+        [items]="branchList" 
+        bindLabel="branchName"
+        bindValue="BranchMasterSid"
+        placeholder="Select Branch">
+    </ng-select>
+    <label class="input-label">Location <span class="text-danger">*</span></label>
+    @if(authorityForm.get('BranchMasterSid')?.touched && authorityForm.get('BranchMasterSid')?.invalid){
+    <div class="error-message">
+      @if(authorityForm.get('BranchMasterSid')?.hasError('required')){
+      <span>Branch is required</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
+<!-- <aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select formControlName="BranchMasterSid" 
+      [items]="branchList" 
+      bindLabel="branchName"
+      bindValue="BranchMasterSid"
+      [disabled]="!selectedCompanyId">
+      <ng-option value="">Select Branch</ng-option>
+    </ng-select>
+    <label class="input-label">Location <span class="text-danger">*</span></label>
+    @if(authorityForm.get('BranchMasterSid')?.touched && authorityForm.get('BranchMasterSid')?.invalid){
+    <div class="error-message">
+      @if(authorityForm.get('BranchMasterSid')?.hasError('required')){
+      <span>Branch is required</span>
+      }
+    </div>
+    }
+  </div>
+</aside> -->
+                    
+
+                    <aside class="col-md-4">
   <div class="custom-form-group custom-form-group-select">
     <ng-select 
       formControlName="DepartmentMaster" 
@@ -116,7 +137,7 @@
   </div>
 </aside>
 
-                    <aside class="col-md-3">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             @if(isEditMode){
                             <select name="status" class="form-select" formControlName="status" id="text-input">
@@ -131,13 +152,7 @@
                         </div>
                     </aside>
 
-                    <!-- <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
-                                formControlName="Remarks" [textWithNumbers]="500"></textarea>
-                            <label for="text-input" class="input-label">Remarks</label>
-                        </div>
-                    </aside> -->
+                   
                 </div>
             </div>
         </div>
@@ -233,7 +248,21 @@
                             <div class="card">
                                 <div class="card-body">
                                     <div class="row">
-                                        <aside class="col-md-6">
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                                    formControlName="AuthorityLevel">
+                                                <label for="text-input" class="input-label">Approval Level <span class="text-danger">*</span></label>
+                                                @if(authorityDetailForm.get('AuthorityLevel')?.touched && authorityDetailForm.get('AuthorityLevel')?.invalid){
+                                                <div class="error-message">
+                                                    @if(authorityDetailForm.get('AuthorityLevel')?.hasError('required')){
+                                                    <span>Approval Level is required</span>
+                                                    }
+                                                </div>
+                                                }
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
                                             <div class="custom-form-group custom-form-group-select">
                                                 <ng-select formControlName="UserMasterSid" 
                                                     [items]="userResults" 
@@ -252,28 +281,29 @@
                                             </div>
                                         </aside>
 
-                                        <aside class="col-md-3">
-                                            <div class="custom-form-group">
-                                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
-                                                    formControlName="AuthorityLevel">
-                                                <label for="text-input" class="input-label">Approval Level <span class="text-danger">*</span></label>
-                                                @if(authorityDetailForm.get('AuthorityLevel')?.touched && authorityDetailForm.get('AuthorityLevel')?.invalid){
-                                                <div class="error-message">
-                                                    @if(authorityDetailForm.get('AuthorityLevel')?.hasError('required')){
-                                                    <span>Approval Level is required</span>
-                                                    }
-                                                </div>
-                                                }
-                                            </div>
-                                        </aside>
+                                        
 
-                                        <aside class="col-md-3">
-                                            <div class="custom-form-group custom-form-group-select">
-                                                <select name="FinalAuthority" class="form-select" formControlName="FinalAuthority">
-                                                    <option value="Y">Yes</option>
-                                                    <option value="N">No</option>
-                                                </select>
-                                                <label class="input-label">Final Level <span class="text-danger">*</span></label>
+                                        <aside class="col-md-4 d-flex align-items-center">
+  <div class="form-check form-check-inline ps-0">
+    <div class="form-check d-flex align-items-center">
+      <input type="checkbox" id="FinalAuthority" class="form-check-input sm"
+        [checked]="authorityDetailForm.get('FinalAuthority')?.value === 'Y'"
+        (change)="onFinalAuthorityChange($event)">
+      <label for="FinalAuthority" class="form-check-label sm">Final Level</label>
+    </div>
+    @if(authorityDetailForm.get('FinalAuthority')?.touched && authorityDetailForm.get('FinalAuthority')?.invalid){
+      <div class="error-message">
+        <span>Final Level selection is required</span>
+      </div>
+
+    }
+  </div>
+</aside>
+<aside class="col-md-8">
+                                            <div class="custom-form-group">
+                                                <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
+                                                    formControlName="Remarks"></textarea>
+                                                <label class="input-label">Remarks</label>
                                             </div>
                                         </aside>
 
@@ -291,13 +321,8 @@
                                             </div>
                                         </aside>
 
-                                        <aside class="col-md-8">
-                                            <div class="custom-form-group">
-                                                <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
-                                                    formControlName="Remarks"></textarea>
-                                                <label class="input-label">Remarks</label>
-                                            </div>
-                                        </aside>
+
+                                        
                                     </div>
                                 </div>
                             </div>
