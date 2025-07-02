@@ -1042,6 +1042,14 @@ export class MasterService {
       })
     )
   }
+  getAllCompaniesSearch() {
+    return this.http.get<{ data: any }>('company/search').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
 
   //company-master
   searchCompanyList(payload) {

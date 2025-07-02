@@ -86,13 +86,15 @@ export class DoctypeComponent implements OnInit {
 
 	initDocumentForm() {
 		this.documentForm = this.fb.group({
-			CompanyMasterSid : [null,[Validators.required]],
-			BranchMasterSid: [null, [Validators.required]],
+			// BranchMasterSid: [null, [Validators.required]],
 			DocumentTypeName: ['', [Validators.required]],
 			DocumentTypeCode: ['', [Validators.required]],
+			Type : [''],
 			CurrencyCode: [null, [Validators.required]],
 			COALedger: ['', [Validators.required]],
 			Subledger: ['', [Validators.required]],
+			ReportTitle : [''],
+			ReportFooter : [''],
 			DocumentStartingNo: ['', [Validators.required]],
 			DocumentSeparator: [null, [Validators.required]],
 			DocumentSLNoLength: ['', [Validators.required]],
@@ -139,15 +141,15 @@ export class DoctypeComponent implements OnInit {
 						status: data.status === 'A' ? 'Active' : 'Suspended',
 					})
 					this.getBranchesByCompanyId({CompanyMasterSid : data.CompanyMasterSid})
-					if(data.CompanyFlag === 'Y'){
-						this.documentForm.get('CompanyValue').enable();
-					}
-					if(data.BranchFlag === 'Y'){
-						this.documentForm.get('BranchValue').enable();
-					}
-					if(data.DocumentFlag === 'Y'){
-						this.documentForm.get('DocumentValue').enable();
-					}
+					// if(data.CompanyFlag === 'Y'){
+					// 	this.documentForm.get('CompanyValue').enable();
+					// }
+					// if(data.BranchFlag === 'Y'){
+					// 	this.documentForm.get('BranchValue').enable();
+					// }
+					// if(data.DocumentFlag === 'Y'){
+					// 	this.documentForm.get('DocumentValue').enable();
+					// }
 				} else {
 					this.appSettingService.showError('Error Loading Document Type');
 				}
@@ -168,11 +170,15 @@ export class DoctypeComponent implements OnInit {
 			return;
 		}
 
+		const BranchMasterSid = this.appSettingService.userSettingSource.value['userBranchMaster'][0].branchMaster.BranchMasterSid;
+		const CompanyMasterSid = this.appSettingService.userSettingSource.value['userBranchMaster'][0].companyMaster.CompanyMasterSid;
 		const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
-		const formValue = this.documentForm.value;
+		const formValue = this.documentForm.getRawValue();
 
 		const payload = {
 			...formValue,
+			CompanyMasterSid : CompanyMasterSid,
+			BranchMasterSid : BranchMasterSid,
 			COALedger : Number(formValue.COALedger),
 			Subledger : Number(formValue.Subledger),
 			CompanyFlag: formValue.CompanyFlag ? 'Y' : 'N',

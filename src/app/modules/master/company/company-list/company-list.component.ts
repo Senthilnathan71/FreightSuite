@@ -11,10 +11,11 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 import { MasterService } from 'src/app/modules/master/master.service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 @Component({
   selector: 'app-company-list',
   standalone: true,
-  imports: [FeatherModule, FormsModule, CommonModule,RouterModule, ListpageComponent],
+  imports: [FeatherModule, FormsModule, CommonModule,RouterModule, ListpageComponent,NgbPaginationModule],
   templateUrl: './company-list.component.html',
   styleUrl: './company-list.component.scss',
 })
@@ -22,6 +23,7 @@ export class CompanyListComponent implements OnInit {
   searchType = 'companyName';
   filterValue = '';
   results: any[] = [];
+  searchResults :any[] = []
   companyList: any[] = []
   searchPerformed = false;
   userData : any;
@@ -51,6 +53,39 @@ export class CompanyListComponent implements OnInit {
         }
       }
     )
+    this.masterService.getAllCompaniesSearch().subscribe(
+      (resp: any) => {
+        console.log(resp);
+        this.results = resp.flatMap(item => {
+          if (!item.branchMaster || item.branchMaster.length === 0) {
+            return ({
+              CompanyMasterSid : item.CompanyMasterSid,
+              companyName: item.companyName,
+              companyCode: item.companyCode,
+              branchName: '',
+              city: '',
+              state: '',
+              country: '',
+              gst: '',
+              status: item.status === 'A' ? 'Active' : 'Suspended'
+            })
+          }
+          return item.branchMaster.map(branch => ({
+            CompanyMasterSid: item.CompanyMasterSid,
+            companyName: item.companyName,
+            companyCode: item.companyCode,
+            branchName: branch.branchName,
+            city: branch.cityMaster?.cityName || '',
+            state: branch.stateMaster?.stateName || '',
+            country: branch.countryMaster?.countryName || '',
+            gst: branch.taxRegistrationNo,
+            status: branch.status === 'A' ? 'Active' : 'Suspended'
+          }))
+        })
+        console.log(this.results);
+      }
+    )
+    
    }
 
    onSearch(event: { type: string, value: string }) {
@@ -61,17 +96,35 @@ export class CompanyListComponent implements OnInit {
 }
 
   search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue,
-    }
-    this.masterService.searchCompanyList(payload).subscribe((res: any) => {
-      this.results = res;
-      this.applySorting();
+    console.log('Entered search');
+    if (!this.filterValue) {
+      this.searchResults = this.results;
       this.searchPerformed = true;
-      this.updatePaginatedData();  // Update paginated data
-      this.totalLengthOfCollection = this.results.length || 0;
+      this.applySorting();
+      this.updatePaginatedData();
+      this.totalLengthOfCollection = this.searchResults.length;
+      console.log('if', this.companyList);
+      return;
+    }
+
+    const filterValue = this.filterValue.toLowerCase();
+
+    this.searchResults = this.results.filter(item => {
+      return (
+        (item.companyName && item.companyName.toLowerCase().includes(filterValue)) ||
+        (item.companyCode && item.companyCode.toLowerCase().includes(filterValue)) ||
+        (item.branchName && item.branchName.toLowerCase().includes(filterValue)) ||
+        (item.city && item.city.toLowerCase().includes(filterValue)) ||
+        (item.state && item.state.toLowerCase().includes(filterValue)) ||
+        (item.country && item.country.toLowerCase().includes(filterValue)) ||
+        (item.gst && item.gst.toLowerCase().includes(filterValue)) ||
+        (item.status && item.status.toLowerCase().includes(filterValue))
+      );
     });
+    this.applySorting();
+    this.updatePaginatedData();
+    this.searchPerformed = true;
+    this.totalLengthOfCollection = this.searchResults.length;
   }
   sort(column: string) {
   if (this.sortColumn === column) {
@@ -86,7 +139,8 @@ export class CompanyListComponent implements OnInit {
 }
 
 applySorting() {
-  this.results.sort((a, b) => {
+  console.log('Entered Sorting')
+  this.searchResults.sort((a, b) => {
     // For company-level sorting
     if (['companyName', 'companyCode'].includes(this.sortColumn)) {
       return this.compareValues(a[this.sortColumn], b[this.sortColumn]);
@@ -137,7 +191,7 @@ private compareValues(valueA: any, valueB: any): number {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.companyList = this.results.slice(startIndex, endIndex);
+    this.companyList = this.searchResults.slice(startIndex, endIndex);
   }
 
   trackByIndex(index: number, item: any): number {
@@ -172,30 +226,31 @@ private compareValues(valueA: any, valueB: any): number {
   }
 
   report(): void {
-    const formattedData = this.companyList.flatMap(item => {
-      if (!item.branchMaster || item.branchMaster.length === 0) {
-        return ({
-          companyName : item.companyName,
-          companyCode : item.companyCode,
-          branchName : '',
-          city : '',
-          state : '',
-          country : '',
-          gst : '',
-          status: item.status === 'A' ? 'Active' : 'Suspended'
-      })
-      }
-      return item.branchMaster.map(branch=>({
-        companyName : item.companyName,
-          companyCode : item.companyCode,
-          branchName : branch.branchName,
-          city : branch.cityMaster?.cityName || '',
-          state : branch.stateMaster?.stateName || '',
-          country : branch.countryMaster?.countryName || '',
-          gst : branch.taxRegistrationNo,
-          status: branch.status === 'A' ? 'Active' : 'Suspended'
-      }))
-    });
+    const formattedData = this.companyList;
+    // const formattedData = this.companyList.flatMap(item => {
+    //   if (!item.branchMaster || item.branchMaster.length === 0) {
+    //     return ({
+    //       companyName : item.companyName,
+    //       companyCode : item.companyCode,
+    //       branchName : '',
+    //       city : '',
+    //       state : '',
+    //       country : '',
+    //       gst : '',
+    //       status: item.status === 'A' ? 'Active' : 'Suspended'
+    //   })
+    //   }
+    //   return item.branchMaster.map(branch=>({
+    //     companyName : item.companyName,
+    //       companyCode : item.companyCode,
+    //       branchName : branch.branchName,
+    //       city : branch.cityMaster?.cityName || '',
+    //       state : branch.stateMaster?.stateName || '',
+    //       country : branch.countryMaster?.countryName || '',
+    //       gst : branch.taxRegistrationNo,
+    //       status: branch.status === 'A' ? 'Active' : 'Suspended'
+    //   }))
+    // });
 
         const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
 
@@ -214,5 +269,8 @@ private compareValues(valueA: any, valueB: any): number {
             fileName: 'Company-Report', 
             title: companyName
         });
+    }
+    clearFilterValue(){
+      this.filterValue = '';
     }
 }

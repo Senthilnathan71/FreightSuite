@@ -40,7 +40,7 @@
                 <div class="card-body">
                     <div class="row">
 
-                        <aside class="col-md-6">
+                        <!-- <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="CompanyMasterSid" [items]="companyList" bindLabel="companyName"
                                     bindValue="CompanyMasterSid" placeholder="Select Company" (change)="getBranchesByCompanyId($event)">
@@ -55,8 +55,8 @@
                                     </div>
                                 }
                             </div>
-                        </aside>
-                        <aside class="col-md-6">
+                        </aside> -->
+                        <!-- <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="BranchMasterSid" [items]="branchList" bindLabel="branchName"
                                     bindValue="BranchMasterSid" placeholder="Select Branch">
@@ -71,7 +71,7 @@
                                     </div>
                                 }
                             </div>
-                        </aside>
+                        </aside> -->
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -110,19 +110,19 @@
                         </aside>
                         <aside class="col-md-12">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" 
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Type" [textWithNumbers]="100"
                                     >
                                 <label for="text-input" class="input-label">Type <span
                                         class="text-danger">*</span></label>
-                                <!-- @if(documentForm.get('DocumentTypeCode').touched && documentForm.get('DocumentTypeCode').invalid){
+                                @if(documentForm.get('Type').touched && documentForm.get('Type').invalid){
                                     <div class="error-message">
-                                        @if(documentForm.get('DocumentTypeCode').hasError('required')){
+                                        @if(documentForm.get('Type').hasError('required')){
                                             <span>Code is required</span>
-                                        } @else if(documentForm.get('DocumentTypeCode').hasError('maxlength')){
-                                            <span>Max 5 Characters</span>
+                                        } @else if(documentForm.get('Type').hasError('maxlength')){
+                                            <span>Max 100 Characters</span>
                                         }
                                     </div>
-                                } -->
+                                }
                             </div>
                         </aside>
                         <aside class="col-md-12">
@@ -177,8 +177,8 @@
                         </aside>
                         <aside class="col-md-6">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    >
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ReportTitle"
+                                   [textWithNumbers]="100" >
                                 <label for="text-input" class="input-label">Report Title <span
                                         class="text-danger"></span></label>
 
@@ -188,21 +188,11 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <textarea id="" class="custom-input-field sm" placeholder="" rows="1"
-                                     ></textarea>
+                                     formControlName="ReportFooter" [textWithNumbers]="100"></textarea>
                                 <label for="" class="input-label">Report Footer <span class="text-danger"></span></label>
 
                             </div>
                         </aside>
-
-
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6" [formGroup]="documentForm">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="row">
 
                         <aside class="col-md-6">
                             <div class="custom-form-group">
@@ -239,6 +229,15 @@
                             </div>
                         </aside>
 
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6" [formGroup]="documentForm">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row">
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -258,9 +257,6 @@
                                 }
                             </div>
                         </aside>
-
-
-
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="ResetValue" [items]="resetValues" bindLabel="value"
