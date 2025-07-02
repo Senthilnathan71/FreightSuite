@@ -2539,55 +2539,57 @@ getAllHawbStocks(){
 
   getAllInco() {
     return this.http.get<{ data: Inco[] }>('inco').pipe(
-      map((resp) => {
-       let response = resp.data;
+      map((resp: any) => {
+        let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
-  getIncoById(IncoMasterSid: number) {
-    return this.http.get<{data: Inco}>(`inco/fetch/${IncoMasterSid}`).pipe(
+
+  getIncoById(id: number) {
+    return this.http.get<{ data: Inco }>(`inco/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
       })
-    )
+    );
   }
 
-  createNewInco(payload) {
-    return this.http.post<{ data: any }>('inco/create', payload).pipe(
+  createInco(payload: any) {
+    return this.http.post('inco/create', payload).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
       })
+    );
+  }
+
+  editInco(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`inco/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+
     )
   }
 
-  updateIncoById(IncoMasterSid: number, payload) {
-    return this.http.patch<{ data: any }>(`inco/update/${IncoMasterSid}`, payload).pipe(
+  softDeleteInco(id: number) {
+    return this.http.delete<{ data: any }>(`inco/delete/${id}`).pipe(
       map((resp) => {
-        let response = resp;
+        let response = resp.data;
         return response;
       })
-    )
-  }
-
-  deleteIncoById(IncoMasterSid: number) {
-    return this.http.delete<{ data: any }>(`inco/delete/${IncoMasterSid}`).pipe(
-      map((resp) => {
-        let response = resp;
-        return response;
-      })
-    )
+    );
   }
 
   searchInco(payload) {
-    return this.http.post('inco/search-list', payload).pipe(
+    return this.http.post("inco/search-list", payload).pipe(
       map((res: any) => {
         return res.data;
       })
-    )
+    );
   }
 
 }

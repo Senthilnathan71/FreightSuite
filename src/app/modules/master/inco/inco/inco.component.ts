@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { take } from 'rxjs';
@@ -29,11 +29,12 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
     NgSelectModule,
     ReactiveFormsModule,
     FormsModule,
-    NgbPaginationModule,
+    NgbPagination,
     ListpageComponent,
     OnlyTextDirective,
     TextWithNumbersDirective,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    NgbModalModule
   ],
   templateUrl: './inco.component.html',
   styleUrl: './inco.component.scss'
@@ -66,10 +67,7 @@ export class IncoComponent{
     this.isFavorite = !this.isFavorite;
   } 
 
-  statusOptions = [
-    { id: 'A', name: 'Active' },
-    { id: 'S', name: 'Suspended' }
-  ];
+  statusList = ["Active", "Suspended"];
 
   incoTypeOptions = [
     { id: 'Sea' , name: 'Sea'},
@@ -104,7 +102,7 @@ export class IncoComponent{
       }
     )
     this.route.paramMap.subscribe(params => {
-      this.IncoMasterSid = +params.get('IncoMasterSid');
+      this.IncoMasterSid = +params.get('id');
       if (this.IncoMasterSid) {
         this.isEditMode = true;
         this.loadIncoData(this.IncoMasterSid);
@@ -135,7 +133,7 @@ export class IncoComponent{
     });
   }
    resetForm(): void {
-    this.incoForm.get('Status')?.disable();
+    this.incoForm.get('status')?.disable();
     this.incoForm.reset({
       Status: 'Active'
     });
@@ -147,21 +145,21 @@ export class IncoComponent{
     this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
    }
 
-   openEditModal(content: any, IncoMasterSid: number): void {
+   openEditModal(content: any, id: number): void {
     this.isEditMode = true;
-    this.IncoMasterSid = IncoMasterSid;
-    this.getIncoById(IncoMasterSid).add(() => {
+    this.IncoMasterSid = id;
+    this.getIncoById(id).add(() => {
     this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
   });
    }
 
-   updateIncoById(IncoMasterSid: number, content: any) {
+   editInco(id: number, content: any) {
     this.isEditMode = true;
-    this.IncoMasterSid = IncoMasterSid;
-    this.masterService.getIncoById(IncoMasterSid).pipe(take(1)).subscribe({
+    this.IncoMasterSid = id;
+    this.masterService.getIncoById(id).pipe(take(1)).subscribe({
       next: (inco: any) => {
         this.incoData = inco;
-        this.incoForm.get('Status')?.enable();
+        this.incoForm.get('status')?.enable();
         this.incoForm.patchValue({
           IncoCode: inco.IncoCode,
           IncoName: inco.IncoName,
@@ -179,14 +177,15 @@ export class IncoComponent{
    }
 
    closeModal(): void {
-    if (this.modalRef) {
+    if (this.modalRef && typeof this.modalRef.close === 'function') {
       this.modalRef.close();
+      this.modalRef = null!;
     }
   }
 
-  getIncoById(IncoMasterSid: number) {
+  getIncoById(id: number) {
     this.resetForm();
-    return this.masterService.getIncoById(IncoMasterSid).pipe(take(1)).subscribe(
+    return this.masterService.getIncoById(id).pipe(take(1)).subscribe(
       (inco: any) => {
         console.log('Inco from backend:', inco);
         this.incoForm.patchValue({
@@ -204,8 +203,8 @@ export class IncoComponent{
   }
 
   onSubmit() {
-    if (this.incoForm.get('Status')?.disabled) {
-      this.incoForm.get('Status')?.enable();
+    if (this.incoForm.get('status')?.disabled) {
+      this.incoForm.get('status')?.enable();
     }
     if (this.incoForm.invalid) {
       this.incoForm.markAllAsTouched();
@@ -230,7 +229,7 @@ export class IncoComponent{
       console.log('payload', payload);
 
       if (this.isEditMode) {
-        this.masterService.updateIncoById(this.IncoMasterSid, payload).subscribe(
+        this.masterService.editInco(this.IncoMasterSid, payload).subscribe(
           (resp: any) => {
             console.log(resp.message);
             if (resp.Status) {
@@ -247,7 +246,7 @@ export class IncoComponent{
           }
         );
       } else {
-        this.masterService.createNewInco(payload).subscribe(
+        this.masterService.createInco(payload).subscribe(
           (resp: any) => {
             console.log(resp);
             if (resp.Status) {
@@ -272,8 +271,8 @@ export class IncoComponent{
     S: 'Suspended'
   };
 
-  loadIncoData(IncoMasterSid: number) {
-    this.masterService.getIncoById(IncoMasterSid).subscribe(
+  loadIncoData(id: number) {
+    this.masterService.getIncoById(id).subscribe(
       (data) => {
         this.incoForm.patchValue({
           ...data,
@@ -353,11 +352,11 @@ updatePaginationData(): void {
     return index;
   }
 
-  deleteIncoById(IncoMasterSid) {
+  softDeleteInco(id) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
-        this.masterService.deleteIncoById(IncoMasterSid).subscribe((resp: any) => {
+        this.masterService.softDeleteInco(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
           this.router.navigate(['master/inco']);
           this.search();
@@ -412,7 +411,7 @@ updatePaginationData(): void {
       const payload = { MenuMasterSid: this.currentMenuId };
       this.masterService.getTandCByCondition(payload).subscribe(
         (resp: any) => {
-          if (resp.status) {
+          if (resp.Status) {
             this.TandCList = resp.data;
             const modalRef = this.modalService.open(TermsAndConditionsComponent, {
               size: 'lg',

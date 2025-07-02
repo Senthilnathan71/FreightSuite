@@ -57,12 +57,12 @@
                             <td>
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
                                     <button class="btn btn-sm btn-link text-primary p-0 mx-2" 
-                                        (click)="updateIncoById(item.IncoMasterSid, content)"
+                                        (click)="editInco(item.IncoMasterSid, content)"
                                         title="Edit">
                                         <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </button>
                                     <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" 
-                                        (click)="deleteIncoById(item.IncoMasterSid)"
+                                        (click)="softDeleteInco(item.IncoMasterSid)"
                                         title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </button>
@@ -198,7 +198,7 @@
 
 <aside class="col-md-6">
   <div class="custom-form-group custom-form-group-select">
-    <ng-select [items]="statusOptions" 
+    <ng-select [items]="statusList" 
               formControlName="Status"
               [class.is-invalid]="incoForm.get('Status')?.invalid && incoForm.get('Status')?.touched"
               [disabled]="incoForm.get('Status')?.disabled">
@@ -227,7 +227,7 @@
             }
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-info" 
-                (click)="onSubmit()" 
+                (click)="onSubmit(); modal.close()" 
                 [disabled]="btnDisable || incoForm.invalid">
                 {{ isEditMode ? 'Update' : 'Save' }}
             </button>
