@@ -36,13 +36,12 @@ import { ServiceLevelListComponent } from './service-level/service-level-list/se
 import { ServiceLevelComponent } from './service-level/service-level.component';
 import { TimeZoneComponent } from './time-zone/time-zone.component';
 import { TimeZoneListComponent } from './time-zone/time-zone-list/time-zone-list.component';
-import { IncoComponent } from './inco/inco.component';
-import { IncoListComponent } from './inco/inco-list/inco-list.component';
 import { ChargeListComponent } from './charge/charge-list/charge-list.component';
 import { ChargeEntryComponent } from './charge/charge-entry/charge-entry.component';
 import { TermsConditionListComponent } from './terms-condition/terms-condition-list/terms-condition-list.component';
 import { TermsConditionEntryComponent } from './terms-condition/terms-condition-entry/terms-condition-entry.component';
 import { HSSACComponent } from './HS-SAC/hs-sac/hs-sac.component';
+import { IncoComponent } from './inco/inco/inco.component';
 import { ZoneComponent } from './zone/zone/zone.component';
 import { CityComponent } from './city/city/city.component';
 import { ChargegroupComponent } from './chargeGroup/chargegroup/chargegroup.component';
@@ -527,22 +526,6 @@ export const MasterRoutes: Routes = [
         },
       },
       {
-        path: 'inco/list',
-        component: IncoListComponent,
-        data: {
-          title: 'Inco',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Inco' }],
-        },
-      },
-      {
-        path: 'inco/entry',
-        component: IncoComponent,
-        data: {
-          title: 'Inco',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Inco' }],
-        },
-      },
-      {
         path: 'time-zone/list',
         component: TimeZoneListComponent,
         data: {
@@ -654,6 +637,25 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: "Master", url: "/master" },
             { title: "Division" },
+          ],
+        },
+      },
+      {
+        path: 'inco',
+        component: IncoComponent,
+        data: {
+          title: 'Inco',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Inco' }],
+        },
+      },
+      {
+        path: "inco/:IncoMasterSid",
+        component: IncoComponent,
+        data: {
+          title: "Inco",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Inco" },
           ],
         },
       },
