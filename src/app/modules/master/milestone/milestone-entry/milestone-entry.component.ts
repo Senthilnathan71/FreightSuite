@@ -10,6 +10,9 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-milestone-entry',
@@ -241,5 +244,41 @@ export class MilestoneEntryComponent implements OnInit {
 			}
 		);
 	}
+  openEmail() {
+  if (!this.milestoneData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.milestoneData;
+  modalRef.componentInstance.idLabel = 'Milestone Id';
+  modalRef.componentInstance.idValue = this.milestoneData?.milestoneId;
+}
+
+openAuthority() {
+  if (!this.milestoneData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.milestoneData;
+  modalRef.componentInstance.idLabel = 'Milestone Id';
+  modalRef.componentInstance.idValue = this.milestoneData?.milestoneId;
+}
+
+openEDoc() {
+  if (!this.milestoneData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.milestoneData;
+  modalRef.componentInstance.idLabel = 'Milestone Id';
+  modalRef.componentInstance.idValue = this.milestoneData?.milestoneId;
+}
+
 
 }

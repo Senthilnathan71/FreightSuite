@@ -16,6 +16,9 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-package-type-list',
@@ -343,5 +346,41 @@ applySorting() {
 			}
 		);
 	}
+  openEmail() {
+  if (!this.packageData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.packageData;
+  modalRef.componentInstance.idLabel = 'Package Type Id';
+  modalRef.componentInstance.idValue = this.packageData?.PackageTypeMasterSid;
+}
+
+openAuthority() {
+  if (!this.packageData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.packageData;
+  modalRef.componentInstance.idLabel = 'Package Type Id';
+  modalRef.componentInstance.idValue = this.packageData?.PackageTypeMasterSid;
+}
+
+openEDoc() {
+  if (!this.packageData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.packageData;
+  modalRef.componentInstance.idLabel = 'Package Type Id';
+  modalRef.componentInstance.idValue = this.packageData?.PackageTypeMasterSid;
+}
+
 
 }

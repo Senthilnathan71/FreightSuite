@@ -19,6 +19,9 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 @Component({
   selector: 'app-inco',
   standalone: true,
@@ -431,4 +434,40 @@ updatePaginationData(): void {
         }
       );
     }
+    openEmail() {
+  if (!this.incoData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.incoData;
+  modalRef.componentInstance.idLabel = 'Inco Id';
+  modalRef.componentInstance.idValue = this.incoData?.IncoMasterSid;
+}
+
+openAuthority() {
+  if (!this.incoData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.incoData;
+  modalRef.componentInstance.idLabel = 'Inco Id';
+  modalRef.componentInstance.idValue = this.incoData?.IncoMasterSid;
+}
+
+openEDoc() {
+  if (!this.incoData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.incoData;
+  modalRef.componentInstance.idLabel = 'Inco Id';
+  modalRef.componentInstance.idValue = this.incoData?.IncoMasterSid;
+}
+
 }

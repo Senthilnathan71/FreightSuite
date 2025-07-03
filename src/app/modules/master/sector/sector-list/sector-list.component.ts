@@ -15,6 +15,10 @@ import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 
 @Component({
@@ -60,6 +64,8 @@ export class SectorComponent implements OnInit {
   isFavorite: boolean = false;
   sortColumn: string = 'sectorName'; 
   sortDirection: string = 'asc';
+  currentMenuId: number;
+  TandCList: any[]=[];
 
   toggleFavorite() {
      this.isFavorite = !this.isFavorite;
@@ -396,4 +402,68 @@ applySorting() {
     modalRef.componentInstance.idLabel = 'Sector Id';
     modalRef.componentInstance.idValue = this.sectorData?.SectorMasterSid;
   }
+
+  
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.SectorMasterSid;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
+
+  openEmail() {
+  if (!this.sectorData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.sectorData;
+  modalRef.componentInstance.idLabel = 'Sector Id';
+  modalRef.componentInstance.idValue = this.sectorData?.SectorMasterSid;
+}
+
+openAuthority() {
+  if (!this.sectorData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.sectorData;
+  modalRef.componentInstance.idLabel = 'Sector Id';
+  modalRef.componentInstance.idValue = this.sectorData?.SectorMasterSid;
+}
+
+openEDoc() {
+  if (!this.sectorData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.sectorData;
+  modalRef.componentInstance.idLabel = 'Sector Id';
+  modalRef.componentInstance.idValue = this.sectorData?.SectorMasterSid;
+}
+
 }

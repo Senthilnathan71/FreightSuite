@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Authority' : 'Create Authority'}}</h4>
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Authorize' : 'Create Authorize'}}</h4>
                 @if(isEditMode){
                 <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showAuthorityInfo()">
                     <i class="fas fs-6 fa-info-circle"></i>
@@ -16,7 +16,7 @@
                             <i class="fas fa-clipboard me-1"></i> Terms & Condition
                         </button>
                     }
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
+                    <button type="button" (click)="closeModal()" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>

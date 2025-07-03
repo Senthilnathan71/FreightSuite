@@ -18,6 +18,9 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 
 
@@ -309,5 +312,41 @@ export class PostMasterViewComponent {
 			}
 		);
 	}
+  openEmail() {
+  if (!this.portData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.portData;
+  modalRef.componentInstance.idLabel = 'Port Id';
+  modalRef.componentInstance.idValue = this.portData?.PortMasterSid;
+}
+
+openAuthority() {
+  if (!this.portData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.portData;
+  modalRef.componentInstance.idLabel = 'Port Id';
+  modalRef.componentInstance.idValue = this.portData?.PortMasterSid;
+}
+
+openEDoc() {
+  if (!this.portData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.portData;
+  modalRef.componentInstance.idLabel = 'Port Id';
+  modalRef.componentInstance.idValue = this.portData?.PortMasterSid;
+}
+
 
 }

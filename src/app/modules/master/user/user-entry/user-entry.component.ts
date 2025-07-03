@@ -15,6 +15,9 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
 	selector: 'app-user-entry',
@@ -355,4 +358,41 @@ export class UserEntryComponent implements OnInit {
 			}
 		);
 	}
+
+	openEmail() {
+  if (!this.userData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.userData;
+  modalRef.componentInstance.idLabel = 'User Id';
+  modalRef.componentInstance.idValue = this.userData?.UserMasterSid;
+}
+
+openAuthority() {
+  if (!this.userData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.userData;
+  modalRef.componentInstance.idLabel = 'User Id';
+  modalRef.componentInstance.idValue = this.userData?.UserMasterSid;
+}
+
+openEDoc() {
+  if (!this.userData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.userData;
+  modalRef.componentInstance.idLabel = 'User Id';
+  modalRef.componentInstance.idValue = this.userData?.UserMasterSid;
+}
+
 }

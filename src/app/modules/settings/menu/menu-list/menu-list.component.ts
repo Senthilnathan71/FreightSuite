@@ -15,6 +15,9 @@ import { SettingsService } from '../../settings.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from '../../email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { EdocComponent } from '../../edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-menu-list',
@@ -69,6 +72,7 @@ modeOfPermissions = [
   { value: 'calendar', label: 'Calendar' },
   { value: 'mail', label: 'Mail' },
   { value: 'shopping-cart', label: 'Shopping' },
+  { value: 'disc', label: 'Disc' }
   
 ];
   currentMenuId: number;
@@ -447,5 +451,41 @@ applySorting() {
 			}
 		);
 	}
+  openEmail() {
+  if (!this.menuData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.menuData;
+  modalRef.componentInstance.idLabel = 'Menu Id';
+  modalRef.componentInstance.idValue = this.menuData?.MenuMasterSid;
+}
+
+openAuthority() {
+  if (!this.menuData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.menuData;
+  modalRef.componentInstance.idLabel = 'Menu Id';
+  modalRef.componentInstance.idValue = this.menuData?.MenuMasterSid;
+}
+
+openEDoc() {
+  if (!this.menuData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.menuData;
+  modalRef.componentInstance.idLabel = 'Menu Id';
+  modalRef.componentInstance.idValue = this.menuData?.MenuMasterSid;
+}
+
 
 }

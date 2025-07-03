@@ -172,7 +172,7 @@ applySorting() {
   }
 
   navigateToCreateGeneration() {
-    this.router.navigate(['master/generation/entry'])
+    this.router.navigate(['master/hawbstock/entry'])
   }
 
   resetPage() {

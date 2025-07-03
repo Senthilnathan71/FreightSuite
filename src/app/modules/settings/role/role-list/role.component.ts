@@ -15,6 +15,9 @@ import { SettingsService } from '../../settings.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from '../../email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { EdocComponent } from '../../edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-role',
@@ -407,5 +410,42 @@ applySorting() {
 			}
 		);
 	}
+
+  openEmail() {
+  if (!this.roleData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.roleData;
+  modalRef.componentInstance.idLabel = 'Role Id';
+  modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
+}
+
+openAuthority() {
+  if (!this.roleData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.roleData;
+  modalRef.componentInstance.idLabel = 'Role Id';
+  modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
+}
+
+openEDoc() {
+  if (!this.roleData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.roleData;
+  modalRef.componentInstance.idLabel = 'Role Id';
+  modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
+}
+
 
 }

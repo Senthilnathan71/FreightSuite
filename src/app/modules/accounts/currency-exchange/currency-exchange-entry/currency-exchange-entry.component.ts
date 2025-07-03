@@ -10,6 +10,10 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-currency-exchange-entry',
@@ -40,6 +44,9 @@ export class CurrencyExchangeEntryComponent implements OnInit {
 	today = this.calendar.getToday();
 	todayDate = new Date(this.today.year,this.today.month,this.today.day);
   currencyExchangeData : any;
+  currentMenuId: number;
+  TandCList: any[]=[];
+  currentClauseId: any;
 
   constructor(
     private fb: FormBuilder,
@@ -250,4 +257,67 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     modalRef.componentInstance.idLabel = 'Currency Exchange Id';
     modalRef.componentInstance.idValue = this.currencyExchangeData?.CurrencyExchangeSid;
   }
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.currentClauseId;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
+
+  openEmail() {
+  if (!this.currencyExchangeData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.currencyExchangeData;
+  modalRef.componentInstance.idLabel = 'Currency Exchange Id';
+  modalRef.componentInstance.idValue = this.currencyExchangeData?.CurrencyExchangeSid;
+}
+
+openAuthority() {
+  if (!this.currencyExchangeData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.currencyExchangeData;
+  modalRef.componentInstance.idLabel = 'Currency Exchange Id';
+  modalRef.componentInstance.idValue = this.currencyExchangeData?.CurrencyExchangeSid;
+}
+
+openEDoc() {
+  if (!this.currencyExchangeData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.currencyExchangeData;
+  modalRef.componentInstance.idLabel = 'Currency Exchange Id';
+  modalRef.componentInstance.idValue = this.currencyExchangeData?.CurrencyExchangeSid;
+}
+
+
 }

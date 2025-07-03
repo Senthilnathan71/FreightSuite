@@ -13,6 +13,9 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-state-entry',
@@ -307,4 +310,40 @@ export class StateEntryComponent implements OnInit {
 			}
 		);
 	}
+  openEmail() {
+  if (!this.stateData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.stateData;
+  modalRef.componentInstance.idLabel = 'State Id';
+  modalRef.componentInstance.idValue = this.stateData?.StateMasterSid;
+}
+
+openAuthority() {
+  if (!this.stateData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.stateData;
+  modalRef.componentInstance.idLabel = 'State Id';
+  modalRef.componentInstance.idValue = this.stateData?.StateMasterSid;
+}
+
+openEDoc() {
+  if (!this.stateData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.stateData;
+  modalRef.componentInstance.idLabel = 'State Id';
+  modalRef.componentInstance.idValue = this.stateData?.StateMasterSid;
+}
+
 }

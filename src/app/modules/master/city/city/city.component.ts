@@ -18,6 +18,9 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { ListpageComponent} from 'src/app/component/listpage/listpage.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-city',
@@ -489,5 +492,41 @@ applySorting() {
       }
     );
   }
+  openEmail() {
+  if (!this.cityData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.cityData;
+  modalRef.componentInstance.idLabel = 'City Id';
+  modalRef.componentInstance.idValue = this.cityData?.CityMasterSid;
+}
+
+openAuthority() {
+  if (!this.cityData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.cityData;
+  modalRef.componentInstance.idLabel = 'City Id';
+  modalRef.componentInstance.idValue = this.cityData?.CityMasterSid;
+}
+
+openEDoc() {
+  if (!this.cityData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.cityData;
+  modalRef.componentInstance.idLabel = 'City Id';
+  modalRef.componentInstance.idValue = this.cityData?.CityMasterSid;
+}
+
   
 }
