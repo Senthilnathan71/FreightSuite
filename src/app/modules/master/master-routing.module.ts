@@ -67,6 +67,8 @@ import { DoctypeComponent } from './document-type/doctype-entry/doctype.componen
 import { DoctypeListComponent } from './document-type/doctype-list/doctype-list.component';
 import { GenerationListComponent } from './generation/generation-list/generation-list.component';
 import { GenerationEntryComponent } from './generation/generation-entry/generation-entry.component';
+import { CostCenterComponent } from './cost-center/cost-center/cost-center.component';
+import { ProfitCenterComponent } from './profit-center/profit-center/profit-center.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -1001,6 +1003,28 @@ export const MasterRoutes: Routes = [
           urls: [
             { title: 'Master', url: '/master' },
             { title: 'Generation ' },
+          ]
+        }
+      },
+      {
+        path: 'cost-center',
+        component: CostCenterComponent,
+        data: {
+          title: 'Cost Center',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Cost Center' },
+          ]
+        }
+      },
+         {
+        path: 'profit-center',
+        component: ProfitCenterComponent,
+        data: {
+          title: 'Profit Center',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Profit Center' },
           ]
         }
       },

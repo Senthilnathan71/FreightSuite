@@ -1,4 +1,4 @@
-<div class="row py-3">
+<div class="row">
 
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
@@ -165,7 +165,7 @@
             <aside class="col-md-6">
               <div class="custom-form-group">
                 <textarea type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                  formControlName="addressLine1" [textWithNumbers]="500" rowspan="2"></textarea>
+                  formControlName="addressLine1" [textWithNumbers]="500" rowspan="2" rows="1"></textarea>
                 <label for="text-input" class="input-label">Address <span class="text-danger">*</span></label>
 
                 <!--  Validation -->
@@ -401,7 +401,7 @@
             <aside class="col-md-6">
               <div class="custom-form-group">
                 <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="remarks"
-                  [textWithNumbers]="500"></textarea>
+                  [textWithNumbers]="500" rows="1"></textarea>
                 <label for="text-input" class="input-label">Remarks </label>
 
                 <!--  Validation -->
@@ -441,7 +441,7 @@
 <ng-template #navTemplate>
   <div>
     <!-- Branch Tab Navigation -->
-    <div class="row">
+    <div class="row mx-1">
       <ul ngbNav #nav1="ngbNav" [(activeId)]="active" class="nav-tabs">
         <li [ngbNavItem]="1">
           <a ngbNavLink>Branch</a>
@@ -505,7 +505,7 @@
             <div class="row">
               <div class="col-md-6">
                 <div class="card border">
-                  <div class="card-body py-2">
+                  <div class="card-body py-1">
                     <div class="row">
                       <aside class="col-12">
                         <h5 class="card-title m-1 text-info text-center">
@@ -571,7 +571,7 @@
               </div>
               <div class="col-md-6">
                 <div class="card border">
-                  <div class="card-body py-2">
+                  <div class="card-body py-1">
                     <div class="row">
                       <aside class="col-12">
                         <h5 class="card-title m-1 text-info text-center">
@@ -707,7 +707,7 @@
 
               <div class="col-md-6">
                 <div class="card border">
-                  <div class="card-body py-2">
+                  <div class="card-body py-1">
                     <div class="row">
                       <aside class="col-12">
                         <h5 class="card-title m-1 text-info text-center">
@@ -817,7 +817,7 @@
               </div>
               <div class="col-md-6">
                 <div class="card border">
-                  <div class="card-body py-2">
+                  <div class="card-body py-1">
                     <div class="row h-100">
                       <aside class="col-12">
                         <h5 class="card-title text-info m-1 text-center">
@@ -843,7 +843,16 @@
                   </div>
                 </div>
               </div>
-              <div class="col-md-12 mt-md-0">
+              
+
+          <div class="modal-footer p-2">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submitBranchForm()">
+              <i class="fas fa-save me-1"></i>
+              {{isModalEditMode ? 'Update' : 'Create'}}
+            </button>
+          </div>
+
+          <div class="col-md-12 mt-md-0">
                 <div class="card mb-0">
                   <div class="card-body py-0">
                     <div class="row">
@@ -853,13 +862,6 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="modal-footer p-2">
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submitBranchForm()">
-              <i class="fas fa-save me-1"></i>
-              {{isModalEditMode ? 'Update' : 'Create'}}
-            </button>
           </div>
         </div>
       </div>
@@ -1064,9 +1066,7 @@
 <!-- BRANCH BANK ENTRY -->
 
 <ng-template #bankEntryContent let-modal>
-  <div class="modal-container">
-    <div class="modal-responsive-wrapper">
-      <div class="modal-content custom-modal">
+
         <!-- Modal Header -->
         <div class="modal-header p-2 bg-info text-white">
           <h4 class="modal-title" id="modal-basic-title">
@@ -1083,177 +1083,139 @@
 
         <!-- Bank Form -->
         <div [formGroup]="branchBankForm">
-          <div class="modal-body">
-            <div class="col-md-12">
-              <div class="card mb-0">
-                <div class="card-body py-0">
-                  <div class="row">
-                    <!-- Bank Name -->
-                    <aside class="col-md-4">
-                      <div class="custom-form-group">
-                        <input type="text" id="bankName" placeholder="" class="custom-input-field sm"
-                          formControlName="BankName" [onlyText]="100">
-                        <label for="bankName" class="input-label">Bank Name <span class="text-danger">*</span></label>
-                        @if(branchBankForm.get('BankName')?.touched && branchBankForm.get('BankName')?.invalid){
-                        <div class="error-message">
-                          @if(branchBankForm.get('BankName')?.hasError('required')){
-                          <span>Bank Name is required</span>
-                          }
-                          @if(branchBankForm.get('BankName')?.hasError('maxlength')){
-                          <span>Max 100 characters</span>
-                          }
-                        </div>
-                        }
-                      </div>
-                    </aside>
-
-                    <!-- Bank Code -->
-                    <aside class="col-md-4">
-                      <div class="custom-form-group">
-                        <input type="text" id="bankCode" placeholder="" class="custom-input-field sm"
-                          formControlName="BankCode" [textWithNumbers]="50">
-                        <label for="bankCode" class="input-label">Bank Code <span class="text-danger">*</span></label>
-                        @if(branchBankForm.get('BankCode')?.touched && branchBankForm.get('BankCode')?.invalid){
-                        <div class="error-message">
-                          @if(branchBankForm.get('BankCode')?.hasError('required')){
-                          <span>Bank Code is required</span>
-                          }
-                          @if(branchBankForm.get('BankCode')?.hasError('maxlength')){
-                          <span>Max 50 characters</span>
-                          }
-                        </div>
-                        }
-                      </div>
-                    </aside>
-
-                    <!-- Bank Address -->
-                    <aside class="col-md-4">
-                      <div class="custom-form-group">
-                        <input type="text" id="bankAddress" placeholder="" class="custom-input-field sm"
-                          formControlName="BankAddress" [textWithNumbers]="500">
-                        <label for="bankAddress" class="input-label">Bank Address</label>
-                        @if(branchBankForm.get('BankAddress')?.touched && branchBankForm.get('BankAddress')?.invalid){
-                        <div class="error-message">
-                          @if(branchBankForm.get('BankAddress')?.hasError('maxlength')){
-                          <span>Max 500 characters</span>
-                          }
-                        </div>
-                        }
-                      </div>
-                    </aside>
-
-                    <!-- IFSC Code -->
-                    <aside class="col-md-4">
-                      <div class="custom-form-group">
-                        <input type="text" id="ifscCode" placeholder="" class="custom-input-field sm"
-                          formControlName="IFSCCode" [textWithNumbers]="20">
-                        <label for="ifscCode" class="input-label">IFSC Code <span class="text-danger">*</span></label>
-                        @if(branchBankForm.get('IFSCCode')?.touched && branchBankForm.get('IFSCCode')?.invalid){
-                        <div class="error-message">
-                          @if(branchBankForm.get('IFSCCode')?.hasError('required')){
-                          <span>IFSC Code is required</span>
-                          }
-                          @if(branchBankForm.get('IFSCCode')?.hasError('maxlength')){
-                          <span>Max 20 characters</span>
-                          }
-                        </div>
-                        }
-                      </div>
-                    </aside>
-
-                    <!-- Bank Account No -->
-                    <aside class="col-md-4">
-                      <div class="custom-form-group">
-                        <input type="text" id="bankAccountNo" placeholder="" class="custom-input-field sm"
-                          formControlName="BankAccountNo" [onlyNumbers]="50">
-                        <label for="bankAccountNo" class="input-label">Bank Account No <span
-                            class="text-danger">*</span></label>
-                        @if(branchBankForm.get('BankAccountNo')?.touched &&
-                        branchBankForm.get('BankAccountNo')?.invalid){
-                        <div class="error-message">
-                          @if(branchBankForm.get('BankAccountNo')?.hasError('required')){
-                          <span>Account Number is required</span>
-                          }
-                          @if(branchBankForm.get('BankAccountNo')?.hasError('onlyNumbers')){
-                          <span>Only digits are allowed</span>
-                          }
-                          @if(branchBankForm.get('BankAccountNo')?.hasError('maxlength')){
-                          <span>Max 50 characters</span>
-                          }
-                        </div>
-                        }
-                      </div>
-                    </aside>
-
-                    <!-- Beneficiary Name -->
-                    <aside class="col-md-4">
-                      <div class="custom-form-group">
-                        <input type="text" id="beneficiaryName" placeholder="" class="custom-input-field sm"
-                          formControlName="BeneficiaryName" [onlyText]="100">
-                        <label for="beneficiaryName" class="input-label">Beneficiary Name <span
-                            class="text-danger">*</span></label>
-                        @if(branchBankForm.get('BeneficiaryName')?.touched &&
-                        branchBankForm.get('BeneficiaryName')?.invalid){
-                        <div class="error-message">
-                          @if(branchBankForm.get('BeneficiaryName')?.hasError('required')){
-                          <span>Beneficiary Name is required</span>
-                          }
-                          @if(branchBankForm.get('BeneficiaryName')?.hasError('maxlength')){
-                          <span>Max 100 characters</span>
-                          }
-                        </div>
-                        }
-                      </div>
-                    </aside>
-                    <!-- Remarks -->
-                    <aside class="col-md-8">
-                      <div class="custom-form-group">
-                        <textarea id="bankRemarks" placeholder="" rows="1" class="input-field sm"
-                          formControlName="Remarks" [textWithNumbers]="300"></textarea>
-                        <label for="bankRemarks" class="input-label">Remarks</label>
-                        @if(branchBankForm.get('Remarks')?.touched && branchBankForm.get('Remarks')?.invalid){
-                        <div class="error-message">
-                          @if(branchBankForm.get('Remarks')?.hasError('maxlength')){
-                          <span>Max 300 characters</span>
-                          }
-                        </div>
-                        }
-                      </div>
-                    </aside>
-
-                    <!-- Status -->
-                    <aside class="col-md-4">
-                      <div class="custom-form-group custom-form-group-select">
-                        @if(isBankModalEdit){
-                        <ng-select id="bankStatus" class="ng-select" formControlName="status">
-                          <ng-option value="Active">Active</ng-option>
-                          <ng-option value="Suspended">Suspended</ng-option>
-                        </ng-select>
-                        } @else {
-                        <input type="text" id="bankStatus" class="custom-input-field sm" formControlName="status"
-                          readonly>
-                        }
-                        <label for="bankStatus" class="input-label">Status <span class="text-danger">*</span></label>
-                      </div>
-                    </aside>
-
-
-                  </div>
+         <div class="modal-body">
+  <div class="col-12">
+    <div class="card mb-0">
+      <div class="card-body py-0">
+        <div class="row">
+          
+          <!-- Bank Name -->
+          <aside class="col-12 col-sm-6 col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="bankName" placeholder="" class="custom-input-field sm" formControlName="BankName" [onlyText]="100">
+              <label for="bankName" class="input-label">Bank Name <span class="text-danger">*</span></label>
+              @if(branchBankForm.get('BankName')?.touched && branchBankForm.get('BankName')?.invalid){
+                <div class="error-message">
+                  @if(branchBankForm.get('BankName')?.hasError('required')){ <span>Bank Name is required</span> }
+                  @if(branchBankForm.get('BankName')?.hasError('maxlength')){ <span>Max 100 characters</span> }
                 </div>
-              </div>
+              }
             </div>
-          </div>
+          </aside>
+
+          <!-- Bank Code -->
+          <aside class="col-12 col-sm-6 col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="bankCode" placeholder="" class="custom-input-field sm" formControlName="BankCode" [textWithNumbers]="50">
+              <label for="bankCode" class="input-label">Bank Code <span class="text-danger">*</span></label>
+              @if(branchBankForm.get('BankCode')?.touched && branchBankForm.get('BankCode')?.invalid){
+                <div class="error-message">
+                  @if(branchBankForm.get('BankCode')?.hasError('required')){ <span>Bank Code is required</span> }
+                  @if(branchBankForm.get('BankCode')?.hasError('maxlength')){ <span>Max 50 characters</span> }
+                </div>
+              }
+            </div>
+          </aside>
+
+          <!-- Bank Address -->
+          <aside class="col-12 col-sm-6 col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="bankAddress" placeholder="" class="custom-input-field sm" formControlName="BankAddress" [textWithNumbers]="500">
+              <label for="bankAddress" class="input-label">Bank Address</label>
+              @if(branchBankForm.get('BankAddress')?.touched && branchBankForm.get('BankAddress')?.invalid){
+                <div class="error-message">
+                  @if(branchBankForm.get('BankAddress')?.hasError('maxlength')){ <span>Max 500 characters</span> }
+                </div>
+              }
+            </div>
+          </aside>
+
+          <!-- IFSC Code -->
+          <aside class="col-12 col-sm-6 col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="ifscCode" placeholder="" class="custom-input-field sm" formControlName="IFSCCode" [textWithNumbers]="20">
+              <label for="ifscCode" class="input-label">IFSC Code <span class="text-danger">*</span></label>
+              @if(branchBankForm.get('IFSCCode')?.touched && branchBankForm.get('IFSCCode')?.invalid){
+                <div class="error-message">
+                  @if(branchBankForm.get('IFSCCode')?.hasError('required')){ <span>IFSC Code is required</span> }
+                  @if(branchBankForm.get('IFSCCode')?.hasError('maxlength')){ <span>Max 20 characters</span> }
+                </div>
+              }
+            </div>
+          </aside>
+
+          <!-- Bank Account No -->
+          <aside class="col-12 col-sm-6 col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="bankAccountNo" placeholder="" class="custom-input-field sm" formControlName="BankAccountNo" [onlyNumbers]="50">
+              <label for="bankAccountNo" class="input-label">Bank Account No <span class="text-danger">*</span></label>
+              @if(branchBankForm.get('BankAccountNo')?.touched && branchBankForm.get('BankAccountNo')?.invalid){
+                <div class="error-message">
+                  @if(branchBankForm.get('BankAccountNo')?.hasError('required')){ <span>Account Number is required</span> }
+                  @if(branchBankForm.get('BankAccountNo')?.hasError('onlyNumbers')){ <span>Only digits are allowed</span> }
+                  @if(branchBankForm.get('BankAccountNo')?.hasError('maxlength')){ <span>Max 50 characters</span> }
+                </div>
+              }
+            </div>
+          </aside>
+
+          <!-- Beneficiary Name -->
+          <aside class="col-12 col-sm-6 col-md-4 ">
+            <div class="custom-form-group">
+              <input type="text" id="beneficiaryName" placeholder="" class="custom-input-field sm" formControlName="BeneficiaryName" [onlyText]="100">
+              <label for="beneficiaryName" class="input-label">Beneficiary Name <span class="text-danger">*</span></label>
+              @if(branchBankForm.get('BeneficiaryName')?.touched && branchBankForm.get('BeneficiaryName')?.invalid){
+                <div class="error-message">
+                  @if(branchBankForm.get('BeneficiaryName')?.hasError('required')){ <span>Beneficiary Name is required</span> }
+                  @if(branchBankForm.get('BeneficiaryName')?.hasError('maxlength')){ <span>Max 100 characters</span> }
+                </div>
+              }
+            </div>
+          </aside>
+
+          <!-- Remarks -->
+          <aside class="col-12 col-sm-6 col-md-4 ">
+            <div class="custom-form-group">
+              <textarea id="bankRemarks" placeholder="" rows="1" class="input-field sm" formControlName="Remarks" [textWithNumbers]="300"></textarea>
+              <label for="bankRemarks" class="input-label">Remarks</label>
+              @if(branchBankForm.get('Remarks')?.touched && branchBankForm.get('Remarks')?.invalid){
+                <div class="error-message">
+                  @if(branchBankForm.get('Remarks')?.hasError('maxlength')){ <span>Max 300 characters</span> }
+                </div>
+              }
+            </div>
+          </aside>
+
+          <!-- Status -->
+          <aside class="col-12 col-sm-6 col-md-4 ">
+            <div class="custom-form-group custom-form-group-select">
+              @if(isBankModalEdit){
+                <ng-select id="bankStatus" class="ng-select" formControlName="status">
+                  <ng-option value="Active">Active</ng-option>
+                  <ng-option value="Suspended">Suspended</ng-option>
+                </ng-select>
+              } @else {
+                <input type="text" id="bankStatus" class="custom-input-field sm" formControlName="status" readonly>
+              }
+              <label for="bankStatus" class="input-label">Status <span class="text-danger">*</span></label>
+            </div>
+          </aside>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
           <!-- Modal Footer -->
-          <div class="modal-footer p-2">
+          <div class="modal-footer">
             <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
               (click)="submitBranchBankForm()">
               <i class="fas fa-save me-1"></i>
               {{isBankModalEdit ? 'Update' : 'Create'}}
             </button>
           </div>
-        </div>
-      </div>
-    </div>
+       
   </div>
 </ng-template>

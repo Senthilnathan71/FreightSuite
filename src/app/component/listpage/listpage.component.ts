@@ -1,11 +1,12 @@
 import { Component,EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { FavoriteStarComponent } from '../favourite/favourite.component';
 
 @Component({
   selector: 'app-listpage',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,FavoriteStarComponent],
   templateUrl: './listpage.component.html',
   styleUrl: './listpage.component.scss'
 })
