@@ -13,6 +13,9 @@ import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interfa
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-department-entry',
@@ -221,4 +224,40 @@ export class DepartmentEntryComponent {
         }
       );
     }
+    openEmail() {
+  if (!this.departmentData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.departmentData;
+  modalRef.componentInstance.idLabel = 'Department Id';
+  modalRef.componentInstance.idValue = this.departmentData?.DepartmentMasterSid;
+}
+
+openAuthority() {
+  if (!this.departmentData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.departmentData;
+  modalRef.componentInstance.idLabel = 'Department Id';
+  modalRef.componentInstance.idValue = this.departmentData?.DepartmentMasterSid;
+}
+
+openEDoc() {
+  if (!this.departmentData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.departmentData;
+  modalRef.componentInstance.idLabel = 'Department Id';
+  modalRef.componentInstance.idValue = this.departmentData?.DepartmentMasterSid;
+}
+
 }

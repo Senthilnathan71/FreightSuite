@@ -9,6 +9,10 @@ import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interfa
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-currency-entry',
@@ -17,7 +21,8 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
     CommonModule,
     ReactiveFormsModule,
     FeatherModule,
-    DatePipe
+    DatePipe,
+    NgSelectModule,
   ],
   templateUrl: './currency-entry.component.html',
   styleUrls: ['./currency-entry.component.scss']
@@ -296,4 +301,40 @@ export class CurrencyEntryComponent implements OnInit {
       }
     );
   }
+  openEmail() {
+  if (!this.currencyData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.currencyData;
+  modalRef.componentInstance.idLabel = 'Currency Id';
+  modalRef.componentInstance.idValue = this.currencyData?.CurrencyMasterSid;
+}
+
+openAuthority() {
+  if (!this.currencyData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.currencyData;
+  modalRef.componentInstance.idLabel = 'Currency Id';
+  modalRef.componentInstance.idValue = this.currencyData?.CurrencyMasterSid;
+}
+
+openEDoc() {
+  if (!this.currencyData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.currencyData;
+  modalRef.componentInstance.idLabel = 'Currency Id';
+  modalRef.componentInstance.idValue = this.currencyData?.CurrencyMasterSid;
+}
+
 }

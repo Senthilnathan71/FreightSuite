@@ -875,13 +875,13 @@ export const MasterRoutes: Routes = [
     ],
   },
   {
-        path: 'Charge-tax',
+        path: 'charge-tax',
         component: ChargeTaxComponent,
         data: {
-          title: 'Charge-tax',
+          title: 'charge-tax',
           urls: [
             { title: 'Master', url: '/master' },
-            { title: 'Charge-tax' },
+            { title: 'charge-tax' },
           ],
         },
       },
@@ -974,35 +974,35 @@ export const MasterRoutes: Routes = [
         }
       },
         {
-        path: 'generation/list',
+        path: 'hawbstock/list',
         component: GenerationListComponent,
         data: {
-          title: 'Generation',
+          title: 'Hawbs tock',
           urls: [
             { title: 'Master', url: '/master' },
-            { title: 'Generation' },
+            { title: 'Hawb stock' },
           ],
         },
       },
       {
-        path: 'generation/entry',
+        path: 'hawbstock/entry',
         component: GenerationEntryComponent,
         data: {
-          title: 'Generation',
+          title: 'Hawb stock',
           urls: [
             { title: 'Master', url: '/master' },
-            { title: 'Generation' },
+            { title: 'Hawb stock' },
           ]
         }
       },
       {
-        path: 'generation/entry/:id',
+        path: 'hawbstock/entry/:id',
         component: GenerationEntryComponent,
         data: {
-          title: 'Generation',
+          title: 'Hawb stock',
           urls: [
             { title: 'Master', url: '/master' },
-            { title: 'Generation ' },
+            { title: 'Hawb stock ' },
           ]
         }
       },

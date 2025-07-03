@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { NgbModal, NgbModalRef, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal, NgbModalRef, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
@@ -71,7 +71,8 @@ export class AuthorityEntryComponent implements OnInit {
     private route: Router,
     private currentRoute: ActivatedRoute,
     private modalService: NgbModal,
-    private matdial: MatDialog
+    private matdial: MatDialog,
+    private activeModal : NgbActiveModal
   ) { }
 
   ngOnInit(): void {
@@ -416,8 +417,8 @@ export class AuthorityEntryComponent implements OnInit {
     this.modalService.dismissAll();
   }
 
-  navigateBack() {
-    history.back();
+  closeModal(){
+    this.activeModal.close();
   }
 
   resetAuthorityForm() {

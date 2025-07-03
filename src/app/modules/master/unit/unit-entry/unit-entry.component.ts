@@ -13,6 +13,9 @@ import { Unit } from 'src/app/modules/crm-mobile/Interfaces/unit.interface';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 
 @Component({
@@ -230,5 +233,41 @@ export class UnitEntryComponent {
 			}
 		);
 	}
+  openEmail() {
+  if (!this.unitData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.unitData;
+  modalRef.componentInstance.idLabel = 'Unit Id';
+  modalRef.componentInstance.idValue = this.unitData?.UnitMasterSid;
+}
+
+openAuthority() {
+  if (!this.unitData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.unitData;
+  modalRef.componentInstance.idLabel = 'Unit Id';
+  modalRef.componentInstance.idValue = this.unitData?.UnitMasterSid;
+}
+
+openEDoc() {
+  if (!this.unitData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.unitData;
+  modalRef.componentInstance.idLabel = 'Unit Id';
+  modalRef.componentInstance.idValue = this.unitData?.UnitMasterSid;
+}
+
 
 }

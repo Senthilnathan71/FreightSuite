@@ -12,6 +12,9 @@ import { DatePipe } from '@angular/common';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
     selector: 'app-product-entry',
@@ -238,5 +241,41 @@ export class ProductEntryComponent implements OnInit{
 			}
 		);
 	}
+    openEmail() {
+  if (!this.productData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.productData;
+  modalRef.componentInstance.idLabel = 'Product Id';
+  modalRef.componentInstance.idValue = this.productData?.ProductMasterSId;
+}
+
+openAuthority() {
+  if (!this.productData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.productData;
+  modalRef.componentInstance.idLabel = 'Product Id';
+  modalRef.componentInstance.idValue = this.productData?.ProductMasterSId;
+}
+
+openEDoc() {
+  if (!this.productData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.productData;
+  modalRef.componentInstance.idLabel = 'Product Id';
+  modalRef.componentInstance.idValue = this.productData?.ProductMasterSId;
+}
+
 
 }

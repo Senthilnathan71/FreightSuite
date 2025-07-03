@@ -20,6 +20,9 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 @Component({
 	selector: 'app-company-entry',
 	standalone: true,
@@ -892,6 +895,42 @@ export class CompanyEntryComponent implements OnInit {
 			}
 		);
 	}
+	openEmail() {
+  if (!this.companyData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.companyData;
+  modalRef.componentInstance.idLabel = 'Company Id';
+  modalRef.componentInstance.idValue = this.companyData?.CompanyMasterSid;
+}
+
+openAuthority() {
+  if (!this.companyData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.companyData;
+  modalRef.componentInstance.idLabel = 'Company Id';
+  modalRef.componentInstance.idValue = this.companyData?.CompanyMasterSid;
+}
+
+openEDoc() {
+  if (!this.companyData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.companyData;
+  modalRef.componentInstance.idLabel = 'Company Id';
+  modalRef.componentInstance.idValue = this.companyData?.CompanyMasterSid;
+}
+
 
 	customEmailValidator(): ValidatorFn {
 		return (control: AbstractControl): ValidationErrors | null => {
@@ -1112,5 +1151,6 @@ export class CompanyEntryComponent implements OnInit {
 		}
 		panControl.updateValueAndValidity();
 	}
+	
 
 }

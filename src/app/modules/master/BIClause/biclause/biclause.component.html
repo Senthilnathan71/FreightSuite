@@ -92,7 +92,7 @@
     <!-- Modal for Create/Edit -->
     <ng-template #content let-modal>
         <div class="modal-header">
-            <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} B Clause</h4>
+            <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} BL Clause</h4>
             @if(isEditMode){
             <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
@@ -193,9 +193,20 @@
         </div>
         <div class="modal-footer">  
             @if(isEditMode){
-                <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto" (click)="openTandC()">
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+        <i class="fas fa-file-alt me-1"></i> e-Doc
+      </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
                     <i class="fas fa-clipboard me-1"></i> Terms & Condition
                 </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
+        <i  class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+                
+      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+      
             }
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-info" 

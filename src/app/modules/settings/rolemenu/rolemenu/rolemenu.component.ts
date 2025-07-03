@@ -14,6 +14,9 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { TogglerComponent } from 'src/app/component/simple-toggler/toggle.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from '../../email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { EdocComponent } from '../../edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-rolemenu',
@@ -440,5 +443,42 @@ private getNestedProperty(obj: any, path: string): any {
 			}
 		);
 	}
+
+	openEmail() {
+  if (!this.roleMenuData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.roleMenuData;
+  modalRef.componentInstance.idLabel = 'Role Menu Id';
+  modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
+}
+
+openAuthority() {
+  if (!this.roleMenuData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.roleMenuData;
+  modalRef.componentInstance.idLabel = 'Role Menu Id';
+  modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
+}
+
+openEDoc() {
+  if (!this.roleMenuData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.roleMenuData;
+  modalRef.componentInstance.idLabel = 'Role Menu Id';
+  modalRef.componentInstance.idValue = this.roleMenuData?.RoleMenuMasterSid;
+}
+
 
 } 

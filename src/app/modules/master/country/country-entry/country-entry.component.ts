@@ -12,6 +12,9 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-country-entry',
@@ -242,4 +245,40 @@ export class CountryEntryComponent implements OnInit {
       }
     );
   }
+  openEmail() {
+  if (!this.countryData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.countryData;
+  modalRef.componentInstance.idLabel = 'Country Id';
+  modalRef.componentInstance.idValue = this.countryData?.CountryMasterSid;
+}
+
+openAuthority() {
+  if (!this.countryData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.countryData;
+  modalRef.componentInstance.idLabel = 'Country Id';
+  modalRef.componentInstance.idValue = this.countryData?.CountryMasterSid;
+}
+
+openEDoc() {
+  if (!this.countryData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.countryData;
+  modalRef.componentInstance.idLabel = 'Country Id';
+  modalRef.componentInstance.idValue = this.countryData?.CountryMasterSid;
+}
+
 }
