@@ -651,7 +651,7 @@ export const MasterRoutes: Routes = [
         },
       },
       {
-        path: "inco/:IncoMasterSid",
+        path: "inco/:id",
         component: IncoComponent,
         data: {
           title: "Inco",
@@ -1017,6 +1017,17 @@ export const MasterRoutes: Routes = [
           ]
         }
       },
+      {
+        path: "cost-center/:id",
+        component: CostCenterComponent,
+        data: {
+          title: "Cost Center",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Cost Center" },
+          ],
+        },
+      },
          {
         path: 'profit-center',
         component: ProfitCenterComponent,
@@ -1027,6 +1038,17 @@ export const MasterRoutes: Routes = [
             { title: 'Profit Center' },
           ]
         }
+      },
+      {
+        path: "profit-center/:id",
+        component: ProfitCenterComponent,
+        data: {
+          title: "Profit Center",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Profit Center" },
+          ],
+        },
       },
 
 ];

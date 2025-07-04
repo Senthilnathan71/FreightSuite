@@ -136,7 +136,7 @@ export class IncoComponent{
     });
   }
    resetForm(): void {
-    this.incoForm.get('status')?.disable();
+    this.incoForm.get('Status')?.disable();
     this.incoForm.reset({
       Status: 'Active'
     });
@@ -162,7 +162,7 @@ export class IncoComponent{
     this.masterService.getIncoById(id).pipe(take(1)).subscribe({
       next: (inco: any) => {
         this.incoData = inco;
-        this.incoForm.get('status')?.enable();
+        this.incoForm.get('Status')?.enable();
         this.incoForm.patchValue({
           IncoCode: inco.IncoCode,
           IncoName: inco.IncoName,
@@ -206,8 +206,8 @@ export class IncoComponent{
   }
 
   onSubmit() {
-    if (this.incoForm.get('status')?.disabled) {
-      this.incoForm.get('status')?.enable();
+    if (this.incoForm.get('Status')?.disabled) {
+      this.incoForm.get('Status')?.enable();
     }
     if (this.incoForm.invalid) {
       this.incoForm.markAllAsTouched();
