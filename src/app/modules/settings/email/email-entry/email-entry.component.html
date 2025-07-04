@@ -1,4 +1,4 @@
-<div class="row py-3">
+<div class="row">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
@@ -7,7 +7,8 @@
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                   <button type="button" (click)="closeModal()" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" (click)="closeModal()"
+                        class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
@@ -22,424 +23,128 @@
                 </div>
             </div>
         </div>
-    </div>
-    <!-- <div class="row">
-        <div class="col-md-12">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="row">
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="" [items]="modeOfEmailType" bindLabel="name"
-                                    bindValue="name">
+        <div class="card">
+            <div class="card-body">
 
-                                </ng-select>
-                                <label for="" class="input-label">Email Type <span class="text-danger"></span></label>
+                <div class="row">
+                    <div class="d-flex gap-4 align-items-center px-2 mb-2">
+                        <!-- To Field -->
+
+                        <div class="col-md-5">
+                            <div class="input-group"><input type="text" placeholder="To" aria-label=""
+                                    class="form-control"><span class="input-group-text">  <i class="fas fa-arrow-right"></i></span>
                             </div>
-                        </aside>
-
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Send Date <span
-                                        class="text-danger"></span></label>
-
+                        </div>
+                        <!-- <div class="col-md-5">
+                            <div class="input-group">
+                                <input type="text" class="form-control" formControlName="Name" placeholder="To "
+                                    required>
+                                <span class="input-group-text btn-light-secondary">
+                                    <i class="fas fa-arrow-right"></i>
+                                </span>
                             </div>
-                        </aside>
+                        </div> -->
 
 
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Organization<span
-                                        class="text-danger"></span></label>
 
+
+                        <!-- CC Field -->
+                        <div class="col-md-5">
+                            <div class="input-group"><input type="text" placeholder="Cc" aria-label=""
+                                    class="form-control"><span class="input-group-text">  <i class="fas fa-arrow-right"></i></span>
                             </div>
-                        </aside>
+                        </div>
 
-                        <aside>
-                            <div class="d-flex align-items-center  gap-3">
-                                <div class="col-md-10">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="">
-                                        <label for="text-input" class="input-label">To <span
-                                                class="text-danger">*</span></label>
+                        <!-- Button -->
+                        <div class="col-2">
 
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <button class="btn btn-sm btn-info mb-1">
-                                        <i-feather name="arrow-down-right" class="feather-sm fw-semibold fs-2"></i-feather>
-                                    </button>
-                                </div>
-
-                            </div>
-
-                        </aside>
-
-                         <aside>
-                            <div class="d-flex align-items-center  gap-3">
-                                <div class="col-md-10">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="">
-                                        <label for="text-input" class="input-label">Cc <span
-                                                class="text-danger"></span></label>
-
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <button class="btn btn-sm btn-info mb-1">
-                                        <i-feather name="arrow-down-right" class="feather-sm fw-semibold fs-2"></i-feather>
-                                    </button>
-                                </div>
-
-                            </div>
-
-                        </aside>
+                            <button class="btn btn-info btn-sm">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
 
 
-                         <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Subject <span
-                                        class="text-danger">*</span></label>
-
-                            </div>
-                        </aside>
-
-
-                           <aside class="col-md-12">
-                                <div class="custom-form-group">
-                                    <textarea id="textarea-input" class="input-field sm" placeholder="" rows=""
-                                        formControlName="Message"></textarea>
-                                    <label for="text-input" class="input-label">Message</label>
-                                </div>
-                            </aside>
-
-                               <aside class="col-md-12">
-                                <div class="custom-form-group">
-                                    <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1"
-                                        formControlName="Remarks"></textarea>
-                                    <label for="text-input" class="input-label">Remarks</label>
-                                </div>
-                            </aside>
-
-                              <aside class="col-md-3">
-                            <div class="custom-form-group mt-3">
-
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" formControlName="">
-                                    <label class="form-check-label">
-                                        Charge Required
-                                    </label>
-                                </div>
-                            </div>
-                        </aside>
-                          <aside class="col-md-3">
-                            <div class="custom-form-group mt-3">
-
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" formControlName="">
-                                    <label class="form-check-label">
-                                        Followup Required
-                                    </label>
-                                </div>
-                            </div>
-                        </aside>
-                          <aside class="col-md-3">
-                            <div class="custom-form-group mt-3">
-
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" formControlName="">
-                                    <label class="form-check-label">
-                                        Organization Required
-                                    </label>
-                                </div>
-                            </div>
-                        </aside>
-                          <aside class="col-md-3">
-                            <div class="custom-form-group mt-3">
-
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" formControlName="">
-                                    <label class="form-check-label">
-                                        Send Immediate
-                                    </label>
-                                </div>
-                            </div>
-                        </aside>
-                       
-
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div> -->
 
 
-    <!-- <div class="enhanced-ui-form container">
-        <div class="row g-4">
 
-            <div class="col-md-6">
-                <div class="card rounded-4 shadow-sm border-0 p-4 h-100 ">
-                    <h5 class="section-title text-primary fw-semibold mb-4">📧 Email Details</h5>
+
+
+
 
                     <aside class="col-md-12 mb-3">
-                        <div class="custom-form-group custom-form-group-select position-relative">
-                            <ng-select formControlName="" [items]="modeOfEmailType" bindLabel="name"
-                                bindValue="name"></ng-select>
-                            <label class="input-label">Email Type <span class="text-danger">*</span></label>
+                        <!-- <label for="text-input" class="form-label">To <span class="text-danger">*</span></label> -->
+                        <div class="input-group">
+                            <input type="text" id="text-input" class="form-control" formControlName="Name"
+                                placeholder="Subject">
+
                         </div>
                     </aside>
 
-                    <div class="custom-form-group position-relative mb-3">
-                        <input type="text" class="custom-input-field sm" formControlName="" />
-                        <label class="input-label">Send Date</label>
-                    </div>
 
-                    <div class="custom-form-group position-relative mb-3">
-                        <input type="text" class="custom-input-field sm" formControlName="" />
-                        <label class="input-label">Organization</label>
-                    </div>
-
-                    <div class="custom-form-group d-flex gap-2 align-items-start mb-3">
-                        <div class="flex-grow-1 position-relative">
-                            <input type="text" class="custom-input-field sm" formControlName="" />
-                            <label class="input-label">To <span class="text-danger">*</span></label>
+                    <!-- Toolbar -->
+                    <!-- <div class="mb-2">
+                        <div class="d-flex flex-wrap gap-3">
+                            <span class="fw-normal">Normal</span>
+                            <span class="fw-light">Sailee Light</span>
+                            <i class="fas fa-bold"></i>
+                            <i class="fas fa-italic"></i>
+                            <i class="fas fa-underline"></i>
+                            <i class="fas fa-list-ul"></i>
+                            <i class="fas fa-list-ol"></i>
+                            <i class="fas fa-align-left"></i>
+                            <i class="fas fa-align-center"></i>
+                            <i class="fas fa-align-right"></i>
+                            <i class="fas fa-align-justify"></i>
+                            <i class="fas fa-link"></i>
+                            <i class="fas fa-font"></i>
                         </div>
-                        <button class="btn btn-outline-info btn-sm mt-1">
-                            <i-feather name="arrow-down-right" class="feather-sm"></i-feather>
+                    </div> -->
+
+
+                    <div >
+                        <p>Monthly billing Customers</p>
+                        <p>1. <strong>New Customers:</strong> 1st Bill - From date of activation to till month end (Pro
+                            rata) + Advance rentals for next month</p>
+                        <p>2. <strong>Existing Customers:</strong> Advance billing from 1st to 30/31st.</p>
+
+                        <p><strong>Due Dates</strong></p>
+                        <ul>
+                            <li>Monthly billing Customers: 15th of the Current Month for Bangalore, Chennai, Nellore,
+                                Vijayawada, Eluru, Visakhapatnam, Coimbatore, Guntur, Delhi, Tirupati, Rajahmundry,
+                                Gurugram, Madurai, Kakinada, Ahmedabad, Jaipur, Lucknow, Ghaziabad, Tirchy, Hosur, Pune
+                            </li>
+                        </ul>
+
+                        <p class="pt-5">Thanks & Regards<br>
+                            Anudhan Palanivel<br>
+                            <small>Note - This is an auto-generated email and reply to this mail id is not monitored. In
+                                case of any query please contact.</small>
+                        </p>
+                    </div>
+
+
+                    <input type="file" class="d-none" multiple>
+
+                    <div class="my-2">
+                        <button type="button" class="btn btn-sm">
+                            <i class="fas fa-paperclip"></i> Attachment
                         </button>
                     </div>
 
-                    <div class="custom-form-group d-flex gap-2 align-items-start mb-3">
-                        <div class="flex-grow-1 position-relative">
-                            <input type="text" class="custom-input-field sm" formControlName="" />
-                            <label class="input-label">Cc</label>
-                        </div>
-                        <button class="btn btn-outline-info btn-sm mt-1">
-                            <i-feather name="arrow-down-right" class="feather-sm"></i-feather>
-                        </button>
-                    </div>
 
-                    <div class="custom-form-group position-relative mb-3">
-                        <input type="text" class="custom-input-field sm" formControlName="" />
-                        <label class="input-label">Subject <span class="text-danger">*</span></label>
-                    </div>
+
+                    <!-- <div class="d-flex justify-content-end mt-4 gap-2">
+          <button class="btn btn-secondary">Preview</button>
+          <button class="btn btn-light">Cancel</button>
+          <button class="btn btn-primary">Send</button>
+        </div> -->
                 </div>
-            </div>
 
 
-            <div class="col-md-6">
-                <div class="card rounded-4 shadow-sm border-0 p-4 h-100 bg-white">
-                    <h5 class="section-title text-success fw-semibold mb-4">📝 Message & Settings</h5>
 
-                    <div class="custom-form-group position-relative mb-3">
-                        <textarea class="input-field sm" rows="5" formControlName="Message"></textarea>
-                        <label class="input-label">Message</label>
-                    </div>
 
-                    <div class="custom-form-group position-relative mb-3">
-                        <textarea class="input-field sm" rows="2" formControlName="Remarks"></textarea>
-                        <label class="input-label">Remarks</label>
-                    </div>
-
-                    <div class="row row-cols-2 g-3 mt-2">
-                        <div class="col">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" formControlName="" />
-                                <label class="form-check-label">Charge Required</label>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" formControlName="" />
-                                <label class="form-check-label">Followup Required</label>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" formControlName="" />
-                                <label class="form-check-label">Organization Required</label>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" formControlName="" />
-                                <label class="form-check-label">Send Immediate</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
-    </div> -->
-
-
-    
-
-     <div class="better-ui-container container">
-        <div class="row gy-4 d-flex align-items-stretch">
-
-
-            <div class="col-md-6">
-                <div class="card h-100 card-bg">
-                    <div class="card-body">
-                        <h5 class="form-section-title mb-4 border-bottom">📧 Email Details</h5>
-
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="" [items]="modeOfEmailType" bindLabel="name"
-                                bindValue="name"></ng-select>
-                            <label class="input-label">Email Type <span class="text-danger">*</span></label>
-                        </div>
-
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Send Date <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Organization<span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="flex-grow-1">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="" />
-                                    <label for="text-input" class="input-label">To <span
-                                            class="text-danger">*</span></label>
-                                </div>
-                            </div>
-                            <button class="btn btn-info btn-sm mb-1">
-                                <i-feather name="arrow-down-right" class="feather-sm text-white"></i-feather>
-                            </button>
-                        </div>
-
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="flex-grow-1">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="" />
-                                    <label for="text-input" class="input-label">Cc <span
-                                            class="text-danger"></span></label>
-                                </div>
-                            </div>
-                            <button class="btn btn-info btn-sm mb-1">
-                                <i-feather name="arrow-down-right" class="feather-sm text-white"></i-feather>
-                            </button>
-                        </div>
-
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Subject <span
-                                        class="text-danger">*</span></label>
-                            </div>
-                        </aside>
-                    </div>
-
-                </div>
-            </div>
-
-
-
-            <div class="col-md-6">
-                <div class="card h-100 card-bg">
-                    <div class="card-body">
-                        <h5 class="form-section-title mb-4 border-bottom">📝 Message & Settings</h5>
-
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <textarea id="textarea-input" class="input-field sm" placeholder="" rows=""
-                                    formControlName="Message"></textarea>
-                                <label for="text-input" class="input-label">Message</label>
-                            </div>
-                        </aside>
-
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1"
-                                    formControlName="Remarks"></textarea>
-                                <label for="text-input" class="input-label">Remarks</label>
-                            </div>
-                        </aside>
-
-                        <h5 class="form-section-title my-3 border-bottom">Option</h5>
-                        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-2 row-cols-lg-2 g-3">
-                            <aside class="col">
-                                <div class="custom-form-group">
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" formControlName="" />
-                                        <label class="form-check-label">Charge Required</label>
-                                    </div>
-                                </div>
-                            </aside>
-
-                            <aside class="col">
-                                <div class="custom-form-group">
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" formControlName="" />
-                                        <label class="form-check-label">Followup Required</label>
-                                    </div>
-                                </div>
-                            </aside>
-
-                            <aside class="col">
-                                <div class="custom-form-group">
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" formControlName="" />
-                                        <label class="form-check-label">Organization Required</label>
-                                    </div>
-                                </div>
-                            </aside>
-
-                            <aside class="col">
-                                <div class="custom-form-group">
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" formControlName="" />
-                                        <label class="form-check-label">Send Immediate</label>
-                                    </div>
-                                </div>
-                            </aside>
-                        </div>
-                    </div>
-
-
-                </div>
-            </div>
-
-        </div>
-    </div>  
-
-
-
-
-  
-
-
-
-
-
-
-
-
-
+    </div>
 </div>
