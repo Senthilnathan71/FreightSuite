@@ -21,6 +21,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { Port } from 'src/app/modules/crm-mobile/Interfaces/port.interface';
 
 
 
@@ -66,6 +67,7 @@ export class PostMasterViewComponent {
   ];
   currentMenuId: number;
   TandCList: any;
+  portCodeLimit : number;
 
   constructor(private config: NgSelectConfig, private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -89,7 +91,7 @@ export class PostMasterViewComponent {
   initPortForm() {
     this.portForm = this.fb.group({
       PortName: ['', [Validators.required, Validators.maxLength(50)]],
-      PortCode: ['', [Validators.required, Validators.maxLength(5)]],
+      PortCode: ['', [Validators.required, Validators.maxLength(3)]],
       CountryMasterSid: ['', [Validators.required]],
       StateMasterSid: ['',],
       TimeZone: [''],
@@ -114,6 +116,7 @@ export class PostMasterViewComponent {
         this.filterStateByCountry(resp.CountryMasterSid);
         this.portForm.patchValue({
           ...resp,
+          PortCode : this.handlePortCodePatch(resp.PortCode,resp.PortType),
           CBMRequire: (resp.CBMRequire == 'Y' ? true : false),
           status: resp.status === 'A' ? 'Active' : 'Suspended'
         });
@@ -124,6 +127,14 @@ export class PostMasterViewComponent {
         console.error('Error loading port:', error);
       }
     );
+  }
+  
+  handlePortCodePatch(PortCode:String,PortType:String){
+    if(PortType === 'Sea'){
+      return PortCode.substring(2,5)
+    } else {
+      return PortCode
+    }
   }
 
   // loadCountry(): void {
@@ -222,6 +233,7 @@ export class PostMasterViewComponent {
       const payload = (this.isEditMode) ?
         {
           ...formValue,
+          PortCode : this.handlePortCodeSubmit(formValue),
           status: formValue.status === 'Active' ? 'A' : 'S',
           CBMRequire: formValue.CBMRequire ? 'Y' : 'N',
           updatedBy: updatedBy
@@ -229,6 +241,7 @@ export class PostMasterViewComponent {
         :
         {
           ...formValue,
+          PortCode : this.handlePortCodeSubmit(formValue),
           status: formValue.status === 'Active' ? 'A' : 'S',
           CBMRequire: formValue.CBMRequire ? 'Y' : 'N',
           createdBy: createdBy
@@ -276,6 +289,15 @@ export class PostMasterViewComponent {
       }
 
 
+    }
+  }
+
+  handlePortCodeSubmit(port:Port){
+    if(port.PortType=== 'Sea'){
+      const countryCode = (this.countryList.find(c => c.CountryMasterSid === port.CountryMasterSid)).countryCode;
+      return countryCode+port.PortCode;
+    } else {
+      return port.PortCode;
     }
   }
 

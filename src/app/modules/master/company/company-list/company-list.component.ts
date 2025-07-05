@@ -12,10 +12,11 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 @Component({
   selector: 'app-company-list',
   standalone: true,
-  imports: [FeatherModule, FormsModule, CommonModule,RouterModule, ListpageComponent,NgbPaginationModule],
+  imports: [FeatherModule, FormsModule, CommonModule,RouterModule, ListpageComponent,NgbPaginationModule,FavoriteStarComponent],
   templateUrl: './company-list.component.html',
   styleUrl: './company-list.component.scss',
 })
