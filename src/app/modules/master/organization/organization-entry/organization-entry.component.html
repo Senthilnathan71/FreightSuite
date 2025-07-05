@@ -74,30 +74,29 @@
                                 </div>
                             </aside>
                             <aside class="col-md-4">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                        formControlName="CustomerShortCode" [textWithNumbers]="50">
-                                    <label for="text-input" class="input-label">Code <span
-                                            class="text-danger">*</span></label>
-                                    @if(customerForm.get('CustomerShortCode')?.touched &&
-                                    customerForm.get('CustomerShortCode')?.invalid ){
-                                    <div class="error-message">
-                                        @if(customerForm.get('CustomerShortCode')?.hasError('required')){
-                                        <span>Code is required</span>
-                                        }
-                                        @else if(customerForm.get('CustomerShortCode')?.hasError('maxlength')){
-                                        <span>Max 50 characters</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
+  <div class="custom-form-group">
+    <input type="text" id="CustomerShortCode" placeholder="" class="custom-input-field sm"
+      formControlName="CustomerShortCode" [textWithNumbers]="50"
+      [attr.disabled]="!customerForm.get('CustomerName')?.value || !customerForm.get('CountryMasterSid')?.value ? true : null">
+    <label for="CustomerShortCode" class="input-label">Code <span class="text-danger">*</span></label>
+    @if(customerForm.get('CustomerShortCode')?.touched && customerForm.get('CustomerShortCode')?.invalid) {
+    <div class="error-message">
+      @if(customerForm.get('CustomerShortCode')?.hasError('required')) {
+      <span>Code is required</span>
+      }
+      @else if(customerForm.get('CustomerShortCode')?.hasError('maxlength')) {
+      <span>Max 50 characters</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="CustomerAliasName" [textWithNumbers]="100">
                                     <label for="text-input" class="input-label">Alias<span
-                                            class="text-danger"></span></label>
+                                            class="text-danger">*</span></label>
                                     @if(customerForm.get('CustomerAliasName')?.touched &&
                                     customerForm.get('CustomerAliasName')?.invalid ){
                                     <div class="error-message">
@@ -116,7 +115,8 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="GroupName" [textWithNumbers]="20">
-                                    <label for="text-input" class="input-label">Group Name </label>
+                                    <label for="text-input" class="input-label">Group Name<span
+                                            class="text-danger">*</span> </label>
                                     @if(customerForm.get('GroupName')?.touched &&
                                     customerForm.get('GroupName')?.invalid ){
                                     <div class="error-message">
@@ -135,7 +135,7 @@
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="CustomerAddress1" [textWithNumbers]="300">
                                     <label for="text-input" class="input-label">Address1<span
-                                            class="text-danger"></span></label>
+                                            class="text-danger">*</span></label>
                                     @if(customerForm.get('CustomerAddress1')?.touched &&
                                     customerForm.get('CustomerAddress1')?.invalid ){
                                     <div class="error-message">
@@ -231,7 +231,8 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="Website" [textWithNumbers]="50">
-                                    <label for="text-input" class="input-label">Website</label>
+                                    <label for="text-input" class="input-label">Website<span
+                                            class="text-danger">*</span></label>
                                     @if(customerForm.get('Website')?.touched &&
                                     customerForm.get('Website')?.invalid ){
                                     <div class="error-message">
@@ -246,64 +247,44 @@
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select">
-                                    <!-- <ng-select [items]="modeOfCustomerType" bindLabel="name" bindValue="name"
-                                        [multiple]="true" [closeOnSelect]="false" [searchable]="true"
-                                        placeholder="Select Customer Type" [(ngModel)]="selectedStatus"
-                                        (change)="updateCustomerType()" name="customerTypeSelection">
-                                        <ng-template ng-option-tmp let-item="item">
-                                            <div class="form-check d-flex align-items-center">
-                                                <input type="checkbox" class="form-check-input sm"
-                                                    [checked]="isSelected(item)" (change)="toggleSelection(item)"
-                                                    id="checkbox-{{ item.name }}" />
-                                                <label class="form-check-label sm" [for]="'checkbox-' + item.name">
-                                                    {{ item.name }}
-                                                </label>
-                                            </div>
-                                        </ng-template>
-                                    </ng-select> -->
-                                    <ng-select  [items]="modeOfCustomerType" bindLabel="name" bindValue="name" [multiple]="true" [closeOnSelect]="false"
-                                        [searchable]="true" placeholder="Select Customer Type" name="customerTypeSelection"
-                                          [ngModel]="selectedStatus"   [ngModelOptions]="{ standalone: true }"
->
-                                        <ng-template ng-option-tmp let-item="item">
-                                            <div class="form-check d-flex align-items-center">
-                                                <input type="checkbox" class="form-check-input sm" [checked]="isSelected(item)"
-                                                    (change)="toggleSelection(item)" id="checkbox-{{ item.name }}" />
-                                                <label class="form-check-label sm" [for]="'checkbox-' + item.name">
-                                                    {{ item.name }}
-                                                </label>
-                                            </div>
-                                        </ng-template>
-                                    </ng-select>
+  <ng-select [items]="modeOfCustomerType" bindLabel="name" bindValue="name" [multiple]="true" 
+    [closeOnSelect]="false" [searchable]="true" placeholder="Select Customer Type" 
+    [(ngModel)]="selectedStatus" (change)="updateDisplayedCustomerTypes()" name="customerTypeSelection">
+    
+    <ng-template ng-option-tmp let-item="item">
+      <div class="form-check d-flex align-items-center">
+        <input type="checkbox" class="form-check-input sm" [checked]="isSelected(item)" 
+          (change)="toggleSelection(item)" id="checkbox-{{ item.name }}" />
+        <label class="form-check-label sm" [for]="'checkbox-' + item.name">
+          {{ item.name }}
+        </label>
+      </div>
+    </ng-template>
+    
+    <ng-template ng-multi-label-tmp let-items="items" let-clear="clear">
+      <div class="d-flex flex-wrap gap-1 align-items-center">
+        <!-- Display first 3 selected items -->
+        <span *ngFor="let item of displayedCustomerTypes" class="badge bg-info">
+          {{ item.name }}
+        </span>
+        
+        <!-- Show +X indicator if there are more than 3 selected -->
+        <span *ngIf="extraCustomerTypesCount > 0" class="badge bg-secondary">
+          +{{ extraCustomerTypesCount }}
+        </span>
+        
+        <!-- Show placeholder when nothing is selected -->
+        <span *ngIf="selectedStatus.length === 0" class="text-muted">
+          Select Customer Type
+        </span>
+      </div>
+    </ng-template>
+  </ng-select>
 
-
-                                    <label class="input-label">
-                                        Customer Type <span class="text-danger"></span>
-                                    </label>
-                                </div>
-
-
-
-
-
-
-                                <!-- <div class="custom-form-group">
-                                    <select formControlName="CountryMasterSid" class="form-select">
-                                        <option value="" disabled selected>Select UNO</option>
-                                        <option *ngFor="let option of countryList" [value]="option.CountryMasterSid">
-                                            {{option.countryName}} - {{option.countryCode}}</option>
-                                    </select>
-                                    <label for="text-input" class="input-label">Customer Type <span
-                                            class="text-danger">*</span></label>
-                                    @if(customerForm.get('CountryMasterSid')?.touched &&
-                                    customerForm.get('CountryMasterSid')?.invalid ){
-                                    <div class="error-message">
-                                        @if(customerForm.get('CountryMasterSid')?.hasError('required')){
-                                        <span>Country is required</span>
-                                        }
-                                    </div>
-                                    }
-                                </div> -->
+  <label class="input-label">
+    Customer Type <span class="text-danger"></span>
+  </label>
+</div>
                             </aside>
                             <aside class="col-md-4">
                                 <div class="d-flex gap-5">
@@ -330,6 +311,7 @@
                                         <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                             formControlName="Network">
                                         <label for="text-input" class="input-label">Network<span
+                                            class="text-danger">*</span><span
                                                 class="text-danger"></span></label>
                                     </div>
                                 </aside>
@@ -340,7 +322,8 @@
                                 <div class="custom-form-group">
                                     <textarea id="" placeholder="" rows="1" class="input-field sm"
                                         formControlName="Remarks" [textWithNumbers]="100"></textarea>
-                                    <label for="text-input" class="input-label">Remarks </label>
+                                    <label for="text-input" class="input-label">Remarks<span
+                                            class="text-danger">*</span></label>
                                     @if(customerForm.get('Remarks')?.touched &&
                                     customerForm.get('Remarks')?.invalid ){
                                     <div class="error-message">
@@ -358,17 +341,19 @@
                                     <div class="form-check d-flex align-items-center">
                                         <input type="checkbox" formControlName="IsMSME" id="IsMSME"
                                             class="form-check-input sm">
-                                        <label for="IsMSME" class="form-check-label sm">Is MSME</label>
+                                        <label for="IsMSME" class="form-check-label sm">Is MSME<span
+                                            class="text-danger">*</span></label>
                                     </div>
                                 </div>
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select">
-                                    <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
-                                        bindValue="name">
-
-                                    </ng-select>
-                                    <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                                    <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
+                                    <ng-option value="Active">Active</ng-option>
+                                    <ng-option value="Suspended">Suspended</ng-option>
+                                </ng-select>
+                                    <label for="" class="input-label">Status <span
+                                            class="text-danger">*</span><span class="text-danger">*</span></label>
                                 </div>
                             </aside>
 
@@ -386,7 +371,8 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="RegistrationNo">
-                                    <label for="text-input" class="input-label">Registration No</label>
+                                    <label for="text-input" class="input-label">Registration No<span
+                                            class="text-danger">*</span></label>
 
                                 </div>
                             </aside>
@@ -417,7 +403,8 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="PanType" placeholder="" class="custom-input-field sm"
                                         formControlName="PanType" />
-                                    <label for="PanType" class="input-label">PAN/VAT</label>
+                                    <label for="PanType" class="input-label">PAN/VAT<span
+                                            class="text-danger">*</span></label>
                                 </div>
                             </aside>
 
@@ -425,7 +412,8 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="PanName" placeholder="" class="custom-input-field sm"
                                         formControlName="PanName" />
-                                    <label for="PanName" class="input-label">Name as per PAN</label>
+                                    <label for="PanName" class="input-label">Name as per PAN<span
+                                            class="text-danger">*</span></label>
                                 </div>
                             </aside>
 
@@ -708,29 +696,44 @@
             <div class="card-body">
                 <ul ngbNav #nav2="ngbNav" [(activeId)]="active2" class="nav-tabs">
                     <li [ngbNavItem]="1">
-                        <button ngbNavLink>
-                             <i-feather
-                                    name="plus-circle" class="feather-sm pt-1 text-info" (click)="openModal(content)" ></i-feather>
-                            Branch</button>
-
-                        <ng-template ngbNavContent>
-                            <ng-container *ngTemplateOutlet="branch"></ng-container>
-                        </ng-template>
-                    </li>
-                    <li [ngbNavItem]="3">
-                        <button ngbNavLink>  
-                                <i-feather name="plus-circle" class="feather-sm pt-1 text-info" (click)="openModal(content3)"></i-feather> Milestone</button>
-                        <ng-template ngbNavContent>
-                            <ng-container *ngTemplateOutlet="TabMilestone"></ng-container>
-                        </ng-template>
-                    </li>
+  <button ngbNavLink>
+    <i-feather name="plus-circle" class="feather-sm pt-1" 
+      [class.text-info]="isCustomerFormValid()" 
+      [class.text-secondary]="!isCustomerFormValid()" 
+      (click)="openModalWithValidationCheck(content)">
+    </i-feather>
+    Branch
+  </button>
+  <ng-template ngbNavContent>
+    <ng-container *ngTemplateOutlet="branch"></ng-container>
+  </ng-template>
+</li>
+                   <li [ngbNavItem]="3">
+  <button ngbNavLink>  
+    <i-feather name="plus-circle" class="feather-sm pt-1" 
+      [class.text-info]="isCustomerFormValid()" 
+      [class.text-secondary]="!isCustomerFormValid()" 
+      (click)="openModalWithValidationCheck(content3)">
+    </i-feather> 
+    Milestone
+  </button>
+  <ng-template ngbNavContent>
+    <ng-container *ngTemplateOutlet="TabMilestone"></ng-container>
+  </ng-template>
+</li>
                      <li [ngbNavItem]="4">
-                        <button ngbNavLink>  
-                                <i-feather name="plus-circle" class="feather-sm pt-1 text-info" (click)="openSalespersonModal(content6)"></i-feather> Salesman</button>
-                        <ng-template ngbNavContent>
-                            <ng-container *ngTemplateOutlet="salesperson"></ng-container>
-                        </ng-template>
-                    </li>
+  <button ngbNavLink>  
+    <i-feather name="plus-circle" class="feather-sm pt-1" 
+      [class.text-info]="isCustomerFormValid()" 
+      [class.text-secondary]="!isCustomerFormValid()" 
+      (click)="openModalWithValidationCheck(content6)">
+    </i-feather> 
+    Salesman
+  </button>
+  <ng-template ngbNavContent>
+    <ng-container *ngTemplateOutlet="salesperson"></ng-container>
+  </ng-template>
+</li>
 
                     <!-- <li [ngbNavItem]="2">
                         <button ngbNavLink>
@@ -1071,7 +1074,28 @@
                     <div class="card-body pb-0">
                         <div class="row">
 
-                            <aside class="col-md-3">
+
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <select id="state" formControlName="CustBranchState" class="form-select" (change)="getCitiesByStateId($event)">
+                                        <option value="" disabled>Select State</option>
+                                        <option *ngFor="let option of stateList" [value]="option.StateMasterSid">
+                                            {{option.stateName}} - {{option.stateCode}}</option>
+                                    </select>
+                                    <label for="state" class="input-label">State <span
+                                            class="text-danger">*</span></label>
+                                    @if(customerBranchForm.get('CustBranchState')?.touched &&
+                                    customerBranchForm.get('CustBranchState')?.invalid){
+                                    <div class="error-message">
+                                        @if(customerBranchForm.get('CustBranchState')?.hasError('required')){
+                                        <span>State is required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+
+                            <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <select id="city" formControlName="CustBranchCity" class="form-select">
                                         <option value="">Select City</option>
@@ -1090,7 +1114,7 @@
                                     }
                                 </div>
                             </aside>
-                               <aside class="col-md-3">
+                               <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input id="branchName" type="text" id="text-input" placeholder=""
                                         class="custom-input-field sm" formControlName="CustBranchName"
@@ -1116,32 +1140,14 @@
                                         <label for="text-input" class="input-label">Branch Type <span class="text-danger">*</span></label>
                                 </div>
                             </aside>
-                              <aside class="col-md-3">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder=""
-                                    class="custom-input-field sm" formControlName="">
-                                        <label for="text-input" class="input-label">Branch Code <span class="text-danger"></span></label>
-                                </div>
-                            </aside>
-                            <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <select id="state" formControlName="CustBranchState" class="form-select" (change)="getCitiesByStateId($event)">
-                                        <option value="" disabled>Select State</option>
-                                        <option *ngFor="let option of stateList" [value]="option.StateMasterSid">
-                                            {{option.stateName}} - {{option.stateCode}}</option>
-                                    </select>
-                                    <label for="state" class="input-label">State <span
-                                            class="text-danger">*</span></label>
-                                    @if(customerBranchForm.get('CustBranchState')?.touched &&
-                                    customerBranchForm.get('CustBranchState')?.invalid){
-                                    <div class="error-message">
-                                        @if(customerBranchForm.get('CustBranchState')?.hasError('required')){
-                                        <span>State is required</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
+                              <aside class="col-md-4">
+  <div class="custom-form-group">
+    <input type="text" id="CustBranchCode" placeholder="" class="custom-input-field sm"
+      formControlName="CustBranchCode" [textWithNumbers]="10" readonly>
+    <label for="CustBranchCode" class="input-label">Branch Code</label>
+  </div>
+</aside>
+                            
                           
                          
 
@@ -1174,24 +1180,26 @@
                                 </div>
                             </aside>
                             <aside class="col-md-4">
-                                <div class="custom-form-group">
-                                    <input id="phone" type="number" id="text-input" placeholder=""
-                                        class="custom-input-field sm" formControlName="CustBranchPhone"
-                                        [onlyNumbers]="20">
-                                    <label for="phone" class="input-label">Phone<span
-                                            class="text-danger"></span></label>
-                                    @if(customerBranchForm.get('CustBranchPhone')?.touched &&
-                                    customerBranchForm.get('CustBranchPhone')?.invalid){
-                                    <div class="error-message">
-                                        @if(customerBranchForm.get('CustBranchPhone')?.hasError('onlyNumbers')){
-                                        <span>Only Digits are allowed</span>
-                                        } @else if(customerBranchForm.get('CustBranchPhone')?.hasError('maxlength')){
-                                        <span>Max 20 Characters</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
+  <div class="custom-form-group">
+    <input id="phone" type="tel" placeholder="" class="custom-input-field sm"
+      formControlName="CustBranchPhone" [onlyNumbers]="20">
+    <label for="phone" class="input-label">Phone<span class="text-danger"></span></label>
+    @if(customerBranchForm.get('CustBranchPhone')?.touched &&
+    customerBranchForm.get('CustBranchPhone')?.invalid ){
+    <div class="error-message">
+      @if(customerBranchForm.get('CustBranchPhone')?.hasError('required')){
+      <span>Phone is required</span>
+      }
+      @else if(customerBranchForm.get('CustBranchPhone')?.hasError('invalidPhoneNumber')){
+      <span>Please enter a valid phone number (6-15 digits)</span>
+      }
+      @else if(customerBranchForm.get('CustBranchPhone')?.hasError('maxlength')){
+      <span>Phone number too long (max 15 digits)</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input id="email" type="text" id="text-input" placeholder=""
@@ -1475,23 +1483,23 @@
                                 </div>
                             </aside>
                             <aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <input type="text" id="MobileNo" placeholder="" class="custom-input-field sm"
-                                        formControlName="MobileNo" [onlyNumbers]="15">
-                                    <label for="MobileNo" class="input-label">Mobile No<span
-                                            class="text-danger"></span></label>
-                                    @if(customerBranchContactForm.get('MobileNo')?.touched &&
-                                    customerBranchContactForm.get('MobileNo')?.invalid){
-                                    <div class="error-message">
-                                        @if(customerBranchContactForm.get('MobileNo')?.hasError('onlyNumbers')){
-                                        <span>Only Digits are allowed</span>
-                                        } @else if(customerBranchContactForm.get('MobileNo')?.hasError('maxlength')){
-                                        <span>Max 15 Characters</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
+  <div class="custom-form-group">
+    <input type="tel" id="MobileNo" placeholder="" class="custom-input-field sm"
+      formControlName="MobileNo" [onlyNumbers]="15">
+    <label for="MobileNo" class="input-label">Mobile No<span class="text-danger"></span></label>
+    @if(customerBranchContactForm.get('MobileNo')?.touched &&
+    customerBranchContactForm.get('MobileNo')?.invalid ){
+    <div class="error-message">
+      @if(customerBranchContactForm.get('MobileNo')?.hasError('invalidPhoneNumber')){
+      <span>Please enter a valid phone number (6-15 digits)</span>
+      }
+      @else if(customerBranchContactForm.get('MobileNo')?.hasError('maxlength')){
+      <span>Phone number too long (max 15 digits)</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="Email" placeholder="" class="custom-input-field sm"

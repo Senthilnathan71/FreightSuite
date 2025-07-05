@@ -156,24 +156,24 @@ export class CurrencyExchangeListComponent {
     return item.ExchangeRateSid || index;
   }
 
-  deleteCurrencyExchange(id: number) {
-    const dialogRef = this.dialog.open(DeleteWarningComponent);
-    dialogRef.afterClosed().subscribe(result => {
-      if (result === true) {
-        this.loading = true;
-        this.accountService.deleteCurrencyExchangeById(id).subscribe({
-          next: (resp: any) => {
-            this.appSettingService.showSuccess("Currency exchange deleted successfully!");
-            this.search(); // Refresh search results
-          },
-          error: (err) => {
-            console.error('Delete error:', err);
-            this.loading = false;
-          }
-        });
-      }
-    });
-  }
+  // deleteCurrencyExchange(id: number) {
+  //   const dialogRef = this.dialog.open(DeleteWarningComponent);
+  //   dialogRef.afterClosed().subscribe(result => {
+  //     if (result === true) {
+  //       this.loading = true;
+  //       this.accountService.deleteCurrencyExchangeById(id).subscribe({
+  //         next: (resp: any) => {
+  //           this.appSettingService.showSuccess("Currency exchange deleted successfully!");
+  //           this.search(); // Refresh search results
+  //         },
+  //         error: (err) => {
+  //           console.error('Delete error:', err);
+  //           this.loading = false;
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
 
   navigateToCreateCurrencyExchange() {
     this.router.navigate(['accounts/currency-exchange/entry']);
