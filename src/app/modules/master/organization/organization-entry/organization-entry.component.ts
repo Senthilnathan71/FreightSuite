@@ -6,6 +6,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {
+  AbstractControl,
   FormBuilder,
   FormGroup,
   FormsModule,
@@ -122,6 +123,8 @@ export class OrganizationEntryComponent {
     { id: '22', name: 'Air CTO' },
     { id: '23', name: 'Pack CFS' },
     { id: '24', name: 'Warehouse' },
+    { id: '25', name: 'Agent' },
+    { id: '26', name: 'Carrier' },
   ];
 
   // isSelected(item: any): boolean {
@@ -152,6 +155,8 @@ export class OrganizationEntryComponent {
   modalRef10: NgbModalRef;
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month, this.today.day);
+  displayedCustomerTypes: any[] = [];
+extraCustomerTypesCount = 0;
 
 
   // Info Related Variables
@@ -163,6 +168,16 @@ export class OrganizationEntryComponent {
   salesmanData : any;
   currentMenuId: number;
   TandCList: any;
+
+  updateDisplayedCustomerTypes(): void {
+  // Get the first 3 selected items
+  this.displayedCustomerTypes = this.modeOfCustomerType
+    .filter(type => this.selectedStatus.includes(type.name))
+    .slice(0, 3);
+  
+  // Calculate how many extra items are selected beyond the first 3
+  this.extraCustomerTypesCount = Math.max(0, this.selectedStatus.length - 3);
+}
 
 
   updateCustomerType(): void {
@@ -179,14 +194,15 @@ export class OrganizationEntryComponent {
   }
 
   toggleSelection(item: any): void {
-    const index = this.selectedStatus.indexOf(item.name);
-    if (index === -1) {
-      this.selectedStatus.push(item.name);
-    } else {
-      this.selectedStatus.splice(index, 1);
-    }
-    this.updateCustomerType();
+  const index = this.selectedStatus.indexOf(item.name);
+  if (index === -1) {
+    this.selectedStatus.push(item.name);
+  } else {
+    this.selectedStatus.splice(index, 1);
   }
+  this.updateDisplayedCustomerTypes();
+  this.updateCustomerType();
+}
 
   isSelected(item: any): boolean {
     return this.selectedStatus.includes(item.name);
@@ -199,6 +215,17 @@ export class OrganizationEntryComponent {
     .replace(/\s/g, '') // Remove all spaces
     .replace(/^./, (c) => c.toLowerCase()); // Lowercase first letter
 }
+isCustomerFormValid(): boolean {
+    return this.customerForm.valid;
+  }
+
+  openModalWithValidationCheck(content: TemplateRef<any>, data?: any) {
+    if (!this.isCustomerFormValid()) {
+      this.appSettingService.showWarning('Please fill in valid customer details first');
+      return;
+    }
+    this.openModal(content, data);
+  }
 
 
   onClearSelection(): void {
@@ -423,8 +450,10 @@ export class OrganizationEntryComponent {
     private calendar : NgbCalendar
   ) { }
 
+
   ngOnInit(): void {
     this.getAllCountries();
+    this.initForm();
     // this.getAllState();
     // this.loadCity();
     this.loadDepartments();
@@ -437,18 +466,52 @@ export class OrganizationEntryComponent {
         this.loadCustomerSalesperson();
       }
     });
-    this.initForm();
+    this.customerForm.get('CustomerName')?.valueChanges.subscribe(() => {
+    this.generateCustomerShortCode();
+  });
+
+  this.customerForm.get('CountryMasterSid')?.valueChanges.subscribe(() => {
+    this.generateCustomerShortCode();
+  });
+    
   }
+  generateCustomerShortCode() {
+  const customerName = this.customerForm.get('CustomerName')?.value;
+  const countryId = this.customerForm.get('CountryMasterSid')?.value;
+  
+  if (!customerName || !countryId) {
+    this.customerForm.get('CustomerShortCode')?.disable();
+    this.customerForm.get('CustomerShortCode')?.setValue('');
+    return;
+  }
+
+  const selectedCountry = this.countryList?.find(c => c.CountryMasterSid == countryId);
+  if (!selectedCountry || !selectedCountry.countryCode) {
+    this.customerForm.get('CustomerShortCode')?.disable();
+    this.customerForm.get('CustomerShortCode')?.setValue('');
+    return;
+  }
+
+  this.customerForm.get('CustomerShortCode')?.enable();
+  
+  // Get first 3 letters of customer name (uppercase)
+  const namePart = customerName.substring(0, 3).toUpperCase();
+  // Get last 3 letters of country code (uppercase)
+  const countryPart = selectedCountry.countryCode.slice(-3).toUpperCase();
+  
+  this.customerForm.get('CustomerShortCode')?.setValue(`${namePart}${countryPart}`);
+}
 
   initForm() {
     this.customerForm = this.fb.group({
       CustomerName: ['', [Validators.required]],
-      CustomerShortCode: ['', [Validators.required]],
-      CustomerAliasName: ['', [Validators.required]],
+       CustomerShortCode: [{ value: '', disabled: true }, [Validators.required]],
+      CustomerAliasName: [''],
       CustomerAddress1: ['', [Validators.required]],
-      CustomerAddress2: ['', [Validators.required]],
+      CustomerAddress2: [''],
       CountryMasterSid: ['', [Validators.required]], // Dropdown
-      LocalLanguage: ['', [Validators.required]],
+      // LocalLanguage: ['', [Validators.required]],
+      CompanyType: [{ value: '', disabled: true }],
       PanAvailable: [false],
       PanType: [{ value: '', disabled: true }, [Validators.required]],
       PanName: [{ value: '', disabled: true }, [Validators.required]],
@@ -458,12 +521,36 @@ export class OrganizationEntryComponent {
       IsMSME: ['', [Validators.required]],
       KYCSpecified: [false],
       RegistrationNo: [{ value: '', disabled: true }],
-      CompanyType: [{ value: '', disabled: true }],
+      
       Remarks: ['', [Validators.required]],
       status: [{value: 'Active', disabled: !this.isEditMode}, Validators.required],
       CustomerType: [{}],
       Network:['', [Validators.required]]
     });
+    this.customerForm.get('CustomerName')?.valueChanges.subscribe(() => {
+    this.updateShortCodeFieldState();
+    this.generateCustomerShortCode();
+  });
+
+  this.customerForm.get('CountryMasterSid')?.valueChanges.subscribe(() => {
+    this.updateShortCodeFieldState();
+    this.generateCustomerShortCode();
+  });
+}
+
+updateShortCodeFieldState() {
+  const customerName = this.customerForm.get('CustomerName')?.value;
+  const countryId = this.customerForm.get('CountryMasterSid')?.value;
+  
+  if (customerName && countryId) {
+    this.customerForm.get('CustomerShortCode')?.enable();
+  } else {
+    this.customerForm.get('CustomerShortCode')?.disable();
+  }
+
+
+
+    
     this.customerForm
       .get('PanAvailable')
       ?.valueChanges.subscribe((panAvailable: boolean) => {
@@ -477,6 +564,8 @@ export class OrganizationEntryComponent {
           panName?.disable();
         }
       });
+       
+
 
     this.customerForm
       .get('KYCSpecified')
@@ -493,14 +582,44 @@ export class OrganizationEntryComponent {
       });
   }
 
+  generateBranchCode() {
+  const branchName = this.customerBranchForm.get('CustBranchName')?.value;
+  const stateId = this.customerBranchForm.get('CustBranchState')?.value;
+  const cityId = this.customerBranchForm.get('CustBranchCity')?.value;
+
+  if (!branchName || !stateId || !cityId) {
+    this.customerBranchForm.get('CustBranchCode')?.setValue('');
+    return;
+  }
+
+  const state = this.stateList?.find(s => s.StateMasterSid == stateId);
+  const city = this.cityList?.find(c => c.CityMasterSid == cityId);
+
+  if (!state || !city) {
+    this.customerBranchForm.get('CustBranchCode')?.setValue('');
+    return;
+  }
+
+  // Get first 3 letters of branch name
+  const namePart = branchName.substring(0, 3).toUpperCase();
+  // Get first 3 letters of state code
+  const statePart = state.stateCode.substring(0, 3).toUpperCase();
+  // Get first 3 letters of city code
+  const cityPart = city.cityCode.substring(0, 3).toUpperCase();
+
+  this.customerBranchForm.get('CustBranchCode')?.setValue(`${namePart}${statePart}${cityPart}`);
+}
+
+
   initCustomerBranchForm() {
     this.customerBranchForm = this.fb.group({
       CustomerMasterSid: [''],
       CustBranchCity: ['', [Validators.required]],
       CustBranchState: ['', [Validators.required]],
       CustBranchName: ['', [Validators.required]],
+      CustBranchCode: [{ value: '', disabled: true }],
       CustBranchZipPostCode: [''],
-      CustBranchPhone: [''],
+      CustBranchPhone: ['', [Validators.maxLength(15), this.phoneNumberValidator]],
       CustBranchEmail: ['', [Validators.required, Validators.email]],
       CustBranchAddress: ['', [Validators.required]],
       CustBranchRegistered: ['Y', [Validators.required]], // default value if applicable
@@ -508,7 +627,44 @@ export class OrganizationEntryComponent {
       CustBranchGSTIN: [''],
       status: [{value: 'Active', disabled: false}, Validators.required],
     });
+    this.customerBranchForm.get('CustBranchName')?.valueChanges.subscribe(() => {
+    this.updateBranchCodeState();
+    this.generateBranchCode();
+  });
+
+  this.customerBranchForm.get('CustBranchState')?.valueChanges.subscribe(() => {
+    this.updateBranchCodeState();
+    this.generateBranchCode();
+  });
+
+  this.customerBranchForm.get('CustBranchCity')?.valueChanges.subscribe(() => {
+    this.updateBranchCodeState();
+    this.generateBranchCode();
+  });
+}
+
+updateBranchCodeState() {
+  const branchName = this.customerBranchForm.get('CustBranchName')?.value;
+  const state = this.customerBranchForm.get('CustBranchState')?.value;
+  const city = this.customerBranchForm.get('CustBranchCity')?.value;
+  
+  if (branchName && state && city) {
+    this.customerBranchForm.get('CustBranchCode')?.enable();
+  } else {
+    this.customerBranchForm.get('CustBranchCode')?.disable();
   }
+
+  }
+  phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
+  if (!control.value) {
+    return null; 
+  }
+
+  const phoneRegex = /^[0-9]{6,15}$/;
+  const isValid = phoneRegex.test(control.value);
+  
+  return isValid ? null : { invalidPhoneNumber: true };
+}
 
   initCustomerBranchContactForm() {
     this.customerBranchContactForm = this.fb.group({
@@ -516,7 +672,7 @@ export class OrganizationEntryComponent {
       CustomerBranchSid: [''],
       ContactType: ['', [Validators.required]],
       ContactName: ['', [Validators.required]],
-      MobileNo: [''],
+      MobileNo: ['', [Validators.maxLength(15), this.phoneNumberValidator]],
       Email: ['', [Validators.required, Validators.email]],
     });
   }
@@ -591,6 +747,7 @@ export class OrganizationEntryComponent {
   //     });
   //   });
   // }
+  
 
   onSubmit() {
     if (this.customerForm.disabled) {
@@ -604,6 +761,9 @@ export class OrganizationEntryComponent {
       updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
     };
     const formValue = this.customerForm.value;
+    const statusValue = formValue.status === 'Active' ? 'A' : 
+                     formValue.status === 'Suspended' ? 'S' : 
+                     formValue.status;
     const selectedPaymentType = this.customerForm.value.paymentType;
 
     console.log(formValue, 'formValue');
@@ -628,7 +788,7 @@ export class OrganizationEntryComponent {
         CompanyType: formValue.CompanyType,
         RegistrationNo: formValue.RegistrationNo,
         ...updatedBy,
-        status: this.status === 'A' ? 'A' : 'C',
+        status: statusValue,
       }
       : {
         CustomerName: formValue.CustomerName,
@@ -650,7 +810,7 @@ export class OrganizationEntryComponent {
         CompanyType: formValue.CompanyType,
         RegistrationNo: formValue.RegistrationNo,
         ...createdBy,
-        status: formValue.status === 'Active' ? 'A' : 'S',
+        status: statusValue,
       };
 
     if (this.isEditMode) {
@@ -692,6 +852,8 @@ export class OrganizationEntryComponent {
   statusMap: { [key: string]: string } = {
     A: 'Active',
     S: 'Suspended',
+    'Active': 'Active',    
+  'Suspended': 'Suspended'
   };
 
   // Fetch customer data and patch the form
@@ -702,7 +864,7 @@ export class OrganizationEntryComponent {
         this.customerName = customerData.CustomerName;
         this.status = customerData.status;
         // Convert API status (A/IA) to display status (Active/Inactive)
-        const formattedStatus = this.statusMap[customerData.status] || '';
+        const formattedStatus = this.statusMap[customerData.status] || customerData.status;
         this.customerForm.patchValue({
           ...customerData,
           CountryMasterSid: customerData.CountryMasterSid, // assign ID
@@ -715,8 +877,15 @@ export class OrganizationEntryComponent {
           PanAvailable:
             customerData.PanType || customerData.PanName ? true : false,
         });
+         setTimeout(() => {
+        if (!customerData.CustomerShortCode) {
+          this.generateCustomerShortCode();
+        }
+      });
+
         console.log(customerData.CustomerType,'CustomerType')
         console.log('Form patched:', this.customerForm.value.CustomerType);
+        this.updateCustomerType()
 
         // ✅ Patch the selected checkboxes from CustomerType JSON
         const customerType = typeof customerData.CustomerType === 'string'
@@ -730,6 +899,7 @@ export class OrganizationEntryComponent {
           .map((type) => type.name);
 
         this.updateCustomerType();
+        this.updateDisplayedCustomerTypes();
       },
       (error) => {
         this.appSettingService.showError('Error loading customer data.');
@@ -837,6 +1007,7 @@ export class OrganizationEntryComponent {
           CustomerMasterSid: this.CustomerMasterSid,
           CityMasterSid: Number(formValue.CustBranchCity),
           StateMasterSid: Number(formValue.CustBranchState),
+          Branch_Code: formValue.CustBranchCode,
           BranchName: formValue.CustBranchBranchName,
           Zip_PostBox: String(formValue.CustBranchZipPostCode),
           ContactNo: String(formValue.CustBranchPhone),
@@ -956,6 +1127,11 @@ export class OrganizationEntryComponent {
           ...cusData,
           Status: formattedStatus,
         });
+        setTimeout(() => {
+        if (!cusData.CustBranchCode) {
+          this.generateBranchCode();
+        }
+      });
       },
       (error) => {
         this.appSettingService.showError('Error loading customer data.');

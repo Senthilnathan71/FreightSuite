@@ -47,6 +47,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
   currentMenuId: number;
   TandCList: any[]=[];
   currentClauseId: any;
+  currencies: any[] = []; 
 
   constructor(
     private fb: FormBuilder,
@@ -63,21 +64,14 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     this.initForm();
     this.loadCompaniesAndBranches();
     this.checkEditMode();
+    this.loadCurrencies();
   }
 
   initForm() {
     this.currencyExchangeForm = this.fb.group({
       EffectiveFrom: ['', [Validators.required]],
-      FromCurrency: ['', [
-        Validators.required,
-        Validators.maxLength(3),
-        Validators.pattern('^[A-Z]{3}$')
-      ]],
-      ToCurrency: ['', [
-        Validators.required,
-        Validators.maxLength(3),
-        Validators.pattern('^[A-Z]{3}$')
-      ]],
+      FromCurrency: ['', [Validators.required]],
+      ToCurrency: ['', [Validators.required]],
       SellRate: ['', [
         Validators.required,
         Validators.pattern(/^\d+\.?\d{0,5}$/)
@@ -103,6 +97,21 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     this.currencyExchangeForm.get('ToCurrency')?.valueChanges.subscribe(val => {
       if (val) {
         this.currencyExchangeForm.get('ToCurrency')?.setValue(val.toUpperCase(), { emitEvent: false });
+      }
+    });
+  }
+
+  loadCurrencies() {
+    this.loading = true;
+    this.masterService.getAllCurrencies().subscribe({
+      next: (currencies) => {
+        this.currencies = currencies;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.appSettingService.showError('Failed to load currencies.');
+        console.error(err);
+        this.loading = false;
       }
     });
   }

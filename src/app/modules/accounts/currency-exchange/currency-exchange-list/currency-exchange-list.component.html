@@ -66,7 +66,7 @@
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                            <!-- <th class="bg-transparent text-light" scope="col" width="10%">Action</th> -->
                             <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveFrom')">
                                 Effective From
                                 <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'EffectiveFrom', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'EffectiveFrom'}"></i>
@@ -96,7 +96,7 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of currencyExchangeList; let i = index; trackBy: trackByExchangeId">
-                            <td>
+                            <!-- <td>
                                 <div class="d-flex align-items-center justify-content-center">
                                     <a class="mx-2 ps-3" [routerLink]="['/accounts/currency-exchange/entry', item.CurrencyExchangeSid]" title="Edit">
                                         <i-feather name="eye" class="feather-sm"></i-feather>
@@ -105,7 +105,7 @@
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
                                 </div>
-                            </td>
+                            </td> -->
                             <td>
                                 <div class="text-truncate">{{item.EffectiveFrom | formatDate}}</div>
                             </td>
