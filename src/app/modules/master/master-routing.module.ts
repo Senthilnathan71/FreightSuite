@@ -940,6 +940,17 @@ export const MasterRoutes: Routes = [
           ]
         }
       },
+      {
+        path: 'year/entry/:YearMasterSid',
+        component: YearEntryComponent,
+        data: {
+          title: 'Year',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Year' },
+          ]
+        }
+      },
         {
         path: 'doctype/entry',
         component: DoctypeComponent,
