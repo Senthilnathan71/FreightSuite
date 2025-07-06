@@ -12,7 +12,7 @@ import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import { take } from 'rxjs';
+import { filter, take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
@@ -22,6 +22,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-zone',
@@ -39,7 +40,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     TextWithNumbersDirective,
     DatePipe,
     ListpageComponent,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    FavoriteStarComponent
   ],
   templateUrl: './zone.component.html',
   styleUrl: './zone.component.scss'
@@ -58,6 +60,7 @@ export class ZoneComponent {
   searchType = 'ZoneName';
   filterValue = '';
   searchPerformed = false;
+  searchResults: any[];
   page = 1;
   pageSize = 10;
   totalLengthOfCollection = 0;
@@ -98,6 +101,9 @@ export class ZoneComponent {
         this.isEditMode = true;
         this.loadZoneData(this.ZoneMasterSid);
       }
+    });
+    this.masterService.searchZone().subscribe((resp:any) => {
+      this.zoneList = resp;
     });
   }
 
@@ -314,26 +320,38 @@ applySorting() {
   });
 }
 
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue
-    };
-
-    this.masterService.searchZone(payload).subscribe((res: any) => {
-      this.results = res;
-      console.log(this.results)
+  search(): void {
+    const filterValue = this.filterValue.toLowerCase();
+    if(!filterValue) {
+      this.searchResults = [...this.zoneList];
+      this.totalLengthOfCollection = this.searchResults.length;
       this.applySorting();
-      this.searchPerformed = true;
+      this.searchPerformed =  true;
       this.updatePaginatedData();
-      this.totalLengthOfCollection = this.results.length || 0;
+      console.log(this.searchResults);
+      return;
+    }
+    console.log(this.filterValue.toLowerCase());
+    if(filterValue) {
+      this.searchResults = this.searchResults.filter(item => {
+      return (
+        (item.ZoneName && item.ZoneName.toLowerCase().includes(filterValue)) ||
+        (item.ZoneCode && item.ZoneCode.toLowerCase().includes(filterValue)) ||
+        (item.status && item.status.toLowerCase().includes(filterValue))
+      );
     });
+      this.totalLengthOfCollection = this.searchResults.length;
+      this.applySorting();
+      this.searchPerformed =  true;
+      this.updatePaginatedData();
+      console.log(this.searchResults);
+    }
   }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.zoneList = this.results.slice(startIndex, endIndex);
+    this.zoneList = this.searchResults.slice(startIndex, endIndex);
   }
 
   trackByIndex(index: number, item: any): number {
@@ -453,6 +471,8 @@ openEDoc() {
   modalRef.componentInstance.idLabel = 'Zone Id';
   modalRef.componentInstance.idValue = this.zoneData?.ZoneMasterSid;
 }
-
+clearFilterValue(){
+      this.filterValue = '';
+    }
 
 }

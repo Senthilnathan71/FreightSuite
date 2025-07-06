@@ -37,10 +37,10 @@ export class MasterService {
       })
     )
   }
-  searchVesselList(payload) {
-    return this.http.post("vessel/search-list", payload).pipe(
-      map((res: any) => {
-        return res.data;
+  searchVesselList() {
+    return this.http.get("vessel/search-list").pipe(
+      map((resp: any) => {
+        return resp.data;
       })
     )
   }
@@ -787,8 +787,8 @@ export class MasterService {
     );
   }
 
-  searchZone(payload) {
-    return this.http.post<{ data: Zone[] }>('zone/search-list', payload).pipe(
+  searchZone() {
+    return this.http.get<{ data: Zone[] }>('zone/search-list').pipe(
       map((resp) => {
         let response = resp.data;
         return response;

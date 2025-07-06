@@ -10,6 +10,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-vessel-list',
@@ -21,7 +22,8 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     ReactiveFormsModule,
     NgbPaginationModule,
     RouterModule,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent
   ],
   templateUrl: './vessel-list.component.html',
   styleUrl: './vessel-list.component.scss'
@@ -34,7 +36,9 @@ export class VesselListComponent {
   searchPerformed = false;
   userData: any;
   loading: boolean = false;
-  allvessel: any[] = []
+  allvessel: any[] = [];
+  searchResults: any[];
+
   // pagination
   page = 1;
   pageSize = 10;
@@ -57,7 +61,11 @@ export class VesselListComponent {
     if (user) {
       this.userData = user;
     }
-  });}
+  });
+  this.masterService.searchVesselList().subscribe((resp:any) => {
+      this.vesselList = resp;
+    });
+}
 
   onSearch(event: { type: string, value: string }) {
   this.searchType = event.type;
@@ -83,36 +91,33 @@ export class VesselListComponent {
   //   });
   // }
 
-    search() {
-      this.loading = true;
-
-      const intSearch = ['YearofBuilt', 'NRT'];
-      const payload = {
-        searchType: this.searchType,
-        filterValue: intSearch.includes(this.searchType) ? Number(this.filterValue) : this.filterValue,
-      };
-
-      this.masterService.searchVesselList(payload).subscribe((res: any) => {
-        this.results = res;
-        this.allvessel = res.map((item: any) => ({
-          ...item,
-          vesselName: item.VesselName,
-          vesselType: item.VesselType,
-          yearOfBuilt: item.YearofBuilt,
-          vesselOperator: item.VesselOperator
-        }));
-
-        this.applySorting();
-        this.vesselList = [...this.allvessel];
-        this.totalLengthOfCollection = this.vesselList.length;
-        this.searchPerformed = true;
-        this.page = 1;
-        this.updatePaginatedData();
-        this.loading = false;
-      }, () => {
-        this.loading = false;
-      });
+    search(): void {
+    if(!this.filterValue) {
+      this.searchResults = [...this.vesselList];
+      this.totalLengthOfCollection = this.searchResults.length;
+      this.applySorting();
+      this.searchPerformed =  true;
+      this.updatePaginatedData();
+      console.log(this.searchResults);
+      return;
     }
+    if(this.filterValue) {
+      this.searchResults = this.searchResults.filter(item => {
+      return (
+        (item.VesselName && item.VesselName.toLowerCase().includes(this.filterValue.toLowerCase())) ||
+        (item.VesselType && item.VesselType.toLowerCase().includes(this.filterValue.toLowerCase())) ||
+        (item.YearofBuilt && item.YearofBuilt===Number(this.filterValue)) ||
+        (item.VesselOperator && item.VesselOperator.toLowerCase().includes(this.filterValue.toLowerCase())) ||
+        (item.status && item.status.toLowerCase().includes(this.filterValue.toLowerCase()))
+      );
+    });
+      this.totalLengthOfCollection = this.searchResults.length;
+      this.applySorting();
+      this.searchPerformed =  true;
+      this.updatePaginatedData();
+      console.log(this.searchResults);
+    }
+  }
 
 
 
@@ -158,7 +163,7 @@ export class VesselListComponent {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.vesselList= this.allvessel.slice(startIndex, endIndex);
+    this.vesselList= this.searchResults.slice(startIndex, endIndex);
   }
 
   trackByIndex(index: number, item: any): number {
@@ -215,5 +220,8 @@ export class VesselListComponent {
     title: companyName
   });
 }
+clearFilterValue(){
+      this.filterValue = '';
+    }
 
 }
