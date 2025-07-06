@@ -58,16 +58,7 @@ export class VerticalNavigationComponent implements OnInit,AfterViewInit {
 
   loadRecentList(event : boolean) {
     if(event){
-      this.verticalNavService.getAllRecentScreens().subscribe(
-        (resp:any)=>{
-          if(resp.status){
-            this.recentList = resp.data;
-            console.log('Recent',this.recentList)
-          } else {
-            this.appSettingsService.showError('Error loading Recent Screens')
-          }
-        }
-      )
+      this.recentList = JSON.parse(localStorage.getItem('recentlyVisited')) || [];
     }
   }
   loadFavouriteList(event : boolean) {

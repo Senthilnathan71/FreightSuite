@@ -225,16 +225,13 @@ export class DepartmentEntryComponent {
       );
     }
     openEmail() {
-  if (!this.departmentData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.departmentData;
-  modalRef.componentInstance.idLabel = 'Department Id';
-  modalRef.componentInstance.idValue = this.departmentData?.DepartmentMasterSid;
-}
+      if (!this.departmentData) return;
+      const modalRef = this.modalService.open(EmailEntryComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
+      });
+    }
 
 openAuthority() {
   if (!this.departmentData) return;

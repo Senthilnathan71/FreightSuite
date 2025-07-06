@@ -1,150 +1,74 @@
 <div class="row">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Email</h4>
-            </div>
-            <div class="col-md-8 pb-2">
-                <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" (click)="closeModal()"
-                        class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-save me-1"></i>
-                        Save
-                    </button>
-                </div>
-            </div>
+  <div class="col-12">
+    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+      <div class="col-md-4 pb-2">
+        <h4 class="page-title mb-0">Email</h4>
+      </div>
+      <div class="col-md-8 pb-2">
+        <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button type="button" (click)="closeModal()" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+            <i class="fas fa-chevron-left me-1"></i> Back
+          </button>
+          <button type="button" (click)="resetForm()" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+          <button type="button" (click)="saveForm()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" [disabled]="emailSending">
+            <i class="fas fa-save me-1"></i> Send
+          </button>
         </div>
-        <div class="card">
-            <div class="card-body">
-
-                <div class="row">
-                    <div class="d-flex gap-4 align-items-center px-2 mb-2">
-                        <!-- To Field -->
-
-                        <div class="col-md-5">
-                            <div class="input-group"><input type="text" placeholder="To" aria-label=""
-                                    class="form-control"><span class="input-group-text">  <i class="fas fa-arrow-right"></i></span>
-                            </div>
-                        </div>
-                        <!-- <div class="col-md-5">
-                            <div class="input-group">
-                                <input type="text" class="form-control" formControlName="Name" placeholder="To "
-                                    required>
-                                <span class="input-group-text btn-light-secondary">
-                                    <i class="fas fa-arrow-right"></i>
-                                </span>
-                            </div>
-                        </div> -->
-
-
-
-
-                        <!-- CC Field -->
-                        <div class="col-md-5">
-                            <div class="input-group"><input type="text" placeholder="Cc" aria-label=""
-                                    class="form-control"><span class="input-group-text">  <i class="fas fa-arrow-right"></i></span>
-                            </div>
-                        </div>
-
-                        <!-- Button -->
-                        <div class="col-2">
-
-                            <button class="btn btn-info btn-sm">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-
-
-                        </div>
-                    </div>
-
-
-
-
-
-
-
-                    <aside class="col-md-12 mb-3">
-                        <!-- <label for="text-input" class="form-label">To <span class="text-danger">*</span></label> -->
-                        <div class="input-group">
-                            <input type="text" id="text-input" class="form-control" formControlName="Name"
-                                placeholder="Subject">
-
-                        </div>
-                    </aside>
-
-
-                    <!-- Toolbar -->
-                    <!-- <div class="mb-2">
-                        <div class="d-flex flex-wrap gap-3">
-                            <span class="fw-normal">Normal</span>
-                            <span class="fw-light">Sailee Light</span>
-                            <i class="fas fa-bold"></i>
-                            <i class="fas fa-italic"></i>
-                            <i class="fas fa-underline"></i>
-                            <i class="fas fa-list-ul"></i>
-                            <i class="fas fa-list-ol"></i>
-                            <i class="fas fa-align-left"></i>
-                            <i class="fas fa-align-center"></i>
-                            <i class="fas fa-align-right"></i>
-                            <i class="fas fa-align-justify"></i>
-                            <i class="fas fa-link"></i>
-                            <i class="fas fa-font"></i>
-                        </div>
-                    </div> -->
-
-
-                    <div >
-                        <p>Monthly billing Customers</p>
-                        <p>1. <strong>New Customers:</strong> 1st Bill - From date of activation to till month end (Pro
-                            rata) + Advance rentals for next month</p>
-                        <p>2. <strong>Existing Customers:</strong> Advance billing from 1st to 30/31st.</p>
-
-                        <p><strong>Due Dates</strong></p>
-                        <ul>
-                            <li>Monthly billing Customers: 15th of the Current Month for Bangalore, Chennai, Nellore,
-                                Vijayawada, Eluru, Visakhapatnam, Coimbatore, Guntur, Delhi, Tirupati, Rajahmundry,
-                                Gurugram, Madurai, Kakinada, Ahmedabad, Jaipur, Lucknow, Ghaziabad, Tirchy, Hosur, Pune
-                            </li>
-                        </ul>
-
-                        <p class="pt-5">Thanks & Regards<br>
-                            Anudhan Palanivel<br>
-                            <small>Note - This is an auto-generated email and reply to this mail id is not monitored. In
-                                case of any query please contact.</small>
-                        </p>
-                    </div>
-
-
-                    <input type="file" class="d-none" multiple>
-
-                    <div class="my-2">
-                        <button type="button" class="btn btn-sm">
-                            <i class="fas fa-paperclip"></i> Attachment
-                        </button>
-                    </div>
-
-
-
-                    <!-- <div class="d-flex justify-content-end mt-4 gap-2">
-          <button class="btn btn-secondary">Preview</button>
-          <button class="btn btn-light">Cancel</button>
-          <button class="btn btn-primary">Send</button>
-        </div> -->
-                </div>
-
-
-
-
-            </div>
-        </div>
+      </div>
     </div>
+    <div class="card" [formGroup]="emailForm">
+      <div class="card-body">
+        <div class="row">
+          <div class="d-flex gap-4 align-items-center px-2 mb-2">
+            <div class="col-md-5">
+              <div class="input-group">
+                <input type="text" formControlName="EmailTo" placeholder="To" class="form-control">
+                <span class="input-group-text"><i class="fas fa-arrow-right"></i></span>
+              </div>
+            </div>
+            <div class="col-md-5">
+              <div class="input-group">
+                <input type="text" formControlName="EmailCC" placeholder="Cc" class="form-control">
+                <span class="input-group-text"><i class="fas fa-arrow-right"></i></span>
+              </div>
+            </div>
+            <div class="col-2">
+              <button class="btn btn-info btn-sm">
+                <i class="fas fa-chevron-down"></i>
+              </button>
+            </div>
+          </div>
+          <aside class="col-md-12 mb-3">
+            <div class="input-group">
+              <input type="text" formControlName="Subject" class="form-control" placeholder="Subject">
+            </div>
+          </aside>
+          <aside class="col-12">
+            <textarea name="body" id="body" placeholder="Type Something"
+              style="min-height: 300px; overflow-y: auto; width: 100%; resize: none"
+              class="rounded" formControlName="Mailbody"></textarea>
+          </aside>
+        <div class="col-12 mt-2">
+            <input type="file" class="d-none" multiple #fileInput (change)="onFileChange($event)">
+            <button type="button" (click)="fileInput.click()" class="btn btn-sm btn-outline-secondary">
+              <i class="fas fa-paperclip"></i> Attachment
+            </button>
+            <div *ngIf="selectedFiles.length > 0" class="mt-2">
+              <ul class="row ps-0">
+                @for(file of selectedFiles;track $index){
+                  <div class="col-md-5 border border-info rounded m-2">
+                    <li class="list-group-item d-flex justify-content-between align-items-center p-1">
+                      <h6 class="pt-1">{{file.name}}</h6>
+                      <button type="button" class="btn btn-info text-white btn-sm float-end" (click)="removeFile(file)">X</button>
+                    </li>
+                  </div>
+                }
+              </ul>
+            </div>
+          </div>
+      </div>
+    </div>
+  </div>
 </div>
