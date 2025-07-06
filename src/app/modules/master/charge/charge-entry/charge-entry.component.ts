@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -27,7 +27,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
     ReactiveFormsModule,
     NgbDatepickerModule,
     DatePipe,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    FormsModule
   ],
   templateUrl: './charge-entry.component.html',
   styleUrls: ['./charge-entry.component.scss'],
@@ -43,6 +44,9 @@ export class ChargeEntryComponent implements OnInit {
   errorMessage: any;
   idParam: number;
   chargeData: any;
+  displayedDepartments: any[] = [];
+ extraDepartmentsCount = 0;
+ selectedDepartments: string[] = [];
 
   // Lookup options
   companyOptions: any[] = [];
@@ -66,6 +70,36 @@ export class ChargeEntryComponent implements OnInit {
     private calendar : NgbCalendar,
     private modalService : NgbModal
   ) { }
+  updateDisplayedDepartments(): void {
+  this.displayedDepartments = this.departmentOptions
+    .filter(dept => this.selectedDepartments.includes(dept.departmentName))
+    .slice(0, 3);
+  this.extraDepartmentsCount = Math.max(0, this.selectedDepartments.length - 3);
+}
+
+toggleDepartmentSelection(item: any): void {
+  const index = this.selectedDepartments.indexOf(item.departmentName);
+  if (index === -1) {
+    this.selectedDepartments.push(item.departmentName);
+  } else {
+    this.selectedDepartments.splice(index, 1);
+  }
+  this.updateDisplayedDepartments();
+  this.updateDepartmentValue();
+}
+isDepartmentSelected(item: any): boolean {
+  return this.selectedDepartments.includes(item.departmentName);
+}
+
+updateDepartmentValue(): void {
+  
+  const selectedIds = this.departmentOptions
+    .filter(dept => this.selectedDepartments.includes(dept.departmentName))
+    .map(dept => dept.DepartmentMasterSid);
+  
+  this.chargeForm.get('DepartmentMasterSid').setValue(selectedIds);
+}
+
 
   ngOnInit(): void {
     this.loadLookupData();
@@ -78,6 +112,7 @@ export class ChargeEntryComponent implements OnInit {
         this.loadCharge(this.idParam);
       }
     });
+    
   }
   onHsnsacSelect(event: any): void {
   if (event) {
@@ -99,7 +134,7 @@ export class ChargeEntryComponent implements OnInit {
       HSNSAC: ['', Validators.required],
       Status: ['A', Validators.required],
       ChargeGroupSid: [null],
-      CompanyMasterSid: [null],
+      // CompanyMasterSid: [null],
       CurrencyMasterSid: [null],
       DepartmentMasterSid: [null, Validators.required],
       TDSMasterSid: [null],
@@ -112,11 +147,11 @@ export class ChargeEntryComponent implements OnInit {
     });
   }
 
-  // Update the loadLookupData method to properly handle charge groups
+
 loadLookupData(): void {
-  this.masterService.getAllCompanies().subscribe(companies => {
-    this.companyOptions = companies.data || companies;
-  });
+  // this.masterService.getAllCompanies().subscribe(companies => {
+  //   this.companyOptions = companies.data || companies;
+  // });
 
   this.masterService.getAllCurrencies().subscribe(currencies => {
     this.currencyOptions = currencies.data || currencies;
@@ -126,7 +161,7 @@ loadLookupData(): void {
     this.departmentOptions = departments.data || departments;
   });
 
-  // Updated charge groups loading
+  
   this.masterService.getAllChargeGroups().subscribe({
     next: (response: any) => {
       // Handle different response structures
@@ -180,6 +215,16 @@ loadLookupData(): void {
           // EffectiveFrom: new Date(resp.EffectiveFrom)
         };
         this.chargeForm.patchValue(chargeData);
+        if (this.isEditMode && resp.DepartmentMasterSid) {
+        const departmentIds = Array.isArray(resp.DepartmentMasterSid) ? 
+          resp.DepartmentMasterSid : [resp.DepartmentMasterSid];
+        
+        this.selectedDepartments = this.departmentOptions
+          .filter(dept => departmentIds.includes(dept.DepartmentMasterSid))
+          .map(dept => dept.departmentName);
+        
+        this.updateDisplayedDepartments();
+        }
       },
       (error) => {
         this.errorMessage = error.message;
