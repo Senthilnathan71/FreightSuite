@@ -13,7 +13,7 @@ import { FeatherModule } from 'angular-feather';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterModule, CommonModule, ReactiveFormsModule,FeatherModule],
+  imports: [RouterModule, CommonModule, ReactiveFormsModule, FeatherModule],
   templateUrl: './login.component.html',
 })
 export class LoginComponent implements OnInit {
@@ -25,7 +25,7 @@ export class LoginComponent implements OnInit {
   isSubmitted: boolean = false;
   isLoading: boolean = false;
   token: any
-  passwordView : boolean;
+  passwordView: boolean;
   successMessage: any;
   constructor(
     private appService: AppService,
@@ -42,7 +42,7 @@ export class LoginComponent implements OnInit {
     this.loginform = this.formBuilder.group({
       email: ["", [this.emailValidator]],
       password: ["", Validators.required],
-      rememberMe : [false]
+      rememberMe: [false]
     });
 
     this.forgotPasswordForm = this.formBuilder.group({
@@ -65,80 +65,80 @@ export class LoginComponent implements OnInit {
 
 
 
-login() {
-  if (this.loginform.invalid) {
-    return;
-  }
-
-  this.isSubmitted = true;
-  this.isLoading = true;
-
-  // Get browser geolocation
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-
-        this.getLocationDetails(lat, lon).then((locationString) => {
-          this.doLogin(locationString, lat, lon);
-        }).catch(() => {
-          // fallback if reverse geocoding fails
-          this.doLogin(`${lat}, ${lon}`, lat, lon);
-        });
-      },
-      (err) => {
-        console.error("Geolocation error:", err);
-        // fallback if geolocation denied
-        this.doLogin('Unknown location', null, null);
-      }
-    );
-  } else {
-    // fallback if browser doesn't support
-    this.doLogin('Unknown location', null, null);
-  }
-}
-
-
-doLogin(location?: string, lat?: number | null, lon?: number | null) {
-  const param = {
-    ...this.loginform.value,
-    projectType: 'freight-forwarding',
-    location,
-    latitude: lat,
-    longitude: lon
-  };
-
-  this.authService.login(param).subscribe((resp: any) => {
-    this.isLoading = false;
-
-    if (!resp.status) {
-      this.errorMessage = resp.message || "Login failed";
+  login() {
+    if (this.loginform.invalid) {
       return;
     }
 
-    if (this.loginform.get('rememberMe')?.value) {
-      localStorage.setItem('rememberedEmail', param.email);
-      localStorage.setItem('rememberedPassword', param.password);
+    this.isSubmitted = true;
+    this.isLoading = true;
+
+    // Get browser geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          this.getLocationDetails(lat, lon).then((locationString) => {
+            this.doLogin(locationString, lat, lon);
+          }).catch(() => {
+            // fallback if reverse geocoding fails
+            this.doLogin(`${lat}, ${lon}`, lat, lon);
+          });
+        },
+        (err) => {
+          console.error("Geolocation error:", err);
+          // fallback if geolocation denied
+          this.doLogin('Unknown location', null, null);
+        }
+      );
     } else {
-      localStorage.removeItem('rememberedEmail');
-      localStorage.removeItem('rememberedPassword');
+      // fallback if browser doesn't support
+      this.doLogin('Unknown location', null, null);
     }
-
-    this.router.navigate(['dashboard']);
-  });
-}
+  }
 
 
+  doLogin(location?: string, lat?: number | null, lon?: number | null) {
+    const param = {
+      ...this.loginform.value,
+      projectType: 'freight-forwarding',
+      location,
+      latitude: lat,
+      longitude: lon
+    };
+
+    this.authService.login(param).subscribe((resp: any) => {
+      this.isLoading = false;
+
+      if (!resp.status) {
+        this.errorMessage = resp.message || "Login failed";
+        return;
+      }
+
+      if (this.loginform.get('rememberMe')?.value) {
+        localStorage.setItem('rememberedEmail', param.email);
+        localStorage.setItem('rememberedPassword', param.password);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+        localStorage.removeItem('rememberedPassword');
+      }
+
+      this.router.navigate(['dashboard']);
+    });
+  }
 
 
 
-async getLocationDetails(lat: number, lon: number): Promise<string> {
-  const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-  const data = await response.json();
-  console.log(data,'getLocationDetails')
-  return data.display_name || `${lat}, ${lon}`;
-}
+
+
+  async getLocationDetails(lat: number, lon: number): Promise<string> {
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+    const data = await response.json();
+    console.log(data, 'getLocationDetails')
+    return data.display_name || `${lat}, ${lon}`;
+  }
 
 
 
@@ -189,9 +189,12 @@ async getLocationDetails(lat: number, lon: number): Promise<string> {
       this.authService.forgotPassword(param).subscribe((resp) => {
         if (resp.status) {
           this.successMessage = resp.message;
+          this.appSettingService.showSuccess('Email Sent Successfully');
+          this.router.navigate(['auth/login']);
           this.isLoading = false;
         } else {
           this.errorMessage = resp.message;
+          this.appSettingService.showError('Email Sent Failed');
           this.isLoading = false;
         }
       })
