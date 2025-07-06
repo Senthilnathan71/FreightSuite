@@ -5,6 +5,7 @@ import { RolemenuComponent } from "./rolemenu/rolemenu/rolemenu.component";
 import { MenuListComponent } from "./menu/menu-list/menu-list.component";
 import { EdocComponent } from "./edoc/edoc/edoc.component";
 import { EmailEntryComponent } from "./email/email-entry/email-entry.component";
+import { MenuEntryComponent } from "./menu/menu-entry/menu-entry.component";
 
 export const SettingsRoutes: Routes = [
     {
@@ -31,6 +32,22 @@ export const SettingsRoutes: Routes = [
                 component: MenuListComponent,
                 data: {
                     title: 'Menu List',
+                    urls: [{ title: 'Master', url: '/master' }, { title: 'Menu' }],
+                },
+            },
+            {
+                path: 'menu/entry',
+                component: MenuEntryComponent,
+                data: {
+                    title: 'Menu Entry',
+                    urls: [{ title: 'Master', url: '/master' }, { title: 'Menu' }],
+                },
+            },
+            {
+                path: 'menu/entry/:id',
+                component: MenuEntryComponent,
+                data: {
+                    title: 'Menu Entry',
                     urls: [{ title: 'Master', url: '/master' }, { title: 'Menu' }],
                 },
             },

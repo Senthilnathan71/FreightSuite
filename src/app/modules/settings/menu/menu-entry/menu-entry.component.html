@@ -1,0 +1,218 @@
+<div class="row">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-2">
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Menu' : 'Menu'}}</h4>
+                @if(isEditMode){
+                <a class="text-info ps-2 d-flex align-items-center w-2 h-2">
+                    <i class="fas fs-6 fa-info-circle"></i>
+                </a>
+                }
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    @if(isEditMode){
+                    <button type="button" appPreventMultiClick
+                        class="btn btn-outline-info btn-sm dofi-min-w-160 dofi-max-w-160">
+                        <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                    </button>
+                    }
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" appPreventMultiClick (click)="onSubmit()">
+                        <i class="fas fa-save me-1"></i>
+                        {{isEditMode ? 'Update' : 'Save'}}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row" [formGroup]="menuForm">
+                    <aside class="col-12">
+                        <h5 class="card-title text-info">
+                            Menu Details
+                        </h5>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="MenuName" formControlName="MenuName" placeholder=""
+                                class="custom-input-field sm">
+                            <label for="MenuName" class="input-label">Menu Name <span
+                                    class="text-danger fw-bold">*</span></label>
+                            @if(menuForm.get('MenuName')?.touched &&
+                            menuForm.get('MenuName')?.invalid){
+                            <div class="error-message">
+                                @if(menuForm.get('MenuName')?.hasError('required')){
+                                <span>Menu Name is required</span>
+                                } @else if(menuForm.get('MenuName')?.hasError('maxlength')){
+                                <span>Max 50 Characters</span>
+                                } @else if(menuForm.get('MenuName')?.hasError('invalidChars')){
+                                <span>Special characters are not allowed</span>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="MenuCode" id="MenuCode" placeholder=""
+                                class="custom-input-field sm">
+                            <label for="MenuCode" class="input-label">Menu Code <span
+                                    class="text-danger fw-bold">*</span></label>
+                            @if(menuForm.get('MenuCode')?.touched &&
+                            menuForm.get('MenuCode')?.invalid){
+                            <div class="error-message">
+                                @if(menuForm.get('MenuCode')?.hasError('required')){
+                                <span>Menu Code is required</span>
+                                } @else if(menuForm.get('MenuCode')?.hasError('maxlength')){
+                                <span>Max 3 Characters</span>
+                                } @else if(menuForm.get('MenuCode')?.hasError('invalidUppercase')){
+                                <span>Only uppercase letters and numbers allowed</span>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="moduleList" bindLabel="ModuleName" bindValue="ModuleMasterSid"
+                                formControlName="ModuleMasterSid" placeholder="Select Module"
+                                [class.is-invalid]="menuForm.get('ModuleMasterSid')?.invalid && menuForm.get('ModuleMasterSid')?.touched">
+                            </ng-select>
+                            <label class="input-label">Module <span class="text-danger">*</span></label>
+                            @if(menuForm.get('ModuleMasterSid')?.touched &&
+                            menuForm.get('ModuleMasterSid')?.invalid){
+                            <div class="error-message">
+                                <span>Module is required</span>
+                            </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="path" formControlName="path" placeholder=""
+                                class="custom-input-field sm">
+                            <label for="path" class="input-label">Path <span
+                                    class="text-danger fw-bold">*</span></label>
+                            @if(menuForm.get('path')?.touched && menuForm.get('path')?.invalid){
+                            <div class="error-message">
+                                @if(menuForm.get('path')?.hasError('required')){
+                                <span>Path is required</span>
+                                } @else if(menuForm.get('path')?.hasError('invalidPath')){
+                                <span>Only lowercase letters, numbers, hyphens and slashes
+                                    allowed (e.g., dashboard/list)</span>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="iconOptions" bindLabel="label" bindValue="value" formControlName="icon"
+                                placeholder="Select an icon">
+                                <ng-template ng-label-tmp let-item="item">
+                                    <i-feather class="feather-sm me-2" [name]="item.value"></i-feather>
+                                    {{item.label}}
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item">
+                                    <i-feather class="feather-sm me-2" [name]="item.value"></i-feather>
+                                    {{item.label}}
+                                </ng-template>
+                            </ng-select>
+                            <label class="input-label">Icon</label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"
+                                [class.is-invalid]="menuForm.get('status')?.invalid && menuForm.get('status')?.touched">
+                            </ng-select>
+                            <label class="input-label">Status <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <aside class="col-12">
+                        <h5 class="card-title text-info">
+                            Permission and Requirements
+                        </h5>
+                    </aside>
+                    <aside [formGroup]="menuForm" class="col-md-6 mt-2">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle no-wrap table-bordered">
+                                <thead>
+                                    <tr class="bg-info text-white rounded-top">
+                                        <th class="bg-transparent text-light" scope="col" width="5%">S.No</th>
+                                        <th class="bg-transparent text-light" scope="col" width="85%">Permission</th>
+                                        <th class="bg-transparent text-light" scope="col" width="10%">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody formArrayName="permissions">
+                                    @for (permission of permissions.controls; track $index; let last = $last) {
+                                    <tr [formGroupName]="$index">
+                                        <td>{{$index + 1}}</td>
+                                        <td class="py-0">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="custom-form-group">
+                                                        <input type="text" formControlName="permissionName" class="custom-input-field sm"
+                                                            placeholder="Permission Name">
+                                                        <!-- <label for="text" class="input-label">Permission Name</label> -->
+                                                        <!-- @if(permission.get('permissionName')?.touched &&
+                                                        permission.get('permissionName')?.invalid){
+                                                        <div class="error-message">
+                                                            @if(permission.get('permissionName')?.hasError('required')){
+                                                            <span>Permission name is required</span>
+                                                            }
+                                                        </div>
+                                                        } -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="pe-2">
+                                            @if(last) {
+                                            <button type="button" class="btn ms-auto btn-sm btn-outline-info me-2" (click)="addPermission()" title="Add Permission">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            }
+                                            @if(permissions.length > 1) {
+                                            <button type="button" class="btn btn-sm btn-outline-danger me-2"
+                                                (click)="removePermission($index)" title="Remove Permission">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

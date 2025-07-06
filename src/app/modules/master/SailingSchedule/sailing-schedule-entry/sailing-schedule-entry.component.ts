@@ -57,7 +57,7 @@ export class SailingScheduleEntryComponent implements OnInit {
     isModalEditMode : boolean;
     vesselList : any[];
     carrierList : any[];
-    portList : any[];
+    portList : any[]=[];
     filteredPOLList : any[];
     filteredPODList : any[];
     active = 1;
@@ -67,9 +67,10 @@ export class SailingScheduleEntryComponent implements OnInit {
     modalRef: NgbModalRef
     model: NgbDateStruct;
     today = this.calendar.getToday();
-    todayDate = new Date(this.today.year, this.today.month, this.today.day);
+    todayDate = new Date(this.today.year, this.today.month-1, this.today.day);
     sailHeadData: any;
     sailDetailData: any;
+    minETADate : any;
 
 
     modeOfStatus = [
@@ -113,43 +114,44 @@ export class SailingScheduleEntryComponent implements OnInit {
         this.scheduleForm = this.fb.group({
             VesselMasterSid : [,[Validators.required]],
             VoyageNo : ['',[Validators.required]],
-            RotationNumber : ['',[Validators.required]],
-            ShipIRN : ['',[Validators.required]],
-            CrewIRN : ['',[Validators.required]],
-            SCMETA : ['',[Validators.required]],
-            SCMETD : [,[Validators.required]],
-            SCMTCargoDescription : [,[Validators.required]],
-            Remarks : ['',[Validators.required]],
+            RotationNumber : [''],
+            ShipIRN : [''],
+            CrewIRN : [''],
+            SCMETA : [null],
+            SCMETD : [null],
+            SCMTCargoDescription : [''],
+            Remarks : [''],
             status : ['Active'],
             CoLoad : [false],
-            VoyageType : [''],
-            Carrier : []
+            VoyageType : [null],
+            Carrier : [null]
         })
     }
 
     initScheduleDetailForm(){
         this.scheduleDetailForm = this.fb.group({
             POLSid : [,[Validators.required]],
-            PODSid : [,[Validators.required]],
+            // PODSid : [,[Validators.required]],
             ETA : [,[Validators.required]],
             ETD : [,[Validators.required]],
-            PortCutoff : [,[Validators.required]],
-            TransitDays : [,[Validators.required]],
-            RotationNo : [,[Validators.required]],
-            RotationDate : [,[Validators.required]],
-            IGMNo : [,[Validators.required]],
-            IGMDate : [,],
-            EGMNo : [,[Validators.required]],
-            EGMDate : [,[Validators.required]],
+            PortCutoff : [null],
+            TransitDays : [''],
+            RotationNo : [''],
+            RotationDate : [null],
+            IGMNo : [''],
+            IGMDate : [null],
+            EGMNo : [''],
+            EGMDate : [null],
             detailstatus : ['Active']
         })
-        this.scheduleDetailForm.get('PODSid')?.valueChanges.subscribe(() => {
-            this.updatePOLList();
-        });
+        this.scheduleDetailForm.get('TransitDays').disable()
+        // this.scheduleDetailForm.get('PODSid')?.valueChanges.subscribe(() => {
+        //     this.updatePOLList();
+        // });
 
-        this.scheduleDetailForm.get('POLSid')?.valueChanges.subscribe(() => {
-            this.updatePODList();
-        });
+        // this.scheduleDetailForm.get('POLSid')?.valueChanges.subscribe(() => {
+        //     this.updatePODList();
+        // });
         this.scheduleDetailForm.get('ETD').valueChanges.subscribe((value:Date)=>{
             if(!value){
                 return;
@@ -167,9 +169,13 @@ export class SailingScheduleEntryComponent implements OnInit {
         forkJoin({
             vessels : this.masterService.getAllVessels(),
             carriers : this.masterService.getAllCustomers(),
-        }).subscribe(({vessels,carriers})=>{
+            ports : this.masterService.getAllPorts()
+        }).subscribe(({vessels,carriers,ports})=>{
             this.vesselList = vessels.data,
-            this.carrierList = carriers
+            this.carrierList = carriers,
+            this.portList = ports.data,
+            this.filteredPOLList = ports.data,
+            this.filteredPODList = ports.data
         })
     }
 
@@ -261,7 +267,7 @@ export class SailingScheduleEntryComponent implements OnInit {
                 (resp:any)=>{
                     if(resp.status){
                         this.appSettingService.showSuccess('Sailing Schedule Updated Successfully');
-                        this.route.navigate(['master/sailing-schedule/list']);
+                        this.loadScheduleData()
                     } else {
                         this.appSettingService.showError('Error Updating Sailing Schedule');
                     }
@@ -275,7 +281,10 @@ export class SailingScheduleEntryComponent implements OnInit {
                 (resp:any)=>{
                     if(resp.status){
                         this.appSettingService.showSuccess('Sailing Schedule Created Successfully');
-                        this.route.navigate(['master/sailing-schedule/list']);
+                        const sailId = resp.data.VoyageMasterHeaderSid;
+                        if(sailId){
+                            this.route.navigate(['master/sailing-schedule/entry',sailId]);
+                        }
                     } else {
                         this.appSettingService.showError('Error Creating Sailing Schedule');
                     }
@@ -290,13 +299,13 @@ export class SailingScheduleEntryComponent implements OnInit {
 
     openDetailEntryModal(content : TemplateRef<any>,data ?: any){
         this.initScheduleDetailForm();
-        this.loadAllDetailFields();
+        // this.loadAllDetailFields();
         if(data){
             this.sailDetailData = data;
             this.isModalEditMode = true;
             this.scheduleDetailForm.patchValue({
                 POLSid: data.POLSid || '',
-                PODSid: data.PODSid || '',
+                // PODSid: data.PODSid || '',
                 ETA: new Date(data.ETA) || '',
                 ETD: new Date(data.ETD) || '',
                 PortCutoff: new Date(data.PortCutoff) || '' ,
@@ -309,8 +318,13 @@ export class SailingScheduleEntryComponent implements OnInit {
                 EGMDate: new Date(data.EGMDate) || '',
                 detailstatus: data.status === 'A' ? 'Active' : 'Suspended'
             })
+            this.minETADate = null
             this.VoyageMasterDetailSid = data.VoyageMasterDetailSid;
-        } 
+            this.filterPortList(data.POLSid);
+        } else {
+            this.calculateMinETA();
+            this.filterPortList();
+        }
         this.modalRef = this.modalService.open(content, { size: 'lg',centered:true , backdrop : 'static' });
     }
 
@@ -324,11 +338,11 @@ export class SailingScheduleEntryComponent implements OnInit {
 
         const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
         const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
-        const formValue = this.scheduleDetailForm.value;
+        const formValue = this.scheduleDetailForm.getRawValue();
 
         const payload = {
             POLSid: parseInt(formValue.POLSid),
-            PODSid: parseInt(formValue.PODSid),
+            // PODSid: parseInt(formValue.PODSid),
             ETA: formValue.ETA,
             ETD: formValue.ETD,
             PortCutoff: formValue.PortCutoff,
@@ -378,22 +392,22 @@ export class SailingScheduleEntryComponent implements OnInit {
 
     }
 
-    loadAllDetailFields(){
-        this.masterService.getAllPorts().subscribe(
-            (resp:any)=>{
-                if(resp.status){
-                    this.portList = resp.data;
-                    this.filteredPOLList = this.portList;
-                    this.filteredPODList = this.portList;
-                } else {
-                    this.appSettingService.showError('Error Loading All Ports')
-                }
-            },
-            (error)=>{
-                console.error('Error Loading All Ports',error);
-            }
-        )
-    }
+    // loadAllDetailFields(){
+    //     this.masterService.getAllPorts().subscribe(
+    //         (resp:any)=>{
+    //             if(resp.status){
+    //                 this.portList = resp.data;
+    //                 this.filteredPOLList = this.portList;
+    //                 this.filteredPODList = this.portList;
+    //             } else {
+    //                 this.appSettingService.showError('Error Loading All Ports')
+    //             }
+    //         },
+    //         (error)=>{
+    //             console.error('Error Loading All Ports',error);
+    //         }
+    //     )
+    // }
 
     // toNgbDate(isoDateString: string): NgbDate | null {
     //     if (!isoDateString) return null;
@@ -418,25 +432,25 @@ export class SailingScheduleEntryComponent implements OnInit {
     // }
 
 
-    updatePOLList() {
-        if(!this.portList) return;
-        const selectedPOD = this.scheduleDetailForm.get('PODSid')?.value;
-        if (selectedPOD) {
-            this.filteredPOLList = this.portList.filter(
-                port => port.PortMasterSid !== selectedPOD
-            );
-        }
-    }
+    // updatePOLList() {
+    //     if(!this.portList) return;
+    //     const selectedPOD = this.scheduleDetailForm.get('PODSid')?.value;
+    //     if (selectedPOD) {
+    //         this.filteredPOLList = this.portList.filter(
+    //             port => port.PortMasterSid !== selectedPOD
+    //         );
+    //     }
+    // }
 
-    updatePODList() {
-        if(!this.portList) return;
-        const selectedPOL = this.scheduleDetailForm.get('POLSid')?.value;
-        if (selectedPOL) {
-            this.filteredPODList = this.portList.filter(
-                port => port.PortMasterSid !== selectedPOL
-            );
-        }
-    }
+    // updatePODList() {
+    //     if(!this.portList) return;
+    //     const selectedPOL = this.scheduleDetailForm.get('POLSid')?.value;
+    //     if (selectedPOL) {
+    //         this.filteredPODList = this.portList.filter(
+    //             port => port.PortMasterSid !== selectedPOL
+    //         );
+    //     }
+    // }
 
 
 
@@ -513,5 +527,44 @@ export class SailingScheduleEntryComponent implements OnInit {
 			}
 		);
 	}
+
+    toggleCoLoad(event){
+        event.preventDefault();
+		const checkbox = event.target as HTMLInputElement;
+		checkbox.checked = !checkbox.checked;
+		this.scheduleForm.get('CoLoad')?.setValue(checkbox.checked);
+		this.scheduleForm.get('CoLoad')?.updateValueAndValidity();
+    }
+
+    filterPortList(PortId ?: number){
+        if(this.scheduleDetailList.length === 0){
+			return;
+		}
+        let onlyPortId = this.scheduleDetailList.map(m => m.POLSid);
+        if(PortId){
+            onlyPortId = onlyPortId.filter(id => id !== PortId);
+        }
+        this.filteredPOLList = this.portList.filter( p => !onlyPortId.includes(p.PortMasterSid))
+    }
+
+    getFormattedPort(PortMasterSid) {
+        if (!PortMasterSid || this.portList.length === 0) {
+            return '';
+        }
+        const port = this.portList.find(p => p.PortMasterSid === PortMasterSid)
+        return `${port.PortName} (${port.PortCode})`
+    }
+
+    calculateMinETA(){
+		if(this.scheduleDetailList.length === 0){
+			this.minETADate = this.toNgbDateStruct(this.todayDate);
+			return;
+		}
+		const onlyETDDates = this.scheduleDetailList.map( m => m.ETD);
+		onlyETDDates.sort((a,b)=>new Date(a).getTime() - new Date(b).getTime())
+		const maxETA = onlyETDDates[onlyETDDates.length-1];
+		this.minETADate = this.toNgbDateStruct(new Date(maxETA));
+	}
+
 }
 

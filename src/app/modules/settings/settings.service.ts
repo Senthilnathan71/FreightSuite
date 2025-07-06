@@ -24,7 +24,7 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
   createMenu(payload: any){
     return this.http.post<{data:any}>('menu/create',payload).pipe(
       map((resp)=>{
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     )
@@ -43,7 +43,7 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
   updateMenuById(MenuMasterSid: number, payload: any){
     return this.http.patch<{data:any}>(`menu/update/${MenuMasterSid}`,payload).pipe(
       map((resp)=>{
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     )
@@ -68,6 +68,14 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
 
   getMenuByModuleId(ModuleMasterSid){
     return this.http.get<{data:any[]}>(`menu/fetchByModule/${ModuleMasterSid}`).pipe(
+      map((res:any)=>{
+        return res.data;
+      })
+    )
+  }
+
+  getMenuPermissions(MenuMasterSid){
+    return this.http.get<{data:any[]}>(`menu/fetch/menu-permissions/${MenuMasterSid}`).pipe(
       map((res:any)=>{
         return res.data;
       })

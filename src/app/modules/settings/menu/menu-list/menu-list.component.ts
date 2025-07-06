@@ -487,5 +487,8 @@ openEDoc() {
   modalRef.componentInstance.idValue = this.menuData?.MenuMasterSid;
 }
 
+navigateToCreate(){
+  this.router.navigate(['settings/menu/entry'])
+}
 
 }
