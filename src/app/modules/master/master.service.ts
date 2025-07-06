@@ -37,10 +37,10 @@ export class MasterService {
       })
     )
   }
-  searchVesselList() {
-    return this.http.get("vessel/search-list").pipe(
+  searchVesselList(params) {
+    return this.http.post("vessel/search-list",{params}).pipe(
       map((resp: any) => {
-        return resp.data;
+        return resp;
       })
     )
   }

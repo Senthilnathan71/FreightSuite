@@ -25,12 +25,12 @@
                 </button>
 
                 <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
-                    [disabled]="!searchPerformed">
+                    [disabled]="!searched">
                     <i class="fas fa-file-alt me-1"></i> Report
                 </button>
 
                 <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
-                    [disabled]="!searchPerformed">
+                    [disabled]="!searched">
                     <i class="fas fa-sync-alt me-1"></i> Reset
                 </button>
             </form>
@@ -39,13 +39,11 @@
         <div class="col-md-12 border-top">
             <div class="row mx-0 py-2">
                 <div class="col-md-8 mx-auto px-0">
-                    <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0"
-                        (ngSubmit)="search()">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                         <div class="d-flex gap-2 col-6 px-0 align-items-center">
                             <div class="form-outline flex-grow-1 position-relative">
                                 <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search" [(ngModel)]="filterValue"
                                     aria-label="Search input">
-                            
                                 <button *ngIf="filterValue"
                                     class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                     (click)="clearFilterValue()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
@@ -55,7 +53,7 @@
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
-                            <button type="submit" (click)="search()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <button type="submit" (click)="loadVessels()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
                         </div>
@@ -65,51 +63,7 @@
         </div>
     </div>
 </div>
-    <!-- <div class="col-12">
-        <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2">
-            <div class="col-8 mx-auto">
-                <div class="rounded-3 p-2 bg-body-tertiary  mb-2" data-bs-theme="light">
-                    <form class="d-flex align-items-center gap-2">
-                        <div class="form-outline col">
-                            <select [(ngModel)]="searchType" name="searchType" class="form-select">
-                                <option value="VesselName">Vessel Name</option>
-                                <option value="VesselShortCode">Vessel Code</option>
-                                <option value="VesselType">Vessel Type</option>
-                                <option value="IMOCode">IMOCode</option>
-                                <option value="YearofBuilt">YearofBuilt</option>
-                                <option value="NRT">Net Register Ton</option>
-                                <option value="status">Status</option>
-                            </select>
-                        </div>
-                        <div class="form-outline col">
-                            <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
-                                placeholder="Enter filter value">
-                            <i
-                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                        </div>
-
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="search()">
-                            <i class="fas fa-search"></i>
-                            Search
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80"
-                            (click)="navigateToCreateVessel()">
-                            <i class="mdi mdi-plus"></i> Create
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="report()">
-                           
-                            Report
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="resetPage()">
-                          
-                            Reset
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div> -->
-
+   
     <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
          <div class="col-12 p-0" >
         <div class="card">
@@ -122,35 +76,35 @@
                             <th class="bg-transparent text-light" scope="col">Vessel Type</th>
                             <th class="bg-transparent text-light" scope="col">Year of Built</th>
                             <th class="bg-transparent text-light" scope="col">Vessel Operator</th> -->
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('vesselName')">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('VesselName')">
                                     Vessel Name
                                     <i class="fas fa-sort ms-1" [ngClass]="{
-                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'vesselName',
-                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'vesselName'
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'VesselName',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'VesselName'
                                     }"></i>
                                     </th>
 
-                                    <th class="bg-transparent text-light" scope="col" (click)="sort('vesselType')">
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('VesselType')">
                                     Vessel Type
                                     <i class="fas fa-sort ms-1" [ngClass]="{
-                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'vesselType',
-                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'vesselType'
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'VesselType',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'VesselType'
                                     }"></i>
                                     </th>
 
-                                    <th class="bg-transparent text-light" scope="col" (click)="sort('yearOfBuilt')">
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('YearofBuilt')">
                                     Year of Built
                                     <i class="fas fa-sort ms-1" [ngClass]="{
-                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'yearOfBuilt',
-                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'yearOfBuilt'
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'YearofBuilt',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'YearofBuilt'
                                     }"></i>
                                     </th>
 
-                                    <th class="bg-transparent text-light" scope="col" (click)="sort('vesselOperator')">
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('VesselOperator')">
                                     Vessel Operator
                                     <i class="fas fa-sort ms-1" [ngClass]="{
-                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'vesselOperator',
-                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'vesselOperator'
+                                        'fa-sort-up': sortDirection === 'asc' && sortColumn === 'VesselOperator',
+                                        'fa-sort-down': sortDirection === 'desc' && sortColumn === 'VesselOperator'
                                     }"></i>
                                     </th>
 
@@ -225,7 +179,7 @@
     </div>
    
     <!-- No records found -->
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searched">
         <div>No records found</div>
     </div>
 </div>
