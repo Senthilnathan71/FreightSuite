@@ -10,6 +10,10 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-generation-entry',
@@ -46,6 +50,10 @@ export class GenerationEntryComponent implements OnInit {
   customerList: any[] = [];
   statusList = ["Active", "Suspended"];
   stockStatusList = ["Free", "Used", "Cancelled"];
+  currentMenuId: number;
+  TandCList: any[]=[];
+  hawstockData: any;
+
 
   constructor(
     private fb: FormBuilder,
@@ -54,7 +62,8 @@ export class GenerationEntryComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private modalService: NgbModal,
-    private calendar: NgbCalendar
+    private calendar: NgbCalendar,
+    private appSettingService: AppSettingsService,
   ) {}
 
   ngOnInit(): void {
@@ -259,7 +268,7 @@ generateAWB(): void {
   handleResponse(resp: any): void {
     if (resp.status) {
       this.appSettingsService.showSuccess(resp.message);
-      this.router.navigate(['master/generation/list']);
+      this.router.navigate(['master/hawbstock/list']);
     } else {
       this.appSettingsService.showError(resp.message);
     }
@@ -271,15 +280,15 @@ generateAWB(): void {
   }
 
   showInfo(): void {
-    if (!this.HawbStockSid) return;
+    if (!this.hawstockData) return;
     const modalRef = this.modalService.open(DetailsComponent, { 
       size: 'lg', 
       centered: true, 
       backdrop: 'static' 
     });
-    modalRef.componentInstance.item = this.hawbForm.value;
+    modalRef.componentInstance.item = this.hawstockData.value;
     modalRef.componentInstance.idLabel = 'HAWB Stock Id';
-    modalRef.componentInstance.idValue = this.HawbStockSid;
+    modalRef.componentInstance.idValue = this.hawstockData?.HawbStockSid;
   }
 
   navigateBack(): void {
@@ -302,4 +311,66 @@ generateAWB(): void {
       }
     }
   }
+  
+
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid = this.HawbStockSid;
+
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
+  openEmail() {
+  if (!this.hawstockData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.hawstockData;
+  modalRef.componentInstance.idLabel = 'HAWB Stock Id';
+  modalRef.componentInstance.idValue = this.hawstockData?.HawbStockSid;
+}
+
+openAuthority() {
+  if (!this.hawstockData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.hawstockData;
+  modalRef.componentInstance.idLabel = 'HAWB Stock Id';
+  modalRef.componentInstance.idValue = this.hawstockData?.HawbStockSid;
+}
+
+openEDoc() {
+  if (!this.hawstockData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.hawstockData;
+  modalRef.componentInstance.idLabel = 'HAWB Stock Id';
+  modalRef.componentInstance.idValue = this.hawstockData?.HawbStockSid;
+}
 }

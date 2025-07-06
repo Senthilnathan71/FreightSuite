@@ -67,7 +67,6 @@ export class TermsAndConditionsComponent implements OnInit {
       CompanyMasterSid,
       BranchMasterSid,
       MenuMasterSid: this.MenuMasterSid,
-      Carrier: 2,
       createdBy: currentUserEmail,
       TandC: formValue.newTerm,
       IsDefaut: formValue.IsDefaut ? 'A' : 'S',

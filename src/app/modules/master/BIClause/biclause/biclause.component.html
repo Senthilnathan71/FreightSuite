@@ -1,4 +1,4 @@
-<div class="d-flex justify-content-end mb-2">
+<!-- <div class="d-flex justify-content-end mb-2">
   <i
     [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
     (click)="toggleFavorite()"
@@ -7,10 +7,10 @@
     title="Favorites"
     style="cursor: pointer;">
   </i>
-</div>
+</div> -->
 <div class="row">
     <app-listpage
-  [title]="'BI Clause'"
+  [title]="'BL Clause'"
   [searchOptions]="[
     { value: 'ClauseDescription', label: ' Clause Description' },
     { value: 'Keyword', label: 'Keyword' },
@@ -92,7 +92,7 @@
     <!-- Modal for Create/Edit -->
     <ng-template #content let-modal>
         <div class="modal-header">
-            <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} BI Clause</h4>
+            <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} BL Clause</h4>
             @if(isEditMode){
             <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
@@ -157,21 +157,7 @@
                                         </div>
                                     </div>
                                 </aside>
-                                <aside class="col-md-6">
-                                    <div class="custom-form-group">
-                                        <input type="number" id="DefaultClause" formControlName="DefaultClause" 
-                                            class="custom-input-field sm" placeholder=""
-                                            [class.is-invalid]="biclauseForm.get('DefaultClause')?.invalid && 
-                                                biclauseForm.get('DefaultClause')?.touched">
-                                        <label for="DefaultClause" class="input-label">Default Clause</label>
-                                        <div *ngIf="biclauseForm.get('DefaultClause')?.touched && 
-                                            biclauseForm.get('DefaultClause')?.errors" class="invalid-feedback d-block">
-                                            <span *ngIf="biclauseForm.get('DefaultClause')?.hasError('pattern')">
-                                                Only numbers are allowed
-                                            </span>
-                                        </div>
-                                    </div>
-                                </aside>
+                                
                                 <aside class="col-md-6">
   <div class="custom-form-group custom-form-group-select">
     <ng-select formControlName="status" [items]="statusOptions" 
@@ -189,6 +175,16 @@
     </div>
   </div>
 </aside>
+<aside class="col-md-3">
+  <div class="custom-form-group">
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" id="DefaultClause" 
+             formControlName="DefaultClause">
+      <label class="form-check-label" for="DefaultClause">Default Clause</label>
+    </div>
+  </div>
+</aside>
+
                             </div>
                         </div>
                     </div>
@@ -197,9 +193,20 @@
         </div>
         <div class="modal-footer">  
             @if(isEditMode){
-                <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto" (click)="openTandC()">
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+        <i class="fas fa-file-alt me-1"></i> e-Doc
+      </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
                     <i class="fas fa-clipboard me-1"></i> Terms & Condition
                 </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
+        <i  class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+                
+      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+      
             }
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-info" 

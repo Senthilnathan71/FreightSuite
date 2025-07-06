@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { IncoComponent } from './inco.component';
+import { ProfitCenterComponent } from './profit-center.component';
 
-describe('IncoComponent', () => {
-  let component: IncoComponent;
-  let fixture: ComponentFixture<IncoComponent>;
+describe('ProfitCenterComponent', () => {
+  let component: ProfitCenterComponent;
+  let fixture: ComponentFixture<ProfitCenterComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [IncoComponent]
+      imports: [ProfitCenterComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(IncoComponent);
+    fixture = TestBed.createComponent(ProfitCenterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

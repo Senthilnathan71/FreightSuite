@@ -12,6 +12,9 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
 	selector: 'app-doctype',
@@ -86,13 +89,15 @@ export class DoctypeComponent implements OnInit {
 
 	initDocumentForm() {
 		this.documentForm = this.fb.group({
-			CompanyMasterSid : [null,[Validators.required]],
-			BranchMasterSid: [null, [Validators.required]],
+			// BranchMasterSid: [null, [Validators.required]],
 			DocumentTypeName: ['', [Validators.required]],
 			DocumentTypeCode: ['', [Validators.required]],
+			Type : [''],
 			CurrencyCode: [null, [Validators.required]],
 			COALedger: ['', [Validators.required]],
 			Subledger: ['', [Validators.required]],
+			ReportTitle : [''],
+			ReportFooter : [''],
 			DocumentStartingNo: ['', [Validators.required]],
 			DocumentSeparator: [null, [Validators.required]],
 			DocumentSLNoLength: ['', [Validators.required]],
@@ -139,15 +144,15 @@ export class DoctypeComponent implements OnInit {
 						status: data.status === 'A' ? 'Active' : 'Suspended',
 					})
 					this.getBranchesByCompanyId({CompanyMasterSid : data.CompanyMasterSid})
-					if(data.CompanyFlag === 'Y'){
-						this.documentForm.get('CompanyValue').enable();
-					}
-					if(data.BranchFlag === 'Y'){
-						this.documentForm.get('BranchValue').enable();
-					}
-					if(data.DocumentFlag === 'Y'){
-						this.documentForm.get('DocumentValue').enable();
-					}
+					// if(data.CompanyFlag === 'Y'){
+					// 	this.documentForm.get('CompanyValue').enable();
+					// }
+					// if(data.BranchFlag === 'Y'){
+					// 	this.documentForm.get('BranchValue').enable();
+					// }
+					// if(data.DocumentFlag === 'Y'){
+					// 	this.documentForm.get('DocumentValue').enable();
+					// }
 				} else {
 					this.appSettingService.showError('Error Loading Document Type');
 				}
@@ -168,11 +173,15 @@ export class DoctypeComponent implements OnInit {
 			return;
 		}
 
+		const BranchMasterSid = this.appSettingService.userSettingSource.value['userBranchMaster'][0].branchMaster.BranchMasterSid;
+		const CompanyMasterSid = this.appSettingService.userSettingSource.value['userBranchMaster'][0].companyMaster.CompanyMasterSid;
 		const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
-		const formValue = this.documentForm.value;
+		const formValue = this.documentForm.getRawValue();
 
 		const payload = {
 			...formValue,
+			CompanyMasterSid : CompanyMasterSid,
+			BranchMasterSid : BranchMasterSid,
 			COALedger : Number(formValue.COALedger),
 			Subledger : Number(formValue.Subledger),
 			CompanyFlag: formValue.CompanyFlag ? 'Y' : 'N',
@@ -322,5 +331,41 @@ export class DoctypeComponent implements OnInit {
 			}
 		);
 	}
+	openEmail() {
+  if (!this.documentData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.documentData;
+  modalRef.componentInstance.idLabel = 'Document Type Id';
+  modalRef.componentInstance.idValue = this.documentData?.DocumentTypeMasterSid;
+}
+
+openAuthority() {
+  if (!this.documentData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.documentData;
+  modalRef.componentInstance.idLabel = 'Document Type Id';
+  modalRef.componentInstance.idValue = this.documentData?.DocumentTypeMasterSid;
+}
+
+openEDoc() {
+  if (!this.documentData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.documentData;
+  modalRef.componentInstance.idLabel = 'Document Type Id';
+  modalRef.componentInstance.idValue = this.documentData?.DocumentTypeMasterSid;
+}
+
 
 }

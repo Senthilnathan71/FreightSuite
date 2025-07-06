@@ -96,11 +96,11 @@
                                         title="Edit">
                                         <i-feather class="feather-sm" name="eye"></i-feather>
                                     </button>
-                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" 
+                                    <!-- <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" 
                                         (click)="deleteRoleById(item.RoleMasterSid)"
                                         title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </button>
+                                    </button> -->
                                 </div>
                             </td>
                             <td>
@@ -158,46 +158,55 @@
                                 <aside class="col-md-6">
                                     <div class="custom-form-group">
                                         <input type="text" id="UserRoleName" formControlName="UserRoleName"
-                                            placeholder="" class="custom-input-field sm">
+                                            placeholder="" class="custom-input-field sm" (keypress)="onKeyPress($event, 'UserRoleName')" maxlength="100"  >
                                         <label for="UserRoleName" class="input-label">Role Name <span
                                                 class="text-danger fw-bold">*</span></label>
-                                        @if(roleForm.get('UserRoleName')?.touched &&
-                                        roleForm.get('UserRoleName')?.invalid){
-                                        <div class="error-message">
-                                            @if(roleForm.get('UserRoleName')?.hasError('required')){
-                                            <span>Role Name is required</span>
-                                            } @else if(roleForm.get('UserRoleName')?.hasError('maxlength')){
-                                            <span>Max 50 Characters</span>
-                                            }
-                                        </div>
-                                        }
+                                        @if(roleForm.get('UserRoleName')?.touched && roleForm.get('UserRoleName')?.invalid){
+<div class="error-message">
+  @if(roleForm.get('UserRoleName')?.hasError('required')){
+  <span>Role Name is required</span>
+  } @else if(roleForm.get('UserRoleName')?.hasError('maxlength')){
+  <span>Max 50 Characters</span>
+  } @else if(roleForm.get('UserRoleName')?.hasError('invalidCharacters')){
+  <span>Only letters are allowed</span>
+  }
+</div>
+}
                                     </div>
                                 </aside>
                                 <aside class="col-md-6">
                                     <div class="custom-form-group">
                                         <input type="text" formControlName="UserRoleCode" id="UserRoleCode"
-                                            placeholder="" class="custom-input-field sm">
+                                            placeholder="" class="custom-input-field sm" (keypress)="onKeyPress($event, 'UserRoleCode')" maxlength="3" >
                                         <label for="UserRoleCode" class="input-label">Role Code <span
                                                 class="text-danger fw-bold">*</span></label>
-                                        @if(roleForm.get('UserRoleCode')?.touched &&
-                                        roleForm.get('UserRoleCode')?.invalid){
-                                        <div class="error-message">
-                                            @if(roleForm.get('UserRoleCode')?.hasError('required')){
-                                            <span>Role Code is required</span>
-                                            } @else if(roleForm.get('UserRoleCode')?.hasError('maxlength')){
-                                            <span>Max 3 Characters</span>
-                                            } @else if(roleForm.get('UserRoleCode')?.hasError('invalidAlphaNumeric')){
-                                            <span>Only alphanumeric characters allowed</span>
-                                            }
-                                        </div>
-                                        }
+                                       @if(roleForm.get('UserRoleCode')?.touched && roleForm.get('UserRoleCode')?.invalid){
+<div class="error-message">
+  @if(roleForm.get('UserRoleCode')?.hasError('required')){
+  <span>Role Code is required</span>
+  } @else if(roleForm.get('UserRoleCode')?.hasError('maxlength')){
+  <span>Max 3 Characters</span>
+  } @else if(roleForm.get('UserRoleCode')?.hasError('invalidCharacters')){
+  <span>Only letters are allowed</span>
+  }
+</div>
+}
                                     </div>
                                 </aside>
                                 <aside class="col-md-6">
                                     <div class="custom-form-group">
                                         <input type="text" id="LicenseType" formControlName="LicenseType"
-                                            class="custom-input-field sm">
+                                            class="custom-input-field sm" (keypress)="onKeyPress($event, 'LicenseType')" maxlength="100">
                                         <label for="LicenseType" class="input-label">License Type</label>
+                                        @if(roleForm.get('LicenseType')?.touched && roleForm.get('LicenseType')?.invalid){
+<div class="error-message">
+  @if(roleForm.get('LicenseType')?.hasError('maxlength')){
+  <span>Max 50 Characters</span>
+  } @else if(roleForm.get('LicenseType')?.hasError('invalidCharacters')){
+  <span>Only letters are allowed</span>
+  }
+</div>
+}
                                     </div>
                                 </aside>
                                 <aside class="col-md-6 mt-2">
@@ -217,9 +226,20 @@
         </div>
         <div class="modal-footer">
             @if(isEditMode){
-                <button appPreventMultiClick type="button" class="btn btn-outline-info me-auto" (click)="openTandC()">
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+        <i class="fas fa-file-alt me-1"></i> e-Doc
+      </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
                     <i class="fas fa-clipboard me-1"></i> Terms & Condition
                 </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
+        <i  class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+                
+      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+      
             }
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-info" (click)="onSubmit()"

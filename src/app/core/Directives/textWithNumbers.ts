@@ -14,12 +14,22 @@ export class TextWithNumbersDirective {
     onKeyDown(event: KeyboardEvent) {
         const allowedKeys = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab', 'Delete'];
 
-        // Allow navigation keys and space (space allowed inside)
+        // Allow navigation keys
         if (allowedKeys.includes(event.key)) return;
 
-        // Allow all other characters - no blocking
+        // Explicitly allow space, comma, and period
+        if (event.key === ' ' || event.key === ',' || event.key === '.') return;
 
-        // But check max length to block input if needed
+        // Allow only letters (A-Z, a-z) and numbers (0-9)
+        const regex = /^[a-zA-Z0-9]$/;
+
+        if (!regex.test(event.key)) {
+            event.preventDefault();
+            this.setValidationError('invalidChar');
+            return;
+        }
+
+        // Check max length
         const currentValue: string = this.el.nativeElement.value;
         const maxLength = this.textWithNumbers ?? Infinity;
 
@@ -46,10 +56,8 @@ export class TextWithNumbersDirective {
         const maxLength = this.textWithNumbers ?? Infinity;
         let value: string = this.el.nativeElement.value;
 
-        // Remove leading spaces
-        value = value.replace(/^\s+/, '');
-
-        // Trim trailing spaces
+        // Remove special characters but keep letters, numbers, spaces, commas, and periods
+        value = value.replace(/[^a-zA-Z0-9 ,.]/g, '');
 
         // Enforce max length
         if (value.length > maxLength) {
@@ -78,7 +86,7 @@ export class TextWithNumbersDirective {
         if (this.control?.control) {
             const errors = { ...(this.control.control.errors || {}) };
             delete errors['maxlength'];
-            // You can delete other error keys if you add more
+            delete errors['invalidChar'];
             if (Object.keys(errors).length === 0) {
                 this.control.control.setErrors(null);
             } else {

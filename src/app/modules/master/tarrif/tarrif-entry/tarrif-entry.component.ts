@@ -22,6 +22,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { Charge } from 'src/app/modules/crm-mobile/Interfaces/charge.interface';
 
 @Component({
 	selector: 'app-tarrif-entry',
@@ -77,7 +78,8 @@ export class TarrifEntryComponent implements OnInit {
 	customerList: any[];
 	companyList: any[];
 	currencyList : any[];
-	isDataLoading : boolean = true;
+	incoList : any[]
+	isDataLoading : boolean = false;
 	tariffData : any;
 	tariffDetailData : any;
 
@@ -89,9 +91,12 @@ export class TarrifEntryComponent implements OnInit {
 	pageSize=5;
 	totalNumberOfCollection:number;
 	today = this.calendar.getToday();
-	todayDate = new Date(this.today.year,this.today.month,this.today.day);
+	todayDate = new Date(this.today.year,this.today.month-1,this.today.day);
+	minEffectiveDate = this.toNgbDateStruct(this.todayDate);
+	minEffectiveFrom : any;
 	currentMenuId: number;
 	TandCList: any;
+	chargeTaxes : any[];
 
 	constructor(
 		private masterServ: MasterService,
@@ -110,8 +115,11 @@ export class TarrifEntryComponent implements OnInit {
 			this.TariffHeaderSid = Number(param.get('id'));
 			if (this.TariffHeaderSid) {
 				this.isEditMode = true;
+				this.minEffectiveDate = undefined
 				this.loadTariff(this.TariffHeaderSid);
 				this.loadTariffDetails();
+			} else {
+				this.minEffectiveDate = this.toNgbDateStruct(this.todayDate)
 			}
 		})
 	}
@@ -119,7 +127,7 @@ export class TarrifEntryComponent implements OnInit {
 	initHeaderForm() {
 		this.tariffHeaderForm = this.fb.group({
 
-			DepartmentMasterSid: ['', [Validators.required]],
+			DepartmentMasterSid: [null, [Validators.required]],
 			POOSid: [,],
 			POLSid: [, [Validators.required]],
 			PODSid: [, [Validators.required]],
@@ -127,15 +135,17 @@ export class TarrifEntryComponent implements OnInit {
 			ViaPortSid: [],
 			POLTerminal: [''],
 			PODTerminal: [''],
-			Carrier: [''],
-			MovementType : [''],
-			AgentSid: [''],
-			IncoTerms: [''],
-			StuffingAt: ['Dock'],
+			Carrier: [null],
+			MovementType : [null],
+			AgentSid: [null],
+			IncoTerms: [null],
+			StuffingAt: [null],
 			EffectiveDate: ['',[Validators.required]],
 			status: ['Active'],
 			Remarks: [''],
 		})
+		this.tariffHeaderForm.get('POLTerminal').disable()
+		this.tariffHeaderForm.get('PODTerminal').disable()
 	}
 
 	initDetailsForm() {
@@ -145,21 +155,22 @@ export class TarrifEntryComponent implements OnInit {
 			detailSlabTo : ['',this.slabConditionalValidator()],
 			detailEffectiveDate : ['',[Validators.required]],
 			detailExpiredOn : ['',[Validators.required]],
-			detailChargeCode : ['',[Validators.required]],
-			detailDescription : ['',[Validators.required]],
-			detailCargoType : ['',[Validators.required]],
-			detailUOMSid : ['',[Validators.required]],
-			detailSaleCurrency :['',Validators.required],
+			detailChargeCode : [null,[Validators.required]],
+			detailDescription : [''],
+			detailCargoType : [null,[Validators.required]],
+			detailUOMSid : [null,[Validators.required]],
+			detailSaleCurrency :[null,Validators.required],
 			detailSalePerUnitPrice:['',[Validators.required]],
-			detailBuyCurrency : ['',[Validators.required]],
+			detailBuyCurrency : [null,[Validators.required]],
 			detailBuyPerUnitPrice : ['',[Validators.required]],
-			detailMinSale : ['',[Validators.required]],
+			detailMinSale : [''],
 			detailstatus : ['Active'],
-			detailRemarks : ['',[Validators.required]]
+			detailRemarks : ['']
 		})
 		this.tariffDetailsForm.get('detailisSlabApplicable')?.valueChanges.subscribe(() => {
 			this.updateSlabValidators();
 		});
+		this.tariffDetailsForm.get('detailDescription')?.disable();
 	}
 
 	slabConditionalValidator(): ValidatorFn {
@@ -195,11 +206,16 @@ export class TarrifEntryComponent implements OnInit {
 
 
 	openTariffDetailEntryModal(content: TemplateRef<any>, data?: any) {
+		if(!this.TariffHeaderSid){
+			this.appSettingServ.showError('Adding tariff details requires creation of tariff header.')
+			return;
+		}
 		this.initDetailsForm();
 		this.loadModalFields();
 		if(data){
 			this.isModalEditMode= true;
 			this.tariffDetailData = data;
+			this.minEffectiveFrom = undefined
 			this.tariffDetailsForm.patchValue({
 				detailisSlabApplicable: data.IsSlabApplicable ==='Y' ? true : false || false,
 				detailSlabFrom: data.SlabFrom || '',
@@ -218,12 +234,13 @@ export class TarrifEntryComponent implements OnInit {
 				detailstatus: data.status ? (data.status === 'A' ? 'Active' : 'Suspended') : 'Active',
 				detailRemarks: data.Remarks || ''
 			})
-			
+			this.setChargeCode(data.ChargeCode);
 			if(data.TariffDetailSid){
 				this.TariffDetailSid = data.TariffDetailSid;
 			}
 		} else {
 			this.isModalEditMode = false;
+			this.calculateMinEffectiveFrom();
 		}
 
 		this.modalRef = this.modalService.open(content, { size: 'lg',centered : true,backdrop : 'static' })
@@ -254,8 +271,10 @@ export class TarrifEntryComponent implements OnInit {
 			customers: this.masterServ.getAllCustomers(),
 			departments: this.masterServ.getAllDepartments(),
 			companies: this.masterServ.getAllCompanies(),
-			currencies : this.masterServ.getAllCurrencies()
-		}).subscribe(({ ports, customers, departments, companies,currencies}) => {
+			currencies : this.masterServ.getAllCurrencies(),
+			incos : this.masterServ.getAllInco(),
+			chargeTax : this.masterServ.getAllChargeTax()
+		}).subscribe(({ ports, customers, departments, companies,currencies,incos,chargeTax}) => {
 			this.portList = ports.data,
 			this.polList = ports.data,
 			this.podList = ports.data,
@@ -263,6 +282,8 @@ export class TarrifEntryComponent implements OnInit {
 			this.departmentList = departments,
 			this.companyList = companies,
 			this.currencyList = currencies,
+			this.incoList = incos
+			this.chargeTaxes = chargeTax.data
 			this.isDataLoading = false;
 		})
 	}
@@ -287,7 +308,7 @@ export class TarrifEntryComponent implements OnInit {
 			this.appSettingServ.showWarning('Please fill all required fields correctly');
 			return;
 		} else {
-			const formValue = this.tariffHeaderForm.value;
+			const formValue = this.tariffHeaderForm.getRawValue();
 			const payload = this.coerceIntoRequiredFormat(formValue);
 
 			if (this.isEditMode) {
@@ -295,7 +316,8 @@ export class TarrifEntryComponent implements OnInit {
 					(resp: any) => {
 						if (resp.status) {
 							this.appSettingServ.showSuccess('Tariff Updated Successfully');
-							this.route.navigate(['master/tarrif/list']);
+							// this.route.navigate(['master/tarrif/list']);
+							this.loadTariff(this.TariffHeaderSid);
 						} else {
 							this.appSettingServ.showError(resp.message);
 						}
@@ -309,7 +331,10 @@ export class TarrifEntryComponent implements OnInit {
 					(resp: any) => {
 						if (resp.status) {
 							this.appSettingServ.showSuccess('Tariff Created Successfully');
-							this.route.navigate(['master/tarrif/list']);
+							const tariffId = resp?.data?.TariffHeaderSid;
+							if(tariffId){
+								this.route.navigate(['master/tarrif/entry',tariffId]);
+							}
 						} else {
 							this.appSettingServ.showError(resp.message);
 						}
@@ -331,7 +356,7 @@ export class TarrifEntryComponent implements OnInit {
 		} else {
 			const createdBy = this.appSettingServ.userSettingSource.value['userEmail'];
 			const updatedBy = this.appSettingServ.userSettingSource.value['userEmail'];
-			let formValue = this.tariffDetailsForm.value;
+			let formValue = this.tariffDetailsForm.getRawValue();
 			const payload = {
 				TariffHeaderSid : this.TariffHeaderSid || parseInt(formValue.TariffHeaderSid),
 				IsSlabApplicable: formValue.detailisSlabApplicable ? 'Y':'N',
@@ -350,7 +375,7 @@ export class TarrifEntryComponent implements OnInit {
 				MinSale: formValue.detailMinSale,
 				status: formValue.detailstatus === 'Active'? 'A':'S',
 				Remarks: formValue.detailRemarks,
-				...(this.isModalEditMode ? {createdBy:createdBy}:{updatedBy:updatedBy})
+				...(this.isModalEditMode ? {updatedBy:updatedBy} : {createdBy:createdBy})
 			}
 			if(this.isModalEditMode){
 				this.masterServ.updateTariffDetailById(this.TariffDetailSid,payload).subscribe(
@@ -463,9 +488,9 @@ export class TarrifEntryComponent implements OnInit {
 		}
 	}
 
-	setChargeCode(ChargeMasterSid){
-		const requiredCharge = this.chargeList.find(charge => charge.ChargeMasterSid === ChargeMasterSid);
-		this.tariffDetailsForm.get('detailChargeCode')?.setValue(requiredCharge.chargeCode);
+	setChargeCode(chargeCode){
+		const requiredCharge = this.chargeList.find(charge => charge.chargeCode === chargeCode);
+		this.setChargeDescription(requiredCharge);
 	}
 
 	loadTariffDetails(){
@@ -496,11 +521,19 @@ export class TarrifEntryComponent implements OnInit {
 	}
 
 	filterPodList(port){
+		if(!port){
+			this.tariffHeaderForm.get('POLTerminal').setValue('')
+			return
+		}
 		this.tariffHeaderForm.get('POLTerminal').setValue(port.PortCode)
 		this.podList = this.portList.filter(each => each.PortMasterSid !== port.PortMasterSid);
 	}
 
 	filterPolList(port){
+		if(!port){
+			this.tariffHeaderForm.get('PODTerminal').setValue('')
+			return
+		}
 		this.tariffHeaderForm.get('PODTerminal').setValue(port.PortCode)
 		this.polList = this.portList.filter(each => each.PortMasterSid !== port.PortMasterSid);
 	}
@@ -544,6 +577,30 @@ export class TarrifEntryComponent implements OnInit {
 				this.appSettingServ.showError('Error loading Terms and Conditions', error);
 			}
 		);
+	}
+
+	setChargeDescription(charge ?: Charge){
+		if(!charge || this.chargeTaxes.length === 0)
+		{
+			this.tariffDetailsForm.get('detailDescription').setValue('');
+			return;
+		}
+		let ChargeMasterSid = charge.ChargeMasterSid;
+		const reqTaxes = this.chargeTaxes.filter(t => t.chargeTaxMasterSid === ChargeMasterSid);
+		if(reqTaxes.length > 0){
+			this.tariffDetailsForm.get('detailDescription').setValue(reqTaxes[0].description);
+		}
+	}
+
+	calculateMinEffectiveFrom(){
+		if(this.TariffDetailsList.length === 0){
+			this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+			return;
+		}
+		const onlyExpiredData = this.TariffDetailsList.map( m => m.ExpiredOn);
+		onlyExpiredData.sort((a,b)=>new Date(a).getTime() - new Date(b).getTime())
+		const maxExpiredOn = onlyExpiredData[onlyExpiredData.length-1];
+		this.minEffectiveFrom = this.toNgbDateStruct(new Date(maxExpiredOn));
 	}
 
 

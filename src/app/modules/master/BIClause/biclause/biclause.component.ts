@@ -16,6 +16,9 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-biclause',
@@ -80,7 +83,7 @@ export class BIclauseComponent implements OnInit {
       ClauseDescription: ['', [Validators.required, Validators.maxLength(500)]],
       Keyword: ['', [Validators.required, Validators.maxLength(5)]],
       Sortorder: ['', [Validators.pattern('^[0-9]*$')]],
-      DefaultClause: ['', [Validators.pattern('^[0-9]*$')]],
+      DefaultClause: [false],
       status: [{value: 'A', disabled: false}, Validators.required]
     });
   }
@@ -225,7 +228,7 @@ applySorting() {
         ClauseDescription: clause.ClauseDescription,
         Keyword: clause.Keyword,
         Sortorder: clause.Sortorder?.toString() || '',
-        DefaultClause: clause.DefaultClause?.toString() || '',
+        DefaultClause: clause.DefaultClause === 'Y',
         status: clause.status || 'A'
       });
     } else {
@@ -259,7 +262,7 @@ applySorting() {
       ClauseDescription: formValue.ClauseDescription,
       Keyword: formValue.Keyword,
       Sortorder: formValue.Sortorder ? parseInt(formValue.Sortorder) : null,
-      DefaultClause: formValue.DefaultClause ? parseInt(formValue.DefaultClause) : null,
+      DefaultClause: formValue.DefaultClause ? 'Y' : 'N',
       status: formValue.status,
       ...(this.isEditMode ? {updatedBy : userEmail} : {createdBy : userEmail})
     };
@@ -387,5 +390,41 @@ applySorting() {
       }
     );
   }
+
+  openEmail() {
+  if (!this.blclauseData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.blclauseData;
+  modalRef.componentInstance.idLabel = 'BLClause Id';
+  modalRef.componentInstance.idValue = this.blclauseData?.BLClauseMasterSid;
+}
+
+openAuthority() {
+  if (!this.blclauseData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.blclauseData;
+  modalRef.componentInstance.idLabel = 'BLClause Id';
+  modalRef.componentInstance.idValue = this.blclauseData?.BLClauseMasterSid;
+}
+
+openEDoc() {
+  if (!this.blclauseData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.blclauseData;
+  modalRef.componentInstance.idLabel = 'BLClause Id';
+  modalRef.componentInstance.idValue = this.blclauseData?.BLClauseMasterSid;
+}
 
 }

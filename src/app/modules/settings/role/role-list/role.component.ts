@@ -15,6 +15,9 @@ import { SettingsService } from '../../settings.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from '../../email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { EdocComponent } from '../../edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-role',
@@ -98,20 +101,60 @@ sortDirection: string = 'asc';
 
   initForm() {
     this.roleForm = this.fb.group({
-      UserRoleName: ['', [Validators.required, Validators.maxLength(50)]],
-      UserRoleCode: ['', [Validators.required, Validators.maxLength(3), this.alphaNumericValidator()]],
-      LicenseType: ['', [Validators.maxLength(50)]],
+      UserRoleName: ['', [Validators.required, Validators.maxLength(50), this.alphaSpaceValidator()]],
+    UserRoleCode: ['', [
+      Validators.required,
+      Validators.maxLength(3),
+      Validators.minLength(3),
+      this.alphaValidator() 
+    ]],
+    LicenseType: ['', [
+      Validators.maxLength(50),
+      this.alphaSpaceValidator() 
+    ]],
       status: [{value: 'Active', disabled: false}, Validators.required]
     });
+    this.roleForm.get('UserRoleCode')?.valueChanges.subscribe(val => {
+      if (val) {
+        this.roleForm.get('UserRoleCode')?.setValue(val.toUpperCase(), { emitEvent: false });
+      }
+    });
   }
-
-  private alphaNumericValidator(): ValidatorFn {
+  
+  
+   private alphaValidator(): ValidatorFn {
     return (control: AbstractControl): {[key: string]: any} | null => {
       if (!control.value) return null;
-      const valid = /^[A-Za-z0-9]+$/.test(control.value);
-      return valid ? null : { invalidAlphaNumeric: true };
+      const valid = /^[A-Za-z]+$/.test(control.value);
+      return valid ? null : { invalidAlpha: true };
     };
   }
+
+   private alphaSpaceValidator(): ValidatorFn {
+    return (control: AbstractControl): {[key: string]: any} | null => {
+      if (!control.value) return null;
+      const valid = /^[A-Za-z\s]+$/.test(control.value);
+      return valid ? null : { invalidAlphaSpace: true };
+    };
+  }
+onKeyPress(event: KeyboardEvent, field: string) {
+ if (field === 'UserRoleCode') {
+      const pattern = /[A-Za-z]/;
+      if (!pattern.test(event.key)) {
+        event.preventDefault();
+      }
+  } else if (field === 'UserRoleName') {
+    const pattern = /[A-Za-z\s]/;
+    if (!pattern.test(event.key)) {
+      event.preventDefault();
+    }
+  } else if (field === 'LicenseType') {
+    const pattern = /[A-Za-z\s]/;
+    if (!pattern.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+}
 
   resetForm(): void {
     this.roleForm.get('status')?.disable();
@@ -291,17 +334,17 @@ applySorting() {
     return index;
   }
 
-  deleteRoleById(id: number) {
-    const dialogRef = this.dialog.open(DeleteWarningComponent);
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === true) {
-        this.settingsService.deleteRoleById(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess('Deleted!');
-          this.search();
-        });
-      }
-    });
-  }
+  // deleteRoleById(id: number) {
+  //   const dialogRef = this.dialog.open(DeleteWarningComponent);
+  //   dialogRef.afterClosed().subscribe((result) => {
+  //     if (result === true) {
+  //       this.settingsService.deleteRoleById(id).subscribe((resp: any) => {
+  //         this.appSettingService.showSuccess('Deleted!');
+  //         this.search();
+  //       });
+  //     }
+  //   });
+  // }
 
   resetPage(): void {
     this.roleList = [];
@@ -367,5 +410,42 @@ applySorting() {
 			}
 		);
 	}
+
+  openEmail() {
+  if (!this.roleData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.roleData;
+  modalRef.componentInstance.idLabel = 'Role Id';
+  modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
+}
+
+openAuthority() {
+  if (!this.roleData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.roleData;
+  modalRef.componentInstance.idLabel = 'Role Id';
+  modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
+}
+
+openEDoc() {
+  if (!this.roleData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.roleData;
+  modalRef.componentInstance.idLabel = 'Role Id';
+  modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
+}
+
 
 }

@@ -301,4 +301,12 @@ getSortValue(item: any): any {
         
     }
 
+    getFormattedPort(PortMasterSid) {
+        if (!PortMasterSid) {
+            return '';
+        }
+        const port = this.portList.find(p => p.PortMasterSid === PortMasterSid)
+        return `${port.PortName} (${port.PortCode})`
+    }
+
 }

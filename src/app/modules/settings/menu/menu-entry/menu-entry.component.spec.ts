@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { IncoListComponent } from './inco-list.component';
+import { MenuEntryComponent } from './menu-entry.component';
 
-describe('IncoListComponent', () => {
-  let component: IncoListComponent;
-  let fixture: ComponentFixture<IncoListComponent>;
+describe('MenuEntryComponent', () => {
+  let component: MenuEntryComponent;
+  let fixture: ComponentFixture<MenuEntryComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [IncoListComponent]
+      imports: [MenuEntryComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(IncoListComponent);
+    fixture = TestBed.createComponent(MenuEntryComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

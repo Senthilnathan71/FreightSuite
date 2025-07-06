@@ -1,146 +1,165 @@
-<div class="d-flex justify-content-end mb-2">
-  <i
-    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
-    (click)="toggleFavorite()"
-    data-toggle="tooltip"
-    data-placement="bottom"
-    title="Favorites"
-    style="cursor: pointer;">
-  </i>
-</div>
-<div class="row">
-    <app-listpage
-  [title]="'Company'"
-  [searchOptions]="[
-    { value: 'companyName', label: 'Company Name' },
-    { value: 'companyCode', label: 'Company Code' },
-    { value: 'status', label: 'Status' }
-  ]"
-  [searchPerformed]="searchPerformed"
-  [defaultSearchType]="'companyName'"
-  (onCreateClick)="navigateToCreateDepartment()"
-  (onReportClick)="report()"
-  (onResetClick)="resetPage()"
-  (onSearchClick)="onSearch($event)">
-    </app-listpage>
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
-        <div class="col-12 p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered">
-                  
-<thead>
-    <tr class="bg-info">
-        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('companyName')">
-            Company Name
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'companyName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'companyName'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('companyCode')">
-            Company Code
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'companyCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'companyCode'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('branchName')">
-            Branch Name
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'branchName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'branchName'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('city')">
-            City
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'city', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'city'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('state')">
-            State
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'state', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'state'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('country')">
-            Country
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'country', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'country'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('gst')">
-            Vat/GST No
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'gst', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'gst'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
-    </tr>
-</thead>
-                    <tbody>
-                        @for(company of companyList;track $index){
-                        @for(branch of company.branchMaster;track $index){
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <a class="text-info mx-2" class="link mx-2 ps-3 "
-                                        [routerLink]="['/master/company/entry/', company.CompanyMasterSid]">
-                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
-                                    </a>
-                                    <a class="text-danger mx-2 ps-3 border-start" (click)="deleteCompany(company.CompanyMasterSid)">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{company.companyName}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{company.companyCode}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{branch.branchName}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{branch.cityMaster.cityName}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{branch.stateMaster.stateName}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{branch.countryMaster.countryName}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{branch.taxRegistrationNo}}</div>
-                            </td>
-                            <td>
-                                <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1"
-                                    *ngIf="branch.status==='A'">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Active</span>
-                                <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1"
-                                    *ngIf="branch.status!=='A'">
-                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                    Suspended</span>
-                            </td>
-                        
-                        </tr>
-                        } @empty{
-                            <tr>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <a class="text-info mx-2" class="link mx-2 ps-3 "
-                                        [routerLink]="['/master/company/entry/', company.CompanyMasterSid]">
-                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
-                                    </a>
-                                    <a class="text-danger mx-2 ps-3 border-start" (click)="deleteCompany(company.CompanyMasterSid)">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{company.companyName}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{company.companyCode}}</div>
-                            </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
+<div class="col-12">
+    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+        <div class="col-md-4 pb-2">
+            <h4 class="page-title mb-0">Company</h4>
+        </div>
+
+        <div class="col-md-8 pb-2">
+            <form
+                class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-2 mx-0 w-100">
+                <app-favorite-star screenName="Company" class="mt-1 me-1"></app-favorite-star>
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                    (click)="navigateToCreateDepartment()">
+                    <i class="fas fa-plus me-1"></i> Create
+                </button>
+
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
+                    [disabled]="!searchPerformed">
+                    <i class="fas fa-file-alt me-1"></i> Report
+                </button>
+
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
+                    [disabled]="!searchPerformed">
+                    <i class="fas fa-sync-alt me-1"></i> Reset
+                </button>
+            </form>
+        </div>
+
+        <div class="col-md-12 border-top">
+            <div class="row mx-0 py-2">
+                <div class="col-md-8 mx-auto px-0">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0"
+                        (ngSubmit)="search()">
+                        <div class="d-flex gap-2 col-6 px-0 align-items-center">
+                            <div class="form-outline flex-grow-1 position-relative">
+                                <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search" [(ngModel)]="filterValue"
+                                    aria-label="Search input">
+                            
+                                <button *ngIf="filterValue"
+                                    class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                    (click)="clearFilterValue()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" data-bs-title="Clear search"
+                                    onfocus="this.classList.replace('text-secondary','text-danger')"
+                                    onblur="this.classList.replace('text-danger','text-secondary')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <button type="submit" [disabled]="results.length === 0" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                <i class="fas fa-search me-1"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
+    </div>
+</div>
+<div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+    <div class="col-12 p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                        <th class="bg-transparent text-light" scope="col" (click)="sort('companyName')">
+                            Company Name
+                            <i class="fas fa-sort ms-1"
+                                [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'companyName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'companyName'}"></i>
+                        </th>
+                        <th class="bg-transparent text-light" scope="col" (click)="sort('companyCode')">
+                            Company Code
+                            <i class="fas fa-sort ms-1"
+                                [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'companyCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'companyCode'}"></i>
+                        </th>
+                        <th class="bg-transparent text-light" scope="col" (click)="sort('branchName')">
+                            Branch Name
+                            <i class="fas fa-sort ms-1"
+                                [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'branchName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'branchName'}"></i>
+                        </th>
+                        <th class="bg-transparent text-light" scope="col" (click)="sort('city')">
+                            City
+                            <i class="fas fa-sort ms-1"
+                                [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'city', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'city'}"></i>
+                        </th>
+                        <th class="bg-transparent text-light" scope="col" (click)="sort('state')">
+                            State
+                            <i class="fas fa-sort ms-1"
+                                [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'state', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'state'}"></i>
+                        </th>
+                        <th class="bg-transparent text-light" scope="col" (click)="sort('country')">
+                            Country
+                            <i class="fas fa-sort ms-1"
+                                [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'country', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'country'}"></i>
+                        </th>
+                        <th class="bg-transparent text-light" scope="col" (click)="sort('gst')">
+                            Vat/GST No
+                            <i class="fas fa-sort ms-1"
+                                [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'gst', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'gst'}"></i>
+                        </th>
+                        <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for(company of companyList;track $index){
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="text-info mx-2" class="link mx-2 ps-3 "
+                                    [routerLink]="['/master/company/entry/', company.CompanyMasterSid]">
+                                    <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start"
+                                    (click)="deleteCompany(company.CompanyMasterSid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{company.companyName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{company.companyCode}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{company.branchName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{company.city}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{company.state}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{company.country}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{company.gst}}</div>
+                        </td>
+                        <td>
+                            <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1"
+                                *ngIf="company.status==='Active'">
+                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                Active</span>
+                            <span class="bg-light-danger px-2  rounded-pill d-inline-flex align-items-center gap-1"
+                                *ngIf="company.status!=='Active'">
+                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                Suspended</span>
+                        </td>
+
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div>
+        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+            [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true"
+            [ellipses]="false" [maxSize]="5">
+        </ngb-pagination>
+    </div>
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0">
+        <div>No records found</div>
     </div>
 </div>

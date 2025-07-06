@@ -16,7 +16,7 @@ export class OnlyNumbersDirective {
 
         if (allowedKeys.includes(event.key)) return;
 
-        const allowedChars = /^[0-9+-]$/;
+        const allowedChars = /^[0-9]$/;
         const currentValue: string = this.el.nativeElement.value;
         const maxLength = this.onlyNumbers ?? Infinity;
 

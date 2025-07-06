@@ -13,12 +13,7 @@
                 <div class="col-md-8 pb-2">
                     <div
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        @if(isEditMode){
-                        <button appPreventMultiClick type="button" class="btn btn-outline-info btn-sm dofi-min-w-160 dofi-max-w-160"
-                            (click)="openTandC()">
-                            <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                        </button>
-                        }
+                       
                         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="goBack()">
                             <i class="fas fa-chevron-left me-1"></i>
@@ -63,7 +58,7 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" class="custom-input-field sm "
-                                    formControlName="PortCode" placeholder="" [textWithNumbers]="5" />
+                                    formControlName="PortCode" placeholder="" [textWithNumbers]="3" />
                                 <label for="text-input" class="input-label">Code <span
                                         class="text-danger fw-semibold">*</span></label>
                                 @if(portForm.get('PortCode').touched && portForm.get('PortCode').invalid){
@@ -71,7 +66,7 @@
                                     @if(portForm.get('PortCode').hasError('required')){
                                     <span>Port Code is required</span>
                                     } @else if(portForm.get('PortCode').hasError('maxlength')){
-                                    <span>Max 5 Characters</span>
+                                    <span>Max 3 Characters</span>
                                     }
                                 </div>
                                 }
@@ -321,6 +316,34 @@
             </div>
         </div>
     </div>
+     @if(isEditMode){
+    <div class="col-12 mt-3">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
+                    <!-- eDoc Button -->
+                     
+                    <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+        <i class="fas fa-file-alt me-1"></i> e-Doc
+      </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
+                    <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
+        <i  class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+                
+      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+                
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+     }          
 
 
 

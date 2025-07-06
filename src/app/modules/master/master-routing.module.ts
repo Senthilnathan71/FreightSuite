@@ -36,13 +36,12 @@ import { ServiceLevelListComponent } from './service-level/service-level-list/se
 import { ServiceLevelComponent } from './service-level/service-level.component';
 import { TimeZoneComponent } from './time-zone/time-zone.component';
 import { TimeZoneListComponent } from './time-zone/time-zone-list/time-zone-list.component';
-import { IncoComponent } from './inco/inco.component';
-import { IncoListComponent } from './inco/inco-list/inco-list.component';
 import { ChargeListComponent } from './charge/charge-list/charge-list.component';
 import { ChargeEntryComponent } from './charge/charge-entry/charge-entry.component';
 import { TermsConditionListComponent } from './terms-condition/terms-condition-list/terms-condition-list.component';
 import { TermsConditionEntryComponent } from './terms-condition/terms-condition-entry/terms-condition-entry.component';
 import { HSSACComponent } from './HS-SAC/hs-sac/hs-sac.component';
+import { IncoComponent } from './inco/inco/inco.component';
 import { ZoneComponent } from './zone/zone/zone.component';
 import { CityComponent } from './city/city/city.component';
 import { ChargegroupComponent } from './chargeGroup/chargegroup/chargegroup.component';
@@ -68,6 +67,8 @@ import { DoctypeComponent } from './document-type/doctype-entry/doctype.componen
 import { DoctypeListComponent } from './document-type/doctype-list/doctype-list.component';
 import { GenerationListComponent } from './generation/generation-list/generation-list.component';
 import { GenerationEntryComponent } from './generation/generation-entry/generation-entry.component';
+import { CostCenterComponent } from './cost-center/cost-center/cost-center.component';
+import { ProfitCenterComponent } from './profit-center/profit-center/profit-center.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -527,22 +528,6 @@ export const MasterRoutes: Routes = [
         },
       },
       {
-        path: 'inco/list',
-        component: IncoListComponent,
-        data: {
-          title: 'Inco',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Inco' }],
-        },
-      },
-      {
-        path: 'inco/entry',
-        component: IncoComponent,
-        data: {
-          title: 'Inco',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Inco' }],
-        },
-      },
-      {
         path: 'time-zone/list',
         component: TimeZoneListComponent,
         data: {
@@ -658,6 +643,25 @@ export const MasterRoutes: Routes = [
         },
       },
       {
+        path: 'inco',
+        component: IncoComponent,
+        data: {
+          title: 'Inco',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Inco' }],
+        },
+      },
+      {
+        path: "inco/:id",
+        component: IncoComponent,
+        data: {
+          title: "Inco",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Inco" },
+          ],
+        },
+      },
+      {
         path: 'zone',
         component: ZoneComponent,
         data: {
@@ -759,13 +763,13 @@ export const MasterRoutes: Routes = [
         },
       },
        {
-        path: 'BIClause',
+        path: 'blclause',
         component: BIclauseComponent,
         data: {
-          title: 'BIClause',
+          title: 'BL Clause',
           urls: [
             { title: 'Master', url: '/master' },
-            { title: 'BIClause' },
+            { title: 'BL Clause' },
           ],
         },
       },
@@ -871,13 +875,13 @@ export const MasterRoutes: Routes = [
     ],
   },
   {
-        path: 'Charge-tax',
+        path: 'charge-tax',
         component: ChargeTaxComponent,
         data: {
-          title: 'Charge-tax',
+          title: 'charge-tax',
           urls: [
             { title: 'Master', url: '/master' },
-            { title: 'Charge-tax' },
+            { title: 'charge-tax' },
           ],
         },
       },
@@ -936,6 +940,17 @@ export const MasterRoutes: Routes = [
           ]
         }
       },
+      {
+        path: 'year/entry/:YearMasterSid',
+        component: YearEntryComponent,
+        data: {
+          title: 'Year',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Year' },
+          ]
+        }
+      },
         {
         path: 'doctype/entry',
         component: DoctypeComponent,
@@ -970,37 +985,81 @@ export const MasterRoutes: Routes = [
         }
       },
         {
-        path: 'generation/list',
+        path: 'hawbstock/list',
         component: GenerationListComponent,
         data: {
-          title: 'Generation',
+          title: 'Hawbs tock',
           urls: [
             { title: 'Master', url: '/master' },
-            { title: 'Generation' },
+            { title: 'Hawb stock' },
           ],
         },
       },
       {
-        path: 'generation/entry',
+        path: 'hawbstock/entry',
         component: GenerationEntryComponent,
         data: {
-          title: 'Generation',
+          title: 'Hawb stock',
           urls: [
             { title: 'Master', url: '/master' },
-            { title: 'Generation' },
+            { title: 'Hawb stock' },
           ]
         }
       },
       {
-        path: 'generation/entry/:id',
+        path: 'hawbstock/entry/:id',
         component: GenerationEntryComponent,
         data: {
-          title: 'Generation',
+          title: 'Hawb stock',
           urls: [
             { title: 'Master', url: '/master' },
-            { title: 'Generation ' },
+            { title: 'Hawb stock ' },
           ]
         }
+      },
+      {
+        path: 'cost-center',
+        component: CostCenterComponent,
+        data: {
+          title: 'Cost Center',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Cost Center' },
+          ]
+        }
+      },
+      {
+        path: "cost-center/:id",
+        component: CostCenterComponent,
+        data: {
+          title: "Cost Center",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Cost Center" },
+          ],
+        },
+      },
+         {
+        path: 'profit-center',
+        component: ProfitCenterComponent,
+        data: {
+          title: 'Profit Center',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'Profit Center' },
+          ]
+        }
+      },
+      {
+        path: "profit-center/:id",
+        component: ProfitCenterComponent,
+        data: {
+          title: "Profit Center",
+          urls: [
+            { title: "Master", url: "/master" },
+            { title: "Profit Center" },
+          ],
+        },
       },
 
 ];

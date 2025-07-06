@@ -19,6 +19,10 @@ import { HSSAC } from '../crm-mobile/Interfaces/hs-sac.interfaces';
 import { Currency } from '../crm-mobile/Interfaces/currency.interface';
 import { Charge } from '../crm-mobile/Interfaces/charge.interface';
 import { Product } from '../crm-mobile/Interfaces/product.interface';
+import { Inco } from '../crm-mobile/Interfaces/inco.intefaces';
+import { CostCenter } from '../crm-mobile/Interfaces/cost-center.interfaces';
+import { ProfitCenter } from '../crm-mobile/Interfaces/profit-center.interfaces';
+import { Year } from '../crm-mobile/Interfaces/year.interfaces';
 @Injectable({
   providedIn: 'root',
 })
@@ -1035,6 +1039,14 @@ export class MasterService {
   // Company Master
   getAllCompanies() {
     return this.http.get<{ data: any }>('company').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+  getAllCompaniesSearch() {
+    return this.http.get<{ data: any }>('company/search').pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -2508,30 +2520,254 @@ getAllHawbStocks(){
     )
   }
 
-  createFavouriteScreen(payload){
-    return this.http.post<{data:any}>('favourite-screen/create',payload).pipe(
-      map((resp)=>{
-        let response = resp;
+
+  //year
+
+  getAllYears() {
+    return this.http.get<Year>('year').pipe(
+      map((resp: any) => {
+        let response = resp.data;
         return response;
       })
     )
   }
-  deleteFavouriteScreen(path:string){
-    return this.http.delete<{data:any}>(`favourite-screen/delete?path=${encodeURIComponent(path)}`).pipe(
-      map((resp)=>{
-        let response = resp;
+
+
+  searchYear(payload: any) {
+    return this.http.post<{ data: any }>(`year/search-list`, payload).pipe(
+      map((res: any) => {
+        return res|| [];
+      })
+    )
+  }
+
+  getYearById(YearMasterSid: number) {
+    return this.http.get<{ data: Year }>(`year/fetch/${YearMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
         return response;
       })
     )
   }
-  isPathFav(path:string){
-    return this.http.get<{data:any}>(`favourite-screen/check?path=${encodeURIComponent(path)}`).pipe(
-      map((resp)=>{
+  createNewYear(payload: any) {
+    return this.http.post("year/create", payload).pipe(
+      map((resp: any) => {
         let response = resp;
         return response;
       })
     )
   }
 
+  updateYearById(YearMasterSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`year/update/${YearMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  deleteYearById(YearMasterSid: number) {
+    return this.http.delete<{ data: any }>(`year/delete/${YearMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  createFavouriteScreen(payload){
+    return this.http.post<{data:any}>('favourite-screen/create',payload).pipe(
+      map((resp)=>{
+        return resp
+      })
+  )}
+  
+  deleteFavouriteScreen(path:string){
+    return this.http.delete<{data:any}>(`favourite-screen/delete?path=${encodeURIComponent(path)}`).pipe(
+      map((resp)=>{
+        return resp
+      })
+  )}
+
+  
+  isPathFav(path:string){
+    return this.http.get<{data:any}>(`favourite-screen/check?path=${encodeURIComponent(path)}`).pipe(
+      map((resp)=>{
+        return resp
+      })
+  )}
+  
+
+  //inco-master
+
+  getAllInco() {
+    return this.http.get<{ data: Inco[] }>('inco').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+  getIncoById(id: number) {
+    return this.http.get<{ data: Inco }>(`inco/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createInco(payload: any) {
+    return this.http.post('inco/create', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  editInco(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`inco/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+
+    )
+  }
+
+  softDeleteInco(id: number) {
+    return this.http.delete<{ data: any }>(`inco/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  searchInco(payload) {
+    return this.http.post("inco/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    );
+  }
+
+  //cost-center-master
+
+  getAllCostCenter() {
+    return this.http.get<{ data: CostCenter[] }>('cost-center').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+  getCostCenterById(id: number) {
+    return this.http.get<{ data: CostCenter }>(`cost-center/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createCostCenter(payload: any) {
+    return this.http.post('cost-center/create', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  editCostCenter(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`cost-center/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+
+    )
+  }
+
+  softDeleteCostCenter(id: number) {
+    return this.http.delete<{ data: any }>(`cost-center/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  searchCostCenter(payload) {
+    return this.http.post("cost-center/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    );
+  }
+
+  //profit-center-master
+
+  getAllProfitCenter() {
+    return this.http.get<{ data: ProfitCenter[] }>('profit-center').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+  getProfitCenterById(id: number) {
+    return this.http.get<{ data: ProfitCenter }>(`profit-center/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createProfitCenter(payload: any) {
+    return this.http.post('profit-center/create', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  editProfitCenter(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`profit-center/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+
+    )
+  }
+
+  softDeleteProfitCenter(id: number) {
+    return this.http.delete<{ data: any }>(`profit-center/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  searchProfitCenter(payload) {
+    return this.http.post("profit-center/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    );
+  }
 
 }

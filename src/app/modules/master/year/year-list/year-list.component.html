@@ -1,4 +1,4 @@
-<div class="d-flex justify-content-end mb-2">
+<!-- <div class="d-flex justify-content-end mb-2">
   <i
     [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
     (click)="toggleFavorite()"
@@ -7,137 +7,116 @@
     title="Favorites"
     style="cursor: pointer;">
   </i>
-</div>
+</div> -->
 <div class="row">
 
+    <app-listpage
+      [title]="'Year'"
+      [searchOptions]="[
+        { value: 'YearName', label: 'Year Name' },
+        { value: 'YearCode', label: 'Year Code' },
+        { value: 'StartDate', label: 'Start Date' },
+        { value: 'EndDate', label: 'End Date' },
+        { value: 'CurrentYear', label: 'Current Year' },
+        { value: 'YearEndCompleted', label: 'Year-End Completed' },
+        { value: 'EndDate', label: 'End Date' },
+        { value: 'status', label: 'Status' }
+      ]"
+      [searchPerformed]="searchPerformed"
+      [defaultSearchType]="'YearName'"
+      (onCreateClick)="nagivateTocreateYear()"
+      (onReportClick)="report()"
+      (onResetClick)="resetPage()"
+      (onSearchClick)="onSearch($event)">
+    </app-listpage>
+   
 
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
-            <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Year</h4>
-            </div>
-            <div class="col-md-8 pb-2">
-                <div class="" data-bs-theme="light">
-                    <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
 
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="nagivateTocreateYear()">
-                            <i class="fas fa-plus me-1"></i> Create
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-file-alt me-1"></i>
-                            Report
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-sync-alt me-1"></i>
-                            Reset
-                        </button>
-                    </form>
+   <div class="col-12" *ngIf="totalLengthOfCollection > 0">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle no-wrap table-bordered">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="bg-transparent text-light" scope="col" width="10%">Actions</th>
+                                <th class="bg-transparent text-light" scope="col">Year Name</th>
+                                <th class="bg-transparent text-light" scope="col">Year Code</th>
+                                <th class="bg-transparent text-light" scope="col">Start Date</th>
+                                <th class="bg-transparent text-light" scope="col">End Date</th>
+                                <th class="bg-transparent text-light" scope="col">Current Year</th>
+                                <th class="bg-transparent text-light" scope="col">Year-End Completed</th>
+                                <th class="bg-transparent text-light" scope="col">Remarks</th>
+                                <!-- <th class="bg-transparent text-light" scope="col">Company</th> -->
+                                <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of yearList; let i = index; trackBy: trackByIndex">
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <a class="text-info mx-2" class="link mx-2 ps-3"
+                                            [routerLink]="['/master/year/entry/', item.YearMasterSid]">
+                                            <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                        </a>
+                                        <a class="text-danger mx-2 ps-3 border-start"
+                                            (click)="deleteYearById(item.YearMasterSid)">
+                                            <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.YearName}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.YearCode}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.StartDate | formatDate}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.EndDate | formatDate}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.CurrentYear}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.YearEndCompleted}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.Remarks}}</div>
+                                </td>
+                                <!-- <td>
+                                    <div class="text-truncate">{{ companyMap[item.CompanyMasterSid] || item.CompanyMasterSid}}</div>
+                                </td> -->
+                                <td>
+                                    @if(item.status === "A"){
+                                        <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                            Active
+                                        </div>
+                                    } @else {
+                                        <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                            Suspended
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="col-md-12  border-top">
-                <div class="row mx-0 py-2">
-                    <div class="col-md-8 mx-auto px-0">
-                        <form
-                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                            <div class="form-outline col-12 col-md px-0">
-                                <select name="searchType" class="form-select">
-                                    <option value="departmentName">Department Name</option>
-                                    <option value="departmentCode">Department Code</option>
-                                    <option value="departmentType">Department Type</option>
-                                    <option value="ExportImport">Export/Import</option>
-                                    <option value="FCLLCL">FCLLCL</option>
-                                    <option value="status">Status</option>
-                                </select>
-                            </div>
-
-                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                                <div class="form-outline flex-grow-1">
-                                    <input name="filterValue" type="text" class="form-control"
-                                        placeholder="Enter filter value">
-                                    <i
-                                        class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                                </div>
-
-                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                                    <i class="fas fa-search me-1"></i>
-                                    Search
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+        </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+            </ngb-pagination>
         </div>
     </div>
-
-
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
-        <div class="col-12 p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Name</th>
-                            <th class="bg-transparent text-light" scope="col">Code</th>
-                            <th class="bg-transparent text-light" scope="col">Start Date</th>
-                            <th class="bg-transparent text-light" scope="col">End Date</th>
-                            <th class="bg-transparent text-light" scope="col">Current Year</th>
-                            <th class="bg-transparent text-light" scope="col">Year End Completed</th>
-                            <th class="bg-transparent text-light" scope="col">Remarks</th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (item of [0,1,2,3]; track $index) {
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2">
-                                        <i-feather class="feather-sm" name="eye"></i-feather>
-                                    </a>
-                                    <a class="text-danger mx-2 ps-3 border-start">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                             <td>
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                             <td>
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                             <td>
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                             <td>
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">RO</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-
-                            <td>
-                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center  gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Active
-                                </div>
-                            </td>
-
-                        </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <!-- No records found -->
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
+        <div>No records found</div>
     </div>
 
 </div>

@@ -1,4 +1,4 @@
-<div class="row my-3">
+<div class="row">
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-2">
@@ -81,28 +81,35 @@
             </aside> -->
             
             <aside class="col-md-4">
-              <div class="custom-form-group">
-                <input type="text" id="FromCurrency" formControlName="FromCurrency" class="custom-input-field sm" maxlength="3" uppercase>
-                <label for="FromCurrency" class="input-label">From Currency <span class="text-danger fw-bold">*</span></label>
-                <div *ngIf="currencyExchangeForm.get('FromCurrency').touched && currencyExchangeForm.get('FromCurrency').errors" class="text-danger">
-                  <div *ngIf="currencyExchangeForm.get('FromCurrency').errors['required']">From Currency is required</div>
-                  <div *ngIf="currencyExchangeForm.get('FromCurrency').errors['maxlength']">Max length is 3 characters</div>
-                  <div *ngIf="currencyExchangeForm.get('FromCurrency').errors['pattern']">Must be 3 uppercase letters</div>
-                </div>
-              </div>
-            </aside>
-            
-            <aside class="col-md-4">
-              <div class="custom-form-group">
-                <input type="text" id="ToCurrency" formControlName="ToCurrency" class="custom-input-field sm" maxlength="3" uppercase>
-                <label for="ToCurrency" class="input-label">To Currency <span class="text-danger fw-bold">*</span></label>
-                <div *ngIf="currencyExchangeForm.get('ToCurrency').touched && currencyExchangeForm.get('ToCurrency').errors" class="text-danger">
-                  <div *ngIf="currencyExchangeForm.get('ToCurrency').errors['required']">To Currency is required</div>
-                  <div *ngIf="currencyExchangeForm.get('ToCurrency').errors['maxlength']">Max length is 3 characters</div>
-                  <div *ngIf="currencyExchangeForm.get('ToCurrency').errors['pattern']">Must be 3 uppercase letters</div>
-                </div>
-              </div>
-            </aside>
+    <div class="custom-form-group">
+      <select id="FromCurrency" formControlName="FromCurrency" class="custom-input-field sm">
+        <option value="">Select From Currency</option>
+        <option *ngFor="let currency of currencies" [value]="currency.currencyCode">
+          {{currency.currencyCode}} - {{currency.currencyName}}
+        </option>
+      </select>
+      <label for="FromCurrency" class="input-label">From Currency <span class="text-danger fw-bold">*</span></label>
+      <div *ngIf="currencyExchangeForm.get('FromCurrency').touched && currencyExchangeForm.get('FromCurrency').errors" class="text-danger">
+        <div *ngIf="currencyExchangeForm.get('FromCurrency').errors['required']">From Currency is required</div>
+      </div>
+    </div>
+  </aside>
+  
+  <aside class="col-md-4">
+    <div class="custom-form-group">
+      <select id="ToCurrency" formControlName="ToCurrency" class="custom-input-field sm">
+        <option value="">Select To Currency</option>
+        <option *ngFor="let currency of currencies" [value]="currency.currencyCode">
+          {{currency.currencyCode}} - {{currency.currencyName}}
+        </option>
+      </select>
+      <label for="ToCurrency" class="input-label">To Currency <span class="text-danger fw-bold">*</span></label>
+      <div *ngIf="currencyExchangeForm.get('ToCurrency').touched && currencyExchangeForm.get('ToCurrency').errors" class="text-danger">
+        <div *ngIf="currencyExchangeForm.get('ToCurrency').errors['required']">To Currency is required</div>
+      </div>
+    </div>
+  </aside>
+
             
             <aside class="col-md-4">
               <div class="custom-form-group">
@@ -159,3 +166,32 @@
     </div>
   </div>
 </div>
+
+ @if(isEditMode){
+    <div class="col-12 mt-3">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
+                    <!-- eDoc Button -->
+                     
+                    <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+        <i class="fas fa-file-alt me-1"></i> e-Doc
+      </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
+                    <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
+        <i  class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+                
+      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+                
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+     }          

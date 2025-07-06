@@ -20,7 +20,7 @@
                     <form
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="openModal(content)">
+                            (click)="navigateToCreate()">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
@@ -89,8 +89,8 @@
                             <td>
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
                                     <button class="btn btn-sm btn-link text-info p-0 mx-2" 
-        (click)="editMenu(item.MenuMasterSid, content)"
-        title="Edit">
+        
+        title="Edit" [routerLink]="['/settings/menu/entry/', item.MenuMasterSid]">
     <i-feather class="feather-sm" name="eye"></i-feather>
 </button>
                                     <!-- <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" 
@@ -344,9 +344,20 @@
         </div>
         <div class="modal-footer">
             @if(isEditMode){
-                <button appPreventMultiClick type="button" class="btn btn-outline-info me-auto" (click)="openTandC()">
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+        <i class="fas fa-file-alt me-1"></i> e-Doc
+      </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
                     <i class="fas fa-clipboard me-1"></i> Terms & Condition
                 </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
+        <i  class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+                
+      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+      
             }
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-info" (click)="onSubmit()"

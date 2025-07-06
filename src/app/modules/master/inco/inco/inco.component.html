@@ -1,0 +1,247 @@
+<!-- <div class="d-flex justify-content-end mb-2">
+  <i
+    [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
+    (click)="toggleFavorite()"
+    data-toggle="tooltip"
+    data-placement="bottom"
+    title="Favorites"
+    style="cursor: pointer;">
+  </i>
+</div> -->
+<div class="row">
+    <app-listpage
+  [title]="'Inco'"
+  [searchOptions]="[
+    { value: 'IncoCode', label: 'Inco Code' },
+    { value: 'IncoName', label: 'Inco Name' },
+    { value: 'IncoType', label: 'Inco Type' },
+    { value: 'OceanFreight', label: 'Ocean Freight' },
+    { value: 'Status', label: 'Status' }
+  ]"
+  [searchPerformed]="searchPerformed"
+  [defaultSearchType]="'IncoName'"
+  (onCreateClick)="openModal(content)"
+  (onReportClick)="report()"
+  (onResetClick)="resetPage()"
+  (onSearchClick)="onSearch($event)">
+    </app-listpage>
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
+          <div class="col-12 p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                        <th class="bg-transparent text-light" scope="col" (click)="sort('IncoCode')">
+            Inco Code
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'IncoCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'IncoCode'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('IncoName')">
+            Inco Name
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'IncoName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'IncoName'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('IncoType')">
+            Inco Type
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'IncoType', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'IncoType'}"></i>
+        </th>
+        <th class="bg-transparent text-light" scope="col" (click)="sort('OceanFreight')">
+            Ocean Freight
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'OceanFreight', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'OceanFreight'}"></i>
+        </th>
+                        <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                        <tr *ngFor="let item of incoList; trackBy: trackByIndex">
+                            <td>
+                                <div class="d-flex gap-2 align-items-center justify-content-center">
+                                    <button class="btn btn-sm btn-link text-primary p-0 mx-2" 
+                                        (click)="editInco(item.IncoMasterSid, content)"
+                                        title="Edit">
+                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" 
+                                        (click)="softDeleteInco(item.IncoMasterSid)"
+                                        title="Delete">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.IncoCode}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.IncoName}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.IncoType}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.OceanFreight}}</div>
+                            </td>
+                            <td>
+                                @if(item.Status === "A"){
+                                    <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                        Active
+                                    </div>
+                                } @else {
+                                    <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                        Suspended
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" 
+                    [pageSize]="pageSize" (pageChange)="updatePaginationData()">
+                </ngb-pagination>
+            </div>
+    </div>
+    </div>
+  <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
+        <div >No records found</div>
+    </div>
+
+    <ng-template #content let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Inco</h4>
+            @if(isEditMode){
+            <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
+                <i class="fas fs-6 fa-info-circle"></i>
+            </a>
+            }
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="incoForm">
+                <div class="col-md-12">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="row">
+                                <aside class="col-md-6">
+                                  <div class="custom-form-group">
+                                     <input type="text" id="text-input" formControlName="IncoName" placeholder=""
+                                        class="custom-input-field sm" [onlyText]="100">
+                                     <label for="text-input" class="input-label">Inco Name <span
+                                        class="text-danger fw-bold">*</span></label>
+                                        @if(incoForm.get('IncoName')?.touched && incoForm.get('IncoName')?.invalid){
+                                          <div class="error-message">
+                                            @if(incoForm.get('IncoName')?.hasError('required')){
+                                              <span>Inco Name is required</span>
+                                            } @else if(incoForm.get('IncoName')?.hasError('maxlength')){
+                                              <span>Max 100 Characters</span>
+                                            } @else if(incoForm.get('IncoName')?.hasError('numberNotAllowed')){
+                                              <span>Only Alphabets are allowed</span>
+                                            }
+                                          </div>
+                                        }
+                                    </div>
+                                </aside>
+                                <aside class="col-md-6">
+                                  <div class="custom-form-group">
+                                     <input type="text" formControlName="IncoCode" id="text-input" placeholder=""
+                                         class="custom-input-field sm" [textWithNumbers]="9">
+                                     <label for="text-input" class="input-label">Inco Code <span
+                                         class="text-danger fw-bold">*</span></label>
+                                         @if(incoForm.get('IncoCode')?.touched && incoForm.get('IncoCode')?.invalid){
+                                  <div class="error-message">
+                                    @if(incoForm.get('IncoCode')?.hasError('required')){
+                                      <span>Inco Code is required</span>
+                                    } @else if(incoForm.get('IncoCode')?.hasError('maxlength')){
+                                      <span>Max 9 Characters</span>
+                                    }
+                                 </div>
+                                }
+                            </div>
+                            </aside>
+
+                            
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select formControlName="IncoType" [items]="incoTypeOptions" bindLabel="name" bindValue="name"></ng-select>
+                                    <label class="input-label">Inco Type <span class="text-danger">*</span></label>
+                                 @if(incoForm.get('IncoType')?.touched && incoForm.get('IncoType')?.invalid){
+      <div class="error-message">
+        @if(incoForm.get('IncoType')?.hasError('required')){
+          <span>Inco Type is required</span>
+        } @else if(incoForm.get('IncoType')?.hasError('min') || incoForm.get('IncoType')?.hasError('max')){
+          <span>Tax Rate must be between 0 and 100</span>
+        }
+      </div>
+    }
+  </div>
+</aside>
+
+<aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select formControlName="OceanFreight" [items]="oceanFreightOptions" bindLabel="name" bindValue="name"></ng-select>
+                                    <label class="input-label">Ocean Freight <span class="text-danger">*</span></label>
+                                 @if(incoForm.get('OceanFreight')?.touched && incoForm.get('OceanFreight')?.invalid){
+      <div class="error-message">
+        @if(incoForm.get('OceanFreight')?.hasError('required')){
+          <span>Ocean Freight is required</span>
+        } @else if(incoForm.get('OceanFreight')?.hasError('min') || incoForm.get('OceanFreight')?.hasError('max')){
+          <span>Tax Rate must be between 0 and 100</span>
+        }
+      </div>
+    }
+  </div>
+</aside>
+                    
+                            <!-- ... (keep all existing HTML until the status field) -->
+
+<aside class="col-md-6">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select [items]="statusList" 
+              formControlName="Status"
+              [class.is-invalid]="incoForm.get('Status')?.invalid && incoForm.get('Status')?.touched"
+              [disabled]="incoForm.get('Status')?.disabled">
+    </ng-select>
+    <label class="input-label">Status <span class="text-danger">*</span></label>
+    @if(incoForm.get('Status')?.touched && incoForm.get('Status')?.invalid){
+    <div class="error-message">
+      <span>Status is required</span>
+    </div>
+    }
+  </div>
+</aside>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            @if(isEditMode){
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+        <i class="fas fa-file-alt me-1"></i> e-Doc
+      </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
+                    <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
+        <i  class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+                
+      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+      
+            }
+            <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-info" 
+                (click)="onSubmit(); modal.close()" 
+                [disabled]="btnDisable || incoForm.invalid">
+                {{ isEditMode ? 'Update' : 'Save' }}
+            </button>
+        </div>
+    </ng-template>
+</div>

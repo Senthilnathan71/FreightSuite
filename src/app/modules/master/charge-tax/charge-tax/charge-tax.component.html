@@ -1,4 +1,4 @@
-<div class="d-flex justify-content-end mb-2">
+<!-- <div class="d-flex justify-content-end mb-2">
   <i
     [ngClass]="isFavorite ? 'fas fa-star fs-5 text-danger' : 'far fa-star fs-5 text-secondary'"
     (click)="toggleFavorite()"
@@ -7,7 +7,7 @@
     title="Favorites"
     style="cursor: pointer;">
   </i>
-</div>
+</div> -->
 <div class="row">
     <app-listpage
   [title]="'Charge Tax'"
@@ -196,15 +196,6 @@
                                         <label for="Remarks" class="input-label">Remarks</label>
                                     </div>
                                 </aside>
-                                <aside class="col-md-6 mt-2">
-                                    <div class="custom-form-group custom-form-group-select">
-                                        <ng-select [items]="statusList" bindLabel="name" bindValue="id"
-                                            formControlName="status"
-                                            [class.is-invalid]="chargeTaxForm.get('status')?.invalid && chargeTaxForm.get('status')?.touched">
-                                        </ng-select>
-                                        <label class="input-label">Status <span class="text-danger">*</span></label>
-                                    </div>
-                                </aside>
                                 <aside class="col-md-6">
   <div class="custom-form-group custom-form-group-select">
     <ng-select [items]="companyList" 
@@ -219,9 +210,20 @@
       <div class="error-message">
         <span>Company is required</span>
       </div>
-    }
+       }
   </div>
 </aside>
+                                <aside class="col-md-6 mt-2">
+                                    <div class="custom-form-group custom-form-group-select">
+                                        <ng-select [items]="statusList" bindLabel="name" bindValue="id"
+                                            formControlName="status"
+                                            [class.is-invalid]="chargeTaxForm.get('status')?.invalid && chargeTaxForm.get('status')?.touched">
+                                        </ng-select>
+                                        <label class="input-label">Status <span class="text-danger">*</span></label>
+                                    </div>
+                                </aside>
+                                
+   
                             </div>
                         </div>
                     </div>
@@ -230,9 +232,20 @@
         </div>
         <div class="modal-footer">
             @if(isEditMode){
-                <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto" (click)="openTandC()">
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+        <i class="fas fa-file-alt me-1"></i> e-Doc
+      </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
                     <i class="fas fa-clipboard me-1"></i> Terms & Condition
                 </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
+        <i  class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+                
+      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+      
             }
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-info" (click)="onSubmit()"

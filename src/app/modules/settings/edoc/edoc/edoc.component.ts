@@ -6,6 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 @Component({
@@ -18,7 +19,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 export class EdocComponent {
   edocform: FormGroup;
 
-  constructor(private fb: FormBuilder,private appSettingService: AppSettingsService) {
+  constructor(private fb: FormBuilder,private appSettingService: AppSettingsService,private activeModal : NgbActiveModal) {
     this.initYearForm();
   }
 
@@ -60,4 +61,8 @@ export class EdocComponent {
     { id: '1', name: 'Active' },
     { id: '2', name: 'Suspended' },
   ];
+
+  closeModal(){
+    this.activeModal.close();
+  }
 }

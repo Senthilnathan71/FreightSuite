@@ -42,10 +42,10 @@
                     <tbody>
                         <tr>
                             <td>
-                                <div class="text-truncate">{{item.updatedBy || item.UpdatedBy  || ''}}</div>
+                                <div class="text-truncate">{{ item.updatedBy ? (item.updatedBy || item.UpdatedBy)  : 'Not updated yet'}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">{{item.updatedOn | date:'dd/MM/yyyy, h:mm a' || ''}}
+                                <div class="text-truncate">{{item.updatedBy ? (item.updatedOn | date:'dd/MM/yyyy, h:mm a') : 'Not updated yet'}}
                                 </div>
                             </td>
                         </tr>

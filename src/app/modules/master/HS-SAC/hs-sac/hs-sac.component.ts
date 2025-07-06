@@ -22,6 +22,9 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 @Component({
   selector: 'app-hs-sac',
@@ -461,5 +464,41 @@ applySorting() {
 			}
 		);
 	}
+  openEmail() {
+  if (!this.hssacData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.hssacData;
+  modalRef.componentInstance.idLabel = 'HSSAC Id';
+  modalRef.componentInstance.idValue = this.hssacData?.HSSACMasterSid;
+}
+
+openAuthority() {
+  if (!this.hssacData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.hssacData;
+  modalRef.componentInstance.idLabel = 'HSSAC Id';
+  modalRef.componentInstance.idValue = this.hssacData?.HSSACMasterSid;
+}
+
+openEDoc() {
+  if (!this.hssacData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.hssacData;
+  modalRef.componentInstance.idLabel = 'HSSAC Id';
+  modalRef.componentInstance.idValue = this.hssacData?.HSSACMasterSid;
+}
+
 
 }
