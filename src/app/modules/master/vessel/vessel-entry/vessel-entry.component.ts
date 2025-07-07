@@ -210,16 +210,13 @@ export class VesselEntryComponent implements OnInit {
 
 
     openEmail() {
-  if (!this.vesselData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.vesselData;
-  modalRef.componentInstance.idLabel = 'Vessel Id';
-  modalRef.componentInstance.idValue = this.vesselData?.VesselMasterSid;
-}
+        if (!this.vesselData) return;
+        const modalRef = this.modalService.open(EmailEntryComponent, {
+            size: 'lg',
+            centered: true,
+            backdrop: 'static'
+        });
+    }
 
 openAuthority() {
   if (!this.vesselData) return;

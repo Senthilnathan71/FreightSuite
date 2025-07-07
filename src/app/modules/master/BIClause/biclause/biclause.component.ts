@@ -123,7 +123,7 @@ export class BIclauseComponent implements OnInit {
         : this.filterValue
     };
 
-    this.masterService.searchBlclause(payload).subscribe({
+    this.masterService.searchBlclauselList(payload).subscribe({
       next: (res) => {
         this.allClauses = res;
         this.totalLengthOfCollection = this.allClauses.length;
@@ -392,16 +392,13 @@ applySorting() {
   }
 
   openEmail() {
-  if (!this.blclauseData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.blclauseData;
-  modalRef.componentInstance.idLabel = 'BLClause Id';
-  modalRef.componentInstance.idValue = this.blclauseData?.BLClauseMasterSid;
-}
+    if (!this.blclauseData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.blclauseData) return;

@@ -93,7 +93,7 @@
                                 [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'country', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'country'}"></i>
                         </th>
                         <th class="bg-transparent text-light" scope="col" (click)="sort('gst')">
-                            Vat/GST No
+                            VAT/GST No
                             <i class="fas fa-sort ms-1"
                                 [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'gst', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'gst'}"></i>
                         </th>
@@ -109,10 +109,10 @@
                                     [routerLink]="['/master/company/entry/', company.CompanyMasterSid]">
                                     <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                 </a>
-                                <a class="text-danger mx-2 ps-3 border-start"
+                                <!-- <a class="text-danger mx-2 ps-3 border-start"
                                     (click)="deleteCompany(company.CompanyMasterSid)">
                                     <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                </a>
+                                </a> -->
                             </div>
                         </td>
                         <td>

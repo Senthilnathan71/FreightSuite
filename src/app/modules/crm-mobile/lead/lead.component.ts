@@ -17,6 +17,10 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { EdocComponent } from '../../settings/edoc/edoc/edoc.component';
+import { AuthorityEntryComponent } from '../../master/authority/authority-entry/authority-entry.component';
+import { EmailEntryComponent } from '../../settings/email/email-entry/email-entry.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 
 @Component({
@@ -68,6 +72,9 @@ export class LeadComponent implements OnInit {
     { collapsed: true },
     // More items as needed
   ];
+  currentMenuId: number;
+  TandCList: any;
+  currentClauseId: any;
 
   trackByFn(index: number, item: any): any {
     return item;
@@ -336,6 +343,59 @@ export class LeadComponent implements OnInit {
     modalRef.componentInstance.idLabel = 'Lead Id';
     modalRef.componentInstance.idValue = this.leadData?.PreCustomerMasterSid;
   }
+
+  openTandC() {
+      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+      const payload = { MenuMasterSid: this.currentMenuId };
+      this.leadService.getTandCByCondition(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.TandCList = resp.data;
+            const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+              size: 'lg',
+              backdrop: 'static',
+              centered: true
+            });
+            modalRef.componentInstance.terms = this.TandCList;
+            modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+            modalRef.componentInstance.DocumentSid = this.currentClauseId;
+  
+          } else {
+            this.appSettingService.showError('Error loading Terms and Conditions');
+          }
+        },
+        (error) => {
+          this.appSettingService.showError('Error loading Terms and Conditions', error);
+        }
+      );
+    }
+
+  openEmail() {
+		if (!this.leadData) return;
+		const modalRef = this.modalService.open(EmailEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+	}
+
+	openAuthority() {
+		// if (!this.leadData) return;
+		// const modalRef = this.modalService.open(AuthorityEntryComponent, {
+		// 	size: 'lg',
+		// 	centered: true,
+		// 	backdrop: 'static'
+		// });
+	}
+
+	openEDoc() {
+		// if (!this.leadData) return;
+		// const modalRef = this.modalService.open(EdocComponent, {
+		// 	size: 'lg',
+		// 	centered: true,
+		// 	backdrop: 'static'
+		// });
+	}
 
 
 }

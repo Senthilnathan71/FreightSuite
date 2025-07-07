@@ -101,6 +101,23 @@ export class MasterService {
     );
   }
 
+  getAllCarriers(){
+    return this.http.get('customer/carrier').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+  getAllAgents(){
+    return this.http.get('customer/agent').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
 
   getCustomerById(id: number) {
     return this.http.get<{ data: any }>(`customer/fetch/${id}`).pipe(
@@ -1082,7 +1099,7 @@ export class MasterService {
   updateCompanyById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`company/update/${id}`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );

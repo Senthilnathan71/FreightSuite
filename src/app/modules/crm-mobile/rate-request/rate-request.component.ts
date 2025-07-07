@@ -23,6 +23,8 @@ import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModul
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from '../../settings/email/email-entry/email-entry.component';
 
 @Component({
   selector: 'app-rate-request',
@@ -71,6 +73,8 @@ export class RateRequestComponent implements OnInit {
 	today = this.calendar.getToday();
 	todayDate = new Date(this.today.year,this.today.month,this.today.day);
   rateRequestData : any;
+  currentMenuId: number;
+  TandCList: any;
 
   constructor(
     private appService: AppService,
@@ -576,5 +580,57 @@ onFilter(search: string) {
     modalRef.componentInstance.idValue = this.rateRequestData?.EnquiryHeaderSid;
   }
 
+  
+  openTandC() {
+    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.leadService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modalRef = this.ngbModal.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modalRef.componentInstance.DocumentSid =this.rateRequestData?.EnquiryHeaderSid;
+
+        } else {
+          this.appSettingsService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingsService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
+  openEmail() {
+		if (!this.rateRequestData) return;
+		const modalRef = this.ngbModal.open(EmailEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+	}
+
+	openAuthority() {
+		// if (!this.tariffData) return;
+		// const modalRef = this.modalService.open(AuthorityEntryComponent, {
+		// 	size: 'lg',
+		// 	centered: true,
+		// 	backdrop: 'static'
+		// });
+	}
+
+	openEDoc() {
+		// if (!this.tariffData) return;
+		// const modalRef = this.modalService.open(EdocComponent, {
+		// 	size: 'lg',
+		// 	centered: true,
+		// 	backdrop: 'static'
+		// });
+	}
 
 }

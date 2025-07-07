@@ -18,6 +18,9 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
     selector: 'app-sailing-schedule-entry',
@@ -168,7 +171,7 @@ export class SailingScheduleEntryComponent implements OnInit {
     loadAllFields(){
         forkJoin({
             vessels : this.masterService.getAllVessels(),
-            carriers : this.masterService.getAllCustomers(),
+            carriers : this.masterService.getAllCarriers(),
             ports : this.masterService.getAllPorts()
         }).subscribe(({vessels,carriers,ports})=>{
             this.vesselList = vessels.data,
@@ -269,7 +272,7 @@ export class SailingScheduleEntryComponent implements OnInit {
                         this.appSettingService.showSuccess('Sailing Schedule Updated Successfully');
                         this.loadScheduleData()
                     } else {
-                        this.appSettingService.showError('Error Updating Sailing Schedule');
+                        this.appSettingService.showError(resp.message);
                     }
                 },
                 (error)=>{
@@ -286,7 +289,7 @@ export class SailingScheduleEntryComponent implements OnInit {
                             this.route.navigate(['master/sailing-schedule/entry',sailId]);
                         }
                     } else {
-                        this.appSettingService.showError('Error Creating Sailing Schedule');
+                        this.appSettingService.showError(resp.message);
                     }
                 },
                 (error)=>{
@@ -527,6 +530,33 @@ export class SailingScheduleEntryComponent implements OnInit {
 			}
 		);
 	}
+
+    openEmail() {
+        if (!this.sailHeadData) return;
+        const modalRef = this.modalService.open(EmailEntryComponent, {
+            size: 'lg',
+            centered: true,
+            backdrop: 'static'
+        });
+    }
+
+    openAuthority() {
+      if (!this.sailHeadData) return;
+      const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+    }
+    
+    openEDoc() {
+      if (!this.sailHeadData) return;
+      const modalRef = this.modalService.open(EdocComponent, { 
+        size: 'lg', 
+        centered: true, 
+        backdrop: 'static' 
+      });
+    }
 
     toggleCoLoad(event){
         event.preventDefault();

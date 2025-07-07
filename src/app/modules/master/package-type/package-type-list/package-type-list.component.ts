@@ -347,16 +347,13 @@ applySorting() {
 		);
 	}
   openEmail() {
-  if (!this.packageData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.packageData;
-  modalRef.componentInstance.idLabel = 'Package Type Id';
-  modalRef.componentInstance.idValue = this.packageData?.PackageTypeMasterSid;
-}
+    if (!this.packageData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.packageData) return;

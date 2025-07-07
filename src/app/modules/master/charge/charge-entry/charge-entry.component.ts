@@ -330,17 +330,14 @@ loadLookupData(): void {
     );
   }
 
-    openEmail() {
-  if (!this.chargeData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.chargeData;
-  modalRef.componentInstance.idLabel = 'charge Id';
-  modalRef.componentInstance.idValue = this.chargeData?.ChargeMasterSid;
-}
+  openEmail() {
+    if (!this.chargeData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.chargeData) return;

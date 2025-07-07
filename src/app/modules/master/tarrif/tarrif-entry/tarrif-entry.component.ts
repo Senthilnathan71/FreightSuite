@@ -23,6 +23,9 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { Charge } from 'src/app/modules/crm-mobile/Interfaces/charge.interface';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 
 @Component({
 	selector: 'app-tarrif-entry',
@@ -75,7 +78,8 @@ export class TarrifEntryComponent implements OnInit {
 	chargeList: any[];
 	UOMList: any[];
 	departmentList: any[];
-	customerList: any[];
+	agentList: any[];
+	carrierList: any[];
 	companyList: any[];
 	currencyList : any[];
 	incoList : any[]
@@ -268,17 +272,19 @@ export class TarrifEntryComponent implements OnInit {
 	loadAllFields() {
 		forkJoin({
 			ports: this.masterServ.getAllPorts(),
-			customers: this.masterServ.getAllCustomers(),
+			agents: this.masterServ.getAllAgents(),
+			carriers: this.masterServ.getAllCarriers(),
 			departments: this.masterServ.getAllDepartments(),
 			companies: this.masterServ.getAllCompanies(),
 			currencies : this.masterServ.getAllCurrencies(),
 			incos : this.masterServ.getAllInco(),
 			chargeTax : this.masterServ.getAllChargeTax()
-		}).subscribe(({ ports, customers, departments, companies,currencies,incos,chargeTax}) => {
+		}).subscribe(({ ports, agents , carriers, departments, companies,currencies,incos,chargeTax}) => {
 			this.portList = ports.data,
 			this.polList = ports.data,
 			this.podList = ports.data,
-			this.customerList = customers,
+			this.agentList = agents,
+			this.carrierList = carriers,
 			this.departmentList = departments,
 			this.companyList = companies,
 			this.currencyList = currencies,
@@ -577,6 +583,33 @@ export class TarrifEntryComponent implements OnInit {
 				this.appSettingServ.showError('Error loading Terms and Conditions', error);
 			}
 		);
+	}
+
+	openEmail() {
+		if (!this.tariffData) return;
+		const modalRef = this.modalService.open(EmailEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+	}
+
+	openAuthority() {
+		if (!this.tariffData) return;
+		const modalRef = this.modalService.open(AuthorityEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+	}
+
+	openEDoc() {
+		if (!this.tariffData) return;
+		const modalRef = this.modalService.open(EdocComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
 	}
 
 	setChargeDescription(charge ?: Charge){

@@ -346,9 +346,6 @@ applySorting() {
     centered: true, 
     backdrop: 'static' 
   });
-  modalRef.componentInstance.item = this.moduleData;
-  modalRef.componentInstance.idLabel = 'Module Id';
-  modalRef.componentInstance.idValue = this.moduleData?.ModuleMasterSid;
 }
 
 openAuthority() {

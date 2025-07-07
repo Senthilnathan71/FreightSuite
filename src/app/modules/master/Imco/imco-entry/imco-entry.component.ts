@@ -189,16 +189,13 @@ export class ImcoEntryComponent implements OnInit {
 		);
 	}
     openEmail() {
-  if (!this.imcoData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.imcoData;
-  modalRef.componentInstance.idLabel = 'Imco Id';
-  modalRef.componentInstance.idValue = this.imcoData?.ImcoMasterSid;
-}
+        if (!this.imcoData) return;
+        const modalRef = this.modalService.open(EmailEntryComponent, {
+            size: 'lg',
+            centered: true,
+            backdrop: 'static'
+        });
+    }
 
 openAuthority() {
   if (!this.imcoData) return;

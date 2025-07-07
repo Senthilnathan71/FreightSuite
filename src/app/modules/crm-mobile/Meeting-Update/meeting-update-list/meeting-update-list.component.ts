@@ -11,6 +11,8 @@ import { forkJoin } from 'rxjs';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -42,6 +44,8 @@ export class MeetingUpdateListComponent implements OnInit {
   btnDisable: boolean = false;
   selectedMeeting: any;
   meetingData : any;
+  currentMenuId: number;
+  TandCList: any;
 
   constructor(
     private router: Router,
@@ -325,4 +329,57 @@ export class MeetingUpdateListComponent implements OnInit {
     modalRef.componentInstance.idLabel = 'Meeting Id';
     modalRef.componentInstance.idValue = this.meetingData?.id;
   }
+
+  
+    openTandC() {
+      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+      const payload = { MenuMasterSid: this.currentMenuId };
+      this.leadService.getTandCByCondition(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.TandCList = resp.data;
+            const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+              size: 'lg',
+              backdrop: 'static',
+              centered: true
+            });
+            modalRef.componentInstance.terms = this.TandCList;
+            modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+            modalRef.componentInstance.DocumentSid = this.meetingData?.id;
+  
+          } else {
+            this.appSettingService.showError('Error loading Terms and Conditions');
+          }
+        },
+        (error) => {
+          this.appSettingService.showError('Error loading Terms and Conditions', error);
+        }
+      );
+    }
+    openEmail() {
+      if (!this.meetingData) return;
+      const modalRef = this.modalService.open(EmailEntryComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
+      });
+    }
+  
+    openAuthority() {
+      // if (!this.tariffData) return;
+      // const modalRef = this.modalService.open(AuthorityEntryComponent, {
+      // 	size: 'lg',
+      // 	centered: true,
+      // 	backdrop: 'static'
+      // });
+    }
+  
+    openEDoc() {
+      // if (!this.tariffData) return;
+      // const modalRef = this.modalService.open(EdocComponent, {
+      // 	size: 'lg',
+      // 	centered: true,
+      // 	backdrop: 'static'
+      // });
+    }
 }

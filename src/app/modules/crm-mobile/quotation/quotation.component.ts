@@ -15,6 +15,7 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from '../../settings/email/email-entry/email-entry.component';
 
 
 @Component({
@@ -746,4 +747,32 @@ export class QuotationComponent implements OnInit {
       }
     );
   }
+
+  openEmail() {
+		if (!this.quotationData) return;
+		const modalRef = this.ngbModal.open(EmailEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+	}
+
+	openAuthority() {
+		// if (!this.tariffData) return;
+		// const modalRef = this.modalService.open(AuthorityEntryComponent, {
+		// 	size: 'lg',
+		// 	centered: true,
+		// 	backdrop: 'static'
+		// });
+	}
+
+	openEDoc() {
+		// if (!this.tariffData) return;
+		// const modalRef = this.modalService.open(EdocComponent, {
+		// 	size: 'lg',
+		// 	centered: true,
+		// 	backdrop: 'static'
+		// });
+	}
+
 }

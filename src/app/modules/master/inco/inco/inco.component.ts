@@ -435,16 +435,13 @@ updatePaginationData(): void {
       );
     }
     openEmail() {
-  if (!this.incoData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.incoData;
-  modalRef.componentInstance.idLabel = 'Inco Id';
-  modalRef.componentInstance.idValue = this.incoData?.IncoMasterSid;
-}
+      if (!this.incoData) return;
+      const modalRef = this.modalService.open(EmailEntryComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
+      });
+    }
 
 openAuthority() {
   if (!this.incoData) return;

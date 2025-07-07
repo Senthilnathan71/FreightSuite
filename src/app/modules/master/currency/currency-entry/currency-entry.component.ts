@@ -302,16 +302,13 @@ export class CurrencyEntryComponent implements OnInit {
     );
   }
   openEmail() {
-  if (!this.currencyData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.currencyData;
-  modalRef.componentInstance.idLabel = 'Currency Id';
-  modalRef.componentInstance.idValue = this.currencyData?.CurrencyMasterSid;
-}
+    if (!this.currencyData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.currencyData) return;

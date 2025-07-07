@@ -332,16 +332,13 @@ export class DoctypeComponent implements OnInit {
 		);
 	}
 	openEmail() {
-  if (!this.documentData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.documentData;
-  modalRef.componentInstance.idLabel = 'Document Type Id';
-  modalRef.componentInstance.idValue = this.documentData?.DocumentTypeMasterSid;
-}
+		if (!this.documentData) return;
+		const modalRef = this.modalService.open(EmailEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+	}
 
 openAuthority() {
   if (!this.documentData) return;

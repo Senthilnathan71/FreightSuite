@@ -168,6 +168,7 @@ export class MenuEntryComponent implements OnInit {
     this.settingsService.getMenuById(id).subscribe(
       (response: any) => {
         const data = response.data;
+        this.menuData = data;
         this.menuForm.patchValue({
           MenuName: data.MenuName,
           MenuCode: data.MenuCode,
@@ -359,9 +360,6 @@ export class MenuEntryComponent implements OnInit {
       centered: true,
       backdrop: 'static'
     });
-    modalRef.componentInstance.item = this.menuData;
-    modalRef.componentInstance.idLabel = 'Menu Id';
-    modalRef.componentInstance.idValue = this.menuData?.MenuMasterSid;
   }
 
   openAuthority() {

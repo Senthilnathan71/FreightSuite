@@ -264,16 +264,13 @@ export class CommodityEntryComponent implements OnInit {
     );
   }
   openEmail() {
-  if (!this.commodityData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.commodityData;
-  modalRef.componentInstance.idLabel = 'Commodity Id';
-  modalRef.componentInstance.idValue = this.commodityData?.CommodityMasterSid;
-}
+    if (!this.commodityData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.commodityData) return;

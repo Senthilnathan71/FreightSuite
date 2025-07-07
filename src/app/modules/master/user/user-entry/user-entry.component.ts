@@ -360,16 +360,13 @@ export class UserEntryComponent implements OnInit {
 	}
 
 	openEmail() {
-  if (!this.userData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.userData;
-  modalRef.componentInstance.idLabel = 'User Id';
-  modalRef.componentInstance.idValue = this.userData?.UserMasterSid;
-}
+		if (!this.userData) return;
+		const modalRef = this.modalService.open(EmailEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+	}
 
 openAuthority() {
   if (!this.userData) return;
