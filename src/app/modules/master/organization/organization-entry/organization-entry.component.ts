@@ -32,6 +32,7 @@ import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { City } from 'src/app/modules/crm-mobile/Interfaces/city.interface';
 import { MasterService } from '../../master.service';
+
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
@@ -42,6 +43,10 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { SettingsService } from 'src/app/modules/settings/settings.service';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 
 @Component({
   selector: 'app-organization-entry',
@@ -78,6 +83,8 @@ export class OrganizationEntryComponent {
   totalLengthOfBranchContact: number;
   totalLengthOfBranchEmail: number;
   totalLengthOfBranchLogin: number;
+   displayedCustomerTypes: any[] = [];
+extraCustomerTypesCount = 0;
 
   active1 = 1;
   active2 = 1;
@@ -88,8 +95,8 @@ export class OrganizationEntryComponent {
   ];
 
   modeOfRegistered = [
-    { id: 'Y', name: 'Active' },
-    { id: 'N', name: 'Suspended' },
+    { id: 'Y', name: 'Registered' },
+    { id: 'N', name: 'Unregistered' },
   ];
   modeofPAN = [
     { id: '1', name: 'Company' },
@@ -155,8 +162,8 @@ export class OrganizationEntryComponent {
   modalRef10: NgbModalRef;
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month, this.today.day);
-  displayedCustomerTypes: any[] = [];
-extraCustomerTypesCount = 0;
+ 
+
 
 
   // Info Related Variables
@@ -168,6 +175,7 @@ extraCustomerTypesCount = 0;
   salesmanData : any;
   currentMenuId: number;
   TandCList: any;
+  menuList: any[] = [];
 
   updateDisplayedCustomerTypes(): void {
   // Get the first 3 selected items
@@ -231,6 +239,42 @@ isCustomerFormValid(): boolean {
   onClearSelection(): void {
     this.customerForm.get('CustomerType')?.setValue([]);
   }
+  // Add these near your other component variables
+displayedDepartments: any[] = [];
+extraDepartmentsCount = 0;
+selectedDepartments: string[] = [];
+updateDisplayedDepartments(): void {
+  this.displayedDepartments = this.departmentList
+    .filter(dept => this.selectedDepartments.includes(dept.DepartmentMasterSid.toString()))
+    .slice(0, 3);
+  this.extraDepartmentsCount = Math.max(0, this.selectedDepartments.length - 3);
+}
+
+toggleDepartmentSelection(item: any): void {
+  const deptId = item.DepartmentMasterSid.toString();
+  const index = this.selectedDepartments.indexOf(deptId);
+  if (index === -1) {
+    this.selectedDepartments.push(deptId);
+  } else {
+    this.selectedDepartments.splice(index, 1);
+  }
+  this.updateDisplayedDepartments();
+  this.customerBranchEmailForm.get('DepartmentMasterSid').setValue(this.selectedDepartments.join(','));
+}
+
+isDepartmentSelected(item: any): boolean {
+  return this.selectedDepartments.includes(item.DepartmentMasterSid.toString());
+}
+validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null;
+
+    const emails = control.value.split(',').map(email => email.trim());
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const invalidEmails = emails.filter(email => !emailRegex.test(email));
+    return invalidEmails.length ? { multipleEmail: true } : null;
+  }
+  
 
   customerBranchData: any;
   customerBranchContactData: any;
@@ -366,32 +410,53 @@ isCustomerFormValid(): boolean {
   }
 
   openBranchEmailModal(content: TemplateRef<any>, data?: any) {
-    this.initCustomerBranchEmailForm();
-    if (data) {
-      // Patch form #2
-      this.branchEmailData = data;
-      this.customerBranchEmailForm.patchValue({
-        CustomerBranchSid: data.CustomerBranchSid,
-        DepartmentMasterSid: data.DepartmentMasterSid || '',
-        Toemail: data.Toemail || '',
-        CCemail: data.CCemail || '',
-      });
-      if (data.CustomerBrEmailSid) {
-        this.customerBranchEmailForm.addControl(
-          'CustomerBrEmailSid',
-          this.fb.control(data.CustomerBrEmailSid)
-        );
-      }
-      this.CustomerBrEmailSid = data.CustomerBrEmailSid;
-      if (this.CustomerBrEmailSid) {
-        this.loadCustomerBranchEmailData();
-      }
-    } else {
-      this.isModalEditMode = false;
-    }
+  this.initCustomerBranchEmailForm();
+  if (data) {
+    // Patch form #2
+    this.branchEmailData = data;
+    
+    // Handle department selection
+    const departmentIds = data.DepartmentMasterSid ? 
+      data.DepartmentMasterSid.split(',').map(id => id.trim()) : [];
+    
+    this.selectedDepartments = departmentIds;
+    this.updateDisplayedDepartments();
 
-    this.modalRef = this.modalService.open(content, { size: 'lg', centered: true }); // ✅ open the template
+    this.customerBranchEmailForm.patchValue({
+      CustomerBranchSid: data.CustomerBranchSid,
+      MenuMasterSid: data.MenuMasterSid || '',
+      DepartmentMasterSid: data.DepartmentMasterSid || '',
+      Toemail: data.Toemail || '',
+      CCemail: data.CCemail || '',
+      BranchName: data.BranchName || this.customerBranchName || ''
+    });
+
+    if (data.CustomerBrEmailSid) {
+      this.customerBranchEmailForm.addControl(
+        'CustomerBrEmailSid',
+        this.fb.control(data.CustomerBrEmailSid)
+      );
+      this.CustomerBrEmailSid = data.CustomerBrEmailSid;
+    }
+    this.isModalEditMode = true;
+  } else {
+    this.isModalEditMode = false;
+    this.selectedDepartments = [];
+    this.updateDisplayedDepartments();
+    this.customerBranchEmailForm.patchValue({
+      BranchName: this.customerBranchName || ''
+    });
   }
+
+  this.modalRef = this.modalService.open(content, { size: 'lg', centered: true });
+}
+  viewEmail(email: string) {
+  if (email) {
+    this.appSettingService.showInfo(`Email: ${email}`);
+  } else {
+    this.appSettingService.showWarning('No email available');
+  }
+}
 
   openBranchLoginModal(content: TemplateRef<any>, data?: any) {
     this.initCustomerBranchLoginForm();
@@ -420,6 +485,7 @@ isCustomerFormValid(): boolean {
     }
     this.modalRef = this.modalService.open(content, { size: 'lg', centered: true }); // ✅ open the template
   }
+  
   modalRef: NgbModalRef;
   modalRef1: NgbModalRef;
   stateList: any;
@@ -442,6 +508,7 @@ isCustomerFormValid(): boolean {
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
+    private settingsService: SettingsService,
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
     private router: Router,
@@ -464,6 +531,7 @@ isCustomerFormValid(): boolean {
         this.loadCustomerData(this.CustomerMasterSid);
         this.loadCustomerBranch();
         this.loadCustomerSalesperson();
+        this.loadMenus();
       }
     });
     this.customerForm.get('CustomerName')?.valueChanges.subscribe(() => {
@@ -665,6 +733,16 @@ updateBranchCodeState() {
   
   return isValid ? null : { invalidPhoneNumber: true };
 }
+loadMenus() {
+  this.settingsService.getAllMenu().subscribe(
+    (menus) => {
+      this.menuList = menus;
+    },
+    (error) => {
+      console.error('Error loading menus:', error);
+    }
+  );
+}
 
   initCustomerBranchContactForm() {
     this.customerBranchContactForm = this.fb.group({
@@ -680,11 +758,13 @@ updateBranchCodeState() {
   initCustomerBranchEmailForm() {
     this.customerBranchEmailForm = this.fb.group({
       CustomerBranchSid: [''],
+       MenuMasterSid: ['', [Validators.required]],
       DepartmentMasterSid: ['', [Validators.required]],
       BranchName: [{ value: this.customerBranchName || '', disabled: true }],
-      Toemail: ['', [Validators.required, Validators.email]],
+      Toemail: ['', [Validators.required, this.validateMultipleEmails]],
       CCemail: ['', [Validators.email]],
     });
+    
   }
 
   initCustomerBranchLoginForm() {
@@ -699,6 +779,7 @@ updateBranchCodeState() {
         '',
         [Validators.required, Validators.maxLength(50), this.passwordValidator],
       ],
+      status: [{value: 'Active', disabled: false}, Validators.required],
     });
   }
 
@@ -865,6 +946,15 @@ updateBranchCodeState() {
         this.status = customerData.status;
         // Convert API status (A/IA) to display status (Active/Inactive)
         const formattedStatus = this.statusMap[customerData.status] || customerData.status;
+        let customerType = customerData.CustomerType;
+      if (typeof customerType === 'string') {
+        try {
+          customerType = JSON.parse(customerType);
+        } catch (e) {
+          console.error('Error parsing CustomerType:', e);
+          customerType = {};
+        }
+      }
         this.customerForm.patchValue({
           ...customerData,
           CountryMasterSid: customerData.CountryMasterSid, // assign ID
@@ -876,6 +966,7 @@ updateBranchCodeState() {
               : false,
           PanAvailable:
             customerData.PanType || customerData.PanName ? true : false,
+            CustomerType: customerType
         });
          setTimeout(() => {
         if (!customerData.CustomerShortCode) {
@@ -883,24 +974,18 @@ updateBranchCodeState() {
         }
       });
 
-        console.log(customerData.CustomerType,'CustomerType')
-        console.log('Form patched:', this.customerForm.value.CustomerType);
-        this.updateCustomerType()
-
-        // ✅ Patch the selected checkboxes from CustomerType JSON
-        const customerType = typeof customerData.CustomerType === 'string'
-          ? JSON.parse(customerData.CustomerType)
-          : customerData.CustomerType || {};
-
         this.selectedStatus = this.modeOfCustomerType
-          .filter(
-            (type) => customerType[this.toCamelCase(type.name)] === 'isTrue'
-          )
-          .map((type) => type.name);
+        .filter(type => {
+          const key = this.toCamelCase(type.name);
+          return customerType[key] === 'isTrue';
+        })
+        .map(type => type.name);
 
-        this.updateCustomerType();
-        this.updateDisplayedCustomerTypes();
-      },
+      this.updateDisplayedCustomerTypes();
+      
+      console.log('CustomerType loaded:', customerType);
+      console.log('Selected statuses:', this.selectedStatus);
+    },
       (error) => {
         this.appSettingService.showError('Error loading customer data.');
       }
@@ -982,6 +1067,11 @@ updateBranchCodeState() {
       )?.BranchName || ''
     );
   }
+  getMenuName(menuSid: number): string {
+  if (!this.menuList) return '';
+  const menu = this.menuList.find(m => m.MenuMasterSid === menuSid);
+  return menu ? menu.MenuName : '';
+}
 
   getDepartmentName(DepartmentMasterSid: number): string {
     if (!this.departmentList) return '';
@@ -1241,52 +1331,36 @@ updateBranchCodeState() {
 
   //customer-branch-email
   customerBranchEmailSubmit() {
-    let createdBy = {
-      createdBy: this.appSettingService.userSettingSource.value['userEmail'],
-    };
-    let updatedBy = {
-      updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
-    };
-    const formValue = this.customerBranchEmailForm.value;
+  if (this.customerBranchEmailForm.invalid) {
+    this.customerBranchEmailForm.markAllAsTouched();
+    return;
+  }
 
-    const payload =
-      this.isModalEditMode && this.CustomerBrEmailSid
-        ? {
-          CustomerBranchSid: Number(this.customerBranchId),
-          DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
-          Toemail: formValue.Toemail,
-          CCemail: formValue.CCemail,
-          ...updatedBy,
-        }
-        : {
-          CustomerBranchSid: Number(this.customerBranchId),
-          DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
-          Toemail: formValue.Toemail,
-          CCemail: formValue.CCemail,
-          ...createdBy,
-        };
+  let createdBy = {
+    createdBy: this.appSettingService.userSettingSource.value['userEmail'],
+  };
+  let updatedBy = {
+    updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
+  };
+  
+  const formValue = this.customerBranchEmailForm.value;
 
-    if (this.isModalEditMode && this.CustomerBrEmailSid) {
-      this.masterService
-        .updateCustomerBranchEmailById(this.CustomerBrEmailSid, payload)
-        .subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
-              this.customerBranchEmailForm.reset();
-              this.modalRef.close();
-              this.loadCustomerBranchEmail();
-            } else {
-              this.appSettingService.showError(resp.message);
-            }
-          },
-          (error) => {
-            this.errorMessage = error.message;
-            console.error('Error loading country:', error);
-          }
-        );
-    } else {
-      this.masterService.createCustomerBranchEmail(payload).subscribe(
+  // Join selected departments with comma
+  const departmentMasterSid = this.selectedDepartments.join(',');
+
+  const payload = {
+    CustomerBranchSid: Number(this.customerBranchId),
+    MenuMasterSid: Number(formValue.MenuMasterSid),
+    DepartmentMasterSid: departmentMasterSid,
+    Toemail: formValue.Toemail,
+    CCemail: formValue.CCemail,
+    ...(this.isModalEditMode ? updatedBy : createdBy)
+  };
+
+  if (this.isModalEditMode && this.CustomerBrEmailSid) {
+    this.masterService
+      .updateCustomerBranchEmailById(this.CustomerBrEmailSid, payload)
+      .subscribe(
         (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
@@ -1299,11 +1373,28 @@ updateBranchCodeState() {
         },
         (error) => {
           this.errorMessage = error.message;
-          console.error('Error loading country:', error);
+          console.error('Error updating branch email:', error);
         }
       );
-    }
+  } else {
+    this.masterService.createCustomerBranchEmail(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.appSettingService.showSuccess(resp.message);
+          this.customerBranchEmailForm.reset();
+          this.modalRef.close();
+          this.loadCustomerBranchEmail();
+        } else {
+          this.appSettingService.showError(resp.message);
+        }
+      },
+      (error) => {
+        this.errorMessage = error.message;
+        console.error('Error creating branch email:', error);
+      }
+    );
   }
+}
 
   deleteCustomerBranchEmail(id) {
     this.masterService
@@ -1556,6 +1647,10 @@ updateBranchCodeState() {
   }
 
   openSalespersonModal(content:TemplateRef<any>,data ?:any){
+    if (!this.isCustomerFormValid()) {
+      this.appSettingService.showWarning('Please fill in valid customer details first');
+      return;
+    }
     this.initSalesPersonForm();
     this.getAllSpCustomerBranch();
     this.loadAllSpfields();
@@ -1672,8 +1767,14 @@ updateBranchCodeState() {
   }
 
   findSalesmanName(id : number){
+    if(!this.salesPersonList){
+      return;
+    }
     const user = this.salesPersonList.find(person => person.UserMasterSid === id );
-    return user.userName;
+    if(user){
+      return user.userName;
+    }
+    return ''
   }
 
   deleteSalesman(CustomerSalesSid : number){
@@ -1768,6 +1869,41 @@ updateBranchCodeState() {
 			}
 		);
 	}
+  openEmail() {
+  if (!this.customerData) return;
+  const modalRef = this.modalService.open(EmailEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.customerData;
+  modalRef.componentInstance.idLabel = 'Customer Id';
+  modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
+}
+
+openAuthority() {
+  if (!this.customerData) return;
+  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.customerData;
+  modalRef.componentInstance.idLabel = 'Customer Id';
+  modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
+}
+
+openEDoc() {
+  if (!this.customerData) return;
+  const modalRef = this.modalService.open(EdocComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+  modalRef.componentInstance.item = this.customerData;
+  modalRef.componentInstance.idLabel = 'Customer Id';
+  modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
+}
 
   
 }
