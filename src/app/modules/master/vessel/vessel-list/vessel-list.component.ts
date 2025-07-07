@@ -74,8 +74,8 @@ export class VesselListComponent {
         if(response.data){
           this.vesselList = response.data.items;
           this.totalLengthOfCollection = response.data.totalCount;
-          this.searched = true;
           this.applySorting();
+          this.searched = true;
         }
       },
       error: (err) => {
@@ -188,6 +188,7 @@ export class VesselListComponent {
     this.totalLengthOfCollection = 0
     this.sortColumn = 'vesselName';
     this.sortDirection = 'asc';
+    this.searched = false;
   }
 
   report(): void {

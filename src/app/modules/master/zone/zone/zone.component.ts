@@ -57,9 +57,8 @@ export class ZoneComponent {
   zoneList: any[] = [];
   statusList = ["Active", "Suspended"]
   modalRef!: NgbModalRef;
-  searchType = 'ZoneName';
   filterValue = '';
-  searchPerformed = false;
+  searched = false;
   searchResults: any[];
   page = 1;
   pageSize = 10;
@@ -88,12 +87,12 @@ export class ZoneComponent {
   ) {}
 
   ngOnInit(): void {
-    // this.loadZone();
     this.appSettingService.getUser().subscribe(user=>{
       if (user) {
         this.userData = user;
       }
-    })
+    });
+    this.loadZones();
     this.initForm();
     this.route.paramMap.subscribe(params => {
       this.ZoneMasterSid = +params.get('id');
@@ -102,8 +101,31 @@ export class ZoneComponent {
         this.loadZoneData(this.ZoneMasterSid);
       }
     });
-    this.masterService.searchZone().subscribe((resp:any) => {
-      this.zoneList = resp;
+  }
+
+  loadZones(): void {
+    const params = {
+      search: this.filterValue ? this.filterValue.trim() : '',
+      page: this.page,
+      pageSize: this.pageSize,
+    };
+
+    this.masterService.searchZonelList(params).subscribe({
+      next: (response) => {
+        if(response.data) {
+          this.zoneList = response.data.items;
+          this.results = [...this.zoneList];
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searched = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching vessels:', err);
+        this.zoneList = [];
+        this.results = [];
+        this.totalLengthOfCollection = 0;
+      },
     });
   }
 
@@ -276,12 +298,7 @@ export class ZoneComponent {
     );
   }
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
+  
 sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -293,7 +310,6 @@ sort(column: string) {
   }
   
   this.applySorting();
-  this.updatePaginatedData();
 }
 
 // Add this method to the class
@@ -318,40 +334,14 @@ applySorting() {
     }
     return 0;
   });
+  this.zoneList = [...this.results];
 }
 
-  search(): void {
-    const filterValue = this.filterValue.toLowerCase();
-    if(!filterValue) {
-      this.searchResults = [...this.zoneList];
-      this.totalLengthOfCollection = this.searchResults.length;
-      this.applySorting();
-      this.searchPerformed =  true;
-      this.updatePaginatedData();
-      console.log(this.searchResults);
-      return;
-    }
-    console.log(this.filterValue.toLowerCase());
-    if(filterValue) {
-      this.searchResults = this.searchResults.filter(item => {
-      return (
-        (item.ZoneName && item.ZoneName.toLowerCase().includes(filterValue)) ||
-        (item.ZoneCode && item.ZoneCode.toLowerCase().includes(filterValue)) ||
-        (item.status && item.status.toLowerCase().includes(filterValue))
-      );
-    });
-      this.totalLengthOfCollection = this.searchResults.length;
-      this.applySorting();
-      this.searchPerformed =  true;
-      this.updatePaginatedData();
-      console.log(this.searchResults);
-    }
-  }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.zoneList = this.searchResults.slice(startIndex, endIndex);
+    this.loadZones();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -365,7 +355,7 @@ applySorting() {
         this.masterService.softDeleteZone(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           this.router.navigate(['master/zone'])
-          this.search();
+          this.loadZones();
         });
       }
     });
@@ -373,12 +363,11 @@ applySorting() {
 
   resetPage(): void {
     this.filterValue = '';
-    this.searchType = 'ZoneName';
     this.page = 1;
     this.zones = [] ;
     this.zoneList = [];
     this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
+    this.searched = false;
     this.sortColumn = 'ZoneName'; 
   this.sortDirection = 'asc';
   }

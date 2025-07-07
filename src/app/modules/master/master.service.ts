@@ -787,11 +787,10 @@ export class MasterService {
     );
   }
 
-  searchZone() {
-    return this.http.get<{ data: Zone[] }>('zone/search-list').pipe(
-      map((resp) => {
-        let response = resp.data;
-        return response;
+  searchZonelList(params) {
+    return this.http.post("zone/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
@@ -1584,11 +1583,10 @@ export class MasterService {
     )
   }
 
-  searchBlclause(payload) {
-    return this.http.post<{ data: any[] }>('blclause/search-list', payload).pipe(
-      map((resp) => {
-        let response = resp.data
-        return response;
+  searchBlclauselList(params) {
+    return this.http.post("blclause/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
