@@ -84,15 +84,27 @@ export class VerticalSidebarComponent implements OnInit {
       left: 0,
       behavior: 'smooth'
     });
-    const path = element.path;
-    const screenName = element.title;
-    this.menuServise.addToRecent({ path, screenName }).subscribe(
-      (resp:any)=>{
-        if(resp.status){
-          console.log(`${screenName} add to recent activities`)
-        }
-      }
-    );
+    
+    const newlyVisited = {
+      path: element.path,
+      screenName: element.title,
+      createdOn: new Date()
+    };
+
+    let recentlyVisited = JSON.parse(localStorage.getItem('recentlyVisited')) || [];
+    const existingIndex = recentlyVisited.findIndex(item => item.path === newlyVisited.path);
+
+    if (existingIndex !== -1) {
+      recentlyVisited.splice(existingIndex, 1);
+    }
+
+    recentlyVisited.unshift(newlyVisited);
+
+    if (recentlyVisited.length > 10) {
+      recentlyVisited.pop();
+    }
+
+    localStorage.setItem('recentlyVisited', JSON.stringify(recentlyVisited));
   }
   
   handleNotify() {
