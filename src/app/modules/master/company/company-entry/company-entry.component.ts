@@ -637,7 +637,7 @@ export class CompanyEntryComponent implements OnInit {
 		if (this.isEditMode) {
 			this.masterService.updateCompanyById(this.CompanyMasterSid, payload).subscribe(
 				(resp: any) => {
-					if (resp) {
+					if (resp.status) {
 						this.appSettingService.showSuccess('Company updated successfully.');
 						const companyId = resp.company?.CompanyMasterSid
 						console.log(resp);
@@ -896,16 +896,13 @@ export class CompanyEntryComponent implements OnInit {
 		);
 	}
 	openEmail() {
-  if (!this.companyData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.companyData;
-  modalRef.componentInstance.idLabel = 'Company Id';
-  modalRef.componentInstance.idValue = this.companyData?.CompanyMasterSid;
-}
+		if (!this.companyData) return;
+		const modalRef = this.modalService.open(EmailEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+	}
 
 openAuthority() {
   if (!this.companyData) return;

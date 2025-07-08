@@ -17,6 +17,9 @@ import { Year } from 'src/app/modules/crm-mobile/Interfaces/year.interfaces';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-year-entry',
@@ -203,6 +206,7 @@ export class YearEntryComponent {
           status: data.status
         },
       );
+      this.yearData = data;
       },
       (error) => {
         this.appSettingService.showError('Error loading year data.');
@@ -257,4 +261,32 @@ export class YearEntryComponent {
       }
     );
   }
+
+  openEmail() {
+		if (!this.yearData) return;
+		const modalRef = this.modalService.open(EmailEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+	}
+
+	openAuthority() {
+		if (!this.yearData) return;
+		const modalRef = this.modalService.open(AuthorityEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+	}
+
+	openEDoc() {
+		if (!this.yearData) return;
+		const modalRef = this.modalService.open(EdocComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+	}
+
 }

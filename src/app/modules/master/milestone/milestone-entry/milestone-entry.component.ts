@@ -245,16 +245,13 @@ export class MilestoneEntryComponent implements OnInit {
 		);
 	}
   openEmail() {
-  if (!this.milestoneData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.milestoneData;
-  modalRef.componentInstance.idLabel = 'Milestone Id';
-  modalRef.componentInstance.idValue = this.milestoneData?.milestoneId;
-}
+    if (!this.milestoneData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.milestoneData) return;

@@ -304,16 +304,13 @@ resetForm(): void {
     );
   }
   openEmail() {
-  if (!this.containerData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.containerData;
-  modalRef.componentInstance.idLabel = 'Container Type Id';
-  modalRef.componentInstance.idValue = this.containerData?.ContainerTypeMasterSid;
-}
+    if (!this.containerData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.containerData) return;

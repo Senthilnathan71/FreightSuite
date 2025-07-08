@@ -246,16 +246,13 @@ export class CountryEntryComponent implements OnInit {
     );
   }
   openEmail() {
-  if (!this.countryData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.countryData;
-  modalRef.componentInstance.idLabel = 'Country Id';
-  modalRef.componentInstance.idValue = this.countryData?.CountryMasterSid;
-}
+    if (!this.countryData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.countryData) return;

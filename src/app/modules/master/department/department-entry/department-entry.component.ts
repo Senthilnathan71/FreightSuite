@@ -224,14 +224,14 @@ export class DepartmentEntryComponent {
         }
       );
     }
-    openEmail() {
-      if (!this.departmentData) return;
-      const modalRef = this.modalService.open(EmailEntryComponent, {
-        size: 'lg',
-        centered: true,
-        backdrop: 'static'
-      });
-    }
+  openEmail() {
+    if (!this.departmentData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.departmentData) return;

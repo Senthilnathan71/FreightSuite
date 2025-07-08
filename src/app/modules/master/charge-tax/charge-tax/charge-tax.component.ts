@@ -399,17 +399,14 @@ applySorting() {
       }
     );
   }
-openEmail() {
-  if (!this.chargeTaxData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.chargeTaxData;
-  modalRef.componentInstance.idLabel = 'ChargeTax Id';
-  modalRef.componentInstance.idValue = this.chargeTaxData?.ChargeTaxMasterSid;
-}
+  openEmail() {
+    if (!this.chargeTaxData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.chargeTaxData) return;

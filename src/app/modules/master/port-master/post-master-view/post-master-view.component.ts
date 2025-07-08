@@ -335,16 +335,13 @@ export class PostMasterViewComponent {
 		);
 	}
   openEmail() {
-  if (!this.portData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.portData;
-  modalRef.componentInstance.idLabel = 'Port Id';
-  modalRef.componentInstance.idValue = this.portData?.PortMasterSid;
-}
+    if (!this.portData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.portData) return;

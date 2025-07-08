@@ -465,16 +465,13 @@ applySorting() {
 		);
 	}
   openEmail() {
-  if (!this.hssacData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.hssacData;
-  modalRef.componentInstance.idLabel = 'HSSAC Id';
-  modalRef.componentInstance.idValue = this.hssacData?.HSSACMasterSid;
-}
+    if (!this.hssacData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.hssacData) return;

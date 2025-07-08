@@ -232,9 +232,6 @@ statusOptions = [
     centered: true, 
     backdrop: 'static' 
   });
-  modalRef.componentInstance.item = this.uomData;
-  modalRef.componentInstance.idLabel = 'UOM Id';
-  modalRef.componentInstance.idValue = this.uomData?.UOMMasterSid;
 }
 
 openAuthority() {

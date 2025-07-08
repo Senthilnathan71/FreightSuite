@@ -431,16 +431,13 @@ applySorting() {
   }
 
   openEmail() {
-  if (!this.sectorData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.sectorData;
-  modalRef.componentInstance.idLabel = 'Sector Id';
-  modalRef.componentInstance.idValue = this.sectorData?.SectorMasterSid;
-}
+    if (!this.sectorData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.sectorData) return;

@@ -242,16 +242,13 @@ export class ProductEntryComponent implements OnInit{
 		);
 	}
     openEmail() {
-  if (!this.productData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.productData;
-  modalRef.componentInstance.idLabel = 'Product Id';
-  modalRef.componentInstance.idValue = this.productData?.ProductMasterSId;
-}
+        if (!this.productData) return;
+        const modalRef = this.modalService.open(EmailEntryComponent, {
+            size: 'lg',
+            centered: true,
+            backdrop: 'static'
+        });
+    }
 
 openAuthority() {
   if (!this.productData) return;

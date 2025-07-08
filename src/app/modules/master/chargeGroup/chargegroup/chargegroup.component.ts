@@ -395,16 +395,13 @@ applySorting() {
     );
   }
   openEmail() {
-  if (!this.chargeGroupData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.chargeGroupData;
-  modalRef.componentInstance.idLabel = 'Charge Group Id';
-  modalRef.componentInstance.idValue = this.chargeGroupData?.ChargeGroupSid;
-}
+    if (!this.chargeGroupData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
     openAuthority() {
   if (!this.chargeGroupData) return;
   const modalRef = this.modalService.open(AuthorityEntryComponent, { 

@@ -281,6 +281,19 @@
 
         </div>
         <div class="modal-footer">
+          <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+        <i class="fas fa-file-alt me-1"></i> e-Doc
+      </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
+                    <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                </button>
+                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
+        <i  class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+                
+      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
           <button class="btn btn-info btn-sm" appPreventMultiClick [disableTime]="2000" [isLoading]="btnDisable"
             (click)="onEditMeeting()">
             Save

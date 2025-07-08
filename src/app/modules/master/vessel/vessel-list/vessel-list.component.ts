@@ -10,6 +10,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-vessel-list',
@@ -21,20 +22,21 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     ReactiveFormsModule,
     NgbPaginationModule,
     RouterModule,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent
   ],
   templateUrl: './vessel-list.component.html',
   styleUrl: './vessel-list.component.scss'
 })
 export class VesselListComponent {
-  searchType = 'VesselName';
+
   filterValue: any;
-  results: any[] = [];
-  vesselList: any[] = []
-  searchPerformed = false;
+  vesselList: any[] = [];
+  searched = false;
   userData: any;
   loading: boolean = false;
-  allvessel: any[] = []
+
+
   // pagination
   page = 1;
   pageSize = 10;
@@ -42,7 +44,7 @@ export class VesselListComponent {
   isFavorite: boolean = false;
 
   // sorting
-  sortColumn: string = 'vesselName'; // default sort column
+  sortColumn: string = 'VesselName'; // default sort column
   sortDirection: string = 'asc'; // default sort direction
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -54,68 +56,64 @@ export class VesselListComponent {
   ) { }
   ngOnInit() {
     this.appSettingService.getUser().subscribe(user => {
-    if (user) {
-      this.userData = user;
-    }
-  });}
+      if (user) {
+        this.userData = user;
+      }
+    });
+    this.loadVessels();
+  }
+  loadVessels(): void {
+    const params = {
+      search: this.filterValue ? this.filterValue.trim() : '',
+      page: this.page,
+      pageSize: this.pageSize,
+    };
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
+    this.masterService.searchVesselList(params).subscribe({
+      next: (response) => {
+        if(response.data){
+          this.vesselList = response.data.items;
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searched = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching vessels:', err);
+        this.vesselList = [];
+        this.totalLengthOfCollection = 0;
+      },
+    });
+  }
 
-  // search() {
-  //   const intSearch = [
-  //     'YearofBuilt',
-  //     'NRT'
-  //   ]
-  //   const payload = {
-  //     searchType: this.searchType,
-  //     filterValue: intSearch.includes(this.searchType) ? Number(this.filterValue) : this.filterValue,
-  //   }
-  //   this.masterService.searchVesselList(payload).subscribe((res: any) => {
-  //     this.results = res;
+
+  // search(): void {
+  //   if (!this.filterValue) {
+  //     this.searchResults = [...this.vesselList];
+  //     this.totalLengthOfCollection = this.searchResults.length;
+  //     this.applySorting();
   //     this.searchPerformed = true;
-  //     this.updatePaginatedData();  
-  //     this.totalLengthOfCollection = this.results.length || 0;
-  //   });
+  //     this.updatePaginatedData();
+  //     console.log(this.searchResults);
+  //     return;
+  //   }
+  //   if (this.filterValue) {
+  //     this.searchResults = this.searchResults.filter(item => {
+  //       return (
+  //         (item.VesselName && item.VesselName.toLowerCase().includes(this.filterValue.toLowerCase())) ||
+  //         (item.VesselType && item.VesselType.toLowerCase().includes(this.filterValue.toLowerCase())) ||
+  //         (item.YearofBuilt && item.YearofBuilt === Number(this.filterValue)) ||
+  //         (item.VesselOperator && item.VesselOperator.toLowerCase().includes(this.filterValue.toLowerCase())) ||
+  //         (item.status && item.status.toLowerCase().includes(this.filterValue.toLowerCase()))
+  //       );
+  //     });
+  //     this.totalLengthOfCollection = this.searchResults.length;
+  //     this.applySorting();
+  //     this.searchPerformed = true;
+  //     this.updatePaginatedData();
+  //     console.log(this.searchResults);
+  //   }
   // }
-
-    search() {
-      this.loading = true;
-
-      const intSearch = ['YearofBuilt', 'NRT'];
-      const payload = {
-        searchType: this.searchType,
-        filterValue: intSearch.includes(this.searchType) ? Number(this.filterValue) : this.filterValue,
-      };
-
-      this.masterService.searchVesselList(payload).subscribe((res: any) => {
-        this.results = res;
-        this.allvessel = res.map((item: any) => ({
-          ...item,
-          vesselName: item.VesselName,
-          vesselType: item.VesselType,
-          yearOfBuilt: item.YearofBuilt,
-          vesselOperator: item.VesselOperator
-        }));
-
-        this.applySorting();
-        this.vesselList = [...this.allvessel];
-        this.totalLengthOfCollection = this.vesselList.length;
-        this.searchPerformed = true;
-        this.page = 1;
-        this.updatePaginatedData();
-        this.loading = false;
-      }, () => {
-        this.loading = false;
-      });
-    }
-
-
-
 
   sort(column: string) {
     if (this.sortColumn === column) {
@@ -128,11 +126,11 @@ export class VesselListComponent {
     }
     
     this.applySorting();
-    this.updatePaginatedData();
+    // this.updatePaginatedData();
   }
 
   applySorting() {
-    this.allvessel.sort((a, b) => {
+    this.vesselList.sort((a, b) => {
       let valueA = a[this.sortColumn];
       let valueB = b[this.sortColumn];
       
@@ -158,7 +156,8 @@ export class VesselListComponent {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.vesselList= this.allvessel.slice(startIndex, endIndex);
+    this.loadVessels();
+    // this.vesselList = this.searchResults.slice(startIndex, endIndex);
   }
 
   trackByIndex(index: number, item: any): number {
@@ -172,7 +171,7 @@ export class VesselListComponent {
         this.masterService.deleteVesselById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           // this.router.navigate(['master/vessel/list'])
-          this.search();
+          // this.search();
         }, (error) => {
           this.appSettingService.showError("Error Deleting Vessel", error);
         });
@@ -187,33 +186,37 @@ export class VesselListComponent {
   resetPage() {
     this.vesselList = []
     this.totalLengthOfCollection = 0
-     this.sortColumn = 'vesselName';
+    this.sortColumn = 'vesselName';
     this.sortDirection = 'asc';
+    this.searched = false;
   }
 
   report(): void {
-  const formattedData = this.vesselList.map(item => ({
-    ...item,
-    status: item.status === 'A' ? 'Active' : 'Suspended'
-  }));
+    const formattedData = this.vesselList.map(item => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
 
-  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
 
-  this.excelReportService.exportAsExcel({
-    data: formattedData,
-    headers: [
-      { key: 'VesselName', label: 'Vessel Name' },
-      // { key: 'VesselShortCode', label: 'Vessel Code' },
-      { key: 'VesselType', label: 'Vessel Type' },
-      { key: 'YearofBuilt', label: 'Year of Built' },
-      // { key: 'IMOCode', label: 'IMO Code' },
-      { key: 'VesselOperator', label: 'Vessel Operator' },
-      // { key: 'NRT', label: 'Net Register Ton' },
-      { key: 'status', label: 'Status' }
-    ],
-    fileName: 'Vessel-Report', 
-    title: companyName
-  });
-}
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'VesselName', label: 'Vessel Name' },
+        // { key: 'VesselShortCode', label: 'Vessel Code' },
+        { key: 'VesselType', label: 'Vessel Type' },
+        { key: 'YearofBuilt', label: 'Year of Built' },
+        // { key: 'IMOCode', label: 'IMO Code' },
+        { key: 'VesselOperator', label: 'Vessel Operator' },
+        // { key: 'NRT', label: 'Net Register Ton' },
+        { key: 'status', label: 'Status' }
+      ],
+      fileName: 'Vessel-Report',
+      title: companyName
+    });
+  }
+  clearFilterValue() {
+    this.filterValue = '';
+  }
 
 }

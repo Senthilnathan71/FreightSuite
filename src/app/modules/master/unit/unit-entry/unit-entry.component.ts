@@ -234,16 +234,13 @@ export class UnitEntryComponent {
 		);
 	}
   openEmail() {
-  if (!this.unitData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.unitData;
-  modalRef.componentInstance.idLabel = 'Unit Id';
-  modalRef.componentInstance.idValue = this.unitData?.UnitMasterSid;
-}
+    if (!this.unitData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.unitData) return;

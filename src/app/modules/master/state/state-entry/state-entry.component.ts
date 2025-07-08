@@ -311,16 +311,13 @@ export class StateEntryComponent implements OnInit {
 		);
 	}
   openEmail() {
-  if (!this.stateData) return;
-  const modalRef = this.modalService.open(EmailEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.stateData;
-  modalRef.componentInstance.idLabel = 'State Id';
-  modalRef.componentInstance.idValue = this.stateData?.StateMasterSid;
-}
+    if (!this.stateData) return;
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
 openAuthority() {
   if (!this.stateData) return;

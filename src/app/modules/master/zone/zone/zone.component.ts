@@ -12,7 +12,7 @@ import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import { take } from 'rxjs';
+import { filter, take } from 'rxjs';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
@@ -22,6 +22,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-zone',
@@ -39,7 +40,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     TextWithNumbersDirective,
     DatePipe,
     ListpageComponent,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    FavoriteStarComponent
   ],
   templateUrl: './zone.component.html',
   styleUrl: './zone.component.scss'
@@ -55,9 +57,9 @@ export class ZoneComponent {
   zoneList: any[] = [];
   statusList = ["Active", "Suspended"]
   modalRef!: NgbModalRef;
-  searchType = 'ZoneName';
   filterValue = '';
-  searchPerformed = false;
+  searched = false;
+  searchResults: any[];
   page = 1;
   pageSize = 10;
   totalLengthOfCollection = 0;
@@ -85,12 +87,12 @@ export class ZoneComponent {
   ) {}
 
   ngOnInit(): void {
-    // this.loadZone();
     this.appSettingService.getUser().subscribe(user=>{
       if (user) {
         this.userData = user;
       }
-    })
+    });
+    this.loadZones();
     this.initForm();
     this.route.paramMap.subscribe(params => {
       this.ZoneMasterSid = +params.get('id');
@@ -98,6 +100,32 @@ export class ZoneComponent {
         this.isEditMode = true;
         this.loadZoneData(this.ZoneMasterSid);
       }
+    });
+  }
+
+  loadZones(): void {
+    const params = {
+      search: this.filterValue ? this.filterValue.trim() : '',
+      page: this.page,
+      pageSize: this.pageSize,
+    };
+
+    this.masterService.searchZonelList(params).subscribe({
+      next: (response) => {
+        if(response.data) {
+          this.zoneList = response.data.items;
+          this.results = [...this.zoneList];
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searched = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching vessels:', err);
+        this.zoneList = [];
+        this.results = [];
+        this.totalLengthOfCollection = 0;
+      },
     });
   }
 
@@ -270,12 +298,7 @@ export class ZoneComponent {
     );
   }
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
+  
 sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -287,7 +310,6 @@ sort(column: string) {
   }
   
   this.applySorting();
-  this.updatePaginatedData();
 }
 
 // Add this method to the class
@@ -312,28 +334,14 @@ applySorting() {
     }
     return 0;
   });
+  this.zoneList = [...this.results];
 }
 
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue
-    };
-
-    this.masterService.searchZone(payload).subscribe((res: any) => {
-      this.results = res;
-      console.log(this.results)
-      this.applySorting();
-      this.searchPerformed = true;
-      this.updatePaginatedData();
-      this.totalLengthOfCollection = this.results.length || 0;
-    });
-  }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.zoneList = this.results.slice(startIndex, endIndex);
+    this.loadZones();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -347,7 +355,7 @@ applySorting() {
         this.masterService.softDeleteZone(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           this.router.navigate(['master/zone'])
-          this.search();
+          this.loadZones();
         });
       }
     });
@@ -355,12 +363,11 @@ applySorting() {
 
   resetPage(): void {
     this.filterValue = '';
-    this.searchType = 'ZoneName';
     this.page = 1;
     this.zones = [] ;
     this.zoneList = [];
     this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
+    this.searched = false;
     this.sortColumn = 'ZoneName'; 
   this.sortDirection = 'asc';
   }
@@ -453,6 +460,8 @@ openEDoc() {
   modalRef.componentInstance.idLabel = 'Zone Id';
   modalRef.componentInstance.idValue = this.zoneData?.ZoneMasterSid;
 }
-
+clearFilterValue(){
+      this.filterValue = '';
+    }
 
 }
