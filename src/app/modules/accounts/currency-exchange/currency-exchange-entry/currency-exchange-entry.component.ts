@@ -72,6 +72,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
       EffectiveFrom: ['', [Validators.required]],
       FromCurrency: ['', [Validators.required]],
       ToCurrency: ['', [Validators.required]],
+      RateFrom: ['', [Validators.required]],
       SellRate: ['', [
         Validators.required,
         Validators.pattern(/^\d+\.?\d{0,5}$/)
@@ -81,6 +82,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
         Validators.pattern(/^\d+\.?\d{0,5}$/)
       ]],
       BankName: ['', [Validators.required]],
+
       Remarks: [''],
       status: [{ value: 'Active', disabled: true }, [Validators.required]],
       CompanyMasterSid: ['', [Validators.required]],
@@ -170,7 +172,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
         this.currencyExchangeForm.patchValue({
           ...data,
           EffectiveFrom: new Date(data.EffectiveFrom),
-          status: data.status === 'A' ? 'Active' : 'Suspended'
+          status: data.status === 'A' ? 'Active' : 'Suspended',
+          RateFrom: data.RateFrom || ''
         });
         this.loading = false;
       },
@@ -195,6 +198,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     const payload = {
       ...formValue,
       EffectiveFrom: formValue.EffectiveFrom,
+      RateFrom: formValue.RateFrom,
       SellRate: parseFloat(formValue.SellRate),
       BuyRate: parseFloat(formValue.BuyRate),
       status: formValue.status === "Active" ? "A" : "S",

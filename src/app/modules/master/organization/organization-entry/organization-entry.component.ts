@@ -98,6 +98,10 @@ extraCustomerTypesCount = 0;
     { id: 'Y', name: 'Registered' },
     { id: 'N', name: 'Unregistered' },
   ];
+  modeOfBranchType = [
+  { id: 'HeadQuarters', name: 'Head Quarters' },
+  { id: 'BRANCH', name: 'Branch' }
+];
   modeofPAN = [
     { id: '1', name: 'Company' },
     { id: '2', name: 'Individual' },
@@ -345,6 +349,7 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
       // Patch form #1
       this.customerBranchForm.patchValue({
         CustBranchName: data.BranchName || '',
+        CustBranchType: data.BranchType||'',
         CustBranchAddress: data.Address || '',
         CustBranchCity: data.CityMasterSid || '',
         CustBranchState: data.StateMasterSid || '',
@@ -414,11 +419,15 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
   if (data) {
     // Patch form #2
     this.branchEmailData = data;
-    
-    // Handle department selection
-    const departmentIds = data.DepartmentMasterSid ? 
+    let departmentIds = [];
+  try {
+    const deptData = JSON.parse(data.DepartmentMasterSid);
+    departmentIds = deptData.departmentIds || [];
+  } catch (e) {
+    // Fallback for old format (comma separated)
+    departmentIds = data.DepartmentMasterSid ? 
       data.DepartmentMasterSid.split(',').map(id => id.trim()) : [];
-    
+  }
     this.selectedDepartments = departmentIds;
     this.updateDisplayedDepartments();
 
@@ -685,6 +694,7 @@ updateShortCodeFieldState() {
       CustBranchCity: ['', [Validators.required]],
       CustBranchState: ['', [Validators.required]],
       CustBranchName: ['', [Validators.required]],
+      CustBranchType: ['', [Validators.required]],
       CustBranchCode: [{ value: '', disabled: true }],
       CustBranchZipPostCode: [''],
       CustBranchPhone: ['', [Validators.maxLength(15), this.phoneNumberValidator]],
@@ -1099,6 +1109,7 @@ loadMenus() {
           StateMasterSid: Number(formValue.CustBranchState),
           Branch_Code: formValue.CustBranchCode,
           BranchName: formValue.CustBranchBranchName,
+          Branch_Type: formValue.CustBranchType,
           Zip_PostBox: String(formValue.CustBranchZipPostCode),
           ContactNo: String(formValue.CustBranchPhone),
           Email: formValue.CustBranchEmail,
@@ -1114,6 +1125,7 @@ loadMenus() {
           CityMasterSid: Number(formValue.CustBranchCity),
           StateMasterSid: Number(formValue.CustBranchState),
           BranchName: formValue.CustBranchName,
+          Branch_Type: formValue.CustBranchType,
           Zip_PostBox: String(formValue.CustBranchZipPostCode),
           ContactNo: String(formValue.CustBranchPhone),
           Email: formValue.CustBranchEmail,
@@ -1345,13 +1357,15 @@ loadMenus() {
   
   const formValue = this.customerBranchEmailForm.value;
 
-  // Join selected departments with comma
-  const departmentMasterSid = this.selectedDepartments.join(',');
+  // Create JSON object for departments
+  const departmentData = {
+    departmentIds: this.selectedDepartments
+  };
 
   const payload = {
     CustomerBranchSid: Number(this.customerBranchId),
     MenuMasterSid: Number(formValue.MenuMasterSid),
-    DepartmentMasterSid: departmentMasterSid,
+    DepartmentMasterSid: JSON.stringify(departmentData),
     Toemail: formValue.Toemail,
     CCemail: formValue.CCemail,
     ...(this.isModalEditMode ? updatedBy : createdBy)
