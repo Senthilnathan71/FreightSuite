@@ -110,6 +110,16 @@
     </div>
   </aside>
 
+  <aside class="col-md-4">
+  <div class="custom-form-group">
+    <input type="text" id="RateFrom" formControlName="RateFrom" class="custom-input-field sm" maxlength="100">
+    <label for="RateFrom" class="input-label">Rate From <span class="text-danger fw-bold">*</span></label>
+    <div *ngIf="currencyExchangeForm.get('RateFrom').touched && currencyExchangeForm.get('RateFrom').errors" class="text-danger">
+      <div *ngIf="currencyExchangeForm.get('RateFrom').errors['required']">Rate From is required</div>
+    </div>
+  </div>
+</aside>  
+
             
             <aside class="col-md-4">
               <div class="custom-form-group">

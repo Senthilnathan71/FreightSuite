@@ -5,6 +5,7 @@ export interface CurrencyExchange {
     EffectiveFrom: Date | string;
     FromCurrency: string;
     ToCurrency: string;
+    RateFrom?: string;  
     SellRate: number;
     BuyRate: number;
     BankName: string;

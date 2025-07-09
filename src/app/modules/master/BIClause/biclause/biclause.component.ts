@@ -108,38 +108,37 @@ export class BIclauseComponent implements OnInit {
 }
 
   search(): void {
-    this.loading = true;
-    
-    if (!this.filterValue.trim()) {
-      // If empty search, load all clauses (like state-list does)
-      this.loadAllClauses();
-      return;
-    }
+  this.loading = true;
+  
+  const params = {
+    search: this.filterValue ? this.filterValue.trim() : '',
+    page: this.page,
+    pageSize: this.pageSize,
+    searchType: this.searchType,
+    status: this.searchType === 'status' ? this.filterValue : null // Add status filter
+  };
 
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'I'
-        : this.filterValue
-    };
-
-    this.masterService.searchBlclauselList(payload).subscribe({
-      next: (res) => {
-        this.allClauses = res;
+  this.masterService.searchBlclauselList(params).subscribe({
+    next: (response) => {
+      if(response.data) {
+        this.allClauses = response.data.items;
+        this.totalLengthOfCollection = response.data.totalCount;
+      } else {
+        this.allClauses = response;
         this.totalLengthOfCollection = this.allClauses.length;
-        this.applySorting();
-        this.searchPerformed = true;
-        this.page = 1;
-        this.updatePaginatedData();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Search error:', err);
-        this.loading = false;
-        this.appSettingService.showError('Failed to search BI Clauses');
       }
-    });
-  }
+      this.applySorting();
+      this.updatePaginatedData(); // Ensure pagination is applied
+      this.searchPerformed = true;
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Search error:', err);
+      this.loading = false;
+      this.appSettingService.showError('Failed to search BI Clauses');
+    }
+  });
+}
   sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -192,24 +191,37 @@ applySorting() {
   });
 }
   loadAllClauses(): void {
-    this.loading = true;
-    this.masterService.getAllBlClause().subscribe({
-      next: (res) => {
-        this.allClauses = res;
+  this.loading = true;
+  const params = {
+    search: '',
+    page: this.page,
+    pageSize: this.pageSize
+  };
+
+  this.masterService.searchBlclauselList(params).subscribe({
+    next: (response) => {
+      if(response.data) {
+        this.allClauses = response.data.items;
+        this.totalLengthOfCollection = response.data.totalCount;
+      } else {
+        this.allClauses = response;
         this.totalLengthOfCollection = this.allClauses.length;
-        this.applySorting();
-        this.searchPerformed = true;
-        this.page = 1;
-        this.updatePaginatedData();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading clauses:', err);
-        this.loading = false;
-        this.appSettingService.showError('Failed to load BI Clauses');
       }
-    });
-  }
+      this.applySorting();
+      this.searchPerformed = true;
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error loading clauses:', err);
+      this.loading = false;
+      this.appSettingService.showError('Failed to load BI Clauses');
+    }
+  });
+}
+clearFilterValue() {
+  this.filterValue = '';
+  this.search();
+}
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
