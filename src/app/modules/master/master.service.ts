@@ -2143,6 +2143,15 @@ searchFfUser(payload: any) {
   );
 }
 
+resetUserPassword(UserMasterSid , payload){
+  return this.http.post<{data:any[]}>(`ff-user/reset/${UserMasterSid}`,payload).pipe(
+    map((resp)=>{
+      let response = resp;
+      return response;
+    })
+  )
+}
+
 //  User Type
 getAllUserType() {
   return this.http.get<{data: any[]}>('user-type').pipe(

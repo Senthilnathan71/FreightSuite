@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, TemplateRef } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
@@ -8,8 +8,8 @@ import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 
 @Component({
@@ -21,7 +21,8 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     CommonModule,
     RouterModule,
     NgbPaginationModule,
-    ListpageComponent
+    ListpageComponent,
+    ReactiveFormsModule
   ],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss'
@@ -41,6 +42,11 @@ export class UserListComponent {
   pageSize = 10;
   totalNumberOfCollection: number;
   isFavorite: boolean = false;
+  resetPasswordForm !:FormGroup
+  passwordView : boolean;
+  passwordView1 : boolean;
+  UserMasterSid : boolean;
+  modalRef : NgbModalRef
 
     // sorting
   sortColumn: string = '=userName'; // default sort column
@@ -55,7 +61,9 @@ export class UserListComponent {
     private appSettingServ: AppSettingsService,
     private router: Router,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private fb:FormBuilder,
+    private modalService : NgbModal
   ) { }
 
   ngOnInit() {
@@ -210,4 +218,122 @@ export class UserListComponent {
     this.searchPerformed = false;
     this.totalNumberOfCollection = 0;
   }
+
+  initResetPassForm() {
+    this.resetPasswordForm = this.fb.group({
+      password: ["", [
+        Validators.required,
+        this.passwordValidator()
+      ]],
+      confirmPassword: ["", [Validators.required,this.confirmPasswordValidator()]]
+    });
+    this.resetPasswordForm.get('password')?.valueChanges.subscribe(
+      ()=>{
+        this.resetPasswordForm.get('confirmPassword').updateValueAndValidity()
+      }
+    )
+  }
+
+  passwordValidator(): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } | null => {
+      const value = control.value;
+      if (!value) {
+        return null;
+      }
+
+      const errors: any = {};
+
+      // Check individual requirements
+      const hasLetter = /[a-zA-Z]/.test(value);
+      const hasNumber = /[0-9]/.test(value);
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+      const hasMinLength = value.length >= 4;
+
+      if (!hasLetter) errors.missingLetter = true;
+      if (!hasNumber) errors.missingNumber = true;
+      if (!hasSpecialChar) errors.missingSpecialChar = true;
+      if (!hasMinLength) errors.minLength = true;
+
+      return Object.keys(errors).length > 0 ? errors : null;
+    };
+  }
+
+  confirmPasswordValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!this.resetPasswordForm) return null;
+
+      const password = this.resetPasswordForm.get('password')?.value;
+      const confirmPassword = control.value;
+
+      // Only validate if both fields have values
+      if (!password || !confirmPassword) {
+        return null;
+      }
+
+      return password === confirmPassword ? null : { passwordMismatch: true };
+    };
+  }
+
+  openChangePassword(content:TemplateRef<any>,UserMasterSid){
+    this.initResetPassForm();
+    this.UserMasterSid = UserMasterSid;
+    if(this.UserMasterSid){
+      this.modalRef = this.modalService.open(content,{size: 'lg',centered : true,backdrop : 'static'})
+    }
+  }
+
+  onSubmitPassForm(){
+    if(this.resetPasswordForm.invalid){
+      this.resetPasswordForm.markAllAsTouched();
+      this.resetPasswordForm.updateValueAndValidity();
+      this.appSettingServ.showWarning('Please fill all the required fields correctly.')
+      return;
+    }
+
+    const currentUserEmail = this.appSettingServ.userSettingSource.value['userEmail'];
+    const formValue = this.resetPasswordForm.value;
+    const payload = {
+      password :formValue.password,
+      updatedBy : currentUserEmail
+    }
+
+    this.masterServ.resetUserPassword(this.UserMasterSid,payload).subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          this.appSettingServ.showSuccess('Password changed Successfully');
+          this.modalRef.close()
+        } else {
+          this.appSettingServ.showError('Error Changing Password');
+          console.error(resp.message)
+        }
+      }
+    )
+
+  }
+
+
+  togglePassword(isPassword: boolean,input:HTMLInputElement): void {
+    if(isPassword){
+      this.passwordView = !this.passwordView
+      input.type = 'text'
+    } else {
+      this.passwordView1 = !this.passwordView1
+      input.type = 'text'
+    }
+  }
+
+  viewPassword(isPassword: boolean,input:HTMLInputElement): void {
+    if(input.type === 'password'){
+      return;
+    }
+    if(isPassword){
+      this.passwordView = !this.passwordView
+      input.type = 'password'
+    } else {
+      this.passwordView1 = !this.passwordView1
+      input.type = 'password'
+    }
+  }
+
+
 }

@@ -6,7 +6,7 @@ import { MasterService } from '../../master.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
-import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { FfUser, UserRole } from 'src/app/modules/crm-mobile/Interfaces/ffuser.interface';
 import { CommonModule } from '@angular/common';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
@@ -44,10 +44,13 @@ export class UserEntryComponent implements OnInit {
 	userRoleForm !:FormGroup;
 
 	departmentList : any[];
+	filteredDeptList : any[] = [];
 	userTypeList : any[];
 	companyList : any[];
 	branchList : any[];
+	filteredBranchList : any[] = []
 	roleList : any[];
+	filteredRoleList : any[] = [];
 	countryList : any[];
 	passwordView : boolean
 
@@ -86,7 +89,7 @@ export class UserEntryComponent implements OnInit {
 		this.userForm = this.fb.group({
 			userName: ['', [Validators.required]],
 			userEmail: ['', [Validators.required,this.customEmailValidator()]],
-			department: ['', [Validators.required]], 
+			department: [[], [Validators.required]], 
 			DefaultDept: [''],
 			isSalesperson: [false],
 			userTypeId: [,[Validators.required]],
@@ -95,9 +98,10 @@ export class UserEntryComponent implements OnInit {
 			userPassword: [,[this.customPasswordValidator()]],
 			CountryMasterSid: [,[Validators.required]],
 			CompanyMasterSid : [,[Validators.required]],
-			branches : [,[Validators.required]],
-			roles : [,[Validators.required]]
+			branches : [[],[Validators.required]],
+			roles : [[],[Validators.required]]
 		});
+		this.userForm.get('DefaultDept').disable()
 	}
 
 
@@ -111,8 +115,10 @@ export class UserEntryComponent implements OnInit {
 			countries : this.masterService.getAllCountry()
 		}).subscribe(({departments,userType,companies,roles,countries})=>{
 			this.departmentList = departments,
+			this.filteredDeptList = departments,
 			this.userTypeList = userType.data,
 			this.companyList = companies
+			this.filteredRoleList = roles.data;
 			this.roleList = roles.data;
 			this.countryList = countries.data;
 		})
@@ -171,7 +177,7 @@ export class UserEntryComponent implements OnInit {
 		}
 
 		const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
-		const formValue = this.userForm.value;
+		const formValue = this.userForm.getRawValue();
 
 		const payload = {
 			...formValue,
@@ -225,6 +231,7 @@ export class UserEntryComponent implements OnInit {
 		this.masterService.getBranchesByCompanyId(company.CompanyMasterSid).subscribe(
 			(resp:any)=>{
 				this.branchList = resp;
+				this.filteredBranchList = resp;
 			}
 		)
 	}
@@ -232,6 +239,7 @@ export class UserEntryComponent implements OnInit {
 	clearCompany(){
 		this.userForm.get('branches')?.setValue([]);
 		this.branchList = [];
+		this.filteredBranchList = []
 	}
 
 	getUserCode(userName : string){
@@ -293,9 +301,9 @@ export class UserEntryComponent implements OnInit {
 			}
 
 			// Check for at least one uppercase letter
-			if (!/[A-Z]/.test(password)) {
-				errors['noUppercase'] = true;
-			}
+			// if (!/[A-Z]/.test(password)) {
+			// 	errors['noUppercase'] = true;
+			// }
 
 			// Check for at least one lowercase letter
 			if (!/[a-z]/.test(password)) {
@@ -331,6 +339,162 @@ export class UserEntryComponent implements OnInit {
 		this.userForm.reset({
 			status : 'Active'
 		})
+	}
+
+	onRoleSearch(event: any): void {
+		const searchTerm = event.target.value.toLowerCase();
+		this.filteredRoleList = this.roleList.filter(role =>
+			role.UserRoleName.toLowerCase().includes(searchTerm)
+		);
+	}
+
+	roleControl():AbstractControl {
+		return this.userForm.get('roles');
+	}
+
+	toggleRole(id: number) {
+		console.log(id);
+		const currentValue = this.roleControl().value;
+		console.log(currentValue);
+		console.log(currentValue.includes(id));
+		if (currentValue.includes(id)) {
+			this.roleControl().setValue(currentValue.filter((v: number) => v != id));
+		} else {
+			this.roleControl().setValue([...currentValue, id]);
+		}
+		console.log(this.roleControl().value);
+	}
+
+	toggleSelectAll() {
+		const currentValue = this.roleControl().value;
+		if (currentValue.length === this.filteredRoleList.length) {
+			this.roleControl().setValue([]);
+		} else {
+			this.roleControl().setValue(this.filteredRoleList.map(r => r.RoleMasterSid));
+		}
+	}
+
+	onSearchKeydown(event: KeyboardEvent): void {
+		if (event.key === 'Backspace') {
+			// Prevent backspace from clearing selected items
+			event.stopPropagation();
+			// Update search term and filtered list
+			const input = event.target as HTMLInputElement;
+			this.updateFilteredRoles(input.value);
+		}
+	}
+
+	private updateFilteredRoles(searchTerm): void {
+		// Assuming you have an original role list
+		const originalRoleList = [...this.filteredRoleList]; // Replace with your actual data source
+		if (searchTerm) {
+			this.filteredRoleList = originalRoleList.filter(role =>
+				role.UserRoleName.toLowerCase().includes(searchTerm.toLowerCase())
+			);
+		} else {
+			this.filteredRoleList = [...originalRoleList];
+		}
+	}
+	// Branch related Data
+
+	onBranchSearch(event: any): void {
+		const searchTerm = event.target.value.toLowerCase();
+		this.filteredBranchList = this.branchList.filter(branch =>
+			branch.branchName.toLowerCase().includes(searchTerm)
+		);
+	}
+
+	branchControl():AbstractControl {
+		return this.userForm.get('branches');
+	}
+
+	toggleBranch(id: number) {
+		const currentValue = this.branchControl().value;
+		if (currentValue.includes(id)) {
+			this.branchControl().setValue(currentValue.filter((v: number) => v != id));
+		} else {
+			this.branchControl().setValue([...currentValue, id]);
+		}
+	}
+
+	toggleBranchSelectAll() {
+		const currentValue = this.branchControl().value;
+		if (currentValue.length === this.filteredBranchList.length) {
+			this.branchControl().setValue([]);
+		} else {
+			this.branchControl().setValue(this.filteredBranchList.map(r => r.BranchMasterSid));
+		}
+	}
+
+	onBranchSearchKeydown(event: KeyboardEvent): void {
+		if (event.key === 'Backspace') {
+			event.stopPropagation();
+			const input = event.target as HTMLInputElement;
+			this.updateFilteredBranches(input.value);
+		}
+	}
+
+	private updateFilteredBranches(searchTerm): void {
+
+		const originalBranchList = [...this.filteredBranchList]; 
+		if (searchTerm) {
+			this.filteredBranchList = originalBranchList.filter(branch =>
+				branch.branchName.toLowerCase().includes(searchTerm.toLowerCase())
+			);
+		} else {
+			this.filteredBranchList = [...originalBranchList];
+		}
+	}
+
+	// Department related Data
+
+	onDeptSearch(event: any): void {
+		const searchTerm = event.target.value.toLowerCase();
+		this.filteredDeptList = this.departmentList.filter(dept =>
+			dept.departmentName.toLowerCase().includes(searchTerm)
+		);
+	}
+
+	deptControl():AbstractControl {
+		return this.userForm.get('department');
+	}
+
+	toggleDept(name: string) {
+		const currentValue = this.deptControl().value;
+		if (currentValue.includes(name)) {
+			this.deptControl().setValue(currentValue.filter((v: string) => v != name));
+		} else {
+			this.deptControl().setValue([...currentValue, name]);
+		}
+	}
+
+	toggleDeptSelectAll() {
+		const currentValue = this.deptControl().value;
+		if (currentValue.length === this.filteredDeptList.length) {
+			this.deptControl().setValue([]);
+		} else {
+			this.deptControl().setValue(this.filteredDeptList.map(r => r.departmentName));
+		}
+	}
+
+	onDeptSearchKeydown(event: KeyboardEvent): void {
+		if (event.key === 'Backspace') {
+			event.stopPropagation();
+			const input = event.target as HTMLInputElement;
+			this.updateFilteredDept(input.value);
+		}
+	}
+
+	private updateFilteredDept(searchTerm): void {
+
+		const originalDeptList = [...this.filteredDeptList]; 
+		if (searchTerm) {
+			this.filteredDeptList = originalDeptList.filter(dept =>
+				dept.departmentName.toLowerCase().includes(searchTerm.toLowerCase())
+			);
+		} else {
+			this.filteredBranchList = [...originalDeptList];
+		}
 	}
 
 	openTandC() {

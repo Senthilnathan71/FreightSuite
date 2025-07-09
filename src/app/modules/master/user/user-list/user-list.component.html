@@ -14,9 +14,8 @@
         { value: 'userEmail', label: 'Email' },
         { value: 'isSalesperson', label: 'Is Salesman' },
         { value: 'status', label: 'Status' }
-      ]" [searchPerformed]="searchPerformed" [defaultSearchType]="'userName'"
-        (onCreateClick)="nagivateTocreateUser()" (onReportClick)="report()" (onResetClick)="reset()"
-        (onSearchClick)="search($event)">
+      ]" [searchPerformed]="searchPerformed" [defaultSearchType]="'userName'" (onCreateClick)="nagivateTocreateUser()"
+        (onReportClick)="report()" (onResetClick)="reset()" (onSearchClick)="search($event)">
     </app-listpage>
 
     <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalNumberOfCollection > 0">
@@ -30,33 +29,30 @@
                             <th class="bg-transparent text-light" scope="col">Email</th>
                             <th class="bg-transparent text-light" scope="col">Is Salesman</th> -->
                             <th class="bg-transparent text-light" scope="col" (click)="sort('userName')">
-                            User Name
-                            <i class="fas fa-sort ms-1"
-                                [ngClass]="{
+                                User Name
+                                <i class="fas fa-sort ms-1" [ngClass]="{
                                 'fa-sort-up': sortColumn === 'userName' && sortDirection === 'asc',
                                 'fa-sort-down': sortColumn === 'userName' && sortDirection === 'desc'
                                 }">
-                            </i>
+                                </i>
                             </th>
 
                             <th class="bg-transparent text-light" scope="col" (click)="sort('email')">
-                            Email
-                            <i class="fas fa-sort ms-1"
-                                [ngClass]="{
+                                Email
+                                <i class="fas fa-sort ms-1" [ngClass]="{
                                 'fa-sort-up': sortColumn === 'email' && sortDirection === 'asc',
                                 'fa-sort-down': sortColumn === 'email' && sortDirection === 'desc'
                                 }">
-                            </i>
+                                </i>
                             </th>
 
                             <th class="bg-transparent text-light" scope="col" (click)="sort('isSalesman')">
-                            Is Salesman
-                            <i class="fas fa-sort ms-1"
-                                [ngClass]="{
+                                Is Salesman
+                                <i class="fas fa-sort ms-1" [ngClass]="{
                                 'fa-sort-up': sortColumn === 'isSalesman' && sortDirection === 'asc',
                                 'fa-sort-down': sortColumn === 'isSalesman' && sortDirection === 'desc'
                                 }">
-                            </i>
+                                </i>
                             </th>
 
 
@@ -70,6 +66,10 @@
                                 <div class="d-flex align-items-center justify-content-center">
                                     <a class="text-info mx-2" [routerLink]="['/master/user/entry/',user.UserMasterSid]">
                                         <i-feather name="eye" class="feather-sm"></i-feather>
+                                    </a>
+                                    <a class="link mx-2 ps-3 border-start text-primary"
+                                        (click)="openChangePassword(resetTemplate,user.UserMasterSid)">
+                                        <i class="fas fa-lock" style="color: #FFD43B;"></i>
                                     </a>
                                     <a class="link mx-2 ps-3 border-start text-danger"
                                         (click)="deleteUser(user.UserMasterSid)">
@@ -118,3 +118,90 @@
         <div>No records found</div>
     </div>
 </div>
+<ng-template #resetTemplate let-modal>
+    <div class="card mb-0">
+        <div class="modal-header p-2 d-flex align-items-center">
+            <span class="db"><img src="assets/images/logos/xtreme-dark-icon.svg" alt="logo" /></span>
+            <h5 class="card-title ms-2 mb-0">Change Password</h5>
+            <button type="button" class="btn btn-close ms-auto me-2" (click)="modal.close()"></button>
+        </div>
+        <div class="modal-body">
+            <form class="col-12 p-3" [formGroup]="resetPasswordForm">
+                <div class="d-flex flex-column align-items-center">
+                    <aside class="col-md-10 col-12">
+                        <div class="input-group my-2">
+                            <input type="password" formControlName="password" class="form-control custom-input-field md"
+                                placeholder="Password" [ngClass]="{'is-invalid': (resetPasswordForm.controls['password'].invalid) && 
+        (resetPasswordForm.controls['password'].touched || resetPasswordForm.controls['password'].dirty )}"
+                                #passwordInput />
+                            <button type="button" class="input-group-text password-toggle"
+                                (mousedown)="togglePassword(true,passwordInput)"
+                                (mouseup)="viewPassword(true,passwordInput)"
+                                (mouseleave)="viewPassword(true,passwordInput)">
+                                @if(!passwordView) {
+                                <i-feather class="feather-sm" name="eye"></i-feather>
+                                } @else {
+                                <i-feather class="feather-sm" name="eye-off"></i-feather>
+                                }
+                            </button>
+                            @if(resetPasswordForm.get('password').invalid && (resetPasswordForm.get('password').touched || resetPasswordForm.get('password').dirty)){
+                                <div class="error-message">
+                                @if(resetPasswordForm.get('password').hasError('required')){
+                                    <span class="text-danger">Password is required</span>
+                                }
+                                @else if(resetPasswordForm.get('password').hasError('minLength')){
+                                    <span>Password must be at least 4 characters long</span>
+                                }
+                                @else if (resetPasswordForm.get('password').hasError('missingLetter')) {
+                                <span>Password must contain at least one letter</span>
+                                }
+                                @else if (resetPasswordForm.get('password').hasError('missingSpecialChar')) {
+                                <span>Password must contain at least one special character</span>
+                                }
+                                @else if (resetPasswordForm.get('password').hasError('missingNumber')) {
+                                <span>Password must contain at least one number</span>
+                                }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-10 col-12">
+                        <div class="input-group my-2">
+                            <input type="password" formControlName="confirmPassword"
+                                class="form-control custom-input-field md" placeholder="Confirm Password" [ngClass]="{'is-invalid': 
+                                (resetPasswordForm.controls['confirmPassword'].invalid) && 
+                                (resetPasswordForm.controls['confirmPassword'].dirty || resetPasswordForm.controls['confirmPassword'].touched)
+                                }" #passwordInput1 />
+                            <button type="button" class="input-group-text password-toggle"
+                                (mousedown)="togglePassword(false,passwordInput1)"
+                                (mouseup)="viewPassword(false,passwordInput1)"
+                                (mouseleave)="viewPassword(false,passwordInput1)"
+                                [attr.aria-label]="passwordView1 ? 'Hide confirm password' : 'Show confirm password'"
+                                tabindex="0">
+                                @if(!passwordView1) {
+                                <i-feather class="feather-sm" name="eye"></i-feather>
+                                } @else {
+                                <i-feather class="feather-sm" name="eye-off"></i-feather>
+                                }
+                            </button>
+                            @if(resetPasswordForm.get('confirmPassword').invalid && (resetPasswordForm.get('confirmPassword').touched ||resetPasswordForm.get('confirmPassword').dirty) ){
+                                <div class="error-message">
+                                    @if(resetPasswordForm.get('confirmPassword').hasError('required')){
+                                        <span>Confirm Password is required</span>
+                                    }@else if(resetPasswordForm.get('confirmPassword').hasError('passwordMismatch')){
+                                        <span>Password do not match</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer p-2">
+            <button class="btn btn-info ms-auto" type="submit" (click)="onSubmitPassForm()"><i
+                    class="fas fa-save me-1"></i> Save</button>
+        </div>
+    </div>
+</ng-template>
