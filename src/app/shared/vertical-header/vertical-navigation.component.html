@@ -174,21 +174,14 @@
   <li class="">
     <div class="d-flex gap-3">
       <div class="position-relative" ngbDropdown #menuSearchDropdown="ngbDropdown">
-        <input type="text" 
-               class="form-control ps-3 pe-5 border border-info" 
-               placeholder="Search Menu"
-               style="border-radius: 20px;"
-               (click)="$event.stopPropagation(); menuSearchDropdown.open()"
-               (input)="searchMenu($event)"
-               ngbDropdownToggle>
+        <input type="text" class="form-control ps-3 pe-5 border border-info" placeholder="Search Menu"
+          style="border-radius: 20px;" (click)="$event.stopPropagation(); menuSearchDropdown.open()"
+          (input)="searchMenu($event)" ngbDropdownToggle>
         <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-info"></i>
-        
+
         <div class="dropdown-menu w-100" style="max-height: 230px;overflow-y: auto;" ngbDropdownMenu>
           <div *ngIf="menuSearchResults.length > 0; else noMenuResults">
-            <a *ngFor="let result of menuSearchResults" 
-               class="dropdown-item" 
-               href="#"
-               [routerLink]="result.path">
+            <a *ngFor="let result of menuSearchResults" class="dropdown-item" href="#" [routerLink]="result.path">
               {{ result.MenuName }}
             </a>
           </div>
@@ -204,21 +197,14 @@
   <li class="nav-item">
     <div class="d-flex gap-3">
       <div class="position-relative" ngbDropdown #docSearchDropdown="ngbDropdown" [autoClose]="outside">
-        <input type="text" 
-               class="form-control ps-3 pe-5 border border-info" 
-               placeholder="Search Document"
-               style="border-radius: 20px;"
-               (click)="$event.stopPropagation(); docSearchDropdown.open()"
-               (input)="searchDocuments($event)"
-               ngbDropdownToggle>
+        <input type="text" class="form-control ps-3 pe-5 border border-info" placeholder="Search Document"
+          style="border-radius: 20px;" (click)="$event.stopPropagation(); docSearchDropdown.open()"
+          (input)="searchDocuments($event)" ngbDropdownToggle>
         <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-info"></i>
-        
+
         <div class="dropdown-menu w-100" style="max-height: 230px;" ngbDropdownMenu>
           <div *ngIf="docSearchResults.length > 0; else noDocResults">
-            <a *ngFor="let result of docSearchResults" 
-               class="dropdown-item" 
-               href="#"
-               [routerLink]="result.path">
+            <a *ngFor="let result of docSearchResults" class="dropdown-item" href="#" [routerLink]="result.path">
               {{ result.title }}
             </a>
           </div>
@@ -234,253 +220,249 @@
 
 
 
-<ul class="navbar-nav float-end">
-  <!-- ============================================================== -->
-  <!-- Existing home button and other items -->
-  <!-- ============================================================== -->
-  <!-- ============================================================== -->
-  <!-- create new -->
-  <!-- ============================================================== -->
-  <li class="nav-item">
-    <a href="javascript:void(0);" class="nav-link">
-      <i-feather name="home"></i-feather>
-    </a>
-  </li>
-   <li class="nav-item dropdown" ngbDropdown #myDrop="ngbDropdown" placement="bottom-end" (openChange)="loadRecentList($event)">
-  <a ngbDropdownToggle
-     class="nav-link dropdown-toggle waves-effect waves-dark"
-     href="javascript:void(0)"
-     aria-haspopup="true"
-     aria-expanded="false">
-    <i-feather name="clock"></i-feather>
-  </a>
+  <ul class="navbar-nav float-end">
+    <!-- ============================================================== -->
+    <!-- Existing home button and other items -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- create new -->
+    <!-- ============================================================== -->
 
-  <div class="dropdown-menu mailbox dropdown-menu-end dropdown-menu-animate-up" ngbDropdownMenu>
-    <span class="with-arrow"><span class="bg-info"></span></span>
+    <li class="nav-item">
+      <a (click)="navigateToMaster()" href="javascript:void(0);" class="nav-link">
+        <i-feather name="home"></i-feather>
+      </a>
+    </li>
+    <li class="nav-item dropdown" ngbDropdown #myDrop="ngbDropdown" placement="bottom-end"
+      (openChange)="loadRecentList($event)">
+      <a ngbDropdownToggle class="nav-link dropdown-toggle waves-effect waves-dark" href="javascript:void(0)"
+        aria-haspopup="true" aria-expanded="false">
+        <i-feather name="clock"></i-feather>
+      </a>
 
-    <ul class="list-style-none mb-0">
-      <!-- Header -->
-      <li>
-        <div class="drop-title bg-info text-white">
-          <h4 class="mb-0 mt-1">{{recentList.length}} Recent</h4>
-          <span class="font-light">Activities</span>
-        </div>
-      </li>
+      <div class="dropdown-menu mailbox dropdown-menu-end dropdown-menu-animate-up" ngbDropdownMenu>
+        <span class="with-arrow"><span class="bg-info"></span></span>
 
-      <!-- Scrollable List -->
-      <li>
-        <ng-scrollbar class="message-center notifications" style="max-height: 230px;">
-          @for(item of recentList; track item) {
-          <a href="javascript:void(0)" class="message-item border-bottom d-block text-decoration-none" [routerLink]="item.path" (click)="myDrop.close()">
-            <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
-              <h5 class="message-title">{{ item.screenName }}</h5>
-              <span class="time fs-2 d-block text-muted text-truncate">{{ item.createdOn | timeAgo }}</span>
-            </span>
-          </a>
-          }
-        </ng-scrollbar>
-      </li>
-    </ul>
-  </div>
-</li>
+        <ul class="list-style-none mb-0">
+          <!-- Header -->
+          <li>
+            <div class="drop-title bg-info text-white">
+              <h4 class="mb-0 mt-1">{{recentList.length}} Recent</h4>
+              <span class="font-light">Activities</span>
+            </div>
+          </li>
+
+          <!-- Scrollable List -->
+          <li>
+            <ng-scrollbar class="message-center notifications" style="max-height: 230px;">
+              @for(item of recentList; track item) {
+              <a href="javascript:void(0)" class="message-item border-bottom d-block text-decoration-none"
+                [routerLink]="item.path" (click)="myDrop.close()">
+                <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                  <h5 class="message-title">{{ item.screenName }}</h5>
+                  <span class="time fs-2 d-block text-muted text-truncate">{{ item.createdOn | timeAgo }}</span>
+                </span>
+              </a>
+              }
+            </ng-scrollbar>
+          </li>
+        </ul>
+      </div>
+    </li>
 
 
 
-  <!-- <li class="nav-item" placement="bottom-end">
+    <!-- <li class="nav-item" placement="bottom-end">
     <a class="nav-link" href="javascript:void(0);">
       <i-feather name="clock"></i-feather>
     </a>
   </li> -->
-  
-  <li class="nav-item dropdown" ngbDropdown #myDrop1="ngbDropdown" placement="bottom-end" (openChange)="loadFavouriteList($event)">
-  <a ngbDropdownToggle
-     class="nav-link dropdown-toggle waves-effect waves-dark"
-     href="javascript:void(0)"
-     aria-haspopup="true"
-     aria-expanded="false">
-    <i-feather name="heart"></i-feather>
-  </a>
 
-  <div class="dropdown-menu mailbox dropdown-menu-end dropdown-menu-animate-up" ngbDropdownMenu>
-    <span class="with-arrow"><span class="bg-info"></span></span>
+    <li class="nav-item dropdown" ngbDropdown #myDrop1="ngbDropdown" placement="bottom-end"
+      (openChange)="loadFavouriteList($event)">
+      <a ngbDropdownToggle class="nav-link dropdown-toggle waves-effect waves-dark" href="javascript:void(0)"
+        aria-haspopup="true" aria-expanded="false">
+        <i-feather name="heart"></i-feather>
+      </a>
 
-    <ul class="list-style-none mb-0">
-      <li>
-        <div class="drop-title bg-info text-white">
-          <h4 class="mb-0 mt-1">{{favouriteList.length}} Favorites</h4>
-          <span class="font-light">Loved Items</span>
-        </div>
-      </li>
+      <div class="dropdown-menu mailbox dropdown-menu-end dropdown-menu-animate-up" ngbDropdownMenu>
+        <span class="with-arrow"><span class="bg-info"></span></span>
 
-      <li>
-        <ng-scrollbar class="message-center notifications" style="max-height: 230px;">
-          @for(item of favouriteList; track item.path) {
-          <div class="message-item border-bottom d-flex justify-content-between align-items-center pe-3">
-            <a href="javascript:void(0)" 
-               class="text-decoration-none flex-grow-1" 
-               [routerLink]="item.path" 
-               (click)="myDrop1.close()">
-              <h5 class="message-title mb-0 ps-3">{{ item.screenName }}</h5>
-            </a>
-          </div>
-          }
-        </ng-scrollbar>
-      </li>
-    </ul>
-  </div>
-</li>
-  <!-- <li class="nav-item">
+        <ul class="list-style-none mb-0">
+          <li>
+            <div class="drop-title bg-info text-white">
+              <h4 class="mb-0 mt-1">{{favouriteList.length}} Favorites</h4>
+              <span class="font-light">Loved Items</span>
+            </div>
+          </li>
+
+          <li>
+            <ng-scrollbar class="message-center notifications" style="max-height: 230px;">
+              @for(item of favouriteList; track item.path) {
+              <div class="message-item border-bottom d-flex justify-content-between align-items-center pe-3">
+                <a href="javascript:void(0)" class="text-decoration-none flex-grow-1" [routerLink]="item.path"
+                  (click)="myDrop1.close()">
+                  <h5 class="message-title mb-0 ps-3">{{ item.screenName }}</h5>
+                </a>
+              </div>
+              }
+            </ng-scrollbar>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- <li class="nav-item">
     <a href="javascript:void(0);" class="nav-link">
       <i-feather name="heart"></i-feather>
     </a>
   </li> -->
 
-  <!-- <li class="nav-item">
+    <!-- <li class="nav-item">
     <a href="javascript:void(0);" class="nav-link">
       <i class="fas fa-outdent fs-4 " (click)="navigateShortcut()"></i>
     </a>
   </li> -->
-   <li class="nav-item">
-    <a href="javascript:void(0);" class="nav-link">
-      <i-feather name="align-right" (click)="navigateShortcut()"></i-feather>
-    </a>
-  </li>
+    <li class="nav-item">
+      <a href="javascript:void(0);" class="nav-link">
+        <i-feather name="align-right" (click)="navigateShortcut()"></i-feather>
+      </a>
+    </li>
 
-  <li class="nav-item dropdown d-none" ngbDropdown placement="bottom-end">
-    <a ngbDropdownToggle class="nav-link dropdown-toggle" href="javascript:void(0)" id="navbarDropdown" role="button"
-      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      <i class="flag-icon flag-icon-{{ selectedLanguage.icon }}"></i>
-    </a>
-    <div class="dropdown-menu dropdown-menu-animate-up" aria-labelledby="navbarDropdown" ngbDropdownMenu>
-      @for(lang of languages; track lang){
-      <span class="dropdown-item" href="#" (click)="changeLanguage(lang)">
-        <i class="flag-icon flag-icon-{{ lang.icon }}"></i>
-        <span>{{ lang.language }}
-          @if(lang.type) {
-          <span>({{ lang.type }})</span>
-          }
+    <li class="nav-item dropdown d-none" ngbDropdown placement="bottom-end">
+      <a ngbDropdownToggle class="nav-link dropdown-toggle" href="javascript:void(0)" id="navbarDropdown" role="button"
+        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="flag-icon flag-icon-{{ selectedLanguage.icon }}"></i>
+      </a>
+      <div class="dropdown-menu dropdown-menu-animate-up" aria-labelledby="navbarDropdown" ngbDropdownMenu>
+        @for(lang of languages; track lang){
+        <span class="dropdown-item" href="#" (click)="changeLanguage(lang)">
+          <i class="flag-icon flag-icon-{{ lang.icon }}"></i>
+          <span>{{ lang.language }}
+            @if(lang.type) {
+            <span>({{ lang.type }})</span>
+            }
 
+          </span>
         </span>
-      </span>
-      }
+        }
 
-    </div>
-  </li>
-  <!-- ============================================================== -->
-  <!-- Comment -->
-  <!-- ============================================================== -->
-  <li class="nav-item dropdown" ngbDropdown placement="bottom-end">
-    <a ngbDropdownToggle class="nav-link dropdown-toggle waves-effect waves-dark" href="javascript:void(0)"
-      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      <i-feather name="bell"></i-feather>
-    </a>
-    <div class="dropdown-menu mailbox dropdown-menu-end dropdown-menu-animate-up" ngbDropdownMenu>
-      <span class="with-arrow">
-        <span class="bg-primary"></span>
-      </span>
-      <ul class="list-style-none">
-        <li>
-          <div class="drop-title bg-primary text-white">
-            <h4 class="mb-0 mt-1">4 New</h4>
-            <span class="font-light">Notifications</span>
-          </div>
-        </li>
-        <li>
-          <ng-scrollbar class="message-center notifications">
-            <!-- Message -->
-            @for(notification of notifications; track notification){
-            <a href="javascript:void(0)" class="message-item border-bottom d-block text-decoration-none">
-              <span class="btn btn-circle rounded-circle {{ notification.btn }}">
-                <i class="{{ notification.icon }}"></i>
-              </span>
-              <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
-                <h5 class="message-title">{{ notification.title }}</h5>
-                <span class="mail-desc fs-2 d-block text-muted text-truncate">{{ notification.subject }}</span>
-                <span class="time fs-2 d-block text-muted text-truncate">{{ notification.time }}</span>
-              </span>
-            </a>
-            }
+      </div>
+    </li>
+    <!-- ============================================================== -->
+    <!-- Comment -->
+    <!-- ============================================================== -->
+    <li class="nav-item dropdown" ngbDropdown placement="bottom-end">
+      <a ngbDropdownToggle class="nav-link dropdown-toggle waves-effect waves-dark" href="javascript:void(0)"
+        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i-feather name="bell"></i-feather>
+      </a>
+      <div class="dropdown-menu mailbox dropdown-menu-end dropdown-menu-animate-up" ngbDropdownMenu>
+        <span class="with-arrow">
+          <span class="bg-primary"></span>
+        </span>
+        <ul class="list-style-none">
+          <li>
+            <div class="drop-title bg-primary text-white">
+              <h4 class="mb-0 mt-1">4 New</h4>
+              <span class="font-light">Notifications</span>
+            </div>
+          </li>
+          <li>
+            <ng-scrollbar class="message-center notifications">
+              <!-- Message -->
+              @for(notification of notifications; track notification){
+              <a href="javascript:void(0)" class="message-item border-bottom d-block text-decoration-none">
+                <span class="btn btn-circle rounded-circle {{ notification.btn }}">
+                  <i class="{{ notification.icon }}"></i>
+                </span>
+                <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                  <h5 class="message-title">{{ notification.title }}</h5>
+                  <span class="mail-desc fs-2 d-block text-muted text-truncate">{{ notification.subject }}</span>
+                  <span class="time fs-2 d-block text-muted text-truncate">{{ notification.time }}</span>
+                </span>
+              </a>
+              }
 
-          </ng-scrollbar>
-        </li>
-        <li class="border-top p-3 d-grid">
-          <button class="btn btn-info">Check all notifications</button>
-        </li>
-      </ul>
-    </div>
-  </li>
-  <!-- ============================================================== -->
-  <!-- End Comment -->
-  <!-- ============================================================== -->
-  <!-- ============================================================== -->
-  <!-- Messages -->
-  <!-- ============================================================== -->
-  <li class="nav-item dropdown d-none" ngbDropdown placement="bottom-end">
-    <a ngbDropdownToggle class="nav-link dropdown-toggle waves-effect waves-dark" href="javascript:void(0)" id="2"
-      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      <i-feather name="message-square"></i-feather>
-    </a>
-    <div class="dropdown-menu dropdown-menu-end mailbox dropdown-menu-animate-up" aria-labelledby="2" ngbDropdownMenu>
-      <span class="with-arrow">
-        <span class="bg-danger"></span>
-      </span>
-      <ul class="list-style-none">
-        <li>
-          <div class="drop-title text-white bg-danger">
-            <h4 class="mb-0 mt-1">5 New</h4>
-            <span class="font-light">Messages</span>
-          </div>
-        </li>
-        <li>
-          <ng-scrollbar class="message-center message-body">
-            <!-- Message -->
-            @for(mymessage of mymessages; track mymessage) {
-            <a href="javascript:void(0)" class="message-item border-bottom d-block text-decoration-none">
-              <span class="user-img position-relative d-inline-block">
-                <img src="{{ mymessage.useravatar }}" alt="user" class="rounded-circle" />
-                <span class="profile-status rounded-circle d-inline-block {{ mymessage.status }} float-end"></span>
-              </span>
-              <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
-                <h5 class="message-title">{{ mymessage.from }}</h5>
-                <span class="mail-desc fs-2 d-block text-muted text-truncate">{{ mymessage.subject }}</span>
-                <span class="time fs-2 d-block text-muted text-truncate">{{ mymessage.time }}</span>
-              </span>
-            </a>
-            }
+            </ng-scrollbar>
+          </li>
+          <li class="border-top p-3 d-grid">
+            <button class="btn btn-info">Check all notifications</button>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- ============================================================== -->
+    <!-- End Comment -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- Messages -->
+    <!-- ============================================================== -->
+    <li class="nav-item dropdown d-none" ngbDropdown placement="bottom-end">
+      <a ngbDropdownToggle class="nav-link dropdown-toggle waves-effect waves-dark" href="javascript:void(0)" id="2"
+        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i-feather name="message-square"></i-feather>
+      </a>
+      <div class="dropdown-menu dropdown-menu-end mailbox dropdown-menu-animate-up" aria-labelledby="2" ngbDropdownMenu>
+        <span class="with-arrow">
+          <span class="bg-danger"></span>
+        </span>
+        <ul class="list-style-none">
+          <li>
+            <div class="drop-title text-white bg-danger">
+              <h4 class="mb-0 mt-1">5 New</h4>
+              <span class="font-light">Messages</span>
+            </div>
+          </li>
+          <li>
+            <ng-scrollbar class="message-center message-body">
+              <!-- Message -->
+              @for(mymessage of mymessages; track mymessage) {
+              <a href="javascript:void(0)" class="message-item border-bottom d-block text-decoration-none">
+                <span class="user-img position-relative d-inline-block">
+                  <img src="{{ mymessage.useravatar }}" alt="user" class="rounded-circle" />
+                  <span class="profile-status rounded-circle d-inline-block {{ mymessage.status }} float-end"></span>
+                </span>
+                <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
+                  <h5 class="message-title">{{ mymessage.from }}</h5>
+                  <span class="mail-desc fs-2 d-block text-muted text-truncate">{{ mymessage.subject }}</span>
+                  <span class="time fs-2 d-block text-muted text-truncate">{{ mymessage.time }}</span>
+                </span>
+              </a>
+              }
 
-          </ng-scrollbar>
-        </li>
-        <li>
-          <a class="
+            </ng-scrollbar>
+          </li>
+          <li>
+            <a class="
               text-center
               link
               d-flex
               align-items-center
               justify-content-center
             " href="javascript:void(0);">
-            <b>See all e-Mails</b>
-            <i class="fa fa-angle-right ms-1"></i>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </li>
-  <!-- ============================================================== -->
-  <!-- End Messages -->
-  <!-- ============================================================== -->
-  <!-- ============================================================== -->
-  <!-- User profile and search -->
-  <!-- ============================================================== -->
-  <li class="nav-item" ngbDropdown placement="bottom-end">
-    <a ngbDropdownToggle class="nav-link text-muted waves-effect waves-dark pro-pic" href="javascript:void(0)"
-      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      <img src="assets/images/users/user4.jpg" alt="user" class="rounded-circle" width="31" />
-    </a>
-    <div class="dropdown-menu-end user-dd dropdown-menu-animate-up" ngbDropdownMenu>
-      <span class="with-arrow">
-        <span class="bg-primary"></span>
-      </span>
-      <!-- <div class="
+              <b>See all e-Mails</b>
+              <i class="fa fa-angle-right ms-1"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- ============================================================== -->
+    <!-- End Messages -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- User profile and search -->
+    <!-- ============================================================== -->
+    <li class="nav-item" ngbDropdown placement="bottom-end">
+      <a ngbDropdownToggle class="nav-link text-muted waves-effect waves-dark pro-pic" href="javascript:void(0)"
+        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <img src="assets/images/users/user4.jpg" alt="user" class="rounded-circle" width="31" />
+      </a>
+      <div class="dropdown-menu-end user-dd dropdown-menu-animate-up" ngbDropdownMenu>
+        <span class="with-arrow">
+          <span class="bg-primary"></span>
+        </span>
+        <!-- <div class="
           d-flex
           no-block
           align-items-center
@@ -497,28 +479,25 @@
           <p class="mb-0">jobs&#64;gmail.com</p>
         </div>
       </div> -->
-      <!-- <a class="dropdown-item" href="javascript:void(0)">
-        <i class="ti-user me-1 ms-1"></i> My Profile</a>
-      <a class="dropdown-item" href="javascript:void(0)">
+        <a class="dropdown-item" href="javascript:void(0)">
+          <i class="ti-user me-1 ms-1"></i> My Profile</a>
+        <!-- <a class="dropdown-item" href="javascript:void(0)">
         <i class="ti-wallet me-1 ms-1"></i> My Balance</a>
       <a class="dropdown-item" href="javascript:void(0)">
-        <i class="ti-email me-1 ms-1"></i> Inbox</a>
-      <div class="dropdown-divider"></div>
-      <a class="dropdown-item" href="javascript:void(0)">
-        <i class="ti-settings me-1 ms-1"></i> Account Setting</a>
-      <div class="dropdown-divider"></div> -->
-      <a class="dropdown-item" href="javascript:void(0)" (click)="logout()">
-        <i class="fa fa-power-off me-1 ms-1"></i> Logout</a>
-      <div class="dropdown-divider"></div>
-      <!-- <div class="ps-4 p-2">
+        <i class="ti-email me-1 ms-1"></i> Inbox</a> -->
+        <!-- <div class="dropdown-divider"></div> -->
+        <!-- <a class="dropdown-item" href="javascript:void(0)">
+          <i class="ti-settings me-1 ms-1"></i> Account Setting</a> -->
+        <!-- <div class="dropdown-divider"></div> -->
+        <a class="dropdown-item" href="javascript:void(0)" (click)="logout()">
+          <i class="fa fa-power-off me-1 ms-1"></i> Logout</a>
+        <!-- <div class="dropdown-divider"></div> -->
+        <!-- <div class="ps-4 p-2">
         <a href="javascript:void(0)" class="btn btn-sm btn-success btn-rounded">View Profile</a>
       </div> -->
-    </div>
-  </li>
-  <!-- ============================================================== -->
-  <!-- User profile and search -->
-  <!-- ============================================================== -->
-</ul>
-
-
-
+      </div>
+    </li>
+    <!-- ============================================================== -->
+    <!-- User profile and search -->
+    <!-- ============================================================== -->
+  </ul>
