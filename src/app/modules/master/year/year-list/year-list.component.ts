@@ -11,6 +11,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 
 @Component({
@@ -23,7 +24,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     NgbPaginationModule, 
     RouterModule, 
     ListpageComponent,
-    CustomDatePipe
+    CustomDatePipe,
+    FavoriteStarComponent
   ],
   templateUrl: './year-list.component.html',
   styleUrl: './year-list.component.scss'
@@ -35,11 +37,9 @@ export class YearListComponent {
     this.isFavorite = !this.isFavorite;
   }
 
-  searchType = 'YearName';
   filterValue = '';
-  results: any[] = [];
   yearList: any[] = [];
-  searchPerformed = false;
+  searched = false;
   loading: boolean = false;
   userData: any; 
   companyMap: { [id: number]: string} = {};
@@ -47,6 +47,9 @@ export class YearListComponent {
   page = 1;
   pageSize = 10;
   totalLengthOfCollection: number = 0;
+
+  sortColumn: string = 'YearName';
+  sortDirection: string = 'asc';
 
   constructor( 
     private masterService: MasterService, 
@@ -63,6 +66,30 @@ export class YearListComponent {
         this.userData = user;
       }
     });
+    this.loadYears();
+  }
+  loadYears(): void {
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+    };
+
+    this.masterService.searchYearList(params).subscribe({
+      next: (response) => {
+        if(response.data){
+          this.yearList = response.data.items;
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searched = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching years:', err);
+        this.yearList = [];
+        this.totalLengthOfCollection = 0;
+      },
+    });
   }
 
   getAllCompanies() {
@@ -74,44 +101,47 @@ export class YearListComponent {
     });
   }
 
-  onSearch(event: { type: string, value: string }) {
-    this.searchType = event.type;
-    this.filterValue = event.value;
-    console.log('Searching with:', this.searchType, this.filterValue);
-    this.search();
+  sort(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.applySorting();
   }
 
-  search() {
-    this.loading = true;
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue,
-    }
-    
-    this.masterService.searchYear(payload).subscribe({
-      next: (res: any) => {
-        this.results = res.data || [];
-        this.searchPerformed = true;
-        this.totalLengthOfCollection = this.results.length;
-        this.page = 1; // Reset to first page on new search
-        this.updatePaginatedData();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Search error:', err);
-        this.results = [];
-        this.yearList = [];
-        this.totalLengthOfCollection = 0;
-        this.searchPerformed = true;
-        this.loading = false;
+  applySorting() {
+    if (!Array.isArray(this.yearList)) {
+    this.yearList = [];
+    return;
+  }
+
+    this.yearList.sort((a,b) => {
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
+
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
       }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
     });
   }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.yearList = this.results.slice(startIndex, endIndex);
+    this.loadYears();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -126,7 +156,6 @@ export class YearListComponent {
         this.masterService.deleteYearById(YearMasterSid).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("Deleted successfully!");
-            this.search(); // Refresh search results
           },
           error: (err) => {
             console.error('Delete error:', err);
@@ -138,12 +167,13 @@ export class YearListComponent {
   }
 
   resetPage() {
-    this.searchPerformed = false;
+    this.searched = false;
     this.yearList = [];
     this.totalLengthOfCollection = 0;
     this.filterValue = '';
-    this.searchType = 'YearName';
     this.page = 1;
+    this.sortColumn = 'YearName';
+    this.sortDirection = 'asc';
   }
 
   getStatusClass(status: string): string {
@@ -188,5 +218,9 @@ export class YearListComponent {
 
   nagivateTocreateYear(){
      this.router.navigate(['master/year/entry'])
+  }
+
+  clearFilterValue() {
+    this.filterValue = '';
   }
 }

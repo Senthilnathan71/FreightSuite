@@ -411,10 +411,10 @@ export class MasterService {
       })
     );
   }
-  searchUomList(payload) {
-    return this.http.post("uom/search-list", payload).pipe(
-      map((res: any) => {
-        return res.data;
+  searchUomList(params) {
+    return this.http.post("uom/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
@@ -2549,10 +2549,10 @@ getAllHawbStocks(){
   }
 
 
-  searchYear(payload: any) {
-    return this.http.post<{ data: any }>(`year/search-list`, payload).pipe(
-      map((res: any) => {
-        return res|| [];
+  searchYearList(params) {
+    return this.http.post("year/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }

@@ -10,25 +10,60 @@
 </div> -->
 <div class="row">
 
-    <app-listpage
-      [title]="'Year'"
-      [searchOptions]="[
-        { value: 'YearName', label: 'Year Name' },
-        { value: 'YearCode', label: 'Year Code' },
-        { value: 'StartDate', label: 'Start Date' },
-        { value: 'EndDate', label: 'End Date' },
-        { value: 'CurrentYear', label: 'Current Year' },
-        { value: 'YearEndCompleted', label: 'Year-End Completed' },
-        { value: 'EndDate', label: 'End Date' },
-        { value: 'status', label: 'Status' }
-      ]"
-      [searchPerformed]="searchPerformed"
-      [defaultSearchType]="'YearName'"
-      (onCreateClick)="nagivateTocreateYear()"
-      (onReportClick)="report()"
-      (onResetClick)="resetPage()"
-      (onSearchClick)="onSearch($event)">
-    </app-listpage>
+    <div class="col-12">
+    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+        <div class="col-md-4 pb-2">
+            <h4 class="page-title mb-0">Year</h4>
+        </div>
+
+        <div class="col-md-8 pb-2">
+            <form
+                class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                <app-favorite-star screenName="Year" class="mt-1 me-1"></app-favorite-star>
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                    (click)="nagivateTocreateYear()">
+                    <i class="fas fa-plus me-1"></i> Create
+                </button>
+
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
+                    [disabled]="!searched">
+                    <i class="fas fa-file-alt me-1"></i> Report
+                </button>
+
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
+                    [disabled]="!searched">
+                    <i class="fas fa-sync-alt me-1"></i> Reset
+                </button>
+            </form>
+        </div>
+
+        <div class="col-md-12 border-top">
+            <div class="row mx-0 py-2">
+                <div class="col-md-8 mx-auto px-0">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                        <div class="d-flex gap-2 col-6 px-0 align-items-center">
+                            <div class="form-outline flex-grow-1 position-relative">
+                                <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search" [(ngModel)]="filterValue"
+                                    aria-label="Search input">
+                                <button *ngIf="filterValue"
+                                    class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                    (click)="clearFilterValue()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" data-bs-title="Clear search"
+                                    onfocus="this.classList.replace('text-secondary','text-danger')"
+                                    onblur="this.classList.replace('text-danger','text-secondary')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <button type="submit" (click)="loadYears()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                <i class="fas fa-search me-1"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
    
 
 
@@ -40,13 +75,34 @@
                         <thead>
                             <tr class="bg-info">
                                 <th class="bg-transparent text-light" scope="col" width="10%">Actions</th>
-                                <th class="bg-transparent text-light" scope="col">Year Name</th>
-                                <th class="bg-transparent text-light" scope="col">Year Code</th>
-                                <th class="bg-transparent text-light" scope="col">Start Date</th>
-                                <th class="bg-transparent text-light" scope="col">End Date</th>
-                                <th class="bg-transparent text-light" scope="col">Current Year</th>
-                                <th class="bg-transparent text-light" scope="col">Year-End Completed</th>
-                                <th class="bg-transparent text-light" scope="col">Remarks</th>
+                                <th class="bg-transparent text-light" scope="col" scope="col" (click)="sort('YearName')">
+                                    Year Name
+                                    <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'YearName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'YearName'}"></i>
+                                </th>
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('YearCode')">
+                                    Year Code
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'YearCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'YearCode'}"></i>
+                            </th>
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('StartDate')">
+                                    Start Date
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'StartDate', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'StartDate'}"></i>
+                            </th>
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('EndDate')">
+                                    End Date
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'EndDate', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'EndDate'}"></i>
+                            </th>
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('CurrentYear')">
+                                    Current Year
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CurrentYear', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CurrentYear'}"></i>
+                            </th>
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('YearEndCompleted')">
+                                    Year-End Completed
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'YearEndCompleted', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'YearEndCompleted'}"></i>
+                            </th>
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('Remarks')">
+                                    Remarks
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Remarks', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Remarks'}"></i>
+                            </th>
                                 <!-- <th class="bg-transparent text-light" scope="col">Company</th> -->
                                 <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                             </tr>
@@ -115,7 +171,7 @@
         </div>
     </div>
     <!-- No records found -->
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searched">
         <div>No records found</div>
     </div>
 
