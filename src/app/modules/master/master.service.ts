@@ -464,10 +464,10 @@ export class MasterService {
       })
     );
   }
-  searchUnitList(payload) {
-    return this.http.post("unit/search-list", payload).pipe(
-      map((res: any) => {
-        return res.data;
+  searchUnitList(params) {
+    return this.http.post("unit/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
@@ -1320,12 +1320,12 @@ export class MasterService {
     );
   }
 
-  searchDivision(payload) {
-    return this.http.post("division/search-list", payload).pipe(
-      map((res: any) => {
-        return res.data;
+  searchDivisionList(params) {
+    return this.http.post("division/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
-    );
+    )
   }
 
 
