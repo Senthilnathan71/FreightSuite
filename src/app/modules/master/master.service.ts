@@ -2786,4 +2786,62 @@ getAllHawbStocks(){
     );
   }
 
+   //Tax
+
+  getAllTax() {
+    return this.http.get<{ data: any[] }>('tax').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+  fetchTaxById(id: number) {
+    return this.http.get<{ data: any }>(`tax/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createNewTax(payload: any) {
+    return this.http.post('tax/create', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  
+    updateTaxById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`tax/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+
+    )
+  }
+
+
+   deleteTax(id: number) {
+    return this.http.delete<{ data: any }>(`tax/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+   searchTaxGroup(payload) {
+    return this.http.post("tax/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    );
+  }
+
 }
