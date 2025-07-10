@@ -141,4 +141,11 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
       return value.includes(searchTerm);
     });
   };
+  onOpen(){
+    this.onTouched();
+    if (this.control) {
+      this.control.markAsTouched();
+      this.control.markAsDirty();
+    }
+  }
 }

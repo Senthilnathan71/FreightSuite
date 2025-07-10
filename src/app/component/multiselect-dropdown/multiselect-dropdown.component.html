@@ -1,47 +1,84 @@
-<div class="multiselect-dropdown">
-  <ng-select 
-    [items]="items"
-    [formControl]="internalControl"
-    [multiple]="true"
-    [clearable]="true"
-    [placeholder]="placeholder"
-    [bindLabel]="bindLabel"
-    [bindValue]="bindValue"
-    [loading]="isLoading"
-    (change)="onSelectionChange($event)"
-  >
-    <!-- Label Template -->
-    <ng-template ng-label-tmp let-item="item">
-      {{ getLabel(item) }}
-    </ng-template>
-
-    <!-- Header Template -->
-    <ng-template ng-header-tmp>
-      <div class="dropdown-header">
-        <div 
-          *ngFor="let label of displayLabels; let i = index"
-          [ngStyle]="getColumnStyle(i)"
+<ng-select
+  [items]="filteredItems"
+  [multiple]="true"
+  [(ngModel)]="internalValue"
+  (ngModelChange)="onModelChange($event)"
+  [closeOnSelect]="false"
+  [bindLabel]="bindLabel"
+  [bindValue]="bindValue"
+  [virtualScroll]="true"
+  [placeholder]="placeholder"
+  [searchable]="searchable"
+  (blur)="onTouched()"
+  (open)="onOpen()"
+  (close)="resetFilter()"
+>
+  <ng-template ng-header-tmp>
+    <div class="px-2 py-2">
+      <div class="form-check">
+        <input
+          type="checkbox"
+          class="form-check-input"
+          id="selectAll"
+          [checked]="control?.value?.length === filteredItems.length"
+          (change)="toggleSelectAll()"
+          (keydown.enter)="toggleSelectAll()"
+          tabindex="0"
         >
-          {{ label }}
-        </div>
+        <label class="form-check-label" for="selectAll" tabindex="-1">
+          {{control?.value?.length === filteredItems.length ? 'Unselect All' : 'Select All'}}
+        </label>
       </div>
-    </ng-template>
-
-    <!-- Option Template -->
-    <ng-template ng-option-tmp let-item="item">
-      <div class="dropdown-row">
-        <div 
-          *ngFor="let field of displayFields; let i = index"
-          [ngStyle]="getColumnStyle(i)"
+    </div>
+    <div class="px-2 py-1" style="border-top: 1px lightgray solid;" *ngIf="searchable">
+      <div class="position-relative">
+        <input
+          type="text"
+          class="form-control pe-5 border-0"
+          placeholder="Search"
+          [(ngModel)]="filterValue"
+          (input)="onSearchInput($event)"
+          (keydown)="$event.stopPropagation()"
+          tabindex="0"
+          #searchInput
+        />
+        <button
+          *ngIf="filterValue"
+          type="button"
+          class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-secondary"
+          (keydown.enter)="clearFilterValue() ; $event.stopPropagation()"
+          (click)="clearFilterValue() ; $event.stopPropagation()"
+          (keydown.Tab)="$event.stopPropagation()"
+          tabindex="0"
+          aria-label="Clear search"
+          ngbTooltip="Clear search"
+          (focus)="isClearFocused = true"
+          (blur)="isClearFocused = false"
+          [ngClass]="{'text-danger': isClearFocused, 'text-secondary': !isClearFocused}"
         >
-          {{ item[field] }}
-        </div>
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-    </ng-template>
-
-    <!-- Loading Template -->
-    <ng-template ng-loading-tmp>
-      <div class="loading-spinner">Loading...</div>
-    </ng-template>
-  </ng-select>
-</div>
+    </div>
+  </ng-template>
+  <ng-template ng-option-tmp let-item="item" let-item$="item$" let-selected="selected" let-marked="marked">
+    <div class="form-check">
+      <input
+        type="checkbox"
+        class="form-check-input"
+        [checked]="isSelected(item[bindValue])"
+        (click)="$event.stopPropagation(); toggleItem(item[bindValue])"
+      >
+      <label class="form-check-label">{{ item[bindLabel] }}</label>
+    </div>
+  </ng-template>
+  <ng-template ng-multi-label-tmp let-items="items" let-clear="clear">
+    <div class="ng-value" *ngFor="let item of items.slice(0, displayCount)">
+      <span class="ng-value-label bg-info text-white">{{ item[bindLabel] }}</span>
+      <span class="ng-value-icon bg-info text-white" (click)="removeItem(item, $event)">×</span>
+    </div>
+    <div class="ng-value" *ngIf="items.length > displayCount">
+      <span class="ng-value-label bg-info text-white">+{{ items.length - displayCount }} more</span>
+    </div>
+  </ng-template>
+</ng-select>

@@ -18,6 +18,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 
 @Component({
 	selector: 'app-user-entry',
@@ -29,7 +30,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 		CommonModule,
 		OnlyTextDirective,
 		OnlyNumbersDirective,
-		TextWithNumbersDirective
+		TextWithNumbersDirective,
+		MultiSelectComponent
 	],
 	templateUrl: './user-entry.component.html',
 	styleUrl: './user-entry.component.scss'
@@ -49,7 +51,7 @@ export class UserEntryComponent implements OnInit {
 	companyList : any[];
 	branchList : any[];
 	filteredBranchList : any[] = []
-	roleList : any[];
+	roleList : any[] = [];
 	filteredRoleList : any[] = [];
 	countryList : any[];
 	passwordView : boolean
@@ -341,161 +343,6 @@ export class UserEntryComponent implements OnInit {
 		})
 	}
 
-	onRoleSearch(event: any): void {
-		const searchTerm = event.target.value.toLowerCase();
-		this.filteredRoleList = this.roleList.filter(role =>
-			role.UserRoleName.toLowerCase().includes(searchTerm)
-		);
-	}
-
-	roleControl():AbstractControl {
-		return this.userForm.get('roles');
-	}
-
-	toggleRole(id: number) {
-		console.log(id);
-		const currentValue = this.roleControl().value;
-		console.log(currentValue);
-		console.log(currentValue.includes(id));
-		if (currentValue.includes(id)) {
-			this.roleControl().setValue(currentValue.filter((v: number) => v != id));
-		} else {
-			this.roleControl().setValue([...currentValue, id]);
-		}
-		console.log(this.roleControl().value);
-	}
-
-	toggleSelectAll() {
-		const currentValue = this.roleControl().value;
-		if (currentValue.length === this.filteredRoleList.length) {
-			this.roleControl().setValue([]);
-		} else {
-			this.roleControl().setValue(this.filteredRoleList.map(r => r.RoleMasterSid));
-		}
-	}
-
-	onSearchKeydown(event: KeyboardEvent): void {
-		if (event.key === 'Backspace') {
-			// Prevent backspace from clearing selected items
-			event.stopPropagation();
-			// Update search term and filtered list
-			const input = event.target as HTMLInputElement;
-			this.updateFilteredRoles(input.value);
-		}
-	}
-
-	private updateFilteredRoles(searchTerm): void {
-		// Assuming you have an original role list
-		const originalRoleList = [...this.filteredRoleList]; // Replace with your actual data source
-		if (searchTerm) {
-			this.filteredRoleList = originalRoleList.filter(role =>
-				role.UserRoleName.toLowerCase().includes(searchTerm.toLowerCase())
-			);
-		} else {
-			this.filteredRoleList = [...originalRoleList];
-		}
-	}
-	// Branch related Data
-
-	onBranchSearch(event: any): void {
-		const searchTerm = event.target.value.toLowerCase();
-		this.filteredBranchList = this.branchList.filter(branch =>
-			branch.branchName.toLowerCase().includes(searchTerm)
-		);
-	}
-
-	branchControl():AbstractControl {
-		return this.userForm.get('branches');
-	}
-
-	toggleBranch(id: number) {
-		const currentValue = this.branchControl().value;
-		if (currentValue.includes(id)) {
-			this.branchControl().setValue(currentValue.filter((v: number) => v != id));
-		} else {
-			this.branchControl().setValue([...currentValue, id]);
-		}
-	}
-
-	toggleBranchSelectAll() {
-		const currentValue = this.branchControl().value;
-		if (currentValue.length === this.filteredBranchList.length) {
-			this.branchControl().setValue([]);
-		} else {
-			this.branchControl().setValue(this.filteredBranchList.map(r => r.BranchMasterSid));
-		}
-	}
-
-	onBranchSearchKeydown(event: KeyboardEvent): void {
-		if (event.key === 'Backspace') {
-			event.stopPropagation();
-			const input = event.target as HTMLInputElement;
-			this.updateFilteredBranches(input.value);
-		}
-	}
-
-	private updateFilteredBranches(searchTerm): void {
-
-		const originalBranchList = [...this.filteredBranchList]; 
-		if (searchTerm) {
-			this.filteredBranchList = originalBranchList.filter(branch =>
-				branch.branchName.toLowerCase().includes(searchTerm.toLowerCase())
-			);
-		} else {
-			this.filteredBranchList = [...originalBranchList];
-		}
-	}
-
-	// Department related Data
-
-	onDeptSearch(event: any): void {
-		const searchTerm = event.target.value.toLowerCase();
-		this.filteredDeptList = this.departmentList.filter(dept =>
-			dept.departmentName.toLowerCase().includes(searchTerm)
-		);
-	}
-
-	deptControl():AbstractControl {
-		return this.userForm.get('department');
-	}
-
-	toggleDept(name: string) {
-		const currentValue = this.deptControl().value;
-		if (currentValue.includes(name)) {
-			this.deptControl().setValue(currentValue.filter((v: string) => v != name));
-		} else {
-			this.deptControl().setValue([...currentValue, name]);
-		}
-	}
-
-	toggleDeptSelectAll() {
-		const currentValue = this.deptControl().value;
-		if (currentValue.length === this.filteredDeptList.length) {
-			this.deptControl().setValue([]);
-		} else {
-			this.deptControl().setValue(this.filteredDeptList.map(r => r.departmentName));
-		}
-	}
-
-	onDeptSearchKeydown(event: KeyboardEvent): void {
-		if (event.key === 'Backspace') {
-			event.stopPropagation();
-			const input = event.target as HTMLInputElement;
-			this.updateFilteredDept(input.value);
-		}
-	}
-
-	private updateFilteredDept(searchTerm): void {
-
-		const originalDeptList = [...this.filteredDeptList]; 
-		if (searchTerm) {
-			this.filteredDeptList = originalDeptList.filter(dept =>
-				dept.departmentName.toLowerCase().includes(searchTerm.toLowerCase())
-			);
-		} else {
-			this.filteredBranchList = [...originalDeptList];
-		}
-	}
 
 	openTandC() {
 		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));

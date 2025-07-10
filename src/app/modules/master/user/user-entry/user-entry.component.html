@@ -93,7 +93,7 @@
                                 <i-feather class="feather-sm" name="eye-off"></i-feather>
                                 }
                             </span>
-                            @if (userForm.get('userPassword')?.touched && userForm.get('userPassword')?.invalid) {
+                            @if (userForm.get('userPassword')?.invalid && (userForm.get('userPassword')?.touched || userForm.get('userPassword')?.dirty)) {
                                 <div class="error-message">
                                     @if(userForm.get('userPassword')?.hasError('required')) {
                                     <div>Password is required</div>
@@ -118,7 +118,9 @@
 
                     <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="filteredDeptList" [multiple]="true" formControlName="department" [closeOnSelect]="false"
+                            <multi-select [control]="userForm.get('department')" [items]="departmentList" bindLabel="departmentName" bindValue="departmentName"
+                            placeholder="Select Department" (valueChange)="setDefaultDept()"></multi-select>
+                            <!-- <ng-select [items]="filteredDeptList" [multiple]="true" formControlName="department" [closeOnSelect]="false"
                             bindLabel="departmentName" bindValue="departmentName" placeholder="Select Department" [searchable]="false" (change)="setDefaultDept()">
                             <ng-template ng-header-tmp>
                                 <div class="py-2">
@@ -157,7 +159,7 @@
                                     <span class="ng-value-label bg-info text-white">+{{ items.length - 2 }}</span>
                                 </div>
                             </ng-template>
-                        </ng-select>
+                        </ng-select> -->
                             <label for="" class="input-label">Dept <span class="text-danger"></span></label>
                             @if(userForm.get('department')?.touched && userForm.get('department')?.invalid){
                                 <div class="error-message">
@@ -270,49 +272,8 @@
                 </aside>
                 <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select">
-                        <!-- <ng-select formControlName="branches" [items]="branchList" bindLabel="branchName"
-                            bindValue="BranchMasterSid" placeholder="Select Branch" [multiple]="true"  [closeOnSelect]="false">
-                        </ng-select> -->
-                         <ng-select [items]="filteredBranchList" [multiple]="true" formControlName="branches" [closeOnSelect]="false"
-                            bindLabel="branchName" bindValue="BranchMasterSid" placeholder="Select Branch" [searchable]="false">
-                            <ng-template ng-header-tmp>
-                                <div class="py-2">
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" id="selectAll"
-                                            [checked]="userForm.get('branches').value?.length === filteredBranchList.length"
-                                            (change)="toggleBranchSelectAll()" (keydown.enter)="toggleBranchSelectAll()" tabindex="0">
-                                        <label class="form-check-label" for="selectAll" tabindex="-1">
-                                            {{userForm.get('branches').value?.length === filteredBranchList.length ? 'Unselect All' : 'Select All'}}
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="px-2 py-2 border-top border-bottom">
-                                    <input type="text" class="form-control" placeholder="Search" (input)="onBranchSearch($event)"
-                                        (keydown)="onBranchSearchKeydown($event)" tabindex="0">
-                                </div>
-                            </ng-template>
-                        
-                            <ng-template ng-option-tmp let-item="item" let-item$="item$" let-selected="selected" let-marked="marked">
-                                <div class="form-check" [ngStyle]="{
-                                    'background-color': (selected || marked) ? 'transparent' : (item$?.focused ? '#f8f9fa' : 'transparent')
-                                  }">
-                                    <input type="checkbox" class="form-check-input"
-                                        [checked]="userForm.get('branches').value?.includes(item.BranchMasterSid)"
-                                        (click)="$event.stopPropagation(); toggleRole(item.BranchMasterSid)">
-                                    <label class="form-check-label">{{ item.branchName }}</label>
-                                </div>
-                            </ng-template>
-                        
-                            <ng-template ng-multi-label-tmp let-items="items" let-clear="clear">
-                                <div class="ng-value" *ngFor="let item of items.slice(0, 2)">
-                                    <span class="ng-value-label bg-info text-white">{{ item.branchName }}</span>
-                                    <span class="ng-value-icon bg-info text-white" (click)="clear(item); $event.stopPropagation()">x</span>
-                                </div>
-                                <div class="ng-value" *ngIf="items.length > 2">
-                                    <span class="ng-value-label bg-info text-white">+{{ items.length - 2 }}</span>
-                                </div>
-                            </ng-template>
-                        </ng-select>
+                        <multi-select [control]="userForm.get('branches')" [items]="branchList" bindLabel="branchName" bindValue="BranchMasterSid"
+                            placeholder="Select Branch"></multi-select>
                         <label for="" class="input-label">Branch <span class="text-danger">*</span></label>
                         @if(userForm.get('branches')?.touched && userForm.get('branches')?.invalid){
                         <div class="error-message">
@@ -325,46 +286,8 @@
                 </aside>
                 <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select">
-                        <ng-select [items]="filteredRoleList" [multiple]="true" formControlName="roles" [closeOnSelect]="false"
-                            bindLabel="UserRoleName" bindValue="RoleMasterSid" placeholder="Select Role" [searchable]="false">
-                            <ng-template ng-header-tmp>
-                                <div class="py-2">
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" id="selectAll"
-                                            [checked]="userForm.get('roles').value?.length === filteredRoleList.length"
-                                            (change)="toggleSelectAll()" (keydown.enter)="toggleSelectAll()" tabindex="0">
-                                        <label class="form-check-label" for="selectAll" tabindex="-1">
-                                            {{userForm.get('roles').value?.length === filteredRoleList.length ? 'Unselect All' : 'Select All'}}
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="px-2 py-2 border-top border-bottom">
-                                    <input type="text" class="form-control" placeholder="Search" (input)="onRoleSearch($event)"
-                                        (keydown)="onSearchKeydown($event)" tabindex="0">
-                                </div>
-                            </ng-template>
-                        
-                            <ng-template ng-option-tmp let-item="item" let-item$="item$" let-selected="selected" let-marked="marked">
-                                <div class="form-check" [ngStyle]="{
-                                    'background-color': (selected || marked) ? 'transparent' : (item$?.focused ? '#f8f9fa' : 'transparent')
-                                  }">
-                                    <input type="checkbox" class="form-check-input"
-                                        [checked]="userForm.get('roles').value?.includes(item.RoleMasterSid)"
-                                        (click)="$event.stopPropagation(); toggleRole(item.RoleMasterSid)">
-                                    <label class="form-check-label">{{ item.UserRoleName }}</label>
-                                </div>
-                            </ng-template>
-                        
-                            <ng-template ng-multi-label-tmp let-items="items" let-clear="clear">
-                                <div class="ng-value" *ngFor="let item of items.slice(0, 2)">
-                                    <span class="ng-value-label bg-info text-white">{{ item.UserRoleName }}</span>
-                                    <span class="ng-value-icon bg-info text-white" (click)="clear(item); $event.stopPropagation()">x</span>
-                                </div>
-                                <div class="ng-value" *ngIf="items.length > 2">
-                                    <span class="ng-value-label bg-info text-white">+{{ items.length - 2 }}</span>
-                                </div>
-                            </ng-template>
-                        </ng-select>
+                        <multi-select [control]="userForm.get('roles')" [items]="roleList" bindLabel="UserRoleName" bindValue="RoleMasterSid"
+                            placeholder="Select Roles"></multi-select>
                         <label for="" class="input-label">Role <span class="text-danger">*</span></label>
                         @if(userForm.get('roles')?.touched && userForm.get('roles')?.invalid){
                         <div class="error-message">

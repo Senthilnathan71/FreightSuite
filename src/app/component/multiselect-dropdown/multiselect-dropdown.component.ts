@@ -1,117 +1,197 @@
-import {Component, Input, Output, EventEmitter,forwardRef, OnInit, OnChanges, SimpleChanges} from '@angular/core';
-import {ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule} from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter, forwardRef } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, AbstractControl, ReactiveFormsModule, FormsModule, FormControl } from '@angular/forms';
+import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
+
 @Component({
-  selector: 'dofi-multiselect-dropdown',
+  selector: 'multi-select',
   standalone: true,
-  imports: [NgSelectModule, CommonModule, ReactiveFormsModule],
+  imports: [
+    NgSelectModule,
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    NgbTooltip
+  ],
   templateUrl: './multiselect-dropdown.component.html',
-  styleUrl: './multiselect-dropdown.component.scss',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => MultiselectDropdownComponent),
+      useExisting: forwardRef(() => MultiSelectComponent),
       multi: true
     }
-  ]
+  ],
+  styles: [`
+    :host ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected {
+      background-color: #ffffff !important; 
+      color: #000000 !important;       
+    }
+    :host ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-marked.ng-option-selected {
+      background-color: #05608D !important; 
+      color: #ffffff !important;       
+    }
+    :host ::ng-deep .ng-dropdown-panel .ng-dropdown-header {
+      padding: 0;       
+    }
+  `]
 })
-export class MultiselectDropdownComponent implements OnInit, OnChanges, ControlValueAccessor {
+export class MultiSelectComponent implements ControlValueAccessor {
+  @Input() control: AbstractControl | null = null;
   @Input() items: any[] = [];
-  @Input() placeholder: string = 'Select options';
-  @Input() displayFields: string[] = [];
-  @Input() displayLabels: string[] = [];
-  @Input() bindLabel: string = '';
-  @Input() bindValue: string = '';
-  @Input() isLoading: boolean = false;
-  @Input() control: FormControl | null = null;
+  @Input() bindLabel: string = 'name';
+  @Input() bindValue: string = 'id';
+  @Input() placeholder: string = 'Select items';
+  @Input() searchable: boolean = true;
+  @Input() displayCount: number = 2;
 
-  @Output() itemSelected = new EventEmitter<any[]>();
+  @Output() searchChange = new EventEmitter<string>();
+  @Output() valueChange = new EventEmitter<any[]>();
 
-  internalControl: FormControl = new FormControl([]);
-  columnWidths: number[] = [];
+  filterValue: string;
+  isClearFocused: boolean = false;
+  filteredItems: any[] = [];
+  public internalValue: any[] = [];
+  public onChange: (value: any[]) => void = () => {};
+  public onTouched: () => void = () => {};
 
-  private onChange: (value: any) => void = () => {};
-  private onTouched: () => void = () => {};
+  ngOnInit() {
+    this.filteredItems = Array.isArray(this.items) ? [...this.items] : [];
+    if (!this.control) {
+      this.control = new FormControl([]);
+    }
+    this.updateInternalValue();
+  }
 
-  ngOnInit(): void {
+  ngOnChanges() {
+    this.filteredItems = Array.isArray(this.items) ? [...this.items] : [];
+    this.updateInternalValue();
+  }
+
+  private updateInternalValue(): void {
     if (this.control) {
-      this.internalControl = this.control;
-    }
-
-    this.internalControl.valueChanges.subscribe(value => {
-      this.onChange(value);
-      this.onTouched();
-      this.itemSelected.emit(value);
-    });
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['control'] && this.control) {
-      this.internalControl = this.control;
-    }
-
-    if (changes['items'] || changes['displayFields'] || changes['displayLabels']) {
-      this.calculateColumnWidths();
+      this.internalValue = this.control.value || [];
     }
   }
 
-  writeValue(value: any): void {
-    this.internalControl.setValue(value || [], { emitEvent: false });
+  writeValue(value: any[]): void {
+    if (this.control) {
+      this.control.setValue(value || [], { emitEvent: false });
+      this.updateInternalValue();
+    }
   }
 
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (value: any[]) => void): void {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
 
-  setDisabledState(isDisabled: boolean): void {
-    isDisabled ? this.internalControl.disable() : this.internalControl.enable();
-  }
-
-  onSelectionChange(selected: any[]): void {
-    this.onChange(selected);
-    this.onTouched();
-    this.itemSelected.emit(selected);
-  }
-
-  getLabel(item: any): string {
-    if (!item || !this.displayFields.length) return '';
-
-    return this.displayFields.map(field => item[field]).join(' - ');
-  }
-
-  getColumnStyle(index: number): any {
-    const width = this.columnWidths[index] || 50;
-    const adjustedWidth = index === 0 ? Math.max(width, 60) : width;
-    return { width: `${adjustedWidth}px`, minWidth: `${adjustedWidth}px` };
-  }
-
-  calculateColumnWidths(): void {
-    if (!this.items?.length || !this.displayFields?.length || !this.displayLabels?.length) {
-      this.columnWidths = [];
-      return;
+  onModelChange(value: any[]): void {
+    if (this.control) {
+      this.control.setValue(value);
+      this.onChange(value);
     }
+    this.valueChange.emit(value);
+  }
 
-    this.columnWidths = new Array(this.displayFields.length).fill(0);
+  toggleSelectAll(): void {
+    if (!this.control || !this.filteredItems) return;
+    const currentValue = this.control.value || [];
+    if (currentValue.length === this.filteredItems.length) {
+      this.control.setValue([]);
+    } else {
+      this.control.setValue(this.filteredItems.map(item => item[this.bindValue]));
+    }
+    this.updateInternalValue();
+    this.onChange(this.control.value);
+    this.valueChange.emit(this.control.value);
+    this.onTouched();
+  }
 
-    this.items.forEach(item => {
-      this.displayFields.forEach((field, index) => {
-        const value = item[field] ? item[field].toString() : '';
-        const estimatedWidth = value.length * 8;
-        this.columnWidths[index] = Math.max(this.columnWidths[index], estimatedWidth);
-      });
-    });
+  toggleItem(itemValue: any): void {
+    if (!this.control) return;
+    const currentValue = this.control.value || [];
+    const newValue = currentValue.includes(itemValue)
+      ? currentValue.filter((v: any) => v !== itemValue)
+      : [...currentValue, itemValue];
+    this.control.setValue(newValue);
+    this.updateInternalValue();
+    this.onChange(newValue);
+    this.valueChange.emit(newValue);
+    this.onTouched();
+  }
 
-    this.displayLabels.forEach((label, index) => {
-      const labelWidth = (label?.length || 0) * 8;
-      this.columnWidths[index] = Math.max(this.columnWidths[index], labelWidth);
-    });
+  isSelected(itemValue: any): boolean {
+    return this.control?.value?.includes(itemValue) || false;
+  }
 
-    this.columnWidths = this.columnWidths.map(w => w + 24);
+  removeItem(item: any, event: Event): void {
+    if (!this.control) return;
+    event.stopPropagation();
+    const currentValue = this.control.value || [];
+    const newValue = currentValue.filter((v: any) => v !== item[this.bindValue]);
+    this.control.setValue(newValue);
+    this.updateInternalValue();
+    this.onChange(newValue);
+    this.valueChange.emit(newValue);
+    this.onTouched();
+  }
+
+  onSearchInput(event: Event): void {
+    const searchTerm = (event.target as HTMLInputElement).value;
+    this.searchChange.emit(searchTerm);
+    if (this.searchable) {
+      this.filteredItems = searchTerm
+        ? this.items.filter(item =>
+            item[this.bindLabel].toLowerCase().includes(searchTerm.toLowerCase()))
+        : [...this.items];
+    }
+  }
+
+  resetFilter() {
+    this.filteredItems = [...this.items];
+  }
+
+  onOpen(): void {
+    this.onTouched();
+    if (this.control) {
+      this.control.markAsTouched();
+      this.control.markAsDirty();
+    }
+  }
+
+  clearFilterValue() {
+    this.filterValue = '';
+    this.filteredItems = [...this.items];
   }
 }
 
+/*
+USAGE : 
+With FormControl : 
+  <multi-select 
+    [control]="anyForm.get('control')" 
+    [items]="itemList" 
+    bindLabel="name" 
+    bindValue="id" 
+    placeholder="Select item" 
+    (valueChange)="handleChange()"
+  >
+  </multi-select>
+
+With NgModel
+
+<multi-select 
+  [items]="modeOfCustomerType" 
+  bindLabel="name" bindValue="name" 
+  placeholder="Select Customer Type" 
+  [(ngModel)]="selectedStatus" 
+  (valueChange)="handleSelectedStatus($event)" 
+  [ngModelOptions]="{standalone: true}"
+  >
+</multi-select>
+
+*/

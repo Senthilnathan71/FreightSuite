@@ -16,6 +16,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 
 @Component({
   selector: 'app-charge-entry',
@@ -28,7 +29,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
     NgbDatepickerModule,
     DatePipe,
     PreventMultiClickDirective,
-    FormsModule
+    FormsModule,
+    MultiSelectComponent
   ],
   templateUrl: './charge-entry.component.html',
   styleUrls: ['./charge-entry.component.scss'],
