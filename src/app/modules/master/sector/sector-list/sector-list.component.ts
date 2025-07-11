@@ -19,6 +19,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 
 @Component({
@@ -34,7 +35,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     RouterModule,
     FormsModule,
     DatePipe,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent
   ],
   templateUrl: './sector-list.component.html',
   styleUrl: './sector-list.component.scss',
@@ -54,7 +56,7 @@ export class SectorComponent implements OnInit {
   modalRef!: NgbModalRef;
   searchType = 'sectorName';
   filterValue = '';
-  searchPerformed = false;
+  searched = false;
   page = 1;
   pageSize = 10;
   totalLengthOfCollection = 0;
@@ -92,14 +94,40 @@ export class SectorComponent implements OnInit {
         if (user) {
           this.userData = user;
         }
-      }
-    )
+      });
+      this.loadSectors();
     this.route.paramMap.subscribe(params => {
       this.SectorMasterSid = +params.get('id');
       if (this.SectorMasterSid) {
         this.isEditMode = true;
         this.loadSectorData(this.SectorMasterSid);
       }
+    });
+  }
+
+  loadSectors(): void {
+    const params = {
+      search: this.filterValue ? this.filterValue.trim() : '',
+      page: this.page,
+      pageSize: this.pageSize,
+    };
+
+    this.masterService.searchSectorList(params).subscribe({
+      next: (response) => {
+        if(response.data) {
+          this.sectorList = response.data.items;
+          this.results = [...this.sectorList];
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searched = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching sectors:', err);
+        this.sectorList = [];
+        this.results = [];
+        this.totalLengthOfCollection = 0;
+      },
     });
   }
 
@@ -321,6 +349,7 @@ applySorting() {
     }
     return 0;
   });
+  this.sectorList = [...this.results];
 }
 
   search() {
@@ -331,11 +360,11 @@ applySorting() {
         : this.filterValue
     };
 
-    this.masterService.searchSectors(payload).subscribe((res: any) => {
+    this.masterService.searchSectorList(payload).subscribe((res: any) => {
       this.results = res.data || res;
       this.applySorting();
       console.log(this.results)
-      this.searchPerformed = true;
+      this.searched = true;
       this.updatePaginationData();
       this.totalLengthOfCollection = this.results.length || 0;
     });
@@ -344,7 +373,7 @@ applySorting() {
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.sectorList = this.results.slice(startIndex, endIndex);
+    this.loadSectors();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -357,7 +386,7 @@ applySorting() {
       if (result === true) {
         this.masterService.deleteSector(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
-          this.search();
+          this.loadSectors();
         });
       }
     });
@@ -366,8 +395,9 @@ applySorting() {
   resetPage(): void {
     this.sectorList = [];
     this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
+    this.searched = false;
     this.filterValue = '';
+    this.sectorList = [];
     this.searchType = 'sectorName';
     this.sortColumn = 'sectorName';
     this.sortDirection = 'asc';
@@ -463,4 +493,7 @@ openEDoc() {
   modalRef.componentInstance.idValue = this.sectorData?.SectorMasterSid;
 }
 
+clearFilterValue(){
+      this.filterValue = '';
+    }
 }

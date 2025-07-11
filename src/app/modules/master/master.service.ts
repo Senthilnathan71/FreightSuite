@@ -39,7 +39,7 @@ export class MasterService {
     )
   }
   searchVesselList(params) {
-    return this.http.post("vessel/search-list",{params}).pipe(
+    return this.http.post("vessel/search-list",params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -517,10 +517,10 @@ export class MasterService {
       })
     );
   }
-  searchState(payload) {
-    return this.http.post("state/search-list", payload).pipe(
-      map((res: any) => {
-        return res.data;
+  searchStateList(params) {
+    return this.http.post("state/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
@@ -1377,12 +1377,12 @@ export class MasterService {
     );
   }
 
-  searchSectors(payload) {
-    return this.http.post('sector/search-list', payload).pipe(
-      map((res: any) => {
-        return res.data;
+  searchSectorList(params) {
+    return this.http.post("sector/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
-    );
+    )
   }
   // Branch Bank
   createBranchBank(payload) {
@@ -2787,12 +2787,12 @@ getAllHawbStocks(){
     );
   }
 
-  searchProfitCenter(payload) {
-    return this.http.post("profit-center/search-list", payload).pipe(
-      map((res: any) => {
-        return res.data;
+  searchProfitCenterList(params) {
+    return this.http.post("profit-center/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
-    );
+    )
   }
 
    //Tax

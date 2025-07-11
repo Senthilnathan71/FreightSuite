@@ -33,7 +33,7 @@ export class StateListComponent {
   filterValue = '';
   stateList: any[] = [];
   allStates: any[] = [];
-  searchPerformed = false;
+  searched = false;
   loading: boolean = false;
   countryOptions: any[] = [];
   zoneOptions: any[] = [];
@@ -62,8 +62,35 @@ export class StateListComponent {
       this.userData = user;
     }
   });
+  this.loadStates();
     this.loadCountries();
     this.loadZones();
+  }
+
+  loadStates(): void {
+    const params = {
+      search: this.filterValue ? this.filterValue.trim() : '',
+      page: this.page,
+      pageSize: this.pageSize,
+    };
+
+    this.masterService.searchStateList(params).subscribe({
+      next: (response) => {
+        if(response.data) {
+          this.stateList = response.data.items;
+          this.allStates = [...this.stateList];
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searched = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching states:', err);
+        this.stateList = [];
+        this.allStates = [];
+        this.totalLengthOfCollection = 0;
+      },
+    });
   }
 
   loadCountries() {
@@ -110,7 +137,7 @@ export class StateListComponent {
         : this.filterValue
     };
 
-    this.masterService.searchState(payload).subscribe({
+    this.masterService.searchStateList(payload).subscribe({
       next: (res: any) => {
         this.allStates = (res.data || res).map(state => {
           const country = this.countryOptions.find(c => c.CountryMasterSid === state.CountryMasterSid);
@@ -127,7 +154,7 @@ export class StateListComponent {
         
         this.stateList = [...this.allStates];
         this.totalLengthOfCollection = this.stateList.length;
-        this.searchPerformed = true;
+        this.searched = true;
         this.page = 1;
         this.updatePaginatedData();
         this.loading = false;
@@ -175,12 +202,13 @@ export class StateListComponent {
       }
       return 0;
     });
+    this.stateList = [...this.allStates];
   }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.stateList = this.allStates.slice(startIndex, endIndex);
+    this.loadStates();
   }
 
   trackByStateId(index: number, item: any): number {
@@ -195,7 +223,7 @@ export class StateListComponent {
         this.masterService.softDelete(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("State deleted successfully!");
-            this.search(); // Refresh search results
+            this.loadStates(); // Refresh search results
           },
           error: (err) => {
             console.error('Delete error:', err);
@@ -214,7 +242,7 @@ export class StateListComponent {
     this.filterValue = '';
     this.searchType = 'stateName';
     this.page = 1;
-    this.searchPerformed = false;
+    this.searched = false;
     this.stateList = [];
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'stateName';
@@ -252,4 +280,7 @@ export class StateListComponent {
     title: companyName
   });
 }
+clearFilterValue(){
+      this.filterValue = '';
+    }
 }
