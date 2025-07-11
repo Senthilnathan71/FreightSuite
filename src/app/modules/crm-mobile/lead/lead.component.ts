@@ -21,6 +21,7 @@ import { EdocComponent } from '../../settings/edoc/edoc/edoc.component';
 import { AuthorityEntryComponent } from '../../master/authority/authority-entry/authority-entry.component';
 import { EmailEntryComponent } from '../../settings/email/email-entry/email-entry.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 
 
 @Component({
@@ -141,7 +142,7 @@ export class LeadComponent implements OnInit {
       StateMasterSid : [,[Validators.required]],
       CityMasterSid : [,[Validators.required]],
       contactPerson : ['',[Validators.required]],
-      email : ['',[Validators.required,this.customEmailValidator()]],
+      email : ['',[Validators.required,EmailValidators.multipleEmails(),Validators.maxLength(100)]],
       phone : ['',[Validators.required]],
       PreferredContactMode : ['Email'],
       LanguagePreferrence : [''],
@@ -154,6 +155,11 @@ export class LeadComponent implements OnInit {
       Notes : [''],
       status : ['Active',[Validators.required]]
     });
+    this.leadForm.get('email').valueChanges.subscribe(
+      ()=>{
+        console.log(this.leadForm.get('email'));
+      }
+    )
   }
 
   // Handle Form Submission
@@ -306,14 +312,30 @@ export class LeadComponent implements OnInit {
 
   customEmailValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      const email = control.value?.trim();
+      const value = control.value?.trim();
 
-      if (!email) return { required: true }; // Empty email error
+      if (!value) return null;
 
-      // Enhanced Email Pattern for Strict Validation
+      const emails = value.split(',')
+        .map(email => email.trim())
+        .filter(email => email.length > 0);
+
+      if (emails.length === 0) return null;
+
+      
       const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-      return emailPattern.test(email) ? null : { emailInvalid: true };
+      
+      for (const email of emails) {
+        if (!emailPattern.test(email)) {
+          return {
+            emailInvalid: true,
+            invalidEmail: email 
+          };
+        }
+      }
+
+      return null;
     };
   }
 

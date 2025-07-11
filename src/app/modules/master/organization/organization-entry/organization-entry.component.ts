@@ -48,6 +48,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
+import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
+import { PasswordValidators } from 'src/app/core/ValidationFn/password.validators';
 
 @Component({
   selector: 'app-organization-entry',
@@ -707,7 +709,7 @@ updateShortCodeFieldState() {
       CustBranchCode: [{ value: '', disabled: true }],
       CustBranchZipPostCode: [''],
       CustBranchPhone: ['', [Validators.maxLength(15), this.phoneNumberValidator]],
-      CustBranchEmail: ['', [Validators.required, Validators.email]],
+      CustBranchEmail: ['', [Validators.required,EmailValidators.multipleEmails()]],
       CustBranchAddress: ['', [Validators.required]],
       CustBranchRegistered: ['Y', [Validators.required]], // default value if applicable
       CustBranchGSTtype: [''],
@@ -770,7 +772,7 @@ loadMenus() {
       ContactType: ['', [Validators.required]],
       ContactName: ['', [Validators.required]],
       MobileNo: ['', [Validators.maxLength(15), this.phoneNumberValidator]],
-      Email: ['', [Validators.required, Validators.email]],
+      Email: ['', [Validators.required, EmailValidators.multipleEmails()]],
     });
   }
 
@@ -780,8 +782,8 @@ loadMenus() {
        MenuMasterSid: ['', [Validators.required]],
       DepartmentMasterSid: ['', [Validators.required]],
       BranchName: [{ value: this.customerBranchName || '', disabled: true }],
-      Toemail: ['', [Validators.required, this.validateMultipleEmails]],
-      CCemail: ['', [Validators.email]],
+      Toemail: ['', [Validators.required, EmailValidators.multipleEmails()]],
+      CCemail: ['', [EmailValidators.multipleEmails()]],
     });
     
   }
@@ -793,10 +795,10 @@ loadMenus() {
       CustomerName: [{ value: this.customerName || '', disabled: true }],
       BranchName: [{ value: this.customerBranchName || '', disabled: true }],
       LoginName: ['', [Validators.required]],
-      LoginEmail: ['', [Validators.required, Validators.email]],
+      LoginEmail: ['', [Validators.required, EmailValidators.singleEmail()]],
       LoginPassword: [
         '',
-        [Validators.required, Validators.maxLength(50), this.passwordValidator],
+        [Validators.required, Validators.maxLength(50), PasswordValidators.validate()],
       ],
       status: [{value: 'Active', disabled: false}, Validators.required],
     });

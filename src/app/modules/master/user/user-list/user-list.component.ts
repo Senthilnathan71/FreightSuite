@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { PasswordValidators } from 'src/app/core/ValidationFn/password.validators';
 
 @Component({
   selector: 'app-user-list',
@@ -223,7 +224,7 @@ export class UserListComponent {
     this.resetPasswordForm = this.fb.group({
       password: ["", [
         Validators.required,
-        this.passwordValidator()
+        PasswordValidators.validate()
       ]],
       confirmPassword: ["", [Validators.required,this.confirmPasswordValidator()]]
     });
@@ -234,29 +235,6 @@ export class UserListComponent {
     )
   }
 
-  passwordValidator(): ValidatorFn {
-    return (control: AbstractControl): { [key: string]: any } | null => {
-      const value = control.value;
-      if (!value) {
-        return null;
-      }
-
-      const errors: any = {};
-
-      // Check individual requirements
-      const hasLetter = /[a-zA-Z]/.test(value);
-      const hasNumber = /[0-9]/.test(value);
-      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
-      const hasMinLength = value.length >= 4;
-
-      if (!hasLetter) errors.missingLetter = true;
-      if (!hasNumber) errors.missingNumber = true;
-      if (!hasSpecialChar) errors.missingSpecialChar = true;
-      if (!hasMinLength) errors.minLength = true;
-
-      return Object.keys(errors).length > 0 ? errors : null;
-    };
-  }
 
   confirmPasswordValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {

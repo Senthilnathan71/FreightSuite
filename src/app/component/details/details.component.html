@@ -26,7 +26,8 @@
                                 <div class="text-truncate">{{item.createdBy || item.CreatedBy || ''}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">{{item.createdOn | date:'dd/MM/yyyy, h:mm a' || ''}}
+                                <div class="text-truncate" *ngIf="item.createdOn">{{item.createdOn | date:'dd/MM/yyyy, h:mm a' || ''}}</div>
+                                <div class="text-truncate" *ngIf="item.CreatedOn">{{item.CreatedOn | date:'dd/MM/yyyy, h:mm a' || ''}}
                                 </div>
                             </td>
                         </tr>
@@ -40,15 +41,34 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @if(item.updatedBy){
                         <tr>
                             <td>
-                                <div class="text-truncate">{{ item.updatedBy ? (item.updatedBy || item.UpdatedBy)  : 'Not updated yet'}}</div>
+                                <div class="text-truncate">{{item.updatedBy || 'Not updated yet'}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">{{item.updatedBy ? (item.updatedOn | date:'dd/MM/yyyy, h:mm a') : 'Not updated yet'}}
-                                </div>
+                                <div class="text-truncate">{{item.updatedBy ? (item.updatedOn | date:'dd/MM/yyyy, h:mm a') : 'Not updated yet'}}</div>
                             </td>
                         </tr>
+                        } @else if(item.UpdatedBy){
+                        <tr>
+                            <td>
+                                <div class="text-truncate">{{item.UpdatedBy || 'Not updated yet'}}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{item.UpdatedBy ? (item.UpdatedOn | date:'dd/MM/yyyy, h:mm a') : 'Not updated yet'}}</div>
+                            </td>
+                        </tr>
+                        } @else {
+                            <tr>
+                                <td>
+                                    <div class="text-truncate">Not updated yet</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">Not updated yet</div>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>

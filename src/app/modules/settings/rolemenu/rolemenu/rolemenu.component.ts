@@ -50,6 +50,8 @@ export class RolemenuComponent implements OnInit {
 	roleList : any[];
 	results : any[];
     roleMenuList : any[];
+	menuPermissionList : any[]=[];
+	selectedPermission : any[]=[];
 
     modalRef: NgbModalRef;
 	roleMenuData : any;
@@ -300,6 +302,7 @@ private getNestedProperty(obj: any, path: string): any {
 			MenuMasterSid : [,[Validators.required]],
 			RoleMasterSid : [,[Validators.required]],
 			Remarks : ['',[Validators.required]],
+			MenuPermissions : [{}],
 			status : ['Active'],
 			InsertRole : [true],
 			ViewRole : [true],
@@ -347,6 +350,35 @@ private getNestedProperty(obj: any, path: string): any {
 				console.error('Error Loading Menus',error);
 			}
 		)
+	}
+
+	getMenuPermissions(menu){
+		this.settingService.getMenuPermissions(menu.MenuMasterSid).subscribe(
+			(resp:any)=>{
+				if(resp.status){
+					this.menuPermissionList = resp.data;
+				} else {
+					this.appSettingService.showError('Error loading menu permissions.')
+				}
+			}
+		)
+	}
+
+	handlePermission(permissionName,state:boolean){
+		if(state){
+			this.selectedPermission.push(permissionName);
+		} else {
+			this.selectedPermission = this.selectedPermission.filter(p => p !== permissionName)
+		}
+		this.updatePermissionControl()
+	}
+
+	updatePermissionControl(){
+		this.menuPermissionList.map(p => {
+			if(this.selectedPermission.includes(p.permissionName)){
+				
+			}
+		})
 	}
 
 	onSubmit(){

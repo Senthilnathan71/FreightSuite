@@ -209,13 +209,22 @@
                 <label for="text-input" class="input-label">Email </label>
 
                 <!--  Validation -->
-                @if(companyForm.get('email')?.touched && companyForm.get('email')?.invalid){
+                @if((companyForm.get('email')?.touched || companyForm.get('email')?.dirty) && companyForm.get('email')?.invalid) {
                 <div class="error-message">
-                  @if(companyForm.get('email')?.hasError('emailInvalid')){
-                  <span>Invalid Email Format</span>
+                  @if(companyForm.get('email')?.hasError('required')) {
+                  <span>Email is required</span>
                   }
-                  @else if(companyForm.get('email')?.hasError('maxlength')){
-                  <span>Max 100 Characters</span>
+                  @if(companyForm.get('email')?.hasError('invalidEmails')) {
+                  <span>Invalid email. {{ companyForm.get('email')?.errors['invalidEmails'].examples }}</span>
+                  }
+                  @if(companyForm.get('email')?.hasError('trailingComma')) {
+                  <span>Please remove the trailing comma or add another email</span>
+                  }
+                  @if(companyForm.get('email')?.hasError('duplicateEmails')) {
+                  <span>Duplicate emails detected</span>
+                  }
+                  @if(companyForm.get('email')?.hasError('maxlength')) {
+                  <span>Maximum 100 characters allowed (current: {{ companyForm.get('email')?.value?.length }})</span>
                   }
                 </div>
                 }
@@ -776,10 +785,23 @@
                           <input type="text" id="branchEmail" placeholder="" class="custom-input-field sm"
                             formControlName="branchEmail">
                           <label for="branchEmail" class="input-label">Email</label>
-                          @if(branchForm.get('branchEmail')?.touched && branchForm.get('branchEmail')?.invalid){
+                          @if((branchForm.get('branchEmail')?.touched || branchForm.get('branchEmail')?.dirty) &&
+                          branchForm.get('branchEmail')?.invalid) {
                           <div class="error-message">
-                            @if(branchForm.get('branchEmail')?.hasError('emailInvalid')){
-                            <span>Invalid Email Format</span>
+                            @if(branchForm.get('branchEmail')?.hasError('required')) {
+                            <span>Email is required</span>
+                            }
+                            @else if(branchForm.get('branchEmail')?.hasError('invalidEmails')) {
+                            <span>Invalid email format</span>
+                            }
+                            @else if(branchForm.get('branchEmail')?.hasError('trailingComma')) {
+                            <span>Remove comma or add another email</span>
+                            }
+                            @else if(branchForm.get('branchEmail')?.hasError('duplicateEmails')) {
+                            <span>Duplicate emails detected</span>
+                            }
+                            @else if(branchForm.get('branchEmail')?.hasError('maxlength')) {
+                            <span>Maximum 100 characters allowed</span>
                             }
                           </div>
                           }

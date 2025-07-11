@@ -67,12 +67,12 @@
                                 formControlName="userEmail">
                             <label for="text-input" class="input-label">Email Id <span
                                     class="text-danger"></span></label>
-                            @if(userForm.get('userEmail')?.touched && userForm.get('userEmail')?.invalid){
+                            @if((userForm.get('userEmail')?.touched ||userForm.get('userEmail')?.dirty ) && userForm.get('userEmail')?.invalid){
                                 <div class="error-message">
                                     @if(userForm.get('userEmail')?.hasError('required')){
                                         <div>Email is required</div>
-                                    } @else if(userForm.get('userEmail')?.hasError('emailInvalid')){
-                                        <div>Invalid Email</div>
+                                    } @else if(userForm.get('userEmail')?.hasError('invalidEmail')){
+                                        <div>Invalid email format</div>
                                     } @else if(userForm.get('userEmail')?.hasError('maxlength')){
                                         <div>Max 50 Characters</div>
                                     }
@@ -98,17 +98,13 @@
                                     @if(userForm.get('userPassword')?.hasError('required')) {
                                     <div>Password is required</div>
                                     } @else if (userForm.get('userPassword')?.hasError('minLength')) {
-                                    <div>Password must be at least 8 characters long</div>
-                                    } @else if(userForm.get('userPassword')?.hasError('maxlength')){
-                                        <div>Max 100 Characters</div>
-                                    } @else if (userForm.get('userPassword')?.hasError('noUppercase')) {
-                                    <div>Password must contain at least one uppercase letter</div>
-                                    } @else if (userForm.get('userPassword')?.hasError('noLowercase')) {
-                                    <div>Password must contain at least one lowercase letter</div>
-                                    } @else if (userForm.get('userPassword')?.hasError('noNumber')) {
-                                    <div>Password must contain at least one number</div>
-                                    } @else if (userForm.get('userPassword')?.hasError('noSpecialChar')) {
-                                    <div>At least One Special Character</div>
+                                    <div>Password must be at least 4 characters</div>
+                                    } @else if (userForm.get('userPassword')?.hasError('missingLetter')) {
+                                    <div>Password must contain at least one letter</div>
+                                    } @else if (userForm.get('userPassword')?.hasError('missingSpecialChar')) {
+                                    <div>Password must contain at least one special character</div>
+                                    } @else if (userForm.get('userPassword')?.hasError('missingNumber')) {
+                                        <div>Password must contain at least one number</div>
                                     }
                                 </div>
                             }

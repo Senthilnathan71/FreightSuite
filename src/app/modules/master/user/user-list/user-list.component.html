@@ -150,7 +150,7 @@
                                     <span class="text-danger">Password is required</span>
                                 }
                                 @else if(resetPasswordForm.get('password').hasError('minLength')){
-                                    <span>Password must be at least 4 characters long</span>
+                                    <span>Password must be at least 4 characters.</span>
                                 }
                                 @else if (resetPasswordForm.get('password').hasError('missingLetter')) {
                                 <span>Password must contain at least one letter</span>
