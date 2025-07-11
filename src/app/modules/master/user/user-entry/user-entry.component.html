@@ -64,7 +64,7 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="userEmail" [textWithNumbers]="50">
+                                formControlName="userEmail">
                             <label for="text-input" class="input-label">Email Id <span
                                     class="text-danger"></span></label>
                             @if(userForm.get('userEmail')?.touched && userForm.get('userEmail')?.invalid){
@@ -84,7 +84,7 @@
                     @if(!isEditMode){
                     <aside class="col-md-4">
                         <div class="input-group my-2">
-                            <input type="password" formControlName="userPassword" class="form-control" placeholder="Password" #passwordInput [textWithNumbers]="100"/>
+                            <input type="password" formControlName="userPassword" class="form-control" placeholder="Password" #passwordInput/>
                             <span class="input-group-text password-toggle rounded-right" (mousedown)="togglePassword(passwordInput)"
                                 (mouseup)="resetPassword(passwordInput)" (mouseleave)="resetPassword(passwordInput)">
                                 @if(!passwordView){
@@ -93,7 +93,7 @@
                                 <i-feather class="feather-sm" name="eye-off"></i-feather>
                                 }
                             </span>
-                            @if (userForm.get('userPassword')?.touched && userForm.get('userPassword')?.invalid) {
+                            @if (userForm.get('userPassword')?.invalid && (userForm.get('userPassword')?.touched || userForm.get('userPassword')?.dirty)) {
                                 <div class="error-message">
                                     @if(userForm.get('userPassword')?.hasError('required')) {
                                     <div>Password is required</div>
@@ -118,10 +118,48 @@
 
                     <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="department" [items]="departmentList" bindLabel="departmentName" bindValue="departmentName"
-                                [multiple]="true" (change)="setDefaultDept()" (clear)="clearDefaultDept()"  [closeOnSelect]="false" placeholder="Select Department">
-
-                            </ng-select>
+                            <multi-select [control]="userForm.get('department')" [items]="departmentList" bindLabel="departmentName" bindValue="departmentName"
+                            placeholder="Select Department" (valueChange)="setDefaultDept()"></multi-select>
+                            <!-- <ng-select [items]="filteredDeptList" [multiple]="true" formControlName="department" [closeOnSelect]="false"
+                            bindLabel="departmentName" bindValue="departmentName" placeholder="Select Department" [searchable]="false" (change)="setDefaultDept()">
+                            <ng-template ng-header-tmp>
+                                <div class="py-2">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="selectAll"
+                                            [checked]="userForm.get('department').value?.length === filteredDeptList.length"
+                                            (change)="toggleDeptSelectAll()" (keydown.enter)="toggleDeptSelectAll()" tabindex="0">
+                                        <label class="form-check-label" for="selectAll" tabindex="-1">
+                                            {{userForm.get('department').value?.length === filteredDeptList.length ? 'Unselect All' : 'Select All'}}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="px-2 py-2 border-top border-bottom">
+                                    <input type="text" class="form-control" placeholder="Search" (input)="onDeptSearch($event)"
+                                        (keydown)="onDeptSearchKeydown($event)" tabindex="0">
+                                </div>
+                            </ng-template>
+                        
+                            <ng-template ng-option-tmp let-item="item" let-item$="item$" let-selected="selected" let-marked="marked">
+                                <div class="form-check" [ngStyle]="{
+                                    'background-color': (selected || marked) ? 'transparent' : (item$?.focused ? '#f8f9fa' : 'transparent')
+                                  }">
+                                    <input type="checkbox" class="form-check-input"
+                                        [checked]="userForm.get('department').value?.includes(item.departmentName)"
+                                        (click)="$event.stopPropagation(); toggleDept(item.departmentName)">
+                                    <label class="form-check-label">{{ item.departmentName }}</label>
+                                </div>
+                            </ng-template>
+                        
+                            <ng-template ng-multi-label-tmp let-items="items" let-clear="clear">
+                                <div class="ng-value" *ngFor="let item of items.slice(0, 2)">
+                                    <span class="ng-value-label bg-info text-white">{{ item.departmentName }}</span>
+                                    <span class="ng-value-icon bg-info text-white" (click)="clear(item); $event.stopPropagation()">x</span>
+                                </div>
+                                <div class="ng-value" *ngIf="items.length > 2">
+                                    <span class="ng-value-label bg-info text-white">+{{ items.length - 2 }}</span>
+                                </div>
+                            </ng-template>
+                        </ng-select> -->
                             <label for="" class="input-label">Dept <span class="text-danger"></span></label>
                             @if(userForm.get('department')?.touched && userForm.get('department')?.invalid){
                                 <div class="error-message">
@@ -135,9 +173,12 @@
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm form-control"
                                 formControlName="DefaultDept" [textWithNumbers]="20" readonly>
-                            <label for="text-input" class="input-label">Default Dept <span
+                            <label for="text-input" [ngClass]="{
+                                'input-label': true,
+                                'bg-transparent': !userForm.get('DefaultDept')?.value
+                              }">Default Dept <span
                                     class="text-danger"></span></label>
                             @if(userForm.get('DefaultDept')?.touched && userForm.get('DefaultDept')?.invalid){
                                 <div class="error-message">
@@ -231,9 +272,8 @@
                 </aside>
                 <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select">
-                        <ng-select formControlName="branches" [items]="branchList" bindLabel="branchName"
-                            bindValue="BranchMasterSid" placeholder="Select Branch" [multiple]="true"  [closeOnSelect]="false">
-                        </ng-select>
+                        <multi-select [control]="userForm.get('branches')" [items]="branchList" bindLabel="branchName" bindValue="BranchMasterSid"
+                            placeholder="Select Branch"></multi-select>
                         <label for="" class="input-label">Branch <span class="text-danger">*</span></label>
                         @if(userForm.get('branches')?.touched && userForm.get('branches')?.invalid){
                         <div class="error-message">
@@ -246,9 +286,8 @@
                 </aside>
                 <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select">
-                        <ng-select formControlName="roles" [items]="roleList" bindLabel="UserRoleName"
-                            bindValue="RoleMasterSid" placeholder="Select Role" [multiple]="true" [closeOnSelect]="false">
-                        </ng-select>
+                        <multi-select [control]="userForm.get('roles')" [items]="roleList" bindLabel="UserRoleName" bindValue="RoleMasterSid"
+                            placeholder="Select Roles"></multi-select>
                         <label for="" class="input-label">Role <span class="text-danger">*</span></label>
                         @if(userForm.get('roles')?.touched && userForm.get('roles')?.invalid){
                         <div class="error-message">

@@ -6,7 +6,7 @@ import { MasterService } from '../../master.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
-import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { FfUser, UserRole } from 'src/app/modules/crm-mobile/Interfaces/ffuser.interface';
 import { CommonModule } from '@angular/common';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
@@ -18,6 +18,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 
 @Component({
 	selector: 'app-user-entry',
@@ -29,7 +30,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 		CommonModule,
 		OnlyTextDirective,
 		OnlyNumbersDirective,
-		TextWithNumbersDirective
+		TextWithNumbersDirective,
+		MultiSelectComponent
 	],
 	templateUrl: './user-entry.component.html',
 	styleUrl: './user-entry.component.scss'
@@ -44,10 +46,13 @@ export class UserEntryComponent implements OnInit {
 	userRoleForm !:FormGroup;
 
 	departmentList : any[];
+	filteredDeptList : any[] = [];
 	userTypeList : any[];
 	companyList : any[];
 	branchList : any[];
-	roleList : any[];
+	filteredBranchList : any[] = []
+	roleList : any[] = [];
+	filteredRoleList : any[] = [];
 	countryList : any[];
 	passwordView : boolean
 
@@ -86,7 +91,7 @@ export class UserEntryComponent implements OnInit {
 		this.userForm = this.fb.group({
 			userName: ['', [Validators.required]],
 			userEmail: ['', [Validators.required,this.customEmailValidator()]],
-			department: ['', [Validators.required]], 
+			department: [[], [Validators.required]], 
 			DefaultDept: [''],
 			isSalesperson: [false],
 			userTypeId: [,[Validators.required]],
@@ -95,9 +100,10 @@ export class UserEntryComponent implements OnInit {
 			userPassword: [,[this.customPasswordValidator()]],
 			CountryMasterSid: [,[Validators.required]],
 			CompanyMasterSid : [,[Validators.required]],
-			branches : [,[Validators.required]],
-			roles : [,[Validators.required]]
+			branches : [[],[Validators.required]],
+			roles : [[],[Validators.required]]
 		});
+		this.userForm.get('DefaultDept').disable()
 	}
 
 
@@ -111,8 +117,10 @@ export class UserEntryComponent implements OnInit {
 			countries : this.masterService.getAllCountry()
 		}).subscribe(({departments,userType,companies,roles,countries})=>{
 			this.departmentList = departments,
+			this.filteredDeptList = departments,
 			this.userTypeList = userType.data,
 			this.companyList = companies
+			this.filteredRoleList = roles.data;
 			this.roleList = roles.data;
 			this.countryList = countries.data;
 		})
@@ -171,7 +179,7 @@ export class UserEntryComponent implements OnInit {
 		}
 
 		const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
-		const formValue = this.userForm.value;
+		const formValue = this.userForm.getRawValue();
 
 		const payload = {
 			...formValue,
@@ -225,6 +233,7 @@ export class UserEntryComponent implements OnInit {
 		this.masterService.getBranchesByCompanyId(company.CompanyMasterSid).subscribe(
 			(resp:any)=>{
 				this.branchList = resp;
+				this.filteredBranchList = resp;
 			}
 		)
 	}
@@ -232,6 +241,7 @@ export class UserEntryComponent implements OnInit {
 	clearCompany(){
 		this.userForm.get('branches')?.setValue([]);
 		this.branchList = [];
+		this.filteredBranchList = []
 	}
 
 	getUserCode(userName : string){
@@ -293,9 +303,9 @@ export class UserEntryComponent implements OnInit {
 			}
 
 			// Check for at least one uppercase letter
-			if (!/[A-Z]/.test(password)) {
-				errors['noUppercase'] = true;
-			}
+			// if (!/[A-Z]/.test(password)) {
+			// 	errors['noUppercase'] = true;
+			// }
 
 			// Check for at least one lowercase letter
 			if (!/[a-z]/.test(password)) {
@@ -332,6 +342,7 @@ export class UserEntryComponent implements OnInit {
 			status : 'Active'
 		})
 	}
+
 
 	openTandC() {
 		this.currentMenuId = Number(localStorage.getItem('currentMenuId'));

@@ -1,3 +1,4 @@
+
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -72,6 +73,7 @@ export class CityComponent {
   isFavorite: boolean = false;
   sortColumn: string = 'cityName'; 
   sortDirection: string = 'asc'; 
+  allCities: any[] = [];
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -96,7 +98,7 @@ export class CityComponent {
   });
     this.getAllCountries();
     this.getAllState();
-    // this.loadCity();
+    this.loadCities();
     this.loadCountryAndStateData();
     this.initForm();
     this.route.paramMap.subscribe(params => {
@@ -115,6 +117,40 @@ export class CityComponent {
       }
     });
   }
+  loadCities(): void {
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize
+  };
+
+  this.masterService.searchCityList(params).subscribe({
+    next: (response: any) => {
+      if (response) {
+        this.cityList = response.items.map((city: any) => {
+          const country = this.countryList.find(c => c.CountryMasterSid === city.CountryMasterSid);
+          const state = this.stateList.find(s => s.StateMasterSid === city.StateMasterSid);
+          return {
+            ...city,
+            countryName: country ? country.countryName : 'N/A',
+            stateName: state ? state.stateName : 'N/A'
+          };
+        });
+        this.totalLengthOfCollection = response.totalCount;
+        this.applySorting();
+      } else {
+        this.cityList = [];
+        this.totalLengthOfCollection = 0;
+      }
+      this.searchPerformed = true;
+    },
+    error: (err) => {
+      console.error('Error loading cities:', err);
+    }
+  });
+}
+
+
 
   loadCountryAndStateData() {
     forkJoin({
@@ -122,7 +158,7 @@ export class CityComponent {
       states: this.masterService.getAllState(),
       city: this.masterService.getAllCity()
     }).subscribe(({ countries, states, city }) => {
-      this.countryList = countries.data;  // assuming res.data format
+      this.countryList = countries.data; 
       this.stateList = states.data;
       this.cityList = city.map(city => {
         const country = this.countryList.find(c => c.CountryMasterSid === city.CountryMasterSid);
@@ -211,6 +247,10 @@ export class CityComponent {
     if (this.modalRef) {
       this.modalRef.close();
     }
+  }
+  clearFilterValue() {
+    this.filterValue = '';
+    this.loadCities();
   }
 
   getCityById(id: number) {
@@ -322,37 +362,7 @@ export class CityComponent {
     );
   }
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'S' 
-        : this.filterValue,
-    }
-    
-    this.masterService.searchCityList(payload).subscribe((res: any) => {
-      this.results = res.map(city => {
-        const country = this.countryList.find(c => c.CountryMasterSid === city.CountryMasterSid);
-        const state = this.stateList.find(s => s.StateMasterSid === city.StateMasterSid);
-        return {
-          ...city,
-          countryName: country ? country.countryName : '',
-          stateName: state ? state.stateName : ''
-        };
-      });
-      this.applySorting();
-      this.searchPerformed = true;
-      this.updatePaginatedData();
-      this.totalLengthOfCollection = this.results.length || 0;
-    });
-  }
+  
   sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -368,32 +378,45 @@ export class CityComponent {
 }
 
 applySorting() {
-  this.results.sort((a, b) => {
-    let valueA = a[this.sortColumn];
-    let valueB = b[this.sortColumn];
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
-  
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-}
+    this.cityList.sort((a, b) => {
+      let valueA: any;
+      let valueB: any;
+
+      // Handle special cases for mapped fields
+      if (this.sortColumn === 'countryName') {
+        valueA = a.countryName;
+        valueB = b.countryName;
+      } else if (this.sortColumn === 'stateName') {
+        valueA = a.stateName;
+        valueB = b.stateName;
+      } else {
+        valueA = a[this.sortColumn];
+        valueB = b[this.sortColumn];
+      }
+
+      // Handle null/undefined values
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+
+      // Convert to string for case-insensitive comparison
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.cityList = this.results.slice(startIndex, endIndex);
+    this.loadCities();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -406,7 +429,7 @@ applySorting() {
       if (result === true) {
         this.masterService.deleteCityById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
-          this.search(); // Refresh the list after deletion
+          
         });
       }
     });

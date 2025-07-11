@@ -90,56 +90,16 @@ export class BIclauseComponent implements OnInit {
   
 
   ngOnInit(): void {
-    this.sort('Sortorder');
-        this.appSettingService.getUser().subscribe(
-            user=>{
-                if(user){
-                    this.userData = user;
-                }
-            }
-        )
-      }
-
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-
-  search(): void {
-    this.loading = true;
     
-    if (!this.filterValue.trim()) {
-      // If empty search, load all clauses (like state-list does)
-      this.loadAllClauses();
-      return;
+       this.appSettingService.getUser().subscribe(user => {
+    if(user) {
+      this.userData = user;
     }
-
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'I'
-        : this.filterValue
-    };
-
-    this.masterService.searchBlclauselList(payload).subscribe({
-      next: (res) => {
-        this.allClauses = res;
-        this.totalLengthOfCollection = this.allClauses.length;
-        this.applySorting();
-        this.searchPerformed = true;
-        this.page = 1;
-        this.updatePaginatedData();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Search error:', err);
-        this.loading = false;
-        this.appSettingService.showError('Failed to search BI Clauses');
+  });
+  this.loadAllClauses();
       }
-    });
-  }
+
+  
   sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -192,30 +152,49 @@ applySorting() {
   });
 }
   loadAllClauses(): void {
-    this.loading = true;
-    this.masterService.getAllBlClause().subscribe({
-      next: (res) => {
-        this.allClauses = res;
-        this.totalLengthOfCollection = this.allClauses.length;
-        this.applySorting();
-        this.searchPerformed = true;
-        this.page = 1;
-        this.updatePaginatedData();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading clauses:', err);
-        this.loading = false;
-        this.appSettingService.showError('Failed to load BI Clauses');
-      }
-    });
-  }
+  this.loading = true;
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize
+  };
 
-  updatePaginatedData(): void {
-    const startIndex = (this.page - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.clauseList = this.allClauses.slice(startIndex, endIndex);
-  }
+  this.masterService.searchBlclauselList(params).subscribe({
+    next: (response) => {
+      if(response.data) {
+        
+        this.allClauses = response.data.items;
+        this.applySorting();
+        this.updatePaginatedData();
+        this.clauseList = [...this.allClauses];
+        this.totalLengthOfCollection = response.data.totalCount;
+        
+      } else {
+        this.allClauses = [];
+        this.clauseList = []; 
+        this.totalLengthOfCollection = 0;
+      }
+      
+      this.searchPerformed = true;
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error loading clauses:', err);
+      this.loading = false;
+    }
+  });
+}
+clearFilterValue() {
+  this.filterValue = '';
+  this.loadAllClauses();
+ 
+}
+
+updatePaginatedData(): void {
+  const startIndex = (this.page - 1) * this.pageSize;
+  const endIndex = startIndex + this.pageSize;
+  this.clauseList = this.allClauses.slice(startIndex, endIndex);
+}
 
   openModal(content: any, clause?: BLClause): void {
     this.isEditMode = !!clause;
@@ -280,7 +259,7 @@ applySorting() {
         
         this.appSettingService.showSuccess(message);
         this.modalService.dismissAll();
-        this.search(); // Refresh current view
+      
       },
       error: (err) => {
         this.btnDisable = false;
@@ -299,7 +278,7 @@ applySorting() {
         this.masterService.deleteBlclauseById(id).subscribe({
           next: () => {
             this.appSettingService.showSuccess("BI Clause deleted successfully!");
-            this.search(); // Refresh current view
+            
           },
           error: (err) => {
             console.error('Delete error:', err);

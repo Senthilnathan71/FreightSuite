@@ -157,7 +157,7 @@ export class ContainerTypeEntryComponent {
         Validators.required,
         Validators.maxLength(300)
       ]],
-      status: [{value: 'Active', disabled: false}, Validators.required],
+      status: [{ value: 'A', disabled: false }, Validators.required],
     });
 }
 
@@ -165,8 +165,9 @@ resetForm(): void {
    
     this.containertypeForm.get('status')?.disable();
     this.containertypeForm.reset({
-      status: 'Active'
+      status: 'A'
     });
+    this.containertypeForm.get('status')?.disable();
   }
 
   onSubmit() {
@@ -187,12 +188,12 @@ resetForm(): void {
         ...formValue,
         CompanyMasterSid: Number(formValue.CompanyMasterSid),
         ...updatedBy,
-        status: formValue.status === "Active" ? "A" : "C"
+        status: formValue.status 
       } : {
         ...formValue,
         CompanyMasterSid: Number(formValue.CompanyMasterSid),
         ...createdBy,
-        status: formValue.status === "Active" ? "A" : "C"
+        status: formValue.status 
       };
 
       console.log('payload', payload);

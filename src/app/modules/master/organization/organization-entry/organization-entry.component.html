@@ -70,10 +70,13 @@
                             </aside>
                             <aside class="col-md-4">
   <div class="custom-form-group">
-    <input type="text" id="CustomerShortCode" placeholder="" class="custom-input-field sm"
+    <input type="text" id="CustomerShortCode" placeholder="" class="custom-input-field sm form-control" readonly
       formControlName="CustomerShortCode" [textWithNumbers]="50"
       [attr.disabled]="!customerForm.get('CustomerName')?.value || !customerForm.get('CountryMasterSid')?.value ? true : null">
-    <label for="CustomerShortCode" class="input-label">Code <span class="text-danger">*</span></label>
+    <label for="CustomerShortCode" [ngClass]="{
+                                'input-label': true,
+                                'bg-transparent': !customerForm.get('CustomerShortCode')?.value
+                              }">Code <span class="text-danger">*</span></label>
     @if(customerForm.get('CustomerShortCode')?.touched && customerForm.get('CustomerShortCode')?.invalid) {
     <div class="error-message">
       @if(customerForm.get('CustomerShortCode')?.hasError('required')) {
@@ -242,7 +245,8 @@
                             </aside>
                             <aside class="col-md-4">
                                 <div class="custom-form-group custom-form-group-select">
-  <ng-select [items]="modeOfCustomerType" bindLabel="name" bindValue="name" [multiple]="true" 
+                                    <multi-select [items]="modeOfCustomerType" bindLabel="name" bindValue="name" placeholder="Select Customer Type" [(ngModel)]="selectedStatus" (valueChange)="handleSelectedStatus($event)" [ngModelOptions]="{standalone: true}"></multi-select>
+  <!-- <ng-select [items]="modeOfCustomerType" bindLabel="name" bindValue="name" [multiple]="true" 
     [closeOnSelect]="false" [searchable]="true" placeholder="Select Customer Type" 
     [(ngModel)]="selectedStatus" (change)="updateDisplayedCustomerTypes()" name="customerTypeSelection">
     
@@ -258,23 +262,19 @@
     
     <ng-template ng-multi-label-tmp let-items="items" let-clear="clear">
       <div class="d-flex flex-wrap gap-1 align-items-center">
-        <!-- Display first 3 selected items -->
         <span *ngFor="let item of displayedCustomerTypes" class="badge bg-info">
           {{ item.name }}
         </span>
-        
-        <!-- Show +X indicator if there are more than 3 selected -->
         <span *ngIf="extraCustomerTypesCount > 0" class="badge bg-secondary">
           +{{ extraCustomerTypesCount }}
         </span>
         
-        <!-- Show placeholder when nothing is selected -->
         <span *ngIf="selectedStatus.length === 0" class="text-muted">
           Select Customer Type
         </span>
       </div>
     </ng-template>
-  </ng-select>
+  </ng-select> -->
 
   <label class="input-label">
     Customer Type <span class="text-danger"></span>
@@ -890,7 +890,10 @@
 
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select 
+                                <multi-select [control]="salespersonForm.get('DepartmentMasterSid')" [items]="spDepartmentList" bindLabel="departmentName" bindValue="departmentName"
+                                    placeholder="Select Department">
+                                </multi-select>
+                                <!-- <ng-select 
                                     class="ng-select" 
                                     multiple=true 
                                     formControlName="DepartmentMasterSid"
@@ -900,7 +903,7 @@
                                     placeholder="Select Department"
                                     closeOnSelect = false
                                 >
-                                </ng-select>
+                                </ng-select> -->
                                 <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                     formControlName="City"> -->
                                 <label for="text-input" class="input-label">Department <span
@@ -1130,13 +1133,56 @@
                                     }
                                 </div>
                             </aside>
-                               <aside class="col-md-4">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input" placeholder=""
-                                    class="custom-input-field sm" formControlName="">
-                                        <label for="text-input" class="input-label">Branch Type <span class="text-danger">*</span></label>
-                                </div>
-                            </aside>
+                               <!-- <aside class="col-md-4">
+  <div class="custom-form-group">
+    
+    
+    <div class="d-flex gap-3 mt-2">
+      <div class="form-check" *ngFor="let option of modeOfBranchType">
+        <input class="form-check-input" type="radio" 
+               formControlName="BranchType"   
+               id="branchType{{option.id}}" 
+               [value]="option.id">
+        <label class="form-check-label" for="branchType{{option.id}}">
+          {{option.name}}
+        </label>
+      </div>
+    </div>
+    @if(customerBranchForm.get('BranchType')?.touched && 
+        customerBranchForm.get('BranchType')?.invalid){
+      <div class="error-message">
+        @if(customerBranchForm.get('BranchType')?.hasError('required')){
+          <span>Branch type is required</span>
+        }
+      </div>
+    }
+  </div>
+</aside> -->
+ <aside class="col-md-4">
+  <div class="custom-form-group">
+     <label for="BranchType" class="form-check-label">Branch Type <span
+                                                class="text-danger">*</span></label>
+    <div class="d-flex gap-3 mt-2">
+      <div class="form-check" *ngFor="let option of modeOfBranchType">
+        <input class="form-check-input" type="radio" 
+               formControlName="CustBranchType"   
+               id="branchType{{option.id}}" 
+               [value]="option.id">
+        <label class="form-check-label" for="branchType{{option.id}}">
+          {{option.name}}
+        </label>
+      </div>
+    </div>
+     @if(customerBranchForm.get('CustBranchType')?.touched && 
+        customerBranchForm.get('CustBranchType')?.invalid){
+      <div class="error-message">
+        @if(customerBranchForm.get('CustBranchType')?.hasError('required')){
+          <span>Branch type is required</span>
+        }
+      </div>
+    }
+  </div>
+</aside>
                               <aside class="col-md-4">
   <div class="custom-form-group">
     <input type="text" id="CustBranchCode" placeholder="" class="custom-input-field sm"
@@ -1603,7 +1649,17 @@
 </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select">
-                                    <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid" 
+                                    <!-- <multi-select 
+                                        [items]="departmentList" 
+                                        bindLabel="departmentName" 
+                                        bindValue="DepartmentMasterSid" 
+                                        placeholder="Select Department"
+                                        [(ngModel)]="selectedDepartments" 
+                                        (valueChange)="updateDisplayedDepartments()" 
+                                        [ngModelOptions]="{standalone: true}"
+                                    >
+                                    </multi-select> -->
+                                     <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid" 
                                         [multiple]="true" [closeOnSelect]="false" [searchable]="true" placeholder="Select Department"
                                         [(ngModel)]="selectedDepartments" (change)="updateDisplayedDepartments()"
                                         [ngModelOptions]="{standalone: true}">
@@ -1638,7 +1694,7 @@
     </span>
   </div>
 </ng-template>
-                                    </ng-select>
+                                    </ng-select> 
                                     <label class="input-label">Department <span class="text-danger">*</span></label>
                                     @if(customerBranchEmailForm.get('DepartmentMasterSid')?.touched &&
                                     customerBranchEmailForm.get('DepartmentMasterSid')?.invalid){

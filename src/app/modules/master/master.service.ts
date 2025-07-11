@@ -39,7 +39,7 @@ export class MasterService {
     )
   }
   searchVesselList(params) {
-    return this.http.post("vessel/search-list",{params}).pipe(
+    return this.http.post("vessel/search-list",params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -411,10 +411,10 @@ export class MasterService {
       })
     );
   }
-  searchUomList(payload) {
-    return this.http.post("uom/search-list", payload).pipe(
-      map((res: any) => {
-        return res.data;
+  searchUomList(params) {
+    return this.http.post("uom/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
@@ -517,10 +517,10 @@ export class MasterService {
       })
     );
   }
-  searchState(payload) {
-    return this.http.post("state/search-list", payload).pipe(
-      map((res: any) => {
-        return res.data;
+  searchStateList(params) {
+    return this.http.post("state/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
@@ -1377,12 +1377,12 @@ export class MasterService {
     );
   }
 
-  searchSectors(payload) {
-    return this.http.post('sector/search-list', payload).pipe(
-      map((res: any) => {
-        return res.data;
+  searchSectorList(params) {
+    return this.http.post("sector/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
-    );
+    )
   }
   // Branch Bank
   createBranchBank(payload) {
@@ -2142,6 +2142,15 @@ searchFfUser(payload: any) {
   );
 }
 
+resetUserPassword(UserMasterSid , payload){
+  return this.http.post<{data:any[]}>(`ff-user/reset/${UserMasterSid}`,payload).pipe(
+    map((resp)=>{
+      let response = resp;
+      return response;
+    })
+  )
+}
+
 //  User Type
 getAllUserType() {
   return this.http.get<{data: any[]}>('user-type').pipe(
@@ -2548,10 +2557,10 @@ getAllHawbStocks(){
   }
 
 
-  searchYear(payload: any) {
-    return this.http.post<{ data: any }>(`year/search-list`, payload).pipe(
-      map((res: any) => {
-        return res|| [];
+  searchYearList(params) {
+    return this.http.post("year/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
@@ -2777,8 +2786,66 @@ getAllHawbStocks(){
     );
   }
 
-  searchProfitCenter(payload) {
-    return this.http.post("profit-center/search-list", payload).pipe(
+  searchProfitCenterList(params) {
+    return this.http.post("profit-center/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
+
+   //Tax
+
+  getAllTax() {
+    return this.http.get<{ data: any[] }>('tax').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+
+  fetchTaxById(id: number) {
+    return this.http.get<{ data: any }>(`tax/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createNewTax(payload: any) {
+    return this.http.post('tax/create', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  
+    updateTaxById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`tax/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+
+    )
+  }
+
+
+   deleteTax(id: number) {
+    return this.http.delete<{ data: any }>(`tax/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+   searchTaxGroup(payload) {
+    return this.http.post("tax/search-list", payload).pipe(
       map((res: any) => {
         return res.data;
       })

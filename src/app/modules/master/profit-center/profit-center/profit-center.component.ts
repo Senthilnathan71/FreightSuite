@@ -22,6 +22,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { MasterService } from '../../master.service';
 import { ProfitCenter } from 'src/app/modules/crm-mobile/Interfaces/profit-center.interfaces';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-profit-center',
@@ -37,7 +38,8 @@ import { ProfitCenter } from 'src/app/modules/crm-mobile/Interfaces/profit-cente
       OnlyTextDirective,
       TextWithNumbersDirective,
       PreventMultiClickDirective,
-      NgbModalModule
+      NgbModalModule,
+      FavoriteStarComponent
     ],
   templateUrl: './profit-center.component.html',
   styleUrl: './profit-center.component.scss'
@@ -54,7 +56,7 @@ export class ProfitCenterComponent {
       modalRef!: NgbModalRef;
       searchType = 'ProfitCenterName';
       filterValue = '';
-      searchPerformed = false;
+      searched = false;
       page = 1;
       pageSize = 5;
       totalLengthOfCollection = 0;
@@ -85,7 +87,7 @@ export class ProfitCenterComponent {
      ) { }
    
      ngOnInit(): void {
-         // this.loadProfitCenter()
+         this.loadProfitCenters()
          this.initForm();
          this.appSettingService.getUser().subscribe(
            user => {
@@ -103,18 +105,31 @@ export class ProfitCenterComponent {
          });
        }
      
-       // loadProfitCenter(): void {
-       //   this.masterService.getAllProfitCenter().subscribe(
-       //     (resp: ProfitCenter[]) => {
-       //       console.log(resp, 'ProfitCenter')
-       //       this.profitCenters = resp['data'];
-       //     },
-       //     (error) => {
-       //       this.errorMessage = error.message;
-       //       console.error('Error loading:', error);
-       //     }
-       //   );
-       // }
+       loadProfitCenters(): void {
+         const params = {
+          search: this.filterValue ? this.filterValue.trim() : '',
+          page: this.page,
+          pageSize: this.pageSize,
+         };
+
+         this.masterService.searchProfitCenterList(params).subscribe({
+          next: (response) => {
+            if(response.data) {
+              this.profitCenterList = response.data.items;
+              this.results = [...this.profitCenterList];
+              this.totalLengthOfCollection = response.data.totalCount;
+              this.applySorting();
+              this.searched = true;
+            }
+          },
+          error: (err) => {
+            console.error('Error fetching profit-centers:', err);
+            this.profitCenterList = [];
+            this.results = [];
+            this.totalLengthOfCollection = 0;
+          },
+         });
+       }
      
        initForm() {
          this.profitCenterForm = this.fb.group({
@@ -289,10 +304,10 @@ export class ProfitCenterComponent {
            filterValue: this.filterValue,
          };
      
-         this.masterService.searchProfitCenter(payload).subscribe((res: any) => {
+         this.masterService.searchProfitCenterList(payload).subscribe((res: any) => {
            this.results = res;
            console.log(this.results)
-           this.searchPerformed = true;
+           this.searched = true;
            this.applySorting();
            this.updatePaginationData();
            this.totalLengthOfCollection = this.results.length || 0;
@@ -307,7 +322,6 @@ export class ProfitCenterComponent {
            this.sortDirection = 'asc';
          }
          this.applySorting();
-         this.updatePaginationData();
        }
      
        applySorting() {
@@ -331,11 +345,12 @@ export class ProfitCenterComponent {
          }
          return 0;
        });
+       this.profitCenterList = [...this.results];
      }
      updatePaginationData(): void {
          const startIndex = (this.page - 1) * this.pageSize;
          const endIndex = startIndex + this.pageSize;
-         this.profitCenterList = this.results.slice(startIndex, endIndex);
+         this.loadProfitCenters();
        }
      
        trackByIndex(index: number, item: any): number {
@@ -349,7 +364,7 @@ export class ProfitCenterComponent {
              this.masterService.softDeleteProfitCenter(id).subscribe((resp: any) => {
                this.appSettingService.showSuccess('Deleted!');
                this.router.navigate(['master/profit-center']);
-               this.search();
+               this.loadProfitCenters();
              });
            }
          });
@@ -358,7 +373,7 @@ export class ProfitCenterComponent {
        resetPage(): void {
          this.profitCenterList = [];
          this.totalLengthOfCollection = 0;
-         this.searchPerformed = false;
+         this.searched = false;
          this.filterValue = '';
          this.searchType = 'ProfitCenterName';
          this.page = 1;
@@ -455,4 +470,8 @@ export class ProfitCenterComponent {
        modalRef.componentInstance.idLabel = 'Profit-Center Id';
        modalRef.componentInstance.idValue = this.profitCenterData?.ProfitCenterMasterSid;
      }
+
+     clearFilterValue(){
+      this.filterValue = '';
+    }
 }

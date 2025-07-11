@@ -1,7 +1,7 @@
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CommonModule } from '@angular/common';
 import { Component, AfterViewInit, EventEmitter, Output, ViewChild, TemplateRef, NgModule, OnInit } from '@angular/core';
-import { NgbAccordionModule, NgbCarouselModule, NgbDropdown, NgbDropdownModule,  NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbCarouselModule, NgbDropdown, NgbDropdownModule, NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateService } from '@ngx-translate/core';
 import { FeatherModule } from 'angular-feather';
 import { NgScrollbarModule } from 'ngx-scrollbar';
@@ -30,21 +30,21 @@ interface messages {
 @Component({
   selector: 'app-vertical-navigation',
   standalone: true,
-  imports: [NgbDropdownModule,RouterModule, FeatherModule, NgScrollbarModule, CommonModule, NgbAccordionModule, NgbCarouselModule,NgbModule,TimeAgoPipe],
+  imports: [NgbDropdownModule, RouterModule, FeatherModule, NgScrollbarModule, CommonModule, NgbAccordionModule, NgbCarouselModule, NgbModule, TimeAgoPipe],
   templateUrl: './vertical-navigation.component.html'
 })
-export class VerticalNavigationComponent implements OnInit,AfterViewInit {
-  recentList : any[] = [];
-  favouriteList : any[] = [];
+export class VerticalNavigationComponent implements OnInit, AfterViewInit {
+  recentList: any[] = [];
+  favouriteList: any[] = [];
   outside = 'outside'
-  menuSearchResults : any[] =[];
-  docSearchResults : any[] = [];
+  menuSearchResults: any[] = [];
+  docSearchResults: any[] = [];
   @Output() toggleSidebar = new EventEmitter<void>();
   @ViewChild('menuSearchDropdown') menuSearchDropdown!: NgbDropdown;
 
   public showSearch = false;
 
-  constructor(private router: Router, private appSettingsService: AppSettingsService, private translate: TranslateService,private verticalNavService:VerticalNavService) {
+  constructor(private router: Router, private appSettingsService: AppSettingsService, private translate: TranslateService, private verticalNavService: VerticalNavService) {
 
     // translate.setDefaultLang('en');
 
@@ -56,18 +56,18 @@ export class VerticalNavigationComponent implements OnInit,AfterViewInit {
   }
 
 
-  loadRecentList(event : boolean) {
-    if(event){
+  loadRecentList(event: boolean) {
+    if (event) {
       this.recentList = JSON.parse(localStorage.getItem('recentlyVisited')) || [];
     }
   }
-  loadFavouriteList(event : boolean) {
-    if(event){
+  loadFavouriteList(event: boolean) {
+    if (event) {
       this.verticalNavService.getAllFavouriteScreens().subscribe(
-        (resp:any)=>{
-          if(resp.status){
+        (resp: any) => {
+          if (resp.status) {
             this.favouriteList = resp.data;
-            console.log('Favourite',this.favouriteList);
+            console.log('Favourite', this.favouriteList);
           } else {
             this.appSettingsService.showError('Error loading Favourite Screens')
           }
@@ -76,32 +76,32 @@ export class VerticalNavigationComponent implements OnInit,AfterViewInit {
     }
   }
 
-  deleteFavourite(path){
+  deleteFavourite(path) {
     this.verticalNavService.deleteFavouriteScreen(path).subscribe(
-      (resp:any)=>{
-        if(resp.status){
+      (resp: any) => {
+        if (resp.status) {
           this.loadFavouriteList(true);
         }
       },
-      (error:any)=>{
-        console.error('Error Deleting Favourite Screens',error)
+      (error: any) => {
+        console.error('Error Deleting Favourite Screens', error)
       }
     )
   }
 
-  searchMenu(event){
+  searchMenu(event) {
     const searchText = event.target.value;
     const payload = {
-      searchType : 'MenuName',
-      filterValue : searchText
+      searchType: 'MenuName',
+      filterValue: searchText
     }
     this.verticalNavService.searchMenu(payload).subscribe(
-      (resp:any)=>{
-        if(resp){
+      (resp: any) => {
+        if (resp) {
           this.menuSearchResults = resp;
         }
       },
-      (error:any)=>{
+      (error: any) => {
         console.error('Error Searching Menus')
       }
     )
@@ -117,11 +117,11 @@ export class VerticalNavigationComponent implements OnInit,AfterViewInit {
     }
   }
 
-  searchDocuments(text){
+  searchDocuments(text) {
 
   }
 
-  openDocument(text){
+  openDocument(text) {
 
   }
 
@@ -219,8 +219,8 @@ export class VerticalNavigationComponent implements OnInit,AfterViewInit {
     icon: 'de'
   }]
 
-  ngAfterViewInit() { 
-       
+  ngAfterViewInit() {
+
   }
 
   logout() {
@@ -234,8 +234,11 @@ export class VerticalNavigationComponent implements OnInit,AfterViewInit {
     this.selectedLanguage = lang;
   }
 
- navigateShortcut(){
+  navigateShortcut() {
     this.router.navigate(['shortcut']);
- }
- 
+  }
+
+  navigateToMaster() {
+    this.router.navigate(['dashboard']);
+  }
 }

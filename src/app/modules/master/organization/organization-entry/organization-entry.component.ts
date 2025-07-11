@@ -47,6 +47,7 @@ import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 
 @Component({
   selector: 'app-organization-entry',
@@ -66,7 +67,8 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
     NgbDatepickerModule,
     CustomDatePipe,
     NgbTooltipModule,
-    DatePipe
+    DatePipe,
+    MultiSelectComponent
   ],
   templateUrl: './organization-entry.component.html',
   styleUrl: './organization-entry.component.scss',
@@ -98,6 +100,10 @@ extraCustomerTypesCount = 0;
     { id: 'Y', name: 'Registered' },
     { id: 'N', name: 'Unregistered' },
   ];
+  modeOfBranchType = [
+  { id: 'HeadQuarters', name: 'Head Quarters' },
+  { id: 'BRANCH', name: 'Branch' }
+];
   modeofPAN = [
     { id: '1', name: 'Company' },
     { id: '2', name: 'Individual' },
@@ -177,15 +183,15 @@ extraCustomerTypesCount = 0;
   TandCList: any;
   menuList: any[] = [];
 
-  updateDisplayedCustomerTypes(): void {
-  // Get the first 3 selected items
-  this.displayedCustomerTypes = this.modeOfCustomerType
-    .filter(type => this.selectedStatus.includes(type.name))
-    .slice(0, 3);
+//   updateDisplayedCustomerTypes(): void {
+//   // Get the first 3 selected items
+//   this.displayedCustomerTypes = this.modeOfCustomerType
+//     .filter(type => this.selectedStatus.includes(type.name))
+//     .slice(0, 3);
   
-  // Calculate how many extra items are selected beyond the first 3
-  this.extraCustomerTypesCount = Math.max(0, this.selectedStatus.length - 3);
-}
+//   // Calculate how many extra items are selected beyond the first 3
+//   this.extraCustomerTypesCount = Math.max(0, this.selectedStatus.length - 3);
+// }
 
 
   updateCustomerType(): void {
@@ -201,19 +207,26 @@ extraCustomerTypesCount = 0;
       ?.setValue(result, { emitEvent: false });
   }
 
-  toggleSelection(item: any): void {
-  const index = this.selectedStatus.indexOf(item.name);
-  if (index === -1) {
-    this.selectedStatus.push(item.name);
-  } else {
-    this.selectedStatus.splice(index, 1);
-  }
-  this.updateDisplayedCustomerTypes();
-  this.updateCustomerType();
-}
+//   toggleSelection(item: any): void {
+//   const index = this.selectedStatus.indexOf(item.name);
+//   if (index === -1) {
+//     this.selectedStatus.push(item.name);
+//   } else {
+//     this.selectedStatus.splice(index, 1);
+//   }
+//   // this.updateDisplayedCustomerTypes();
+//   this.updateCustomerType();
+// }
 
-  isSelected(item: any): boolean {
-    return this.selectedStatus.includes(item.name);
+  // isSelected(item: any): boolean {
+  //   return this.selectedStatus.includes(item.name);
+  // }
+
+  handleSelectedStatus(event){
+    console.log(event);
+    this.selectedStatus = [...event];
+    this.updateCustomerType();
+    console.log(this.customerForm.get('CustomerType').value);
   }
 
  toCamelCase(str: string): string {
@@ -345,6 +358,7 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
       // Patch form #1
       this.customerBranchForm.patchValue({
         CustBranchName: data.BranchName || '',
+        CustBranchType: data.BranchType||'',
         CustBranchAddress: data.Address || '',
         CustBranchCity: data.CityMasterSid || '',
         CustBranchState: data.StateMasterSid || '',
@@ -414,11 +428,15 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
   if (data) {
     // Patch form #2
     this.branchEmailData = data;
-    
-    // Handle department selection
-    const departmentIds = data.DepartmentMasterSid ? 
+    let departmentIds = [];
+  try {
+    const deptData = JSON.parse(data.DepartmentMasterSid);
+    departmentIds = deptData.departmentIds || [];
+  } catch (e) {
+    // Fallback for old format (comma separated)
+    departmentIds = data.DepartmentMasterSid ? 
       data.DepartmentMasterSid.split(',').map(id => id.trim()) : [];
-    
+  }
     this.selectedDepartments = departmentIds;
     this.updateDisplayedDepartments();
 
@@ -685,6 +703,7 @@ updateShortCodeFieldState() {
       CustBranchCity: ['', [Validators.required]],
       CustBranchState: ['', [Validators.required]],
       CustBranchName: ['', [Validators.required]],
+      CustBranchType: ['', [Validators.required]],
       CustBranchCode: [{ value: '', disabled: true }],
       CustBranchZipPostCode: [''],
       CustBranchPhone: ['', [Validators.maxLength(15), this.phoneNumberValidator]],
@@ -846,7 +865,6 @@ loadMenus() {
                      formValue.status === 'Suspended' ? 'S' : 
                      formValue.status;
     const selectedPaymentType = this.customerForm.value.paymentType;
-
     console.log(formValue, 'formValue');
     const payload = this.isEditMode
       ? {
@@ -981,7 +999,6 @@ loadMenus() {
         })
         .map(type => type.name);
 
-      this.updateDisplayedCustomerTypes();
       
       console.log('CustomerType loaded:', customerType);
       console.log('Selected statuses:', this.selectedStatus);
@@ -1099,6 +1116,7 @@ loadMenus() {
           StateMasterSid: Number(formValue.CustBranchState),
           Branch_Code: formValue.CustBranchCode,
           BranchName: formValue.CustBranchBranchName,
+          Branch_Type: formValue.CustBranchType,
           Zip_PostBox: String(formValue.CustBranchZipPostCode),
           ContactNo: String(formValue.CustBranchPhone),
           Email: formValue.CustBranchEmail,
@@ -1114,6 +1132,7 @@ loadMenus() {
           CityMasterSid: Number(formValue.CustBranchCity),
           StateMasterSid: Number(formValue.CustBranchState),
           BranchName: formValue.CustBranchName,
+          Branch_Type: formValue.CustBranchType,
           Zip_PostBox: String(formValue.CustBranchZipPostCode),
           ContactNo: String(formValue.CustBranchPhone),
           Email: formValue.CustBranchEmail,
@@ -1345,13 +1364,15 @@ loadMenus() {
   
   const formValue = this.customerBranchEmailForm.value;
 
-  // Join selected departments with comma
-  const departmentMasterSid = this.selectedDepartments.join(',');
+  // Create JSON object for departments
+  const departmentData = {
+    departmentIds: this.selectedDepartments
+  };
 
   const payload = {
     CustomerBranchSid: Number(this.customerBranchId),
     MenuMasterSid: Number(formValue.MenuMasterSid),
-    DepartmentMasterSid: departmentMasterSid,
+    DepartmentMasterSid: JSON.stringify(departmentData),
     Toemail: formValue.Toemail,
     CCemail: formValue.CCemail,
     ...(this.isModalEditMode ? updatedBy : createdBy)

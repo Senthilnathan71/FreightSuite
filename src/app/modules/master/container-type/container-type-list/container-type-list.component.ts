@@ -33,11 +33,11 @@ export class ContainerTypeListComponent {
   results: any[] = [];
   containerList: any[] = [];
   searchPerformed = false;
-  companyMap: { [id: number]: string} = {};
-  userData : any;
-  sortColumn: string = 'ContainerName'; 
+  companyMap: { [id: number]: string } = {};
+  userData: any;
+  sortColumn: string = 'ContainerName';
   sortDirection: string = 'asc';
-  
+  loading = false;
 
   // Pagination 
   page = 1;
@@ -47,8 +47,8 @@ export class ContainerTypeListComponent {
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
-  } 
-  
+  }
+
   constructor(
     private masterService: MasterService,
     private router: Router,
@@ -58,17 +58,50 @@ export class ContainerTypeListComponent {
     private excelReportService: ExcelExportService
   ) { }
 
-  ngOnInit() { 
+  ngOnInit() {
     this.getAllCompanies();
-     this.appSettingService.getUser().subscribe(user => {
-    if (user) {
-      this.userData = user;
-    }
-  });
-}
-  
+    this.appSettingService.getUser().subscribe(
+      user => {
+        if (user) {
+          this.userData = user;
+        }
+      }
+    );
+    this.loadContainerTypes();
+  }
+  loadContainerTypes(): void {
+    this.loading = true;
 
-  getAllCompanies(){
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+
+    this.masterService.searchContainerType(params).subscribe({
+      next: (response) => {
+        if (response) {
+          this.results = response.items;
+          this.containerList = response.items;
+          this.totalLengthOfCollection = response.totalCount;
+          this.applySorting();
+          this.searchPerformed = true;
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching container types:', err);
+        this.results = [];
+        this.containerList = [];
+        this.totalLengthOfCollection = 0;
+        this.loading = false;
+      }
+    });
+  }
+
+  getAllCompanies() {
     this.masterService.getAllCompanies().subscribe((companies: any[]) => {
       this.companyMap = {};
       companies.forEach(c => {
@@ -77,68 +110,50 @@ export class ContainerTypeListComponent {
     });
   }
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
+
+  sort(column: string) {
+    if (this.sortColumn === column) {
+      // Reverse the sort direction if clicking the same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Set new sort column and default to ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.loadContainerTypes();
+
+    this.applySorting();
+    this.updatePaginatedData();
   }
-  
-  this.applySorting();
-  this.updatePaginatedData();
-}
 
-applySorting() {
-  this.results.sort((a, b) => {
-    let valueA = a[this.sortColumn];
-    let valueB = b[this.sortColumn];
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
-  
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-}
+  applySorting() {
+    this.results.sort((a, b) => {
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
 
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue
-    }
+      // Handle null/undefined values
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
 
-    this.masterService.searchContainerType(payload).subscribe((res: any) => {
-      this.results = res;
-      this.applySorting();
-      this.searchPerformed = true;
-      this.updatePaginatedData();
-      this.totalLengthOfCollection = this.results.length || 0;
+      // Convert to string for case-insensitive comparison
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
     });
   }
+
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.containerList = this.results.slice(startIndex, endIndex);
+    this.loadContainerTypes();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -152,7 +167,7 @@ applySorting() {
         this.masterService.deleteContainerTypeById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           this.router.navigate(['master/container-type/list'])
-          this.search();
+
         });
       }
     });
@@ -160,6 +175,10 @@ applySorting() {
 
   navigateToaddNewContainerType() {
     this.router.navigate(['master/container-type/entry']);
+  }
+
+  clearFilterValue() {
+    this.filterValue = '';
   }
 
   resetPage(): void {
@@ -171,6 +190,7 @@ applySorting() {
     this.page = 1;
     this.sortColumn = 'ContainerName';
     this.sortDirection = 'asc';
+    // this.loadContainerTypes();
   }
 
   report(): void {
@@ -179,20 +199,20 @@ applySorting() {
       status: item.status === 'A' ? 'Active' : 'Suspended'
     }));
 
-        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
 
-        this.excelReportService.exportAsExcel({
-            data: formattedData,
-            headers: [
-                { key: 'ContainerName', label: 'Container Name' },
-                { key: 'ContainerCode', label: 'Container Code' },
-                { key: 'ContainerIsoCode', label: 'ISO Code' },
-                { key: 'ContainerCategory', label: 'Category' },
-                { key: 'NoOfTeu', label: 'No of TEU' },
-                { key: 'status', label: 'Status' },
-            ],
-            fileName: 'Container-Type-Report', 
-            title: companyName
-        });
-    }
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'ContainerName', label: 'Container Name' },
+        { key: 'ContainerCode', label: 'Container Code' },
+        { key: 'ContainerIsoCode', label: 'ISO Code' },
+        { key: 'ContainerCategory', label: 'Category' },
+        { key: 'NoOfTeu', label: 'No of TEU' },
+        { key: 'status', label: 'Status' },
+      ],
+      fileName: 'Container-Type-Report',
+      title: companyName
+    });
+  }
 }

@@ -10,6 +10,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-uom-list',
@@ -20,23 +21,25 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     FormsModule,
     NgbPaginationModule,
     RouterModule,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent
   ],
   templateUrl: './uom-list.component.html',
   styleUrl: './uom-list.component.scss'
 })
 export class UOMListComponent {
-  searchType = 'UOMName';
   filterValue = '';
-  results: any[] = [];
   uomList: any[] = [];
-  searchPerformed = false;
+  searched = false;
   userData: any;
   // pagination
   page = 1;
   pageSize = 10;
   totalLengthOfCollection: number;
   isFavorite: boolean = false;
+
+  sortColumn: string = 'UOMName';
+  sortDirection: string = 'asc';
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -50,37 +53,78 @@ export class UOMListComponent {
     private excelReportService: ExcelExportService
   ) { }
 
-  ngOnInit() { this.appSettingService.getUser().subscribe(user => {
+  ngOnInit() { 
+    this.appSettingService.getUser().subscribe(user => {
     if (user) {
       this.userData = user;
     }
   });
+  this.loadUoms();
+}
+loadUoms(): void {
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize,
+  };
+  
+  this.masterService.searchUomList(params).subscribe({
+    next: (response) => {
+      if(response.data){
+        this.uomList = response.data.items;
+        this.totalLengthOfCollection = response.data.totalCount;
+        this.applySorting();
+        this.searched = true;
+      }
+    },
+    error: (err) => {
+      console.error('Error fetching Uoms:', err);
+      this.uomList = [];
+      this.totalLengthOfCollection = 0;
+    },
+  });
 }
 
-onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue:this.filterValue,
-    }
-    this.masterService.searchUomList(payload).subscribe((res: any) => {
-      this.results = res;
-      this.searchPerformed = true;
-      this.updatePaginatedData();
-      this.totalLengthOfCollection = this.results.length || 0;
-    });
+sort(column: string) {
+  if (this.sortColumn === column) {
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    this.sortColumn = column;
+    this.sortDirection = 'asc';
   }
+
+  this.applySorting();
+}
+
+applySorting() {
+  if (!Array.isArray(this.uomList)) {
+    this.uomList = [];
+    return;
+  }
+  this.uomList.sort((a,b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+
+    if (valueA < valueB) {
+      return this.sortDirection === 'asc' ? -1 : 1;
+    }
+    if (valueA > valueB) {
+      return this.sortDirection === 'asc' ? 1: -1;
+    }
+    return 0;
+  });
+}
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.uomList = this.results.slice(startIndex, endIndex);
+    this.loadUoms();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -93,7 +137,6 @@ onSearch(event: { type: string, value: string }) {
       if (result === true) {
         this.masterService.deleteUomById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
-          this.search(); // Refresh the list after deletion
         });
       }
     });
@@ -106,10 +149,11 @@ onSearch(event: { type: string, value: string }) {
   resetPage() {
     this.uomList = [];
     this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
+    this.searched = false;
     this.filterValue = '';
-    this.searchType = 'UOMName';
     this.page = 1;
+    this.sortColumn = 'UOMName';
+    this.sortDirection = 'asc';
   }
 
   report(): void {
@@ -135,5 +179,9 @@ onSearch(event: { type: string, value: string }) {
 
   getStatusText(status: string): string {
     return status === 'A' ? 'Active' : 'Suspended';
+  }
+
+  clearFilterValue() {
+    this.filterValue = '';
   }
 }

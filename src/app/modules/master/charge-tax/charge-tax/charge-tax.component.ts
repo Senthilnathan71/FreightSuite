@@ -83,18 +83,50 @@ export class ChargeTaxComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-      this.appSettingService.getUser().subscribe(user => {
-    if (user) {
-      this.userData = user;
-    }
-  });
-   this.loadCompanies();
+    this.appSettingService.getUser().subscribe(user => {
+      if (user) {
+        this.userData = user;
+      }
+    });
+    this.loadCompanies();
     this.initForm();
+    this.loadChargeTaxes();
     this.route.paramMap.subscribe(params => {
       this.ChargeTaxMasterSid = +params.get('id');
       if (this.ChargeTaxMasterSid) {
         this.isEditMode = true;
         this.loadChargeTaxData(this.ChargeTaxMasterSid);
+      }
+    });
+  }
+  loadChargeTaxes(): void {
+    this.isLoading = true;
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize
+    };
+
+    this.masterService.searchChargeTax(params).subscribe({
+      next: (response: any) => {
+        if (response.data) {
+          this.results = response.data.items || [];
+          this.applySorting();
+          this.updatePaginationData();
+          this.chargeTaxList = [...this.results];
+          this.totalLengthOfCollection = response.data.totalCount || 0;
+          
+        } else {
+          this.results = [];
+          this.chargeTaxList = [];
+          this.totalLengthOfCollection = 0;
+        }
+        this.searchPerformed = true;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading charge taxes:', err);
+        this.isLoading = false;
       }
     });
   }
@@ -215,7 +247,7 @@ export class ChargeTaxComponent implements OnInit {
         if (resp.status) {
           this.appSettingService.showSuccess(resp.message);
           this.closeModal();
-          this.search();
+          
         } else {
           this.appSettingService.showError(resp.message);
         }
@@ -232,7 +264,7 @@ export class ChargeTaxComponent implements OnInit {
         if (resp.status) {
           this.appSettingService.showSuccess(resp.message);
           this.closeModal();
-          this.search();
+          
         } else {
           this.appSettingService.showError(resp.message);
         }
@@ -245,29 +277,12 @@ export class ChargeTaxComponent implements OnInit {
     );
   }
 }
-
-onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'S'
-        : this.filterValue
-    };
-
-    this.masterService.searchChargeTax(payload).subscribe((res: any) => {
-      this.results = res.data || res;
-      this.applySorting();
-      this.searchPerformed = true;
-      this.updatePaginationData();
-      this.totalLengthOfCollection = this.results.length || 0;
-    });
+clearFilterValue() {
+    this.filterValue = '';
+    this.loadChargeTaxes();
   }
+
+
   sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -321,7 +336,7 @@ applySorting() {
       if (result === true) {
         this.masterService.deleteChargeTaxById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
-          this.search();
+            
         });
       }
     });
