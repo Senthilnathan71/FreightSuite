@@ -11,6 +11,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 
 @Component({
@@ -22,7 +23,8 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     FormsModule,
     RouterModule,
     NgbPaginationModule,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent 
   ],
   templateUrl: './commodity-list.component.html',
   styleUrls: ['./commodity-list.component.scss']
@@ -30,7 +32,7 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
 export class CommodityListComponent {
   searchType = 'CommodityName';
   filterValue = '';
-  results: Commodity[] = [];
+  // results: Commodity[] = [];
   commodityList: Commodity[] = [];
   searchPerformed = false;
   userData : any;
@@ -65,40 +67,39 @@ export class CommodityListComponent {
         }
       }
     )
+    this.loadCommodities();
   }
+  loadCommodities(): void {
+  this.loading = true; // Show loading indicator
+  
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection
+  };
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'S' 
-        : this.filterValue,
-    };
-    
-    this.loading = true;
-    this.masterService.searchCommodity(payload).subscribe({
-      next: (res) => {
-        this.results = res;
+  this.masterService.searchCommodity(params).subscribe({
+    next: (response) => {
+      if(response){
+        this.commodityList = response.items;
+        this.totalLengthOfCollection = response.totalCount;
         this.applySorting();
         this.searchPerformed = true;
-        this.updatePaginatedData();
-        this.totalLengthOfCollection = this.results.length;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error(err);
-        this.loading = false;
-        this.appSettingService.showError('Failed to search commodities');
       }
-    });
-  }
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error fetching commodities:', err);
+      this.commodityList = [];
+      this.totalLengthOfCollection = 0;
+      this.loading = false;
+    }
+  });
+}
+
+  
   sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -108,43 +109,43 @@ export class CommodityListComponent {
     this.sortColumn = column;
     this.sortDirection = 'asc';
   }
-  
+   
+  this.loadCommodities();
   this.applySorting();
   this.updatePaginatedData();
 }
 
 applySorting() {
-  this.results.sort((a, b) => {
+  this.commodityList.sort((a, b) => {
     let valueA = a[this.sortColumn];
     let valueB = b[this.sortColumn];
-    
-    // Handle null/undefined values
+
     if (valueA == null) valueA = '';
     if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
+
     valueA = valueA.toString().toLowerCase();
     valueB = valueB.toString().toLowerCase();
-  
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
+
+    if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
+    if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
     return 0;
   });
 }
 
+
   updatePaginatedData() {
-    const startIndex = (this.page - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.commodityList = this.results.slice(startIndex, endIndex);
-  }
+  const startIndex = (this.page - 1) * this.pageSize;
+  const endIndex = startIndex + this.pageSize;
+  this.loadCommodities(); 
+  // this.commodityList = this.results.slice(startIndex, endIndex);
+}
 
   navigateToCreate() {
     this.router.navigate(['master/commodity/entry']);
   }
+  clearFilterValue() {
+  this.filterValue = '';
+}
 
   editCommodity(id: number) {
     this.router.navigate(['master/commodity/entry', id]);
@@ -157,7 +158,7 @@ applySorting() {
         this.masterService.deleteCommodityById(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("Deleted!");
-            this.search(); // Refresh the list after deletion
+            
           },
           error: (err) => {
             this.appSettingService.showError("Failed to delete commodity");
