@@ -220,10 +220,13 @@
 
                         <aside class="col-md-4">
   <div class="custom-form-group custom-form-group-select">
-    <ng-select [items]="statusList" 
-              formControlName="status"
-              [class.is-invalid]="containertypeForm.get('status')?.invalid && containertypeForm.get('status')?.touched"
-              [disabled]="containertypeForm.get('status')?.disabled">
+    <ng-select
+      [items]="statusList"
+      bindLabel="name"
+      bindValue="id"
+      formControlName="status"
+      [class.is-invalid]="containertypeForm.get('status')?.invalid && containertypeForm.get('status')?.touched"
+      [disabled]="containertypeForm.get('status')?.disabled">
     </ng-select>
     <label class="input-label">Status <span class="text-danger">*</span></label>
     @if(containertypeForm.get('status')?.touched && containertypeForm.get('status')?.invalid){
@@ -233,6 +236,7 @@
     }
   </div>
 </aside>
+
 
 
                     </div>

@@ -37,7 +37,7 @@ export class ContainerTypeListComponent {
   userData : any;
   sortColumn: string = 'ContainerName'; 
   sortDirection: string = 'asc';
-  
+  loading = false;
 
   // Pagination 
   page = 1;
@@ -66,8 +66,40 @@ export class ContainerTypeListComponent {
           this.userData = user;
         }
       }
-    )
+    );
+    this.loadContainerTypes();
   }
+  loadContainerTypes(): void {
+  this.loading = true;
+  
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection
+  };
+
+  this.masterService.searchContainerType(params).subscribe({
+    next: (response) => {
+      if(response) {
+        this.results = response.items;
+        this.containerList = response.items;
+        this.totalLengthOfCollection = response.totalCount;
+        this.applySorting();
+        this.searchPerformed = true;
+      }
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error fetching container types:', err);
+      this.results = [];
+      this.containerList = [];
+      this.totalLengthOfCollection = 0;
+      this.loading = false;
+    }
+  });
+}
 
   getAllCompanies() {
     this.masterService.getAllCompanies().subscribe((companies: any[]) => {
@@ -78,12 +110,7 @@ export class ContainerTypeListComponent {
     });
   }
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
+  
 sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -93,6 +120,7 @@ sort(column: string) {
     this.sortColumn = column;
     this.sortDirection = 'asc';
   }
+  this.loadContainerTypes();
   
   this.applySorting();
   this.updatePaginatedData();
@@ -121,25 +149,11 @@ applySorting() {
   });
 }
 
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue
-    }
-
-    this.masterService.searchContainerType(payload).subscribe((res: any) => {
-      this.results = res;
-      this.applySorting();
-      this.searchPerformed = true;
-      this.updatePaginatedData();
-      this.totalLengthOfCollection = this.results.length || 0;
-    });
-  }
-
+  
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.containerList = this.results.slice(startIndex, endIndex);
+    this.loadContainerTypes();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -153,7 +167,7 @@ applySorting() {
         this.masterService.deleteContainerTypeById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           this.router.navigate(['master/container-type/list'])
-          this.search();
+          
         });
       }
     });
@@ -162,6 +176,10 @@ applySorting() {
   navigateToaddNewContainerType() {
     this.router.navigate(['master/container-type/entry']);
   }
+
+  clearFilterValue() {
+  this.filterValue = '';
+}
 
   resetPage(): void {
     this.containerList = [];
@@ -172,6 +190,7 @@ applySorting() {
     this.page = 1;
     this.sortColumn = 'ContainerName';
     this.sortDirection = 'asc';
+    // this.loadContainerTypes();
   }
 
   report(): void {

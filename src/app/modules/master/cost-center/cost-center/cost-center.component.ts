@@ -66,6 +66,7 @@ export class CostCenterComponent {
    sortColumn: string = 'CostCenterName';
    sortDirection: string = 'asc';
    isFavorite: boolean = false;
+   loading = false;
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -102,7 +103,37 @@ export class CostCenterComponent {
           this.loadCostCenterData(this.CostCenterMasterSid);
         }
       });
+      this.loadCostCenters();
     }
+    loadCostCenters(): void {
+  this.loading = true;
+  
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection
+  };
+
+  this.masterService.searchCostCenter(params).subscribe({
+    next: (response) => {
+      if(response) {
+        this.costCenterList = response.items;
+        this.totalLengthOfCollection = response.totalCount;
+        this.applySorting();
+        this.searchPerformed = true;
+      }
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error fetching cost centers:', err);
+      this.costCenterList = [];
+      this.totalLengthOfCollection = 0;
+      this.loading = false;
+    }
+  });
+}
   
     // loadCostCenter(): void {
     //   this.masterService.getAllCostCenter().subscribe(
@@ -277,28 +308,7 @@ export class CostCenterComponent {
       );
     }
   
-    onSearch(event: { type: string, value: string}) {
-      this.searchType = event.type;
-      this.filterValue = event.value;
-      console.log('Searching with:', this.searchType, this.filterValue);
-      this.search();
-    }
-  
-    search() {
-      const payload = {
-        searchType: this.searchType,
-        filterValue: this.filterValue,
-      };
-  
-      this.masterService.searchCostCenter(payload).subscribe((res: any) => {
-        this.results = res;
-        console.log(this.results)
-        this.searchPerformed = true;
-        this.applySorting();
-        this.updatePaginationData();
-        this.totalLengthOfCollection = this.results.length || 0;
-      });
-    }
+    
   
     sort(column: string) {
       if (this.sortColumn === column) {
@@ -307,6 +317,7 @@ export class CostCenterComponent {
         this.sortColumn = column;
         this.sortDirection = 'asc';
       }
+      this.loadCostCenters();
       this.applySorting();
       this.updatePaginationData();
     }
@@ -333,10 +344,14 @@ export class CostCenterComponent {
       return 0;
     });
   }
+  clearFilterValue() {
+  this.filterValue = '';
+  this.loadCostCenters();
+  }
   updatePaginationData(): void {
       const startIndex = (this.page - 1) * this.pageSize;
       const endIndex = startIndex + this.pageSize;
-      this.costCenterList = this.results.slice(startIndex, endIndex);
+      this.loadCostCenters();
     }
   
     trackByIndex(index: number, item: any): number {
@@ -350,7 +365,7 @@ export class CostCenterComponent {
           this.masterService.softDeleteCostCenter(id).subscribe((resp: any) => {
             this.appSettingService.showSuccess('Deleted!');
             this.router.navigate(['master/cost-center']);
-            this.search();
+            
           });
         }
       });

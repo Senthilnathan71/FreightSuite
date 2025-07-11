@@ -138,7 +138,6 @@ export class CityComponent {
         });
         this.totalLengthOfCollection = response.totalCount;
         this.applySorting();
-        this.updatePaginatedData();
       } else {
         this.cityList = [];
         this.totalLengthOfCollection = 0;
@@ -379,7 +378,7 @@ export class CityComponent {
 }
 
 applySorting() {
-    this.results.sort((a, b) => {
+    this.cityList.sort((a, b) => {
       let valueA: any;
       let valueB: any;
 
@@ -417,6 +416,7 @@ applySorting() {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
+    this.loadCities();
   }
 
   trackByIndex(index: number, item: any): number {
