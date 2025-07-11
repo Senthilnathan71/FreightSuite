@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, TemplateRef } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
@@ -58,17 +58,17 @@ export class ChargegroupComponent implements OnInit {
   totalLengthOfCollection = 0;
   isLoading = false;
   companyOptions: any[] = [];
-  userData : any;
-  chargeGroupData : any;
+  userData: any;
+  chargeGroupData: any;
   currentMenuId: number;
-  TandCList: any[]=[];
+  TandCList: any[] = [];
   isFavorite: boolean = false;
-  sortColumn: string = 'GroupName'; 
-sortDirection: string = 'asc';
+  sortColumn: string = 'GroupName';
+  sortDirection: string = 'asc';
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
-  } 
+  }
 
   constructor(
     private modalService: NgbModal,
@@ -90,7 +90,7 @@ sortDirection: string = 'asc';
           this.userData = user;
         }
       }
-    )
+    );
 
     this.initForm();
     this.route.paramMap.subscribe(params => {
@@ -98,11 +98,40 @@ sortDirection: string = 'asc';
       if (this.ChargeGroupSid) {
         this.isEditMode = true;
         this.loadChargeGroupData(this.ChargeGroupSid);
-        
       }
     });
     this.loadCompanies();
+    this.loadChargeGroups();
   }
+
+  loadChargeGroups(): void {
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize
+  };
+
+  this.masterService.searchChargeGroups(params).subscribe({
+    next: (response: any) => {
+      if (response?.data) {
+        this.results = response.data.items || [];
+        this.applySorting();
+        this.updatePaginationData();
+        this.chargeGroupList = [...this.results];
+        this.totalLengthOfCollection = response.data.totalCount || 0;
+        
+      } else {
+        this.results = [];
+        this.chargeGroupList = [];
+        this.totalLengthOfCollection = 0;
+      }
+      this.searchPerformed = true;
+    },
+    error: (err) => {
+      console.error('Error loading charge groups:', err);
+    }
+  });
+}
 
   loadCompanies(): void {
     this.masterService.getAllCompanies().subscribe({
@@ -121,7 +150,7 @@ sortDirection: string = 'asc';
       CompanyMasterSid: ['', Validators.required],
       GroupName: ['', [Validators.required, Validators.maxLength(100)]],
       Remarks: ['', [Validators.required, Validators.maxLength(100)]],
-      status: [{value: 'Active', disabled: false}, Validators.required]
+      status: [{ value: 'Active', disabled: false }, Validators.required]
     });
   }
 
@@ -137,6 +166,9 @@ sortDirection: string = 'asc';
     this.resetForm();
     this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
   }
+  trackByIndex(index: number, item: any): number {
+  return index;
+}
 
   editChargeGroup(id: number, content: any) {
     this.isEditMode = true;
@@ -152,7 +184,7 @@ sortDirection: string = 'asc';
           Remarks: chargeGroup.Remarks || '',
           status: chargeGroup.status === 'A' ? 'Active' : 'Suspended'
         });
-        this.modalRef = this.modalService.open(content, {centered: true, size: 'lg', backdrop: 'static'});
+        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
       },
       error: (err) => {
         console.error('Error fetching Charge Group', err);
@@ -184,6 +216,11 @@ sortDirection: string = 'asc';
     );
   }
 
+  clearFilterValue() {
+    this.filterValue = '';
+    this.loadChargeGroups();
+  }
+
   onSubmit() {
     if (this.chargeGroupForm.get('status')?.disabled) {
       this.chargeGroupForm.get('status')?.enable();
@@ -193,119 +230,79 @@ sortDirection: string = 'asc';
       this.chargeGroupForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
-    } else {
-      let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      const formValue = this.chargeGroupForm.value;
-
-      const payload = {
-        ...formValue,
-        ...(this.isEditMode ? updatedBy : createdBy),
-        status: formValue.status === "Active" ? "A" : "S",
-        CompanyMasterSid: Number(formValue.CompanyMasterSid)
-      };
-
-      if (this.isEditMode) {
-        this.masterService.updateChargeGroupById(this.ChargeGroupSid, payload).subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
-              this.closeModal();
-              this.search();
-            } else {
-              this.appSettingService.showError(resp.message);
-            }
-          },
-          (error) => {
-            this.errorMessage = error.message;
-            console.error('Error loading:', error);
-          }
-        );
-      } else {
-        this.masterService.createNewChargeGroup(payload).subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
-              this.closeModal();
-              this.search();
-            } else {
-              this.appSettingService.showError(resp.message);
-            }
-          },
-          (error) => {
-            this.errorMessage = error.message;
-            console.error('Error loading:', error);
-          }
-        );
-      }
     }
-  }
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
+    this.btnDisable = true;
+    const formValue = this.chargeGroupForm.value;
+    const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
 
-  search() {
     const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'S'
-        : this.filterValue
+      ...formValue,
+      status: formValue.status === "Active" ? "A" : "S",
+      CompanyMasterSid: Number(formValue.CompanyMasterSid),
+      ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail })
     };
 
-    this.masterService.searchChargeGroups(payload).subscribe((res: any) => {
-      this.results = res.data || res;
-      this.applySorting();
-      this.searchPerformed = true;
-      this.updatePaginationData();
-      this.totalLengthOfCollection = this.results.length || 0;
+    const operation = this.isEditMode
+      ? this.masterService.updateChargeGroupById(this.ChargeGroupSid, payload)
+      : this.masterService.createNewChargeGroup(payload);
+
+    operation.subscribe({
+      next: (resp: any) => {
+        this.btnDisable = false;
+        if (resp.status) {
+          this.appSettingService.showSuccess(resp.message);
+          this.closeModal();
+          this.loadChargeGroups();
+        } else {
+          this.appSettingService.showError(resp.message);
+        }
+      },
+      error: (err) => {
+        this.btnDisable = false;
+        this.errorMessage = err.message;
+        console.error('Error:', err);
+        this.appSettingService.showError('Operation failed');
+      }
     });
   }
-  sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
-  }
-  
-  this.applySorting();
-  this.updatePaginationData();
-}
 
-applySorting() {
-  this.results.sort((a, b) => {
-    let valueA = a[this.sortColumn];
-    let valueB = b[this.sortColumn];
-    
-    // Handle company name separately since it's nested
-    if (this.sortColumn === 'company') {
-      valueA = a.companyMaster?.companyName;
-      valueB = b.companyMaster?.companyName;
+  sort(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
     }
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
-  
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-}
+    this.applySorting();
+    this.updatePaginationData();
+  }
+
+  applySorting() {
+    this.results.sort((a, b) => {
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
+
+      if (this.sortColumn === 'company') {
+        valueA = a.companyMaster?.companyName;
+        valueB = b.companyMaster?.companyName;
+      }
+
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -313,53 +310,61 @@ applySorting() {
     this.chargeGroupList = this.results.slice(startIndex, endIndex);
   }
 
-  trackByIndex(index: number, item: any): number {
-    return index;
+  onPageChange(page: number) {
+    this.page = page;
+    this.updatePaginationData();
   }
 
   deleteChargeGroupById(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
-        this.masterService.deleteChargeGroupById(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess('Deleted!');
-          this.search();
+        this.masterService.deleteChargeGroupById(id).subscribe({
+          next: (resp: any) => {
+            this.appSettingService.showSuccess('Deleted successfully!');
+            this.loadChargeGroups();
+          },
+          error: (err) => {
+            this.appSettingService.showError('Failed to delete');
+          }
         });
       }
     });
   }
 
   resetPage(): void {
-    this.chargeGroupList = [];
-    this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
     this.filterValue = '';
     this.searchType = 'GroupName';
-    this.sortColumn = 'GroupName'; 
-  this.sortDirection = 'asc';
+    this.page = 1;
+    this.searchPerformed = false;
+    this.results = [];
+    this.chargeGroupList = [];
+    this.totalLengthOfCollection = 0;
+    this.sortColumn = 'GroupName';
+    this.sortDirection = 'asc';
   }
 
   report(): void {
     const formattedData = this.chargeGroupList.map(item => ({
       ...item,
-      company : item.companyMaster?.companyName,
+      company: item.companyMaster?.companyName,
       status: item.status === 'A' ? 'Active' : 'Suspended'
     }));
 
-        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
 
-        this.excelReportService.exportAsExcel({
-            data: formattedData,
-            headers: [
-                { key: 'company', label: 'Company' },
-                { key: 'GroupName', label: 'Group Name' },
-                { key: 'Remarks', label: 'Remarks' },
-                { key: 'status', label: 'Status' },
-            ],
-            fileName: 'Charge-Group-Report', 
-            title: companyName
-        });
-    }
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'company', label: 'Company' },
+        { key: 'GroupName', label: 'Group Name' },
+        { key: 'Remarks', label: 'Remarks' },
+        { key: 'status', label: 'Status' },
+      ],
+      fileName: 'Charge-Group-Report',
+      title: companyName
+    });
+  }
 
   showInfo() {
     if (!this.chargeGroupData) return;
@@ -384,7 +389,6 @@ applySorting() {
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
           modalRef.componentInstance.DocumentSid = this.ChargeGroupSid;
-
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');
         }
@@ -394,6 +398,7 @@ applySorting() {
       }
     );
   }
+
   openEmail() {
     if (!this.chargeGroupData) return;
     const modalRef = this.modalService.open(EmailEntryComponent, {
@@ -402,27 +407,28 @@ applySorting() {
       backdrop: 'static'
     });
   }
-    openAuthority() {
-  if (!this.chargeGroupData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.chargeGroupData;
-  modalRef.componentInstance.idLabel = 'Charge Group Id';
-  modalRef.componentInstance.idValue = this.chargeGroupData?.ChargeGroupSid;
-}
 
-openEDoc() {
-  if (!this.chargeGroupData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.chargeGroupData;
-  modalRef.componentInstance.idLabel = 'Charge Group Id';
-  modalRef.componentInstance.idValue = this.chargeGroupData?.ChargeGroupSid;
-}
+  openAuthority() {
+    if (!this.chargeGroupData) return;
+    const modalRef = this.modalService.open(AuthorityEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.chargeGroupData;
+    modalRef.componentInstance.idLabel = 'Charge Group Id';
+    modalRef.componentInstance.idValue = this.chargeGroupData?.ChargeGroupSid;
+  }
+
+  openEDoc() {
+    if (!this.chargeGroupData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.item = this.chargeGroupData;
+    modalRef.componentInstance.idLabel = 'Charge Group Id';
+    modalRef.componentInstance.idValue = this.chargeGroupData?.ChargeGroupSid;
+  }
 }

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
@@ -10,44 +10,46 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-charge-list',
   standalone: true,
-  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule, ListpageComponent],
+  imports: [
+    CommonModule, 
+    FeatherModule, 
+    FormsModule, 
+    ReactiveFormsModule,
+    NgbPaginationModule, 
+    RouterModule, 
+    ListpageComponent,
+    FavoriteStarComponent
+  ],
   templateUrl: './charge-list.component.html',
   styleUrls: ['./charge-list.component.scss']
 })
 export class ChargeListComponent {
-  searchType = 'chargeName';
-  filterValue = '';
-  results: any[] = [];
+  filterValue: any;
   chargeList: any[] = [];
-  allCharges: any[] = [];
   searchPerformed = false;
+  userData: any;
   loading: boolean = false;
 
   // pagination
   page = 1;
   pageSize = 10;
   totalLengthOfCollection: number = 0;
-  userData: any;
-  isFavorite: boolean = false;
 
   // sorting
-  sortColumn: string = 'chargeName'; 
-  sortDirection: string = 'asc'; 
+  sortColumn: string = 'chargeName';
+  sortDirection: string = 'asc';
 
-  toggleFavorite() {
-    this.isFavorite = !this.isFavorite;
-  }
-  
   constructor(
     private masterService: MasterService,
-    private excelReportService: ExcelExportService,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private excelReportService: ExcelExportService
   ) { }
 
   ngOnInit() {
@@ -56,68 +58,51 @@ export class ChargeListComponent {
         this.userData = user;
       }
     });
+    this.loadCharges();
   }
 
-  onSearch(event: { type: string, value: string }) {
-    this.searchType = event.type;
-    this.filterValue = event.value;
-    this.search();
-  }
-
-  search() {
-    this.loading = true;
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'Status' 
-        ? this.filterValue === 'Active' ? 'A' : 'I'
-        : this.filterValue
-    };
-
-    this.masterService.searchChargeList(payload).subscribe({
-      next: (res: any) => {
-        this.allCharges = Array.isArray(res) ? res : res.data || [];
-        
-        // Apply sorting after loading new data
-        this.applySorting();
-        
-        this.chargeList = [...this.allCharges];
-        this.totalLengthOfCollection = this.chargeList.length;
-        this.searchPerformed = true;
-        this.page = 1;
-        this.updatePaginatedData();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Search error:', err);
-        this.loading = false;
-      }
-    });
-  }
+  // In your component
+loadCharges(): void {
+  this.loading = true;
+  
+  this.masterService.searchChargeList({
+    search: this.filterValue || '',
+    page: this.page,
+    pageSize: this.pageSize
+  }).subscribe({
+    next: (res) => {
+      this.chargeList = res?.items || res || []; // Handle both formats
+      this.totalLengthOfCollection = res.data?.totalCount || this.chargeList.length;
+      this.applySorting();
+      this.searchPerformed = true;
+      this.loading = false;
+    },
+    error: (err) => {
+      this.chargeList = [];
+      this.totalLengthOfCollection = 0;
+      this.loading = false;
+    }
+  });
+}
 
   sort(column: string) {
     if (this.sortColumn === column) {
-      // Reverse the sort direction if clicking the same column
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-      // Set new sort column and default to ascending
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
-    
     this.applySorting();
-    this.updatePaginatedData();
   }
 
   applySorting() {
-    this.allCharges.sort((a, b) => {
+    this.chargeList.sort((a, b) => {
       let valueA = a[this.sortColumn];
       let valueB = b[this.sortColumn];
       
-      // Handle null/undefined values
       if (valueA == null) valueA = '';
       if (valueB == null) valueB = '';
       
-      // Convert to string for case-insensitive comparison
       valueA = valueA.toString().toLowerCase();
       valueB = valueB.toString().toLowerCase();
     
@@ -132,9 +117,7 @@ export class ChargeListComponent {
   }
 
   updatePaginatedData(): void {
-    const startIndex = (this.page - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.chargeList = this.allCharges.slice(startIndex, endIndex);
+    this.loadCharges();
   }
 
   trackByChargeId(index: number, item: any): number {
@@ -145,15 +128,13 @@ export class ChargeListComponent {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        this.loading = true;
         this.masterService.deleteChargeById(id).subscribe({
           next: () => {
             this.appSettingService.showSuccess("Deleted!");
-            this.search();
+            this.loadCharges();
           },
           error: (err) => {
-            console.error('Delete error:', err);
-            this.loading = false;
+            this.appSettingService.showError("Error Deleting Charge", err);
           }
         });
       }
@@ -166,11 +147,9 @@ export class ChargeListComponent {
 
   resetPage() {
     this.filterValue = '';
-    this.searchType = 'chargeName';
     this.page = 1;
     this.searchPerformed = false;
     this.chargeList = [];
-    this.allCharges = [];
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'chargeName';
     this.sortDirection = 'asc';
@@ -197,5 +176,9 @@ export class ChargeListComponent {
       fileName: 'Charge-Report',
       title: companyName
     });
+  }
+
+  clearFilterValue() {
+    this.filterValue = '';
   }
 }
