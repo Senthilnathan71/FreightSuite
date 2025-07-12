@@ -1,0 +1,318 @@
+<!-- <div class="row">
+
+    <div class="col-12">
+    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+        <div class="col-md-4 pb-2">
+            <h4 class="page-title mb-0">Chart of Accounts</h4>
+        </div>
+
+        <div class="col-md-8 pb-2">
+            <form
+                class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                <app-favorite-star screenName="Year" class="mt-1 me-1"></app-favorite-star>
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                   (click)="nagivatecreate()">
+                    <i class="fas fa-plus me-1"></i> Create
+                </button>
+
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                    >
+                    <i class="fas fa-file-alt me-1"></i> Report
+                </button>
+
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+                   >
+                    <i class="fas fa-sync-alt me-1"></i> Reset
+                </button>
+            </form>
+        </div>
+
+        <div class="col-md-12 border-top">
+            <div class="row mx-0 py-2">
+                <div class="col-md-8 mx-auto px-0">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                        <div class="d-flex gap-2 col-6 px-0 align-items-center">
+                            <div class="form-outline flex-grow-1 position-relative">
+                                <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search" 
+                                    aria-label="Search input">
+                                <button *ngIf="filterValue"
+                                    class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                    tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" data-bs-title="Clear search"
+                                    onfocus="this.classList.replace('text-secondary','text-danger')"
+                                    onblur="this.classList.replace('text-danger','text-secondary')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                <i class="fas fa-search me-1"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+   
+
+
+   <div class="col-12" *ngIf="totalLengthOfCollection > 0">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle no-wrap table-bordered">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="bg-transparent text-light" scope="col" width="10%">Actions</th>
+                                <th class="bg-transparent text-light" scope="col" scope="col" >
+                                     Name
+                                    <i class="fas fa-sort ms-1" ></i>
+                                </th>
+                                <th class="bg-transparent text-light" scope="col">
+                                   Code
+                                <i class="fas fa-sort ms-1" ></i>
+                            </th>
+                                <th class="bg-transparent text-light" scope="col" >
+                                   Group
+                                <i class="fas fa-sort ms-1" ></i>
+                            </th>
+                                <th class="bg-transparent text-light" scope="col" >
+                                    Sub Group
+                                <i class="fas fa-sort ms-1" ></i>
+                            </th>
+                                <th class="bg-transparent text-light" scope="col" >
+                                    Category
+                                <i class="fas fa-sort ms-1" ></i>
+                            </th>
+                                <th class="bg-transparent text-light" scope="col" >
+                                    Report Type
+                                <i class="fas fa-sort ms-1"></i>
+                            </th>
+                                <th class="bg-transparent text-light" scope="col" >
+                                    Currency Code
+                                <i class="fas fa-sort ms-1" ></i>
+                            </th>
+                                <th class="bg-transparent text-light" scope="col" >
+                                    Remarks
+                                <i class="fas fa-sort ms-1" ></i>
+                            </th>
+                                <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of yearList; let i = index; trackBy: trackByIndex">
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <a class="text-info mx-2" class="link mx-2 ps-3"
+                                           >
+                                            <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                        </a>
+                                        <a class="text-danger mx-2 ps-3 border-start"
+                                           >
+                                            <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.YearName}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.YearCode}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.StartDate }}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.EndDate}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.CurrentYear}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.YearEndCompleted}}</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate">{{item.Remarks}}</div>
+                                </td>
+                                <td>
+                                    @if(item.status === "A"){
+                                        <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                            Active
+                                        </div>
+                                    } @else {
+                                        <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                            Suspended
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+            </ngb-pagination>
+        </div>
+    </div>
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searched">
+        <div>No records found</div>
+    </div>
+
+</div> -->
+
+
+
+<div class="row">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">Chart of Accounts</h4>
+            </div>
+
+            <div class="col-md-8 pb-2">
+                <form
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="navigateToCreate()">
+                        <i class="fas fa-plus me-1"></i> Create
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
+                        [disabled]="!searched">
+                        <i class="fas fa-file-alt me-1"></i> Report
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
+                        [disabled]="!searched">
+                        <i class="fas fa-sync-alt me-1"></i> Reset
+                    </button>
+                </form>
+            </div>
+
+            <div class="col-md-12 border-top">
+                <div class="row mx-0 py-2">
+                    <div class="col-md-8 mx-auto px-0">
+                        <form
+                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                            <div class="d-flex gap-2 col-6 px-0 align-items-center">
+                                <div class="form-outline flex-grow-1 position-relative">
+                                    <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                                        [(ngModel)]="filterValue" aria-label="Search input">
+                                    <button *ngIf="filterValue"
+                                        class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                        (click)="clearFilterValue()" tabindex="0" aria-label="Clear search">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                                    (click)="loadChartAccounts()">
+                                    <i class="fas fa-search me-1"></i> Search
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+        <div class="col-12 p-0">
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle no-wrap table-bordered">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+
+                                <th class="bg-transparent text-light" (click)="sort('Name')">Name
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                            'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Name',
+                            'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Name'
+                            }"></i>
+                                </th>
+
+                                <th class="bg-transparent text-light" (click)="sort('code')">Ledger Code
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                            'fa-sort-up': sortDirection === 'asc' && sortColumn === 'LedgerCode',
+                            'fa-sort-down': sortDirection === 'desc' && sortColumn === 'LedgerCode'
+                            }"></i>
+                                </th>
+
+                                <th class="bg-transparent text-light" (click)="sort('Group')">Group
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                            'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Group',
+                            'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Group'
+                            }"></i>
+
+
+                                <th class="bg-transparent text-light" (click)="sort('subGroup')">
+                                    Sub Group
+                                    <i class="fas fa-sort ms-1" [ngClass]="{
+                                'fa-sort-up': sortDirection === 'asc' && sortColumn === 'subGroup',
+                                'fa-sort-down': sortDirection === 'desc' && sortColumn === 'subGroup'
+                            }"></i>
+                                </th>
+
+                                <th class="bg-transparent text-light">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of chartAccountList; let i = index; trackBy: trackByIndex">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <a class="text-info mx-2"
+                                            [routerLink]="['/master/chart-account/entry', item.id]">
+                                            <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                        </a>
+                                        <a class="text-danger mx-2 ps-3 border-start"
+                                            (click)="deleteChartAccount(item.ChartMasterSid)">
+                                            <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>{{ item.Name }}</td>
+                                <td>{{ item.code }}</td>
+                                <td>{{ item.Group }}</td>
+                                <td>{{ item.subGroup }}</td>
+                                <td>
+                                    @if(item.status === 'A') {
+                                    <div
+                                        class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                        Active
+                                    </div>
+                                    } @else {
+                                    <div
+                                        class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                        <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                        Suspended
+                                    </div>
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- <div>
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+                </ngb-pagination>
+            </div> -->
+        </div>
+    </div>
+
+    <!-- No Records -->
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searched">
+        <div>No records found</div>
+    </div>
+</div>
