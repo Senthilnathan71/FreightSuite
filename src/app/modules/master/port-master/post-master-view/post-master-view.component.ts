@@ -47,7 +47,7 @@ import { Port } from 'src/app/modules/crm-mobile/Interfaces/port.interface';
 export class PostMasterViewComponent {
   portForm!: FormGroup;
   isEditMode = false;
-  btnDisable: boolean = false;
+ btnDisable: boolean = true;
   countryList: Country[] = [];
   stateList: State[] = [];
   filteredStateList: State[];
@@ -79,6 +79,10 @@ export class PostMasterViewComponent {
   ngOnInit() {
     this.initPortForm();
     this.loadAllFields();
+      // Enable Save button only if form is valid
+    this.portForm.statusChanges.subscribe(status => {
+      this.btnDisable = status !== 'VALID';
+    });
     this.route.paramMap.subscribe(params => {
       this.idParam = Number(params.get('id'));
       if (this.idParam) {

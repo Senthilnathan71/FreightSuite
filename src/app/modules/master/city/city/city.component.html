@@ -25,7 +25,7 @@
   (onResetClick)="resetPage()"
   (onSearchClick)="onSearch($event)">
     </app-listpage> -->
-    <div class="row">
+<div class="row">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col-md-4 pb-2">
@@ -33,7 +33,8 @@
             </div>
 
             <div class="col-md-8 pb-2">
-                <form class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                <form
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="openModal(content)">
                         <i class="fas fa-plus me-1"></i> Create
@@ -51,71 +52,75 @@
                 </form>
             </div>
 
-                            <div class="col-md-12 border-top">
-            <div class="row mx-0 py-2">
-                <div class="col-md-8 mx-auto px-0">
-                    <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                        <div class="d-flex gap-2 col-6 px-0 align-items-center">
-                            <div class="form-outline flex-grow-1 position-relative">
-                                <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search" [(ngModel)]="filterValue"
-                                    aria-label="Search input">
-                                <button *ngIf="filterValue"
-                                    class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                    (click)="clearFilterValue()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
-                                    data-bs-placement="top" data-bs-title="Clear search"
-                                    onfocus="this.classList.replace('text-secondary','text-danger')"
-                                    onblur="this.classList.replace('text-danger','text-secondary')">
-                                    <i class="fas fa-times"></i>
+            <div class="col-md-12 border-top">
+                <div class="row mx-0 py-2">
+                    <div class="col-md-8 mx-auto px-0">
+                        <form
+                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                            <div class="d-flex gap-2 col-6 px-0 align-items-center">
+                                <div class="form-outline flex-grow-1 position-relative">
+                                    <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                                        [(ngModel)]="filterValue" aria-label="Search input">
+                                    <button *ngIf="filterValue"
+                                        class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                        (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
+                                        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
+                                        onfocus="this.classList.replace('text-secondary','text-danger')"
+                                        onblur="this.classList.replace('text-danger','text-secondary')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <button type="submit" (click)="loadCities()"
+                                    class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                    <i class="fas fa-search me-1"></i> Search
                                 </button>
                             </div>
-                            <button type="submit" (click)="loadCities()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-  <i class="fas fa-search me-1"></i> Search
-</button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
     <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf=" totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
-    <tr class="bg-info">
-        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('cityName')">
-            City Name
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'cityName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'cityName'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('cityCode')">
-            City Code
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'cityCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'cityCode'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('countryName')">
-            Country
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'countryName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'countryName'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('stateName')">
-            State
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'stateName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'stateName'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
-    </tr>
-</thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('cityName')">
+                                City Name
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'cityName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'cityName'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('cityCode')">
+                                City Code
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'cityCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'cityCode'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('countryName')">
+                                Country
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'countryName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'countryName'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('stateName')">
+                                State
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'stateName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'stateName'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         <tr *ngFor="let item of cityList; trackBy: trackByIndex">
                             <td>
                                 <div class="d-flex align-items-center justify-content-center gap-2">
-                                    <button class="btn btn-sm btn-link text-info p-0" 
-                                        (click)="updateCityById(item.CityMasterSid, content)"
-                                        title="Edit">
+                                    <button class="btn btn-sm btn-link text-info p-0"
+                                        (click)="updateCityById(item.CityMasterSid, content)" title="Edit">
                                         <i-feather class="feather-sm" name="eye"></i-feather>
                                     </button>
-                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" 
-                                        (click)="deleteCity(item.CityMasterSid)"
-                                        title="Delete">
+                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3"
+                                        (click)="deleteCity(item.CityMasterSid)" title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </button>
                                 </div>
@@ -134,165 +139,162 @@
                             </td>
                             <td>
                                 @if(item.status === "A"){
-                                    <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                        Active
-                                    </div>
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active
+                                </div>
                                 } @else {
-                                    <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                        <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                        Suspended
-                                    </div>
+                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Suspended
+                                </div>
                                 }
-                            </td> 
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             <div class="d-flex justify-content-end mt-3">
-                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" 
-                    [pageSize]="pageSize" (pageChange)="updatePaginatedData()">
+                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
+                    (pageChange)="updatePaginatedData()">
                 </ngb-pagination>
             </div>
         </div>
     </div>
     <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
-        <div >No records found</div>
+        <div>No records found</div>
     </div>
     <ng-template #content let-modal>
-        <div class="modal-header">
+        <div class="modal-header p-2 bg-info text-white">
             <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} City</h4>
             @if(isEditMode){
             <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
-            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+            <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
         </div>
         <div class="modal-body">
             <form [formGroup]="cityForm">
                 <div class="col-md-12">
-                    <div class="card h-100">
-                        <div class="card-body">
+                  
                             <div class="row">
                                 <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input formControlName="cityName" type="text" id="text-input" placeholder=""
-                                    class="custom-input-field sm" [onlyText]="100">
-                                <label for="text-input" class="input-label">City Name <span
-                                        class="text-danger fw-bold">*</span></label>
-                                @if(cityForm.get('cityName')?.touched && cityForm.get('cityName')?.invalid){
-                                <div class="error-message">
-                                    @if(cityForm.get('cityName')?.hasError('required')){
-                                    <span>City Name is required</span>
-                                    } @else if(cityForm.get('cityName')?.hasError('maxlength')){
-                                    <span>Max 100 Characters</span>
-                                    } @else if(cityForm.get('cityName')?.hasError('numberNotAllowed')){
-                                    <span>Only Alphabets are allowed</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
+                                    <div class="custom-form-group">
+                                        <input formControlName="cityName" type="text" id="text-input" placeholder=""
+                                            class="custom-input-field sm" [onlyText]="100">
+                                        <label for="text-input" class="input-label">City Name <span
+                                                class="text-danger fw-bold">*</span></label>
+                                        @if(cityForm.get('cityName')?.touched && cityForm.get('cityName')?.invalid){
+                                        <div class="error-message">
+                                            @if(cityForm.get('cityName')?.hasError('required')){
+                                            <span>City Name is required</span>
+                                            } @else if(cityForm.get('cityName')?.hasError('maxlength')){
+                                            <span>Max 100 Characters</span>
+                                            } @else if(cityForm.get('cityName')?.hasError('numberNotAllowed')){
+                                            <span>Only Alphabets are allowed</span>
+                                            }
+                                        </div>
+                                        }
+                                    </div>
+                                </aside>
 
                                 <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input formControlName="cityCode" type="text" id="text-input" placeholder=""
-                                    class="custom-input-field sm" [textWithNumbers]="3">
-                                <label for="text-input" class="input-label">City Code <span
-                                        class="text-danger fw-bold">*</span></label>
-                                @if(cityForm.get('cityCode')?.touched && cityForm.get('cityCode')?.invalid){
-                                <div class="error-message">
-                                    @if(cityForm.get('cityCode')?.hasError('required')){
-                                    <span>City Code is required</span>
-                                    } @else if(cityForm.get('cityCode')?.hasError('maxlength')){
-                                    <span>Max 3 Characters</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
+                                    <div class="custom-form-group">
+                                        <input formControlName="cityCode" type="text" id="text-input" placeholder=""
+                                            class="custom-input-field sm" [textWithNumbers]="3">
+                                        <label for="text-input" class="input-label">City Code <span
+                                                class="text-danger fw-bold">*</span></label>
+                                        @if(cityForm.get('cityCode')?.touched && cityForm.get('cityCode')?.invalid){
+                                        <div class="error-message">
+                                            @if(cityForm.get('cityCode')?.hasError('required')){
+                                            <span>City Code is required</span>
+                                            } @else if(cityForm.get('cityCode')?.hasError('maxlength')){
+                                            <span>Max 3 Characters</span>
+                                            }
+                                        </div>
+                                        }
+                                    </div>
+                                </aside>
 
-                            <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <select formControlName="CountryMasterSid" class="form-select">
-                                    <option value="" disabled selected>Select Country</option>
-                                    <option *ngFor="let option of countryList" [value]="option.CountryMasterSid">
-                                        {{option.countryName }}</option>
-                                </select>
-                                <label for="text-input" class="input-label">Country <span
-                                        class="text-danger fw-bold">*</span></label>
-                                @if(cityForm.get('CountryMasterSid')?.touched &&
-                                cityForm.get('CountryMasterSid')?.invalid){
-                                <div class="error-message">
-                                    @if(cityForm.get('CountryMasterSid')?.hasError('required')){
-                                    <span>Country is required</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
+                                <aside class="col-md-4">
+                                    <div class="custom-form-group">
+                                        <select formControlName="CountryMasterSid" class="form-select">
+                                            <option value="" disabled selected>Select Country</option>
+                                            <option *ngFor="let option of countryList"
+                                                [value]="option.CountryMasterSid">
+                                                {{option.countryName }}</option>
+                                        </select>
+                                        <label for="text-input" class="input-label">Country <span
+                                                class="text-danger fw-bold">*</span></label>
+                                        @if(cityForm.get('CountryMasterSid')?.touched &&
+                                        cityForm.get('CountryMasterSid')?.invalid){
+                                        <div class="error-message">
+                                            @if(cityForm.get('CountryMasterSid')?.hasError('required')){
+                                            <span>Country is required</span>
+                                            }
+                                        </div>
+                                        }
+                                    </div>
+                                </aside>
 
-                            <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <select formControlName="StateMasterSid" class="form-select">
-                                    <option value="" disabled selected>Select State</option>
-                                    <option *ngFor="let option of stateList" [value]="option.StateMasterSid">{{
-                                        option.stateName }}</option>
-                                </select>
-                                <label for="text-input" class="input-label">State <span
-                                        class="text-danger fw-bold">*</span></label>
-                                @if(cityForm.get('StateMasterSid')?.touched &&
-                                cityForm.get('StateMasterSid')?.invalid){
-                                <div class="error-message">
-                                    @if(cityForm.get('StateMasterSid')?.hasError('required')){
-                                    <span>State is required</span>
-                                    }
-                                </div>
-                                }
+                                <aside class="col-md-4">
+                                    <div class="custom-form-group">
+                                        <select formControlName="StateMasterSid" class="form-select">
+                                            <option value="" disabled selected>Select State</option>
+                                            <option *ngFor="let option of stateList" [value]="option.StateMasterSid">{{
+                                                option.stateName }}</option>
+                                        </select>
+                                        <label for="text-input" class="input-label">State <span
+                                                class="text-danger fw-bold">*</span></label>
+                                        @if(cityForm.get('StateMasterSid')?.touched &&
+                                        cityForm.get('StateMasterSid')?.invalid){
+                                        <div class="error-message">
+                                            @if(cityForm.get('StateMasterSid')?.hasError('required')){
+                                            <span>State is required</span>
+                                            }
+                                        </div>
+                                        }
+                                    </div>
+                                </aside>
+                                <aside class="col-md-4">
+                                    <div class="custom-form-group custom-form-group-select">
+                                        <ng-select [items]="statusList" formControlName="status"
+                                            [class.is-invalid]="cityForm.get('status')?.invalid && cityForm.get('status')?.touched"
+                                            [disabled]="cityForm.get('status')?.disabled">
+                                        </ng-select>
+                                        <label class="input-label">Status <span class="text-danger">*</span></label>
+                                        @if(cityForm.get('status')?.touched && cityForm.get('status')?.invalid){
+                                        <div class="error-message">
+                                            <span>Status is required</span>
+                                        </div>
+                                        }
+                                    </div>
+                                </aside>
                             </div>
-                        </aside>
-                            <aside class="col-md-6">
-  <div class="custom-form-group custom-form-group-select">
-    <ng-select [items]="statusList" 
-              formControlName="status"
-              [class.is-invalid]="cityForm.get('status')?.invalid && cityForm.get('status')?.touched"
-              [disabled]="cityForm.get('status')?.disabled">
-    </ng-select>
-    <label class="input-label">Status <span class="text-danger">*</span></label>
-    @if(cityForm.get('status')?.touched && cityForm.get('status')?.invalid){
-    <div class="error-message">
-      <span>Status is required</span>
-    </div>
-    }
-  </div>
-</aside>
-                            </div>
+
                         </div>
-                    </div>
-                </div>
             </form>
         </div>
         <div class="modal-footer">
             @if(isEditMode){
-                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
-        <i class="fas fa-file-alt me-1"></i> e-Doc
-      </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
-                    <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
-        <i  class="fas fa-shield-alt me-1"></i> Authorize
-      </button>
-                
-      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
-        <i class="fas fa-envelope me-1"></i> Email
-      </button>
-      
+            <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+                <i class="fas fa-file-alt me-1"></i> e-Doc
+            </button>
+            <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
+                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+            </button>
+            <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
+                <i class="fas fa-shield-alt me-1"></i> Authorize
+            </button>
+
+            <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto " (click)="openEmail()">
+                <i class="fas fa-envelope me-1"></i> Email
+            </button>
+
             }
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-            <button type="button" class="btn btn-primary" 
-                (click)="onSubmit()" 
+            <button type="button" class="btn btn-info" (click)="onSubmit()"
                 [disabled]="btnDisable || cityForm.invalid">
                 {{ isEditMode ? 'Update' : 'Save' }}
             </button>

@@ -154,20 +154,19 @@
         <div>No records found</div>
     </div>
     <ng-template #content let-modal>
-        <div class="modal-header">
+        <div class="modal-header p-2 bg-info text-white">
             <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Charge Tax</h4>
             @if(isEditMode){
             <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
-            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+            <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
         </div>
         <div class="modal-body">
             <form [formGroup]="chargeTaxForm">
                 <div class="col-md-12">
-                    <div class="card h-100">
-                        <div class="card-body">
+                    
                             <div class="row">
                                 <aside class="col-md-6">
                                     <div class="custom-form-group">
@@ -278,8 +277,7 @@
                                 
    
                             </div>
-                        </div>
-                    </div>
+                      
                 </div>
             </form>
         </div>
@@ -300,8 +298,8 @@
       </button>
       
             }
-            <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-            <button type="button" class="btn btn-info" (click)="onSubmit()"
+            <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
                 [disabled]="btnDisable || chargeTaxForm.invalid">
                 {{ isEditMode ? 'Update' : 'Save' }}
             </button>

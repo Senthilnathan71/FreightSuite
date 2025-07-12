@@ -30,6 +30,7 @@ export class ImcoEntryComponent implements OnInit {
     isEditMode: boolean;
     ImcoForm: FormGroup;
     imcoData: any;
+    btnDisable: boolean = true; 
 
     modeOfStatus = [
         { value: 'Active', name: 'Active' },
@@ -76,6 +77,9 @@ export class ImcoEntryComponent implements OnInit {
             status: ['Active', [Validators.required]],
             Remarks: ['']
         })
+            this.ImcoForm.statusChanges.subscribe(status => {
+            this.btnDisable = status !== 'VALID';
+        });
     }
 
     onSubmit() {

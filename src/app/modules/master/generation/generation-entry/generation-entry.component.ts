@@ -53,8 +53,7 @@ export class GenerationEntryComponent implements OnInit {
   currentMenuId: number;
   TandCList: any[]=[];
   hawstockData: any;
-
-
+  btnDisable: boolean = false;
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -143,8 +142,12 @@ export class GenerationEntryComponent implements OnInit {
       CompanyMasterSid: [null, Validators.required],
       BranchMasterSid: [null, Validators.required]
     });
+    this.btnDisable = true;
      this.hawbForm.get('AirwayBillType').valueChanges.subscribe(value => {
     this.updateFormValidation(value);
+  });
+    this.hawbForm.statusChanges.subscribe(status => {
+    this.btnDisable = status !== 'VALID';
   });
   }
   updateFormValidation(awbType: string): void {

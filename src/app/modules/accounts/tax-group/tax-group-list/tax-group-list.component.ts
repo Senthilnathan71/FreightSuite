@@ -110,6 +110,7 @@ export class TaxGroupListComponent {
 
   ngOnInit(): void {
     this.initForm();
+    this.taxGroupForm.valueChanges.subscribe(() => {});
   }
 
   toggleFavorite() {
