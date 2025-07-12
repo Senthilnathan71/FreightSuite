@@ -87,8 +87,9 @@ export class OrganizationEntryComponent {
   totalLengthOfBranchContact: number;
   totalLengthOfBranchEmail: number;
   totalLengthOfBranchLogin: number;
-   displayedCustomerTypes: any[] = [];
-extraCustomerTypesCount = 0;
+  displayedCustomerTypes: any[] = [];
+  extraCustomerTypesCount = 0;
+
 
   active1 = 1;
   active2 = 1;
@@ -525,6 +526,7 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
   status: any;
   CustomerBrEmailSid: any;
   customerBranchResults: any;
+  btnCustomerSaveDisabled: boolean = true;
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -615,9 +617,14 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
       CustomerType: [{}],
       Network:['', [Validators.required]]
     });
+    
     this.customerForm.get('CustomerName')?.valueChanges.subscribe(() => {
     this.updateShortCodeFieldState();
     this.generateCustomerShortCode();
+    this.customerForm.statusChanges.subscribe(status => {
+  this.btnCustomerSaveDisabled = status !== 'VALID';
+});
+
   });
 
   this.customerForm.get('CountryMasterSid')?.valueChanges.subscribe(() => {

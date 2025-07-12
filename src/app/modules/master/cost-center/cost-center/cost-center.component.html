@@ -154,20 +154,19 @@
     </div>
 
     <ng-template #content let-modal>
-        <div class="modal-header">
+        <div class="modal-header p-2 bg-info text-white">
             <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Cost Center</h4>
             @if(isEditMode){
             <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
-            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+            <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
         </div>
         <div class="modal-body">
             <form [formGroup]="costCenterForm">
                 <div class="col-md-12">
-                    <div class="card h-100">
-                        <div class="card-body">
+                   
                             <div class="row">
                                 <aside class="col-md-6">
                                   <div class="custom-form-group">
@@ -190,7 +189,7 @@
                                 </aside>
                                 <aside class="col-md-6">
                                   <div class="custom-form-group">
-                                     <input type="text" formControlName="CostCenterCode" id="text-input" placeholder=""
+                                     <input type="number" formControlName="CostCenterCode" id="text-input" placeholder=""
                                          class="custom-input-field sm" [textWithNumbers]="9">
                                      <label for="text-input" class="input-label">Cost Center Code <span
                                          class="text-danger fw-bold">*</span></label>
@@ -236,8 +235,7 @@
 
 
                             </div>
-                        </div>
-                    </div>
+                     
                 </div>
             </form>
         </div>
@@ -258,8 +256,8 @@
       </button>
       
             }
-            <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-            <button type="button" class="btn btn-info" 
+            <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-info btn-sm" 
                 (click)="onSubmit(); modal.close()" 
                 [disabled]="btnDisable || costCenterForm.invalid">
                 {{ isEditMode ? 'Update' : 'Save' }}

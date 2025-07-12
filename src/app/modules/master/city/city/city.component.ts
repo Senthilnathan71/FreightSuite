@@ -308,6 +308,8 @@ export class CityComponent {
             console.log(resp.message);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+               this.closeModal();             // <-- Close the modal here
+               this.resetForm();              // <-- Reset the form here
               this.router.navigate(['master/city/list']);
             } else {
               this.appSettingService.showError(resp.message);
@@ -324,6 +326,8 @@ export class CityComponent {
             console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+               this.closeModal();             // <-- Close the modal here
+               this.resetForm();              // <-- Reset the form here
               this.router.navigate(['master/city/list']);
             } else {
               this.appSettingService.showError(resp.message);

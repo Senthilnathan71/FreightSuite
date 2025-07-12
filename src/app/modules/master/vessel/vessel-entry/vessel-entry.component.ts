@@ -242,5 +242,11 @@ openEDoc() {
   modalRef.componentInstance.idValue = this.vesselData?.VesselMasterSid;
 }
 
+reset() {
+  this.vesselForm.reset({
+    status: 'Active' 
+  });
+}
+
 
 }
