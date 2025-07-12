@@ -33,37 +33,35 @@
                     </form>
                 </div>
             </div>
-            <div class="col-md-12 border-top">
-                <div class="row mx-0 py-2">
-                    <div class="col-md-8 mx-auto px-0">
-                        <form
-                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                            <div class="form-outline col-12 col-md px-0">
-                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
-                                    <option value="UserRoleName">Role Name</option>
-                                    <option value="UserRoleCode">Role Code</option>
-                                    <option value="LicenseType">License Type</option>
-                                    <option value="status">Status</option>
-                                </select>
-                            </div>
-                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                                <div class="form-outline flex-grow-1">
-                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
-                                        placeholder="Enter filter value">
-                                    <i
-                                        class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                                </div>
-                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                                    (click)="search()">
-                                    <i class="fas fa-search me-1"></i> Search
+            
+                            <div class="col-md-12 border-top">
+            <div class="row mx-0 py-2">
+                <div class="col-md-8 mx-auto px-0">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                        <div class="d-flex gap-2 col-6 px-0 align-items-center">
+                            <div class="form-outline flex-grow-1 position-relative">
+                                <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search" [(ngModel)]="filterValue"
+                                    aria-label="Search input">
+                                <button *ngIf="filterValue"
+                                    class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                    (click)="clearFilterValue()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" data-bs-title="Clear search"
+                                    onfocus="this.classList.replace('text-secondary','text-danger')"
+                                    onblur="this.classList.replace('text-danger','text-secondary')">
+                                    <i class="fas fa-times"></i>
                                 </button>
                             </div>
-                        </form>
-                    </div>
+                            <button type="submit" (click)="loadRoles()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+  <i class="fas fa-search me-1"></i> Search
+</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
     <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">

@@ -61,37 +61,34 @@ export class GenerationListComponent {
         this.userData = user;
       }
     });
+    this.loadHawbStocks();
   }
 
-  onSearch(event: { type: string, value: string }) {
-    this.searchType = event.type;
-    this.filterValue = event.value;
-    this.search();
-  }
-
-  search() {
+  loadHawbStocks(): void {
     this.loading = true;
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue,
-    }
     
-    this.masterService.searchHawbStock(payload).subscribe({
-      next: (res: any) => {
-        this.results = res.data || [];
-        this.applySorting();
-        this.searchPerformed = true;
-        this.totalLengthOfCollection = this.results.length;
-        this.page = 1; // Reset to first page on new search
-        this.updatePaginatedData();
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+
+    this.masterService.searchHawbStock(params).subscribe({
+      next: (response:any) => {
+        if(response.data) {
+          this.hawbList = response.data.items || [];
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searchPerformed = true;
+        }
         this.loading = false;
       },
       error: (err) => {
-        console.error('Search error:', err);
-        this.results = [];
+        console.error('Error fetching HAWB stocks:', err);
         this.hawbList = [];
         this.totalLengthOfCollection = 0;
-        this.searchPerformed = true;
         this.loading = false;
       }
     });
@@ -110,6 +107,7 @@ export class GenerationListComponent {
   this.updatePaginatedData();
 }
 
+  
 applySorting() {
   if (!this.results) return;
   
@@ -145,7 +143,11 @@ applySorting() {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.hawbList = this.results.slice(startIndex, endIndex);
+    this.loadHawbStocks();
+  }
+  clearFilterValue() {
+    this.filterValue = '';
+    this.loadHawbStocks();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -160,7 +162,7 @@ applySorting() {
         this.masterService.deleteHawbStock(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("Deleted successfully!");
-            this.search(); // Refresh search results
+           
           },
           error: (err) => {
             console.error('Delete error:', err);

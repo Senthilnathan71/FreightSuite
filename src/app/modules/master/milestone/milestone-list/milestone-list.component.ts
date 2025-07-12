@@ -68,7 +68,41 @@ export class MilestoneListComponent {
       }
     });
     this.loadDepartments();
+    this.loadMilestones();
   }
+
+  loadMilestones(): void {
+  this.loading = true;
+  
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection
+  };
+
+  this.masterService.searchMilestoneList(params).subscribe({
+    next: (response: any) => {
+      if (response) {
+        this.allMilestones = response.items || response;
+        this.totalLengthOfCollection = response.totalCount || response.length;
+        this.applySorting();
+        this.milestoneList = this.allMilestones; 
+        this.searchPerformed = true;
+      }
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error fetching milestones:', err);
+      this.allMilestones = [];
+      this.milestoneList = []; 
+      this.totalLengthOfCollection = 0;
+      this.loading = false;
+    }
+  });
+}
+
 
   loadDepartments() {
     this.loading = true;
@@ -92,7 +126,7 @@ export class MilestoneListComponent {
     this.sortColumn = column;
     this.sortDirection = 'asc';
   }
-  
+  this.loadMilestones();
   this.applySorting();
   this.updatePaginatedData();
 }
@@ -126,49 +160,7 @@ applySorting() {
   });
 }
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-
-  search() {
-    this.loading = true;
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'S'
-        : this.filterValue
-    };
-
-    this.masterService.searchMilestoneList(payload).subscribe({
-      next: (res: any) => {
-        this.allMilestones = (res.data || res).map(milestone => {
-          const department = this.departmentOptions.find(d => d.DepartmentMasterSid === milestone.DepartmentMasterSid);
-          return {
-            ...milestone,
-            departmentName: department ? department.DepartmentName : 'N/A',
-            ShipmentType: this.getShipmentTypeLabel(milestone.ShipmentType),
-            AutoCapture: milestone.AutoCapture === 'Y' ? 'Yes' : 'No',
-            AutomailRequire: milestone.AutomailRequire === 'Y' ? 'Yes' : 'No'
-          };
-        });
-        this.applySorting();
-        
-        this.milestoneList = [...this.allMilestones];
-        this.totalLengthOfCollection = this.milestoneList.length;
-        this.searchPerformed = true;
-        this.page = 1;
-        this.updatePaginatedData();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Search error:', err);
-        this.loading = false;
-      }
-    });
-  }
+  
 
   getShipmentTypeLabel(type: string): string {
     const found = this.shipmentTypeOptions.find(t => t.value === type);
@@ -178,7 +170,11 @@ applySorting() {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.milestoneList = this.allMilestones.slice(startIndex, endIndex);
+    this.loadMilestones();
+  }
+  clearFilterValue() {
+    this.filterValue = '';
+     this.loadMilestones();
   }
 
   trackByMilestoneId(index: number, item: any): number {
@@ -193,7 +189,7 @@ applySorting() {
         this.masterService.deleteMilestoneById(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("Milestone deleted successfully!");
-            this.search(); // Refresh search results
+            
           },
           error: (err) => {
             console.error('Delete error:', err);

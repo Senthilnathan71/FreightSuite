@@ -48,6 +48,8 @@ export class DepartmentEntryComponent {
   statusList = ["Active", "Suspended"]
   currentMenuId: any;
   TandCList: any[]=[];
+  departmentTypeOptions = ['Sea', 'Air', 'Road', 'Transport'];
+
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,

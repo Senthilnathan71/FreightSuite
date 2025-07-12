@@ -26,8 +26,9 @@ export class DepartmentListComponent {
   departmentList: any[] = []
   searchPerformed = false;
   allDepartments: any[] = []; 
-  sortColumn: string = 'departmentName'; 
+  sortColumn: string = 'departmentCode'; 
   sortDirection: string = 'asc';
+  loading = false;
 
   // pagination
   page = 1;
@@ -44,32 +45,10 @@ this.appSettingService.getUser().subscribe(user => {
         console.log(this.userData,'userData')
       }
     });  
+    this.loadDepartments();
   }
 
-  onSearch(event: { type: string, value: string }) {
-    this.searchType = event.type;
-    this.filterValue = event.value;
-    this.search();
-  }
-
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue,
-    }
-    this.masterService.searchDepartmentList(payload).subscribe((res: any) => {
-      this.results = res;
-      this.allDepartments = [...this.results]; 
-      
-      
-      this.applySorting();
-      
-      this.searchPerformed = true;
-      this.totalLengthOfCollection = this.allDepartments.length;
-      this.page = 1;
-      this.updatePaginatedData();
-    });
-  }
+  
   sort(column: string) {
     if (this.sortColumn === column) {
       // Reverse the sort direction if clicking the same column
@@ -80,12 +59,11 @@ this.appSettingService.getUser().subscribe(user => {
       this.sortDirection = 'asc';
     }
     
-    this.applySorting();
-    this.updatePaginatedData();
+    this.loadDepartments();
   }
 
   applySorting() {
-    this.allDepartments.sort((a, b) => {
+    this.departmentList.sort((a, b) => {
       let valueA = a[this.sortColumn];
       let valueB = b[this.sortColumn];
       
@@ -111,7 +89,7 @@ this.appSettingService.getUser().subscribe(user => {
   updatePaginatedData(): void {
   const startIndex = (this.page - 1) * this.pageSize;
   const endIndex = startIndex + this.pageSize;
-  this.departmentList = this.allDepartments.slice(startIndex, endIndex);
+  this.loadDepartments();
 }
 
   trackByIndex(index: number, item: any): number {
@@ -125,14 +103,47 @@ this.appSettingService.getUser().subscribe(user => {
         this.masterService.deleteDepartmentById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           this.router.navigate(['master/department/list'])
-          this.search();
+         
         });
+      }
+    });
+  }
+  loadDepartments(): void {
+    this.loading = true;
+    
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+
+    this.masterService.searchDepartmentList(params).subscribe({
+      next: (response) => {
+        if(response) {
+          this.departmentList = response.items;
+          this.totalLengthOfCollection = response.totalCount;
+          this.applySorting();
+          this.searchPerformed = true;
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching departments:', err);
+        this.departmentList = [];
+        this.totalLengthOfCollection = 0;
+        this.loading = false;
       }
     });
   }
 
   navigateToCreateDepartment() {
     this.router.navigate(['master/department/entry'])
+  }
+  clearFilterValue() {
+    this.filterValue = '';
+    this.loadDepartments();
   }
 
   resetPage() {
@@ -142,7 +153,7 @@ this.appSettingService.getUser().subscribe(user => {
     this.filterValue = '';
     this.searchType = 'departmantName';
     this.page = 1;
-    this.sortColumn = 'departmantName';
+    this.sortColumn = 'departmentCode';
     this.sortDirection = 'asc';
   }
 

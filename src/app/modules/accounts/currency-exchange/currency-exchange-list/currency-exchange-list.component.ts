@@ -63,37 +63,38 @@ export class CurrencyExchangeListComponent {
       this.userData = user;
     }
   });
+  this.loadCurrencyExchanges();
 }
 
-  search() {
-    this.loading = true;
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'S'
-        : this.filterValue
-    };
-    
-    this.accountService.searchCurrencyExchangeList(payload).subscribe({
-      next: (res: any) => {
-        this.allResults = res.data || res || [];
-        this.applySorting(); // Apply sorting after loading new data
-        this.totalLengthOfCollection = this.allResults.length;
+loadCurrencyExchanges(): void {
+  this.loading = true;
+  
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection
+  };
+
+  this.accountService.searchCurrencyExchangeList(params).subscribe({
+    next: (response) => {
+      if(response) {
+        this.currencyExchangeList = response.items || response.data || [];
+        this.totalLengthOfCollection = response.totalCount || response.length || 0;
+        this.applySorting();
         this.searchPerformed = true;
-        this.page = 1; // Reset to first page on new search
-        this.updatePaginatedData();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Search error:', err);
-        this.allResults = [];
-        this.currencyExchangeList = [];
-        this.totalLengthOfCollection = 0;
-        this.searchPerformed = true;
-        this.loading = false;
       }
-    });
-  }
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error fetching currency exchanges:', err);
+      this.currencyExchangeList = [];
+      this.totalLengthOfCollection = 0;
+      this.loading = false;
+    }
+  });
+}
 
   sort(column: string) {
     if (this.sortColumn === column) {
@@ -104,13 +105,13 @@ export class CurrencyExchangeListComponent {
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
-    
+    this.loadCurrencyExchanges();
     this.applySorting();
     this.updatePaginatedData();
   }
 
   applySorting() {
-    this.allResults.sort((a, b) => {
+    this.currencyExchangeList.sort((a, b) => {
       let valueA = a[this.sortColumn];
       let valueB = b[this.sortColumn];
       
@@ -145,11 +146,15 @@ export class CurrencyExchangeListComponent {
       return 0;
     });
   }
+  clearFilterValue() {
+  this.filterValue = '';
+  this.loadCurrencyExchanges();
+}
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.currencyExchangeList = this.allResults.slice(startIndex, endIndex);
+    this.loadCurrencyExchanges();
   }
 
   trackByExchangeId(index: number, item: any): number {
