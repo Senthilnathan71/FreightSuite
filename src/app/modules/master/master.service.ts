@@ -464,10 +464,10 @@ export class MasterService {
       })
     );
   }
-  searchUnitList(payload) {
-    return this.http.post("unit/search-list", payload).pipe(
-      map((res: any) => {
-        return res.data;
+  searchUnitList(params) {
+    return this.http.post("unit/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
@@ -578,10 +578,10 @@ export class MasterService {
       })
     );
   }
-  searchPortList(payload) {
-    return this.http.post("port/search-list", payload).pipe(
-      map((res: any) => {
-        return res.data;
+  searchPortList(params) {
+    return this.http.post("port/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
@@ -864,22 +864,20 @@ export class MasterService {
     );
   }
 
-  searchPackageType(payload) {
-    return this.http.post<{ data: any }>('package-type/search-list', payload).pipe(
-      map((resp) => {
-        let response = resp.data;
-        return response;
+  searchPackageTypeList(params) {
+    return this.http.post("package-type/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
 
   // Tariff Master
 
-  searchTariff(payload: any) {
-    return this.http.post<{ data: any }>(`tariff/search-list`, payload).pipe(
-      map((resp) => {
-        let response = resp;
-        return response;
+  searchTariffList(params) {
+    return this.http.post("tariff/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
@@ -1320,12 +1318,12 @@ export class MasterService {
     );
   }
 
-  searchDivision(payload) {
-    return this.http.post("division/search-list", payload).pipe(
-      map((res: any) => {
-        return res.data;
+  searchDivisionList(params) {
+    return this.http.post("division/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
-    );
+    )
   }
 
 
@@ -1712,11 +1710,10 @@ export class MasterService {
     )
   }
 
-  searchProducts(payload){
-    return this.http.post<{data:Product[]}>('product/search-list',payload).pipe(
-      map((resp)=>{
-        let response = resp;
-        return response;
+  searchProductList(params) {
+    return this.http.post("product/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
@@ -2133,14 +2130,13 @@ deleteFfUserById(UserMasterSid: number) {
   );
 }
 
-searchFfUser(payload: any) {
-  return this.http.post<{data: any[]}>('ff-user/search-list', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+ searchFfUserList(params) {
+    return this.http.post("ff-user/search-list",params).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
 
 resetUserPassword(UserMasterSid , payload){
   return this.http.post<{data:any[]}>(`ff-user/reset/${UserMasterSid}`,payload).pipe(

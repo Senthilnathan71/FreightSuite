@@ -83,6 +83,10 @@ export class UnitEntryComponent {
   ngOnInit() {
     this.loadContainerTypes();
     
+     this.unitForm.statusChanges.subscribe(status => {
+    this.btnDisable = status !== 'VALID';
+  });
+
     this.route.paramMap.subscribe(params => {
       this.idParam = Number(params.get('id'));
       if (this.idParam) {

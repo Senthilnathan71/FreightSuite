@@ -85,6 +85,7 @@ export class HSSACComponent {
   TandCList: any;
   sortColumn: string = 'HSSACCode'; 
 sortDirection: string = 'asc';
+loading = true; 
 
   isFavorite: boolean = false;
 
@@ -122,7 +123,38 @@ sortDirection: string = 'asc';
         this.loadHssacData(this.HSSACMasterSid);
       }
     });
+    this.loadHssacs();
   }
+
+  loadHssacs(): void {
+  this.loading = true; 
+  
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection
+  };
+
+  this.masterService.searchHssac(params).subscribe({
+    next: (response) => {
+      if(response){
+        this.hssacList = response.items;
+        this.totalLengthOfCollection = response.totalCount;
+        this.applySorting();
+        this.searchPerformed = true;
+      }
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error fetching HS-SAC codes:', err);
+      this.hssacList = [];
+      this.totalLengthOfCollection = 0;
+      this.loading = false;
+    }
+  });
+}
 
   // loadHssac(): void {
   //   this.masterService.getAllHssac().subscribe(
@@ -148,6 +180,10 @@ sortDirection: string = 'asc';
       Remarks: ['', [Validators.required]],
       status: [{value: 'Active', disabled: false}, Validators.required], 
     });
+  }
+  clearFilterValue() {
+    this.filterValue = '';
+     this.loadHssacs();
   }
 
   resetForm(): void {
@@ -312,28 +348,7 @@ editHssac(id: number, content: any) {
     );
   }
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue,
-    };
-
-    this.masterService.searchHssac(payload).subscribe((res: any) => {
-      this.results = res;
-      console.log(this.results)
-      this.searchPerformed = true;
-      this.applySorting();
-      this.updatePaginationData();
-      this.totalLengthOfCollection = this.results.length || 0;
-    });
-  }
+  
 
   sort(column: string) {
   if (this.sortColumn === column) {
@@ -344,13 +359,13 @@ editHssac(id: number, content: any) {
     this.sortColumn = column;
     this.sortDirection = 'asc';
   }
-  
+  this.loadHssacs();
   this.applySorting();
   this.updatePaginationData();
 }
 
 applySorting() {
-  this.results.sort((a, b) => {
+  this.hssacList.sort((a, b) => {
     let valueA = a[this.sortColumn];
     let valueB = b[this.sortColumn];
     
@@ -374,7 +389,7 @@ applySorting() {
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.hssacList = this.results.slice(startIndex, endIndex);
+    this.loadHssacs();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -388,7 +403,7 @@ applySorting() {
         this.masterService.softDeleteHssac(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
           this.router.navigate(['master/hs-sac']);
-          this.search();
+         
         });
       }
     });

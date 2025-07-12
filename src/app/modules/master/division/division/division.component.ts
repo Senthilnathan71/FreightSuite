@@ -21,6 +21,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-division',
@@ -38,7 +39,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     TextWithNumbersDirective,
     DatePipe,
     ListpageComponent,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    FavoriteStarComponent
   ],
   templateUrl: './division.component.html',
   styleUrl: './division.component.scss'
@@ -58,7 +60,7 @@ export class DivisionComponent {
   companyMap: { [id: number]: string} ={};
   searchType = 'DivisionName';
   filterValue = '';
-  searchPerformed = false;
+  searched = false;
   page = 1;
   pageSize = 5;
   totalLengthOfCollection = 0;
@@ -93,7 +95,7 @@ export class DivisionComponent {
   });
     this.getAllCompanies();
     this.loadCompanies();
-    // this.loadDivision();
+    this.loadDivisions();
     this.initForm();
     this.route.paramMap.subscribe(params => {
       this.DivisionMasterSid = +params.get('DivisionMasterSid');
@@ -104,18 +106,31 @@ export class DivisionComponent {
     });
   }
 
-  // loadDivision(): void {
-  //   this.masterService.getAllDivisions().subscribe(
-  //     (resp: Division[]) => {
-  //       console.log(resp,'Divisions')
-  //       this.divisions=resp['data'];
-  //     },
-  //     (error) => {
-  //       this.errorMessage = error.message;
-  //       console.error('Error loading:',error);
-  //     }
-  //   );
-  // }
+  loadDivisions(): void {
+    const params = {
+      search: this.filterValue ? this.filterValue.trim() : '',
+      page: this.page,
+      pageSize: this.pageSize,
+    };
+
+    this.masterService.searchDivisionList(params).subscribe({
+      next: (response) => {
+        if(response.data) {
+          this.divisionList = response.data.items;
+          this.results = [...this.divisionList];
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searched = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching divisions:', err);
+        this.divisionList = [];
+        this.results = [];
+        this.totalLengthOfCollection = 0;
+      },
+    });
+  }
 
   initForm() {
     this.divisionForm = this.fb.group({
@@ -123,7 +138,7 @@ export class DivisionComponent {
       DivisionCode: ['', [Validators.required]],
       // address: ['', [Validators.required]],
       CompanyMasterSid: ['',[Validators.required]],
-      Remarks: ['', [Validators.required]],
+      Remarks: [''],
       status: [{value: 'Active', disabled: false}, Validators.required],
     });
   }
@@ -282,28 +297,6 @@ export class DivisionComponent {
     );
   }
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue
-    };
-
-    this.masterService.searchDivision(payload).subscribe((res: any) => {
-      this.results = res;
-      this.applySorting(); 
-      console.log(this.results)
-      this.searchPerformed = true;
-      this.updatePaginatedData();
-      this.totalLengthOfCollection = this.results.length || 0;
-    });
-  }
   sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -350,7 +343,7 @@ applySorting() {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.divisionList = this.results.slice(startIndex, endIndex);
+    this.loadDivisions();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -364,7 +357,7 @@ applySorting() {
         this.masterService.deleteDivision(DivisionMasterSid).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           this.router.navigate(['master/division/list'])
-          this.search();
+          this.loadDivisions();
         });
       }
     });
@@ -387,12 +380,11 @@ applySorting() {
 
   resetPage(): void {
     this.filterValue = '';
-    this.searchType = 'DivisionName';
     this.page = 1;
     this.divisions = [] ;
     this.divisionList = [];
     this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
+    this.searched = false;
     this.sortColumn = 'DivisionName';
     this.sortDirection = 'asc';
   }
@@ -485,6 +477,10 @@ openEDoc() {
   modalRef.componentInstance.idLabel = 'BLClause Id';
   modalRef.componentInstance.idValue = this.divisionData?.DivisionMasterSid;
 }
+
+clearFilterValue(){
+      this.filterValue = '';
+    }
 
 
 }

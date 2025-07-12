@@ -62,39 +62,42 @@ export class CurrencyListComponent {
     if (user) {
       this.userData = user;
     }
-  });}
+  });
+  this.loadCurrencies();
+}
+  loadCurrencies(): void {
+  this.loading = true;
+  
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection
+  };
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
+  this.masterService.searchCurrencyList(params).subscribe({
+    next: (response) => {
+      if(response){
+        this.currencyList = response.items;
+        this.allCurrencies = response.items; // Maintain both lists if needed
+        this.totalLengthOfCollection = response.totalCount;
+        this.applySorting();
+        this.searchPerformed = true;
+      }
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error fetching currencies:', err);
+      this.currencyList = [];
+      this.allCurrencies = [];
+      this.totalLengthOfCollection = 0;
+      this.loading = false;
+    }
+  });
 }
 
-  search() {
-    this.loading = true;
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue,
-    };
-
-    this.masterService.searchCurrencyList(payload).subscribe({
-      next: (res: any) => {
-        this.allCurrencies = res.data || res;
-        this.applySorting(); // Apply sorting after getting new data
-        this.searchPerformed = true;
-        this.totalLengthOfCollection = this.allCurrencies.length;
-        this.page = 1;
-        this.updatePaginatedData();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Search error:', err);
-        this.loading = false;
-      }
-    });
-  }
-
+ 
   sort(column: string) {
     if (this.sortColumn === column) {
       // Reverse the sort direction if clicking the same column
@@ -135,8 +138,12 @@ export class CurrencyListComponent {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.currencyList = this.allCurrencies.slice(startIndex, endIndex);
+    this.loadCurrencies();
   }
+  clearFilterValue() {
+  this.filterValue = '';
+  this.loadCurrencies(); 
+}
 
   trackByCurrencyId(index: number, item: any): number {
   return item.CurrencyMasterSid;
@@ -150,7 +157,7 @@ export class CurrencyListComponent {
         this.masterService.softDelete(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("Currency deleted successfully!");
-            this.search(); // Refresh search results
+          
           },
           error: (err) => {
             console.error('Delete error:', err);

@@ -33,37 +33,35 @@
                     </form>
                 </div>
             </div>
-            <div class="col-md-12 border-top">
-                <div class="row mx-0 py-2">
-                    <div class="col-md-8 mx-auto px-0">
-                        <form
-                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                            <div class="form-outline col-12 col-md px-0">
-                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
-                                    <option value="UserRoleName">Role Name</option>
-                                    <option value="UserRoleCode">Role Code</option>
-                                    <option value="LicenseType">License Type</option>
-                                    <option value="status">Status</option>
-                                </select>
-                            </div>
-                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                                <div class="form-outline flex-grow-1">
-                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
-                                        placeholder="Enter filter value">
-                                    <i
-                                        class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                                </div>
-                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                                    (click)="search()">
-                                    <i class="fas fa-search me-1"></i> Search
+            
+                            <div class="col-md-12 border-top">
+            <div class="row mx-0 py-2">
+                <div class="col-md-8 mx-auto px-0">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                        <div class="d-flex gap-2 col-6 px-0 align-items-center">
+                            <div class="form-outline flex-grow-1 position-relative">
+                                <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search" [(ngModel)]="filterValue"
+                                    aria-label="Search input">
+                                <button *ngIf="filterValue"
+                                    class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                    (click)="clearFilterValue()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" data-bs-title="Clear search"
+                                    onfocus="this.classList.replace('text-secondary','text-danger')"
+                                    onblur="this.classList.replace('text-danger','text-secondary')">
+                                    <i class="fas fa-times"></i>
                                 </button>
                             </div>
-                        </form>
-                    </div>
+                            <button type="submit" (click)="loadRoles()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+  <i class="fas fa-search me-1"></i> Search
+</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
     <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
@@ -140,20 +138,19 @@
         <div>No records found</div>
     </div>
     <ng-template #content let-modal>
-        <div class="modal-header">
+        <div class="modal-header p-2 bg-info text-white">
             <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Role</h4>
             @if(isEditMode){
             <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
-            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+            <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
         </div>
         <div class="modal-body">
             <form [formGroup]="roleForm">
                 <div class="col-md-12">
-                    <div class="card h-100">
-                        <div class="card-body">
+                    
                             <div class="row">
                                 <aside class="col-md-6">
                                     <div class="custom-form-group">
@@ -209,7 +206,7 @@
 }
                                     </div>
                                 </aside>
-                                <aside class="col-md-6 mt-2">
+                                <aside class="col-md-6">
                                     <div class="custom-form-group custom-form-group-select">
                                         <ng-select [items]="statusList" bindLabel="name" bindValue="id"
                                             formControlName="status"
@@ -219,8 +216,7 @@
                                     </div>
                                 </aside>
                             </div>
-                        </div>
-                    </div>
+                    
                 </div>
             </form>
         </div>
@@ -241,8 +237,8 @@
       </button>
       
             }
-            <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-            <button type="button" class="btn btn-info" (click)="onSubmit()"
+            <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
                 [disabled]="btnDisable || roleForm.invalid">
                 {{ isEditMode ? 'Update' : 'Save' }}
             </button>

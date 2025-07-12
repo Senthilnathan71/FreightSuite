@@ -97,7 +97,37 @@ sortDirection: string = 'asc';
         this.loadRoleData(this.RoleMasterSid);
       }
     });
+    this.loadRoles();
   }
+  loadRoles(): void {
+  this.isLoading = true;
+  
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection
+  };
+
+  this.settingsService.searchRole(params).subscribe({
+    next: (response: any) => {
+      if(response){
+        this.roleList = response.data.items || response.data;
+        this.totalLengthOfCollection = response.data.totalCount || response.length;
+        this.applySorting();
+        this.searchPerformed = true;
+      }
+      this.isLoading = false;
+    },
+    error: (err) => {
+      console.error('Error fetching roles:', err);
+      this.roleList = [];
+      this.totalLengthOfCollection = 0;
+      this.isLoading = false;
+    }
+  });
+}
 
   initForm() {
     this.roleForm = this.fb.group({
@@ -241,7 +271,7 @@ onKeyPress(event: KeyboardEvent, field: string) {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              this.search();
+             
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -257,7 +287,7 @@ onKeyPress(event: KeyboardEvent, field: string) {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              this.search();
+              
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -271,22 +301,7 @@ onKeyPress(event: KeyboardEvent, field: string) {
     }
   }
 
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'S'
-        : this.filterValue
-    };
-
-    this.settingsService.searchRole(payload).subscribe((res: any) => {
-      this.results = res.data || res;
-       this.applySorting();
-      this.searchPerformed = true;
-      this.updatePaginationData();
-      this.totalLengthOfCollection = this.results.length || 0;
-    });
-  }
+  
   sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -297,12 +312,11 @@ onKeyPress(event: KeyboardEvent, field: string) {
     this.sortDirection = 'asc';
   }
   
-  this.applySorting();
-  this.updatePaginationData();
+  this.loadRoles();
 }
 
 applySorting() {
-  this.results.sort((a, b) => {
+  this.roleList.sort((a, b) => {
     let valueA = a[this.sortColumn];
     let valueB = b[this.sortColumn];
     
@@ -327,7 +341,7 @@ applySorting() {
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.roleList = this.results.slice(startIndex, endIndex);
+    this.loadRoles();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -355,6 +369,10 @@ applySorting() {
     this.sortColumn = 'UserRoleName'; 
     this.sortDirection = 'asc';
   }
+  clearFilterValue() {
+  this.filterValue = '';
+  this.loadRoles();
+}
 
   report(): void {
     const formattedData = this.roleList.map(item => ({

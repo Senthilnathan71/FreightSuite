@@ -93,30 +93,25 @@
                         </aside>
 
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" formControlName="departmentType" placeholder=""
-                                    class="custom-input-field sm" [onlyText]="10">
-                                <label for="text-input" class="input-label">Dept Type <span
-                                        class="text-danger fw-bold">*</span></label>
-                                <div class="error-message">
-                                    @if(departmentForm.get('departmentType')?.touched &&
-                                    departmentForm.get('departmentType')?.invalid){
-
-                                    @if(departmentForm.get('departmentType')?.hasError('required')){
-                                    <span>Department Type is required</span>
-                                    }
-
-                                    @else if(departmentForm.get('departmentType')?.hasError('numberNotAllowed')){
-                                    <span>Only Alphabets are Allowed</span>
-                                    }
-
-                                    @else if(departmentForm.get('departmentType')?.hasError('maxlength')){
-                                    <span>Max 10 characters</span>
-                                    }
-                                    }
-                                </div>
-                            </div>
-                        </aside>
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select class="ng-select" formControlName="departmentType">
+      <ng-option value="">Select Department Type</ng-option>
+      @for(type of departmentTypeOptions; track type) {
+        <ng-option [value]="type">{{type}}</ng-option>
+      }
+    </ng-select>
+    <label for="text-input" class="input-label">Dept Type <span
+            class="text-danger fw-bold">*</span></label>
+    <div class="error-message">
+      @if(departmentForm.get('departmentType')?.touched &&
+      departmentForm.get('departmentType')?.invalid){
+        @if(departmentForm.get('departmentType')?.hasError('required')){
+          <span>Department Type is required</span>
+        }
+      }
+    </div>
+  </div>
+</aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select class="ng-select" formControlName="ExportImport">

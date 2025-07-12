@@ -121,7 +121,7 @@ export class ZoneComponent {
         }
       },
       error: (err) => {
-        console.error('Error fetching vessels:', err);
+        console.error('Error fetching zones:', err);
         this.zoneList = [];
         this.results = [];
         this.totalLengthOfCollection = 0;

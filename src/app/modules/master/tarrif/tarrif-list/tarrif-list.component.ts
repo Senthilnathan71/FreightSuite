@@ -13,6 +13,7 @@ import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-tarrif-list',
@@ -24,7 +25,8 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     RouterModule,
     NgbPaginationModule,
     CustomDatePipe,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent
   ],
   templateUrl: './tarrif-list.component.html',
   styleUrl: './tarrif-list.component.scss'
@@ -35,7 +37,7 @@ export class TarrifListComponent implements OnInit {
   filterValue: string;
   results: Tariff[];
   tariffList: any[];
-  searchPerformed : boolean;
+  searched : boolean = false;
   userData : any;
 
   // pagination values
@@ -66,8 +68,34 @@ export class TarrifListComponent implements OnInit {
         if (user) {
           this.userData = user;
         }
-      }
-    )
+      });
+      this.loadTariffs();
+  }
+
+  loadTariffs(): void {
+    const params = {
+      search: this.filterValue ? this.filterValue.trim() : '',
+      page: this.page,
+      pageSize: this.pageSize,
+    };
+
+    this.masterServ.searchTariffList(params).subscribe({
+      next: (response) => {
+        if(response.data) {
+          this.tariffList = response.data.items;
+          this.results = [...this.tariffList];
+          this.totalNumberOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searched = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching tariffs:', err);
+        this.tariffList = [];
+        this.results = [];
+        this.totalNumberOfCollection = 0;
+      },
+    });
   }
 
   onSearch(event: { type: string, value: string }) {
@@ -83,10 +111,10 @@ export class TarrifListComponent implements OnInit {
       searchType: this.searchType,
       filterValue: intFields.includes(this.searchType) ? Number(this.filterValue) : this.filterValue
     }
-    this.masterServ.searchTariff(payload).subscribe(
+    this.masterServ.searchTariffList(payload).subscribe(
       (res) => {
         this.results = res.data;
-        this.searchPerformed = true;
+        this.searched = true;
         this.applySorting();
         this.updatePaginationData();
         this.totalNumberOfCollection = this.results.length || 0;
@@ -105,7 +133,6 @@ export class TarrifListComponent implements OnInit {
   }
   
   this.applySorting();
-  this.updatePaginationData();
 }
 
 applySorting() {
@@ -129,12 +156,13 @@ applySorting() {
     }
     return 0;
   });
+  this.tariffList = [...this.results];
 }
 
   updatePaginationData() {
     let start = (this.page - 1) * this.pageSize;
     let end = start + this.pageSize;
-    this.tariffList = this.results.slice(start, end)
+    this.loadTariffs();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -149,7 +177,7 @@ applySorting() {
           (resp: any) => {
             this.appSettingServ.showSuccess("Deleted!");
             // this.router.navigate([`master/tarrif/list`]);
-            this.search()
+            this.loadTariffs()
           });
       }
     })
@@ -188,10 +216,14 @@ applySorting() {
 
   reset() {
     this.tariffList = [];
-    this.searchPerformed = false;
+    this.filterValue = '';
+    this.searched = false;
     this.totalNumberOfCollection = 0;
     this.sortColumn = 'POLTerminal';
     this.sortDirection = 'asc';
   }
+  clearFilterValue(){
+      this.filterValue = '';
+    }
 
 }

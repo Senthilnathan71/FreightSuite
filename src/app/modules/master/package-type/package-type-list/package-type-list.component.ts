@@ -19,6 +19,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-package-type-list',
@@ -34,7 +35,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     FormsModule,
     DatePipe,
     ListpageComponent,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    FavoriteStarComponent
   ],
   templateUrl: './package-type-list.component.html',
   styleUrl: './package-type-list.component.scss',
@@ -52,7 +54,7 @@ export class PackageTypeListComponent {
   modalRef!: NgbModalRef;
   searchType = 'PackageName';
   filterValue = '';
-  searchPerformed = false;
+  searched = false;
   page = 1;
   pageSize = 10;
   totalLengthOfCollection = 0;
@@ -89,8 +91,34 @@ export class PackageTypeListComponent {
         if (user) {
           this.userData = user;
         }
-      }
-    )
+      });
+      this.loadPackageTypes();
+  }
+
+  loadPackageTypes(): void {
+    const params = {
+      search: this.filterValue ? this.filterValue.trim() : '',
+      page: this.page,
+      pageSize: this.pageSize,
+    };
+
+    this.masterService.searchPackageTypeList(params).subscribe({
+      next: (response) => {
+        if(response.data) {
+          this.packageTypeList = response.data.items;
+          this.results = [...this.packageTypeList];
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searched = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching packageTypes:', err);
+        this.packageTypeList = [];
+        this.results = [];
+        this.totalLengthOfCollection = 0;
+      },
+    });
   }
 
   initForm() {
@@ -215,9 +243,9 @@ export class PackageTypeListComponent {
         : this.filterValue
     };
 
-    this.masterService.searchPackageType(payload).subscribe((res: any) => {
+    this.masterService.searchPackageTypeList(payload).subscribe((res: any) => {
       this.results = res.data || res;
-      this.searchPerformed = true;
+      this.searched = true;
       this.applySorting();
       this.updatePaginationData();
       this.totalLengthOfCollection = this.results.length || 0;
@@ -235,7 +263,6 @@ export class PackageTypeListComponent {
   }
   
   this.applySorting();
-  this.updatePaginationData();
 }
 
 applySorting() {
@@ -259,12 +286,13 @@ applySorting() {
     }
     return 0;
   });
+  this.packageTypeList = [...this.results];
 }
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.packageTypeList = this.results.slice(startIndex, endIndex);
+    this.loadPackageTypes();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -277,7 +305,7 @@ applySorting() {
       if (result === true) {
         this.masterService.deletePackageById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
-          this.search();
+          this.loadPackageTypes();
         });
       }
     });
@@ -286,7 +314,7 @@ applySorting() {
   resetPage(): void {
     this.packageTypeList = [];
     this.totalLengthOfCollection = 0;
-    this.searchPerformed = false;
+    this.searched = false;
     this.filterValue = '';
     this.searchType = 'PackageName';
     this.sortColumn = 'PackageName';
@@ -378,6 +406,8 @@ openEDoc() {
   modalRef.componentInstance.idLabel = 'Package Type Id';
   modalRef.componentInstance.idValue = this.packageData?.PackageTypeMasterSid;
 }
-
+clearFilterValue(){
+      this.filterValue = '';
+    }
 
 }

@@ -101,6 +101,7 @@ export class TarrifEntryComponent implements OnInit {
 	currentMenuId: number;
 	TandCList: any;
 	chargeTaxes : any[];
+	btnDisable: boolean = true;
 
 	constructor(
 		private masterServ: MasterService,
@@ -115,6 +116,9 @@ export class TarrifEntryComponent implements OnInit {
 	ngOnInit(): void {
 		this.initHeaderForm();
 		this.loadAllFields();
+		  this.tariffHeaderForm.statusChanges.subscribe(status => {
+				this.btnDisable = status !== 'VALID';
+			});
 		this.currRoute.paramMap.subscribe(param => {
 			this.TariffHeaderSid = Number(param.get('id'));
 			if (this.TariffHeaderSid) {

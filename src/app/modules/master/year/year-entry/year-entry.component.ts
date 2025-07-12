@@ -49,7 +49,7 @@ export class YearEntryComponent {
   isEditMode = false; // Flag for edit mode
   errorMessage: string = '';  // To store any error messages
   years: Year[] = [];
-  btnDisable: boolean = false;
+  btnDisable: boolean = true;
   YearMasterSid: number;
   yearData: any;
   today = this.calendar.getToday();
@@ -61,7 +61,7 @@ export class YearEntryComponent {
   ];
   currentMenuId: any;
   TandCList: any[]=[];
-
+  
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -75,7 +75,9 @@ export class YearEntryComponent {
     this.getAllCompanies();
     this.loadYear();
     this.initForm();
-
+      this.yearForm.valueChanges.subscribe(() => {
+    this.btnDisable = !this.yearForm.valid;
+  });
     this.route.paramMap.subscribe(params => {
       this.YearMasterSid = +params.get('YearMasterSid');
       if(this.YearMasterSid){
@@ -220,9 +222,7 @@ export class YearEntryComponent {
     })
   }
 
-  reset() {
-    this.yearForm.reset();
-  }
+
 
   goBack() {
     this.router.navigate(['master/year/list']);
@@ -288,5 +288,26 @@ export class YearEntryComponent {
 			backdrop: 'static'
 		});
 	}
+
+  reset() {
+  this.yearForm.reset({
+    CompanyMasterSid: '',
+    YearName: '',
+    YearCode: '',
+    StartDate: this.todayDate,
+    EndDate: this.todayDate,
+    CurrentYear: '',
+    YearEndCompleted: '',
+    Remarks: '',
+    status: 'Active'
+  });
+
+  // Re-disable the status field
+  this.yearForm.get('status')?.disable();
+
+  // Disable the save button again
+  this.btnDisable = true;
+}
+
 
 }

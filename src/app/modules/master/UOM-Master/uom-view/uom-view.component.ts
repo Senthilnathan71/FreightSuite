@@ -35,7 +35,7 @@ export class UOMViewComponent {
   uomForm!: FormGroup;
   isEditMode = false;
   selectedShipmentType: number;
-  btnDisable: boolean = false;
+  btnDisable: boolean = true;
   uomData: any;
 
 
@@ -79,6 +79,12 @@ statusOptions = [
       status: new FormControl({value: 'A', disabled: !this.isEditMode}, [Validators.required]),
       Remarks: new FormControl('', [Validators.maxLength(300)])
     });
+
+      //Dynamically disable/enable Save button based on form validity
+  this.uomForm.statusChanges.subscribe(status => {
+    this.btnDisable = status !== 'VALID';
+  });
+
     
   // Enable status control when in edit mode
   if (this.isEditMode) {

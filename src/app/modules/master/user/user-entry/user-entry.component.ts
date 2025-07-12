@@ -57,6 +57,7 @@ export class UserEntryComponent implements OnInit {
 	filteredRoleList : any[] = [];
 	countryList : any[];
 	passwordView : boolean
+	btnDisable: boolean = true;
 
 	modeOfStatus = [
 		{name : 'Active'},
@@ -80,6 +81,10 @@ export class UserEntryComponent implements OnInit {
 	ngOnInit(): void {
 		this.initUserForm(); 
 		this.loadAllFields();
+		this.userForm.statusChanges.subscribe(status => {
+		this.btnDisable = status !== 'VALID';
+	});
+
 		this.currentRoute.paramMap.subscribe((param) => {
 			this.UserMasterSid = +param.get('id');
 			if (this.UserMasterSid) {

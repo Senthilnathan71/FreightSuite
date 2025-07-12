@@ -90,7 +90,8 @@ export class TaxGroupListComponent {
   currentMenuId: number;
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
-  searched=false;
+  searched = false;
+  loading = true;
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -101,7 +102,7 @@ export class TaxGroupListComponent {
     private dialog: MatDialog,
     private excelReportService: ExcelExportService,
     private calendar: NgbCalendar
-  ) {}
+  ) { }
 
   modeofTaxType = [
     { id: 1, name: 'Input' },
@@ -110,6 +111,39 @@ export class TaxGroupListComponent {
 
   ngOnInit(): void {
     this.initForm();
+    this.taxGroupForm.valueChanges.subscribe(() => { });
+    this.loadTaxGroups();
+  }
+
+  loadTaxGroups(): void {
+    this.loading = true;
+
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+
+    this.masterService.searchTaxGroup(params).subscribe({
+      next: (response) => {
+        if (response) {
+          this.taxGroupList = response.items;
+          this.totalLengthOfCollection = response.totalCount;
+          this.applySorting();
+          this.searchPerformed = true;
+          this.searched = true;
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching tax groups:', err);
+        this.taxGroupList = [];
+        this.totalLengthOfCollection = 0;
+        this.loading = false;
+      }
+    });
   }
 
   toggleFavorite() {
@@ -197,17 +231,17 @@ export class TaxGroupListComponent {
 
     const payload = this.isEditMode
       ? {
-          ...formValue,
-          TaxRate: parseFloat(formValue.TaxRate),
-          TaxExempt: formValue.TaxExempt ? 'Y' : 'N',
-          ...UpdatedBy,
-        }
+        ...formValue,
+        TaxRate: parseFloat(formValue.TaxRate),
+        TaxExempt: formValue.TaxExempt ? 'Y' : 'N',
+        ...UpdatedBy,
+      }
       : {
-          ...formValue,
-          TaxRate: parseFloat(formValue.TaxRate),
-          TaxExempt: formValue.TaxExempt ? 'Y' : 'N',
-          ...CreatedBy,
-        };
+        ...formValue,
+        TaxRate: parseFloat(formValue.TaxRate),
+        TaxExempt: formValue.TaxExempt ? 'Y' : 'N',
+        ...CreatedBy,
+      };
 
     console.log('payload', payload);
 
@@ -272,12 +306,11 @@ export class TaxGroupListComponent {
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
-    this.applySorting();
-    this.updatePaginationData();
+    this.loadTaxGroups();
   }
 
   applySorting(): void {
-    this.results.sort((a, b) => {
+    this.taxGroupList.sort((a, b) => {
       let valA = (a[this.sortColumn] || '').toString().toLowerCase();
       let valB = (b[this.sortColumn] || '').toString().toLowerCase();
       return this.sortDirection === 'asc'
@@ -289,11 +322,15 @@ export class TaxGroupListComponent {
   updatePaginationData(): void {
     const start = (this.page - 1) * this.pageSize;
     const end = start + this.pageSize;
-    this.taxGroupList = this.results.slice(start, end);
+    this.loadTaxGroups();
   }
 
   trackByIndex(index: number): number {
     return index;
+  }
+  clearFilterValue() {
+    this.filterValue = '';
+    this.loadTaxGroups();
   }
 
   softDeleteTaxGroup(id: number): void {
@@ -303,7 +340,7 @@ export class TaxGroupListComponent {
         this.masterService.deleteTax(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
           this.router.navigate(['accounts/tax-group/list']);
-          this.search();
+
         });
       }
     });
@@ -315,33 +352,7 @@ export class TaxGroupListComponent {
     }
   }
 
-  search(): void {
-    const payload = {
-      search: this.filterValue?.trim() || '',
-      page: this.page,
-      pageSize: this.pageSize,
-    };
 
-    this.masterService.searchTaxGroup(payload).subscribe({
-      next: (response) => {
-        if (response) {
-          this.results = response.items;
-          console.log(this.results, 'Data');
-          this.searched=true;
-          this.totalLengthOfCollection = response.totalCount;
-          this.applySorting();
-          this.updatePaginationData();
-          this.searchPerformed = true;
-        }
-      },
-      error: (err) => {
-        console.error('Error fetching tax groups:', err);
-        this.results = [];
-        this.taxGroupList = [];
-        this.totalLengthOfCollection = 0;
-      },
-    });
-  }
 
   resetPage(): void {
     this.taxGroupList = [];

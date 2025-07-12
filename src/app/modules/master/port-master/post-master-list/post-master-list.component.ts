@@ -12,6 +12,7 @@ import { forkJoin } from 'rxjs';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-post-master-list',
@@ -23,7 +24,8 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     NgbPaginationModule,
     RouterModule,
     MatDialogModule,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent
   ],
   templateUrl: './post-master-list.component.html',
   styleUrls: ['./post-master-list.component.scss']
@@ -32,7 +34,7 @@ export class PostMasterListComponent implements OnInit {
   // search controls
   searchType = 'PortName';
   filterValue = '';
-  searchPerformed = false;
+  searched = false;
   userData: any;
 
 
@@ -72,6 +74,32 @@ export class PostMasterListComponent implements OnInit {
       if (user) {
         this.userData = user;
       }
+    });
+    this.loadPorts();
+  }
+  loadPorts(): void {
+    const params = {
+      search: this.filterValue ? this.filterValue.trim() : '',
+      page: this.page,
+      pageSize: this.pageSize,
+    };
+
+    this.masterService.searchPortList(params).subscribe({
+      next: (response) => {
+        if(response.data) {
+          this.portList = response.data.items;
+          this.results = [...this.portList];
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searched = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching ports:', err);
+        this.portList = [];
+        this.results = [];
+        this.totalLengthOfCollection = 0;
+      },
     });
   }
 
@@ -120,7 +148,7 @@ export class PostMasterListComponent implements OnInit {
       };
     });
 
-    this.searchPerformed = true;
+    this.searched = true;
     this.totalLengthOfCollection = this.results.length;
     this.page = 1;
     this.updatePaginatedData();
@@ -139,7 +167,6 @@ sort(column: string) {
   }
   
   this.applySorting();
-  this.updatePaginatedData();
 }
 
 applySorting() {
@@ -163,13 +190,15 @@ applySorting() {
     }
     return 0;
   });
+  this.portList = [...this.results];
 }
 
 
   /** Slice results for current page */
   updatePaginatedData(): void {
-    const start = (this.page - 1) * this.pageSize;
-    this.portList = this.results.slice(start, start + this.pageSize);
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.loadPorts();
   }
 
   trackByIndex(_: number, __: any): number {
@@ -183,7 +212,7 @@ applySorting() {
         if (!confirmed) return;
         this.masterService.deletePortById(id).subscribe(() => {
           this.appSettingService.showSuccess('Deleted!');
-          this.search();
+          this.loadPorts();
         });
       });
   }
@@ -208,7 +237,7 @@ applySorting() {
   resetPage(): void {
     this.page = 1;
     this.filterValue = '';
-    this.searchPerformed = false;
+    this.searched = false;
     this.results = [];
     this.portList = [];
     this.totalLengthOfCollection = 0;
@@ -240,5 +269,8 @@ applySorting() {
       title: companyName
     });
   }
+  clearFilterValue(){
+      this.filterValue = '';
+    }
 
 }
