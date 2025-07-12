@@ -38,33 +38,22 @@
                     <div class="col-md-8 mx-auto px-0">
                         <form
                             class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                            <div class="form-outline col-12 col-md px-0">
-                                <select name="searchType" class="form-select" [(ngModel)]="searchType">
-                                    <option value="MenuMasterSid">Menu Name</option>
-                                    <option value="InsertRole">Allow Add</option>
-                                    <option value="UpdateRole">Allow Modify</option>
-                                    <option value="ViewRole">Allow View</option>
-                                    <option value="DeleteRole">Allow Delete</option>
-                                    <option value="status">Status</option>
-                                </select>
-                            </div>
-                            <!-- <div class="form-outline col-12 col-md px-0">
-                                <input name="filterValue" type="text" class="form-control"
-                                    placeholder="Enter filter value">
-                                <i
-                                    class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                            </div> -->
-                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                                <div class="form-outline flex-grow-1">
-                                    <input name="filterValue" type="text" class="form-control"
-                                        placeholder="Enter filter value" [(ngModel)]="filterValue">
-                                    <i
-                                        class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                             <div class="d-flex gap-2 col-6 px-0 align-items-center">
+                                <div class="form-outline flex-grow-1 position-relative">
+                                    <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                                        [(ngModel)]="filterValue" aria-label="Search input">
+                                    <button *ngIf="filterValue"
+                                        class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                        (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
+                                        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
+                                        onfocus="this.classList.replace('text-secondary','text-danger')"
+                                        onblur="this.classList.replace('text-danger','text-secondary')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
                                 </div>
-
-                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSearch()">
-                                    <i class="fas fa-search me-1"></i>
-                                    Search
+                                <button type="submit" (click)="onRoleMenuSearch()"
+                                    class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                    <i class="fas fa-search me-1"></i> Search
                                 </button>
                             </div>
                         </form>
@@ -77,7 +66,7 @@
         <div class="modal-header p-2 bg-info text-white">
             <h4 class="modal-title">{{isEditMode ? 'Update Role Menu' : 'Role Menu'}}</h4>
             @if(isEditMode){
-            <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
+            <a class="text-white ps-2 w-2 h-2" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
@@ -87,7 +76,7 @@
             <form  [formGroup]="roleMenuForm">
                 <div class="col-md-12 p-0">
                     <div class="card h-100">
-                        <section class="card-body">
+                        <section class="card-body py-0">
                             <section class="row">
                                 <h6 class="card-title">Role Access Details</h6>
                                 <aside class="col-md-6">
@@ -125,6 +114,7 @@
                                             placeholder="Select Menu"
                                             formControlName="MenuMasterSid"
                                             (change)="getMenuPermissions($event)"
+                                            (clear)="clearMenuPermissions()"
                                         >
                                         </ng-select>
                                         <label for="text-input" class="input-label">Menu <span
@@ -189,31 +179,22 @@
                                 </aside>
                             </section>
                         </section>
-                        <section class="card-body" *ngIf="roleMenuForm.get('MenuMasterSid').value">
+                        <section class="card-body py-0" *ngIf="menuPermissionsFetched">
                             <section class="row">
                                 <h6 class="card-title">Role Access Permissions</h6>
-                                @for(permission of menuPermissionList;track $index){
-                                    <aside class="col-md-6 d-flex align-items-center my-2">
-                                        <dofi-toggler onLabel="Allowed" offLabel="Restricted" (toggleChange)="handlePermission(permission.permissionName,$event)"></dofi-toggler>
-                                        <label class="form-check-label ms-2">{{permission.permissionName}}</label>
-                                    </aside>
+                                @for(permission of menuPermissionList; track i; let i = $index) {
+                                <form class="col-md-4 d-flex align-items-center my-2">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input focus-ring focus-ring-primary" [id]="'permission-' + i"
+                                            [checked]="selectedPermission.includes(permission.permissionName)"
+                                            (change)="handlePermission(permission.permissionName, $event)"
+                                            (keydown)="onCheckboxKeydown($event, permission.permissionName)" tabindex="0">
+                                        <label [for]="'permission-' + i" class="form-check-label">
+                                            {{permission.permissionName}}
+                                        </label>
+                                    </div>
+                                </form>
                                 }
-                                <!-- <aside class="col-md-6 d-flex align-items-center my-2">
-                                    <dofi-toggler formControlName="InsertRole" onLabel="Allowed" offLabel="Restricted"></dofi-toggler>
-                                    <label class="form-check-label ms-2">Allow Add</label>
-                                </aside>
-                                <aside class="col-md-6 d-flex align-items-center my-2">
-                                    <dofi-toggler formControlName="UpdateRole" onLabel="Allowed" offLabel="Restricted"></dofi-toggler>
-                                    <label class="form-check-label ms-2">Allow Modify</label>
-                                </aside>
-                                <aside class="col-md-6 d-flex align-items-center my-2">
-                                    <dofi-toggler formControlName="ViewRole" onLabel="Allowed" offLabel="Restricted"></dofi-toggler>
-                                    <label class="form-check-label ms-2">Allow View</label>
-                                </aside>
-                                <aside class="col-md-6 d-flex align-items-center my-2">
-                                    <dofi-toggler formControlName="DeleteRole" onLabel="Allowed" offLabel="Restricted"></dofi-toggler>
-                                    <label class="form-check-label ms-2">Allow Delete</label>
-                                </aside> -->
                             </section>
                         </section>
                     </div>
@@ -242,7 +223,7 @@
         </div>
     </ng-template>
 
-    <div class="col-12">
+    <!-- <div class="col-12">
         <div class="row bg-white align-items-center rounded-top shadow-sm">
             <div class="col-md-12  border-bottom">
                 <div class="row mx-0 py-2">
@@ -291,7 +272,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
     <div class="row bg-white py-2 rounded-bottom shadow-sm mx-auto" *ngIf="totalAmountOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
@@ -300,14 +281,15 @@
 <thead>
     <tr class="bg-info">
         <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('menuMaster.MenuName')">
+        <th class="bg-transparent text-light" scope="col" (click)="sort('menuName')">
             Menu Name
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'menuMaster.MenuName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'menuMaster.MenuName'}"></i>
+            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'menuName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'menuName'}"></i>
         </th>
-        <th class="bg-transparent text-light" scope="col">Allow Add</th>
+        <!-- <th class="bg-transparent text-light" scope="col">Allow Add</th>
                             <th class="bg-transparent text-light" scope="col">Allow Modify</th>
                             <th class="bg-transparent text-light" scope="col">Allow View</th>
-                            <th class="bg-transparent text-light" scope="col">Allow Delete</th>
+                            <th class="bg-transparent text-light" scope="col">Allow Delete</th> -->
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('roleName')">Role name <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'roleName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'roleName'}"></i></th>
                             <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                         </tr>
                     </thead>
@@ -330,10 +312,15 @@
                             </td>
                             <td>
                                 <div class="text-truncate">
-                                    {{item.menuMaster?.MenuName}}
+                                    {{item.menuName}}
                                 </div>
                             </td>
                             <td>
+                                <div class="text-truncate">
+                                    {{item.roleName}}
+                                </div>
+                            </td>
+                            <!-- <td>
                                  @if(item.InsertRole === 'Y'){
                                 <div class="text-success ms-2">
                                     <i-feather name="check"></i-feather>
@@ -377,7 +364,7 @@
                                 </div>
                                 }
                                 
-                            </td>
+                            </td> -->
                             <td>
                                 @if(item.status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">

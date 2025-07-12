@@ -1,8 +1,8 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdown, NgbModal, NgbModalModule, NgbModalRef, NgbModule, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
@@ -30,12 +30,14 @@ import { take } from 'rxjs';
     NgbPagination,
     RouterModule,
     FormsModule,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    NgbModule
   ],
   templateUrl: './menu-entry.component.html',
   styleUrl: './menu-entry.component.scss'
 })
 export class MenuEntryComponent implements OnInit {
+
   menuForm!: FormGroup;
   isEditMode: boolean = false;
   results: any[] = [];
@@ -73,8 +75,37 @@ export class MenuEntryComponent implements OnInit {
     { value: 'disc', label: 'Disc' }
 
   ];
+
+
+  specialOptions = [
+    'View',
+    'Edit',
+    'Delete',
+    'Modify',
+    'Edoc',
+    'Terms and Condition',
+    'Authority',
+    'Email'
+  ];
+
+  getOptionIcon(option: string): string {
+  const icons: {[key: string]: string} = {
+    'View': 'eye',
+    'Edit': 'edit',
+    'Delete': 'trash-alt',
+    'Modify': 'sliders-h',
+    'Edoc': 'file-alt',
+    'Terms and Condition': 'clipboard',
+    'Authority': 'shield-alt',
+    'Email': 'envelope'
+  };
+  return icons[option] || 'plus-circle';
+}
+
+
   currentMenuId: number;
   TandCList: any;
+  allPermissions :any[]
 
   constructor(
     private modalService: NgbModal,
@@ -85,7 +116,7 @@ export class MenuEntryComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
   ) { }
 
   ngOnInit(): void {
@@ -143,7 +174,7 @@ export class MenuEntryComponent implements OnInit {
 
   createPermissionGroup(): FormGroup {
     return this.fb.group({
-      permissionName: ['', [Validators.required, Validators.maxLength(100)]],
+      permissionName: ['', [Validators.required, Validators.maxLength(100),this.duplicatePermissionValidator()]],
     });
   }
 
@@ -159,6 +190,19 @@ export class MenuEntryComponent implements OnInit {
     if (this.permissions.length > 1) {
       this.permissions.removeAt(index);
     }
+  }
+
+  createPermissionWithOption(event:string){
+    const permissions = this.permissions.value;
+    this.allPermissions = permissions.map(p => p.permissionName.toLowerCase());
+    if(this.allPermissions.includes(event.toLowerCase())){
+      this.appSettingService.showError('Duplicate Permission name not allowed');
+      return;
+    }
+    const formWithPermission = this.fb.group({
+      permissionName: [event, [Validators.required, Validators.maxLength(100),this.duplicatePermissionValidator()]],
+    })
+    this.permissions.push(formWithPermission);
   }
 
 
@@ -178,7 +222,6 @@ export class MenuEntryComponent implements OnInit {
           icon: data.icon,
           status: data.status === 'A' ? 'Active' : 'Suspended'
         });
-        console.log(data);
       },
       (error) => {
         this.appSettingService.showError('Error loading data.');
@@ -227,6 +270,7 @@ export class MenuEntryComponent implements OnInit {
       const selectedModule = this.moduleList.find(
         module => module.ModuleMasterSid == this.menuForm.value.ModuleMasterSid
       );
+      
 
       const payload = {
         ...formValue,
@@ -279,11 +323,31 @@ export class MenuEntryComponent implements OnInit {
   };
 
   private preparePermissionsPayload(): any[] {
-    return this.permissions.controls.map(permissionGroup => ({
+    const permissionNames =  this.permissions.controls.map(permissionGroup => ({
       permissionName: permissionGroup.get('permissionName')?.value,
     }));
+    return permissionNames
   }
 
+  // Add this method to your component
+  duplicatePermissionValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value || !this.permissions) {
+        return null;
+      }
+
+      const currentPermissionName = control.value.trim().toLowerCase();
+      const duplicateIndex = this.permissions.controls.findIndex((permission, index) => {
+        // Skip current control being validated
+        if (control.parent && control.parent === permission) {
+          return false;
+        }
+        return permission.get('permissionName')?.value?.trim().toLowerCase() === currentPermissionName;
+      });
+
+      return duplicateIndex >= 0 ? { duplicatePermission: true } : null;
+    };
+  }
 
 
   trackByIndex(index: number, item: any): number {

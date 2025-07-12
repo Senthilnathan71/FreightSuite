@@ -55,7 +55,7 @@ export class RolemenuComponent implements OnInit {
 
     modalRef: NgbModalRef;
 	roleMenuData : any;
-	sortColumn: string = 'MenuMasterSid'; 
+	sortColumn: string = 'menuName'; 
     sortDirection: string = 'asc';
 
 	modeOfStatus = [
@@ -75,6 +75,7 @@ export class RolemenuComponent implements OnInit {
 	currentMenuId: number;
 	TandCList: any;
     isFavorite: boolean = false;
+	menuPermissionsFetched : boolean;
 
 	toggleFavorite() {
 		this.isFavorite = !this.isFavorite;
@@ -93,6 +94,7 @@ export class RolemenuComponent implements OnInit {
 		this.fetchAllData();
 		this.initSearchForm();
 		this.setupValueChanges();
+		this.onRoleMenuSearch();
 		this.appSettingService.getUser().subscribe(
 			(user)=>{
 				this.userData = user;
@@ -115,9 +117,9 @@ export class RolemenuComponent implements OnInit {
 }
 
 applySorting() {
-  if (!this.results) return;
+  if (!this.roleMenuList) return;
   
-  this.results.sort((a, b) => {
+  this.roleMenuList.sort((a, b) => {
     // Handle nested properties (like menuMaster.MenuName)
     let valueA = this.sortColumn.includes('.') 
       ? this.getNestedProperty(a, this.sortColumn)
@@ -148,30 +150,67 @@ private getNestedProperty(obj: any, path: string): any {
   return path.split('.').reduce((o, p) => o?.[p], obj);
 }
 
-
-	onSearch(){
-		const payload = {
-			searchType : this.searchType,
-			filterValue : this.filterValue
-		}
-
-		this.settingService.searchRoleMenu(payload).subscribe(
-			(resp:any)=>{
-				if(resp.status){
-					this.results = resp.data || [];
-					this.applySorting();
-					this.searchPerformed = true;
-					this.totalAmountOfCollection = this.results.length;
-					this.updatePaginationData();
-				} else {
-					this.appSettingService.showError('Error Searching Role Menu');
-				}
-			},
-			(error)=>{
-				console.error('Error Searching Role Menu',error);
+onRoleMenuSearch(){
+	const params = {
+		search : this.filterValue?.trim() || '',
+		page : this.page,
+		pageSize : this.pageSize
+	};
+	this.settingService.searchRoleMenu(params).subscribe({
+		next : (response:any) => {
+			if(response.status){
+				this.roleMenuList = response?.data.items.map((rolemenu : any)=>{
+					return {
+						...rolemenu,
+						menuName : rolemenu?.menuMaster?.MenuName,
+						roleName : rolemenu?.roleMaster?.UserRoleName,
+						status : rolemenu.status
+					}
+				})
+				this.totalAmountOfCollection = response.data?.totalCount;
+				console.log(this.roleMenuList);
+				console.log(this.totalAmountOfCollection);
+				this.applySorting();
+			} else {
+				this.roleMenuList = [];
+				this.totalAmountOfCollection = 0;
 			}
-		)
-	}
+			this.searchPerformed = true;
+		},
+		error :(err)=>{
+			console.error('Error loading Role menu',err);
+		}
+	})
+}
+
+clearFilterValue(){
+	this.filterValue = '';
+	this.onRoleMenuSearch();
+}
+
+	// onSearch(){
+	// 	const payload = {
+	// 		searchType : this.searchType,
+	// 		filterValue : this.filterValue
+	// 	}
+
+	// 	this.settingService.searchRoleMenu(payload).subscribe(
+	// 		(resp:any)=>{
+	// 			if(resp.status){
+	// 				this.results = resp.data || [];
+	// 				this.applySorting();
+	// 				this.searchPerformed = true;
+	// 				this.totalAmountOfCollection = this.results.length;
+	// 				this.updatePaginationData();
+	// 			} else {
+	// 				this.appSettingService.showError('Error Searching Role Menu');
+	// 			}
+	// 		},
+	// 		(error)=>{
+	// 			console.error('Error Searching Role Menu',error);
+	// 		}
+	// 	)
+	// }
 
 	deleteRoleMenuById(RoleMenuMasterSid : number){
 		const dialogRef = this.dialog.open(DeleteWarningComponent);
@@ -182,7 +221,7 @@ private getNestedProperty(obj: any, path: string): any {
 						(resp:any)=>{
 							if(resp.status){
 								this.appSettingService.showSuccess('Role Menu Deleted Successfully');
-								this.onSearch();
+								this.onRoleMenuSearch()
 							} else {
 								this.appSettingService.showError('Error Deleting Role Menu');
 							}
@@ -199,7 +238,7 @@ private getNestedProperty(obj: any, path: string): any {
 	updatePaginationData(){
 		let start = (this.page - 1) * this.pageSize;
 		let end = start + this.pageSize;
-		this.roleMenuList = this.results.slice(start,end);
+		this.onRoleMenuSearch()
 	}
 
 	reset(){
@@ -319,17 +358,29 @@ private getNestedProperty(obj: any, path: string): any {
 			this.roleMenuData = data;
 			const ourModule = this.moduleList.find(module => module.ModuleName === data.Module);
 			this.filterMenuByModule(ourModule);
+			this.getMenuPermissions(data)
+			let permissions = data.MenuPermissions;
+			if(typeof permissions === 'string') {
+				try {
+					permissions = JSON.parse(permissions)
+				} catch(e){
+					console.error('Error parsing permissions:',e);
+					permissions = {};
+				}
+			}
 			this.roleMenuForm.patchValue({
 				Module: data.Module,
 				MenuMasterSid: data.MenuMasterSid,
 				RoleMasterSid: data.RoleMasterSid,
 				Remarks: data.Remarks,
 				status: data.status === 'A' ? 'Active' : 'Suspended',
-				InsertRole: data.InsertRole === 'Y' ? true : false,
-				ViewRole: data.ViewRole === 'Y' ? true : false,
-				UpdateRole: data.UpdateRole === 'Y' ? true : false,
-				DeleteRole: data.DeleteRole === 'Y' ? true : false
+				
 			})
+			if(permissions){
+			this.selectedPermission = Object.entries(permissions)
+				.filter(([key, value]) => value === 'isTrue')
+				.map(([key]) => key);
+			}
 			if(data.RoleMenuMasterSid){
 				this.RoleMenuMasterSid = data.RoleMenuMasterSid;
 			}
@@ -355,8 +406,11 @@ private getNestedProperty(obj: any, path: string): any {
 	getMenuPermissions(menu){
 		this.settingService.getMenuPermissions(menu.MenuMasterSid).subscribe(
 			(resp:any)=>{
-				if(resp.status){
-					this.menuPermissionList = resp.data;
+				if(resp){
+					this.menuPermissionList = resp;
+					if(this.menuPermissionList.length > 0){
+						this.menuPermissionsFetched = true;
+					}
 				} else {
 					this.appSettingService.showError('Error loading menu permissions.')
 				}
@@ -364,7 +418,9 @@ private getNestedProperty(obj: any, path: string): any {
 		)
 	}
 
-	handlePermission(permissionName,state:boolean){
+
+	handlePermission(permissionName,event){
+		const state = (event.target as HTMLInputElement).checked;
 		if(state){
 			this.selectedPermission.push(permissionName);
 		} else {
@@ -374,11 +430,38 @@ private getNestedProperty(obj: any, path: string): any {
 	}
 
 	updatePermissionControl(){
-		this.menuPermissionList.map(p => {
-			if(this.selectedPermission.includes(p.permissionName)){
-				
-			}
+		const result : any = {};
+		this.menuPermissionList.forEach((permission)=>{
+			const key = permission.permissionName;
+			result[key]= this.selectedPermission.includes(permission.permissionName) ? 
+			'isTrue' : 'isFalse';
 		})
+		this.roleMenuForm.get('MenuPermissions')?.setValue(result,{emitEvent:false});
+	}
+
+	onCheckboxKeydown(event: KeyboardEvent, permissionName: string) {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			this.handlePermission(permissionName, { target: { checked: !this.selectedPermission.includes(permissionName) } } as any);
+		}
+
+		if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+			event.preventDefault();
+			const checkboxes = document.querySelectorAll<HTMLInputElement>('.form-check-input');
+			const currentIndex = Array.from(checkboxes).findIndex(cb => cb === event.target);
+
+			if (currentIndex >= 0) {
+				let nextIndex = currentIndex;
+
+				if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+					nextIndex = Math.min(currentIndex + 1, checkboxes.length - 1);
+				} else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+					nextIndex = Math.max(currentIndex - 1, 0);
+				}
+
+				checkboxes[nextIndex]?.focus();
+			}
+		}
 	}
 
 	onSubmit(){
@@ -405,7 +488,7 @@ private getNestedProperty(obj: any, path: string): any {
 					if(resp.status){
 						this.appSettingService.showSuccess('Role Menu Updated Successfully');
 						this.closeModal();
-						this.onSearch();
+						this.onRoleMenuSearch();
 					} else {
 						this.appSettingService.showError('Error Updating Role Menu')
 					}
@@ -420,9 +503,9 @@ private getNestedProperty(obj: any, path: string): any {
 					if(resp.status){
 						this.appSettingService.showSuccess('Role Menu Created Successfully');
 						this.closeModal();
-						this.onSearch();
+						this.onRoleMenuSearch();
 					} else {
-						this.appSettingService.showError('Error Creating Role Menu');
+						this.appSettingService.showError(resp.message);
 					}
 				},
 				(error)=>{
@@ -439,7 +522,18 @@ private getNestedProperty(obj: any, path: string): any {
 	closeModal(){
 		this.menuList = [];
 		this.isEditMode = false;
+		this.roleMenuForm.reset({
+			status : 'Active'
+		})
+		this.menuPermissionsFetched = false;
 		this.modalRef.close()
+	}
+	
+	clearMenuPermissions(){
+		this.menuPermissionsFetched = false;
+		this.roleMenuForm.get('MenuPermissions').reset({});
+		this.menuPermissionList = [];
+		this.selectedPermission = [];
 	}
 
 	showInfo() {
