@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal, NgbModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 
@@ -6,7 +6,8 @@ import { NgbActiveModal, NgbModal, NgbModalModule } from '@ng-bootstrap/ng-boots
     standalone: true,
     imports: [
         DatePipe,
-        NgbModalModule
+        NgbModalModule,
+        CommonModule
     ],
     selector: 'dofi-info',
     templateUrl: 'details.component.html'

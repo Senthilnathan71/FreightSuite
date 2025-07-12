@@ -745,17 +745,25 @@
                                     <aside class="col-md-4">
                                         <div class="custom-form-group">
                                             <input type="text" id="text-input" placeholder=""
-                                                class="custom-input-field sm" formControlName="email" [textWithNumbers]="100">
+                                                class="custom-input-field sm" formControlName="email">
                                             <label for="text-input" class="input-label">E-mail <span
                                                     class="text-danger">*</span></label>
-                                            @if(leadForm.get('email')?.touched && leadForm.get('email')?.invalid){
+                                            @if((leadForm.get('email')?.touched || leadForm.get('email')?.dirty) && leadForm.get('email')?.invalid) {
                                             <div class="error-message">
-                                                @if(leadForm.get('email')?.hasError('required')){
+                                                @if(leadForm.get('email')?.hasError('required')) {
                                                 <span>Email is required</span>
-                                                } @else if(leadForm.get('email')?.hasError('emailInvalid')){
-                                                <span>Invalid Email Address</span>
-                                                } @else if(leadForm.get('email')?.hasError('maxlength')){
-                                                <span>Max 100 Characters</span>
+                                                }
+                                                @else if(leadForm.get('email')?.hasError('trailingComma')) {
+                                                <span>Please remove trailing comma or add another email</span>
+                                                }
+                                                @else if(leadForm.get('email')?.hasError('duplicateEmails')) {
+                                                <span>Duplicate emails found</span>
+                                                }
+                                                @else if(leadForm.get('email')?.hasError('invalidEmails')) {
+                                                <span>Invalid email format</span>
+                                                }
+                                                @else if(leadForm.get('email')?.hasError('maxlength')) {
+                                                <span>Maximum 100 characters allowed</span>
                                                 }
                                             </div>
                                             }

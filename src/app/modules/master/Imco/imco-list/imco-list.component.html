@@ -11,10 +11,10 @@
 <div class="row">
 
     <app-listpage
-  [title]="'Imco'"
+  [title]="'IMCO'"
   [searchOptions]="[
-    { value: 'ImcoClass', label: ' Imco Class' },
-    { value: 'ImcoName', label: 'Imco Name' },
+    { value: 'ImcoClass', label: ' IMCO Class' },
+    { value: 'ImcoName', label: 'IMCO Name' },
     { value: 'ImcoUn', label: 'UN no' },
     { value: 'PackingGroup', label: 'Packing Group' },
     { value: 'status', label: 'Status' }
@@ -36,7 +36,7 @@
   <tr class="bg-info">
     <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
     <th class="bg-transparent text-light" scope="col" (click)="sort('ImcoClass')">
-      Imco Class
+      IMCO Class
       <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ImcoClass', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ImcoClass'}"></i>
     </th>
     <th class="bg-transparent text-light" scope="col" (click)="sort('ImcoUn')">
@@ -59,13 +59,13 @@
                             <td>
                                 <div class="d-flex align-items-center justify-content-center">
                                     <a class="text-info mx-2" class="link mx-2 ps-3 "
-                                        [routerLink]="['/master/Imco/entry/',item.ImcoMasterSid]">
+                                        [routerLink]="['/master/imco/entry/',item.ImcoMasterSid]">
                                         <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </a>
-                                    <a class="text-danger mx-2 ps-3 border-start"
+                                    <!-- <a class="text-danger mx-2 ps-3 border-start"
                                         (click)="deleteIMCOById(item.ImcoMasterSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
+                                    </a> -->
                                 </div>
                             </td>
                             <td>

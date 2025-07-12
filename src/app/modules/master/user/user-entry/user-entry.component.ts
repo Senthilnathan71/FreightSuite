@@ -19,6 +19,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
+import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
+import { PasswordValidators } from 'src/app/core/ValidationFn/password.validators';
 
 @Component({
 	selector: 'app-user-entry',
@@ -90,14 +92,14 @@ export class UserEntryComponent implements OnInit {
 	initUserForm() {
 		this.userForm = this.fb.group({
 			userName: ['', [Validators.required]],
-			userEmail: ['', [Validators.required,this.customEmailValidator()]],
+			userEmail: ['', [Validators.required,EmailValidators.singleEmail()]],
 			department: [[], [Validators.required]], 
 			DefaultDept: [''],
 			isSalesperson: [false],
 			userTypeId: [,[Validators.required]],
 			contactNumber: [],
 			status: ['Active'],
-			userPassword: [,[this.customPasswordValidator()]],
+			userPassword: [,[PasswordValidators.validate()]],
 			CountryMasterSid: [,[Validators.required]],
 			CompanyMasterSid : [,[Validators.required]],
 			branches : [[],[Validators.required]],
@@ -274,58 +276,6 @@ export class UserEntryComponent implements OnInit {
 		modalRef.componentInstance.idValue = this.userData?.UserMasterSid;
 	}
 
-	customEmailValidator(): ValidatorFn {
-		return (control: AbstractControl): ValidationErrors | null => {
-			const email = control.value?.trim();
-
-			if (!email) return { required: true }; // Empty email error
-
-			// Enhanced Email Pattern for Strict Validation
-			const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-			return emailPattern.test(email) ? null : { emailInvalid: true };
-		};
-	}
-
-	customPasswordValidator(): ValidatorFn {
-		return (control: AbstractControl): ValidationErrors | null => {
-			const password = control.value?.trim();
-
-			// Return required error if empty
-			if (!password) return this.isEditMode ? null : {required : true};
-
-			const errors: ValidationErrors = {};
-
-
-			// Check minimum length (8 characters)
-			if (password.length < 8) {
-				errors['minLength'] = true;
-			}
-
-			// Check for at least one uppercase letter
-			// if (!/[A-Z]/.test(password)) {
-			// 	errors['noUppercase'] = true;
-			// }
-
-			// Check for at least one lowercase letter
-			if (!/[a-z]/.test(password)) {
-				errors['noLowercase'] = true;
-			}
-
-			// Check for at least one number
-			if (!/\d/.test(password)) {
-				errors['noNumber'] = true;
-			}
-
-			// Check for at least one special character
-			if (!/[@$!%*?&]/.test(password)) {
-				errors['noSpecialChar'] = true;
-			}
-
-			// Return null if no errors, otherwise return the errors object
-			return Object.keys(errors).length > 0 ? errors : null;
-		};
-	}
 
 	togglePassword(input: HTMLInputElement): void {
 		this.passwordView = true;

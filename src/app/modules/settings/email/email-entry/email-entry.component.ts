@@ -7,6 +7,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { SettingsService } from '../../settings.service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
+import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 
 @Component({
   selector: 'app-email-entry',
@@ -47,10 +48,10 @@ export class EmailEntryComponent implements OnInit {
 
   initMailForm() {
     this.emailForm = this.fb.group({
-      EmailTo: ['', [Validators.required, this.customEmailValidator()]],
-      EmailCC: ['', [this.customEmailValidator()]],
-      Subject: [''],
-      Mailbody: ['']
+      EmailTo: ['', [Validators.required, EmailValidators.multipleEmails()]],
+      EmailCC: ['', [EmailValidators.multipleEmails()]],
+      Subject: ['',[Validators.maxLength(500)]],
+      Mailbody: ['',[Validators.maxLength(2000)]]
     });
   }
 

@@ -22,16 +22,54 @@
       <div class="card-body">
         <div class="row">
           <div class="d-flex gap-4 align-items-center px-2 mb-2">
-            <div class="col-md-5">
+            <div class="col-md-5 py-2">
               <div class="input-group">
                 <input type="text" formControlName="EmailTo" placeholder="To" class="form-control">
                 <span class="input-group-text"><i class="fas fa-arrow-right" style="transform: rotate(45deg);"></i></span>
+                @if((emailForm.get('EmailTo')?.touched || emailForm.get('EmailTo')?.dirty) && emailForm.get('EmailTo')?.invalid) {
+                <div class="error-message">
+                  @if(emailForm.get('EmailTo')?.hasError('required')) {
+                  <span>Email To is required</span>
+                  }
+                  @else if(emailForm.get('EmailTo')?.hasError('trailingComma')) {
+                  <span>Please remove trailing comma or add another email</span>
+                  }
+                  @else if(emailForm.get('EmailTo')?.hasError('duplicateEmails')) {
+                  <span>Duplicate emails found</span>
+                  }
+                  @else if(emailForm.get('EmailTo')?.hasError('invalidEmails')) {
+                  <span>Invalid email format</span>
+                  }
+                  @else if(emailForm.get('EmailTo')?.hasError('maxlength')) {
+                  <span>Maximum 100 characters allowed</span>
+                  }
+                </div>
+                }
               </div>
             </div>
-            <div class="col-md-5">
+            <div class="col-md-5 py-2">
               <div class="input-group">
                 <input type="text" formControlName="EmailCC" placeholder="Cc" class="form-control">
                 <span class="input-group-text"><i class="fas fa-arrow-right" style="transform: rotate(45deg);"></i></span>
+                @if((emailForm.get('EmailCC')?.touched || emailForm.get('EmailCC')?.dirty) && emailForm.get('EmailCC')?.invalid) {
+                <div class="error-message">
+                  @if(emailForm.get('EmailCC')?.hasError('required')) {
+                  <span>Email CC is required</span>
+                  }
+                  @else if(emailForm.get('EmailCC')?.hasError('trailingComma')) {
+                  <span>Please remove trailing comma or add another email</span>
+                  }
+                  @else if(emailForm.get('EmailCC')?.hasError('duplicateEmails')) {
+                  <span>Duplicate emails found</span>
+                  }
+                  @else if(emailForm.get('EmailCC')?.hasError('invalidEmails')) {
+                  <span>Invalid email format</span>
+                  }
+                  @else if(emailForm.get('EmailCC')?.hasError('maxlength')) {
+                  <span>Maximum 100 characters allowed</span>
+                  }
+                </div>
+                }
               </div>
             </div>
             <div class="col-2">
@@ -43,12 +81,28 @@
           <aside class="col-md-12 mb-3">
             <div class="input-group">
               <input type="text" formControlName="Subject" class="form-control" placeholder="Subject">
+              @if((emailForm.get('Subject')?.touched || emailForm.get('Subject')?.dirty) && emailForm.get('Subject')?.invalid) {
+                <div class="error-message">
+                  @if(emailForm.get('Subject')?.hasError('maxlength')) {
+                  <span>Maximum 500 characters allowed</span>
+                  }
+                </div>
+                }
             </div>
           </aside>
           <aside class="col-12">
+            <div class="input-group">
             <textarea name="body" id="body" placeholder="Type Something"
               style="min-height: 300px; overflow-y: auto; width: 100%; resize: none"
               class="rounded" formControlName="Mailbody"></textarea>
+              @if((emailForm.get('Mailbody')?.touched || emailForm.get('Mailbody')?.dirty) && emailForm.get('Mailbody')?.invalid) {
+              <div class="error-message">
+                @if(emailForm.get('Mailbody')?.hasError('maxlength')) {
+                <span>Maximum 2000 characters allowed</span>
+                }
+              </div>
+              }
+              </div>
           </aside>
         <div class="col-12 mt-2">
             <input type="file" class="d-none" multiple #fileInput (change)="onFileChange($event)">

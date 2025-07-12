@@ -152,7 +152,7 @@ applySorting() {
 
 
 	navigateToCreate() {
-		this.route.navigate(['master/Imco/entry']);
+		this.route.navigate(['master/imco/entry']);
 	}
 
 	reset() {

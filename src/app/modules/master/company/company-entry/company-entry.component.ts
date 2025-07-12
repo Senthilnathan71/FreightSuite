@@ -23,6 +23,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 @Component({
 	selector: 'app-company-entry',
 	standalone: true,
@@ -140,7 +141,7 @@ export class CompanyEntryComponent implements OnInit {
 			CurrencyMasterSid: [null, [Validators.required]],
 			addressLine1: ['', [Validators.required]],
 			webSite: ['',[this.customWebsiteValidator(),Validators.maxLength(100)]],
-			email: ['', [this.customEmailValidator(),Validators.maxLength(100)]],
+			email: ['', [EmailValidators.multipleEmails(),Validators.maxLength(100)]],
 			phoneNumber: [],
 			Pan: [''],
 			isHo: [false],
@@ -168,7 +169,7 @@ export class CompanyEntryComponent implements OnInit {
 			branchCountryMasterSid: [null, [Validators.required]],
 			branchWebSite: ['', [Validators.maxLength(100),this.customWebsiteValidator()]],
 			branchPhoneNumber: ['', [Validators.maxLength(20)]],
-			branchEmail: ['', [Validators.maxLength(100), this.customEmailValidator()]],
+			branchEmail: ['', [Validators.maxLength(100), EmailValidators.multipleEmails()]],
 			branchTimeZone: ['', [Validators.maxLength(6)]],
 			branchRemarks: ['', [Validators.maxLength(500)]],
 			branchStatus: ['Active'],
