@@ -10,6 +10,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-unit-list',
@@ -21,17 +22,18 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     NgbPaginationModule,
     RouterModule,
     MatDialogModule,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent
   ],
   templateUrl: './unit-list.component.html',
   styleUrl: './unit-list.component.scss'
 })
 export class UnitListComponent {
-  searchType = 'unitName';
   filterValue = '';
+  searchType = 'unitName';
   unitList: any[] = [];
   allUnits: any[] = [];
-  searchPerformed = false;
+  searched = false;
   loading: boolean = false;
   userData: any;
 
@@ -40,6 +42,9 @@ export class UnitListComponent {
   pageSize = 10;
   totalLengthOfCollection: number = 0;
   isFavorite: boolean = false;
+
+  sortColumn: string = 'unitName';
+  sortDirection: string = 'asc';
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -59,6 +64,31 @@ export class UnitListComponent {
       this.userData = user;
     }
   });
+  this.loadUnits();
+  }
+
+  loadUnits(): void {
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+    };
+
+    this.masterService.searchUnitList(params).subscribe({
+      next: (response) => {
+        if(response.data) {
+          this.unitList = response.data.items;
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searched = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching units:', err);
+        this.unitList = [];
+        this.totalLengthOfCollection = 0;
+      },
+    });
   }
 
   onSearch(event: { type: string, value: string }) {
@@ -105,7 +135,7 @@ export class UnitListComponent {
     this.allUnits = res.data || res;
     this.unitList = [...this.allUnits];
     this.totalLengthOfCollection = this.unitList.length;
-    this.searchPerformed = true;
+    this.searched = true;
     this.page = 1;
     this.updatePaginatedData();
     this.loading = false;
@@ -117,10 +147,45 @@ export class UnitListComponent {
     this.loading = false;
   }
 
+  sort(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.applySorting();
+  }
+
+  applySorting() {
+    // if (!Array.isArray(this.unitList)) {
+    //   this.unitList = [];
+    //   return;
+    // }
+
+    this.unitList.sort((a,b) => {
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
+
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.unitList = this.allUnits.slice(startIndex, endIndex);
+    this.loadUnits();
   }
 
   trackByUnitId(index: number, item: any): number {
@@ -154,7 +219,7 @@ export class UnitListComponent {
     this.filterValue = '';
     this.searchType = 'unitName';
     this.page = 1;
-    this.searchPerformed = false;
+    this.searched = false;
     this.unitList = [];
     this.allUnits = [];
     this.totalLengthOfCollection = 0;
@@ -189,5 +254,8 @@ export class UnitListComponent {
   });
 }
 
+clearFilterValue() {
+    this.filterValue = '';
+  }
  
 }
