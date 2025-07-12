@@ -159,7 +159,7 @@
                         </h5>
                     </aside>
                     <aside [formGroup]="menuForm" class="col-md-6 mt-2">
-                        <div class="table-responsive">
+                        <div class="table-responsive overflow-visible">
                             <table class="table table-hover align-middle no-wrap table-bordered">
                                 <thead>
                                     <tr class="bg-info text-white rounded-top">
@@ -169,37 +169,67 @@
                                     </tr>
                                 </thead>
                                 <tbody formArrayName="permissions">
-                                    @for (permission of permissions.controls; track $index; let last = $last) {
-                                    <tr [formGroupName]="$index">
-                                        <td>{{$index + 1}}</td>
+                                    @for (permission of permissions.controls; track permission.value?.permissionName || i;
+                                    let i = $index; let last =
+                                    $last) {
+                                    <tr [formGroupName]="i">
+                                        <td>{{i + 1}}</td>
                                         <td class="py-0">
                                             <div class="row">
-                                                <div class="col-md-12">
+                                                <div class="col-md-12 py-2">
                                                     <div class="custom-form-group">
-                                                        <input type="text" formControlName="permissionName" class="custom-input-field sm"
-                                                            placeholder="Permission Name">
-                                                        <!-- <label for="text" class="input-label">Permission Name</label> -->
-                                                        <!-- @if(permission.get('permissionName')?.touched &&
-                                                        permission.get('permissionName')?.invalid){
+                                                        <input type="text" formControlName="permissionName"
+                                                            class="custom-input-field sm" placeholder="Permission Name" [class.is-invalid]="permission.get('permissionName')?.invalid && 
+                                      (permission.get('permissionName')?.dirty || 
+                                       permission.get('permissionName')?.touched)">
+                                                        @if(permission.get('permissionName')?.hasError('required') &&
+                                                        (permission.get('permissionName')?.dirty ||
+                                                        permission.get('permissionName')?.touched)) {
                                                         <div class="error-message">
-                                                            @if(permission.get('permissionName')?.hasError('required')){
-                                                            <span>Permission name is required</span>
-                                                            }
+                                                            Permission name is required
                                                         </div>
-                                                        } -->
-                                                    </div>
+                                                        }
+                                                        @if(permission.get('permissionName')?.hasError('maxlength') &&
+                                                        (permission.get('permissionName')?.dirty ||
+                                                        permission.get('permissionName')?.touched)) {
+                                                        <div class="error-message">
+                                                            Maximum 100 characters allowed
+                                                        </div>
+                                                        }
+                                                        @if(permission.get('permissionName')?.hasError('duplicatePermission') &&
+                                                        (permission.get('permissionName')?.dirty ||
+                                                        permission.get('permissionName')?.touched)) {
+                                                        <div class="error-message">
+                                                            Permission name already exists
+                                                        </div>
+                                                        }
+                                                        </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="pe-2">
+                                        <td class="pe-2 position-relative z-3">
                                             @if(last) {
-                                            <button type="button" class="btn ms-auto btn-sm btn-outline-info me-2" (click)="addPermission()" title="Add Permission">
-                                                <i class="fas fa-plus"></i>
+                                            <button type="button" class="btn ms-auto btn-sm btn-outline-info me-2"
+                                                (click)="addPermission()" title="Add Permission">
+                                                <!-- <i-feather class="feather-sm me-2" name=""></i-feather> -->
+                                                <i class="fas fa-plus"></i> Custom
                                             </button>
+                                            <div ngbDropdown placement="top-end" class="d-inline-block">
+                                                <button type="button" class="btn btn-sm btn-outline-primary me-2"
+                                                    id="dropdown1" ngbDropdownToggle> <i class="fas fa-plus"></i>
+                                                    Prebuilt </button>
+                                                <div ngbDropdownMenu aria-labelledby="dropdown1" class="z-2 border">
+                                                    @for(option of specialOptions;track option){
+                                                    <button ngbDropdownItem class="fw-bold text-info"
+                                                        (click)="createPermissionWithOption(option)"><i
+                                                            class="fas fa-{{getOptionIcon(option)}} text-info me-2"></i>{{option}}</button>
+                                                    }
+                                                </div>
+                                            </div>
                                             }
                                             @if(permissions.length > 1) {
                                             <button type="button" class="btn btn-sm btn-outline-danger me-2"
-                                                (click)="removePermission($index)" title="Remove Permission">
+                                                (click)="removePermission(i)" title="Remove Permission">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                             }
@@ -214,8 +244,6 @@
             </div>
         </div>
     </div>
-
-</div>
 @if(isEditMode){
     <div class="col-12 mt-3">
     <div class="card">

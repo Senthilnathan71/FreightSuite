@@ -1994,10 +1994,14 @@
                     </aside> -->
                     <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select">
+                                    @if(CustomerLoginSid){
                                     <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
-                                    <ng-option value="Active">Active</ng-option>
-                                    <ng-option value="Suspended">Suspended</ng-option>
-                                </ng-select>
+                                        <ng-option value="Active">Active</ng-option>
+                                        <ng-option value="Suspended">Suspended</ng-option>
+                                    </ng-select>
+                                    } @else {
+                                    <input type="text" name="status" class="custom-input-field sm" formControlName="status" id="text-input" readonly>
+                                    }
                                     <label for="" class="input-label">Status <span
                                             class="text-danger">*</span></label>
                                 </div>

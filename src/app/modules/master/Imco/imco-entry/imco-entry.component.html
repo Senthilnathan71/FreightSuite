@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Imco' : ' Imco'}}</h4>
+                <h4 class="page-title mb-0">{{isEditMode ? 'Edit IMCO' : ' IMCO'}}</h4>
                 @if(isEditMode){
                 <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
                     <i class="fas fs-6 fa-info-circle"></i>
@@ -34,13 +34,13 @@
 
     <div class="col-md-12" [formGroup]="ImcoForm">
         <div class="card h-100">
-            <div class="card-body">
+            <div class="card-body pb-0">
                 <div class="row">
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="ImcoClass" [textWithNumbers]="10">
-                            <label for="text-input" class="input-label">Imco Class <span
+                            <label for="text-input" class="input-label">IMCO Class <span
                                     class="text-danger">*</span></label>
                             @if(ImcoForm.get('ImcoClass').touched && ImcoForm.get('ImcoClass').invalid){
                             <div class="error-message">
