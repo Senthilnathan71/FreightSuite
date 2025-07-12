@@ -27,6 +27,7 @@ export class DoctypeListComponent {
    searchPerformed = false;
    sortColumn: string = 'DocumentTypeName'; 
    sortDirection: string = 'asc';
+   loading = false;
 
    // pagination
    page = 1;
@@ -52,28 +53,39 @@ export class DoctypeListComponent {
             this.userData = user
          }
       });
+      this.loadDocTypes();
    }
+   loadDocTypes(): void {
+    this.loading = true;
+    
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
 
-   onSearch(event: { type: string, value: string }) {
-      this.searchType = event.type;
-      this.filterValue = event.value;
-      console.log('Searching with:', this.searchType, this.filterValue);
-      this.search();
-   }
-
-   search() {
-      const payload = {
-         searchType: this.searchType,
-         filterValue: this.filterValue,
+    this.masterService.searchDocTypes(params).subscribe({
+      next: (response:any) => {
+        if(response.data){
+          this.docTypeList = response.data.items;
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searchPerformed = true;
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching document types:', err);
+        this.docTypeList = [];
+        this.totalLengthOfCollection = 0;
+        this.loading = false;
       }
-      this.masterService.searchDocTypes(payload).subscribe((res: any) => {
-         this.results = res.data;
-         this.applySorting(); 
-         this.searchPerformed = true;
-         this.updatePaginatedData();
-         this.totalLengthOfCollection = this.results.length || 0;
-      });
-   }
+    });
+  }
+
+   
    sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -83,13 +95,14 @@ export class DoctypeListComponent {
     this.sortColumn = column;
     this.sortDirection = 'asc';
   }
+   this.loadDocTypes();
   
   this.applySorting();
   this.updatePaginatedData();
 }
 
 applySorting() {
-  this.results.sort((a, b) => {
+  this.docTypeList.sort((a, b) => {
     let valueA = a[this.sortColumn];
     let valueB = b[this.sortColumn];
     
@@ -121,8 +134,12 @@ applySorting() {
    updatePaginatedData(): void {
       const startIndex = (this.page - 1) * this.pageSize;
       const endIndex = startIndex + this.pageSize;
-      this.docTypeList = this.results.slice(startIndex, endIndex);
+       this.loadDocTypes();
    }
+   clearFilterValue() {
+    this.filterValue = '';
+     this.loadDocTypes();
+  }
 
    trackByIndex(index: number, item: any): number {
       return index;
@@ -135,7 +152,7 @@ applySorting() {
             this.masterService.deleteDocTypeById(id).subscribe((resp: any) => {
                this.appSettingService.showSuccess("Deleted!");
                this.router.navigate(['master/doctype/list'])
-               this.search();
+              
             });
          }
       });

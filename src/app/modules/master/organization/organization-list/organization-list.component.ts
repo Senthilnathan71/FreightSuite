@@ -33,6 +33,7 @@ export class OrganizationListComponent implements OnInit {
   organizationList: any[] = []
   searchPerformed = false;
   userData : any;
+  loading = false;
 
   // pagination
   page = 1;
@@ -59,30 +60,41 @@ export class OrganizationListComponent implements OnInit {
           this.userData = user;
         }
       }
-    )
+    );
+    this.loadOrganizations();
   }
+   
+  loadOrganizations(): void {
+    this.loading = true;
+    
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue,
-    }
-    this.masterService.searchOrganizationList(payload).subscribe((res: any) => {
-      this.results = res;
-       this.allOrganizations = [...this.results];
-       this.applySorting();
-      this.searchPerformed = true;
-      this.updatePaginatedData();  // Update paginated data
-      this.totalLengthOfCollection = this.results.length || 0;
+    this.masterService.searchOrganizationList(params).subscribe({
+      next: (response) => {
+        if(response) {
+          this.organizationList = response.items;
+          this.totalLengthOfCollection = response.totalCount;
+          this.applySorting();
+          this.searchPerformed = true;
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching organizations:', err);
+        this.organizationList = [];
+        this.totalLengthOfCollection = 0;
+        this.loading = false;
+      }
     });
   }
+
+
   sort(column: string) {
     if (this.sortColumn === column) {
       // Reverse the sort direction if clicking the same column
@@ -92,13 +104,13 @@ export class OrganizationListComponent implements OnInit {
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
-    
+    this.loadOrganizations();
     this.applySorting();
     this.updatePaginatedData();
   }
 
   applySorting() {
-    this.allOrganizations.sort((a, b) => {
+    this.organizationList.sort((a, b) => {
       let valueA = a[this.sortColumn];
       let valueB = b[this.sortColumn];
       
@@ -124,7 +136,7 @@ export class OrganizationListComponent implements OnInit {
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.organizationList = this.allOrganizations.slice(startIndex, endIndex);
+    this.loadOrganizations();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -145,6 +157,10 @@ export class OrganizationListComponent implements OnInit {
 
   navigateToCreateOrganization() {
     this.router.navigate(['master/organization/entry'])
+  }
+  clearFilterValue() {
+    this.filterValue = '';
+    this.loadOrganizations();
   }
 
   reset(){

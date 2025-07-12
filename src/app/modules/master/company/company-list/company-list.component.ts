@@ -8,7 +8,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
-
+ 
 import { MasterService } from 'src/app/modules/master/master.service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
@@ -28,25 +28,27 @@ export class CompanyListComponent implements OnInit {
   companyList: any[] = []
   searchPerformed = false;
   userData : any;
-  sortColumn: string = 'companyName'; 
+  sortColumn: string = 'companyName';
   sortDirection: string = 'asc';
-
+ 
+ 
   // pagination
   page = 1;
   pageSize = 10;
   totalLengthOfCollection: number;
   isFavorite: boolean = false;
-
+ 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
-  } 
-  
+  }
+ 
   constructor(private masterService: MasterService, private router: Router,
     private appSettingService: AppSettingsService, private dialog: MatDialog,
     private userService: authService,
     private excelReportService: ExcelExportService
   ) { }
   ngOnInit() {
+    this.loadCompanies();
     this.appSettingService.getUser().subscribe(
       user => {
         if (user) {
@@ -56,7 +58,7 @@ export class CompanyListComponent implements OnInit {
     )
     this.masterService.getAllCompaniesSearch().subscribe(
       (resp: any) => {
-        console.log(resp);
+        // console.log(resp);
         this.results = resp.flatMap(item => {
           if (!item.branchMaster || item.branchMaster.length === 0) {
             return ({
@@ -86,47 +88,47 @@ export class CompanyListComponent implements OnInit {
         console.log(this.results);
       }
     )
-    
+   
    }
-
-   onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-
-  search() {
-    console.log('Entered search');
-    if (!this.filterValue) {
-      this.searchResults = this.results;
-      this.searchPerformed = true;
-      this.applySorting();
-      this.updatePaginatedData();
-      this.totalLengthOfCollection = this.searchResults.length;
-      console.log('if', this.companyList);
-      return;
+   loadCompanies(): void {
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection.toUpperCase()
+  };
+ 
+ 
+  this.masterService.searchCompanyList(params).subscribe({
+    next: (response) => {
+      if(response) {
+        this.companyList = response.items.map(item => ({
+          CompanyMasterSid: item.CompanyMasterSid,
+          companyName: item.companyName,
+          companyCode: item.companyCode,
+          branchName: item.branchMaster?.[0]?.branchName || '',
+          city: item.branchMaster?.[0]?.cityMaster?.cityName || '',
+          state: item.branchMaster?.[0]?.stateMaster?.stateName || '',
+          country: item.branchMaster?.[0]?.countryMaster?.countryName || '',
+          gst: item.branchMaster?.[0]?.taxRegistrationNo || '',
+          status: item.status === 'A' ? 'Active' : 'Suspended'
+        }));
+        this.totalLengthOfCollection = response.totalCount;
+        this.applySorting();
+        this.searchPerformed = true;
+      }
+     
+    },
+    error: (err) => {
+      console.error('Error fetching companies:', err);
+      this.companyList = [];
+      this.totalLengthOfCollection = 0;
+     
     }
-
-    const filterValue = this.filterValue.toLowerCase();
-
-    this.searchResults = this.results.filter(item => {
-      return (
-        (item.companyName && item.companyName.toLowerCase().includes(filterValue)) ||
-        (item.companyCode && item.companyCode.toLowerCase().includes(filterValue)) ||
-        (item.branchName && item.branchName.toLowerCase().includes(filterValue)) ||
-        (item.city && item.city.toLowerCase().includes(filterValue)) ||
-        (item.state && item.state.toLowerCase().includes(filterValue)) ||
-        (item.country && item.country.toLowerCase().includes(filterValue)) ||
-        (item.gst && item.gst.toLowerCase().includes(filterValue)) ||
-        (item.status && item.status.toLowerCase().includes(filterValue))
-      );
-    });
-    this.applySorting();
-    this.updatePaginatedData();
-    this.searchPerformed = true;
-    this.totalLengthOfCollection = this.searchResults.length;
-  }
+  });
+}
+   
   sort(column: string) {
   if (this.sortColumn === column) {
     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -134,50 +136,66 @@ export class CompanyListComponent implements OnInit {
     this.sortColumn = column;
     this.sortDirection = 'asc';
   }
-  
-  this.applySorting();
-  this.updatePaginatedData();
+  this.page = 1;
+  this.loadCompanies();
 }
-
+ 
+ 
+// applySorting() {
+//   console.log('Entered Sorting')
+//   this.searchResults.sort((a, b) => {
+//     // For company-level sorting
+//     if (['companyName', 'companyCode'].includes(this.sortColumn)) {
+//       return this.compareValues(a[this.sortColumn], b[this.sortColumn]);
+//     }
+//     // For branch-level sorting
+//     else {
+//       const branchA = a.branchMaster?.[0] || {};
+//       const branchB = b.branchMaster?.[0] || {};
+     
+//       switch(this.sortColumn) {
+//         case 'branchName':
+//           return this.compareValues(branchA.branchName, branchB.branchName);
+//         case 'city':
+//           return this.compareValues(branchA.cityMaster?.cityName, branchB.cityMaster?.cityName);
+//         case 'state':
+//           return this.compareValues(branchA.stateMaster?.stateName, branchB.stateMaster?.stateName);
+//         case 'country':
+//           return this.compareValues(branchA.countryMaster?.countryName, branchB.countryMaster?.countryName);
+//         case 'gst':
+//           return this.compareValues(branchA.taxRegistrationNo, branchB.taxRegistrationNo);
+//         default:
+//           return 0;
+//       }
+//     }
+//   });
+// }
 applySorting() {
-  console.log('Entered Sorting')
-  this.searchResults.sort((a, b) => {
-    // For company-level sorting
-    if (['companyName', 'companyCode'].includes(this.sortColumn)) {
-      return this.compareValues(a[this.sortColumn], b[this.sortColumn]);
-    }
-    // For branch-level sorting
-    else {
-      const branchA = a.branchMaster?.[0] || {};
-      const branchB = b.branchMaster?.[0] || {};
-      
-      switch(this.sortColumn) {
-        case 'branchName':
-          return this.compareValues(branchA.branchName, branchB.branchName);
-        case 'city':
-          return this.compareValues(branchA.cityMaster?.cityName, branchB.cityMaster?.cityName);
-        case 'state':
-          return this.compareValues(branchA.stateMaster?.stateName, branchB.stateMaster?.stateName);
-        case 'country':
-          return this.compareValues(branchA.countryMaster?.countryName, branchB.countryMaster?.countryName);
-        case 'gst':
-          return this.compareValues(branchA.taxRegistrationNo, branchB.taxRegistrationNo);
-        default:
-          return 0;
-      }
-    }
+  this.companyList.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
+ 
+    if (valueA == null) valueA = '';
+    if (valueB == null) valueB = '';
+ 
+    valueA = valueA.toString().toLowerCase();
+    valueB = valueB.toString().toLowerCase();
+ 
+    if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
+    if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
+    return 0;
   });
 }
-
+ 
 private compareValues(valueA: any, valueB: any): number {
   // Handle null/undefined values
   if (valueA == null) valueA = '';
   if (valueB == null) valueB = '';
-  
+ 
   // Convert to string for case-insensitive comparison
   valueA = valueA.toString().toLowerCase();
   valueB = valueB.toString().toLowerCase();
-
+ 
   if (valueA < valueB) {
     return this.sortDirection === 'asc' ? -1 : 1;
   }
@@ -186,35 +204,35 @@ private compareValues(valueA: any, valueB: any): number {
   }
   return 0;
 }
-
-
-
+ 
+ 
+ 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.companyList = this.searchResults.slice(startIndex, endIndex);
+    this.loadCompanies();
   }
-
+ 
   trackByIndex(index: number, item: any): number {
     return index;
   }
-
+ 
   deleteCompany(id) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         this.masterService.deleteCompanyById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
-          this.search();
+         
         });
       }
     });
   }
-
+ 
   navigateToCreateDepartment() {
     this.router.navigate(['master/company/entry'])
   }
-
+ 
   resetPage() {
     this.companyList = [];
     this.totalLengthOfCollection = 0;
@@ -225,7 +243,7 @@ private compareValues(valueA: any, valueB: any): number {
     this.sortColumn = 'companyName';
     this.sortDirection = 'asc';
   }
-
+ 
   report(): void {
     const formattedData = this.companyList;
     // const formattedData = this.companyList.flatMap(item => {
@@ -252,9 +270,9 @@ private compareValues(valueA: any, valueB: any): number {
     //       status: branch.status === 'A' ? 'Active' : 'Suspended'
     //   }))
     // });
-
+ 
         const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+ 
         this.excelReportService.exportAsExcel({
             data: formattedData,
             headers: [
@@ -267,11 +285,14 @@ private compareValues(valueA: any, valueB: any): number {
                 { key: 'gst', label: 'Vat/GST No' },
                 { key: 'status', label: 'Status' },
             ],
-            fileName: 'Company-Report', 
+            fileName: 'Company-Report',
             title: companyName
         });
     }
     clearFilterValue(){
       this.filterValue = '';
+      this.loadCompanies();
     }
 }
+ 
+ 

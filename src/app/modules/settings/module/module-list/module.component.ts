@@ -46,6 +46,7 @@ export class ModuleComponent implements OnInit {
   modalRef!: any;
   userData : any;
   moduleData : any
+  loading = false;
   
   searchType = 'ModuleName';
   filterValue = '';
@@ -91,8 +92,38 @@ export class ModuleComponent implements OnInit {
           this.userData = user;
         }
       }
-    )
+    );
+    this.loadModule();
   }
+  loadModule() {
+  this.loading = true;
+  
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection
+  };
+
+  this.settingsService.searchModule(params).subscribe({
+    next: (response:any) => {
+      if(response.data) {
+        this.moduleList = response.data.items || response.data;
+        this.totalAmountOfCollection = response.data.totalCount || response.length;
+        this.applySorting();
+        this.searchPerformed = true;
+      }
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Search error:', err);
+      this.moduleList = [];
+      this.totalAmountOfCollection = 0;
+      this.loading = false;
+    }
+  });
+}
 
   initForm() {
     this.moduleForm = this.fb.group({
@@ -170,7 +201,7 @@ export class ModuleComponent implements OnInit {
         if (resp.status) {
           this.appSettingService.showSuccess(resp.message || 'Operation successful');
           this.closeModal();
-          this.onSearch();
+          
         } else {
           this.appSettingService.showError(resp.message || 'Operation failed');
         }
@@ -188,27 +219,7 @@ export class ModuleComponent implements OnInit {
     }
   }
 
-  onSearch() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'S'
-        : this.filterValue
-    };
-
-    this.settingsService.searchModule(payload).subscribe({
-      next: (res: any) => {
-        this.results = res.data || res;
-        this.applySorting();
-        this.searchPerformed = true;
-        this.updatePaginationData();
-        this.totalAmountOfCollection = this.results.length;
-      },
-      error: (err) => {
-        console.error('Search error:', err);
-      }
-    });
-  }
+  
   sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -218,13 +229,13 @@ export class ModuleComponent implements OnInit {
     this.sortColumn = column;
     this.sortDirection = 'asc';
   }
-  
+  this.loadModule();
   this.applySorting();
   this.updatePaginationData();
 }
 
 applySorting() {
-  this.results.sort((a, b) => {
+  this.moduleList.sort((a, b) => {
     let valueA = a[this.sortColumn];
     let valueB = b[this.sortColumn];
     
@@ -249,8 +260,12 @@ applySorting() {
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.moduleList = this.results.slice(startIndex, endIndex);
+    this.loadModule();
   }
+  clearFilterValue() {
+  this.filterValue = '';
+  this.loadModule();
+}
 
   deleteModuleById(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
@@ -260,7 +275,7 @@ applySorting() {
           next: (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess('Module deleted successfully');
-              this.onSearch();
+              
             }
           },
           error: (err) => {
