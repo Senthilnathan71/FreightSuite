@@ -12,6 +12,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-product-list',
@@ -22,7 +23,8 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     FormsModule,
     CommonModule,
     NgbPaginationModule,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent
 ],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss'
@@ -33,7 +35,7 @@ export class ProductListComponent {
     filterValue : any;
     productList : Product[];
     slicedProductList: Product[];
-    searchPerformed : boolean;
+    searched : boolean = false;
     userData:any;
     modeOfProductType = [
         { id: "1", name: "General" },
@@ -73,32 +75,38 @@ export class ProductListComponent {
                     console.log(this.userData,'UserData')
                 }
             }
-        )
+        );
+        this.loadProducts();
     }
 
-    onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
 
-    search(){        
-        const payload = {
-            searchType : this.searchType,
-            filterValue : this.filterValue
-        }
-        this.masterService.searchProducts(payload).subscribe(
-            (resp:any)=>{
-                this.allProducts = resp.data;
-                this.productList = [...this.allProducts]; 
-                this.applySorting();
-                this.searchPerformed = true;
-                this.updatePaginationData();
-                this.totalAmountOfCollection = this.productList.length || 0;
-            }
-        )
+    loadProducts(): void {
+        
+        const params = {
+            search: this.filterValue?.trim() || '',
+            page: this.page,
+            pageSize: this.pageSize,
+        };
+
+        this.masterService.searchProductList(params).subscribe({
+            next: (response) => {
+                if(response.data){
+                    this.productList = response.data.items;
+                    this.totalAmountOfCollection = response.data.totalCount;
+                    this.applySorting();
+                    this.updatePaginationData();
+                    this.searched = true;
+                }
+            },
+            error: (err) => {
+                console.error('Error fetching products:', err);
+                this.productList = [];
+                this.totalAmountOfCollection = 0;
+            },
+        });
     }
+
+   
     sort(column: string) {
         if (this.sortColumn === column) {
             // Reverse the sort direction if clicking the same column
@@ -114,6 +122,10 @@ export class ProductListComponent {
     }
 
     applySorting() {
+        if (!Array.isArray(this.productList)){
+            this.productList = [];
+            return;
+        }
     this.productList.sort((a, b) => {
         let valueA = a[this.sortColumn];
         let valueB = b[this.sortColumn];
@@ -142,7 +154,6 @@ export class ProductListComponent {
     });
     
     // Update pagination after sorting
-    this.updatePaginationData();
 }
     navigateTocreateProduct(){
         this.router.navigate(["master/product/entry"])
@@ -153,7 +164,7 @@ export class ProductListComponent {
         this.productList =[];
         this.slicedProductList = [];
         this.totalAmountOfCollection = 0;
-        this.searchPerformed = false;
+        this.searched = false;
         this.filterValue = '';
         this.searchType = 'ProductName';
         this.page = 1;
@@ -171,7 +182,7 @@ export class ProductListComponent {
                         (resp:any)=>{
                             if(resp.status){
                                 this.appSettingService.showSuccess('Product Deleted Successfully');
-                                this.search();
+                                this.loadProducts();
                             } else {
                                 console.error('Error Deleting Product',resp.message);
                             }
@@ -221,5 +232,9 @@ export class ProductListComponent {
     getProductType(id){
         return this.modeOfProductType.find(type => type.id === id).name;
     }
+
+    clearFilterValue() {
+    this.filterValue = '';
+  }
 
 }

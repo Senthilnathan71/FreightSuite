@@ -12,6 +12,7 @@ import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModu
 import { NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { PasswordValidators } from 'src/app/core/ValidationFn/password.validators';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-user-list',
@@ -23,7 +24,8 @@ import { PasswordValidators } from 'src/app/core/ValidationFn/password.validator
     RouterModule,
     NgbPaginationModule,
     ListpageComponent,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    FavoriteStarComponent
   ],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss'
@@ -34,7 +36,7 @@ export class UserListComponent {
   filterValue: string;
   results: any[];
   userList: any[];
-  searchPerformed: boolean;
+  searched: boolean = false;
   userData: any;
   loading: boolean = false;
   alluser: any[] = []
@@ -50,7 +52,7 @@ export class UserListComponent {
   modalRef : NgbModalRef
 
     // sorting
-  sortColumn: string = '=userName'; // default sort column
+  sortColumn: string = 'userName'; // default sort column
   sortDirection: string = 'asc'; // default sort direction
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -67,14 +69,39 @@ export class UserListComponent {
     private modalService : NgbModal
   ) { }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.appSettingServ.getUser().subscribe(
       user => {
         if (user) {
           this.userData = user;
         }
-      }
-    )
+      });
+      this.loadUsers();
+  }
+  loadUsers(): void {
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+    };
+
+    this.masterServ.searchFfUserList(params).subscribe({
+      next: (response) => {
+        if(response.data){
+          this.userList = response.data.items;
+          this.results = [...this.userList];
+          this.totalNumberOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searched = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching users:', err);
+        this.userList = [];
+        this.results = [];
+        this.totalNumberOfCollection = 0;
+      },
+    });
   }
 
   // search(event ?: any) {
@@ -91,30 +118,7 @@ export class UserListComponent {
   //     }
   //   )
   // }
-  search(event?: any) {
-  const payload = {
-    searchType: event?.type || this.searchType,
-    filterValue: event?.value || this.filterValue
-  };
-
-  this.loading = true;
-  this.masterServ.searchFfUser(payload).subscribe(
-    (res) => {
-      this.alluser = Array.isArray(res) ? res : res.data || []; 
-      this.applySorting();
-      this.userList = [...this.alluser];
-      this.totalNumberOfCollection = this.userList.length || 0;
-      this.searchPerformed = true;
-      this.page = 1;
-      this.updatePaginationData();
-      this.loading = false;
-    },
-    (err) => {
-      console.error('Search error:', err);
-      this.loading = false;
-    }
-  );
-}
+  
 
   sort(column: string) {
     if (this.sortColumn === column) {
@@ -127,11 +131,10 @@ export class UserListComponent {
     }
     
     this.applySorting();
-    this.updatePaginationData();
   }
 
   applySorting() {
-    this.alluser.sort((a, b) => {
+    this.results.sort((a, b) => {
       let valueA = a[this.sortColumn];
       let valueB = b[this.sortColumn];
       
@@ -152,13 +155,14 @@ export class UserListComponent {
       }
       return 0;
     });
+    this.userList = [...this.results];
   }
 
 
   updatePaginationData() {
     let start = (this.page - 1) * this.pageSize;
     let end = start + this.pageSize;
-     this.userList= this.alluser.slice(start, end);
+    this.loadUsers();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -173,7 +177,7 @@ export class UserListComponent {
           (resp: any) => {
             if (resp.status) {
               this.appSettingServ.showSuccess("Deleted!");
-              this.search(null)
+              this.loadUsers();
             } else {
               this.appSettingServ.showError('Error Deleting User');
             }
@@ -216,7 +220,7 @@ export class UserListComponent {
     this.userList = [];
     this.searchType = 'userName';
     this.filterValue = '';
-    this.searchPerformed = false;
+    this.searched = false;
     this.totalNumberOfCollection = 0;
   }
 
@@ -313,5 +317,7 @@ export class UserListComponent {
     }
   }
 
-
+  clearFilterValue(){
+      this.filterValue = '';
+    }
 }
