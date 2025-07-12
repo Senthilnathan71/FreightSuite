@@ -1,0 +1,192 @@
+<div class="row" [formGroup]="chartForm">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">Chart of Accounts</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="nagivateback()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="onReset()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="card h-100">
+            <div class="card-body rounded">
+                <div class="row">
+
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="Name" class="custom-input-field sm" placeholder="" />
+                            <label class="input-label"> Name <span class="text-danger">*</span></label>
+                            <div class="error-message"
+                                *ngIf="chartForm.get('Name')?.touched && chartForm.get('Name')?.invalid">
+                                <span> Name is required</span>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="code">
+                            <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
+                            <div class="error-message"
+                                *ngIf="chartForm.get('code')?.touched && chartForm.get('code')?.invalid">
+                                <span> Code is required</span>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="CurrencyCode">
+                            <label for="text-input" class="input-label">Currency Code <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <div class="row">
+                        <aside class="col-6 col-md-2 mt-2">
+                            <div class="form-check">
+                                <input type="radio" id="asset" class="form-check-input" name="accountType" />
+                                <label for="asset" class="form-check-label">Asset</label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-6 col-md-2 mt-2">
+                            <div class="form-check">
+                                <input type="radio" id="liability" class="form-check-input" name="accountType" />
+                                <label for="liability" class="form-check-label">Liability</label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-6 col-md-2 mt-2">
+                            <div class="form-check">
+                                <input type="radio" id="equity" class="form-check-input" name="accountType" />
+                                <label for="equity" class="form-check-label">Equity</label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-6 col-md-2 mt-2">
+                            <div class="form-check">
+                                <input type="radio" id="Income" class="form-check-input" name="accountType" />
+                                <label for="Income" class="form-check-label">Income</label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-6 col-md-2 mt-2">
+                            <div class="form-check">
+                                <input type="radio" id="Expense" class="form-check-input" name="accountType" />
+                                <label for="Expense" class="form-check-label">Expense</label>
+                            </div>
+                        </aside>
+                    </div>
+
+                    <div class="row">
+                        <aside class="col-md-4 my-3">
+                            <div class="form-check">
+                                <input type="checkbox" id="ISSR" class="form-check-input"
+                                    [checked]="isSubledgerRequired" (change)="onSubledgerChange($event)" />
+                                <label for="ISSR" class="form-check-label">Is Subledger Required</label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4" *ngIf="isSubledgerRequired">
+                            <div class="custom-form-group">
+                                <input type="text" id="ledgerName" placeholder="" class="form-control"
+                                    formControlName="LedgerName" />
+                                <label for="ledgerName" class="input-label">Ledger Name</label>
+                                <div class="error-message"
+                                    *ngIf="chartForm.get('LedgerName')?.touched && chartForm.get('LedgerName')?.invalid">
+                                    <span>Ledger Name is required</span>
+                                </div>
+                            </div>
+                        </aside>
+
+
+                    </div>
+
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="Group">
+                            <label for="text-input" class="input-label">Group<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="subGroup">
+                            <label for="text-input" class="input-label">Sub Group</label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4 mt-3 mt-md-0">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="Category" [items]="modeOfCategory" bindLabel="name"
+                                bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Category <span class="text-danger"></span></label>
+                            <div class="error-message"
+                                *ngIf="chartForm.get('Category')?.touched && chartForm.get('Category')?.invalid">
+                                <span>Category is required</span>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4 mt-3 mt-md-0">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="reportType" [items]="modeOfReportType" bindLabel="name"
+                                bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Report Type <span class="text-danger"></span></label>
+                            <div class="error-message"
+                                *ngIf="chartForm.get('reportType')?.touched && chartForm.get('reportType')?.invalid">
+                                <span>Reprot Type is required</span>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <textarea id="" placeholder="" rows="1" class="input-field sm"
+                                formControlName="Remarks"></textarea>
+                            <label for="text-input" class="input-label">Remarks </label>
+                        </div>
+                    </aside>
+
+
+
+                    <aside class="col-md-4 mt-3 mt-md-0">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
+                                bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

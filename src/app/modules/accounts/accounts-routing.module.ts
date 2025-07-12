@@ -6,6 +6,8 @@ import { TaxGroupListComponent } from './tax-group/tax-group-list/tax-group-list
 import { TaxGroupComponent } from './tax-group/tax-group.component';
 import { ApprovalComponent } from './approval/approval/approval.component';
 import { ModalComponent } from './modal/modal/modal.component';
+import { ChartAccountListComponent } from './chart-account/chart-account-list/chart-account-list.component';
+import { ChartAccountEntryComponent } from './chart-account/chart-account-entry/chart-account-entry.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -89,6 +91,29 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "accounts", url: "/modal" },
             { title: "modal" },
+          ],
+        },
+      },
+
+      {
+        path: "chart-accounts/list",
+        component: ChartAccountListComponent,
+        data: {
+          title: "Chart Accounts",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Chart Accounts" },
+          ],
+        },
+      },
+      {
+        path: "chart-accounts/entry",
+        component: ChartAccountEntryComponent,
+        data: {
+          title: "Chart Accounts",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Chart Accounts" },
           ],
         },
       },

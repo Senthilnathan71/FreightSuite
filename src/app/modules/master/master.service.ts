@@ -2853,4 +2853,61 @@ getAllHawbStocks(){
     );
   }
 
+  // Chart of accounts
+
+
+   getAllCoa() {
+    return this.http.get<{ data: any[] }>('tax').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+   fetchCoaById(id: number) {
+    return this.http.get<{ data: any }>(`tax/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createNewCoa(payload: any) {
+    return this.http.post('tax/create', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  
+    updateCoaById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`tax/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+
+    )
+  }
+
+
+   deleteCOA(id: number) {
+    return this.http.delete<{ data: any }>(`tax/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+   searchCoa(payload) {
+    return this.http.post("tax/search-list", payload).pipe(
+      map((res: any) => {
+        return res.data;
+      })
+    );
+  }
 }

@@ -1,0 +1,177 @@
+import { Component } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FeatherModule } from 'angular-feather';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { MatDialog } from '@angular/material/dialog';
+import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+
+
+@Component({
+  selector: 'app-chart-account-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    NgbPaginationModule,
+    RouterModule,
+    FeatherModule,
+    FavoriteStarComponent,
+    ReactiveFormsModule
+  ],
+  templateUrl: './chart-account-list.component.html',
+  styleUrl: './chart-account-list.component.scss'
+})
+export class ChartAccountListComponent {
+
+  chartAccountList: any[] = [];
+  filterValue: string = '';
+  userData: any;
+  searched = false;
+  // pagination
+  page = 1;
+  pageSize = 10;
+  totalLengthOfCollection = 0;
+  // sorting
+  sortColumn: string = 'Name';
+  sortDirection: string = 'asc';
+
+  
+  constructor(
+    private masterService: MasterService,
+    private router: Router,
+    private appSettingService: AppSettingsService,
+    private excelReportService: ExcelExportService,
+    private dialog: MatDialog
+  ) {}
+
+  ngOnInit() {
+    this.appSettingService.getUser().subscribe(user => {
+      if (user) {
+        this.userData = user;
+      }
+    });
+    this.loadChartAccounts();
+  }
+
+  loadChartAccounts(): void {
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+    };
+
+    this.masterService.searchCoa(params).subscribe({
+      next: (response) => {
+        if (response?.data) {
+          this.chartAccountList = response.data.items;
+          console.log(this.chartAccountList,"Chart");
+          
+          this.totalLengthOfCollection = response.data.totalCount;
+          this.applySorting();
+          this.searched = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching chart accounts:', err);
+        this.chartAccountList = [];
+        this.totalLengthOfCollection = 0;
+      }
+    });
+  }
+
+
+  deleteChartAccount(id: number) {
+  const dialogRef = this.dialog.open(DeleteWarningComponent); 
+
+  dialogRef.afterClosed().subscribe(result => {
+    if (result === true) {
+      this.masterService.deleteCOA(id).subscribe(
+        (resp: any) => {
+          this.appSettingService.showSuccess("Chart Account Deleted!");
+          // this.search(); 
+        },
+        (error) => {
+          this.appSettingService.showError("Error Deleting Chart Account", error);
+        }
+      );
+    }
+  });
+}
+
+
+  resetPage(): void {
+    this.chartAccountList = [];
+    this.totalLengthOfCollection = 0;
+    this.sortColumn = 'Name';
+    this.sortDirection = 'asc';
+    this.searched = false;
+    this.filterValue = '';
+  }
+
+  sort(column: string): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.applySorting();
+  }
+
+  applySorting(): void {
+    this.chartAccountList.sort((a, b) => {
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
+
+      valueA = valueA ?? '';
+      valueB = valueB ?? '';
+
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+
+      if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
+      if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
+
+  report(): void {
+    const formattedData = this.chartAccountList.map(item => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
+
+    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'Name', label: 'Name' },
+        { key: 'subGroup', label: 'Sub Group' },
+        { key: 'LedgerCode', label: 'Currency Code' },
+        { key: 'Group', label: 'Group' },
+        { key: 'status', label: 'Status' }
+      ],
+      fileName: 'Chart-of-Accounts-Report',
+      title: companyName
+    });
+  }
+
+  navigateToCreate() {
+    this.router.navigate(['accounts/chart-accounts/entry'])
+  }
+
+  clearFilterValue() {
+    this.filterValue = '';
+  }
+}
