@@ -1225,14 +1225,22 @@
                                         class="custom-input-field sm" formControlName="CustBranchEmail">
                                     <label for="email" class="input-label">Email<span
                                             class="text-danger"></span></label>
-                                    @if(customerBranchForm.get('CustBranchEmail')?.touched &&
-                                    customerBranchForm.get('CustBranchEmail')?.invalid){
+                                    @if((customerBranchForm.get('CustBranchEmail')?.touched || customerBranchForm.get('CustBranchEmail')?.dirty) && customerBranchForm.get('CustBranchEmail')?.invalid) {
                                     <div class="error-message">
-                                        @if(customerBranchForm.get('CustBranchEmail')?.hasError('required')){
+                                        @if(customerBranchForm.get('CustBranchEmail')?.hasError('required')) {
                                         <span>Email is required</span>
                                         }
-                                        @else if(customerBranchForm.get('CustBranchEmail')?.hasError('email')){
-                                        <span>Invalid Email Format</span>
+                                        @else if(customerBranchForm.get('CustBranchEmail')?.hasError('invalidEmails')) {
+                                        <span>Invalid email format</span>
+                                        }
+                                        @else if(customerBranchForm.get('CustBranchEmail')?.hasError('trailingComma')) {
+                                        <span>Please remove the trailing comma or add another email</span>
+                                        }
+                                        @else if(customerBranchForm.get('CustBranchEmail')?.hasError('duplicateEmails')) {
+                                        <span>Duplicate emails detected</span>
+                                        }
+                                        @else if(customerBranchForm.get('CustBranchEmail')?.hasError('maxlength')) {
+                                        <span>Maximum 100 characters allowed</span>
                                         }
                                     </div>
                                     }
@@ -1567,14 +1575,22 @@
                                         formControlName="Email">
                                     <label for="Email" class="input-label">Email <span
                                             class="text-danger">*</span></label>
-                                    @if(customerBranchContactForm.get('Email')?.touched &&
-                                    customerBranchContactForm.get('Email')?.invalid){
+                                    @if((customerBranchContactForm.get('Email')?.touched || customerBranchContactForm.get('Email')?.dirty) && customerBranchContactForm.get('Email')?.invalid) {
                                     <div class="error-message">
-                                        @if(customerBranchContactForm.get('Email')?.hasError('required')){
+                                        @if(customerBranchContactForm.get('Email')?.hasError('required')) {
                                         <span>Email is required</span>
                                         }
-                                        @else if(customerBranchContactForm.get('Email')?.hasError('email')){
+                                        @else if(customerBranchContactForm.get('Email')?.hasError('invalidEmails')) {
                                         <span>Invalid email format</span>
+                                        }
+                                        @else if(customerBranchContactForm.get('Email')?.hasError('trailingComma')) {
+                                        <span>Please remove the trailing comma or add another email</span>
+                                        }
+                                        @else if(customerBranchContactForm.get('Email')?.hasError('duplicateEmails')) {
+                                        <span>Duplicate emails detected</span>
+                                        }
+                                        @else if(customerBranchContactForm.get('Email')?.hasError('maxlength')) {
+                                        <span>Maximum 100 characters allowed</span>
                                         }
                                     </div>
                                     }
@@ -1712,14 +1728,22 @@
                                         formControlName="Toemail">
                                     <label for="text-input" class="input-label">To Email <span
                                             class="text-danger">*</span></label>
-                                    @if(customerBranchEmailForm.get('Toemail')?.touched &&
-                                    customerBranchEmailForm.get('Toemail')?.invalid){
+                                    @if((customerBranchEmailForm.get('Toemail')?.touched || customerBranchEmailForm.get('Toemail')?.dirty) && customerBranchEmailForm.get('Toemail')?.invalid) {
                                     <div class="error-message">
-                                        @if(customerBranchEmailForm.get('Toemail')?.hasError('required')){
+                                        @if(customerBranchEmailForm.get('Toemail')?.hasError('required')) {
                                         <span>To Email is required</span>
                                         }
-                                        @if(customerBranchEmailForm.get('Toemail')?.hasError('email')){
-                                        <span>Invalid To Email</span>
+                                        @else if(customerBranchEmailForm.get('Toemail')?.hasError('invalidEmails')) {
+                                        <span>Invalid email format</span>
+                                        }
+                                        @else if(customerBranchEmailForm.get('Toemail')?.hasError('trailingComma')) {
+                                        <span>Please remove the trailing comma or add another email</span>
+                                        }
+                                        @else if(customerBranchEmailForm.get('Toemail')?.hasError('duplicateEmails')) {
+                                        <span>Duplicate emails detected</span>
+                                        }
+                                        @else if(customerBranchEmailForm.get('Toemail')?.hasError('maxlength')) {
+                                        <span>Maximum 100 characters allowed</span>
                                         }
                                     </div>
                                     }
@@ -1731,12 +1755,23 @@
                                         formControlName="CCemail">
                                     <label for="text-input" class="input-label">CC Email <span
                                             class="text-danger"></span></label>
-                                    @if(customerBranchEmailForm.get('CCemail')?.touched &&
-                                    customerBranchEmailForm.get('CCemail')?.invalid){
+                                    @if((customerBranchEmailForm.get('CCemail')?.touched || customerBranchEmailForm.get('CCemail')?.dirty) && customerBranchEmailForm.get('CCemail')?.invalid) {
                                     <div class="error-message">
-                                       @if(customerBranchEmailForm.get('Toemail')?.hasError('multipleEmail')){
-  <span>One or more email addresses are invalid</span>
-}
+                                        @if(customerBranchEmailForm.get('CCemail')?.hasError('required')) {
+                                        <span>CC Email is required</span>
+                                        }
+                                        @else if(customerBranchEmailForm.get('CCemail')?.hasError('invalidEmails')) {
+                                        <span>Invalid email format</span>
+                                        }
+                                        @else if(customerBranchEmailForm.get('CCemail')?.hasError('trailingComma')) {
+                                        <span>Please remove the trailing comma or add another email</span>
+                                        }
+                                        @else if(customerBranchEmailForm.get('CCemail')?.hasError('duplicateEmails')) {
+                                        <span>Duplicate emails detected</span>
+                                        }
+                                        @else if(customerBranchEmailForm.get('CCemail')?.hasError('maxlength')) {
+                                        <span>Maximum 100 characters allowed</span>
+                                        }
                                     </div>
                                     }
                                 </div>
@@ -1912,16 +1947,18 @@
                                 <div class="custom-form-group">
                                     <input type="text" id="LoginEmail" placeholder="" class="custom-input-field sm"
                                         formControlName="LoginEmail">
-                                    <label for="LoginEmail" class="input-label">email<span
+                                    <label for="LoginEmail" class="input-label">Email<span
                                             class="text-danger"></span></label>
-                                    @if(customerBranchLoginForm.get('LoginEmail')?.touched &&
-                                    customerBranchLoginForm.get('LoginEmail')?.invalid){
+                                    @if((customerBranchLoginForm.get('LoginEmail')?.touched || customerBranchLoginForm.get('LoginEmail')?.dirty) && customerBranchLoginForm.get('LoginEmail')?.invalid) {
                                     <div class="error-message">
-                                        @if(customerBranchLoginForm.get('LoginEmail').hasError('required')){
+                                        @if(customerBranchLoginForm.get('LoginEmail')?.hasError('required')) {
                                         <span>Email is required</span>
                                         }
-                                        @else if(customerBranchLoginForm.get('LoginEmail').hasError('email')){
+                                        @else if(customerBranchLoginForm.get('LoginEmail')?.hasError('invalidEmail')) {
                                         <span>Invalid email format</span>
+                                        }
+                                        @else if(customerBranchLoginForm.get('LoginEmail')?.hasError('maxlength')) {
+                                        <span>Max 100 characters allowed</span>
                                         }
                                     </div>
                                     }
@@ -1930,21 +1967,30 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="LoginPassword" placeholder="" class="custom-input-field sm"
-                                        formControlName="LoginPassword" [textWithNumbers]="50">
+                                        formControlName="LoginPassword">
                                     <label for="LoginPassword" class="input-label">Password <span
                                             class="text-danger"></span></label>
-                                    @if(customerBranchLoginForm.get('LoginPassword')?.touched &&
-                                    customerBranchLoginForm.get('LoginPassword')?.invalid){
+                                    @if((customerBranchLoginForm.get('LoginPassword')?.touched || customerBranchLoginForm.get('LoginPassword')?.dirty)  &&
+                                    customerBranchLoginForm.get('LoginPassword')?.invalid) {
                                     <div class="error-message">
-                                        @if(customerBranchLoginForm.get('LoginPassword').hasError('required')){
-                                        <span>Password is required</span>
+                                        @if(customerBranchLoginForm.get('LoginPassword')?.hasError('required')) {
+                                        <span>
+                                            Password is required
+                                        </span>
                                         }
-                                        @else{
-                                        @if(customerBranchLoginForm.get('LoginPassword').hasError('passwordError')){
-                                        <span>{{customerBranchLoginForm.get('LoginPassword')?.errors?.['passwordError']}}</span>
-                                        }@else if(customerBranchLoginForm.get('LoginPassword').hasError('maxlength')){
-                                        <span>Max 50 Characters</span>
+                                        @else if(customerBranchLoginForm.get('LoginPassword')?.hasError('minLength')) {
+                                        <span>
+                                            Password must be at least 4 characters.
+                                        </span>
                                         }
+                                        @else if(customerBranchLoginForm.get('LoginPassword')?.hasError('missingLetter')) {
+                                        <span>Password must contain at least one letter</span>
+                                        }
+                                        @else if(customerBranchLoginForm.get('LoginPassword')?.hasError('missingSpecialChar')) {
+                                        <span>Password must contain at least one special character</span>
+                                        }
+                                        @else if(customerBranchLoginForm.get('LoginPassword')?.hasError('missingNumber')) {
+                                        <span>Password must contain at least one number</span>
                                         }
                                     </div>
                                     }
@@ -1966,7 +2012,7 @@
                                     <ng-option value="Suspended">Suspended</ng-option>
                                 </ng-select>
                                     <label for="" class="input-label">Status <span
-                                            class="text-danger">*</span><span class="text-danger">*</span></label>
+                                            class="text-danger">*</span></label>
                                 </div>
                             </aside>
                         </div>

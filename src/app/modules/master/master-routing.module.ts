@@ -730,10 +730,10 @@ export const MasterRoutes: Routes = [
         },
       },
         {
-        path: 'Imco/list',
+        path: 'imco/list',
         component: ImcoListComponent,
         data: {
-          title: 'Imco',
+          title: 'IMCO',
           urls: [
             { title: 'Master', url: '/master' },
             { title: 'Imco' },
@@ -741,10 +741,10 @@ export const MasterRoutes: Routes = [
         },
       },
       {
-        path: 'Imco/entry',
+        path: 'imco/entry',
         component: ImcoEntryComponent,
         data: {
-          title: 'Imco',
+          title: 'IMCO',
           urls: [
             { title: 'Master', url: '/master' },
             { title: 'Imco' },
@@ -752,10 +752,10 @@ export const MasterRoutes: Routes = [
         },
       },
       {
-        path: 'Imco/entry/:id',
+        path: 'imco/entry/:id',
         component: ImcoEntryComponent,
         data: {
-          title: 'Imco',
+          title: 'IMCO',
           urls: [
             { title: 'Master', url: '/master' },
             { title: 'Imco' },

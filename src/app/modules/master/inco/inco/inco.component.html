@@ -10,7 +10,7 @@
 </div> -->
 <div class="row">
     <app-listpage
-  [title]="'Inco'"
+  [title]="'INCO'"
   [searchOptions]="[
     { value: 'IncoCode', label: 'Inco Code' },
     { value: 'IncoName', label: 'Inco Name' },
@@ -124,6 +124,23 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <div class="row">
+                              <aside class="col-md-6">
+                                  <div class="custom-form-group">
+                                     <input type="text" formControlName="IncoCode" id="text-input" placeholder=""
+                                         class="custom-input-field sm" [textWithNumbers]="9">
+                                     <label for="text-input" class="input-label">Inco Code <span
+                                         class="text-danger fw-bold">*</span></label>
+                                         @if(incoForm.get('IncoCode')?.touched && incoForm.get('IncoCode')?.invalid){
+                                  <div class="error-message">
+                                    @if(incoForm.get('IncoCode')?.hasError('required')){
+                                      <span>Inco Code is required</span>
+                                    } @else if(incoForm.get('IncoCode')?.hasError('maxlength')){
+                                      <span>Max 9 Characters</span>
+                                    }
+                                 </div>
+                                }
+                            </div>
+                            </aside>
                                 <aside class="col-md-6">
                                   <div class="custom-form-group">
                                      <input type="text" id="text-input" formControlName="IncoName" placeholder=""
@@ -143,23 +160,7 @@
                                         }
                                     </div>
                                 </aside>
-                                <aside class="col-md-6">
-                                  <div class="custom-form-group">
-                                     <input type="text" formControlName="IncoCode" id="text-input" placeholder=""
-                                         class="custom-input-field sm" [textWithNumbers]="9">
-                                     <label for="text-input" class="input-label">Inco Code <span
-                                         class="text-danger fw-bold">*</span></label>
-                                         @if(incoForm.get('IncoCode')?.touched && incoForm.get('IncoCode')?.invalid){
-                                  <div class="error-message">
-                                    @if(incoForm.get('IncoCode')?.hasError('required')){
-                                      <span>Inco Code is required</span>
-                                    } @else if(incoForm.get('IncoCode')?.hasError('maxlength')){
-                                      <span>Max 9 Characters</span>
-                                    }
-                                 </div>
-                                }
-                            </div>
-                            </aside>
+                                
 
                             
                             <aside class="col-md-6">
@@ -193,6 +194,35 @@
     }
   </div>
 </aside>
+<aside class="col-md-6">
+  <div class="custom-form-group">
+    <input type="text" id="text-input" formControlName="IncoDescription" placeholder="" class="custom-input-field sm"
+      [textWithNumbers]="500">
+    <label for="text-input" class="input-label">Inco Description <span class="text-danger fw-bold"></span></label>
+    @if(incoForm.get('IncoDescription')?.touched && incoForm.get('IncoDescription')?.invalid){
+    <div class="error-message">
+      @if(incoForm.get('IncoDescription')?.hasError('maxlength')){
+      <span>Max 500 Characters</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
+<aside class="col-md-6">
+  <div class="custom-form-group">
+    <input type="text" id="text-input" formControlName="Remarks" placeholder="" class="custom-input-field sm"
+      [textWithNumbers]="500">
+    <label for="text-input" class="input-label">Remarks <span class="text-danger fw-bold"></span></label>
+    @if(incoForm.get('Remarks')?.touched && incoForm.get('Remarks')?.invalid){
+    <div class="error-message">
+      @if(incoForm.get('Remarks')?.hasError('maxlength')){
+      <span>Max 500 Characters</span>
+      }
+    </div>
+    }
+  </div>
+</aside>
+
                     
                             <!-- ... (keep all existing HTML until the status field) -->
 
@@ -220,7 +250,7 @@
             </form>
         </div>
         <div class="modal-footer">
-            @if(isEditMode){
+            <!-- @if(isEditMode){
                 <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
         <i class="fas fa-file-alt me-1"></i> e-Doc
       </button>
@@ -235,7 +265,7 @@
         <i class="fas fa-envelope me-1"></i> Email
       </button>
       
-            }
+            } -->
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-info" 
                 (click)="onSubmit(); modal.close()" 

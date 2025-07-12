@@ -132,6 +132,8 @@ export class IncoComponent{
       IncoName: ['', [Validators.required]],
       IncoType: ['', [Validators.required]],
       OceanFreight: ['', [Validators.required]],
+      Remarks : [''],
+      IncoDescription : [''],
       Status: [{value: 'A', disabled: false}, Validators.required]
     });
   }
@@ -168,6 +170,8 @@ export class IncoComponent{
           IncoName: inco.IncoName,
           IncoType: inco.IncoType,
           OceanFreight: inco.OceanFreight,
+          Remarks : inco.Remarks,
+          IncoDescription : inco.IncoDescription,
           Status: inco.Status === 'A' ? 'Active' : 'Suspended'
         });
         this.modalRef = this.modalService.open(content, {centered: true, size: 'lg', backdrop: 'static'});
@@ -196,6 +200,8 @@ export class IncoComponent{
           IncoName: inco.IncoName,
           IncoType: inco.IncoType,
           OceanFreight: inco.OceanFreight,
+          Remarks : inco.Remarks,
+          IncoDescription : inco.IncoDescription,
           Status: inco.Status === 'A' ? 'Active' : 'Suspended'
         });
       },

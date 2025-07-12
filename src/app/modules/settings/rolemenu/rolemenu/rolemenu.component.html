@@ -124,6 +124,7 @@
                                             bindValue="MenuMasterSid" 
                                             placeholder="Select Menu"
                                             formControlName="MenuMasterSid"
+                                            (change)="getMenuPermissions($event)"
                                         >
                                         </ng-select>
                                         <label for="text-input" class="input-label">Menu <span
@@ -188,10 +189,16 @@
                                 </aside>
                             </section>
                         </section>
-                        <section class="card-body">
+                        <section class="card-body" *ngIf="roleMenuForm.get('MenuMasterSid').value">
                             <section class="row">
                                 <h6 class="card-title">Role Access Permissions</h6>
-                                <aside class="col-md-6 d-flex align-items-center my-2">
+                                @for(permission of menuPermissionList;track $index){
+                                    <aside class="col-md-6 d-flex align-items-center my-2">
+                                        <dofi-toggler onLabel="Allowed" offLabel="Restricted" (toggleChange)="handlePermission(permission.permissionName,$event)"></dofi-toggler>
+                                        <label class="form-check-label ms-2">{{permission.permissionName}}</label>
+                                    </aside>
+                                }
+                                <!-- <aside class="col-md-6 d-flex align-items-center my-2">
                                     <dofi-toggler formControlName="InsertRole" onLabel="Allowed" offLabel="Restricted"></dofi-toggler>
                                     <label class="form-check-label ms-2">Allow Add</label>
                                 </aside>
@@ -206,7 +213,7 @@
                                 <aside class="col-md-6 d-flex align-items-center my-2">
                                     <dofi-toggler formControlName="DeleteRole" onLabel="Allowed" offLabel="Restricted"></dofi-toggler>
                                     <label class="form-check-label ms-2">Allow Delete</label>
-                                </aside>
+                                </aside> -->
                             </section>
                         </section>
                     </div>
