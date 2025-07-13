@@ -22,6 +22,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-cost-center',
@@ -38,7 +39,8 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
     OnlyTextDirective,
     TextWithNumbersDirective,
     PreventMultiClickDirective,
-    NgbModalModule
+    NgbModalModule,
+    FavoriteStarComponent
   ],
   templateUrl: './cost-center.component.html',
   styleUrl: './cost-center.component.scss'

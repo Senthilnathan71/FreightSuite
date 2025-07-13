@@ -11,6 +11,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-generation-list',
@@ -22,7 +23,8 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     NgbPaginationModule, 
     RouterModule, 
     ListpageComponent,
-    CustomDatePipe
+    CustomDatePipe,
+    FavoriteStarComponent
   ],
   templateUrl: './generation-list.component.html',
   styleUrl: './generation-list.component.scss'

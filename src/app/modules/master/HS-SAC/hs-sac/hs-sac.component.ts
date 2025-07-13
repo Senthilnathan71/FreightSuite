@@ -25,6 +25,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-hs-sac',
@@ -44,7 +45,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
     NgbDatepickerModule,
     DatePipe,
     ListpageComponent,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    FavoriteStarComponent
   ],
   templateUrl: './hs-sac.component.html',
   styleUrl: './hs-sac.component.scss',

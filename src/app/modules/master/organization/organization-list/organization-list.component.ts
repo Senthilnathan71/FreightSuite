@@ -12,11 +12,12 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-organization-list',
   standalone: true,
-  imports: [FeatherModule, NgSelectModule, NgbPaginationModule, CommonModule, RouterModule, FormsModule, ReactiveFormsModule, ListpageComponent],
+  imports: [FeatherModule, NgSelectModule, NgbPaginationModule, CommonModule, RouterModule, FormsModule, ReactiveFormsModule, ListpageComponent,FavoriteStarComponent],
   templateUrl: './organization-list.component.html',
   styleUrl: './organization-list.component.scss'
 })
