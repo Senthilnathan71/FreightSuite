@@ -199,6 +199,14 @@
                     </ng-option>
                   </ng-select>
                   <label for="text-input" class="input-label">Zone <span class="text-danger fw-bold">*</span></label>
+                   <div *ngIf="
+        (stateForm.get('ZoneMasterSid')?.touched || stateForm.get('ZoneMasterSid')?.dirty) &&
+        stateForm.get('ZoneMasterSid')?.invalid
+      " class="error-message">
+                    <span *ngIf="stateForm.get('ZoneMasterSid')?.hasError('required')">
+                      Zone is required
+                    </span>
+                  </div>
                 </div>
               </aside>
 

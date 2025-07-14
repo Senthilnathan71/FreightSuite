@@ -40,6 +40,7 @@ export class ChartAccountListComponent {
   // sorting
   sortColumn: string = 'Name';
   sortDirection: string = 'asc';
+  
 
   
   constructor(
@@ -64,6 +65,8 @@ export class ChartAccountListComponent {
       search: this.filterValue?.trim() || '',
       page: this.page,
       pageSize: this.pageSize,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
     };
 
     this.masterService.searchCoa(params).subscribe({
@@ -100,6 +103,17 @@ export class ChartAccountListComponent {
           this.appSettingService.showError("Error Deleting Chart Account", error);
         }
       );
+    }
+  });
+}
+softDeleteTaxGroup(id: number): void {
+  const dialogRef = this.dialog.open(DeleteWarningComponent);
+  dialogRef.afterClosed().subscribe((result) => {
+    if (result === true) {
+      this.masterService.deleteCOA(id).subscribe((resp: any) => {
+        this.appSettingService.showSuccess('Deleted!');
+       
+      });
     }
   });
 }
@@ -141,6 +155,12 @@ export class ChartAccountListComponent {
     });
   }
 
+   updatePaginatedData(): void {
+    const start = (this.page - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.loadChartAccounts();
+  }
+
   trackByIndex(index: number, item: any): number {
     return index;
   }
@@ -156,10 +176,10 @@ export class ChartAccountListComponent {
     this.excelReportService.exportAsExcel({
       data: formattedData,
       headers: [
-        { key: 'Name', label: 'Name' },
-        { key: 'subGroup', label: 'Sub Group' },
+        { key: 'LedgerName', label: 'Name' },
+        { key: 'SubGroupName', label: 'Sub Group' },
         { key: 'LedgerCode', label: 'Currency Code' },
-        { key: 'Group', label: 'Group' },
+        { key: 'GroupName', label: 'Group' },
         { key: 'status', label: 'Status' }
       ],
       fileName: 'Chart-of-Accounts-Report',
