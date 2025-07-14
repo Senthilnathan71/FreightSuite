@@ -214,6 +214,7 @@ export class DivisionComponent {
   }
 
   onSubmit() {
+    if (this.btnDisable) return;
     if (this.divisionForm.get('status')?.disabled) {
       this.divisionForm.get('status')?.enable();
     }
@@ -223,6 +224,7 @@ export class DivisionComponent {
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
     } else {
+      this.btnDisable = true;
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.divisionForm.value;
@@ -251,10 +253,12 @@ export class DivisionComponent {
             } else {
               this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Update Division Error:', error);
+            this.btnDisable = false;
           }
         );
       } else {
@@ -267,10 +271,12 @@ export class DivisionComponent {
             } else {
               this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Create Division Error:', error);
+            this.btnDisable = false;
           }
         );
       }

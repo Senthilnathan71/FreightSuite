@@ -217,6 +217,7 @@ export class ZoneComponent {
   }
 
   onSubmit() {
+    if (this.btnDisable) return;
     if (this.zoneForm.get('status')?.disabled) {
       this.zoneForm.get('status')?.enable();
     }
@@ -226,6 +227,7 @@ export class ZoneComponent {
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
     } else {
+      this.btnDisable = true;
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.zoneForm.value;
@@ -252,10 +254,12 @@ export class ZoneComponent {
             } else {
               this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Update Zone Error:', error);
+            this.btnDisable = false;
           }
         );
       } else {
@@ -268,10 +272,12 @@ export class ZoneComponent {
             } else {
               this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Create Zone Error:', error);
+            this.btnDisable = false;
           }
         );
       }
