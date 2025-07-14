@@ -22,6 +22,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-city',
@@ -39,7 +40,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     NgSelectModule,
     DatePipe,
     ListpageComponent,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    FavoriteStarComponent
   ],
   templateUrl: './city.component.html',
   styleUrl: './city.component.scss'

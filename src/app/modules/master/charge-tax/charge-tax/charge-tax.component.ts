@@ -18,6 +18,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-charge-tax',
@@ -33,7 +34,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     FormsModule,
     DatePipe,
     ListpageComponent,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    FavoriteStarComponent
   ],
   templateUrl: './charge-tax.component.html',
   styleUrl: './charge-tax.component.scss',

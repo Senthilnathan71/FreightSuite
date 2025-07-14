@@ -12,6 +12,7 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-container-type-list',
@@ -22,7 +23,8 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     FormsModule,
     FeatherModule,
     NgbPaginationModule,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent
   ],
   templateUrl: './container-type-list.component.html',
   styleUrl: './container-type-list.component.scss'

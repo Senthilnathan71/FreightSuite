@@ -10,6 +10,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-currency-list',
@@ -20,7 +21,8 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     FormsModule,
     NgbPaginationModule,
     RouterModule,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent
   ],
   templateUrl: './currency-list.component.html',
   styleUrl: './currency-list.component.scss'

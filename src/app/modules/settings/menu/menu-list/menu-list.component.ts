@@ -18,6 +18,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from '../../email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from '../../edoc/edoc/edoc.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-menu-list',
@@ -31,7 +32,8 @@ import { EdocComponent } from '../../edoc/edoc/edoc.component';
     NgbPagination,
     RouterModule,
     FormsModule,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    FavoriteStarComponent
   ],
   templateUrl: './menu-list.component.html',
   styleUrl: './menu-list.component.scss',
@@ -59,6 +61,7 @@ export class MenuListComponent implements OnInit {
   menuData : any;
   sortColumn: string = 'ModuleName'; 
   sortDirection: string = 'asc';
+  loading = false;
 modeOfPermissions = [
   { value: 'Y', name: "Allowed" },
   { value: 'N', name: "Restricted" }
@@ -103,7 +106,8 @@ modeOfPermissions = [
           this.userData = user;
         }
       }
-    )
+    );
+    this.loadMenus();
 
     this.initForm();
     this.loadModules(); 
@@ -276,7 +280,7 @@ onToggleChange(controlName: string, event: Event) {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              this.search();
+              
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -292,7 +296,7 @@ onToggleChange(controlName: string, event: Event) {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              this.search();
+              
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -305,24 +309,38 @@ onToggleChange(controlName: string, event: Event) {
       }
     }
   }
+  loadMenus(): void {
+  this.loading = true;
+  
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection
+  };
+
+  this.settingsService.searchMenuList(params).subscribe({
+    next: (response) => {
+      if(response) {
+        this.menuList = response.items || response.data;
+        this.totalLengthOfCollection = response.totalCount || response.length;
+        this.applySorting();
+        this.searchPerformed = true;
+      }
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error fetching menus:', err);
+      this.menuList = [];
+      this.totalLengthOfCollection = 0;
+      this.loading = false;
+    }
+  });
+}
+
 
   // Rest of the methods remain the same as before...
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'S'
-        : this.filterValue
-    };
-
-    this.settingsService.searchMenuList(payload).subscribe((res: any) => {
-      this.results = res.data || res;
-      this.applySorting();
-      this.searchPerformed = true;
-      this.updatePaginationData();
-      this.totalLengthOfCollection = this.results.length || 0;
-    });
-  }
   sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -333,41 +351,41 @@ onToggleChange(controlName: string, event: Event) {
     this.sortDirection = 'asc';
   }
   
-  this.applySorting();
-  this.updatePaginationData();
+  this.loadMenus();
 }
 
 applySorting() {
-  this.results.sort((a, b) => {
-    // First sort by ModuleName
-    let moduleA = a.ModuleName || '';
-    let moduleB = b.ModuleName || '';
-    
-    if (moduleA < moduleB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
+  const moduleOrder = ['Account', 'CRM', 'Master', 'Settings'];
+
+  this.menuList.sort((a, b) => {
+    const moduleA = a.ModuleName || '';
+    const moduleB = b.ModuleName || '';
+    const indexA = moduleOrder.indexOf(moduleA);
+    const indexB = moduleOrder.indexOf(moduleB);
+
+    if (indexA !== indexB) {
+      return indexA - indexB;
     }
-    if (moduleA > moduleB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    
-    // If ModuleNames are equal, sort by MenuName
-    let menuA = a.MenuName || '';
-    let menuB = b.MenuName || '';
-    
-    if (menuA < menuB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (menuA > menuB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
+
+    const menuA = (a.MenuName || '').toLowerCase();
+    const menuB = (b.MenuName || '').toLowerCase();
+
+    return this.sortDirection === 'asc' 
+      ? menuA.localeCompare(menuB) 
+      : menuB.localeCompare(menuA);
   });
 }
+
+
+clearFilterValue() {
+    this.filterValue = '';
+   this.loadMenus();
+  }
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.menuList = this.results.slice(startIndex, endIndex);
+    this.loadMenus();
   }
 
   trackByIndex(index: number, item: any): number {

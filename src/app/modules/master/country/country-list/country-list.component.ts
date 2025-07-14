@@ -12,6 +12,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-country-list',
@@ -24,7 +25,8 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     RouterModule,
     MatDialogModule,
     MatButtonModule,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent
   ],
   templateUrl: './country-list.component.html',
   styleUrl: './country-list.component.scss'

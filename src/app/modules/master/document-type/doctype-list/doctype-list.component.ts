@@ -11,11 +11,12 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { MasterService } from 'src/app/modules/master/master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
    selector: 'app-doctype-list',
    standalone: true,
-   imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule, ListpageComponent],
+   imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule, ListpageComponent,FavoriteStarComponent],
    templateUrl: './doctype-list.component.html',
    styleUrl: './doctype-list.component.scss'
 })

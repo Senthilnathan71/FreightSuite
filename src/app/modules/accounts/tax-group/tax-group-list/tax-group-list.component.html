@@ -6,7 +6,7 @@
       </div>
 
       <div class="col-md-8 pb-2">
-        <form class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+        <form class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
           <app-favorite-star screenName="Tax Group" class="mt-1 me-1"></app-favorite-star>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openModal(content)">
             <i class="fas fa-plus me-1"></i> Create
@@ -25,7 +25,7 @@
             <div class="row mx-0 py-2">
                 <div class="col-md-8 mx-auto px-0">
                     <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                        <div class="d-flex gap-2 col-6 px-0 align-items-center">
+                        <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
                             <div class="form-outline flex-grow-1 position-relative">
                                 <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search" [(ngModel)]="filterValue"
                                     aria-label="Search input">
@@ -38,9 +38,12 @@
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
-                            <button type="submit" (click)="loadTaxGroups()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                           <div class="mt-md-0 mt-1">
+                                                      <button type="submit" (click)="loadTaxGroups()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
   <i class="fas fa-search me-1"></i> Search
 </button>
+                            </div>
+    
                         </div>
                     </form>
                 </div>
@@ -59,7 +62,7 @@
       <table class="table table-hover align-middle no-wrap table-bordered">
         <thead>
           <tr class="bg-info">
-            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+            <!-- <th class="bg-transparent text-light" scope="col" width="10%">Action</th> -->
 
             <th class="bg-transparent text-light" scope="col" (click)="sort('TaxName')">
               Tax Name
@@ -79,11 +82,15 @@
                 [ngClass]="{ 'fa-sort-up': sortColumn === 'TaxType' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'TaxType' && sortDirection === 'desc' }"></i>
             </th>
 
-            <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveFrom')">
+            <!-- <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveFrom')">
               Effective From
               <i class="fas fa-sort ms-1"
                 [ngClass]="{ 'fa-sort-up': sortColumn === 'EffectiveFrom' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'EffectiveFrom' && sortDirection === 'desc' }"></i>
-            </th>
+            </th> -->
+             <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveFrom')">
+                                Effective From
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'EffectiveFrom', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'EffectiveFrom'}"></i>
+                            </th>
 
             <th class="bg-transparent text-light" scope="col" (click)="sort('TaxRate')">
               Tax Rate
@@ -101,7 +108,7 @@
 
         <tbody>
           <tr *ngFor="let item of taxGroupList; trackBy: trackByIndex">
-            <td>
+            <!-- <td>
               <div class="d-flex align-items-center justify-content-center gap-2">
                 <button class="btn btn-sm btn-link text-primary p-0 mx-2"
                      (click)="openEditModal(content, item.TaxMasterSid)"
@@ -114,11 +121,13 @@
                   <i-feather name="trash-2" class="feather-sm"></i-feather>
                 </button>
               </div>
-            </td>
+            </td> -->
             <td><div class="text-truncate">{{ item.TaxName }}</div></td>
             <td><div class="text-truncate">{{ item.TaxCode }}</div></td>
             <td><div class="text-truncate">{{ item.TaxType }}</div></td>
-            <td><div class="text-truncate">{{ item.EffectiveFrom }}</div></td>
+            <td>
+                                <div class="text-truncate">{{item.EffectiveFrom | formatDate}}</div>
+                            </td>
             <td><div class="text-truncate">{{ item.TaxRate }}</div></td>
             <td><div class="text-truncate">{{ item.Remarks  }}</div></td>
           </tr>
@@ -215,6 +224,7 @@
             </button>
           </div>
         </aside>
+
 
            <!-- Tax Rate -->
         <aside class="col-md-6">

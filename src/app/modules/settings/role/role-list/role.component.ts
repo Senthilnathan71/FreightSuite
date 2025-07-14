@@ -18,6 +18,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from '../../email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from '../../edoc/edoc/edoc.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-role',
@@ -32,7 +33,8 @@ import { EdocComponent } from '../../edoc/edoc/edoc.component';
     RouterModule,
     FormsModule,
     DatePipe,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    FavoriteStarComponent
   ],
   templateUrl: './role.component.html',
   styleUrl: './role.component.scss',

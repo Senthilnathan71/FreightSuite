@@ -19,6 +19,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-biclause',
@@ -33,7 +34,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     FeatherModule,
     DatePipe,
     ListpageComponent,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    FavoriteStarComponent
   ],
   templateUrl: './biclause.component.html',
   styleUrls: ['./biclause.component.scss']
