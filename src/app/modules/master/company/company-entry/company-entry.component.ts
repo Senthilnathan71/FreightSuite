@@ -143,7 +143,7 @@ export class CompanyEntryComponent implements OnInit {
 			webSite: ['',[this.customWebsiteValidator(),Validators.maxLength(100)]],
 			email: ['', [EmailValidators.multipleEmails(),Validators.maxLength(100)]],
 			phoneNumber: [],
-			Pan: [''],
+			Pan: ['',this.panValidator],
 			isHo: [false],
 			status: ['Active'],
 			remarks: [''],
@@ -173,7 +173,7 @@ export class CompanyEntryComponent implements OnInit {
 			branchTimeZone: ['', [Validators.maxLength(6)]],
 			branchRemarks: ['', [Validators.maxLength(500)]],
 			branchStatus: ['Active'],
-			branchTaxRegistrationNo: ['', [Validators.maxLength(50)]],
+			branchTaxRegistrationNo: ['', [Validators.maxLength(50),this.gstValidator]],
 			branchCompanyLogo: [],
 			branchReportLogo: [],
 
@@ -1142,12 +1142,27 @@ openEDoc() {
 		this.isPanRequiredFlag = isIndia;
 
 		if (isIndia) {
-			panControl.setValidators([Validators.required, Validators.maxLength(20)]);
+			panControl.setValidators([Validators.required, Validators.maxLength(20),this.panValidator]);
 			// this.appSettingService.showInfo('PAN is required for Indian companies');
 		} else {
-			panControl.setValidators([Validators.maxLength(20)]);
+			panControl.setValidators([Validators.maxLength(20),this.panValidator]);
 		}
 		panControl.updateValueAndValidity();
+	}
+
+	gstValidator(control: AbstractControl): ValidationErrors | null {
+		const gstin = control.value;
+		// 2 numbers + 5 alphabet + 4 numbers + 1 alphabet + 1 alphanumeric + Z + 1 alphanumberic
+		const GST_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+		if (!gstin) return null;
+		return GST_REGEX.test(gstin) ? null : { invalidGST: true };
+	}
+	panValidator(control: AbstractControl): ValidationErrors | null {
+		const pan = control.value;
+		// 5 alphabets + 4 numbers + 1 alphabet
+		const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+		if (!pan) return null;
+		return PAN_REGEX.test(pan) ? null : { invalidPAN: true };
 	}
 	
 

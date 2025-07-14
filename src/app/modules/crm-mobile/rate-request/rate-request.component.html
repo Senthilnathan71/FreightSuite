@@ -12,13 +12,13 @@
                         <div class="col-md-4">
                             <div class="mb-2">
                                 <label class="form-label">Customer</label>
-                                <select formControlName="customerName" (change)="onCustomerChange($event)"
-                                    class="form-select">
-                                    <option value="" disabled>Select Customer</option>
-                                    <option *ngFor="let item of customers" [value]="item.CustomerMasterSid">
+                                <ng-select formControlName="customerName" (change)="onCustomerChange($event)"
+                                    class="ng-select">
+                                    <ng-option value="" disabled>Select Customer</ng-option>
+                                    <ng-option *ngFor="let item of customers" [value]="item.CustomerMasterSid">
                                         {{ item.CustomerName }}
-                                    </option>
-                                </select>
+                                    </ng-option>
+                                </ng-select>
                                 <small *ngIf="f['customerName'].touched && f['customerName'].invalid"
                                     class="text-danger">
                                     Customer Name is required.
@@ -60,13 +60,13 @@
                         <div class="col-md-4">
                             <div class="mb-2">
                                 <label for="customer" class="form-label">Dept Name</label>
-                                <select formControlName="Segment" class="form-select"
+                                <ng-select formControlName="Segment" class="ng-select"
                                     (change)="onSegmentChange($event)">
-                                    <option value="">Select</option>
-                                    <option *ngFor="let item of departments" [value]="item.DepartmentMasterSid">
+                                    <ng-option value="" disabled>Select Department</ng-option>
+                                    <ng-option *ngFor="let item of departments" [value]="item.DepartmentMasterSid">
                                         {{ item.departmentName }}
-                                    </option>
-                                </select>
+                                    </ng-option>
+                                </ng-select>
                                 <small *ngIf="f['Segment'].touched && f['Segment'].invalid" class="text-danger">
                                     Segment is required.
                                 </small>
@@ -76,10 +76,10 @@
                         <div class="col-12 col-md-3">
                             <div class="mb-2">
                                 <label for="status" class="form-label">Status</label>
-                                <select formControlName="status" class="form-select">
-                                    <option value="">Status</option>
-                                    <option *ngFor="let option of statusList" [value]="option">{{ option }}</option>
-                                </select>
+                                <ng-select formControlName="status" class="ng-select">
+                                    <ng-option value="" disabled>Select Status</ng-option>
+                                    <ng-option *ngFor="let option of statusList" [value]="option">{{ option }}</ng-option>
+                                </ng-select>
                                 <small *ngIf="f['status'].touched && f['status'].invalid" class="text-danger">
                                     Status is required.
                                 </small>
@@ -100,7 +100,7 @@
                     <i class="fas fs-6 fa-info-circle"></i> 
                     Details
                 </button> -->
-                <button class="btn btn-info btn-sm" (click)="addRoute()" type="button"><i-feather
+                <button class="btn btn-info btn-sm" (click)="addRoute()" type="button" [disabled]="!(f['customerName'].value && selectedDepartment)"><i-feather
                         class="feather-sm ms-2" name="plus"></i-feather> New
                     Route</button>
                 <button *ngIf="EnquiryHeaderSid" class="btn btn-info btn-sm" (click)="navigateQuotation()"
@@ -108,7 +108,7 @@
                     Quotation</button>
                 }
                 @if (!isMobile) {
-                <button class="btn btn-info btn-sm" type="button" (click)="addRoute()"><i-feather
+                <button class="btn btn-info btn-sm" type="button" (click)="addRoute()" [disabled]="!(f['customerName'].value && selectedDepartment)"><i-feather
                         class="feather-sm ms-2" name="plus"></i-feather> Add
                     Route</button>
                 <button *ngIf="EnquiryHeaderSid" class="btn btn-info btn-sm" (click)="navigateQuotation()"
@@ -138,15 +138,15 @@
 
                         <section class="card-body p-2 requestLooper">
                             <div class="row mb-2">
-                                <div class="col-6 col-md-3">
+                                <div class="col-12 col-md-3">
                                     <div class="mb-1">
                                         <label class="form-label">POO</label>
-                                        <select formControlName="POO" class="form-select">
-                                            <option value="" disabled>Select POO</option>
-                                            <option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
-                                                {{ item.PortCode }}
-                                            </option>
-                                        </select>
+                                        <ng-select formControlName="POO" class="ng-select">
+                                            <ng-option value="" disabled>Select POO</ng-option>
+                                            <ng-option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
+                                                {{item.PortName}} ({{ item.PortCode }})
+                                            </ng-option>
+                                        </ng-select>
                                         <!-- <small *ngIf="route.get('POO')?.touched && route.get('POO')?.invalid"
                                                 class="text-danger">
                                                 POO is required.
@@ -173,12 +173,12 @@
                                 <div class="col-6 col-md-3">
                                     <div class="mb-1">
                                         <label class="form-label">POL <span class="text-danger">*</span></label>
-                                        <select formControlName="POL" class="form-select">
-                                            <option value="" disabled>Select POL</option>
-                                            <option *ngFor="let item of getFilteredPOLPorts(routeIndex)" [value]="item.PortMasterSid">
-                                                {{ item.PortCode }}
-                                            </option>
-                                        </select>
+                                        <ng-select formControlName="POL" class="ng-select">
+                                            <ng-option value="" disabled>Select POL</ng-option>
+                                            <ng-option *ngFor="let item of getFilteredPOLPorts(routeIndex)" [value]="item.PortMasterSid">
+                                                {{item.PortName}} ({{ item.PortCode }})
+                                            </ng-option>
+                                        </ng-select>
                                         <!-- <ng-select class="ng-select" [items]="getFilteredPOLPorts(routeIndex)" bindLabel="PortCode"
                                             bindValue="PortMasterSid" [searchable]="false" placeholder="Select"
                                             formControlName="POL">
@@ -220,15 +220,15 @@
                                         </small>
                                     </div>
                                 </div> -->
-                                <div class="col-6 col-md-3">
+                                <div class="col-12 col-md-3">
                                     <div class="mb-1">
                                         <label class="form-label">POD <span class="text-danger">*</span></label>
-                                        <select formControlName="POD" class="form-select">
-                                            <option value="" disabled>Select POD</option>
-                                            <option *ngFor="let item of getFilteredPODPorts(routeIndex)" [value]="item.PortMasterSid">
-                                                {{ item.PortCode }}
-                                            </option>
-                                        </select>
+                                        <ng-select formControlName="POD" class="ng-select">
+                                            <ng-option value="" disabled>Select POD</ng-option>
+                                            <ng-option *ngFor="let item of getFilteredPODPorts(routeIndex)" [value]="item.PortMasterSid">
+                                                {{item.PortName}} ({{ item.PortCode }})
+                                            </ng-option>
+                                        </ng-select>
                                         <!-- <ng-select class="ng-select" [items]="getFilteredPODPorts(routeIndex)" bindLabel="PortCode"
                                             bindValue="PortMasterSid" [searchable]="false" placeholder="Select" formControlName="POD">
                                             <ng-template ng-header-tmp>
@@ -250,15 +250,15 @@
                                 </div>
 
 
-                                <div class="col-6 col-md-3">
+                                <div class="col-12 col-md-3">
                                     <div class="mb-1">
                                         <label class="form-label">FPOD</label>
-                                        <select formControlName="FDC" class="form-select">
-                                            <option value="" disabled>Select FPOD</option>
-                                            <option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
-                                                {{ item.PortCode }}
-                                            </option>
-                                        </select>
+                                        <ng-select formControlName="FDC" class="ng-select">
+                                            <ng-option value="" disabled>Select FPOD</ng-option>
+                                            <ng-option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
+                                                {{item.PortName}} ({{ item.PortCode }})
+                                            </ng-option>
+                                        </ng-select>
                                         <!-- <small *ngIf="route.get('FDC')?.touched && route.get('FDC')?.invalid"
                                                 class="text-danger">
                                                 FDC is required.
@@ -329,8 +329,10 @@
                                                             </select>
                                                         </td>
                                                         <td>
-                                                            <input type="text" formControlName="product"
-                                                                class="form-control">
+                                                              <select name="product" formControlName="product" id="" class="form-select">
+                                                                <option value="" disabled>Select Product</option>
+                                                                <option *ngFor="let product of productList" [value]="product.ProductName">{{product.ProductName}}</option>
+                                                            </select>
                                                         </td>
                                                         <td>
                                                             <input type="number" formControlName="Qty"
@@ -429,8 +431,10 @@
                                                             </select>
                                                         </td>
                                                         <td>
-                                                            <input type="text" formControlName="product"
-                                                                class="form-control">
+                                                            <select name="product" formControlName="product" id="" class="form-select">
+                                                                <option value="" disabled>Select Product</option>
+                                                                <option *ngFor="let product of productList" [value]="product.ProductName">{{product.ProductName}}</option>
+                                                            </select>
                                                         </td>
                                                         <td>
                                                             <input type="text" formControlName="Qty"

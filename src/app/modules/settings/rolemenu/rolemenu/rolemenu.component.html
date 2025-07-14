@@ -171,9 +171,20 @@
                                 </aside>
                             </section>
                         </section>
-                        <section class="card-body py-0" *ngIf="menuPermissionsFetched">
-                            <section class="row">
+                        <section class="card-body pb-0" *ngIf="roleMenuForm.get('MenuMasterSid')?.value">
+                            <section >
                                 <h6 class="card-title">Role Access Permissions</h6>
+                                <section class="row" *ngIf="showLoading">
+                                    <div class="text-center">
+                                        <div class="d-flex justify-content-center align-items-center" style="min-height: 100px;">
+                                            <div class="spinner-border spinner-border-sm text-info me-2" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <span class="loading-text">Loading Permissions</span>
+                                        </div>
+                                    </div>
+                                </section>
+                                <section class="row" *ngIf="!showLoading">
                                 @for(permission of menuPermissionList; track i; let i = $index) {
                                 <form class="col-md-4 d-flex align-items-center my-2">
                                     <div class="form-check">
@@ -189,6 +200,7 @@
                                     </div>
                                 </form>
                                 }
+                                </section>
                             </section>
                         </section>
                     </div>

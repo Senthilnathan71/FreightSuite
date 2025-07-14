@@ -17,7 +17,8 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"  [disabled]="chartForm.invalid">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+                        [disabled]="chartForm.invalid">
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
@@ -33,10 +34,11 @@
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <input type="text" formControlName="Name" class="custom-input-field sm" placeholder="" />
+                            <input type="text" formControlName="LedgerName" class="custom-input-field sm"
+                                placeholder="" />
                             <label class="input-label"> Name <span class="text-danger">*</span></label>
                             <div class="error-message"
-                                *ngIf="chartForm.get('Name')?.touched && chartForm.get('Name')?.invalid">
+                                *ngIf="chartForm.get('LedgerName')?.touched && chartForm.get('LedgerName')?.invalid">
                                 <span> Name is required</span>
                             </div>
                         </div>
@@ -44,23 +46,24 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="code">
+                                formControlName="LedgerCode">
                             <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
                             <div class="error-message"
-                                *ngIf="chartForm.get('code')?.touched && chartForm.get('code')?.invalid">
+                                *ngIf="chartForm.get('LedgerCode')?.touched && chartForm.get('LedgerCode')?.invalid">
                                 <span> Code is required</span>
                             </div>
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="CurrencyCode">
-                            <label for="text-input" class="input-label">Currency Code <span
-                                    class="text-danger"></span></label>
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="LedgerCurrency" [items]="currencyList" bindLabel="currencyName"
+                                bindValue="currencyMasterSid" placeholder="Select Currency">
+                            </ng-select>
+                            <label class="input-label">Currency Code</label>
                         </div>
                     </aside>
-                    <div class="row">
+
+                    <div class="row my-1">
                         <aside class="col-6 col-md-2 mt-2">
                             <div class="form-check">
                                 <input type="radio" id="asset" class="form-check-input" name="accountType" />
@@ -97,7 +100,7 @@
                         </aside>
                     </div>
 
-                    <div class="row">
+                    <!-- <div class="row">
                         <aside class="col-md-4 my-3">
                             <div class="form-check">
                                 <input type="checkbox" id="ISSR" class="form-check-input"
@@ -108,31 +111,46 @@
 
                         <aside class="col-md-4" *ngIf="isSubledgerRequired">
                             <div class="custom-form-group">
-                                <input type="text" id="ledgerName" placeholder="" class="form-control"
-                                    formControlName="LedgerName" />
-                                <label for="ledgerName" class="input-label">Ledger Name</label>
+                                <input type="text" id="SubledgerName" placeholder="" class="form-control"
+                                    formControlName="SubledgerName" />
+                                <label for="ledgerName" class="input-label">SubLedger Name</label>
                                 <div class="error-message"
-                                    *ngIf="chartForm.get('LedgerName')?.touched && chartForm.get('LedgerName')?.invalid">
-                                    <span>Ledger Name is required</span>
+                                    *ngIf="chartForm.get('SubledgerName')?.touched && chartForm.get('SubledgerName')?.invalid">
+                                    <span>SubledgerName is required</span>
                                 </div>
                             </div>
                         </aside>
 
 
-                    </div>
+                    </div> -->
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="SubledgerName">
+                            <label for="text-input" class="input-label">SubledgerName <span
+                                    class="text-danger">*</span></label>
+                            <div class="error-message"
+                                *ngIf="chartForm.get('SubledgerName')?.touched && chartForm.get('SubledgerName')?.invalid">
+                                <span> SubledgerName is required</span>
+                            </div>
+                        </div>
+
+                    </aside>
+
 
 
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Group">
+                                formControlName="GroupName">
                             <label for="text-input" class="input-label">Group<span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="subGroup">
+                                formControlName="SubGroupName">
                             <label for="text-input" class="input-label">Sub Group</label>
                         </div>
                     </aside>
@@ -151,7 +169,7 @@
                     </aside>
                     <aside class="col-md-4 mt-3 mt-md-0">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="reportType" [items]="modeOfReportType" bindLabel="name"
+                            <ng-select formControlName="LedgerType" [items]="modeOfReportType" bindLabel="name"
                                 bindValue="name">
 
                             </ng-select>
@@ -173,15 +191,24 @@
 
 
 
-                    <aside class="col-md-4 mt-3 mt-md-0">
+                    <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
-                                bindValue="name">
+                            <ng-container *ngIf="isEditMode; else readOnlyStatus">
+                                <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
+                                    bindValue="name" placeholder="Select status" class="ng-select">
+                                </ng-select>
+                            </ng-container>
+                            <ng-template #readOnlyStatus>
+                                <input type="text" name="Status" class="custom-input-field sm" formControlName="Status"
+                                    id="text-input" readonly>
+                            </ng-template>
 
-                            </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger"></span></label>
+                            <label for="text-input" class="input-label">Status <span class="text-danger"></span></label>
+
+
                         </div>
                     </aside>
+
 
 
 

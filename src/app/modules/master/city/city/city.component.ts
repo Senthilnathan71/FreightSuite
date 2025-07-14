@@ -158,19 +158,9 @@ export class CityComponent {
     forkJoin({
       countries: this.masterService.getAllCountry(),
       states: this.masterService.getAllState(),
-      city: this.masterService.getAllCity()
-    }).subscribe(({ countries, states, city }) => {
+    }).subscribe(({ countries, states }) => {
       this.countryList = countries.data; 
       this.stateList = states.data;
-      this.cityList = city.map(city => {
-        const country = this.countryList.find(c => c.CountryMasterSid === city.CountryMasterSid);
-        const state = this.stateList.find(s => s.StateMasterSid === city.StateMasterSid);
-        return {
-          ...city,
-          countryName: country ? country.countryName : '',
-          stateName: state ? state.stateName : ''
-        };
-      });
     });
   }
 
@@ -275,6 +265,7 @@ export class CityComponent {
   }
 
   onSubmit() {
+    if (this.btnDisable) return;
     if (this.cityForm.get('status')?.disabled) {
       this.cityForm.get('status')?.enable();
     }
@@ -284,6 +275,7 @@ export class CityComponent {
       this.appSettingService.showWarning('Please fill all required fields correctly.')
       return;
     } else {
+      this.btnDisable = true;
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.cityForm.getRawValue(); // Use getRawValue() to get disabled values too
@@ -307,37 +299,37 @@ export class CityComponent {
       if (this.isEditMode) {
         this.masterService.updateCityById(this.CityMasterSid, payload).subscribe(
           (resp: any) => {
-            console.log(resp.message);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
                this.closeModal();             // <-- Close the modal here
-               this.resetForm();              // <-- Reset the form here
-              this.router.navigate(['master/city/list']);
+              this.router.navigate(['master/city']);
             } else {
               this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Error loading country:', error);
+            this.btnDisable = false;
           }
         );
       } else {
         this.masterService.createCity(payload).subscribe(
           (resp: any) => {
-            console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
                this.closeModal();             // <-- Close the modal here
-               this.resetForm();              // <-- Reset the form here
-              this.router.navigate(['master/city/list']);
+              this.router.navigate(['master/city']);
             } else {
               this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Error loading country:', error);
+            this.btnDisable = false;
           }
         );
       }
@@ -435,6 +427,8 @@ applySorting() {
       if (result === true) {
         this.masterService.deleteCityById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
+          this.router.navigate(['master/city/list'])
+          this.loadCities();
           
         });
       }

@@ -462,6 +462,15 @@ export class LeadService {
     )
   }
 
+  getAllProducts(){
+    return this.http.get<{data : any[]}>('product').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   
 
 }

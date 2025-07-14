@@ -232,32 +232,32 @@
                             <tr class="bg-info">
                                 <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
 
-                                <th class="bg-transparent text-light" (click)="sort('Name')">Name
+                                <th class="bg-transparent text-light" (click)="sort('LedgerName')">Name
                                     <i class="fas fa-sort ms-1" [ngClass]="{
-                            'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Name',
-                            'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Name'
+                            'fa-sort-up': sortDirection === 'asc' && sortColumn === 'LedgerName',
+                            'fa-sort-down': sortDirection === 'desc' && sortColumn === 'LedgerName'
                             }"></i>
                                 </th>
 
-                                <th class="bg-transparent text-light" (click)="sort('code')">Ledger Code
+                                <th class="bg-transparent text-light" (click)="sort('LedgerCode')">Ledger Code
                                     <i class="fas fa-sort ms-1" [ngClass]="{
                             'fa-sort-up': sortDirection === 'asc' && sortColumn === 'LedgerCode',
                             'fa-sort-down': sortDirection === 'desc' && sortColumn === 'LedgerCode'
                             }"></i>
                                 </th>
 
-                                <th class="bg-transparent text-light" (click)="sort('Group')">Group
+                                <th class="bg-transparent text-light" (click)="sort('GroupName')">Group
                                     <i class="fas fa-sort ms-1" [ngClass]="{
-                            'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Group',
-                            'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Group'
+                            'fa-sort-up': sortDirection === 'asc' && sortColumn === 'GroupName',
+                            'fa-sort-down': sortDirection === 'desc' && sortColumn === 'GroupName'
                             }"></i>
 
 
-                                <th class="bg-transparent text-light" (click)="sort('subGroup')">
+                                <th class="bg-transparent text-light" (click)="sort('SubGroupName')">
                                     Sub Group
                                     <i class="fas fa-sort ms-1" [ngClass]="{
-                                'fa-sort-up': sortDirection === 'asc' && sortColumn === 'subGroup',
-                                'fa-sort-down': sortDirection === 'desc' && sortColumn === 'subGroup'
+                                'fa-sort-up': sortDirection === 'asc' && sortColumn === 'SubGroupName',
+                                'fa-sort-down': sortDirection === 'desc' && sortColumn === 'SubGroupName'
                             }"></i>
                                 </th>
 
@@ -267,23 +267,23 @@
                         <tbody>
                             <tr *ngFor="let item of chartAccountList; let i = index; trackBy: trackByIndex">
                                 <td>
-                                    <div class="d-flex align-items-center">
+                                    <div class="d-flex align-items-center justify-content-center">
                                         <a class="text-info mx-2"
-                                            [routerLink]="['/master/chart-account/entry', item.id]">
+                                            [routerLink]="['/accounts/chart-accounts/entry', item.COAMasterSid]">
                                             <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                         </a>
                                         <a class="text-danger mx-2 ps-3 border-start"
-                                            (click)="deleteChartAccount(item.ChartMasterSid)">
+                                             (click)="deleteChartAccount(item.COAMasterSid)">
                                             <i-feather name="trash-2" class="feather-sm"></i-feather>
                                         </a>
                                     </div>
                                 </td>
-                                <td>{{ item.Name }}</td>
-                                <td>{{ item.code }}</td>
-                                <td>{{ item.Group }}</td>
-                                <td>{{ item.subGroup }}</td>
+                                <td>{{ item.LedgerName }}</td>
+                                <td>{{ item.LedgerCode }}</td>
+                                <td>{{ item.GroupName }}</td>
+                                <td>{{ item.SubGroupName }}</td>
                                 <td>
-                                    @if(item.status === 'A') {
+                                    @if(item.Status === 'A') {
                                     <div
                                         class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                         <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
@@ -301,18 +301,24 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-
-            <!-- <div>
+                <div>
                 <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
                     [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
                 </ngb-pagination>
-            </div> -->
+            </div>
+            
+  </div>
+</div>
+
+
+            </div>
+    
+
+            
         </div>
-    </div>
+   
 
     <!-- No Records -->
     <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searched">
         <div>No records found</div>
     </div>
-</div>

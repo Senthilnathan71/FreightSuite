@@ -2852,7 +2852,7 @@ getAllHawbStocks(){
 
 
    getAllCoa() {
-    return this.http.get<{ data: any[] }>('tax').pipe(
+    return this.http.get<{ data: any[] }>('coa').pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -2861,7 +2861,7 @@ getAllHawbStocks(){
   }
 
    fetchCoaById(id: number) {
-    return this.http.get<{ data: any }>(`tax/fetch/${id}`).pipe(
+    return this.http.get<{ data: any }>(`coa/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -2870,7 +2870,7 @@ getAllHawbStocks(){
   }
 
   createNewCoa(payload: any) {
-    return this.http.post('tax/create', payload).pipe(
+    return this.http.post('coa/create', payload).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -2879,7 +2879,7 @@ getAllHawbStocks(){
   }
   
     updateCoaById(id: number, payload: any) {
-    return this.http.patch<{ data: any }>(`tax/update/${id}`, payload).pipe(
+    return this.http.patch<{ data: any }>(`coa/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2890,7 +2890,7 @@ getAllHawbStocks(){
 
 
    deleteCOA(id: number) {
-    return this.http.delete<{ data: any }>(`tax/delete/${id}`).pipe(
+    return this.http.delete<{ data: any }>(`coa/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -2899,9 +2899,9 @@ getAllHawbStocks(){
   }
 
    searchCoa(payload) {
-    return this.http.post("tax/search-list", payload).pipe(
+    return this.http.post("coa/search-list", payload).pipe(
       map((res: any) => {
-        return res.data;
+        return res;
       })
     );
   }

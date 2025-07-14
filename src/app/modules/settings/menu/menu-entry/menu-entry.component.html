@@ -155,7 +155,7 @@
                 <div class="row">
                     <aside class="col-12">
                         <h5 class="card-title text-info">
-                            Permission and Requirements
+                            Menu Permissions
                         </h5>
                     </aside>
                     <aside [formGroup]="menuForm" class="col-md-6 mt-2">
@@ -208,22 +208,32 @@
                                             </div>
                                         </td>
                                         <td class="pe-2 position-relative z-3">
-                                            @if(last) {
+                                            @if(!last){
+                                                <button type="button" class="btn ms-auto btn-sm btn-outline-info me-2"
+                                                (click)="clearPermission(i)" title="Add Permission">
+                                                
+                                                <i class="fas fa-plus"></i> Custom
+                                            </button>
+                                            }
+                                        @if(last) {
                                             <button type="button" class="btn ms-auto btn-sm btn-outline-info me-2"
                                                 (click)="addPermission()" title="Add Permission">
-                                               
+                                                
                                                 <i class="fas fa-plus"></i> Custom
                                             </button>
                                             <br>
-                                            <div ngbDropdown placement="top-end" class="d-inline-block mt-2">
+                                            <div ngbDropdown placement="top-end" class="d-inline-block mt-2" (openChange)="filterPermissionList($event)">
                                                 <button type="button" class="btn btn-sm btn-outline-primary me-2"
                                                     id="dropdown1" ngbDropdownToggle> <i class="fas fa-plus"></i>
                                                     Prebuilt </button>
                                                 <div ngbDropdownMenu aria-labelledby="dropdown1" class="z-2 border">
-                                                    @for(option of specialOptions;track option){
+                                                    @for(option of filteredPermissions;track option;let last=$last){
                                                     <button ngbDropdownItem class="fw-bold text-info"
                                                         (click)="createPermissionWithOption(option)"><i
                                                             class="fas fa-{{getOptionIcon(option)}} text-info me-2"></i>{{option}}</button>
+                                                        <div class="dropdown-divider my-1" *ngIf="!last"></div>
+                                                    } @empty {
+                                                        <button ngbDropdownItem class="fw-bold py-2" disabled>No items found</button>
                                                     }
                                                 </div>
                                             </div>
