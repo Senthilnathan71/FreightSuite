@@ -62,7 +62,7 @@ export class RateRequestComponent implements OnInit {
   enquiry: any;
   selectedFCLLCL: string = ''; // Store selected segment's FCL/LCL type
   selectedCustomerName: any;
-  statusList = ['Active', 'Suspend'];
+  statusList = ['Active', 'Suspended'];
   minDate: string = '';
   rateRequest: boolean = false;
   ports = [];
@@ -75,6 +75,7 @@ export class RateRequestComponent implements OnInit {
   rateRequestData : any;
   currentMenuId: number;
   TandCList: any;
+  productList : any[];
 
   constructor(
     private appService: AppService,
@@ -98,6 +99,7 @@ export class RateRequestComponent implements OnInit {
     this.loadContainerTypes();
     this.loadPorts();
     this.initializeForm();
+    this.loadProducts();
 
     this.activatedRoute.paramMap.subscribe((params) => {
       this.EnquiryHeaderSid = +params.get('id');
@@ -259,10 +261,11 @@ export class RateRequestComponent implements OnInit {
   //   }, 100);
 
   // }
-  onSegmentChange(event: Event) {
-    const selectedDepartmentId = Number(
-      (event.target as HTMLSelectElement).value
-    );
+  onSegmentChange(event) {
+    if(!event){
+      return;
+    }
+    const selectedDepartmentId = Number(event);
     this.rateRequestForm
       .get('DepartmentMasterSid')
       ?.setValue(selectedDepartmentId);
@@ -313,10 +316,8 @@ export class RateRequestComponent implements OnInit {
     }, 100);
   }
 
-  onCustomerChange(event: Event): void {
-    const selectedCustomerId = Number(
-      (event.target as HTMLSelectElement).value
-    );
+  onCustomerChange(CustomerMasterSid): void {
+    const selectedCustomerId = CustomerMasterSid
     this.rateRequestForm.get('CustomerMasterSid')?.setValue(selectedCustomerId);
 
     const selectedCustomer = this.customers.find(
@@ -400,7 +401,7 @@ onFilter(search: string) {
       customerName: response.CustomerMasterSid,
       shipmentDate:new Date(response.ShipmentExpectedDate),
       Segment: response.DepartmentMasterSid,
-      status: response.status === 'A' ? 'Active' : 'Suspend',
+      status: response.status === 'A' ? 'Active' : 'Suspended',
     });
     this.rateRequestForm.get('Segment')?.disable();
     // Get the FormArray for routes and clear existing data
@@ -451,7 +452,6 @@ onFilter(search: string) {
 
   onSubmit() {
     this.btnDisable = true;
-
     if (this.EnquiryHeaderSid) {
       const updatePayload = {
         ...this.rateRequestForm.value,
@@ -570,6 +570,19 @@ onFilter(search: string) {
     } else if(this.selectedFCLLCL === 'FCL' || this.selectedFCLLCL === 'LCL'){
       this.filteredPorts = this.ports.filter(port => port.PortType === 'Sea')
     }
+  }
+
+  loadProducts(){
+    this.leadService.getAllProducts().subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          this.productList = resp.data;
+        } else {
+          console.error('Error loading Product');
+          this.appSettingsService.showError('Error loading products.')
+        }
+      }
+    )
   }
 
   showInfo() {

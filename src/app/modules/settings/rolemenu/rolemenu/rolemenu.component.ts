@@ -59,6 +59,7 @@ export class RolemenuComponent implements OnInit {
 	roleMenuData : any;
 	sortColumn: string = 'menuName'; 
     sortDirection: string = 'asc';
+	showLoading : boolean;
 
 	modeOfStatus = [
 		{value : 'A',name: "Active"},
@@ -406,10 +407,12 @@ clearFilterValue(){
 	}
 
 	getMenuPermissions(menu){
+		this.showLoading =true;
 		this.settingService.getMenuPermissions(menu.MenuMasterSid).subscribe(
 			(resp:any)=>{
 				if(resp){
 					this.menuPermissionList = resp;
+					this.showLoading = false;
 					if(this.menuPermissionList.length > 0){
 						this.menuPermissionsFetched = true;
 					}

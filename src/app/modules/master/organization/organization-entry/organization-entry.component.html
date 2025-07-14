@@ -400,6 +400,15 @@
                                         formControlName="PanType" />
                                     <label for="PanType" class="input-label">PAN/VAT <span
                                             class="text-danger">*</span></label>
+                                    @if(customerForm.get('PanType').invalid && (customerForm.get('PanType')?.touched || customerForm.get('PanType')?.dirty)){
+                                        <div class="error-message">
+                                            @if(customerForm.get('PanType')?.hasError('required')){
+                                                <span>PAN/VAT is required</span>
+                                            } @else if(customerForm.get('PanType')?.hasError('invalidPAN')){
+                                                <span>Provided PAN/VAT is invalid</span>
+                                            }
+                                        </div>
+                                    }
                                 </div>
                             </aside>
 
@@ -1296,7 +1305,10 @@
                                     @if(customerBranchForm.get('CustBranchGSTIN')?.touched &&
                                     customerBranchForm.get('CustBranchGSTIN')?.invalid){
                                     <div class="error-message">
-                                        @if(customerBranchForm.get('CustBranchGSTIN')?.hasError('maxlength')){
+                                        @if(customerBranchForm.get('CustBranchGSTIN')?.hasError('invalidGST')){
+                                        <span>Provided GSTIN is invalid</span>
+                                        }
+                                        @else if(customerBranchForm.get('CustBranchGSTIN')?.hasError('maxlength')){
                                         <span>Max 15 Characters</span>
                                         }
                                     </div>
@@ -1654,17 +1666,10 @@
 </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select">
-                                    <!-- <multi-select 
-                                        [items]="departmentList" 
-                                        bindLabel="departmentName" 
-                                        bindValue="DepartmentMasterSid" 
-                                        placeholder="Select Department"
-                                        [(ngModel)]="selectedDepartments" 
-                                        (valueChange)="updateDisplayedDepartments()" 
-                                        [ngModelOptions]="{standalone: true}"
-                                    >
-                                    </multi-select> -->
-                                     <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid" 
+                                    <multi-select [control]="customerBranchEmailForm.get('DepartmentMasterSid')" [items]="departmentList" bindLabel="departmentName" bindValue="departmentName"
+                                    placeholder="Select Department">
+                                </multi-select>
+                                     <!-- <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid" 
                                         [multiple]="true" [closeOnSelect]="false" [searchable]="true" placeholder="Select Department"
                                         [(ngModel)]="selectedDepartments" (change)="updateDisplayedDepartments()"
                                         [ngModelOptions]="{standalone: true}">
@@ -1683,23 +1688,22 @@
                                         
                                         <ng-template ng-multi-label-tmp let-items="items" let-clear="clear">
   <div class="d-flex flex-wrap gap-1 align-items-center">
-    <!-- Display first 3 selected items -->
     <span *ngFor="let item of displayedDepartments" class="badge bg-info">
       {{ item.departmentName }}
     </span>
                                                 
-                                                <!-- Show +X indicator if there are more than 3 selected -->
+                                               
     <span *ngIf="extraDepartmentsCount > 0" class="badge bg-secondary">
       +{{ extraDepartmentsCount }}
     </span>
                                                 
-                                                <!-- Show placeholder when nothing is selected -->
+                                                
                                                 <span *ngIf="selectedDepartments.length === 0" class="text-muted">
       Select Departments
     </span>
   </div>
 </ng-template>
-                                    </ng-select> 
+                                    </ng-select>  -->
                                     <label class="input-label">Department <span class="text-danger">*</span></label>
                                     @if(customerBranchEmailForm.get('DepartmentMasterSid')?.touched &&
                                     customerBranchEmailForm.get('DepartmentMasterSid')?.invalid){
@@ -2296,8 +2300,9 @@
                          <td>
                             <div class="text-truncate">{{ getMenuName(item.MenuMasterSid) }}</div>
                         </td>
+                        <ng-template #emaildescriptionTemplate>{{formatDepartment(item.DepartmentMasterSid)}}</ng-template>
                         <td>
-                            <div class="text-truncate">{{getDepartmentName(item.DepartmentMasterSid)}}</div>
+                            <div class="dofi-max-w-300 text-truncate" [ngbTooltip]=emaildescriptionTemplate>{{formatDepartment(item.DepartmentMasterSid)}}</div>
                         </td>
                         <td>
                             <div class="text-truncate">{{item.Toemail}}</div>
@@ -2436,7 +2441,7 @@
                             </div>
                         </td>
                         <td>
-                            <div class="dofi-max-w-600 text-truncate" [ngbTooltip]=descriptionTemplate>
+                            <div class="dofi-max-w-300 text-truncate" [ngbTooltip]=descriptionTemplate>
                                 {{formatDepartment(item.DepartmentMasterSid)}}
                             </div>
                             <!-- <div class="text-truncate">{{formatDepartment(item.DepartmentMasterSid)}}</div> -->

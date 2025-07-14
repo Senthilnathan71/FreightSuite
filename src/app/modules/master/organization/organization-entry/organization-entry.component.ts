@@ -432,16 +432,16 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
     // Patch form #2
     this.branchEmailData = data;
     let departmentIds = [];
-  try {
-    const deptData = JSON.parse(data.DepartmentMasterSid);
-    departmentIds = deptData.departmentIds || [];
-  } catch (e) {
-    // Fallback for old format (comma separated)
-    departmentIds = data.DepartmentMasterSid ? 
-      data.DepartmentMasterSid.split(',').map(id => id.trim()) : [];
-  }
-    this.selectedDepartments = departmentIds;
-    this.updateDisplayedDepartments();
+  // try {
+  //   const deptData = JSON.parse(data.DepartmentMasterSid);
+  //   departmentIds = deptData.departmentIds || [];
+  // } catch (e) {
+  //   // Fallback for old format (comma separated)
+  //   departmentIds = data.DepartmentMasterSid ? 
+  //     data.DepartmentMasterSid.split(',').map(id => id.trim()) : [];
+  // }
+  //   this.selectedDepartments = departmentIds;
+  //   this.updateDisplayedDepartments();
 
     this.customerBranchEmailForm.patchValue({
       CustomerBranchSid: data.CustomerBranchSid,
@@ -463,7 +463,7 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
   } else {
     this.isModalEditMode = false;
     this.selectedDepartments = [];
-    this.updateDisplayedDepartments();
+    // this.updateDisplayedDepartments();
     this.customerBranchEmailForm.patchValue({
       BranchName: this.customerBranchName || ''
     });
@@ -603,7 +603,7 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
       // LocalLanguage: ['', [Validators.required]],
       CompanyType: [{ value: '', disabled: true }],
       PanAvailable: [false],
-      PanType: [{ value: '', disabled: true }, [Validators.required]],
+      PanType: [{ value: '', disabled: true }, [Validators.required,this.panValidator]],
       PanName: [{ value: '', disabled: true }, [Validators.required]],
       GroupName: ['', [Validators.required]],
       Website: ['', [Validators.required]],
@@ -720,7 +720,7 @@ updateShortCodeFieldState() {
       CustBranchAddress: ['', [Validators.required]],
       CustBranchRegistered: ['Y', [Validators.required]], // default value if applicable
       CustBranchGSTtype: [''],
-      CustBranchGSTIN: [''],
+      CustBranchGSTIN: ['',this.gstValidator],
       status: [{value: 'Active', disabled: false}, Validators.required],
     });
     this.customerBranchForm.get('CustBranchName')?.valueChanges.subscribe(() => {
@@ -787,7 +787,7 @@ loadMenus() {
     this.customerBranchEmailForm = this.fb.group({
       CustomerBranchSid: [''],
        MenuMasterSid: ['', [Validators.required]],
-      DepartmentMasterSid: ['', [Validators.required]],
+      DepartmentMasterSid: [[], [Validators.required]],
       BranchName: [{ value: this.customerBranchName || '', disabled: true }],
       Toemail: ['', [Validators.required, EmailValidators.multipleEmails()]],
       CCemail: ['', [EmailValidators.multipleEmails()]],
@@ -1359,6 +1359,7 @@ loadMenus() {
 
   //customer-branch-email
   customerBranchEmailSubmit() {
+    console.log(this.customerBranchEmailForm.value);
   if (this.customerBranchEmailForm.invalid) {
     this.customerBranchEmailForm.markAllAsTouched();
     return;
@@ -1381,7 +1382,7 @@ loadMenus() {
   const payload = {
     CustomerBranchSid: Number(this.customerBranchId),
     MenuMasterSid: Number(formValue.MenuMasterSid),
-    DepartmentMasterSid: JSON.stringify(departmentData),
+    DepartmentMasterSid: formValue.DepartmentMasterSid,
     Toemail: formValue.Toemail,
     CCemail: formValue.CCemail,
     ...(this.isModalEditMode ? updatedBy : createdBy)
@@ -1826,6 +1827,21 @@ loadMenus() {
   formatDepartment(depart : any[]){
     
     return depart.join(" , ")
+  }
+
+  gstValidator(control: AbstractControl): ValidationErrors | null {
+    const gstin = control.value;
+    // 2 numbers + 5 alphabet + 4 numbers + 1 alphabet + 1 alphanumeric + Z + 1 alphanumberic
+    const GST_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+    if (!gstin) return null;
+    return GST_REGEX.test(gstin) ? null : { invalidGST: true };
+  }
+  panValidator(control: AbstractControl): ValidationErrors | null {
+    const pan = control.value;
+    // 5 alphabets + 4 numbers + 1 alphabet
+    const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    if (!pan) return null;
+    return PAN_REGEX.test(pan) ? null : { invalidPAN: true };
   }
 
 

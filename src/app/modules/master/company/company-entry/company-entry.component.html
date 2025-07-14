@@ -375,6 +375,7 @@
                   
                       <div class="error-message" *ngIf="companyForm.get('Pan')?.touched && companyForm.get('Pan')?.invalid">
                         <span *ngIf="companyForm.get('Pan')?.hasError('required')">PAN is required</span>
+                        <span *ngIf="companyForm.get('Pan')?.hasError('invalidPAN')">Provided PAN is invalid</span>
                         <span *ngIf="companyForm.get('Pan')?.hasError('maxlength')">Max 20 Characters</span>
                       </div>
                     </div>
@@ -590,7 +591,10 @@
                           @if(branchForm.get('branchTaxRegistrationNo')?.touched &&
                           branchForm.get('branchTaxRegistrationNo')?.invalid){
                           <div class="error-message">
-                            @if(branchForm.get('branchTaxRegistrationNo')?.hasError('maxlength')){
+                            @if(branchForm.get('branchTaxRegistrationNo')?.hasError('invalidGST')){
+                            <span>Provided GST/VAT is invalid</span>
+                            }
+                            @else if(branchForm.get('branchTaxRegistrationNo')?.hasError('maxlength')){
                             <span>Max 50 characters</span>
                             }
                           </div>
