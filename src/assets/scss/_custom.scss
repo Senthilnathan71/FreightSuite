@@ -266,3 +266,11 @@
         transition: height 0.3s ease-in;
     }
 }
+
+// table-sm start
+
+.table.table-sm  > :not(caption) > * > * {
+    padding:4px;
+    font-size:11px;
+}
+// table-sm end
