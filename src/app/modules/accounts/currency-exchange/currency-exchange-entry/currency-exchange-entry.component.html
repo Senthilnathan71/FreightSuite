@@ -80,84 +80,112 @@
               </div>
             </aside> -->
             
-            <aside class="col-md-4">
-    <div class="custom-form-group">
-      <select id="FromCurrency" formControlName="FromCurrency" class="custom-input-field sm">
-        <option value="">Select From Currency</option>
-        <option *ngFor="let currency of currencies" [value]="currency.currencyCode">
-          {{currency.currencyCode}} - {{currency.currencyName}}
-        </option>
-      </select>
-      <label for="FromCurrency" class="input-label">From Currency <span class="text-danger fw-bold">*</span></label>
-      <div *ngIf="currencyExchangeForm.get('FromCurrency').touched && currencyExchangeForm.get('FromCurrency').errors" class="text-danger">
-        <div *ngIf="currencyExchangeForm.get('FromCurrency').errors['required']">From Currency is required</div>
-      </div>
-    </div>
-  </aside>
-  
-  <aside class="col-md-4">
-    <div class="custom-form-group">
-      <select id="ToCurrency" formControlName="ToCurrency" class="custom-input-field sm">
-        <option value="">Select To Currency</option>
-        <option *ngFor="let currency of currencies" [value]="currency.currencyCode">
-          {{currency.currencyCode}} - {{currency.currencyName}}
-        </option>
-      </select>
-      <label for="ToCurrency" class="input-label">To Currency <span class="text-danger fw-bold">*</span></label>
-      <div *ngIf="currencyExchangeForm.get('ToCurrency').touched && currencyExchangeForm.get('ToCurrency').errors" class="text-danger">
-        <div *ngIf="currencyExchangeForm.get('ToCurrency').errors['required']">To Currency is required</div>
-      </div>
-    </div>
-  </aside>
-
-  <aside class="col-md-4">
+<aside class="col-md-4">
   <div class="custom-form-group">
-    <input type="text" id="RateFrom" formControlName="RateFrom" class="custom-input-field sm" maxlength="100">
-    <label for="RateFrom" class="input-label">Rate From <span class="text-danger fw-bold">*</span></label>
-    <div *ngIf="currencyExchangeForm.get('RateFrom').touched && currencyExchangeForm.get('RateFrom').errors" class="text-danger">
-      <div *ngIf="currencyExchangeForm.get('RateFrom').errors['required']">Rate From is required</div>
+    <select formControlName="FromCurrency" class="custom-input-field sm">
+      <option value="">Select From Currency</option>
+      <option *ngFor="let currency of currencies" [value]="currency.currencyCode">
+        {{ currency.currencyCode }} - {{ currency.currencyName }}
+      </option>
+    </select>
+    <label class="input-label">From Currency <span class="text-danger">*</span></label>
+    <div class="error-message" *ngIf="currencyExchangeForm.get('FromCurrency')?.touched && currencyExchangeForm.get('FromCurrency')?.invalid">
+      <span *ngIf="currencyExchangeForm.get('FromCurrency')?.errors?.['required']">From Currency is required</span>
     </div>
   </div>
-</aside>  
+</aside>
+
+<aside class="col-md-4">
+  <div class="custom-form-group">
+    <select formControlName="ToCurrency" class="custom-input-field sm">
+      <option value="">Select To Currency</option>
+      <option *ngFor="let currency of currencies" [value]="currency.currencyCode">
+        {{ currency.currencyCode }} - {{ currency.currencyName }}
+      </option>
+    </select>
+    <label class="input-label">To Currency <span class="text-danger">*</span></label>
+    <div class="error-message" *ngIf="currencyExchangeForm.get('ToCurrency')?.touched && currencyExchangeForm.get('ToCurrency')?.invalid">
+      <span *ngIf="currencyExchangeForm.get('ToCurrency')?.errors?.['required']">To Currency is required</span>
+    </div>
+  </div>
+</aside>
+
+ <aside class="col-md-4">
+  <div class="custom-form-group">
+    <input type="text" formControlName="RateFrom" class="custom-input-field sm" placeholder="" maxlength="100" />
+    <label class="input-label">Rate From <span class="text-danger">*</span></label>
+    <div class="error-message" *ngIf="currencyExchangeForm.get('RateFrom')?.touched && currencyExchangeForm.get('RateFrom')?.invalid">
+      <span>Rate From is required</span>
+    </div>
+  </div>
+</aside>
 
             
             <aside class="col-md-4">
-              <div class="custom-form-group">
-                <input type="number" step="0.00001" id="SellRate" formControlName="SellRate" class="custom-input-field sm">
-                <label for="SellRate" class="input-label">Sell Rate <span class="text-danger fw-bold">*</span></label>
-                <div *ngIf="currencyExchangeForm.get('SellRate').touched && currencyExchangeForm.get('SellRate').errors" class="text-danger">
-                  <div *ngIf="currencyExchangeForm.get('SellRate').errors['required']">Sell Rate is required</div>
-                  <div *ngIf="currencyExchangeForm.get('SellRate').errors['pattern']">Enter a valid decimal number (max 5 decimal places)</div>
-                </div>
-              </div>
-            </aside>
+  <div class="custom-form-group">
+    <input
+      type="number"
+      step="0.00001"
+      formControlName="SellRate"
+      class="custom-input-field sm"
+      placeholder=""
+    />
+    <label class="input-label">Sell Rate <span class="text-danger">*</span></label>
+    <div class="error-message" *ngIf="currencyExchangeForm.get('SellRate')?.touched && currencyExchangeForm.get('SellRate')?.invalid">
+      <span *ngIf="currencyExchangeForm.get('SellRate')?.errors?.['required']">Sell Rate is required</span>
+      <span *ngIf="currencyExchangeForm.get('SellRate')?.errors?.['pattern']">Enter a valid decimal number (max 5 decimal places)</span>
+    </div>
+  </div>
+</aside>
+
+            
+           <aside class="col-md-4">
+  <div class="custom-form-group">
+    <input
+      type="number"
+      step="0.00001"
+      formControlName="BuyRate"
+      class="custom-input-field sm"
+      placeholder=""
+    />
+    <label class="input-label">Buy Rate <span class="text-danger">*</span></label>
+    <div class="error-message" *ngIf="currencyExchangeForm.get('BuyRate')?.touched && currencyExchangeForm.get('BuyRate')?.invalid">
+      <span *ngIf="currencyExchangeForm.get('BuyRate')?.errors?.['required']">Buy Rate is required</span>
+      <span *ngIf="currencyExchangeForm.get('BuyRate')?.errors?.['pattern']">Enter a valid decimal number (max 5 decimal places)</span>
+    </div>
+  </div>
+</aside>
+
             
             <aside class="col-md-4">
-              <div class="custom-form-group">
-                <input type="number" step="0.00001" id="BuyRate" formControlName="BuyRate" class="custom-input-field sm">
-                <label for="BuyRate" class="input-label">Buy Rate <span class="text-danger fw-bold"></span></label>
-                <div *ngIf="currencyExchangeForm.get('BuyRate').touched && currencyExchangeForm.get('BuyRate').errors" class="text-danger">
-                  <div *ngIf="currencyExchangeForm.get('BuyRate').errors['required']">Buy Rate is required</div>
-                  <div *ngIf="currencyExchangeForm.get('BuyRate').errors['pattern']">Enter a valid decimal number (max 5 decimal places)</div>
-                </div>
-              </div>
-            </aside>
-            
+  <div class="custom-form-group">
+    <input
+      type="text"
+      formControlName="BankName"
+      class="custom-input-field sm"
+      placeholder=""
+    />
+    <label class="input-label">Bank Name <span class="text-danger">*</span></label>
+    <div class="error-message" *ngIf="currencyExchangeForm.get('BankName')?.touched && currencyExchangeForm.get('BankName')?.invalid">
+      <span *ngIf="currencyExchangeForm.get('BankName')?.errors?.['required']">Bank Name is required</span>
+    </div>
+  </div>
+</aside>
+
             <aside class="col-md-4">
-              <div class="custom-form-group">
-                <input type="text" id="BankName" formControlName="BankName" class="custom-input-field sm">
-                <label for="BankName" class="input-label">Bank Name <span class="text-danger fw-bold"></span></label>
-                <div *ngIf="currencyExchangeForm.get('BankName').touched && currencyExchangeForm.get('BankName').errors" class="text-danger">
-                  <div *ngIf="currencyExchangeForm.get('BankName').errors['required']">Bank Name is required</div>
-                </div>
-              </div>
-            </aside>
-            <aside class="col-md-4">
-              <div class="custom-form-group">
-                <textarea id="Remarks" formControlName="Remarks" class="custom-textarea-field sm" rows="1" maxlength="100"></textarea>
-                <label for="Remarks" class="input-label">Remarks</label>
-              </div>
-            </aside>
+  <div class="custom-form-group">
+    <textarea
+      formControlName="Remarks"
+      class="custom-textarea-field sm"
+      rows="1"
+      placeholder=""
+      maxlength="100"
+    ></textarea>
+    <label class="input-label">Remarks</label>
+
+  </div>
+</aside>
+
             
             <aside class="col-md-4">
               <div class="custom-form-group">

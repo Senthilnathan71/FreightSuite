@@ -117,6 +117,17 @@ export const AccountRoutes: Routes = [
           ],
         },
       },
+       {
+        path: "chart-accounts/entry/:id",
+        component: ChartAccountEntryComponent,
+        data: {
+          title: "Chart Accounts",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Chart Accounts" },
+          ],
+        },
+      },
     ]
   }
 ]

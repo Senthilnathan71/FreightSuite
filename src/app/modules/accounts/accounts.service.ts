@@ -63,5 +63,18 @@ export class AccountsService {
       })
     );
   }
+
+
+
+  // chart of accounts
+  
+  getAllCurrencies() {
+    return this.http.get<{ data: any }>('currency').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
   
 }
