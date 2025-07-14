@@ -265,6 +265,7 @@ editHssac(id: number, content: any) {
 }
 
   onSubmit() {
+    if (this.btnDisable) return;
     if (this.hssacForm.get('status')?.disabled) {
       this.hssacForm.get('status')?.enable();
     }
@@ -274,6 +275,7 @@ editHssac(id: number, content: any) {
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
     } else {
+      this.btnDisable = true;
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.hssacForm.value;
@@ -303,10 +305,12 @@ editHssac(id: number, content: any) {
             } else {
               this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Error loading:', error);
+            this.btnDisable = false;
           }
         );
       } else {
@@ -320,10 +324,12 @@ editHssac(id: number, content: any) {
             } else {
               this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Error loading:', error);
+            this.btnDisable = false;
           }
         );
       }
