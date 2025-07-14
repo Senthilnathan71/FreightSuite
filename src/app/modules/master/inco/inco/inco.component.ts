@@ -22,6 +22,7 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 @Component({
   selector: 'app-inco',
   standalone: true,
@@ -37,7 +38,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     OnlyTextDirective,
     TextWithNumbersDirective,
     PreventMultiClickDirective,
-    NgbModalModule
+    NgbModalModule,
+    FavoriteStarComponent
   ],
   templateUrl: './inco.component.html',
   styleUrl: './inco.component.scss'
@@ -65,6 +67,7 @@ export class IncoComponent{
   sortColumn: string = 'IncoName';
   sortDirection: string = 'asc';
   isFavorite: boolean = false;
+  loading = false;
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -111,7 +114,38 @@ export class IncoComponent{
         this.loadIncoData(this.IncoMasterSid);
       }
     });
+    this.loadIncos();
   }
+
+  loadIncos(): void {
+  this.loading = true;
+  
+  const params = {
+    search: this.filterValue?.trim() || '',
+    page: this.page,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection
+  };
+
+  this.masterService.searchInco(params).subscribe({
+    next: (response) => {
+      if(response) {
+        this.incoList = response.items;
+        this.totalLengthOfCollection = response.totalCount;
+        this.applySorting();
+        this.searchPerformed = true;
+      }
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error fetching incos:', err);
+      this.incoList = [];
+      this.totalLengthOfCollection = 0;
+      this.loading = false;
+    }
+  });
+}
 
   // loadInco(): void {
   //   this.masterService.getAllInco().subscribe(
@@ -295,29 +329,7 @@ export class IncoComponent{
     );
   }
 
-  onSearch(event: { type: string, value: string}) {
-    this.searchType = event.type;
-    this.filterValue = event.value;
-    console.log('Searching with:', this.searchType, this.filterValue);
-    this.search();
-  }
-
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue,
-    };
-
-    this.masterService.searchInco(payload).subscribe((res: any) => {
-      this.results = res;
-      console.log(this.results)
-      this.searchPerformed = true;
-      this.applySorting();
-      this.updatePaginationData();
-      this.totalLengthOfCollection = this.results.length || 0;
-    });
-  }
-
+  
   sort(column: string) {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -325,12 +337,11 @@ export class IncoComponent{
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
-    this.applySorting();
-    this.updatePaginationData();
+    this.loadIncos();
   }
 
   applySorting() {
-  this.results.sort((a, b) => {
+  this.incoList.sort((a, b) => {
     let valueA = a[this.sortColumn];
     let valueB = b[this.sortColumn];
     
@@ -354,7 +365,12 @@ export class IncoComponent{
 updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.incoList = this.results.slice(startIndex, endIndex);
+    this.loadIncos();
+  }
+
+   clearFilterValue() {
+    this.filterValue = '';
+   this.loadIncos();
   }
 
   trackByIndex(index: number, item: any): number {
@@ -368,7 +384,7 @@ updatePaginationData(): void {
         this.masterService.softDeleteInco(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
           this.router.navigate(['master/inco']);
-          this.search();
+          
         });
       }
     });

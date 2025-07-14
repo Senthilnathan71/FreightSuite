@@ -11,11 +11,12 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
 	selector: 'app-imco-list',
 	standalone: true,
-	imports: [FeatherModule, RouterModule, FormsModule, CommonModule, NgbPaginationModule, ListpageComponent],
+	imports: [FeatherModule, RouterModule, FormsModule, CommonModule, NgbPaginationModule, ListpageComponent,FavoriteStarComponent],
 	templateUrl: './imco-list.component.html',
 	styleUrl: './imco-list.component.scss'
 })
@@ -29,6 +30,7 @@ export class ImcoListComponent implements OnInit{
 	userData : any;
 	sortColumn: string = 'ImcoClass'; 
     sortDirection: string = 'asc';
+	loading = false;
 
 	// Pagination Data
 	page = 1;
@@ -56,32 +58,42 @@ export class ImcoListComponent implements OnInit{
                     this.userData = user;
                 }
             }
-        )
+        );
+		 this.loadImcos();
     }
 
-	onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-	search() {
-		const payload = {
-			searchType: this.searchType,
-			filterValue: this.filterValue
-		}
-		this.searchPerformed = true;
-		this.masterService.searchIMCO(payload).subscribe(
-			(resp: any) => {
-				if (resp.status) {
-					this.searchResults = resp.data;
-					this.applySorting();
-					this.updatePaginationData();
-					this.totalAmountOfCollection = this.searchResults.length;
-				}
-			}
-		)
-	}
+
+	loadImcos(): void {
+    this.loading = true;
+    
+    const params = {
+      search: this.filterValue?.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+
+    this.masterService.searchIMCO(params).subscribe({
+      next: (response: any) => {
+        if(response.data) {
+          this.imcoList = response.data.items;
+          this.totalAmountOfCollection = response.data.totalCount || response.data.length;
+          this.applySorting();
+          this.searchPerformed = true;
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching IMCOs:', err);
+        this.imcoList = [];
+        this.totalAmountOfCollection = 0;
+        this.loading = false;
+      }
+    });
+  }
+
+
 	sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -91,15 +103,14 @@ export class ImcoListComponent implements OnInit{
     this.sortColumn = column;
     this.sortDirection = 'asc';
   }
+  this.loadImcos();
   
-  this.applySorting();
-  this.updatePaginationData();
 }
 
 applySorting() {
-  if (!this.searchResults) return;
+  if (!this.imcoList) return;
   
-  this.searchResults.sort((a, b) => {
+  this.imcoList.sort((a, b) => {
     let valueA = a[this.sortColumn];
     let valueB = b[this.sortColumn];
     
@@ -124,8 +135,12 @@ applySorting() {
 	updatePaginationData() {
 		let start = (this.page - 1) * this.pageSize;
 		let end = start + this.pageSize;
-		this.imcoList = this.searchResults.slice(start, end);
+		this.loadImcos();
 	}
+	 clearFilterValue() {
+    this.filterValue = '';
+	this.loadImcos();
+  }
 
 	deleteIMCOById(IMCOMasterSid: number) {
 		const matRef = this.matdial.open(DeleteWarningComponent);
@@ -136,7 +151,7 @@ applySorting() {
 						(resp: any) => {
 							if (resp.status) {
 								this.appSettingService.showSuccess('IMCO Deleted');
-								this.search();
+								
 							} else {
 								this.appSettingService.showError('Error Deleting IMCO');
 							}

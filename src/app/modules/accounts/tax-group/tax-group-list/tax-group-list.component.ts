@@ -37,6 +37,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ParseFlags } from '@angular/compiler';
+import { CustomDatePipe } from "../../../../core/pipes/custom-date-format.pipe";
 
 @Component({
   selector: 'app-tax-group-list',
@@ -58,7 +59,8 @@ import { ParseFlags } from '@angular/compiler';
     TermsAndConditionsComponent,
     AuthorityEntryComponent,
     DetailsComponent,
-  ],
+    CustomDatePipe
+],
   templateUrl: './tax-group-list.component.html',
   styleUrl: './tax-group-list.component.scss',
   providers: [
@@ -165,6 +167,16 @@ export class TaxGroupListComponent {
   resetForm(): void {
     this.taxGroupForm.reset();
   }
+
+  private formatDateForExport(date: string | Date): string {
+  if (!date) return '';
+  const d = new Date(date);
+  return d.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+}
 
   openModal(content: any): void {
     this.resetForm();
@@ -333,18 +345,18 @@ export class TaxGroupListComponent {
     this.loadTaxGroups();
   }
 
-  softDeleteTaxGroup(id: number): void {
-    const dialogRef = this.dialog.open(DeleteWarningComponent);
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === true) {
-        this.masterService.deleteTax(id).subscribe((resp: any) => {
-          this.appSettingService.showSuccess('Deleted!');
-          this.router.navigate(['accounts/tax-group/list']);
+  // softDeleteTaxGroup(id: number): void {
+  //   const dialogRef = this.dialog.open(DeleteWarningComponent);
+  //   dialogRef.afterClosed().subscribe((result) => {
+  //     if (result === true) {
+  //       this.masterService.deleteTax(id).subscribe((resp: any) => {
+  //         this.appSettingService.showSuccess('Deleted!');
+  //         this.router.navigate(['accounts/tax-group/list']);
 
-        });
-      }
-    });
-  }
+  //       });
+  //     }
+  //   });
+  // }
 
   closeModal(): void {
     if (this.modalRef && typeof this.modalRef.close === 'function') {
@@ -369,6 +381,7 @@ export class TaxGroupListComponent {
     const formattedData = this.taxGroupList.map((item) => ({
       ...item,
       Status: item.Status === 'A' ? 'Active' : 'Suspended',
+      EffectiveFrom: this.formatDateForExport(item.EffectiveFrom),
     }));
     const companyName =
       this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ??

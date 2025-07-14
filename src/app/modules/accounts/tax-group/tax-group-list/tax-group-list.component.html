@@ -62,7 +62,7 @@
       <table class="table table-hover align-middle no-wrap table-bordered">
         <thead>
           <tr class="bg-info">
-            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+            <!-- <th class="bg-transparent text-light" scope="col" width="10%">Action</th> -->
 
             <th class="bg-transparent text-light" scope="col" (click)="sort('TaxName')">
               Tax Name
@@ -82,11 +82,15 @@
                 [ngClass]="{ 'fa-sort-up': sortColumn === 'TaxType' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'TaxType' && sortDirection === 'desc' }"></i>
             </th>
 
-            <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveFrom')">
+            <!-- <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveFrom')">
               Effective From
               <i class="fas fa-sort ms-1"
                 [ngClass]="{ 'fa-sort-up': sortColumn === 'EffectiveFrom' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'EffectiveFrom' && sortDirection === 'desc' }"></i>
-            </th>
+            </th> -->
+             <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveFrom')">
+                                Effective From
+                                <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'EffectiveFrom', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'EffectiveFrom'}"></i>
+                            </th>
 
             <th class="bg-transparent text-light" scope="col" (click)="sort('TaxRate')">
               Tax Rate
@@ -104,7 +108,7 @@
 
         <tbody>
           <tr *ngFor="let item of taxGroupList; trackBy: trackByIndex">
-            <td>
+            <!-- <td>
               <div class="d-flex align-items-center justify-content-center gap-2">
                 <button class="btn btn-sm btn-link text-primary p-0 mx-2"
                      (click)="openEditModal(content, item.TaxMasterSid)"
@@ -117,11 +121,13 @@
                   <i-feather name="trash-2" class="feather-sm"></i-feather>
                 </button>
               </div>
-            </td>
+            </td> -->
             <td><div class="text-truncate">{{ item.TaxName }}</div></td>
             <td><div class="text-truncate">{{ item.TaxCode }}</div></td>
             <td><div class="text-truncate">{{ item.TaxType }}</div></td>
-            <td><div class="text-truncate">{{ item.EffectiveFrom }}</div></td>
+            <td>
+                                <div class="text-truncate">{{item.EffectiveFrom | formatDate}}</div>
+                            </td>
             <td><div class="text-truncate">{{ item.TaxRate }}</div></td>
             <td><div class="text-truncate">{{ item.Remarks  }}</div></td>
           </tr>
@@ -218,6 +224,7 @@
             </button>
           </div>
         </aside>
+
 
            <!-- Tax Rate -->
         <aside class="col-md-6">

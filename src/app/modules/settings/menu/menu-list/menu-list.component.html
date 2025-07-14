@@ -8,64 +8,65 @@
     style="cursor: pointer;">
   </i>
 </div> -->
-<div class="row">
+
+
+    <div class="row">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
-            <!-- Header and buttons remain the same -->
             <div class="col-md-4 pb-2">
                 <h4 class="page-title mb-0">Menu</h4>
             </div>
+
             <div class="col-md-8 pb-2">
-                <div class="" data-bs-theme="light">
-                    <form
-                        class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <app-favorite-star screenName="Menu" class="mt-1 me-1"></app-favorite-star>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="navigateToCreate()">
-                            <i class="fas fa-plus me-1"></i> Create
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
-                            [disabled]="!searchPerformed || totalLengthOfCollection === 0">
-                            <i class="fas fa-file-alt me-1"></i> Report
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="resetPage()" [disabled]="!searchPerformed">
-                            <i class="fas fa-sync-alt me-1"></i> Reset
-                        </button>
-                    </form>
-                </div>
+                <form class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="navigateToCreate()">
+                        <i class="fas fa-plus me-1"></i> Create
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
+                        [disabled]="!searchPerformed">
+                        <i class="fas fa-file-alt me-1"></i> Report
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
+                        [disabled]="!searchPerformed">
+                        <i class="fas fa-sync-alt me-1"></i> Reset
+                    </button>
+                </form>
             </div>
-            <!-- Search section remains the same -->
-            <div class="col-md-12 border-top">
-                <div class="row mx-0 py-2">
-                    <div class="col-md-8 mx-auto px-0">
-                        <form
-                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                            <div class="form-outline col-12 col-md px-0">
-                                <select [(ngModel)]="searchType" name="searchType" class="form-select">
-                                    <option value="MenuName">Menu Name</option>
-                                    <option value="ModuleName">Module Name</option>
-                                    <option value="status">Status</option>
-                                </select>
-                            </div>
-                            <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                                <div class="form-outline flex-grow-1">
-                                    <input [(ngModel)]="filterValue" name="filterValue" type="text" class="form-control"
-                                        placeholder="Enter filter value">
-                                    <i
-                                        class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                                </div>
-                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                                    (click)="search()">
-                                    <i class="fas fa-search me-1"></i> Search
+
+                            <div class="col-md-12 border-top">
+            <div class="row mx-0 py-2">
+                <div class="col-md-8 mx-auto px-0">
+                    <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                       <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
+                            <div class="form-outline flex-grow-1 position-relative">
+                                <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search" [(ngModel)]="filterValue"
+                                    aria-label="Search input">
+                                <button *ngIf="filterValue"
+                                    class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                    (click)="clearFilterValue()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" data-bs-title="Clear search"
+                                    onfocus="this.classList.replace('text-secondary','text-danger')"
+                                    onblur="this.classList.replace('text-danger','text-secondary')">
+                                    <i class="fas fa-times"></i>
                                 </button>
                             </div>
-                        </form>
-                    </div>
+                           <div class="mt-md-0 mt-1">
+                                                   <button type="submit" (click)="loadMenus()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+  <i class="fas fa-search me-1"></i> Search
+</button>
+                            </div>
+         
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
     <!-- Results table remains the same -->
     <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
         <div class="col-12 p-0">
