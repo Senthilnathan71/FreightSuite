@@ -56,38 +56,6 @@ export class CompanyListComponent implements OnInit {
         }
       }
     )
-    this.masterService.getAllCompaniesSearch().subscribe(
-      (resp: any) => {
-        // console.log(resp);
-        this.results = resp.flatMap(item => {
-          if (!item.branchMaster || item.branchMaster.length === 0) {
-            return ({
-              CompanyMasterSid : item.CompanyMasterSid,
-              companyName: item.companyName,
-              companyCode: item.companyCode,
-              branchName: '',
-              city: '',
-              state: '',
-              country: '',
-              gst: '',
-              status: item.status === 'A' ? 'Active' : 'Suspended'
-            })
-          }
-          return item.branchMaster.map(branch => ({
-            CompanyMasterSid: item.CompanyMasterSid,
-            companyName: item.companyName,
-            companyCode: item.companyCode,
-            branchName: branch.branchName,
-            city: branch.cityMaster?.cityName || '',
-            state: branch.stateMaster?.stateName || '',
-            country: branch.countryMaster?.countryName || '',
-            gst: branch.taxRegistrationNo,
-            status: branch.status === 'A' ? 'Active' : 'Suspended'
-          }))
-        })
-        console.log(this.results);
-      }
-    )
    
    }
    loadCompanies(): void {
@@ -103,17 +71,7 @@ export class CompanyListComponent implements OnInit {
   this.masterService.searchCompanyList(params).subscribe({
     next: (response) => {
       if(response) {
-        this.companyList = response.items.map(item => ({
-          CompanyMasterSid: item.CompanyMasterSid,
-          companyName: item.companyName,
-          companyCode: item.companyCode,
-          branchName: item.branchMaster?.[0]?.branchName || '',
-          city: item.branchMaster?.[0]?.cityMaster?.cityName || '',
-          state: item.branchMaster?.[0]?.stateMaster?.stateName || '',
-          country: item.branchMaster?.[0]?.countryMaster?.countryName || '',
-          gst: item.branchMaster?.[0]?.taxRegistrationNo || '',
-          status: item.status === 'A' ? 'Active' : 'Suspended'
-        }));
+        this.companyList = response.items;
         this.totalLengthOfCollection = response.totalCount;
         this.applySorting();
         this.searchPerformed = true;

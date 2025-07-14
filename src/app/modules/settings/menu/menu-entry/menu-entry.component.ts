@@ -102,7 +102,7 @@ export class MenuEntryComponent implements OnInit {
   return icons[option] || 'plus-circle';
 }
 
-
+  filteredPermissions = [...this.specialOptions];
   currentMenuId: number;
   TandCList: any;
   allPermissions :any[]
@@ -189,20 +189,39 @@ export class MenuEntryComponent implements OnInit {
   removePermission(index: number): void {
     if (this.permissions.length > 1) {
       this.permissions.removeAt(index);
+      this.permissions.controls.forEach(control => {
+        control.get('permissionName').updateValueAndValidity();
+      });
+      this.permissions.updateValueAndValidity();
+      this.menuForm.updateValueAndValidity();
+    }
+  }
+
+  clearPermission(index:number){
+    console.log(index);
+    if(index!==undefined){
+      console.log(this.permissions);
+      this.permissions.at(index).get('permissionName')?.setValue('');
     }
   }
 
   createPermissionWithOption(event:string){
-    const permissions = this.permissions.value;
-    this.allPermissions = permissions.map(p => p.permissionName.toLowerCase());
-    if(this.allPermissions.includes(event.toLowerCase())){
-      this.appSettingService.showError('Duplicate Permission name not allowed');
+    if(this.permissions.value[this.permissions.length-1].permissionName === ''){
+      this.permissions.at(this.permissions.length-1).setValue({permissionName : event});
       return;
     }
     const formWithPermission = this.fb.group({
       permissionName: [event, [Validators.required, Validators.maxLength(100),this.duplicatePermissionValidator()]],
     })
     this.permissions.push(formWithPermission);
+  }
+
+  filterPermissionList(state){
+    if(state){
+      let existingPermissions = this.permissions.value; 
+      existingPermissions = existingPermissions.map(p => p.permissionName.toLowerCase());
+      this.filteredPermissions = this.specialOptions.filter(perm => !existingPermissions.includes(perm.toLowerCase()));
+    }
   }
 
 
