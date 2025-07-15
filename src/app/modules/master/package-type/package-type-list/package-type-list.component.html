@@ -11,77 +11,76 @@
 <div class="row">
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
-        <div class="col-md-4 pb-2">
-            <h4 class="page-title mb-0">Package Type</h4>
-        </div>
+      <div class="col-md-auto pb-2">
+        <h4 class="page-title mb-0">Package Type</h4>
+      </div>
 
-        <div class="col-md-8 pb-2">
-            <form
-                class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                <app-favorite-star screenName="Package Type" class="mt-1 me-1"></app-favorite-star>
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                    (click)="openModal(content)">
-                    <i class="fas fa-plus me-1"></i> Create
-                </button>
-
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
-                    [disabled]="!searched">
-                    <i class="fas fa-file-alt me-1"></i> Report
-                </button>
-
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
-                    [disabled]="!searched">
-                    <i class="fas fa-sync-alt me-1"></i> Reset
-                </button>
-            </form>
-        </div>
-
-        <div class="col-md-12 border-top">
-            <div class="row mx-0 py-2">
-                <div class="col-md-8 mx-auto px-0">
-                    <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                        <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
-                            <div class="form-outline flex-grow-1 position-relative">
-                                <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search" [(ngModel)]="filterValue"
-                                    aria-label="Search input">
-                                <button *ngIf="filterValue"
-                                    class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                    (click)="clearFilterValue()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
-                                    data-bs-placement="top" data-bs-title="Clear search"
-                                    onfocus="this.classList.replace('text-secondary','text-danger')"
-                                    onblur="this.classList.replace('text-danger','text-secondary')">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                           <div class="mt-md-0 mt-1">
-                              <button type="submit" (click)="loadPackageTypes()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                                <i class="fas fa-search me-1"></i> Search
-                            </button>
-                            </div>
-                            
-                        </div>
-                    </form>
-                </div>
+      <div class="col pb-2">
+        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+          <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
+            <div class="form-outline flex-grow-1 position-relative">
+              <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                [(ngModel)]="filterValue" aria-label="Search input">
+              <button *ngIf="filterValue"
+                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                (click)="clearFilterValue()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
+                data-bs-placement="top" data-bs-title="Clear search"
+                onfocus="this.classList.replace('text-secondary','text-danger')"
+                onblur="this.classList.replace('text-danger','text-secondary')">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
-        </div>
+            <div class="mt-md-0 mt-1">
+              <button type="submit" (click)="loadPackageTypes()"
+                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                <i class="fas fa-search me-1"></i> Search
+              </button>
+            </div>
+
+          </div>
+        </form>
+      </div>
+
+      <div class="col-md-auto pb-2">
+        <form
+          class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <app-favorite-star screenName="Package Type" class="mt-1 me-1"></app-favorite-star>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openModal(content)">
+            <i class="fas fa-plus me-1"></i> Create
+          </button>
+
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
+            [disabled]="!searched">
+            <i class="fas fa-file-alt me-1"></i> Report
+          </button>
+
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
+            [disabled]="!searched">
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+        </form>
+      </div>
+
     </div>
-</div>
+  </div>
   <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searched && totalLengthOfCollection > 0">
     <div class="col-12 p-0">
       <div class="table-responsive">
-        <table class="table table-hover align-middle no-wrap table-bordered">
+        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
           <thead>
             <tr class="bg-info">
-              <th class="bg-transparent text-light" scope="col"  width="10%">Action</th>
+              <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
               <th class="bg-transparent text-light" scope="col" (click)="sort('PackageName')">
-            Package Name
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PackageName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PackageName'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('PackageCode')">
-            Package Code
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PackageCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PackageCode'}"></i>
-        </th>
-              <th class="bg-transparent text-light" scope="col"  width="10%">Status</th>
+                Package Name
+                <i class="fas fa-sort ms-1"
+                  [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PackageName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PackageName'}"></i>
+              </th>
+              <th class="bg-transparent text-light" scope="col" (click)="sort('PackageCode')">
+                Package Code
+                <i class="fas fa-sort ms-1"
+                  [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PackageCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PackageCode'}"></i>
+              </th>
+              <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -121,7 +120,7 @@
           </tbody>
         </table>
       </div>
-      <div class="d-flex justify-content-end mt-3">
+      <div class="d-flex justify-content-end mt-2">
         <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
           (pageChange)="updatePaginationData()">
         </ngb-pagination>
@@ -144,79 +143,78 @@
     <div class="modal-body">
       <form [formGroup]="packageTypeForm">
         <div class="col-md-12">
-          
-              <div class="row">
-                <aside class="col-md-6">
-                  <div class="custom-form-group">
-                    <input type="text" id="PackageName" formControlName="PackageName" placeholder=""
-                      class="custom-input-field sm">
-                    <label for="PackageName" class="input-label">Package Name <span
-                        class="text-danger fw-bold">*</span></label>
-                    @if(packageTypeForm.get('PackageName')?.touched && packageTypeForm.get('PackageName')?.invalid){
-                    <div class="error-message">
-                      @if(packageTypeForm.get('PackageName')?.hasError('required')){
-                      <span>Package Name is required</span>
-                      } @else if(packageTypeForm.get('PackageName')?.hasError('maxlength')){
-                      <span>Max 100 Characters</span>
-                      }
-                    </div>
-                    }
-                  </div>
-                </aside>
-                <aside class="col-md-6">
-                  <div class="custom-form-group">
-                    <input type="text" formControlName="PackageCode" id="PackageCode" placeholder=""
-                      class="custom-input-field sm">
-                    <label for="PackageCode" class="input-label">Package Code <span
-                        class="text-danger fw-bold">*</span></label>
-                    @if(packageTypeForm.get('PackageCode')?.touched && packageTypeForm.get('PackageCode')?.invalid){
-                    <div class="error-message">
-                      @if(packageTypeForm.get('PackageCode')?.hasError('required')){
-                      <span>Package Code is required</span>
-                      } @else if(packageTypeForm.get('PackageCode')?.hasError('maxlength')){
-                      <span>Max 3 Characters</span>
-                      }
-                    </div>
-                    }
-                  </div>
-                </aside>
-                <aside class="col-md-6">
-  <div class="custom-form-group custom-form-group-select">
-    <ng-select [items]="statusList" 
-              formControlName="status"
-              [class.is-invalid]="packageTypeForm.get('status')?.invalid && packageTypeForm.get('status')?.touched"
-              [disabled]="packageTypeForm.get('status')?.disabled">
-    </ng-select>
-    <label class="input-label">Status <span class="text-danger">*</span></label>
-    @if(packageTypeForm.get('status')?.touched && packageTypeForm.get('status')?.invalid){
-    <div class="error-message">
-      <span>Status is required</span>
-    </div>
-    }
-  </div>
-</aside>
+
+          <div class="row">
+            <aside class="col-md-6">
+              <div class="custom-form-group">
+                <input type="text" id="PackageName" formControlName="PackageName" placeholder=""
+                  class="custom-input-field sm">
+                <label for="PackageName" class="input-label">Package Name <span
+                    class="text-danger fw-bold">*</span></label>
+                @if(packageTypeForm.get('PackageName')?.touched && packageTypeForm.get('PackageName')?.invalid){
+                <div class="error-message">
+                  @if(packageTypeForm.get('PackageName')?.hasError('required')){
+                  <span>Package Name is required</span>
+                  } @else if(packageTypeForm.get('PackageName')?.hasError('maxlength')){
+                  <span>Max 100 Characters</span>
+                  }
+                </div>
+                }
               </div>
-           
+            </aside>
+            <aside class="col-md-6">
+              <div class="custom-form-group">
+                <input type="text" formControlName="PackageCode" id="PackageCode" placeholder=""
+                  class="custom-input-field sm">
+                <label for="PackageCode" class="input-label">Package Code <span
+                    class="text-danger fw-bold">*</span></label>
+                @if(packageTypeForm.get('PackageCode')?.touched && packageTypeForm.get('PackageCode')?.invalid){
+                <div class="error-message">
+                  @if(packageTypeForm.get('PackageCode')?.hasError('required')){
+                  <span>Package Code is required</span>
+                  } @else if(packageTypeForm.get('PackageCode')?.hasError('maxlength')){
+                  <span>Max 3 Characters</span>
+                  }
+                </div>
+                }
+              </div>
+            </aside>
+            <aside class="col-md-6">
+              <div class="custom-form-group custom-form-group-select">
+                <ng-select [items]="statusList" formControlName="status"
+                  [class.is-invalid]="packageTypeForm.get('status')?.invalid && packageTypeForm.get('status')?.touched"
+                  [disabled]="packageTypeForm.get('status')?.disabled">
+                </ng-select>
+                <label class="input-label">Status <span class="text-danger">*</span></label>
+                @if(packageTypeForm.get('status')?.touched && packageTypeForm.get('status')?.invalid){
+                <div class="error-message">
+                  <span>Status is required</span>
+                </div>
+                }
+              </div>
+            </aside>
+          </div>
+
         </div>
       </form>
     </div>
     <div class="modal-footer">
-     @if(isEditMode){
-                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+      @if(isEditMode){
+      <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
         <i class="fas fa-file-alt me-1"></i> e-Doc
       </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
-                    <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
-        <i  class="fas fa-shield-alt me-1"></i> Authorize
+      <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
+        <i class="fas fa-clipboard me-1"></i> Terms & Condition
       </button>
-                
-      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
+      <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
+        <i class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+
+      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto " (click)="openEmail()">
         <i class="fas fa-envelope me-1"></i> Email
       </button>
-      
-            }
+
+      }
       <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
       <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
         [disabled]="btnDisable || packageTypeForm.invalid">

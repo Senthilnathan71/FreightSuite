@@ -24,15 +24,42 @@
   (onResetClick)="resetPage()"
   (onSearchClick)="onSearch($event)">
     </app-listpage> -->
-    <div class="row">
+<div class="row">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
-            <div class="col-md-4 pb-2">
+            <div class="col-md-auto pb-2">
                 <h4 class="page-title mb-0">Cost Center</h4>
             </div>
 
-            <div class="col-md-8 pb-2">
-                <form class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+            <div class="col pb-2">
+                <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                    <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
+                        <div class="form-outline flex-grow-1 position-relative">
+                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                                [(ngModel)]="filterValue" aria-label="Search input">
+                            <button *ngIf="filterValue"
+                                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
+                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
+                                onfocus="this.classList.replace('text-secondary','text-danger')"
+                                onblur="this.classList.replace('text-danger','text-secondary')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="mt-md-0 mt-1">
+                            <button type="submit" (click)="loadCostCenters()"
+                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                <i class="fas fa-search me-1"></i> Search
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-md-auto pb-2">
+                <form
+                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="openModal(content)">
@@ -51,71 +78,45 @@
                 </form>
             </div>
 
-                            <div class="col-md-12 border-top">
-            <div class="row mx-0 py-2">
-                <div class="col-md-8 mx-auto px-0">
-                    <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                         <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
-                            <div class="form-outline flex-grow-1 position-relative">
-                                <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search" [(ngModel)]="filterValue"
-                                    aria-label="Search input">
-                                <button *ngIf="filterValue"
-                                    class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                    (click)="clearFilterValue()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
-                                    data-bs-placement="top" data-bs-title="Clear search"
-                                    onfocus="this.classList.replace('text-secondary','text-danger')"
-                                    onblur="this.classList.replace('text-danger','text-secondary')">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <div class="mt-md-0 mt-1">
-                                         <button type="submit" (click)="loadCostCenters()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-  <i class="fas fa-search me-1"></i> Search
-</button>
-                            </div>
-                   
-                        </div>
-                    </form>
-                </div>
-            </div>
+
         </div>
     </div>
-</div>
     <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searchPerformed && totalLengthOfCollection > 0">
-          <div class="col-12 p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                        <th class="bg-transparent text-light" scope="col" (click)="sort('CostCenterCode')">
-            Cost Center Code
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CostCenterCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CostCenterCode'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('CostCenterName')">
-            Cost Center Name
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CostCenterName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CostCenterName'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('Remarks')">
-            Remarks
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Remarks', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Remarks'}"></i>
-        </th>
-                        <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('CostCenterCode')">
+                                Cost Center Code
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CostCenterCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CostCenterCode'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('CostCenterName')">
+                                Cost Center Name
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CostCenterName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CostCenterName'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('Remarks')">
+                                Remarks
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Remarks', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Remarks'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
 
-                    </tr>
-                </thead>
-                <tbody>
+                        </tr>
+                    </thead>
+                    <tbody>
                         <tr *ngFor="let item of costCenterList; trackBy: trackByIndex">
                             <td>
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
-                                    <button class="btn btn-sm btn-link text-primary p-0 mx-2" 
-                                        (click)="editCostCenter(item.CostCenterMasterSid, content)"
-                                        title="Edit">
+                                    <button class="btn btn-sm btn-link text-primary p-0 mx-2"
+                                        (click)="editCostCenter(item.CostCenterMasterSid, content)" title="Edit">
                                         <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </button>
-                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" 
-                                        (click)="softDeleteCostCenter(item.CostCenterMasterSid)"
-                                        title="Delete">
+                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3"
+                                        (click)="softDeleteCostCenter(item.CostCenterMasterSid)" title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </button>
                                 </div>
@@ -131,30 +132,30 @@
                             </td>
                             <td>
                                 @if(item.Status === "A"){
-                                    <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                        Active
-                                    </div>
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active
+                                </div>
                                 } @else {
-                                    <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                        <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                        Suspended
-                                    </div>
+                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Suspended
+                                </div>
                                 }
                             </td>
                         </tr>
                     </tbody>
-            </table>
-        </div>
-        <div class="d-flex justify-content-end mt-3">
-                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" 
-                    [pageSize]="pageSize" (pageChange)="updatePaginationData()">
+                </table>
+            </div>
+            <div class="d-flex justify-content-end mt-2">
+                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
+                    (pageChange)="updatePaginationData()">
                 </ngb-pagination>
             </div>
+        </div>
     </div>
-    </div>
-  <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
-        <div >No records found</div>
+    <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
+        <div>No records found</div>
     </div>
 
     <ng-template #content let-modal>
@@ -165,104 +166,107 @@
                 <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
-            <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+            <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                (click)="modal.dismiss()"></button>
         </div>
         <div class="modal-body">
             <form [formGroup]="costCenterForm">
                 <div class="col-md-12">
-                   
-                            <div class="row">
-                                <aside class="col-md-6">
-                                  <div class="custom-form-group">
-                                     <input type="text" id="text-input" formControlName="CostCenterName" placeholder=""
-                                        class="custom-input-field sm" [onlyText]="100">
-                                     <label for="text-input" class="input-label">Cost Center Name <span
+
+                    <div class="row">
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" formControlName="CostCenterName" placeholder=""
+                                    class="custom-input-field sm" [onlyText]="100">
+                                <label for="text-input" class="input-label">Cost Center Name <span
                                         class="text-danger fw-bold">*</span></label>
-                                        @if(costCenterForm.get('CostCenterName')?.touched && costCenterForm.get('CostCenterName')?.invalid){
-                                          <div class="error-message">
-                                            @if(costCenterForm.get('CostCenterName')?.hasError('required')){
-                                              <span>Cost Center Name is required</span>
-                                            } @else if(costCenterForm.get('CostCenterName')?.hasError('maxlength')){
-                                              <span>Max 100 Characters</span>
-                                            } @else if(costCenterForm.get('CostCenterName')?.hasError('numberNotAllowed')){
-                                              <span>Only Alphabets are allowed</span>
-                                            }
-                                          </div>
-                                        }
-                                    </div>
-                                </aside>
-                                <aside class="col-md-6">
-                                  <div class="custom-form-group">
-                                     <input type="number" formControlName="CostCenterCode" id="text-input" placeholder=""
-                                         class="custom-input-field sm" [textWithNumbers]="9">
-                                     <label for="text-input" class="input-label">Cost Center Code <span
-                                         class="text-danger fw-bold">*</span></label>
-                                         @if(costCenterForm.get('CostCenterCode')?.touched && costCenterForm.get('CostCenterCode')?.invalid){
-                                  <div class="error-message">
-                                    @if(costCenterForm.get('CostCenterCode')?.hasError('required')){
-                                      <span>Cost Center Code is required</span>
-                                    } @else if(costCenterForm.get('CostCenterCode')?.hasError('maxlength')){
-                                      <span>Max 9 Characters</span>
+                                @if(costCenterForm.get('CostCenterName')?.touched &&
+                                costCenterForm.get('CostCenterName')?.invalid){
+                                <div class="error-message">
+                                    @if(costCenterForm.get('CostCenterName')?.hasError('required')){
+                                    <span>Cost Center Name is required</span>
+                                    } @else if(costCenterForm.get('CostCenterName')?.hasError('maxlength')){
+                                    <span>Max 100 Characters</span>
+                                    } @else if(costCenterForm.get('CostCenterName')?.hasError('numberNotAllowed')){
+                                    <span>Only Alphabets are allowed</span>
                                     }
-                                 </div>
+                                </div>
                                 }
                             </div>
-                            </aside>
-
-                            
-                           
-
-<aside class="col-md-6">
-                                <div class="custom-form-group">
-                                    <input type="textarea" id="text-input" class="custom-input-field sm" formControlName="Remarks" placeholder="">
-                                    <label for="text-input" class="input-label">Remarks <span class="text-danger">*</span></label>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="number" formControlName="CostCenterCode" id="text-input" placeholder=""
+                                    class="custom-input-field sm" [textWithNumbers]="9">
+                                <label for="text-input" class="input-label">Cost Center Code <span
+                                        class="text-danger fw-bold">*</span></label>
+                                @if(costCenterForm.get('CostCenterCode')?.touched &&
+                                costCenterForm.get('CostCenterCode')?.invalid){
+                                <div class="error-message">
+                                    @if(costCenterForm.get('CostCenterCode')?.hasError('required')){
+                                    <span>Cost Center Code is required</span>
+                                    } @else if(costCenterForm.get('CostCenterCode')?.hasError('maxlength')){
+                                    <span>Max 9 Characters</span>
+                                    }
                                 </div>
-                            </aside>
-                    
-                            <!-- ... (keep all existing HTML until the status field) -->
-
-<aside class="col-md-6">
-  <div class="custom-form-group custom-form-group-select">
-    <ng-select [items]="statusList" 
-              formControlName="Status"
-              [class.is-invalid]="costCenterForm.get('Status')?.invalid && costCenterForm.get('Status')?.touched"
-              [disabled]="costCenterForm.get('Status')?.disabled">
-    </ng-select>
-    <label class="input-label">Status <span class="text-danger">*</span></label>
-    @if(costCenterForm.get('Status')?.touched && costCenterForm.get('Status')?.invalid){
-    <div class="error-message">
-      <span>Status is required</span>
-    </div>
-    }
-  </div>
-</aside>
-
-
+                                }
                             </div>
-                     
+                        </aside>
+
+
+
+
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="textarea" id="text-input" class="custom-input-field sm"
+                                    formControlName="Remarks" placeholder="">
+                                <label for="text-input" class="input-label">Remarks <span
+                                        class="text-danger">*</span></label>
+                            </div>
+                        </aside>
+
+                        <!-- ... (keep all existing HTML until the status field) -->
+
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="statusList" formControlName="Status"
+                                    [class.is-invalid]="costCenterForm.get('Status')?.invalid && costCenterForm.get('Status')?.touched"
+                                    [disabled]="costCenterForm.get('Status')?.disabled">
+                                </ng-select>
+                                <label class="input-label">Status <span class="text-danger">*</span></label>
+                                @if(costCenterForm.get('Status')?.touched && costCenterForm.get('Status')?.invalid){
+                                <div class="error-message">
+                                    <span>Status is required</span>
+                                </div>
+                                }
+                            </div>
+                        </aside>
+
+
+                    </div>
+
                 </div>
             </form>
         </div>
         <div class="modal-footer">
             @if(isEditMode){
-                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
-        <i class="fas fa-file-alt me-1"></i> e-Doc
-      </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
-                    <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
-        <i  class="fas fa-shield-alt me-1"></i> Authorize
-      </button>
-                
-      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
-        <i class="fas fa-envelope me-1"></i> Email
-      </button>
-      
+            <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+                <i class="fas fa-file-alt me-1"></i> e-Doc
+            </button>
+            <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
+                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+            </button>
+            <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
+                <i class="fas fa-shield-alt me-1"></i> Authorize
+            </button>
+
+            <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto " (click)="openEmail()">
+                <i class="fas fa-envelope me-1"></i> Email
+            </button>
+
             }
             <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-            <button type="button" class="btn btn-info btn-sm" 
-                (click)="onSubmit(); modal.close()" 
+            <button type="button" class="btn btn-info btn-sm" (click)="onSubmit(); modal.close()"
                 [disabled]="btnDisable || costCenterForm.invalid">
                 {{ isEditMode ? 'Update' : 'Save' }}
             </button>

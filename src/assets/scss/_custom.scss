@@ -270,7 +270,11 @@
 // table-sm start
 
 .table.table-sm  > :not(caption) > * > * {
-    padding:4px;
-    font-size:11px;
+    padding:7px;
+    font-size:15px;
 }
 // table-sm end
+
+.pagination {
+    margin-bottom: 0;
+}

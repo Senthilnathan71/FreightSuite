@@ -9,94 +9,98 @@
   </i>
 </div> -->
 <div class="row">
-   <div class="col-12">
+  <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
-        <div class="col-md-4 pb-2">
-            <h4 class="page-title mb-0">Port</h4>
-        </div>
+      <div class="col-md-auto pb-2">
+        <h4 class="page-title mb-0">Port</h4>
+      </div>
 
-        <div class="col-md-8 pb-2">
-            <form
-                class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                <app-favorite-star screenName="Port" class="mt-1 me-1"></app-favorite-star>
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                    (click)="navigateToCreatePort()">
-                    <i class="fas fa-plus me-1"></i> Create
-                </button>
-
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
-                    [disabled]="!searched">
-                    <i class="fas fa-file-alt me-1"></i> Report
-                </button>
-
-                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
-                    [disabled]="!searched">
-                    <i class="fas fa-sync-alt me-1"></i> Reset
-                </button>
-            </form>
-        </div>
-
-        <div class="col-md-12 border-top">
-            <div class="row mx-0 py-2">
-                <div class="col-md-8 mx-auto px-0">
-                    <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                       <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
-                            <div class="form-outline flex-grow-1 position-relative">
-                                <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search" [(ngModel)]="filterValue"
-                                    aria-label="Search input">
-                                <button *ngIf="filterValue"
-                                    class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                    (click)="clearFilterValue()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
-                                    data-bs-placement="top" data-bs-title="Clear search"
-                                    onfocus="this.classList.replace('text-secondary','text-danger')"
-                                    onblur="this.classList.replace('text-danger','text-secondary')">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <div class="mt-md-0 mt-1">
-                            <button type="submit" (click)="loadPorts()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                                <i class="fas fa-search me-1"></i> Search
-                            </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+      <div class="col pb-2">
+        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+          <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
+            <div class="form-outline flex-grow-1 position-relative">
+              <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                [(ngModel)]="filterValue" aria-label="Search input">
+              <button *ngIf="filterValue"
+                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                (click)="clearFilterValue()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
+                data-bs-placement="top" data-bs-title="Clear search"
+                onfocus="this.classList.replace('text-secondary','text-danger')"
+                onblur="this.classList.replace('text-danger','text-secondary')">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
-        </div>
+            <div class="mt-md-0 mt-1">
+              <button type="submit" (click)="loadPorts()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                <i class="fas fa-search me-1"></i> Search
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="col-md-auto pb-2">
+        <form
+          class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <app-favorite-star screenName="Port" class="mt-1 me-1"></app-favorite-star>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="navigateToCreatePort()">
+            <i class="fas fa-plus me-1"></i> Create
+          </button>
+
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
+            [disabled]="!searched">
+            <i class="fas fa-file-alt me-1"></i> Report
+          </button>
+
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
+            [disabled]="!searched">
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+        </form>
+      </div>
+
+
     </div>
-</div>
+  </div>
 
   <div class="row  bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
     <div class="col-12 p-0">
       <div class="table-responsive">
-        <table class="table table-hover align-middle no-wrap table-bordered">
+        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
           <thead>
             <tr class="bg-info">
               <th class="bg-transparent text-light" scope="col" width="10%">Actions</th>
               <th class="bg-transparent text-light" scope="col" (click)="sort('PortName')">
-            Port Name
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PortName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PortName'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('PortCode')">
-            Port Code
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PortCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PortCode'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('countryName')">
-            Country
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'countryName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'countryName'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('ZoneMasterSid')">
-             Region
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ZoneMasterSid', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ZoneMasterSid'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('PortType')">
-            Port Type
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PortType', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PortType'}"></i>
-        </th>
-        <th class="bg-transparent text-light" scope="col" (click)="sort('TerminalCode')">
-             Terminal Code
-            <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'TerminalCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'TerminalCode'}"></i>
-        </th>
+                Port Name
+                <i class="fas fa-sort ms-1"
+                  [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PortName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PortName'}"></i>
+              </th>
+              <th class="bg-transparent text-light" scope="col" (click)="sort('PortCode')">
+                Port Code
+                <i class="fas fa-sort ms-1"
+                  [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PortCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PortCode'}"></i>
+              </th>
+              <th class="bg-transparent text-light" scope="col" (click)="sort('countryName')">
+                Country
+                <i class="fas fa-sort ms-1"
+                  [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'countryName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'countryName'}"></i>
+              </th>
+              <th class="bg-transparent text-light" scope="col" (click)="sort('ZoneMasterSid')">
+                Region
+                <i class="fas fa-sort ms-1"
+                  [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ZoneMasterSid', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ZoneMasterSid'}"></i>
+              </th>
+              <th class="bg-transparent text-light" scope="col" (click)="sort('PortType')">
+                Port Type
+                <i class="fas fa-sort ms-1"
+                  [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PortType', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PortType'}"></i>
+              </th>
+              <th class="bg-transparent text-light" scope="col" (click)="sort('TerminalCode')">
+                Terminal Code
+                <i class="fas fa-sort ms-1"
+                  [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'TerminalCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'TerminalCode'}"></i>
+              </th>
               <th class="bg-transparent text-light" scope="col">Status</th>
             </tr>
           </thead>
