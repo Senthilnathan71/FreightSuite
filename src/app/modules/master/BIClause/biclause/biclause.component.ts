@@ -20,6 +20,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { SettingsService } from 'src/app/modules/settings/settings.service';
 
 @Component({
   selector: 'app-biclause',
@@ -55,6 +56,9 @@ export class BIclauseComponent implements OnInit {
   blclauseData: any;
   sortColumn: string = 'ClauseDescription'; 
   sortDirection: string = 'asc';
+   permissions: string[] = [];
+  currentMenuPermissions: any = {};
+
   // Pagination
   page = 1;
   pageSize = 10;
@@ -76,6 +80,7 @@ export class BIclauseComponent implements OnInit {
     private modalService: NgbModal,
     private fb: FormBuilder,
     private masterService: MasterService,
+     private settingsService: SettingsService,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
     private userService: authService,
@@ -96,10 +101,32 @@ export class BIclauseComponent implements OnInit {
        this.appSettingService.getUser().subscribe(user => {
     if(user) {
       this.userData = user;
+      this.checkPermissions();
     }
   });
   this.loadAllClauses();
       }
+
+      checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.settingsService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
 
   
   sort(column: string) {

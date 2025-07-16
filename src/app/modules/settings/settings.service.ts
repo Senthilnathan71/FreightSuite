@@ -279,6 +279,15 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
     )
   }
 
+  getRoleMenuPermissions(menuId: number, roleId: number) {
+  return this.http.get<{ data: any }>(`role-menu/permissions/${menuId}/${roleId}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
   // Email log
   createNewEmailLog(payload){
     return this.http.post<{data : any[]}>('emailLog/create',payload).pipe(

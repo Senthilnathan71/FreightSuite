@@ -20,6 +20,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { SettingsService } from 'src/app/modules/settings/settings.service';
 
 @Component({
   selector: 'app-chargegroup',
@@ -67,6 +68,8 @@ export class ChargegroupComponent implements OnInit {
   isFavorite: boolean = false;
   sortColumn: string = 'GroupName';
   sortDirection: string = 'asc';
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -76,6 +79,7 @@ export class ChargegroupComponent implements OnInit {
     private modalService: NgbModal,
     private fb: FormBuilder,
     private masterService: MasterService,
+    private settingsService: SettingsService,
     private route: ActivatedRoute,
     private router: Router,
     private appSettingService: AppSettingsService,
@@ -104,7 +108,29 @@ export class ChargegroupComponent implements OnInit {
     });
     this.loadCompanies();
     this.loadChargeGroups();
+    this.checkPermissions();
   }
+
+   checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.settingsService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
 
   loadChargeGroups(): void {
   const params = {

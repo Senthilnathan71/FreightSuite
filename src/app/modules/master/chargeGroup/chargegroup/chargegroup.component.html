@@ -110,13 +110,17 @@
 
                             <td>
                                 <div class="d-flex align-items-center justify-content-center">
+                                     @if(hasPermission('View')) {
                                     <a class="text-info mx-2" (click)="editChargeGroup(item.ChargeGroupSid, content)">
                                         <i-feather class="feather-sm" name="eye"></i-feather>
                                     </a>
+                                }
+                                 @if(hasPermission('Delete')) {
                                     <a class="text-danger mx-2 ps-3 border-start"
                                         (click)="deleteChargeGroupById(item.ChargeGroupSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
+                                }
                                 </div>
                             </td>
                             <td>
@@ -246,28 +250,41 @@
         </div>
         <div class="modal-footer">
             @if(isEditMode){
-            <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
-                <i class="fas fa-file-alt me-1"></i> e-Doc
-            </button>
-            <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
-                <i class="fas fa-clipboard me-1"></i> Terms & Condition
-            </button>
-            <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
-                <i class="fas fa-shield-alt me-1"></i> Authorize
-            </button>
-
-            <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto " (click)="openEmail()">
-                <i class="fas fa-envelope me-1"></i> Email
-            </button>
-
+            @if(hasPermission('Edoc')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
+        <i class="fas fa-file-alt me-1"></i> e-Doc
+      </button>
+    }
+    
+    @if(hasPermission('Terms and Condition')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openTandC()">
+        <i class="fas fa-clipboard me-1"></i> Terms & Condition
+      </button>  
+    }
+    
+    @if(hasPermission('Authority')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
+        <i class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+    }
+    
+    @if(hasPermission('Email')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto"(click)="openEmail()">
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+    }
+    
             }
             <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+            @if(hasPermission('Edit')) {
             <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
                 [disabled]="btnDisable || chargeGroupForm.invalid || isLoading">
                 <span *ngIf="!isLoading">{{ isEditMode ? 'Update' : 'Save' }}</span>
                 <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status"
                     aria-hidden="true"></span>
             </button>
+        }
+
         </div>
     </ng-template>
 </div>
