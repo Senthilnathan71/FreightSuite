@@ -41,7 +41,9 @@ export class VerticalNavigationComponent implements OnInit, AfterViewInit {
   docSearchResults: any[] = [];
   @Output() toggleSidebar = new EventEmitter<void>();
   @ViewChild('menuSearchDropdown') menuSearchDropdown!: NgbDropdown;
-
+  userData:any;
+  branchName: string = '';
+  companyName: string = '';
   public showSearch = false;
 
   constructor(private router: Router, private appSettingsService: AppSettingsService, private translate: TranslateService, private verticalNavService: VerticalNavService) {
@@ -50,10 +52,29 @@ export class VerticalNavigationComponent implements OnInit, AfterViewInit {
 
   }
 
-  ngOnInit(): void {
-    this.loadRecentList(true);
-    this.loadFavouriteList(true);
+ ngOnInit(): void {
+  this.appSettingsService.getUser().subscribe(user => {
+    if (user) {
+      this.userData = user;
+      this.branchName = user?.userBranchMaster?.[0]?.branchMaster?.branchName || '';
+      this.companyName = user?.userBranchMaster?.[0]?.companyMaster?.companyName || '';
+    }
+  });
+}
+
+
+onBranchChange(event: Event): void {
+  const selectedId = (event.target as HTMLSelectElement).value;
+  const selectedBranch = this.userData.userBranchMaster.find(
+    (b: any) => b.UserBranchMasterSid == selectedId
+  );
+
+  if (selectedBranch) {
+    console.log('Switched to Branch:', selectedBranch.branchMaster.branchName);
+    console.log('Switched to Company:', selectedBranch.companyMaster.companyName);
   }
+}
+
 
 
   loadRecentList(event: boolean) {

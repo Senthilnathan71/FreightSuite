@@ -8,6 +8,9 @@ import { ApprovalComponent } from './approval/approval/approval.component';
 import { ModalComponent } from './modal/modal/modal.component';
 import { ChartAccountListComponent } from './chart-account/chart-account-list/chart-account-list.component';
 import { ChartAccountEntryComponent } from './chart-account/chart-account-entry/chart-account-entry.component';
+import { VendorTdsListComponent } from './vendor-tds/vendor-tds-list/vendor-tds-list.component';
+import { VendorTdsEntryComponent } from './vendor-tds/vendor-tds-entry/vendor-tds-entry.component';
+import { LedgerMappingComponent } from './ledger-mapping/ledger-mapping/ledger-mapping.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -125,6 +128,39 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Chart Accounts" },
+          ],
+        },
+      },
+       {
+        path: "vendor-tds/list",
+        component: VendorTdsListComponent,
+        data: {
+          title: "Vendor TDS",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Vendor TDS" },
+          ],
+        },
+      },
+      {
+        path: "vendor-tds/entry",
+        component: VendorTdsEntryComponent,
+        data: {
+          title: "Vendor TDS",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Vendor TDS" },
+          ],
+        },
+      },
+      {
+        path: "ledger-mapping/list",
+        component: LedgerMappingComponent,
+        data: {
+          title: "Ledger Mapping",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Ledger Mapping" },
           ],
         },
       },

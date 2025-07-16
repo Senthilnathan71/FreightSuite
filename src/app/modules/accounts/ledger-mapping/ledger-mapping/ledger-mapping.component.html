@@ -1,0 +1,197 @@
+<div class="row">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">Ledger Mapping</h4>
+            </div>
+
+            <div class="col-md-8 pb-2">
+                <form
+                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <app-favorite-star screenName="Ledger Mapping" class="mt-1 me-1"></app-favorite-star>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="openModal(content)">
+                        <i class="fas fa-plus me-1"></i> Create
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-file-alt me-1"></i> Report
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-sync-alt me-1"></i> Reset
+                    </button>
+                </form>
+            </div>
+
+            <div class="col-md-12 border-top">
+                <div class="row mx-0 py-2">
+                    <div class="col-md-8 mx-auto px-0">
+                        <form
+                            class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                            <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
+                                <div class="form-outline flex-grow-1 position-relative">
+                                    <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                                        aria-label="Search input">
+                                    <button *ngIf="filterValue"
+                                        class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                        tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
+                                        data-bs-placement="top" data-bs-title="Clear search"
+                                        onfocus="this.classList.replace('text-secondary','text-danger')"
+                                        onblur="this.classList.replace('text-danger','text-secondary')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="mt-md-0 mt-1">
+                                    <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                        <i class="fas fa-search me-1"></i> Search
+                                    </button>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Name</th>
+                            <th class="bg-transparent text-light" scope="col">Code</th>
+                            <th class="bg-transparent text-light" scope="col">Remarks</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="d-flex gap-2 align-items-center justify-content-center">
+                                    <button class="btn btn-sm btn-link text-primary p-0 mx-2" title="Edit">
+                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3"
+                                        title="Delete">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Data</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">DSa</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">Dat</div>
+                            </td>
+                            <td>
+
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active
+                                </div>
+
+                                <!-- <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Suspended
+                                </div> -->
+
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- <div class="d-flex justify-content-end mt-3">
+                <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
+                    (pageChange)="updatePaginationData()">
+                </ngb-pagination>
+            </div> -->
+        </div>
+    </div>
+    <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
+        <div>No records found</div>
+    </div>
+
+    <ng-template #content let-modal>
+       
+            <div class="modal-header bg-info text-white p-2">
+                <h5 class="modal-title">Ledger Mapping</h5>
+                <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                    (click)="modal.dismiss()"></button>
+            </div>
+            <div class="modal-body">
+                 <form [formGroup]="ledgerForm">
+
+                <div class="col-12">
+                    <div class="row">
+                        <aside class="col-md-6">
+                    <div class="custom-form-group">
+                        <input type="text" id="Name" placeholder="" class="custom-input-field sm"
+                            formControlName="Name">
+                        <label for="Name" class="input-label"> Name <span class="text-danger fw-bold"></span></label>
+                        <div class="error-message text-danger small">
+                            @if (ledgerForm.get('Name')?.touched && ledgerForm.get('Name')?.invalid) {
+                            <span> Name is required</span>
+                            }
+                        </div>
+                    </div>
+                </aside>
+
+                <aside class="col-md-6">
+                    <div class="custom-form-group">
+                        <input type="text" id="Code" placeholder="" class="custom-input-field sm"
+                            formControlName="Code">
+                        <label for="Code" class="input-label"> Code <span class="text-danger fw-bold"></span></label>
+                        <div class="error-message text-danger small">
+                            @if (ledgerForm.get('Code')?.touched && ledgerForm.get('Code')?.invalid) {
+                            <span>Code is required</span>
+                            }
+                        </div>
+                    </div>
+                </aside>
+
+
+
+                <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="textarea" id="text-input" class="custom-input-field sm" formControlName="Remarks" placeholder="">
+                                    <label for="text-input" class="input-label">Remarks <span class="text-danger"></span></label>
+                                </div>
+                            </aside>
+
+
+                 <aside class="col-md-6">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
+                                bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    </div>
+                </div>
+
+                
+
+                <div class="modal-footer mt-2 p-0 pt-1">
+                    <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+                    <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
+                        [disabled]="ledgerForm.invalid">
+                        Save
+                    </button>
+                </div>
+                   </form>
+            </div>
+     
+    </ng-template>
+
+
+</div>
