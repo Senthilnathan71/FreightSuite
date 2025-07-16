@@ -1,13 +1,23 @@
 <!-- ============================================================== -->
 <!-- toggle and nav items -->
 <!-- ============================================================== -->
-<ul class="navbar-nav float-start me-auto">
+<ul class="navbar-nav float-start me-auto d-flex align-items-center gap-3">
   <li class="nav-item d-none d-lg-block">
     <a (click)="toggleSidebar.emit()" class="nav-link sidebartoggler waves-effect waves-light"
       href="javascript:void(0)">
       <i class="mdi mdi-menu fs-7"></i>
     </a>
   </li>
+    <!-- Branch and Company info - aligned horizontally -->
+  <li class="nav-item d-flex flex-wrap align-items-center gap-3">
+    <span *ngIf="userData?.userBranchMaster?.length" class="fw-bold text-info ">
+      <strong class="text-dark">Branch :</strong> {{ userData.userBranchMaster[0]?.branchMaster?.branchName }}
+    </span>
+    <span *ngIf="userData?.userBranchMaster?.length" class="fw-bold text-info ">
+      <strong class="text-dark">Company :</strong> {{ userData.userBranchMaster[0]?.companyMaster?.companyName }}
+    </span>
+  </li>
+
   <!-- ============================================================== -->
   <!-- mega menu -->
   <!-- ============================================================== -->
@@ -169,8 +179,12 @@
 <!-- ============================================================== -->
 <!-- Right side toggle and nav items -->
 <!-- ============================================================== -->
+
+ 
 <ul class="navbar-nav float-end d-flex align-items-center gap-2">
   <!-- Search Inputs with Dropdown -->
+        
+  
   <li class="">
     <div class="d-flex gap-3">
       <div class="position-relative" ngbDropdown #menuSearchDropdown="ngbDropdown">
@@ -227,6 +241,9 @@
     <!-- ============================================================== -->
     <!-- create new -->
     <!-- ============================================================== -->
+     <!-- vertical-navigation.component.html -->
+  
+
 
     <li class="nav-item">
       <a (click)="navigateToMaster()" href="javascript:void(0);" class="nav-link">
@@ -453,6 +470,41 @@
     <!-- ============================================================== -->
     <!-- User profile and search -->
     <!-- ============================================================== -->
+    
+  <li class="nav-item dropdown" ngbDropdown autoClose="outside" placement="bottom-end">
+  <a ngbDropdownToggle class="nav-link dropdown-toggle waves-effect waves-dark" href="javascript:void(0)">
+    <i-feather name="user"></i-feather>
+  </a>
+
+  <div class="dropdown-menu mailbox dropdown-menu-end dropdown-menu-animate-up p-0" ngbDropdownMenu style="min-width: 300px;">
+  
+    <span class="with-arrow"><span class="bg-info"></span></span>
+
+    <ul class="list-style-none mb-0">
+ 
+      <li>
+        <div class="drop-title bg-info text-white">
+          <h4 class="mb-0 mt-1">{{ userData?.userBranchMaster?.length || 0 }} Branches</h4>
+          <span class="font-light">Switch Branch & Company</span>
+        </div>
+      </li>
+      <li>
+        <div class="px-3 py-3">
+          <label class="form-label fw-bold mb-2 text-black">Choose Branch & Company</label>
+          <select class="form-select form-select-sm w-100" (change)="onBranchChange($event)">
+            <option *ngFor="let branch of userData?.userBranchMaster" [value]="branch.UserBranchMasterSid">
+              {{ branch.branchMaster.branchName }} - {{ branch.companyMaster.companyName }}
+            </option>
+          </select>
+        </div>
+      </li>
+    </ul>
+  </div>
+</li>
+
+
+
+
     <li class="nav-item" ngbDropdown placement="bottom-end">
       <a ngbDropdownToggle class="nav-link text-muted waves-effect waves-dark pro-pic" href="javascript:void(0)"
         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

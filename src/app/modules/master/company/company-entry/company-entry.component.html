@@ -24,7 +24,7 @@
             <i class="fas fa-sync-alt me-1"></i>
             Reset
           </button>
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submitCompanyForm()">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submitCompanyForm()" [disabled]="companyForm.invalid">
             <i class="fas fa-save me-1"></i>
             {{isEditMode ? 'Update' : 'Save'}}
           </button>
@@ -895,9 +895,9 @@
               
 
           <div class="modal-footer p-2">
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submitBranchForm()">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submitBranchForm()" [disabled]="branchForm.invalid">
               <i class="fas fa-save me-1"></i>
-              {{isModalEditMode ? 'Update' : 'Create'}}
+              {{isModalEditMode ? 'Update' : 'Save'}}
             </button>
           </div>
 
@@ -1260,9 +1260,9 @@
           <!-- Modal Footer -->
           <div class="modal-footer">
             <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-              (click)="submitBranchBankForm()">
+              (click)="submitBranchBankForm()"  [disabled]="branchBankForm.invalid">
               <i class="fas fa-save me-1"></i>
-              {{isBankModalEdit ? 'Update' : 'Create'}}
+              {{isBankModalEdit ? 'Update' : 'Save'}}
             </button>
           </div>
        
