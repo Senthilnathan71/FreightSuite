@@ -158,7 +158,7 @@
       </div>
       <div class="d-flex justify-content-end mt-2">
         <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
-          (pageChange)="updatePaginationData()">
+          (pageChange)="updatePaginationData()" [maxSize]="5" [rotate]="true" [ellipses]="false">
         </ngb-pagination>
       </div>
     </div>

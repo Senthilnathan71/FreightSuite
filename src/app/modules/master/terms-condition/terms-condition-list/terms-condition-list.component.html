@@ -159,7 +159,7 @@
         </div>
         <div>
             <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalAmountOfCollections" [pageSize]="pageSize"
-                [(page)]="page" (pageChange)="updatePaginationData()">
+                [(page)]="page" (pageChange)="updatePaginationData()" [maxSize]="5" [rotate]="true" [ellipses]="false">
             </ngb-pagination>
         </div>
     </div>
