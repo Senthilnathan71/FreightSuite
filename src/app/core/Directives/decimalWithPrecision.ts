@@ -16,6 +16,7 @@ export class DecimalPrecisionDirective implements OnInit {
   @Input('DecimalPrecisionAfter') afterDecimal = 2;
 
   private regex!: RegExp;
+  private numberRegex = /^-?\d*\.?\d*$/; // Regex to check if input is a valid number
 
   constructor(private el: ElementRef, private control: NgControl) {}
 
@@ -32,6 +33,13 @@ export class DecimalPrecisionDirective implements OnInit {
     const selectionStart = this.el.nativeElement.selectionStart;
     const selectionEnd = this.el.nativeElement.selectionEnd;
 
+    // First check if the input is a valid number character
+    if (!this.numberRegex.test(inputChar) && inputChar !== '.') {
+      event.preventDefault();
+      this.setNumberError();
+      return;
+    }
+
     // Simulate the new value if this character is added
     const newValue =
       currentValue.substring(0, selectionStart) +
@@ -39,7 +47,8 @@ export class DecimalPrecisionDirective implements OnInit {
       currentValue.substring(selectionEnd);
 
     if (!this.regex.test(newValue)) {
-      event.preventDefault(); // Block invalid input
+      event.preventDefault();
+      this.setPrecisionError();
     }
   }
 
@@ -48,21 +57,58 @@ export class DecimalPrecisionDirective implements OnInit {
     const input = event.target as HTMLInputElement;
     const value = input.value;
 
-    if (!this.regex.test(value)) {
-      this.control.control?.setErrors({
-        decimalPrecision: {
-          message: `Must be max ${this.beforeDecimal} digits before and ${this.afterDecimal} digits after decimal`
-        }
-      });
+    if (value && !this.numberRegex.test(value)) {
+      this.setNumberError();
+    } else if (value && !this.regex.test(value)) {
+      this.setPrecisionError();
     } else {
-      const errors = this.control.control?.errors;
-      if (errors && errors['decimalPrecision']) {
+      this.clearError();
+    }
+  }
+
+  @HostListener('blur')
+  onBlur(): void {
+    const value = this.el.nativeElement.value;
+    if (value && !this.numberRegex.test(value)) {
+      this.setNumberError();
+    } else if (value && !this.regex.test(value)) {
+      this.setPrecisionError();
+    } else {
+      this.clearError();
+    }
+  }
+
+  private setNumberError(): void {
+    this.control.control?.setErrors({
+      invalidNumber: {
+        message: 'Please enter a valid number'
+      },
+      ...this.control.control.errors
+    });
+  }
+
+  private setPrecisionError(): void {
+    this.control.control?.setErrors({
+      decimalPrecision: {
+        message: `Must be max ${this.beforeDecimal} digits before and ${this.afterDecimal} digits after decimal`
+      },
+      ...this.control.control.errors
+    });
+  }
+
+  private clearError(): void {
+    const errors = this.control.control?.errors;
+    if (errors) {
+      if (errors['invalidNumber']) {
+        delete errors['invalidNumber'];
+      }
+      if (errors['decimalPrecision']) {
         delete errors['decimalPrecision'];
-        if (Object.keys(errors).length === 0) {
-          this.control.control?.setErrors(null);
-        } else {
-          this.control.control?.setErrors(errors);
-        }
+      }
+      if (Object.keys(errors).length === 0) {
+        this.control.control?.setErrors(null);
+      } else {
+        this.control.control?.setErrors(errors);
       }
     }
   }

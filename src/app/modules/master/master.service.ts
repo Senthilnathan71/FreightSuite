@@ -117,6 +117,14 @@ export class MasterService {
       })
     );
   }
+  getAllTransporters(){
+    return this.http.get('customer/transporter').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
 
 
   getCustomerById(id: number) {
@@ -2913,7 +2921,192 @@ getAllHawbStocks(){
       return response;
     })
   );
-}
+
+  // Tds Set Header
+   getAllTdsSet() {
+    return this.http.get<{ data: any[] }>('tds').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+   fetchTdsById(id: number) {
+    return this.http.get<{ data: any }>(`tds/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  createNewTds(payload: any) {
+    return this.http.post('tds/create', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  
+    updateTdsById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`tds/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+
+    )
+  }
+
+
+   deleteTds(id: number) {
+    return this.http.delete<{ data: any }>(`tds/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+   searchTds(payload) {
+    return this.http.post("tds/search-list", payload).pipe(
+      map((res: any) => {
+        let response = res;
+        return response
+      })
+    );
+  }
+  // Tds Set Detail
+   getAllTdsSetDetail() {
+    return this.http.get<{ data: any[] }>('tds-detail').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+   fetchTdsDetailById(id: number) {
+    return this.http.get<{ data: any }>(`tds-detail/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+   fetchTdsDetailByHeaderId(id: number) {
+    return this.http.get<{ data: any }>(`tds-detail/fetchByHeader/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  createNewTdsDetail(payload: any) {
+    return this.http.post<{ data:any }>('tds-detail/create', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  
+    updateTdsDetailById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`tds-detail/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+
+    )
+  }
+
+
+   deleteTdsDetail(id: number) {
+    return this.http.delete<{ data: any }>(`tds-detail/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+   searchTdsDetail(payload) {
+    return this.http.post<{ data:any }>("tds-detail/search-list", payload).pipe(
+      map((res: any) => {
+        let response = res;
+        return response
+      })
+    );
+  }
+  // Tds Set Exemption
+   getAllTdsSetExemption() {
+    return this.http.get<{ data: any[] }>('tds-exemption').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+   fetchTdsExemptionById(id: number) {
+    return this.http.get<{ data: any }>(`tds-exemption/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+   fetchTdsExemptionByHeaderId(id: number) {
+    return this.http.get<{ data: any }>(`tds-exemption/fetchByHeader/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  createNewTdsExemption(payload: any) {
+    return this.http.post<{ data:any }>('tds-exemption/create', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  
+    updateTdsExemptionById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`tds-exemption/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+
+    )
+  }
+
+
+   deleteTdsExemption(id: number) {
+    return this.http.delete<{ data: any }>(`tds-exemption/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+   searchTdsExemption(payload) {
+    return this.http.post<{ data:any }>("tds-exemption/search-list", payload).pipe(
+      map((res: any) => {
+        let response = res;
+        return response
+      })
+    );
+  }
+
 }
 
 

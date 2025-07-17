@@ -7,20 +7,22 @@
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="navigateBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
                     <!-- <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80">
                         <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
                     </button> -->
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
                         <i class="fas fa-save me-1"></i>
-                        Save
+                        {{isEditMode ? 'Update' : 'Save' }}
                     </button>
                 </div>
             </div>
@@ -28,63 +30,156 @@
     </div>
 
     <div class="col-md-12">
-        <div class="card h-100">
-            <div class="card-body pb-0">
-                <div class="row">
+        <div class="card">
+            <div class="card-body pb-2">
+                <div class="row" [formGroup]="tdsForm">
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="Name">
+                                formControlName="TDSSetName" [textWithNumbers]="50">
                             <label for="text-input" class="input-label">TDS Set <span
                                     class="text-danger">*</span></label>
+                            @if(tdsForm.get('TDSSetName')?.invalid &&
+                            (tdsForm.get('TDSSetName')?.touched || tdsForm.get('TDSSetName')?.dirty)) {
+                            <div class="error-message">
+                                @if(tdsForm.get('TDSSetName')?.hasError('required')){
+                                <small>TDS Set is required</small>
+                                } @else if(tdsForm.get('TDSSetName')?.hasError('maxlength')){
+                                <small>Max 50 Characters allowed</small>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="displayName">
+                                formControlName="TransactionLimit" DecimalPrecision [DecimalPrecisionBefore]="9"
+                                [DecimalPrecisionAfter]="3">
                             <label for="text-input" class="input-label">Transaction Limit <span
                                     class="text-danger">*</span></label>
+                            @if(tdsForm.get('TransactionLimit')?.invalid &&
+                            (tdsForm.get('TransactionLimit')?.touched || tdsForm.get('TransactionLimit')?.dirty)) {
+                            <div class="error-message">
+                                @if(tdsForm.get('TransactionLimit')?.hasError('required')){
+                                <small>Transaction Limit is required</small>
+                                } @else if(tdsForm.get('TransactionLimit')?.hasError('invalidNumber')){
+                                <small>Enter a valid number</small>
+                                } @else if(tdsForm.get('TransactionLimit')?.hasError('decimalPrecision')){
+                                <small>Allowed : 12 Digits before and 3 digits after decimal point</small>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="displayName">
+                                formControlName="AnnualLimit" DecimalPrecision [DecimalPrecisionBefore]="9"
+                                [DecimalPrecisionAfter]="3">
                             <label for="text-input" class="input-label">Annual Limit <span
                                     class="text-danger">*</span></label>
+                            @if(tdsForm.get('AnnualLimit')?.invalid &&
+                            (tdsForm.get('AnnualLimit')?.touched || tdsForm.get('AnnualLimit')?.dirty)) {
+                            <div class="error-message">
+                                @if(tdsForm.get('AnnualLimit')?.hasError('required')){
+                                <small>Annual Limit is required</small>
+                                } @else if(tdsForm.get('AnnualLimit')?.hasError('invalidNumber')){
+                                <small>Enter a valid number</small>
+                                } @else if(tdsForm.get('AnnualLimit')?.hasError('decimalPrecision')){
+                                <small>Allowed : 9 Digits before and 3 digits after decimal point</small>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="displayName">
+                                formControlName="TDSsetTransactionLimit" DecimalPrecision [DecimalPrecisionBefore]="9"
+                                [DecimalPrecisionAfter]="3">
                             <label for="text-input" class="input-label">TDS Set Transaction Limit <span
                                     class="text-danger">*</span></label>
+                            @if(tdsForm.get('TDSsetTransactionLimit')?.invalid &&
+                            (tdsForm.get('TDSsetTransactionLimit')?.touched ||
+                            tdsForm.get('TDSsetTransactionLimit')?.dirty)) {
+                            <div class="error-message">
+                                @if(tdsForm.get('TDSsetTransactionLimit')?.hasError('required')){
+                                <small>TDS Set Transaction Limit is required</small>
+                                } @else if(tdsForm.get('TDSsetTransactionLimit')?.hasError('decimalPrecision')){
+                                <small>Allowed : 9 Digits before and 3 digits after decimal point</small>
+                                } @else if(tdsForm.get('TDSsetTransactionLimit')?.hasError('invalidNumber')){
+                                <small>Enter a valid number</small>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="displayName">
+                                formControlName="TDSSetAnnualLimit" DecimalPrecision [DecimalPrecisionBefore]="9"
+                                [DecimalPrecisionAfter]="3">
                             <label for="text-input" class="input-label">TDS Set Annual Limit <span
                                     class="text-danger">*</span></label>
+                            @if(tdsForm.get('TDSSetAnnualLimit')?.invalid &&
+                            (tdsForm.get('TDSSetAnnualLimit')?.touched || tdsForm.get('TDSSetAnnualLimit')?.dirty)) {
+                            <div class="error-message">
+                                @if(tdsForm.get('TDSSetAnnualLimit')?.hasError('required')){
+                                <small>TDS Set Annual Limit is required</small>
+                                } @else if(tdsForm.get('TDSSetAnnualLimit')?.hasError('decimalPrecision')){
+                                <small>Allowed : 9 Digits before and 3 digits after decimal point</small>
+                                } @else if(tdsForm.get('TDSSetAnnualLimit')?.hasError('invalidNumber')){
+                                <small>Enter a valid number</small>
+                                }
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="displayName">
-                            <label for="text-input" class="input-label">Effective Form <span
-                                    class="text-danger">*</span></label>
+                        <div class="d-flex">
+                            <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d="ngbDatepicker" (click)="d.toggle()" readonly formControlName="EffectiveFrom"
+                                    [footerTemplate]="footerTemplate" [minDate]="minEffectiveFrom" />
+                                <label for="text-input" class="input-label">Effective Form <span
+                                        class="text-danger">*</span></label>
+                                @if(tdsForm.get('EffectiveFrom')?.touched &&
+                                tdsForm.get('EffectiveFrom')?.invalid){
+                                <div class="error-message">
+                                    @if(tdsForm.get('EffectiveFrom')?.hasError('required')){
+                                    <small>Effective From is required</small>
+                                    }
+                                </div>
+                                }
+                            </div>
+                            <button class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2"
+                                (click)="d.toggle()" type="button">
+                                <i-feather name="calendar" class="feather-sm"></i-feather>
+                            </button>
                         </div>
                     </aside>
+                    <ng-template #footerTemplate>
+                        <hr class="my-0" />
+                        <button class="btn btn-info btn-sm m-2 float-start"
+                            (click)="tdsForm.get('EffectiveFrom').setValue(todayDate); d.close()">
+                            Today
+                        </button>
+                        <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d.close()">
+                            Close
+                        </button>
+                    </ng-template>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
-                                bindValue="name">
-
+                            @if(isEditMode){
+                            <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
+                                <ng-option value="Active">Active</ng-option>
+                                <ng-option value="Suspended">Suspended</ng-option>
                             </ng-select>
+                            } @else {
+                            <input type="text" name="status" class="custom-input-field sm" formControlName="status"
+                                id="text-input" readonly>
+                            }
                             <label for="" class="input-label">Status <span class="text-danger"></span></label>
                         </div>
                     </aside>
@@ -94,112 +189,202 @@
         </div>
     </div>
 
-    <div class="row bg-white py-2 rounded shadow-sm mx-2 my-2">
-        <div class="col-12 p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-0">
-                    <thead>
-                        <tr class="bg-info">
-                            <!-- <th class="bg-transparent text-light" scope="col">Action</th> -->
-                            <th class="bg-transparent text-light dofi-w-80" scope="col">SNO</th>
-                            <th class="bg-transparent text-light dofi-w-150" scope="col">Country</th>
-                            <th class="bg-transparent text-light" scope="col">Income Category</th>
-                            <th class="bg-transparent text-light" scope="col">Company Type</th>
-                            <th class="bg-transparent text-light dofi-w-120" scope="col">IT Section</th>
-                            <th class="bg-transparent text-light dofi-w-100" scope="col">Amt</th>
-                            <th class="bg-transparent text-light dofi-w-60" scope="col">Percentage</th>
-                            <th class="bg-transparent text-light dofi-w-100" scope="col">Effective Form</th>
-                            <th class="bg-transparent text-light dofi-w-100" scope="col">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (item of [0,1,2]; track $index) {
-                        <tr>
-                            <!-- <td>
-                            <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
-                        </td> -->
-                            <td>
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">RO</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <td>
-                                <span
-                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Approved</span>
-                            </td>
-
-
-
-                        </tr>
-                        }
-                    </tbody>
-                </table>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
+                        <li [ngbNavItem]="1" [disabled]="!TDSSetHeaderSid">
+                            <button ngbNavLink (click)="openDetailModal(tdsDetailEntryTemplate)">
+                                <button class="btn p-0 me-2">
+                                    <i-feather name="plus-circle" class="feather-sm "></i-feather>
+                                </button>
+                                TDS Detail
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="row" *ngIf="totalNumberOfDetails > 0">
+                    <div>
+                        <ng-container *ngTemplateOutlet="detailListTemplate"></ng-container>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <ul ngbNav #nav="ngbNav" [(activeId)]="active1" class="nav-tabs">
+                        <li [ngbNavItem]="1" [disabled]="!TDSSetHeaderSid">
+                            <button ngbNavLink (click)="openExemptionModal(tdsExemptionEntryTemplate)">
+                                <button class="btn p-0 me-2">
+                                    <i-feather name="plus-circle" class="feather-sm "></i-feather>
+                                </button>
+                                Exemption Detail
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="row" *ngIf="totalNumberOfExemptions > 0">
+                    <div>
+                        <ng-container *ngTemplateOutlet="exemptionListTemplate"></ng-container>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-     <div class="row bg-white py-2 rounded shadow-sm mx-2 my-2">
-        <div class="col-12 p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-0">
-                    <thead>
-                        <tr class="bg-info">
-                            <!-- <th class="bg-transparent text-light" scope="col">Action</th> -->
-                            <th class="bg-transparent text-light" scope="col">Vessel Name</th>
-                            <th class="bg-transparent text-light" scope="col">Carrier Name</th>
-                            <th class="bg-transparent text-light" scope="col">Transporter Name</th>
-                            <th class="bg-transparent text-light" scope="col">Effective From</th>
-                             <th class="bg-transparent text-light" scope="col">Effective To</th>
-                            <!-- <th class="bg-transparent text-light" scope="col">IT Section</th>
+</div>
+<ng-template #detailListTemplate>
+    <div class="col-12 mt-1">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-0">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">Action</th>
+                        <th class="bg-transparent text-light dofi-w-80" scope="col">Sno.</th>
+                        <th class="bg-transparent text-light dofi-w-150" scope="col">Country</th>
+                        <th class="bg-transparent text-light" scope="col">Income Category</th>
+                        <th class="bg-transparent text-light" scope="col">Company Type</th>
+                        <th class="bg-transparent text-light dofi-w-120" scope="col">IT Section</th>
+                        <th class="bg-transparent text-light dofi-w-100" scope="col">Amt</th>
+                        <th class="bg-transparent text-light dofi-w-60" scope="col">Percentage</th>
+                        <th class="bg-transparent text-light dofi-w-100" scope="col">Effective Form</th>
+                        <th class="bg-transparent text-light dofi-w-100" scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (item of filteredDetailsList; track $index) {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="text-info mx-2" (click)="openDetailModal(tdsDetailEntryTemplate,item)">
+                                    <i-feather name="eye" class="feather-sm"></i-feather>
+                                </a>
+                                <a class="link mx-2 ps-3 border-start text-danger"
+                                    (click)="deleteTdsSetDetail(item.TDSSetRateSid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.Sno}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.countryMaster?.countryName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.IncomeCategory}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.CompanyType}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.ITSectionCode}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.TDSAmount}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.TDSRate}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.EffectiveFrom | formatDate}}</div>
+                        </td>
+                        <td>
+                            @if(item.status === "A"){
+                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                Active
+                            </div>
+                            } @else {
+                            <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                Suspended
+                            </div>
+                            }
+                        </td>
+
+
+
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-2">
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalNumberOfDetails"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updateDetailsPagination()" [rotate]="true"
+                [ellipses]="false" [maxSize]="5">
+            </ngb-pagination>
+        </div>
+    </div>
+</ng-template>
+<ng-template #exemptionListTemplate>
+    <div class="col-12 mt-1">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-0">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">Action</th>
+                        <th class="bg-transparent text-light" scope="col">Vessel Name</th>
+                        <th class="bg-transparent text-light" scope="col">Carrier Name</th>
+                        <th class="bg-transparent text-light" scope="col">Transporter Name</th>
+                        <th class="bg-transparent text-light" scope="col">Effective From</th>
+                        <th class="bg-transparent text-light" scope="col">Effective To</th>
+                        <th class="bg-transparent text-light" scope="col">Status</th>
+                        <!-- <th class="bg-transparent text-light" scope="col">IT Section</th>
                             <th class="bg-transparent text-light" scope="col">Amt</th>
                             <th class="bg-transparent text-light" scope="col">Percentage</th>
                             <th class="bg-transparent text-light" scope="col">Effective Form</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th> -->
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (item of [0,1,2]; track $index) {
-                        <tr>
-                            <!-- <td>
-                            <i-feather name="edit-3" class="feather-sm ms-2"></i-feather>
-                        </td> -->
-                            <td>
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">RO</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <!-- <td>
+                            -->
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (item of filteredExemptionList; track $index) {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <a class="text-info mx-2" (click)="openExemptionModal(tdsExemptionEntryTemplate,item)">
+                                    <i-feather name="eye" class="feather-sm"></i-feather>
+                                </a>
+                                <a class="link mx-2 ps-3 border-start text-danger"
+                                    (click)="deleteTdsExemption(item.TDSExemptionSid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.vesselMaster?.VesselName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.customerCarrier?.CustomerName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.customerTransporter?.CustomerName}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.EffectiveFrom | formatDate}}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate">{{item.EffectiveTo | formatDate}}</div>
+                        </td>
+                        <td>
+                            @if(item.status === "A"){
+                            <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                Active
+                            </div>
+                            } @else {
+                            <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                Suspended
+                            </div>
+                            }
+                        </td>
+                        <!-- <td>
                                 <div class="text-truncate">Rial</div>
                             </td>
                             <td>
@@ -217,11 +402,439 @@
 
 
 
-                        </tr>
-                        }
-                    </tbody>
-                </table>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-2">
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalNumberOfExemptions"
+                [pageSize]="exPageSize" [(page)]="exPage" (pageChange)="updateExemptionPagination()" [rotate]="true"
+                [ellipses]="false" [maxSize]="5">
+            </ngb-pagination>
+        </div>
+    </div>
+</ng-template>
+<ng-template #tdsDetailEntryTemplate let-modal>
+    <div class="col-12">
+        <div class="card mb-0 h-100">
+            <div class="modal-header p-2 bg-info text-white">
+                <h4 class="modal-title">{{detailModalEdit ? 'Update TDS Detail':'TDS Detail'}}</h4>
+                <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                    (click)="modal.dismiss('Cross click')"></button>
+            </div>
+
+            <div class="modal-body py-2">
+                <form [formGroup]="tdsDetailForm">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="Sno" [onlyNumbers]="2">
+                                    <label for="text-input" class="input-label">Sno. <span
+                                            class="text-danger"></span></label>
+                                    @if(tdsDetailForm.get('Sno')?.invalid &&
+                                    (tdsDetailForm.get('Sno')?.touched || tdsDetailForm.get('Sno')?.dirty)) {
+                                    <div class="error-message">
+                                        @if(tdsDetailForm.get('Sno')?.hasError('required')){
+                                        <small>Sno. is required</small>
+                                        } @else if(tdsDetailForm.get('Sno')?.hasError('onlyNumbers')){
+                                        <small>Only numbers are allowed</small>
+                                        } @else if(tdsDetailForm.get('Sno')?.hasError('maxlength')){
+                                        <small>Max 2 digit are allowed</small>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select class="ng-select" formControlName="CountryMasterSid"
+                                        [items]="countryList" bindLabel="countryName" bindValue="CountryMasterSid"
+                                        placeholder="Select Country">
+                                    </ng-select>
+                                    <label for="charge" class="input-label">Country <span
+                                            class="text-danger"></span></label>
+                                    @if(tdsDetailForm.get('CountryMasterSid')?.touched &&
+                                    tdsDetailForm.get('CountryMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(tdsDetailForm.get('CountryMasterSid')?.hasError('required')){
+                                        <small>Country is Required</small>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="IncomeCategory" [textWithNumbers]="100">
+                                    <label for="text-input" class="input-label">Income Category <span
+                                            class="text-danger"></span></label>
+                                    @if(tdsDetailForm.get('IncomeCategory')?.invalid &&
+                                    (tdsDetailForm.get('IncomeCategory')?.touched ||
+                                    tdsDetailForm.get('IncomeCategory')?.dirty)) {
+                                    <div class="error-message">
+                                        @if(tdsDetailForm.get('IncomeCategory')?.hasError('required')){
+                                        <small>Income Category is required</small>
+                                        } @else if(tdsDetailForm.get('IncomeCategory')?.hasError('maxlength')){
+                                        <small>Max 100 Characters</small>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select class="ng-select" formControlName="CompanyType" [items]="companyTypeList"
+                                        bindLabel="name" bindValue="name" placeholder="Select Company Type">
+                                    </ng-select>
+                                    <label for="charge" class="input-label">Company Type <span
+                                            class="text-danger">*</span></label>
+                                    @if(tdsDetailForm.get('CompanyType')?.touched &&
+                                    tdsDetailForm.get('CompanyType')?.invalid){
+                                    <div class="error-message">
+                                        @if(tdsDetailForm.get('CompanyType')?.hasError('required')){
+                                        <small>Company Type is Required</small>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="ITSectionCode" [textWithNumbers]="10">
+                                    <label for="text-input" class="input-label">IT Section <span
+                                            class="text-danger"></span></label>
+                                    @if(tdsDetailForm.get('ITSectionCode')?.invalid &&
+                                    (tdsDetailForm.get('ITSectionCode')?.touched ||
+                                    tdsDetailForm.get('ITSectionCode')?.dirty)) {
+                                    <div class="error-message">
+                                        @if(tdsDetailForm.get('ITSectionCode')?.hasError('required')){
+                                        <small>IT Section is required</small>
+                                        } @else if(tdsDetailForm.get('ITSectionCode')?.hasError('maxlength')){
+                                        <small>Max 10 Characters</small>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="TDSAmount" DecimalPrecision [DecimalPrecisionBefore]="8"
+                                        [DecimalPrecisionAfter]="2">
+                                    <label for="text-input" class="input-label">Amount <span
+                                            class="text-danger"></span></label>
+                                    @if(tdsDetailForm.get('TDSAmount')?.invalid &&
+                                    (tdsDetailForm.get('TDSAmount')?.touched ||
+                                    tdsDetailForm.get('TDSAmount')?.dirty)) {
+                                    <div class="error-message">
+                                        @if(tdsDetailForm.get('TDSAmount')?.hasError('required')){
+                                        <small>Amount is required</small>
+                                        } @else if(tdsDetailForm.get('TDSAmount')?.hasError('decimalPrecision')){
+                                        <small>Only 8 digit before and 2 digits after decimal point is allowed</small>
+                                        } @else if(tdsDetailForm.get('TDSAmount')?.hasError('invalidNumber')){
+                                        <small>Enter a valid number</small>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="TDSRate" DecimalPrecision [DecimalPrecisionBefore]="2"
+                                        [DecimalPrecisionAfter]="2">
+                                    <label for="text-input" class="input-label">Percentage <span
+                                            class="text-danger">*</span></label>
+                                    @if(tdsDetailForm.get('TDSRate')?.invalid &&
+                                    (tdsDetailForm.get('TDSRate')?.touched ||
+                                    tdsDetailForm.get('TDSRate')?.dirty)) {
+                                    <div class="error-message">
+                                        @if(tdsDetailForm.get('TDSRate')?.hasError('required')){
+                                        <small>Percentage is required</small>
+                                        } @else if(tdsDetailForm.get('TDSRate')?.hasError('decimalPrecision')){
+                                        <small>Only 2 digit before and 2 digits after decimal point is allowed</small>
+                                        } @else if(tdsDetailForm.get('TDSRate')?.hasError('invalidNumber')){
+                                        <small>Enter a valid number</small>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="d-flex">
+                                    <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                        <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp"
+                                            ngbDatepicker #d1="ngbDatepicker" (click)="d1.toggle()" readonly
+                                            formControlName="EffectiveFrom" [footerTemplate]="detailfooterTemplate"
+                                            [minDate]="minDetailEffectiveFrom" />
+                                        <label for="text-input" class="input-label">Effective Form <span
+                                                class="text-danger">*</span></label>
+                                        @if(tdsDetailForm.get('EffectiveFrom')?.touched &&
+                                        tdsDetailForm.get('EffectiveFrom')?.invalid){
+                                        <div class="error-message">
+                                            @if(tdsDetailForm.get('EffectiveFrom')?.hasError('required')){
+                                            <small>Effective From is required</small>
+                                            }
+                                        </div>
+                                        }
+                                    </div>
+                                    <button
+                                        class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2"
+                                        (click)="d1.toggle()" type="button">
+                                        <i-feather name="calendar" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                            </aside>
+                            <ng-template #detailfooterTemplate>
+                                <hr class="my-0" />
+                                <button class="btn btn-info btn-sm m-2 float-start"
+                                    (click)="tdsDetailForm.get('EffectiveFrom').setValue(todayDate); d1.close()">
+                                    Today
+                                </button>
+                                <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">
+                                    Close
+                                </button>
+                            </ng-template>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select">
+                                    @if(detailModalEdit){
+                                    <ng-select name="status" class="ng-select" formControlName="detailStatus"
+                                        id="text-input">
+                                        <ng-option value="Active">Active</ng-option>
+                                        <ng-option value="Suspended">Suspended</ng-option>
+                                    </ng-select>
+                                    } @else {
+                                    <input type="text" name="status" class="custom-input-field sm"
+                                        formControlName="detailStatus" id="text-input" readonly>
+                                    }
+                                    <label for="" class="input-label">Status <span class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer p-2">
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                    (click)="onSubmitDetails()">
+                    <i class="fas fa-save me-1"></i>
+                    {{detailModalEdit ? 'Update' : 'Create'}}
+                </button>
+            </div>
+        </div>
+    </div>
+</ng-template>
+<ng-template #tdsExemptionEntryTemplate let-modal1>
+    <div class="col-12">
+        <div class="card mb-0 h-100">
+            <div class="modal-header p-2 bg-info text-white">
+                <h4 class="modal-title">{{exemptionModalEdit ? 'Update Exemption Detail':'Exemption Detail'}}</h4>
+                <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                    (click)="modal1.dismiss('Cross click')"></button>
+            </div>
+
+            <div class="modal-body py-2">
+                <form [formGroup]="tdsExemptionForm">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select class="ng-select" formControlName="Vessel" [items]="vesselList"
+                                        bindLabel="VesselName" bindValue="VesselMasterSid" placeholder="Select Vessel">
+                                    </ng-select>
+                                    <label for="charge" class="input-label">Vessel <span
+                                            class="text-danger">*</span></label>
+                                    @if(tdsExemptionForm.get('Vessel')?.touched &&
+                                    tdsExemptionForm.get('Vessel')?.invalid){
+                                    <div class="error-message">
+                                        @if(tdsExemptionForm.get('Vessel')?.hasError('required')){
+                                        <small>Vessel is Required</small>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select class="ng-select" formControlName="Carrier" placeholder="Select Carrier">
+                                        @for(item of carrierList;track $index){
+                                        @if(item.CustomerMasterSid != tdsExemptionForm.get('Transporter').value){
+                                        <ng-option [value]="item.CustomerMasterSid">{{item.CustomerName}}</ng-option>
+                                        }
+                                        }
+                                    </ng-select>
+                                    <label for="charge" class="input-label">Carrier <span
+                                            class="text-danger">*</span></label>
+                                    @if(tdsExemptionForm.get('Carrier')?.touched &&
+                                    tdsExemptionForm.get('Carrier')?.invalid){
+                                    <div class="error-message">
+                                        @if(tdsExemptionForm.get('Carrier')?.hasError('required')){
+                                        <small>Carrier is Required</small>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select class="ng-select" formControlName="Transporter"
+                                        placeholder="Select Transporter">
+                                        @for(item of transporterList;track $index){
+                                        @if(item.CustomerMasterSid != tdsExemptionForm.get('Carrier').value){
+                                        <ng-option [value]="item.CustomerMasterSid">{{item.CustomerName}}</ng-option>
+                                        }
+                                        }
+                                    </ng-select>
+                                    <label for="charge" class="input-label">Transporter <span
+                                            class="text-danger">*</span></label>
+                                    @if(tdsExemptionForm.get('Transporter')?.touched &&
+                                    tdsExemptionForm.get('Transporter')?.invalid){
+                                    <div class="error-message">
+                                        @if(tdsExemptionForm.get('Transporter')?.hasError('required')){
+                                        <small>Transporter is Required</small>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-md-6">
+                                <div class="d-flex">
+                                    <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                        <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp"
+                                            ngbDatepicker #d2="ngbDatepicker" (click)="d2.toggle()" readonly
+                                            formControlName="EffectiveFrom" [footerTemplate]="expFromfooterTemplate"
+                                            [minDate]="minExemptionEffectiveFrom" />
+                                        <label for="text-input" class="input-label">Effective Form <span
+                                                class="text-danger">*</span></label>
+                                        @if(tdsExemptionForm.get('EffectiveFrom')?.touched &&
+                                        tdsExemptionForm.get('EffectiveFrom')?.invalid){
+                                        <div class="error-message">
+                                            @if(tdsExemptionForm.get('EffectiveFrom')?.hasError('required')){
+                                            <small>Effective From is required</small>
+                                            }
+                                        </div>
+                                        }
+                                    </div>
+                                    <button
+                                        class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2"
+                                        (click)="d2.toggle()" type="button">
+                                        <i-feather name="calendar" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                            </aside>
+                            <ng-template #expFromfooterTemplate>
+                                <hr class="my-0" />
+                                <button class="btn btn-info btn-sm m-2 float-start"
+                                    (click)="tdsExemptionForm.get('EffectiveFrom').setValue(todayDate); d2.close()">
+                                    Today
+                                </button>
+                                <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d2.close()">
+                                    Close
+                                </button>
+                            </ng-template>
+                            <aside class="col-md-6">
+                                <div class="d-flex">
+                                    <div class="custom-form-group custom-form-group-select w-100 mb-0">
+                                        <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp"
+                                            ngbDatepicker #d3="ngbDatepicker" (click)="d3.toggle()" readonly
+                                            formControlName="EffectiveTo" [footerTemplate]="expTofooterTemplate"
+                                            [minDate]="toNgbDateStruct(tdsExemptionForm.get('EffectiveFrom').value)" />
+                                        <label for="text-input" class="input-label">Effective To <span
+                                                class="text-danger">*</span></label>
+                                        @if(tdsExemptionForm.get('EffectiveTo')?.touched &&
+                                        tdsExemptionForm.get('EffectiveTo')?.invalid){
+                                        <div class="error-message">
+                                            @if(tdsExemptionForm.get('EffectiveTo')?.hasError('required')){
+                                            <small>Effective To is required</small>
+                                            }
+                                        </div>
+                                        }
+                                    </div>
+                                    <button
+                                        class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2"
+                                        (click)="d3.toggle()" type="button">
+                                        <i-feather name="calendar" class="feather-sm"></i-feather>
+                                    </button>
+                                </div>
+                            </aside>
+                            <ng-template #expTofooterTemplate>
+                                <hr class="my-0" />
+                                <button class="btn btn-info btn-sm m-2 float-start"
+                                    (click)="tdsExemptionForm.get('EffectiveTo').setValue(todayDate); d3.close()">
+                                    Today
+                                </button>
+                                <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d3.close()">
+                                    Close
+                                </button>
+                            </ng-template>
+                            <aside class="col-md-6">
+                                <div class="custom-form-group custom-form-group-select">
+                                    @if(exemptionModalEdit){
+                                    <ng-select name="status" class="ng-select" formControlName="exemptionStatus"
+                                        id="text-input">
+                                        <ng-option value="Active">Active</ng-option>
+                                        <ng-option value="Suspended">Suspended</ng-option>
+                                    </ng-select>
+                                    } @else {
+                                    <input type="text" name="status" class="custom-input-field sm"
+                                        formControlName="exemptionStatus" id="text-input" readonly>
+                                    }
+                                    <label for="" class="input-label">Status <span class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer p-2">
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                    (click)="onSubmitExemption()">
+                    <i class="fas fa-save me-1"></i>
+                    {{exemptionModalEdit ? 'Update' : 'Create'}}
+                </button>
+            </div>
+        </div>
+    </div>
+</ng-template>
+@if(isEditMode){
+<div class="col-12 mt-3">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12 d-flex flex-wrap gap-2">
+                    <!-- eDoc Button -->
+                    @if(hasPermission('Edoc')) {
+                    <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+                        <i class="fas fa-file-alt me-1"></i> e-Doc
+                    </button>
+                    }
+                    @if(hasPermission('Terms and Condition')) {
+                    <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
+                        <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                    </button>
+                    }
+                    @if(hasPermission('Authority')) {
+                    <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
+                        <i class="fas fa-shield-alt me-1"></i> Authorize
+                    </button>
+                    }
+                    @if(hasPermission('Email')) {
+                    <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "
+                        (click)="openEmail()">
+                        <i class="fas fa-envelope me-1"></i> Email
+                    </button>
+                    }
+                </div>
             </div>
         </div>
     </div>
 </div>
+}

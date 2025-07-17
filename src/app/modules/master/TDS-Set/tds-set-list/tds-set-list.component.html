@@ -18,33 +18,26 @@
 
             <div class="col pb-2">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
-                    <div class="form-outline col-12 col-md-auto px-0">
-                        <select name="searchType" class="form-select">
-                            <option value="departmentName">Department Name</option>
-                            <option value="departmentCode">Department Code</option>
-                            <option value="departmentType">Department Type</option>
-                            <option value="ExportImport">Export/Import</option>
-                            <option value="FCLLCL">FCLLCL</option>
-                            <option value="status">Status</option>
-                        </select>
-                    </div>
-                    <!-- <div class="form-outline col-12 col-md px-0">
-                                <input name="filterValue" type="text" class="form-control"
-                                    placeholder="Enter filter value">
-                                <i
-                                    class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
-                            </div> -->
-                    <div class="d-flex d-md-flex gap-2 col-12 col-md px-0 align-items-center">
-                        <div class="form-outline flex-grow-1">
-                            <input name="filterValue" type="text" class="form-control" placeholder="Enter filter value">
-                            <i
-                                class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                    <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
+                        <div class="form-outline flex-grow-1 position-relative">
+                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                                [(ngModel)]="filterValue" aria-label="Search input">
+                            <button *ngIf="filterValue"
+                                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
+                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
+                                onfocus="this.classList.replace('text-secondary','text-danger')"
+                                onblur="this.classList.replace('text-danger','text-secondary')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="mt-md-0 mt-1">
+                            <button type="submit" (click)="loadTds()"
+                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                <i class="fas fa-search me-1"></i> Search
+                            </button>
                         </div>
 
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-search me-1"></i>
-                            Search
-                        </button>
                     </div>
                 </form>
             </div>
@@ -52,7 +45,8 @@
             <div class="col-md-auto pb-2">
                 <div class="" data-bs-theme="light">
                     <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <app-favorite-star screenName="TDS Set" class="mt-1 me-1"></app-favorite-star>
                         <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                             <i class="fas fa-search me-1"></i>
                             Search
@@ -61,11 +55,12 @@
                             (click)="navigateTocreatetdsSet()">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="report()">
                             <i class="fas fa-file-alt me-1"></i>
                             Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
@@ -77,51 +72,76 @@
     </div>
 
 
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">TDS Name</th>
-                            <th class="bg-transparent text-light" scope="col">Effective Date</th>
-                            <th class="bg-transparent text-light" scope="col">Transaction Limit</th>
-                            <th class="bg-transparent text-light" scope="col">Annual Limit</th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('TDSSetName')">TDS Name <i
+                                    class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'TDSSetName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'TDSSetName'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('EffectiveFrom')">Effective
+                                Date <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'EffectiveFrom', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'EffectiveFrom'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('TransactionLimit')">
+                                Transaction Limit <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'TransactionLimit', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'TransactionLimit'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('AnnualLimit')">Annual Limit
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'AnnualLimit', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'AnnualLimit'}"></i>
+                            </th>
                             <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        @for (item of tdsList; track $index) {
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2" class="link mx-2 ps-3 ">
+                                    @if(hasPermission('View')) {
+                                    <a class="text-info mx-2" class="link mx-2 ps-3 "
+                                        [routerLink]="['/master/tds-set/entry',item.TDSSetHeaderSid]">
                                         <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </a>
-                                    <a class="text-danger mx-2 ps-3 border-start">
+                                    }
+                                    @if(hasPermission('Delete')) {
+                                    <a class="text-danger mx-2 ps-3 border-start"
+                                        (click)="deleteTdsSet(item.TDSSetHeaderSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
+                                    }
                                 </div>
                             </td>
 
                             <td>
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.TDSSetName}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">RO</div>
+                                <div class="text-truncate">{{item.EffectiveFrom | formatDate}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">Rial</div>
+                                <div class="text-truncate">{{item.TransactionLimit}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">Rial</div>
+                                <div class="text-truncate">{{item.AnnualLimit}}</div>
                             </td>
                             <td>
-                                <span
-                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                @if(item.status === "A"){
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Approved</span>
+                                    Active
+                                </div>
+                                } @else {
+                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Suspended
+                                </div>
+                                }
                             </td>
 
 
@@ -131,7 +151,15 @@
                     </tbody>
                 </table>
             </div>
+            <div>
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true"
+                    [ellipses]="false" [maxSize]="5">
+                </ngb-pagination>
+            </div>
         </div>
     </div>
-
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
+        <div>No records found</div>
+    </div>
 </div>
