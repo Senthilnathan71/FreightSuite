@@ -1,10 +1,21 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, TemplateRef } from '@angular/core';
-import { FormsModule, FormGroup, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  FormGroup,
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
-import { NgbModalModule, NgbPagination, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbModalModule,
+  NgbPagination,
+  NgbModal,
+  NgbModalRef,
+} from '@ng-bootstrap/ng-bootstrap';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from '../../master.service';
@@ -27,10 +38,10 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
   selector: 'app-division',
   standalone: true,
   imports: [
-    CommonModule, 
-    FeatherModule, 
-    FormsModule, 
-    NgbPagination, 
+    CommonModule,
+    FeatherModule,
+    FormsModule,
+    NgbPagination,
     RouterModule,
     NgbModalModule,
     NgSelectModule,
@@ -40,10 +51,10 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     DatePipe,
     ListpageComponent,
     PreventMultiClickDirective,
-    FavoriteStarComponent
+    FavoriteStarComponent,
   ],
   templateUrl: './division.component.html',
-  styleUrl: './division.component.scss'
+  styleUrl: './division.component.scss',
 })
 export class DivisionComponent {
   divisionForm!: FormGroup;
@@ -54,10 +65,10 @@ export class DivisionComponent {
   errorMessage: string = '';
   btnDisable: boolean = false;
   divisionList: any[] = [];
-  statusList = ["Active", "Suspended"]
-  companyList: any[] = [] ;
+  statusList = ['Active', 'Suspended'];
+  companyList: any[] = [];
   modalRef!: NgbModalRef;
-  companyMap: { [id: number]: string} ={};
+  companyMap: { [id: number]: string } = {};
   searchType = 'DivisionName';
   filterValue = '';
   searched = false;
@@ -65,45 +76,71 @@ export class DivisionComponent {
   pageSize = 5;
   totalLengthOfCollection = 0;
   userData: any;
-  divisionData : any;
+  divisionData: any;
   currentMenuId: number;
   TandCList: any;
   isFavorite: boolean = false;
-  sortColumn: string = 'DivisionName'; 
+  sortColumn: string = 'DivisionName';
   sortDirection: string = 'asc';
-
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
-  } 
-  
+  }
+
   constructor(
-   private modalService: NgbModal,
-   private fb: FormBuilder,
-   private masterService: MasterService,
-   private route: ActivatedRoute,
-   private router: Router,
-   private appSettingService: AppSettingsService,
-   private dialog: MatDialog,
-   private excelReportService: ExcelExportService
+    private modalService: NgbModal,
+    private fb: FormBuilder,
+    private masterService: MasterService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private appSettingService: AppSettingsService,
+    private dialog: MatDialog,
+    private excelReportService: ExcelExportService
   ) {}
 
   ngOnInit(): void {
-    this.appSettingService.getUser().subscribe(user => {
-    if (user) {
-      this.userData = user;
-    }
-  });
+    this.appSettingService.getUser().subscribe((user) => {
+      if (user) {
+        this.userData = user;
+        this.checkPermissions();
+      }
+    });
     this.getAllCompanies();
     this.loadCompanies();
     this.loadDivisions();
     this.initForm();
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       this.DivisionMasterSid = +params.get('DivisionMasterSid');
       if (this.DivisionMasterSid) {
         this.isEditMode = true;
         this.loadDivisionData(this.DivisionMasterSid);
       }
     });
+  }
+
+  checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId);
+    console.log(userRole);
+    if (currentMenuId && userRole) {
+      this.masterService
+        .getRoleMenuPermissions(currentMenuId, userRole)
+        .subscribe({
+          next: (response) => {
+            this.currentMenuPermissions = response.data.MenuPermissions || {};
+            this.permissions = Object.keys(this.currentMenuPermissions).filter(
+              (key) => this.currentMenuPermissions[key] === 'isTrue'
+            );
+            console.log(this.permissions);
+          },
+        });
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
   }
 
   loadDivisions(): void {
@@ -115,7 +152,7 @@ export class DivisionComponent {
 
     this.masterService.searchDivisionList(params).subscribe({
       next: (response) => {
-        if(response.data) {
+        if (response.data) {
           this.divisionList = response.data.items;
           this.results = [...this.divisionList];
           this.totalLengthOfCollection = response.data.totalCount;
@@ -137,9 +174,9 @@ export class DivisionComponent {
       DivisionName: ['', [Validators.required]],
       DivisionCode: ['', [Validators.required]],
       // address: ['', [Validators.required]],
-      CompanyMasterSid: ['',[Validators.required]],
+      CompanyMasterSid: ['', [Validators.required]],
       Remarks: [''],
-      status: [{value: 'Active', disabled: false}, Validators.required],
+      status: [{ value: 'Active', disabled: false }, Validators.required],
     });
   }
 
@@ -147,45 +184,60 @@ export class DivisionComponent {
     // Disable status field and set to 'Active' for create mode
     this.divisionForm.get('status')?.disable();
     this.divisionForm.reset({
-      status: 'Active'
+      status: 'Active',
     });
   }
 
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static'});
+    this.modalRef = this.modalService.open(content, {
+      centered: true,
+      size: 'lg',
+      backdrop: 'static',
+    });
   }
-  
+
   openEditModal(content: any, DivisionMasterSid: number): void {
     this.isEditMode = true;
     this.DivisionMasterSid = DivisionMasterSid;
     this.getDivisionById(DivisionMasterSid).add(() => {
-      this.modalRef = this.modalService.open(content, { centered: true, size: 'lg' , backdrop: 'static'});
+      this.modalRef = this.modalService.open(content, {
+        centered: true,
+        size: 'lg',
+        backdrop: 'static',
+      });
     });
   }
 
   updateDivisionById(DivisionMasterSid: number, content: any) {
     this.isEditMode = true;
     this.DivisionMasterSid = DivisionMasterSid;
-    this.masterService.getDivisionById(DivisionMasterSid).pipe(take(1)).subscribe({
-      next: (division: any) => {
-        this.divisionForm.get('status')?.enable();
-        this.divisionData = division;
-        this.divisionForm.patchValue({
-          DivisionName: division.DivisionName,
-          DivisionCode: division.DivisionCode,
-          CompanyMasterSid: Number(division.CompanyMasterSid),
-          Remarks: division.Remarks,
-          status: division.status === 'A' ? 'Active' : 'Suspended'
-        });
-        this.modalRef = this.modalService.open(content, { centered: true,  size: 'lg', backdrop: 'static'});
-      },
-      error: (err) => {
-        console.error('Error fetching', err);
-        this.appSettingService.showError('Error fetching data for editing');
-      }
-    });
+    this.masterService
+      .getDivisionById(DivisionMasterSid)
+      .pipe(take(1))
+      .subscribe({
+        next: (division: any) => {
+          this.divisionForm.get('status')?.enable();
+          this.divisionData = division;
+          this.divisionForm.patchValue({
+            DivisionName: division.DivisionName,
+            DivisionCode: division.DivisionCode,
+            CompanyMasterSid: Number(division.CompanyMasterSid),
+            Remarks: division.Remarks,
+            status: division.status === 'A' ? 'Active' : 'Suspended',
+          });
+          this.modalRef = this.modalService.open(content, {
+            centered: true,
+            size: 'lg',
+            backdrop: 'static',
+          });
+        },
+        error: (err) => {
+          console.error('Error fetching', err);
+          this.appSettingService.showError('Error fetching data for editing');
+        },
+      });
   }
 
   closeModal(): void {
@@ -196,21 +248,24 @@ export class DivisionComponent {
 
   getDivisionById(DivisionMasterSid: number) {
     this.resetForm();
-    return this.masterService.getDivisionById(DivisionMasterSid).pipe(take(1)).subscribe(
-      (division: any) => {
-        console.log('Division from backend:', division);
-        this.divisionForm.patchValue({
-          DivisionName: division.DivisionName,
-          DivisionCode: division.DivisionCode,
-          CompanyMasterSid: Number(division.CompanyMasterSid),
-          Remarks: division.Remarks,
-          status: division.status === 'A' ? 'Active' : 'Suspended'
-        });
-      },
-      (error) => {
-        this.appSettingService.showError('Error loading');
-      }
-    );
+    return this.masterService
+      .getDivisionById(DivisionMasterSid)
+      .pipe(take(1))
+      .subscribe(
+        (division: any) => {
+          console.log('Division from backend:', division);
+          this.divisionForm.patchValue({
+            DivisionName: division.DivisionName,
+            DivisionCode: division.DivisionCode,
+            CompanyMasterSid: Number(division.CompanyMasterSid),
+            Remarks: division.Remarks,
+            status: division.status === 'A' ? 'Active' : 'Suspended',
+          });
+        },
+        (error) => {
+          this.appSettingService.showError('Error loading');
+        }
+      );
   }
 
   onSubmit() {
@@ -221,46 +276,56 @@ export class DivisionComponent {
     if (this.divisionForm.invalid) {
       this.divisionForm.markAllAsTouched();
       this.divisionForm.updateValueAndValidity();
-      this.appSettingService.showWarning('Please fill all required fields correctly.');
+      this.appSettingService.showWarning(
+        'Please fill all required fields correctly.'
+      );
       return;
     } else {
       this.btnDisable = true;
-      let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
+      let createdBy = {
+        createdBy: this.appSettingService.userSettingSource.value['userEmail'],
+      };
+      let updatedBy = {
+        updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      };
       const formValue = this.divisionForm.value;
 
-      const payload = (this.isEditMode) ? {
-        ...formValue,
-        CompanyMasterSid:Number(formValue.CompanyMasterSid),
-        ...updatedBy,
-        status: formValue.status === "Active" ? "A" : "I"
-      } : {
-        ...formValue,
-        CompanyMasterSid:Number(formValue.CompanyMasterSid),
-        ...createdBy,
-        status: formValue.status === "Active" ? "A" : "I"
-      };
+      const payload = this.isEditMode
+        ? {
+            ...formValue,
+            CompanyMasterSid: Number(formValue.CompanyMasterSid),
+            ...updatedBy,
+            status: formValue.status === 'Active' ? 'A' : 'I',
+          }
+        : {
+            ...formValue,
+            CompanyMasterSid: Number(formValue.CompanyMasterSid),
+            ...createdBy,
+            status: formValue.status === 'Active' ? 'A' : 'I',
+          };
 
       console.log('payload', payload);
 
       if (this.isEditMode) {
-        this.masterService.updateDivisionById(this.DivisionMasterSid, payload).subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
-              this.closeModal();
-              this.router.navigate(['master/division']);
-            } else {
-              this.appSettingService.showError(resp.message);
+        this.masterService
+          .updateDivisionById(this.DivisionMasterSid, payload)
+          .subscribe(
+            (resp: any) => {
+              if (resp.status) {
+                this.appSettingService.showSuccess(resp.message);
+                this.closeModal();
+                this.router.navigate(['master/division']);
+              } else {
+                this.appSettingService.showError(resp.message);
+              }
+              this.btnDisable = false;
+            },
+            (error) => {
+              this.errorMessage = error.message;
+              console.error('Update Division Error:', error);
+              this.btnDisable = false;
             }
-            this.btnDisable = false;
-          },
-          (error) => {
-            this.errorMessage = error.message;
-            console.error('Update Division Error:', error);
-            this.btnDisable = false;
-          }
-        );
+          );
       } else {
         this.masterService.createNewDivision(payload).subscribe(
           (resp: any) => {
@@ -285,7 +350,7 @@ export class DivisionComponent {
 
   statusMap: { [key: string]: string } = {
     A: 'Active',
-    IA: 'Suspended'
+    IA: 'Suspended',
   };
 
   loadDivisionData(DivisionMasterSid: number) {
@@ -293,9 +358,8 @@ export class DivisionComponent {
       (divisionData) => {
         this.divisionForm.patchValue({
           ...divisionData,
-          status: divisionData.status === 'A' ? 'Active' : 'Suspended'
-        },
-        );
+          status: divisionData.status === 'A' ? 'Active' : 'Suspended',
+        });
       },
       (error) => {
         this.appSettingService.showError('Error loading data.');
@@ -304,47 +368,47 @@ export class DivisionComponent {
   }
 
   sort(column: string) {
-  if (this.sortColumn === column) {
-    // Reverse the sort direction if clicking the same column
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    // Set new sort column and default to ascending
-    this.sortColumn = column;
-    this.sortDirection = 'asc';
-  }
-  
-  this.applySorting();
-  this.updatePaginatedData();
-}
+    if (this.sortColumn === column) {
+      // Reverse the sort direction if clicking the same column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Set new sort column and default to ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
 
-applySorting() {
-  this.results.sort((a, b) => {
-    let valueA = a[this.sortColumn];
-    let valueB = b[this.sortColumn];
-    
-    // Handle null/undefined values
-    if (valueA == null) valueA = '';
-    if (valueB == null) valueB = '';
-    
-    // Special handling for company names
-    if (this.sortColumn === 'CompanyMasterSid') {
-      valueA = this.companyMap[valueA] || '';
-      valueB = this.companyMap[valueB] || '';
-    }
-    
-    // Convert to string for case-insensitive comparison
-    valueA = valueA.toString().toLowerCase();
-    valueB = valueB.toString().toLowerCase();
-    
-    if (valueA < valueB) {
-      return this.sortDirection === 'asc' ? -1 : 1;
-    }
-    if (valueA > valueB) {
-      return this.sortDirection === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-}
+    this.applySorting();
+    this.updatePaginatedData();
+  }
+
+  applySorting() {
+    this.results.sort((a, b) => {
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
+
+      // Handle null/undefined values
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+
+      // Special handling for company names
+      if (this.sortColumn === 'CompanyMasterSid') {
+        valueA = this.companyMap[valueA] || '';
+        valueB = this.companyMap[valueB] || '';
+      }
+
+      // Convert to string for case-insensitive comparison
+      valueA = valueA.toString().toLowerCase();
+      valueB = valueB.toString().toLowerCase();
+
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;
@@ -358,36 +422,38 @@ applySorting() {
 
   deleteDivision(DivisionMasterSid) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
-        this.masterService.deleteDivision(DivisionMasterSid).subscribe((resp: any) => {
-          this.appSettingService.showSuccess("Deleted!");
-          this.router.navigate(['master/division/list'])
-          this.loadDivisions();
-        });
+        this.masterService
+          .deleteDivision(DivisionMasterSid)
+          .subscribe((resp: any) => {
+            this.appSettingService.showSuccess('Deleted!');
+            this.router.navigate(['master/division/list']);
+            this.loadDivisions();
+          });
       }
     });
   }
 
   getAllCompanies() {
-    this.masterService.getAllCompanies().subscribe((res)=> {
+    this.masterService.getAllCompanies().subscribe((res) => {
       this.companyList = res;
-    })
+    });
   }
 
   loadCompanies() {
     this.masterService.getAllCompanies().subscribe((companies: any[]) => {
-      this.companyMap ={};
-      companies.forEach(c => {
+      this.companyMap = {};
+      companies.forEach((c) => {
         this.companyMap[c.CompanyMasterSid] = c.companyName;
-      })
-    })
+      });
+    });
   }
 
   resetPage(): void {
     this.filterValue = '';
     this.page = 1;
-    this.divisions = [] ;
+    this.divisions = [];
     this.divisionList = [];
     this.totalLengthOfCollection = 0;
     this.searched = false;
@@ -396,31 +462,38 @@ applySorting() {
   }
 
   report(): void {
-  const formattedData = this.divisionList.map(item => ({
-    ...item,
-    status: item.status === 'A' ? 'Active' : 'Suspended',
-    CompanyName: this.companyMap[item.CompanyMasterSid] || item.CompanyMasterSid
-  }));
+    const formattedData = this.divisionList.map((item) => ({
+      ...item,
+      status: item.status === 'A' ? 'Active' : 'Suspended',
+      CompanyName:
+        this.companyMap[item.CompanyMasterSid] || item.CompanyMasterSid,
+    }));
 
-  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+    const companyName =
+      this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ??
+      'Company';
 
-  this.excelReportService.exportAsExcel({
-    data: formattedData,
-    headers: [
-      { key: 'DivisionName', label: 'Division Name' },
-      { key: 'DivisionCode', label: 'Division Code' },
-      { key: 'CompanyName', label: 'Company' },
-      { key: 'Remarks', label: 'Remarks' },
-      { key: 'status', label: 'Status' }
-    ],
-    fileName: 'Division-Report', 
-    title: companyName
-  });
-}
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'DivisionName', label: 'Division Name' },
+        { key: 'DivisionCode', label: 'Division Code' },
+        { key: 'CompanyName', label: 'Company' },
+        { key: 'Remarks', label: 'Remarks' },
+        { key: 'status', label: 'Status' },
+      ],
+      fileName: 'Division-Report',
+      title: companyName,
+    });
+  }
 
   showInfo() {
-    if(!this.divisionData) return;
-    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    if (!this.divisionData) return;
+    const modalRef = this.modalService.open(DetailsComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+    });
     modalRef.componentInstance.item = this.divisionData;
     modalRef.componentInstance.idLabel = 'Division Id';
     modalRef.componentInstance.idValue = this.divisionData?.DivisionMasterSid;
@@ -436,18 +509,22 @@ applySorting() {
           const modalRef = this.modalService.open(TermsAndConditionsComponent, {
             size: 'lg',
             backdrop: 'static',
-            centered: true
+            centered: true,
           });
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
           modalRef.componentInstance.DocumentSid = this.DivisionMasterSid;
-
         } else {
-          this.appSettingService.showError('Error loading Terms and Conditions');
+          this.appSettingService.showError(
+            'Error loading Terms and Conditions'
+          );
         }
       },
       (error) => {
-        this.appSettingService.showError('Error loading Terms and Conditions', error);
+        this.appSettingService.showError(
+          'Error loading Terms and Conditions',
+          error
+        );
       }
     );
   }
@@ -456,37 +533,35 @@ applySorting() {
     const modalRef = this.modalService.open(EmailEntryComponent, {
       size: 'lg',
       centered: true,
-      backdrop: 'static'
+      backdrop: 'static',
     });
   }
 
-openAuthority() {
-  if (!this.divisionData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.divisionData;
-  modalRef.componentInstance.idLabel = 'Division Id';
-  modalRef.componentInstance.idValue = this.divisionData?.DivisionMasterSid;
-}
+  openAuthority() {
+    if (!this.divisionData) return;
+    const modalRef = this.modalService.open(AuthorityEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+    });
+    modalRef.componentInstance.item = this.divisionData;
+    modalRef.componentInstance.idLabel = 'Division Id';
+    modalRef.componentInstance.idValue = this.divisionData?.DivisionMasterSid;
+  }
 
-openEDoc() {
-  if (!this.divisionData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.divisionData;
-  modalRef.componentInstance.idLabel = 'BLClause Id';
-  modalRef.componentInstance.idValue = this.divisionData?.DivisionMasterSid;
-}
+  openEDoc() {
+    if (!this.divisionData) return;
+    const modalRef = this.modalService.open(EdocComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+    });
+    modalRef.componentInstance.item = this.divisionData;
+    modalRef.componentInstance.idLabel = 'BLClause Id';
+    modalRef.componentInstance.idValue = this.divisionData?.DivisionMasterSid;
+  }
 
-clearFilterValue(){
-      this.filterValue = '';
-    }
-
-
+  clearFilterValue() {
+    this.filterValue = '';
+  }
 }

@@ -27,7 +27,7 @@ import { Year } from '../crm-mobile/Interfaces/year.interfaces';
   providedIn: 'root',
 })
 export class MasterService {
- 
+
   constructor(private http: HttpClient) { }
   //vessel-master
   getAllVessels() {
@@ -39,7 +39,7 @@ export class MasterService {
     )
   }
   searchVesselList(params) {
-    return this.http.post("vessel/search-list",params).pipe(
+    return this.http.post("vessel/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -101,7 +101,7 @@ export class MasterService {
     );
   }
 
-  getAllCarriers(){
+  getAllCarriers() {
     return this.http.get('customer/carrier').pipe(
       map((resp: any) => {
         let response = resp.data;
@@ -109,7 +109,7 @@ export class MasterService {
       })
     );
   }
-  getAllAgents(){
+  getAllAgents() {
     return this.http.get('customer/agent').pipe(
       map((resp: any) => {
         let response = resp.data;
@@ -117,7 +117,7 @@ export class MasterService {
       })
     );
   }
-  getAllTransporters(){
+  getAllTransporters() {
     return this.http.get('customer/transporter').pipe(
       map((resp: any) => {
         let response = resp.data;
@@ -420,7 +420,7 @@ export class MasterService {
     );
   }
   searchUomList(params) {
-    return this.http.post("uom/search-list",params).pipe(
+    return this.http.post("uom/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -473,7 +473,7 @@ export class MasterService {
     );
   }
   searchUnitList(params) {
-    return this.http.post("unit/search-list",params).pipe(
+    return this.http.post("unit/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -526,7 +526,7 @@ export class MasterService {
     );
   }
   searchStateList(params) {
-    return this.http.post("state/search-list",params).pipe(
+    return this.http.post("state/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -568,9 +568,9 @@ export class MasterService {
     )
   }
 
-  getStateByCountryId(CountryMasterSid){
-    return this.http.get<{data:any}>(`state/fetchByCountry/${CountryMasterSid}`).pipe(
-      map((resp)=>{
+  getStateByCountryId(CountryMasterSid) {
+    return this.http.get<{ data: any }>(`state/fetchByCountry/${CountryMasterSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
@@ -587,7 +587,7 @@ export class MasterService {
     );
   }
   searchPortList(params) {
-    return this.http.post("port/search-list",params).pipe(
+    return this.http.post("port/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -706,7 +706,7 @@ export class MasterService {
   //city-master
 
   getAllCity() {
-    return this.http.get<{ data:City[] }>('city').pipe(
+    return this.http.get<{ data: City[] }>('city').pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -732,7 +732,7 @@ export class MasterService {
   }
 
   createCity(payload: City) {
-    return this.http.post<{ data: any}>('city/add', payload).pipe(
+    return this.http.post<{ data: any }>('city/add', payload).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -758,9 +758,9 @@ export class MasterService {
     );
   }
 
-  getCityByStateId(StateMasterSid:number){
-    return this.http.get<{data:any[]}>(`city/fetchByState/${StateMasterSid}`).pipe(
-      map((resp)=>{
+  getCityByStateId(StateMasterSid: number) {
+    return this.http.get<{ data: any[] }>(`city/fetchByState/${StateMasterSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
@@ -814,7 +814,7 @@ export class MasterService {
   }
 
   searchZonelList(params) {
-    return this.http.post("zone/search-list",params).pipe(
+    return this.http.post("zone/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -873,7 +873,7 @@ export class MasterService {
   }
 
   searchPackageTypeList(params) {
-    return this.http.post("package-type/search-list",params).pipe(
+    return this.http.post("package-type/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -883,7 +883,7 @@ export class MasterService {
   // Tariff Master
 
   searchTariffList(params) {
-    return this.http.post("tariff/search-list",params).pipe(
+    return this.http.post("tariff/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -1014,13 +1014,13 @@ export class MasterService {
     )
   }
   getBranchesByCompanyId(CompanyMasterID: number) {
-  return this.http.get<{ data: Branch[] }>(`branch/company/${CompanyMasterID}`).pipe(
-    map((resp) => {
-      let response = resp.data;
-      return response;
-    })
-  );
-}
+    return this.http.get<{ data: Branch[] }>(`branch/company/${CompanyMasterID}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
 
   deleteBranchById(BranchMasterSid: number) {
     return this.http.delete<{ data: Branch }>(`branch/delete/${BranchMasterSid}`).pipe(
@@ -1327,7 +1327,7 @@ export class MasterService {
   }
 
   searchDivisionList(params) {
-    return this.http.post("division/search-list",params).pipe(
+    return this.http.post("division/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -1384,7 +1384,7 @@ export class MasterService {
   }
 
   searchSectorList(params) {
-    return this.http.post("sector/search-list",params).pipe(
+    return this.http.post("sector/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -1483,7 +1483,7 @@ export class MasterService {
       })
     );
   }
-  
+
 
   deleteChargeById(id: number) {
     return this.http.delete<{ data: any }>(`charge/delete/${id}`).pipe(
@@ -1565,7 +1565,7 @@ export class MasterService {
   getAllBlClause() {
     return this.http.get<{ data: any[] }>('blclause').pipe(
       map((resp) => {
-       let response = resp.data;
+        let response = resp.data;
         return response;
       })
     )
@@ -1608,7 +1608,7 @@ export class MasterService {
   }
 
   searchBlclauselList(params) {
-    return this.http.post("blclause/search-list",params).pipe(
+    return this.http.post("blclause/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -1673,45 +1673,45 @@ export class MasterService {
 
   // Product Master
 
-  getAllProduct(){
-    return this.http.get<{data:Product[]}>('product').pipe(
-      map((resp)=>{
+  getAllProduct() {
+    return this.http.get<{ data: Product[] }>('product').pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  createNewProduct(payload){
-    return this.http.post<{data:Product}>('product/create',payload).pipe(
-      map((resp)=>{
+  createNewProduct(payload) {
+    return this.http.post<{ data: Product }>('product/create', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  getProductById(ProductMasterSid){
-    return this.http.get<{data:Product}>(`product/fetch/${ProductMasterSid}`).pipe(
-      map((resp)=>{
+  getProductById(ProductMasterSid) {
+    return this.http.get<{ data: Product }>(`product/fetch/${ProductMasterSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  updateProductById(ProductMasterSid,payload){
-    return this.http.patch<{data:Product}>(`product/update/${ProductMasterSid}`,payload).pipe(
-      map((resp)=>{
+  updateProductById(ProductMasterSid, payload) {
+    return this.http.patch<{ data: Product }>(`product/update/${ProductMasterSid}`, payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  deleteProductById(ProductMasterSid){
-    return this.http.delete<{data:Product}>(`product/delete/${ProductMasterSid}`).pipe(
-      map((resp)=>{
+  deleteProductById(ProductMasterSid) {
+    return this.http.delete<{ data: Product }>(`product/delete/${ProductMasterSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
@@ -1719,7 +1719,7 @@ export class MasterService {
   }
 
   searchProductList(params) {
-    return this.http.post("product/search-list",params).pipe(
+    return this.http.post("product/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -1727,122 +1727,122 @@ export class MasterService {
   }
 
 
-  
-  
+
+
   // Charge Group Master
 
-getAllChargeGroups() {
-  return this.http.get<{ data: any[] }>('charge-group').pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  getAllChargeGroups() {
+    return this.http.get<{ data: any[] }>('charge-group').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
-getChargeGroupById(ChargeGroupSid: number) {
-  return this.http.get<{ data: any }>(`charge-group/fetch/${ChargeGroupSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  getChargeGroupById(ChargeGroupSid: number) {
+    return this.http.get<{ data: any }>(`charge-group/fetch/${ChargeGroupSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
-createNewChargeGroup(payload: any) {
-  return this.http.post<{ data: any }>('charge-group/create', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  createNewChargeGroup(payload: any) {
+    return this.http.post<{ data: any }>('charge-group/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
-updateChargeGroupById(ChargeGroupSid: number, payload: any) {
-  return this.http.patch<{ data: any }>(`charge-group/update/${ChargeGroupSid}`, payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  updateChargeGroupById(ChargeGroupSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`charge-group/update/${ChargeGroupSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
-deleteChargeGroupById(ChargeGroupSid: number) {
-  return this.http.delete<{ data: any }>(`charge-group/delete/${ChargeGroupSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  deleteChargeGroupById(ChargeGroupSid: number) {
+    return this.http.delete<{ data: any }>(`charge-group/delete/${ChargeGroupSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
-searchChargeGroups(payload: any) {
-  return this.http.post<{ data: any[] }>('charge-group/search-list', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  searchChargeGroups(payload: any) {
+    return this.http.post<{ data: any[] }>('charge-group/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
   // Terms And Conditions
 
-  getAllTandC(){
-    return this.http.get<{data:any[]}>('terms-and-conditions').pipe(
-      map((resp)=>{
+  getAllTandC() {
+    return this.http.get<{ data: any[] }>('terms-and-conditions').pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
-  createNewTandC(payload){
-    return this.http.post<{data:any}>('terms-and-conditions/create',payload).pipe(
-      map((resp)=>{
-        let response = resp;
-        return response;
-      })
-    )
-  }
-
-  getTandCById(TermsAndConditionsMasterSid){
-    return this.http.get<{data:any}>(`terms-and-conditions/fetch/${TermsAndConditionsMasterSid}`).pipe(
-      map((resp)=>{
+  createNewTandC(payload) {
+    return this.http.post<{ data: any }>('terms-and-conditions/create', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  updateTandCById(TermsAndConditionsMasterSid,payload){
-    return this.http.patch<{data:any}>(`terms-and-conditions/update/${TermsAndConditionsMasterSid}`,payload).pipe(
-      map((resp)=>{
+  getTandCById(TermsAndConditionsMasterSid) {
+    return this.http.get<{ data: any }>(`terms-and-conditions/fetch/${TermsAndConditionsMasterSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  deleteTandCById(TermsAndConditionsMasterSid){
-    return this.http.delete<{data:any}>(`terms-and-conditions/delete/${TermsAndConditionsMasterSid}`).pipe(
-      map((resp)=>{
+  updateTandCById(TermsAndConditionsMasterSid, payload) {
+    return this.http.patch<{ data: any }>(`terms-and-conditions/update/${TermsAndConditionsMasterSid}`, payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  searchTandC(payload){
-    return this.http.post<{data:any[]}>('terms-and-conditions/search-list',payload).pipe(
-      map((resp)=>{
+  deleteTandCById(TermsAndConditionsMasterSid) {
+    return this.http.delete<{ data: any }>(`terms-and-conditions/delete/${TermsAndConditionsMasterSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  getTandCByCondition(payload){
-    return this.http.post<{data : any[]}>('terms-and-conditions/fetchByCondition',payload).pipe(
-      map((resp)=>{
+  searchTandC(payload) {
+    return this.http.post<{ data: any[] }>('terms-and-conditions/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getTandCByCondition(payload) {
+    return this.http.post<{ data: any[] }>('terms-and-conditions/fetchByCondition', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
@@ -1851,54 +1851,54 @@ searchChargeGroups(payload: any) {
 
   // Terms And Conditions Details
 
-  getAllTandCDetail(){
-    return this.http.get<{data:any[]}>('terms-and-conditions-detail').pipe(
-      map((resp)=>{
+  getAllTandCDetail() {
+    return this.http.get<{ data: any[] }>('terms-and-conditions-detail').pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  createNewTandCDetail(payload){
-    return this.http.post<{data:any}>('terms-and-conditions-detail/create',payload).pipe(
-      map((resp)=>{
+  createNewTandCDetail(payload) {
+    return this.http.post<{ data: any }>('terms-and-conditions-detail/create', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  getTandCDetailById(TermsAndConditionsDetailSid){
-    return this.http.get<{data:any}>(`terms-and-conditions-detail/fetch/${TermsAndConditionsDetailSid}`).pipe(
-      map((resp)=>{
+  getTandCDetailById(TermsAndConditionsDetailSid) {
+    return this.http.get<{ data: any }>(`terms-and-conditions-detail/fetch/${TermsAndConditionsDetailSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  updateTandCDetailById(TermsAndConditionsDetailSid,payload){
-    return this.http.patch<{data:any}>(`terms-and-conditions-detail/update/${TermsAndConditionsDetailSid}`,payload).pipe(
-      map((resp)=>{
+  updateTandCDetailById(TermsAndConditionsDetailSid, payload) {
+    return this.http.patch<{ data: any }>(`terms-and-conditions-detail/update/${TermsAndConditionsDetailSid}`, payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  deleteTandCDetailById(TermsAndConditionsDetailSid){
-    return this.http.delete<{data:any}>(`terms-and-conditions-detail/delete/${TermsAndConditionsDetailSid}`).pipe(
-      map((resp)=>{
+  deleteTandCDetailById(TermsAndConditionsDetailSid) {
+    return this.http.delete<{ data: any }>(`terms-and-conditions-detail/delete/${TermsAndConditionsDetailSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  searchTandCDetail(payload){
-    return this.http.post<{data:any[]}>('terms-and-conditions-detail/search-list',payload).pipe(
-      map((resp)=>{
+  searchTandCDetail(payload) {
+    return this.http.post<{ data: any[] }>('terms-and-conditions-detail/search-list', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
@@ -1907,9 +1907,9 @@ searchChargeGroups(payload: any) {
 
   // T&C Transaction
 
-  createTandCTransaction(payload){
-    return this.http.post<{data:any[]}>('terms-and-conditions/transaction',payload).pipe(
-      map((resp)=>{
+  createTandCTransaction(payload) {
+    return this.http.post<{ data: any[] }>('terms-and-conditions/transaction', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
@@ -1917,64 +1917,64 @@ searchChargeGroups(payload: any) {
   }
 
   // Sailing Schedule Header
-  
-  getAllSailingSchedule(){
-    return this.http.get<{data:any[]}>('voyage').pipe(
-      map((resp)=>{
+
+  getAllSailingSchedule() {
+    return this.http.get<{ data: any[] }>('voyage').pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  createNewSailingSchedule(payload){
-    return this.http.post<{data:any}>('voyage/create',payload).pipe(
-      map((resp)=>{
+  createNewSailingSchedule(payload) {
+    return this.http.post<{ data: any }>('voyage/create', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  getSailingScheduleById(VoyageMasterHeaderSid){
-    return this.http.get<{data:any}>(`voyage/fetch/${VoyageMasterHeaderSid}`).pipe(
-      map((resp)=>{
+  getSailingScheduleById(VoyageMasterHeaderSid) {
+    return this.http.get<{ data: any }>(`voyage/fetch/${VoyageMasterHeaderSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  updateSailingScheduleById(VoyageMasterHeaderSid,payload){
-    return this.http.patch<{data:any}>(`voyage/update/${VoyageMasterHeaderSid}`,payload).pipe(
-      map((resp)=>{
+  updateSailingScheduleById(VoyageMasterHeaderSid, payload) {
+    return this.http.patch<{ data: any }>(`voyage/update/${VoyageMasterHeaderSid}`, payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  deleteSailingScheduleById(VoyageMasterHeaderSid){
-    return this.http.delete<{data:any}>(`voyage/delete/${VoyageMasterHeaderSid}`).pipe(
-      map((resp)=>{
+  deleteSailingScheduleById(VoyageMasterHeaderSid) {
+    return this.http.delete<{ data: any }>(`voyage/delete/${VoyageMasterHeaderSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  searchSailingSchedule(payload){
-    return this.http.post<{data:any[]}>('voyage/search-list',payload).pipe(
-      map((resp)=>{
+  searchSailingSchedule(payload) {
+    return this.http.post<{ data: any[] }>('voyage/search-list', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  specialScheduleSearch(payload){
-    return this.http.post<{data:any[]}>('voyage/searchBy',payload).pipe(
-      map((resp)=>{
+  specialScheduleSearch(payload) {
+    return this.http.post<{ data: any[] }>('voyage/searchBy', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
@@ -1983,565 +1983,565 @@ searchChargeGroups(payload: any) {
 
   // Sailing Schedule Detail
 
-  getAllSailingScheduleDetail(){
-    return this.http.get<{data:any[]}>('voyage-detail').pipe(
-      map((resp)=>{
+  getAllSailingScheduleDetail() {
+    return this.http.get<{ data: any[] }>('voyage-detail').pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  createNewSailingScheduleDetail(payload){
-    return this.http.post<{data:any}>('voyage-detail/create',payload).pipe(
-      map((resp)=>{
+  createNewSailingScheduleDetail(payload) {
+    return this.http.post<{ data: any }>('voyage-detail/create', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  getSailingScheduleDetailById(VoyageMasterDetailSid){
-    return this.http.get<{data:any}>(`voyage-detail/fetch/${VoyageMasterDetailSid}`).pipe(
-      map((resp)=>{
+  getSailingScheduleDetailById(VoyageMasterDetailSid) {
+    return this.http.get<{ data: any }>(`voyage-detail/fetch/${VoyageMasterDetailSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  updateSailingScheduleDetailById(VoyageMasterDetailSid,payload){
-    return this.http.patch<{data:any}>(`voyage-detail/update/${VoyageMasterDetailSid}`,payload).pipe(
-      map((resp)=>{
+  updateSailingScheduleDetailById(VoyageMasterDetailSid, payload) {
+    return this.http.patch<{ data: any }>(`voyage-detail/update/${VoyageMasterDetailSid}`, payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  deleteSailingScheduleDetailById(VoyageMasterDetailSid){
-    return this.http.delete<{data:any}>(`voyage-detail/delete/${VoyageMasterDetailSid}`).pipe(
-      map((resp)=>{
+  deleteSailingScheduleDetailById(VoyageMasterDetailSid) {
+    return this.http.delete<{ data: any }>(`voyage-detail/delete/${VoyageMasterDetailSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  searchSailingScheduleDetail(payload){
-    return this.http.post<{data:any[]}>('voyage-detail/search-list',payload).pipe(
-      map((resp)=>{
+  searchSailingScheduleDetail(payload) {
+    return this.http.post<{ data: any[] }>('voyage-detail/search-list', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
- 
 
-// Charge Tax Master
-getAllChargeTax() {
-  return this.http.get<{data: any[]}>('charge-tax').pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
 
-getChargeTaxById(ChargeTaxMasterSid: number) {
-  return this.http.get<{data: any}>(`charge-tax/fetch/${ChargeTaxMasterSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  // Charge Tax Master
+  getAllChargeTax() {
+    return this.http.get<{ data: any[] }>('charge-tax').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
-createNewChargeTax(payload: any) {
-  return this.http.post<{data: any}>('charge-tax/create', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  getChargeTaxById(ChargeTaxMasterSid: number) {
+    return this.http.get<{ data: any }>(`charge-tax/fetch/${ChargeTaxMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
-updateChargeTaxById(ChargeTaxMasterSid: number, payload: any) {
-  return this.http.patch<{data: any}>(`charge-tax/update/${ChargeTaxMasterSid}`, payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  createNewChargeTax(payload: any) {
+    return this.http.post<{ data: any }>('charge-tax/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
-deleteChargeTaxById(ChargeTaxMasterSid: number) {
-  return this.http.delete<{data: any}>(`charge-tax/delete/${ChargeTaxMasterSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  updateChargeTaxById(ChargeTaxMasterSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`charge-tax/update/${ChargeTaxMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
-searchChargeTax(payload: any) {
-  return this.http.post<{data: any[]}>('charge-tax/search-list', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-// User Master
-getAllFfUser() {
-  return this.http.get<{data: any[]}>('ff-user').pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  deleteChargeTaxById(ChargeTaxMasterSid: number) {
+    return this.http.delete<{ data: any }>(`charge-tax/delete/${ChargeTaxMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
-getFfUserById(UserMasterSid: number) {
-  return this.http.get<{data: any}>(`ff-user/fetch/${UserMasterSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  searchChargeTax(payload: any) {
+    return this.http.post<{ data: any[] }>('charge-tax/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  // User Master
+  getAllFfUser() {
+    return this.http.get<{ data: any[] }>('ff-user').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
-createNewFfUser(payload: any) {
-  return this.http.post<{data: any}>('ff-user/create', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  getFfUserById(UserMasterSid: number) {
+    return this.http.get<{ data: any }>(`ff-user/fetch/${UserMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
-updateFfUserById(UserMasterSid: number, payload: any) {
-  return this.http.patch<{data: any}>(`ff-user/update/${UserMasterSid}`, payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  createNewFfUser(payload: any) {
+    return this.http.post<{ data: any }>('ff-user/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
-deleteFfUserById(UserMasterSid: number) {
-  return this.http.delete<{data: any}>(`ff-user/delete/${UserMasterSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
+  updateFfUserById(UserMasterSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`ff-user/update/${UserMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
- searchFfUserList(params) {
-    return this.http.post("ff-user/search-list",params).pipe(
+  deleteFfUserById(UserMasterSid: number) {
+    return this.http.delete<{ data: any }>(`ff-user/delete/${UserMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  searchFfUserList(params) {
+    return this.http.post("ff-user/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
     )
   }
 
-resetUserPassword(UserMasterSid , payload){
-  return this.http.post<{data:any[]}>(`ff-user/reset/${UserMasterSid}`,payload).pipe(
-    map((resp)=>{
-      let response = resp;
-      return response;
-    })
-  )
-}
-
-//  User Type
-getAllUserType() {
-  return this.http.get<{data: any[]}>('user-type').pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-getUserTypeById(UserMasterSid: number) {
-  return this.http.get<{data:any}>(`user-type/fetch/${UserMasterSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-createNewUserType(payload: any) {
-  return this.http.post<{data: any}>('user-type/create', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-updateUserTypeById(UserMasterSid: number, payload: any) {
-  return this.http.patch<{data: any}>(`user-type/update/${UserMasterSid}`, payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-deleteUserTypeById(UserMasterSid: number) {
-  return this.http.delete<{data: any}>(`user-type/delete/${UserMasterSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-searchUserType(payload: any) {
-  return this.http.post<{data: any[]}>('user-type/search-list', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-
-getAllSalesperson() {
-  return this.http.get<{data: any[]}>('customer-salesteam/salesperson').pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-getAllSalesteam() {
-  return this.http.get<{data: any[]}>('customer-salesteam').pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-getSalesteamById(CustomerSalesSid: number) {
-  return this.http.get<{data: any}>(`customer-salesteam/fetch/${CustomerSalesSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-createNewSalesteam(payload: any) {
-  return this.http.post<{data: any}>('customer-salesteam/create', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-updateSalesteamById(CustomerSalesSid: number, payload: any) {
-  return this.http.patch<{data: any}>(`customer-salesteam/update/${CustomerSalesSid}`, payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-deleteSalesteamById(CustomerSalesSid: number) {
-  return this.http.delete<{data: any}>(`customer-salesteam/delete/${CustomerSalesSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-searchSalesteam(payload: any) {
-  return this.http.post<{data: any[]}>('customer-salesteam/search-list', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-// milestone-master
-
-getAllMilestones() {
-  return this.http.get<{ data: any[] }>('milestone').pipe(
-    map((resp) => {
-      let response = resp.data;
-      return response;
-    })
-  );
-}
-
-searchMilestoneList(payload: any) {
-  return this.http.post<{ data: any[] }>('milestone/search-list', payload).pipe(
-    map((resp) => {
-      let response = resp.data;
-      return response;
-    })
-  );
-}
-
-getMilestoneById(MilestoneMasterSid: number) {
-  return this.http.get<{ data: any }>(`milestone/fetch/${MilestoneMasterSid}`).pipe(
-    map((resp) => {
-      let response = resp.data;
-      return response;
-    })
-  );
-}
-
-createMilestone(payload: any) {
-  return this.http.post<{ data: any }>('milestone/create', payload).pipe(
-    map((resp) => {
-      let response = resp.data;
-      return response;
-    })
-  );
-}
-
-updateMilestoneById(MilestoneMasterSid: number, payload: any) {
-  return this.http.patch<{ data: any }>(`milestone/update/${MilestoneMasterSid}`, payload).pipe(
-    map((resp) => {
-      let response = resp.data;
-      return response;
-    })
-  );
-}
-
-deleteMilestoneById(MilestoneMasterSid: number) {
-  return this.http.delete<{ data: any }>(`milestone/delete/${MilestoneMasterSid}`).pipe(
-    map((resp) => {
-      let response = resp.data;
-      return response;
-    })
-  );
-}
-// Authority Master Methods
-getAllAuthorities() {
-  return this.http.get<{ data: any[] }>('authority').pipe(
-    map((resp) => {
-      let response = resp.data;
-      return response;
-    })
-  );
-}
-
-getAuthorityById(AuthorityMasterSid: number) {
-  return this.http.get<{ data: any }>(`authority/fetch/${AuthorityMasterSid}`).pipe(
-    map((resp) => {
-      let response = resp.data;
-      return response;
-    })
-  );
-}
-
-createAuthority(payload: any) {
-  return this.http.post<{ data: any }>('authority/create', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-updateAuthorityById(AuthorityMasterSid: number, payload: any) {
-  return this.http.patch<{ data: any }>(`authority/update/${AuthorityMasterSid}`, payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-deleteAuthorityById(AuthorityMasterSid: number) {
-  return this.http.delete<{ data: any }>(`authority/delete/${AuthorityMasterSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-searchAuthority(payload: any) {
-  return this.http.post<{ data: any[] }>('authority/search-list', payload).pipe(
-    map((resp) => {
-      let response = resp.data;
-      return response;
-    })
-  );
-}
-// Authority Detail Master
-
-getAllAuthorityDetails() {
-  return this.http.get<{ data: any[] }>('authority-detail').pipe(
-    map((resp) => {
-      let response = resp.data;
-      return response;
-    })
-  );
-}
-
-getAuthorityDetailById(AuthorityDetailSid: number) {
-  return this.http.get<{ data: any }>(`authority-detail/fetch/${AuthorityDetailSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-createNewAuthorityDetail(payload: any) {
-  return this.http.post<{ data: any }>('authority-detail/create', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-updateAuthorityDetailById(AuthorityDetailSid: number, payload: any) {
-  return this.http.patch<{ data: any }>(`authority-detail/update/${AuthorityDetailSid}`, payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-deleteAuthorityDetailById(AuthorityDetailSid: number) {
-  return this.http.delete<{ data: any }>(`authority-detail/delete/${AuthorityDetailSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-searchAuthorityDetails(payload: any) {
-  return this.http.post<{ data: any[] }>('authority-detail/search-list', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-// Document Type Master
-
-getAllDocType() {
-  return this.http.get<{ data: any[] }>('document-type').pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-getDocTypeById(DocumentTypeMasterSid: number) {
-  return this.http.get<{ data: any }>(`document-type/fetch/${DocumentTypeMasterSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-createNewDocType(payload: any) {
-  return this.http.post<{ data: any }>('document-type/create', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-updateDocTypeById(DocumentTypeMasterSid: number, payload: any) {
-  return this.http.patch<{ data: any }>(`document-type/update/${DocumentTypeMasterSid}`, payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-deleteDocTypeById(DocumentTypeMasterSid: number) {
-  return this.http.delete<{ data: any }>(`document-type/delete/${DocumentTypeMasterSid}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-searchDocTypes(payload: any) {
-  return this.http.post<{ data: any[] }>('document-type/search-list', payload).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
-}
-
-//Hawb
-getAllHawbStocks(){
-    return this.http.get<{data:any[]}>('generation').pipe(
-      map((resp)=>{
+  resetUserPassword(UserMasterSid, payload) {
+    return this.http.post<{ data: any[] }>(`ff-user/reset/${UserMasterSid}`, payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  createNewHawbStock(payload){
-    return this.http.post<{data:any}>('generation/create', payload).pipe(
-      map((resp)=>{
+  //  User Type
+  getAllUserType() {
+    return this.http.get<{ data: any[] }>('user-type').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getUserTypeById(UserMasterSid: number) {
+    return this.http.get<{ data: any }>(`user-type/fetch/${UserMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  createNewUserType(payload: any) {
+    return this.http.post<{ data: any }>('user-type/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  updateUserTypeById(UserMasterSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`user-type/update/${UserMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  deleteUserTypeById(UserMasterSid: number) {
+    return this.http.delete<{ data: any }>(`user-type/delete/${UserMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  searchUserType(payload: any) {
+    return this.http.post<{ data: any[] }>('user-type/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+
+  getAllSalesperson() {
+    return this.http.get<{ data: any[] }>('customer-salesteam/salesperson').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  getAllSalesteam() {
+    return this.http.get<{ data: any[] }>('customer-salesteam').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getSalesteamById(CustomerSalesSid: number) {
+    return this.http.get<{ data: any }>(`customer-salesteam/fetch/${CustomerSalesSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  createNewSalesteam(payload: any) {
+    return this.http.post<{ data: any }>('customer-salesteam/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  updateSalesteamById(CustomerSalesSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`customer-salesteam/update/${CustomerSalesSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  deleteSalesteamById(CustomerSalesSid: number) {
+    return this.http.delete<{ data: any }>(`customer-salesteam/delete/${CustomerSalesSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  searchSalesteam(payload: any) {
+    return this.http.post<{ data: any[] }>('customer-salesteam/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  // milestone-master
+
+  getAllMilestones() {
+    return this.http.get<{ data: any[] }>('milestone').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  searchMilestoneList(payload: any) {
+    return this.http.post<{ data: any[] }>('milestone/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getMilestoneById(MilestoneMasterSid: number) {
+    return this.http.get<{ data: any }>(`milestone/fetch/${MilestoneMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createMilestone(payload: any) {
+    return this.http.post<{ data: any }>('milestone/create', payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  updateMilestoneById(MilestoneMasterSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`milestone/update/${MilestoneMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  deleteMilestoneById(MilestoneMasterSid: number) {
+    return this.http.delete<{ data: any }>(`milestone/delete/${MilestoneMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+  // Authority Master Methods
+  getAllAuthorities() {
+    return this.http.get<{ data: any[] }>('authority').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getAuthorityById(AuthorityMasterSid: number) {
+    return this.http.get<{ data: any }>(`authority/fetch/${AuthorityMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  createAuthority(payload: any) {
+    return this.http.post<{ data: any }>('authority/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  updateAuthorityById(AuthorityMasterSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`authority/update/${AuthorityMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  deleteAuthorityById(AuthorityMasterSid: number) {
+    return this.http.delete<{ data: any }>(`authority/delete/${AuthorityMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  searchAuthority(payload: any) {
+    return this.http.post<{ data: any[] }>('authority/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+  // Authority Detail Master
+
+  getAllAuthorityDetails() {
+    return this.http.get<{ data: any[] }>('authority-detail').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getAuthorityDetailById(AuthorityDetailSid: number) {
+    return this.http.get<{ data: any }>(`authority-detail/fetch/${AuthorityDetailSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  createNewAuthorityDetail(payload: any) {
+    return this.http.post<{ data: any }>('authority-detail/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  updateAuthorityDetailById(AuthorityDetailSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`authority-detail/update/${AuthorityDetailSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  deleteAuthorityDetailById(AuthorityDetailSid: number) {
+    return this.http.delete<{ data: any }>(`authority-detail/delete/${AuthorityDetailSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  searchAuthorityDetails(payload: any) {
+    return this.http.post<{ data: any[] }>('authority-detail/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  // Document Type Master
+
+  getAllDocType() {
+    return this.http.get<{ data: any[] }>('document-type').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getDocTypeById(DocumentTypeMasterSid: number) {
+    return this.http.get<{ data: any }>(`document-type/fetch/${DocumentTypeMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  createNewDocType(payload: any) {
+    return this.http.post<{ data: any }>('document-type/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  updateDocTypeById(DocumentTypeMasterSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`document-type/update/${DocumentTypeMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  deleteDocTypeById(DocumentTypeMasterSid: number) {
+    return this.http.delete<{ data: any }>(`document-type/delete/${DocumentTypeMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  searchDocTypes(payload: any) {
+    return this.http.post<{ data: any[] }>('document-type/search-list', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  //Hawb
+  getAllHawbStocks() {
+    return this.http.get<{ data: any[] }>('generation').pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  fetchHawbStockById(HawbStockSid){
-    return this.http.get<{data:any}>(`generation/fetch/${HawbStockSid}`).pipe(
-      map((resp)=>{
+  createNewHawbStock(payload) {
+    return this.http.post<{ data: any }>('generation/create', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  updateHawbStockById(HawbStockSid,payload){
-    return this.http.patch<{data:any}>(`generation/update/${HawbStockSid}`,payload).pipe(
-      map((resp)=>{
+  fetchHawbStockById(HawbStockSid) {
+    return this.http.get<{ data: any }>(`generation/fetch/${HawbStockSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  deleteHawbStock(HawbStockSid){
-    return this.http.delete<{data:any}>(`generation/delete/${HawbStockSid}`).pipe(
-      map((resp)=>{
+  updateHawbStockById(HawbStockSid, payload) {
+    return this.http.patch<{ data: any }>(`generation/update/${HawbStockSid}`, payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  searchHawbStock(payload){
-    return this.http.post<{data:any[]}>('generation/search-list',payload).pipe(
-      map((resp)=>{
+  deleteHawbStock(HawbStockSid) {
+    return this.http.delete<{ data: any }>(`generation/delete/${HawbStockSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  searchHawbStock(payload) {
+    return this.http.post<{ data: any[] }>('generation/search-list', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
@@ -2562,7 +2562,7 @@ getAllHawbStocks(){
 
 
   searchYearList(params) {
-    return this.http.post("year/search-list",params).pipe(
+    return this.http.post("year/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
@@ -2604,28 +2604,31 @@ getAllHawbStocks(){
     )
   }
 
-  createFavouriteScreen(payload){
-    return this.http.post<{data:any}>('favourite-screen/create',payload).pipe(
-      map((resp)=>{
+  createFavouriteScreen(payload) {
+    return this.http.post<{ data: any }>('favourite-screen/create', payload).pipe(
+      map((resp) => {
         return resp
       })
-  )}
-  
-  deleteFavouriteScreen(path:string){
-    return this.http.delete<{data:any}>(`favourite-screen/delete?path=${encodeURIComponent(path)}`).pipe(
-      map((resp)=>{
-        return resp
-      })
-  )}
+    )
+  }
 
-  
-  isPathFav(path:string){
-    return this.http.get<{data:any}>(`favourite-screen/check?path=${encodeURIComponent(path)}`).pipe(
-      map((resp)=>{
+  deleteFavouriteScreen(path: string) {
+    return this.http.delete<{ data: any }>(`favourite-screen/delete?path=${encodeURIComponent(path)}`).pipe(
+      map((resp) => {
         return resp
       })
-  )}
-  
+    )
+  }
+
+
+  isPathFav(path: string) {
+    return this.http.get<{ data: any }>(`favourite-screen/check?path=${encodeURIComponent(path)}`).pipe(
+      map((resp) => {
+        return resp
+      })
+    )
+  }
+
 
   //inco-master
 
@@ -2791,14 +2794,14 @@ getAllHawbStocks(){
   }
 
   searchProfitCenterList(params) {
-    return this.http.post("profit-center/search-list",params).pipe(
+    return this.http.post("profit-center/search-list", params).pipe(
       map((resp: any) => {
         return resp;
       })
     )
   }
 
-   //Tax
+  //Tax
 
   getAllTax() {
     return this.http.get<{ data: any[] }>('tax').pipe(
@@ -2827,8 +2830,8 @@ getAllHawbStocks(){
       })
     );
   }
-  
-    updateTaxById(id: number, payload: any) {
+
+  updateTaxById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`tax/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp;
@@ -2839,7 +2842,7 @@ getAllHawbStocks(){
   }
 
 
-   deleteTax(id: number) {
+  deleteTax(id: number) {
     return this.http.delete<{ data: any }>(`tax/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
@@ -2848,7 +2851,7 @@ getAllHawbStocks(){
     );
   }
 
-   searchTaxGroup(payload) {
+  searchTaxGroup(payload) {
     return this.http.post("tax/search-list", payload).pipe(
       map((res: any) => {
         return res.data;
@@ -2859,7 +2862,7 @@ getAllHawbStocks(){
   // Chart of accounts
 
 
-   getAllCoa() {
+  getAllCoa() {
     return this.http.get<{ data: any[] }>('coa').pipe(
       map((resp: any) => {
         let response = resp.data;
@@ -2868,7 +2871,7 @@ getAllHawbStocks(){
     );
   }
 
-   fetchCoaById(id: number) {
+  fetchCoaById(id: number) {
     return this.http.get<{ data: any }>(`coa/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
@@ -2885,8 +2888,8 @@ getAllHawbStocks(){
       })
     );
   }
-  
-    updateCoaById(id: number, payload: any) {
+
+  updateCoaById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`coa/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp;
@@ -2897,7 +2900,7 @@ getAllHawbStocks(){
   }
 
 
-   deleteCOA(id: number) {
+  deleteCOA(id: number) {
     return this.http.delete<{ data: any }>(`coa/delete/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
@@ -2906,7 +2909,7 @@ getAllHawbStocks(){
     );
   }
 
-   searchCoa(payload) {
+  searchCoa(payload) {
     return this.http.post("coa/search-list", payload).pipe(
       map((res: any) => {
         return res;
@@ -2914,16 +2917,18 @@ getAllHawbStocks(){
     );
   }
 
-   getRoleMenuPermissions(menuId: number, roleId: number) {
-  return this.http.get<{ data: any }>(`role-menu/permissions/${menuId}/${roleId}`).pipe(
-    map((resp) => {
-      let response = resp;
-      return response;
-    })
-  );
+
+  getRoleMenuPermissions(menuId: number, roleId: number) {
+    return this.http.get<{ data: any }>(`role-menu/permissions/${menuId}/${roleId}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
 
   // Tds Set Header
-   getAllTdsSet() {
+  getAllTdsSet() {
     return this.http.get<{ data: any[] }>('tds').pipe(
       map((resp: any) => {
         let response = resp;
@@ -2932,7 +2937,7 @@ getAllHawbStocks(){
     );
   }
 
-   fetchTdsById(id: number) {
+  fetchTdsById(id: number) {
     return this.http.get<{ data: any }>(`tds/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp;
@@ -2949,8 +2954,8 @@ getAllHawbStocks(){
       })
     );
   }
-  
-    updateTdsById(id: number, payload: any) {
+
+  updateTdsById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`tds/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp;
@@ -2961,7 +2966,7 @@ getAllHawbStocks(){
   }
 
 
-   deleteTds(id: number) {
+  deleteTds(id: number) {
     return this.http.delete<{ data: any }>(`tds/delete/${id}`).pipe(
       map((resp) => {
         let response = resp;
@@ -2970,7 +2975,7 @@ getAllHawbStocks(){
     );
   }
 
-   searchTds(payload) {
+  searchTds(payload) {
     return this.http.post("tds/search-list", payload).pipe(
       map((res: any) => {
         let response = res;
@@ -2979,7 +2984,7 @@ getAllHawbStocks(){
     );
   }
   // Tds Set Detail
-   getAllTdsSetDetail() {
+  getAllTdsSetDetail() {
     return this.http.get<{ data: any[] }>('tds-detail').pipe(
       map((resp: any) => {
         let response = resp;
@@ -2988,7 +2993,7 @@ getAllHawbStocks(){
     );
   }
 
-   fetchTdsDetailById(id: number) {
+  fetchTdsDetailById(id: number) {
     return this.http.get<{ data: any }>(`tds-detail/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp;
@@ -2996,7 +3001,7 @@ getAllHawbStocks(){
       })
     );
   }
-   fetchTdsDetailByHeaderId(id: number) {
+  fetchTdsDetailByHeaderId(id: number) {
     return this.http.get<{ data: any }>(`tds-detail/fetchByHeader/${id}`).pipe(
       map((resp) => {
         let response = resp;
@@ -3006,15 +3011,15 @@ getAllHawbStocks(){
   }
 
   createNewTdsDetail(payload: any) {
-    return this.http.post<{ data:any }>('tds-detail/create', payload).pipe(
+    return this.http.post<{ data: any }>('tds-detail/create', payload).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
       })
     );
   }
-  
-    updateTdsDetailById(id: number, payload: any) {
+
+  updateTdsDetailById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`tds-detail/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp;
@@ -3025,7 +3030,7 @@ getAllHawbStocks(){
   }
 
 
-   deleteTdsDetail(id: number) {
+  deleteTdsDetail(id: number) {
     return this.http.delete<{ data: any }>(`tds-detail/delete/${id}`).pipe(
       map((resp) => {
         let response = resp;
@@ -3034,8 +3039,8 @@ getAllHawbStocks(){
     );
   }
 
-   searchTdsDetail(payload) {
-    return this.http.post<{ data:any }>("tds-detail/search-list", payload).pipe(
+  searchTdsDetail(payload) {
+    return this.http.post<{ data: any }>("tds-detail/search-list", payload).pipe(
       map((res: any) => {
         let response = res;
         return response
@@ -3043,7 +3048,7 @@ getAllHawbStocks(){
     );
   }
   // Tds Set Exemption
-   getAllTdsSetExemption() {
+  getAllTdsSetExemption() {
     return this.http.get<{ data: any[] }>('tds-exemption').pipe(
       map((resp: any) => {
         let response = resp;
@@ -3052,7 +3057,7 @@ getAllHawbStocks(){
     );
   }
 
-   fetchTdsExemptionById(id: number) {
+  fetchTdsExemptionById(id: number) {
     return this.http.get<{ data: any }>(`tds-exemption/fetch/${id}`).pipe(
       map((resp) => {
         let response = resp;
@@ -3060,7 +3065,7 @@ getAllHawbStocks(){
       })
     );
   }
-   fetchTdsExemptionByHeaderId(id: number) {
+  fetchTdsExemptionByHeaderId(id: number) {
     return this.http.get<{ data: any }>(`tds-exemption/fetchByHeader/${id}`).pipe(
       map((resp) => {
         let response = resp;
@@ -3070,15 +3075,15 @@ getAllHawbStocks(){
   }
 
   createNewTdsExemption(payload: any) {
-    return this.http.post<{ data:any }>('tds-exemption/create', payload).pipe(
+    return this.http.post<{ data: any }>('tds-exemption/create', payload).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
       })
     );
   }
-  
-    updateTdsExemptionById(id: number, payload: any) {
+
+  updateTdsExemptionById(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`tds-exemption/update/${id}`, payload).pipe(
       map((resp) => {
         let response = resp;
@@ -3089,7 +3094,7 @@ getAllHawbStocks(){
   }
 
 
-   deleteTdsExemption(id: number) {
+  deleteTdsExemption(id: number) {
     return this.http.delete<{ data: any }>(`tds-exemption/delete/${id}`).pipe(
       map((resp) => {
         let response = resp;
@@ -3098,8 +3103,8 @@ getAllHawbStocks(){
     );
   }
 
-   searchTdsExemption(payload) {
-    return this.http.post<{ data:any }>("tds-exemption/search-list", payload).pipe(
+  searchTdsExemption(payload) {
+    return this.http.post<{ data: any }>("tds-exemption/search-list", payload).pipe(
       map((res: any) => {
         let response = res;
         return response

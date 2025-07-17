@@ -1,12 +1,12 @@
 <!-- <app-favorite-star screenName="State"></app-favorite-star> -->
 <div class="row">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
-            <div class="col-md-auto pb-2">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
+            <div class="col pb-2">
                 <h4 class="page-title mb-0">State</h4>
             </div>
 
-            <div class="col pb-2">
+            <div class="col-md-8 pb-2">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
@@ -102,14 +102,18 @@
                         <tr *ngFor="let item of stateList; let i = index; trackBy: trackByStateId">
                             <td>
                                 <div class="d-flex align-items-center">
+                                    @if(hasPermission('View')) {
                                     <a class="mx-2 ps-3" [routerLink]="['/master/state/entry/', item.StateMasterSid]"
                                         title="Edit">
                                         <i-feather name="eye" class="feather-sm"></i-feather>
                                     </a>
+                                }
+                                @if(hasPermission('Delete')) {
                                     <a class="text-danger mx-2 ps-3 border-start"
                                         (click)="softDelete(item.StateMasterSid)" title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
+                                }
                                 </div>
                             </td>
                             <td>

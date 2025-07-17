@@ -50,7 +50,8 @@ export class UserListComponent {
   passwordView1 : boolean;
   UserMasterSid : boolean;
   modalRef : NgbModalRef
-
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
     // sorting
   sortColumn: string = 'userName'; // default sort column
   sortDirection: string = 'asc'; // default sort direction
@@ -74,9 +75,33 @@ export class UserListComponent {
       user => {
         if (user) {
           this.userData = user;
+          this.checkPermissions();
         }
       });
       this.loadUsers();
+  }
+   checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId);
+    console.log(userRole);
+    if (currentMenuId && userRole) {
+      this.masterServ
+        .getRoleMenuPermissions(currentMenuId, userRole)
+        .subscribe({
+          next: (response) => {
+            this.currentMenuPermissions = response.data.MenuPermissions || {};
+            this.permissions = Object.keys(this.currentMenuPermissions).filter(
+              (key) => this.currentMenuPermissions[key] === 'isTrue'
+            );
+            console.log(this.permissions);
+          },
+        });
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
   }
   loadUsers(): void {
     const params = {

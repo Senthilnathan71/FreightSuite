@@ -38,7 +38,9 @@ export class CommodityEntryComponent implements OnInit {
   hssacOptions: any[] = [];
   loadingHSSAC = false;
   commodityData: any;
-
+  userData:any;
+   permissions: string[] = [];
+  currentMenuPermissions: any = {};
   statusOptions = [
     { id: 'Active', name: 'Active' },
     { id: 'Suspended', name: 'Suspended' }
@@ -72,6 +74,7 @@ export class CommodityEntryComponent implements OnInit {
 
   ngOnInit() {
     this.loadHSSACOptions();
+
     
     this.route.params.subscribe(params => {
       if (params['id']) {
@@ -79,7 +82,9 @@ export class CommodityEntryComponent implements OnInit {
         this.isEditMode = true;
         this.loadCommodity(this.commodityId);
       }
+     
     });
+    
 
     this.commodityForm.get('CommodityName')?.valueChanges.subscribe(value => {
       if (value) {
@@ -89,7 +94,35 @@ export class CommodityEntryComponent implements OnInit {
         }
       }
     });
+    this.appSettingService.getUser().subscribe(
+      user => {
+        if (user) {
+          this.userData = user;
+          this.checkPermissions();
+        }
+      }
+    )
   }
+    checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+ 
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
 
   private loadHSSACOptions() {
     this.loadingHSSAC = true;
