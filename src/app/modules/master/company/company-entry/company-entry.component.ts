@@ -67,6 +67,9 @@ export class CompanyEntryComponent implements OnInit {
 	branchListLength: number;
 	branchBankLength: number;
 	modalRef: NgbModalRef;
+	permissions: string[] = [];
+  currentMenuPermissions: any = {};
+  userData: any;
 
 	companyForm!: FormGroup;
 	branchForm!: FormGroup;
@@ -129,7 +132,38 @@ export class CompanyEntryComponent implements OnInit {
 				}
 			}
 		)
+		this.appSettingService.getUser().subscribe(
+      user => {
+        if (user) {
+          this.userData = user;
+          this.checkPermissions();
+          
+        }
+      }
+    )
+
 	}
+	checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+ 
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
+ 
 
 	// FORM INITIALIZATION
 

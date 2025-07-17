@@ -19,6 +19,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { SettingsService } from 'src/app/modules/settings/settings.service';
 
 @Component({
   selector: 'app-charge-tax',
@@ -67,6 +68,8 @@ export class ChargeTaxComponent implements OnInit {
   isFavorite: boolean = false;
   sortColumn: string = 'HSNCode'; 
   sortDirection: string = 'asc';
+   permissions: string[] = [];
+  currentMenuPermissions: any = {};
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -100,7 +103,29 @@ export class ChargeTaxComponent implements OnInit {
         this.loadChargeTaxData(this.ChargeTaxMasterSid);
       }
     });
+    this.checkPermissions();
   }
+
+   checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
   loadChargeTaxes(): void {
     this.isLoading = true;
     const params = {

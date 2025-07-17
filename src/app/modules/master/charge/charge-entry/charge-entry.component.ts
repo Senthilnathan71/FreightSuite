@@ -49,6 +49,7 @@ export class ChargeEntryComponent implements OnInit {
   displayedDepartments: any[] = [];
  extraDepartmentsCount = 0;
  selectedDepartments: string[] = [];
+ userData: any;
 
   // Lookup options
   companyOptions: any[] = [];
@@ -62,6 +63,8 @@ export class ChargeEntryComponent implements OnInit {
 	todayDate = new Date(this.today.year,this.today.month,this.today.day);
   currentMenuId: any;
   TandCList: any;
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
 
   constructor(
     private fb: FormBuilder,
@@ -114,8 +117,35 @@ updateDepartmentValue(): void {
         this.loadCharge(this.idParam);
       }
     });
+    this.appSettingService.getUser().subscribe(user => {
+    if(user) {
+      this.userData = user;
+      this.checkPermissions();
+    }
+  });
+    
     
   }
+   checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
   onHsnsacSelect(event: any): void {
   if (event) {
     const selectedHsnsac = this.hsnsacOptions.find(item => item.code === event);

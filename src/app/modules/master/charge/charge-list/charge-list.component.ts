@@ -11,6 +11,7 @@ import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { SettingsService } from 'src/app/modules/settings/settings.service';
 
 @Component({
   selector: 'app-charge-list',
@@ -34,6 +35,8 @@ export class ChargeListComponent {
   searchPerformed = false;
   userData: any;
   loading: boolean = false;
+   permissions: string[] = [];
+  currentMenuPermissions: any = {};
 
   // pagination
   page = 1;
@@ -59,7 +62,28 @@ export class ChargeListComponent {
       }
     });
     this.loadCharges();
+    this.checkPermissions();
   }
+  checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
 
   // In your component
 loadCharges(): void {

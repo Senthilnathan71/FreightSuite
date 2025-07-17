@@ -79,7 +79,6 @@ export class ChargegroupComponent implements OnInit {
     private modalService: NgbModal,
     private fb: FormBuilder,
     private masterService: MasterService,
-    private settingsService: SettingsService,
     private route: ActivatedRoute,
     private router: Router,
     private appSettingService: AppSettingsService,
@@ -94,6 +93,7 @@ export class ChargegroupComponent implements OnInit {
       user => {
         if (user) {
           this.userData = user;
+          this.checkPermissions();
         }
       }
     );
@@ -108,7 +108,7 @@ export class ChargegroupComponent implements OnInit {
     });
     this.loadCompanies();
     this.loadChargeGroups();
-    this.checkPermissions();
+    
   }
 
    checkPermissions() {
@@ -117,7 +117,7 @@ export class ChargegroupComponent implements OnInit {
     console.log(currentMenuId)
     console.log(userRole)
     if (currentMenuId && userRole) {
-     this.settingsService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
   next: (response) => {
     this.currentMenuPermissions = response.data.MenuPermissions || {};
     this.permissions = Object.keys(this.currentMenuPermissions)

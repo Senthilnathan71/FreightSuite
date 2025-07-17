@@ -115,14 +115,18 @@
                         <tr *ngFor="let item of cityList; trackBy: trackByIndex">
                             <td>
                                 <div class="d-flex align-items-center justify-content-center gap-2">
+                                    @if(hasPermission('View')) {
                                     <button class="btn btn-sm btn-link text-info p-0"
                                         (click)="updateCityById(item.CityMasterSid, content)" title="Edit">
                                         <i-feather class="feather-sm" name="eye"></i-feather>
                                     </button>
+                                }
+                                @if(hasPermission('Delete')) {
                                     <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3"
                                         (click)="deleteCity(item.CityMasterSid)" title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </button>
+                                }
                                 </div>
                             </td>
                             <td>
@@ -278,20 +282,27 @@
         </div>
         <div class="modal-footer">
             @if(isEditMode){
-            <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
-                <i class="fas fa-file-alt me-1"></i> e-Doc
-            </button>
-            <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
-                <i class="fas fa-clipboard me-1"></i> Terms & Condition
-            </button>
-            <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
-                <i class="fas fa-shield-alt me-1"></i> Authorize
-            </button>
-
-            <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto " (click)="openEmail()">
-                <i class="fas fa-envelope me-1"></i> Email
-            </button>
-
+                @if(hasPermission('Edoc')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
+        <i class="fas fa-file-alt me-1"></i> e-Doc
+      </button>
+    }
+               @if(hasPermission('Terms and Condition')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openTandC()">
+        <i class="fas fa-clipboard me-1"></i> Terms & Condition
+      </button>
+    }
+                 @if(hasPermission('Authority')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
+        <i class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+    }
+                
+      @if(hasPermission('Email')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto"(click)="openEmail()">
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+    }
             }
             <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-info" (click)="onSubmit()" [disabled]="btnDisable || cityForm.invalid">

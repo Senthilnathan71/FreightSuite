@@ -20,7 +20,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
-import { SettingsService } from 'src/app/modules/settings/settings.service';
+
 
 @Component({
   selector: 'app-biclause',
@@ -80,7 +80,6 @@ export class BIclauseComponent implements OnInit {
     private modalService: NgbModal,
     private fb: FormBuilder,
     private masterService: MasterService,
-     private settingsService: SettingsService,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
     private userService: authService,
@@ -113,7 +112,7 @@ export class BIclauseComponent implements OnInit {
     console.log(currentMenuId)
     console.log(userRole)
     if (currentMenuId && userRole) {
-     this.settingsService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
   next: (response) => {
     this.currentMenuPermissions = response.data.MenuPermissions || {};
     this.permissions = Object.keys(this.currentMenuPermissions)
