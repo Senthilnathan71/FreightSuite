@@ -729,6 +729,17 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
+      {
+        path: 'tds-set/entry/:id',
+        component: TdsSetEntryComponent,
+        data: {
+          title: 'TDS Set',
+          urls: [
+            { title: 'Master', url: '/master' },
+            { title: 'TDS Set' },
+          ],
+        },
+      },
         {
         path: 'imco/list',
         component: ImcoListComponent,

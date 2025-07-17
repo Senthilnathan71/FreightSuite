@@ -384,6 +384,7 @@ clearFilterValue(){
 				.filter(([key, value]) => value === 'isTrue')
 				.map(([key]) => key);
 			}
+			this.updatePermissionControl();
 			if(data.RoleMenuMasterSid){
 				this.RoleMenuMasterSid = data.RoleMenuMasterSid;
 			}
@@ -392,6 +393,12 @@ clearFilterValue(){
   	}
 
 	filterMenuByModule(selectedModule){
+		if(!selectedModule){
+			this.roleMenuForm.get('MenuMasterSid').setValue('');
+			this.menuList = [];
+			this.selectedPermission = [];
+			return;
+		}
 		this.settingService.getMenuByModuleId(selectedModule.ModuleMasterSid).subscribe(
 			(resp:any)=>{
 				if(resp){
@@ -475,6 +482,7 @@ clearFilterValue(){
 			this.roleMenuForm.updateValueAndValidity();
 			this.appSettingService.showWarning('Please fill all the required fields')
 		}
+		this.updatePermissionControl();
 		const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
 		const formValue = this.roleMenuForm.value;
 		const payload = {
@@ -526,6 +534,7 @@ clearFilterValue(){
 
 	closeModal(){
 		this.menuList = [];
+		this.selectedPermission = [];
 		this.isEditMode = false;
 		this.roleMenuForm.reset({
 			status : 'Active'
