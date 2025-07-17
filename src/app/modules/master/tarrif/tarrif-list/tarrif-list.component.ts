@@ -46,7 +46,8 @@ export class TarrifListComponent implements OnInit {
   totalNumberOfCollection: number;
   sortColumn: string = 'POLTerminal'; 
   sortDirection: string = 'asc';
-
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
   isFavorite: boolean = false;
 
   toggleFavorite() {
@@ -67,11 +68,35 @@ export class TarrifListComponent implements OnInit {
       user => {
         if (user) {
           this.userData = user;
+          this.checkPermissions();
         }
       });
       this.loadTariffs();
   }
 
+    checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId);
+    console.log(userRole);
+    if (currentMenuId && userRole) {
+      this.masterServ
+        .getRoleMenuPermissions(currentMenuId, userRole)
+        .subscribe({
+          next: (response) => {
+            this.currentMenuPermissions = response.data.MenuPermissions || {};
+            this.permissions = Object.keys(this.currentMenuPermissions).filter(
+              (key) => this.currentMenuPermissions[key] === 'isTrue'
+            );
+            console.log(this.permissions);
+          },
+        });
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
+  }
   loadTariffs(): void {
     const params = {
       search: this.filterValue ? this.filterValue.trim() : '',

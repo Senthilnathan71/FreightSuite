@@ -37,6 +37,8 @@ export class UOMListComponent {
   pageSize = 10;
   totalLengthOfCollection: number;
   isFavorite: boolean = false;
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
 
   sortColumn: string = 'UOMName';
   sortDirection: string = 'asc';
@@ -57,10 +59,34 @@ export class UOMListComponent {
     this.appSettingService.getUser().subscribe(user => {
     if (user) {
       this.userData = user;
+      this.checkPermissions();
     }
   });
   this.loadUoms();
 }
+ checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId);
+    console.log(userRole);
+    if (currentMenuId && userRole) {
+      this.masterService
+        .getRoleMenuPermissions(currentMenuId, userRole)
+        .subscribe({
+          next: (response) => {
+            this.currentMenuPermissions = response.data.MenuPermissions || {};
+            this.permissions = Object.keys(this.currentMenuPermissions).filter(
+              (key) => this.currentMenuPermissions[key] === 'isTrue'
+            );
+            console.log(this.permissions);
+          },
+        });
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
+  }
 loadUoms(): void {
   const params = {
     search: this.filterValue?.trim() || '',

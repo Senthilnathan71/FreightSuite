@@ -47,7 +47,8 @@ export class StateListComponent {
   // sorting
   sortColumn: string = 'stateName'; // default sort column
   sortDirection: string = 'asc'; // default sort direction 
-  
+  permissions: string[] = [];
+  currentMenuPermissions: any = {}; 
   constructor(
     private masterService: MasterService,
     private router: Router,
@@ -60,11 +61,36 @@ export class StateListComponent {
     this.appSettingService.getUser().subscribe(user => {
     if (user) {
       this.userData = user;
+      this.checkPermissions();
     }
   });
   this.loadStates();
     this.loadCountries();
     this.loadZones();
+  }
+
+    checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId);
+    console.log(userRole);
+    if (currentMenuId && userRole) {
+      this.masterService
+        .getRoleMenuPermissions(currentMenuId, userRole)
+        .subscribe({
+          next: (response) => {
+            this.currentMenuPermissions = response.data.MenuPermissions || {};
+            this.permissions = Object.keys(this.currentMenuPermissions).filter(
+              (key) => this.currentMenuPermissions[key] === 'isTrue'
+            );
+            console.log(this.permissions);
+          },
+        });
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
   }
 
   loadStates(): void {

@@ -53,7 +53,9 @@ export class PostMasterListComponent implements OnInit {
   sectorOptions: any[] = [];
   regionList : any[];
   isFavorite: boolean = false;
-
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
+  
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   } 
@@ -73,10 +75,32 @@ export class PostMasterListComponent implements OnInit {
     this.appSettingService.getUser().subscribe(user => {
       if (user) {
         this.userData = user;
+        this.checkPermissions();
       }
     });
     this.loadPorts();
   }
+
+      checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+ 
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
   loadPorts(): void {
     const params = {
       search: this.filterValue ? this.filterValue.trim() : '',

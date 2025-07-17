@@ -11,6 +11,7 @@ import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 
 declare var $: any;
 
+
 interface notifications {
   btn: string;
   icon: string;
@@ -45,6 +46,7 @@ export class VerticalNavigationComponent implements OnInit, AfterViewInit {
   branchName: string = '';
   companyName: string = '';
   public showSearch = false;
+  selectedBranchCompany: any;
 
   constructor(private router: Router, private appSettingsService: AppSettingsService, private translate: TranslateService, private verticalNavService: VerticalNavService) {
 
@@ -70,10 +72,13 @@ onBranchChange(event: Event): void {
   );
 
   if (selectedBranch) {
+    this.selectedBranchCompany = selectedBranch;
+
     console.log('Switched to Branch:', selectedBranch.branchMaster.branchName);
     console.log('Switched to Company:', selectedBranch.companyMaster.companyName);
   }
 }
+
 
 
 

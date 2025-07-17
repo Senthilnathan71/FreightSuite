@@ -37,8 +37,9 @@ export class UOMViewComponent {
   selectedShipmentType: number;
   btnDisable: boolean = true;
   uomData: any;
-
-
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
+  userData:any;
   shipmenttypes = [
     { id: 'FCL', name: 'FCL' },
     { id: 'LCL', name: 'LCL' },
@@ -100,7 +101,40 @@ statusOptions = [
       this.uomForm.get('status')?.enable();
     }
   });
+
+    this.appSettingService.getUser().subscribe((user) => {
+      if (user) {
+        this.userData = user;
+        this.checkPermissions();
+      }
+    });
 }
+
+
+
+  checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId);
+    console.log(userRole);
+    if (currentMenuId && userRole) {
+      this.masterService
+        .getRoleMenuPermissions(currentMenuId, userRole)
+        .subscribe({
+          next: (response) => {
+            this.currentMenuPermissions = response.data.MenuPermissions || {};
+            this.permissions = Object.keys(this.currentMenuPermissions).filter(
+              (key) => this.currentMenuPermissions[key] === 'isTrue'
+            );
+            console.log(this.permissions);
+          },
+        });
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
+  }
 
   loadUom(UomMasterSid): void {
   this.masterService.getUomById(UomMasterSid).subscribe(

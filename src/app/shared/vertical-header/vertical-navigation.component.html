@@ -9,14 +9,27 @@
     </a>
   </li>
     <!-- Branch and Company info - aligned horizontally -->
-  <li class="nav-item d-flex flex-wrap align-items-center gap-3">
-    <span *ngIf="userData?.userBranchMaster?.length" class="fw-bold text-info ">
+ <li class="nav-item d-flex flex-wrap align-items-center gap-3">
+  <span *ngIf="selectedBranchCompany" class="fw-bold text-info">
+    <strong class="text-dark">Branch :</strong>
+    {{ selectedBranchCompany.branchMaster.branchName }}
+  </span>
+  <span *ngIf="selectedBranchCompany" class="fw-bold text-info">
+    <strong class="text-dark">Company :</strong>
+    {{ selectedBranchCompany.companyMaster.companyName }}
+  </span>
+
+  <!-- Fallback to show default branch if nothing selected -->
+  <ng-container *ngIf="!selectedBranchCompany && userData?.userBranchMaster?.length">
+    <span class="fw-bold text-info">
       <strong class="text-dark">Branch :</strong> {{ userData.userBranchMaster[0]?.branchMaster?.branchName }}
     </span>
-    <span *ngIf="userData?.userBranchMaster?.length" class="fw-bold text-info ">
+    <span class="fw-bold text-info">
       <strong class="text-dark">Company :</strong> {{ userData.userBranchMaster[0]?.companyMaster?.companyName }}
     </span>
-  </li>
+  </ng-container>
+</li>
+
 
   <!-- ============================================================== -->
   <!-- mega menu -->

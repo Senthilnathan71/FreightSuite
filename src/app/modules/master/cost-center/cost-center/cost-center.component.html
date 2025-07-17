@@ -26,12 +26,12 @@
     </app-listpage> -->
 <div class="row">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
-            <div class="col-md-auto pb-2">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
+            <div class="col pb-2">
                 <h4 class="page-title mb-0">Cost Center</h4>
             </div>
 
-            <div class="col pb-2">
+            <div class="col-md-8 pb-2">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
@@ -111,14 +111,20 @@
                         <tr *ngFor="let item of costCenterList; trackBy: trackByIndex">
                             <td>
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
+                                    @if(hasPermission('View')) {
+ 
                                     <button class="btn btn-sm btn-link text-primary p-0 mx-2"
                                         (click)="editCostCenter(item.CostCenterMasterSid, content)" title="Edit">
                                         <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </button>
+                                }
+                                @if(hasPermission('Delete')) {
+ 
                                     <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3"
                                         (click)="softDeleteCostCenter(item.CostCenterMasterSid)" title="Delete">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </button>
+                                }
                                 </div>
                             </td>
                             <td>
@@ -250,19 +256,27 @@
         </div>
         <div class="modal-footer">
             @if(isEditMode){
-            <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
-                <i class="fas fa-file-alt me-1"></i> e-Doc
-            </button>
-            <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
-                <i class="fas fa-clipboard me-1"></i> Terms & Condition
-            </button>
-            <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
-                <i class="fas fa-shield-alt me-1"></i> Authorize
-            </button>
-
-            <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto " (click)="openEmail()">
-                <i class="fas fa-envelope me-1"></i> Email
-            </button>
+                    @if(hasPermission('Edoc')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
+        <i class="fas fa-file-alt me-1"></i> e-Doc
+      </button>
+    }
+               @if(hasPermission('Terms and Condition')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openTandC()">
+        <i class="fas fa-clipboard me-1"></i> Terms & Condition
+      </button>
+    }
+                 @if(hasPermission('Authority')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
+        <i class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+    }
+                
+      @if(hasPermission('Email')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto"(click)="openEmail()">
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+    }
 
             }
             <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>

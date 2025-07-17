@@ -29,9 +29,10 @@ export class ImcoListComponent implements OnInit{
 	searchResults: any[];
 	userData : any;
 	sortColumn: string = 'ImcoClass'; 
-    sortDirection: string = 'asc';
+  sortDirection: string = 'asc';
 	loading = false;
-
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
 	// Pagination Data
 	page = 1;
 	pageSize = 10;
@@ -56,11 +57,33 @@ export class ImcoListComponent implements OnInit{
             user=>{
                 if(user){
                     this.userData = user;
+                     this.checkPermissions();
                 }
             }
         );
 		 this.loadImcos();
     }
+
+      checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+ 
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
 
 
 	loadImcos(): void {

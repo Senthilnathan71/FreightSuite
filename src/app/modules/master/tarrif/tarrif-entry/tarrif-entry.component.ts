@@ -87,6 +87,9 @@ export class TarrifEntryComponent implements OnInit {
 	tariffData : any;
 	tariffDetailData : any;
 
+	userData:any;
+	permissions: string[] = [];
+    currentMenuPermissions: any = {};
 
 	cargoTypes = ['General', 'Haz', 'Reefer', 'Flexi', 'ODC', 'Empty', 'RORO', 'OOG', 'Tanker'];
 	serviceLevel = ['BreakBulk', 'OOG', 'Tanker']
@@ -130,7 +133,39 @@ export class TarrifEntryComponent implements OnInit {
 				this.minEffectiveDate = this.toNgbDateStruct(this.todayDate)
 			}
 		})
+
+		 this.appSettingServ.getUser().subscribe((user) => {
+      if (user) {
+        this.userData = user;
+        this.checkPermissions();
+      }
+    });
 	}
+
+			
+		checkPermissions() {
+			const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+			const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+			console.log(currentMenuId);
+			console.log(userRole);
+			if (currentMenuId && userRole) {
+			this.masterServ
+				.getRoleMenuPermissions(currentMenuId, userRole)
+				.subscribe({
+				next: (response) => {
+					this.currentMenuPermissions = response.data.MenuPermissions || {};
+					this.permissions = Object.keys(this.currentMenuPermissions).filter(
+					(key) => this.currentMenuPermissions[key] === 'isTrue'
+					);
+					console.log(this.permissions);
+				},
+				});
+			}
+		}
+
+		hasPermission(permission: string): boolean {
+			return this.permissions.includes(permission);
+		}
 
 	initHeaderForm() {
 		this.tariffHeaderForm = this.fb.group({

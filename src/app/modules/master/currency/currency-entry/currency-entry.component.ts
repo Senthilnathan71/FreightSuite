@@ -34,7 +34,9 @@ export class CurrencyEntryComponent implements OnInit {
   currencyID: number;
   loading = false;
   currencyData: any;
-  
+  userData:any;
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
   statusOptions = [
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }
@@ -61,8 +63,37 @@ export class CurrencyEntryComponent implements OnInit {
         this.getCurrencyById(this.currencyID);
       }
     });
+
+    this.appSettingService.getUser().subscribe(
+      user => {
+        if (user) {
+          this.userData = user;
+          this.checkPermissions();
+        }
+      }
+    )
   }
 
+   checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+ 
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
   initForm() {
     this.currencyForm = this.fb.group({
       currencyName: ['', [

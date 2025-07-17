@@ -66,7 +66,8 @@ export class PackageTypeListComponent {
   isFavorite: boolean = false;
   sortColumn: string = 'HSSACCode'; 
   sortDirection: string = 'asc';
-
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   } 
@@ -90,10 +91,32 @@ export class PackageTypeListComponent {
       user => {
         if (user) {
           this.userData = user;
+          this.checkPermissions();
         }
       });
       this.loadPackageTypes();
   }
+
+   checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+ 
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
 
   loadPackageTypes(): void {
     const params = {

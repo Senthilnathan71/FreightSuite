@@ -290,19 +290,27 @@
                 <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
                     <!-- eDoc Button -->
                      
-                    <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+                      @if(hasPermission('Edoc')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
         <i class="fas fa-file-alt me-1"></i> e-Doc
       </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
-                    <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
-        <i  class="fas fa-shield-alt me-1"></i> Authorize
+    }
+               @if(hasPermission('Terms and Condition')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openTandC()">
+        <i class="fas fa-clipboard me-1"></i> Terms & Condition
       </button>
+    }
+                 @if(hasPermission('Authority')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
+        <i class="fas fa-shield-alt me-1"></i> Authorize
+      </button>
+    }
                 
-      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
+      @if(hasPermission('Email')) {
+      <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto"(click)="openEmail()">
         <i class="fas fa-envelope me-1"></i> Email
       </button>
+    }
                 
                 </div>
             </div>
