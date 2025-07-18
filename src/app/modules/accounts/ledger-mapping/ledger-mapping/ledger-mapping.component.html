@@ -1,32 +1,10 @@
 <div class="row">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
-            <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Ledger Mapping</h4>
+            <div class="col-auto pb-2">
+                <h4 class="page-title mb-0">Subledger Mapping</h4>
             </div>
-
-            <div class="col-md-8 pb-2">
-                <form
-                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <app-favorite-star screenName="Ledger Mapping" class="mt-1 me-1"></app-favorite-star>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="openModal(content)">
-                        <i class="fas fa-plus me-1"></i> Create
-                    </button>
-
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-file-alt me-1"></i> Report
-                    </button>
-
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1"></i> Reset
-                    </button>
-                </form>
-            </div>
-
-            <div class="col-md-12 border-top">
-                <div class="row mx-0 py-2">
-                    <div class="col-md-8 mx-auto px-0">
+                    <div class="col-md-7 mx-auto px-0 pb-2">
                         <form
                             class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                             <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
@@ -51,8 +29,28 @@
                             </div>
                         </form>
                     </div>
-                </div>
+            
+
+            <div class="col-auto pb-2">
+                <form
+                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <app-favorite-star screenName="Ledger Mapping" class="mt-1 me-1"></app-favorite-star>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="openModal(content)">
+                        <i class="fas fa-plus me-1"></i> Create
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-file-alt me-1"></i> Report
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-sync-alt me-1"></i> Reset
+                    </button>
+                </form>
             </div>
+
+          
         </div>
     </div>
     <div class="row bg-white py-2 rounded shadow-sm mx-auto">
@@ -62,9 +60,9 @@
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Name</th>
-                            <th class="bg-transparent text-light" scope="col">Code</th>
-                            <th class="bg-transparent text-light" scope="col">Remarks</th>
+                            <th class="bg-transparent text-light" scope="col">Ledger Name</th>
+                            <th class="bg-transparent text-light" scope="col">COA Name</th>
+                            <!-- <th class="bg-transparent text-light" scope="col">Remarks</th> -->
                             <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
 
                         </tr>
@@ -87,9 +85,6 @@
                             </td>
                             <td>
                                 <div class="text-truncate">DSa</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">Dat</div>
                             </td>
                             <td>
 
@@ -122,7 +117,7 @@
     <ng-template #content let-modal>
        
             <div class="modal-header bg-info text-white p-2">
-                <h5 class="modal-title">Ledger Mapping</h5>
+                <h5 class="modal-title">Subledger Mapping</h5>
                 <button type="button" class="btn-close btn-close-white" aria-label="Close"
                     (click)="modal.dismiss()"></button>
             </div>

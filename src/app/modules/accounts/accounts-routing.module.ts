@@ -135,7 +135,7 @@ export const AccountRoutes: Routes = [
         path: "vendor-tds/list",
         component: VendorTdsListComponent,
         data: {
-          title: "Vendor TDS",
+          title: "Supplier TDS Mapping",
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Vendor TDS" },
@@ -146,7 +146,7 @@ export const AccountRoutes: Routes = [
         path: "vendor-tds/entry",
         component: VendorTdsEntryComponent,
         data: {
-          title: "Vendor TDS",
+          title: "Supplier TDS Mapping",
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Vendor TDS" },
