@@ -22,10 +22,10 @@
   <!-- Fallback to show default branch if nothing selected -->
   <ng-container *ngIf="!selectedBranchCompany && userData?.userBranchMaster?.length">
     <span class="fw-bold text-info">
-      <strong class="text-dark">Branch :</strong> {{ userData.userBranchMaster[0]?.branchMaster?.branchName }}
+      <strong class="text-dark">Branch :</strong> {{ branchName }}
     </span>
     <span class="fw-bold text-info">
-      <strong class="text-dark">Company :</strong> {{ userData.userBranchMaster[0]?.companyMaster?.companyName }}
+      <strong class="text-dark">Company :</strong> {{ companyName }}
     </span>
   </ng-container>
 </li>
@@ -484,7 +484,7 @@
     <!-- User profile and search -->
     <!-- ============================================================== -->
     
-  <li class="nav-item dropdown" ngbDropdown autoClose="outside" placement="bottom-end">
+  <!-- <li class="nav-item dropdown" ngbDropdown autoClose="outside" placement="bottom-end">
   <a ngbDropdownToggle class="nav-link dropdown-toggle waves-effect waves-dark" href="javascript:void(0)">
     <i-feather name="user"></i-feather>
   </a>
@@ -513,7 +513,7 @@
       </li>
     </ul>
   </div>
-</li>
+</li> -->
 
 
 
@@ -544,8 +544,14 @@
           <p class="mb-0">jobs&#64;gmail.com</p>
         </div>
       </div> -->
+      <li>
         <a class="dropdown-item" href="javascript:void(0)">
-          <i class="ti-user me-1 ms-1"></i> My Profile</a>
+          <i class="ti-user me-1 ms-1"></i> My Profile</a></li>
+          <li>
+  <a class="dropdown-item d-flex align-items-center" (click)="openBranchSwitchModal(branchSwitchModal)" style="cursor: pointer;">
+    <i class="ti-exchange-vertical me-1 ms-1"></i> Switch Branch
+  </a>
+</li>
         <!-- <a class="dropdown-item" href="javascript:void(0)">
         <i class="ti-wallet me-1 ms-1"></i> My Balance</a>
       <a class="dropdown-item" href="javascript:void(0)">
@@ -554,8 +560,8 @@
         <!-- <a class="dropdown-item" href="javascript:void(0)">
           <i class="ti-settings me-1 ms-1"></i> Account Setting</a> -->
         <!-- <div class="dropdown-divider"></div> -->
-        <a class="dropdown-item" href="javascript:void(0)" (click)="logout()">
-          <i class="fa fa-power-off me-1 ms-1"></i> Logout</a>
+        <li><a class="dropdown-item" href="javascript:void(0)" (click)="logout()">
+          <i class="fa fa-power-off me-1 ms-1"></i> Logout</a></li>
         <!-- <div class="dropdown-divider"></div> -->
         <!-- <div class="ps-4 p-2">
         <a href="javascript:void(0)" class="btn btn-sm btn-success btn-rounded">View Profile</a>
@@ -566,3 +572,49 @@
     <!-- User profile and search -->
     <!-- ============================================================== -->
   </ul>
+  <ng-template #branchSwitchModal let-modal>
+  <div class="modal-header bg-primary text-white">
+    <div class="w-100 d-flex justify-content-between align-items-start flex-column">
+      <div class="w-100 d-flex justify-content-between align-items-start">
+        <h5 class="modal-title mb-0">Branches</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+      </div>
+      <small>Switch Branch & Company</small>
+    </div>
+  </div>
+
+  <div class="modal-body">
+    <!-- Company Dropdown -->
+    <label class="form-label fw-bold text-black">Select Company</label>
+    <select class="form-select mb-3"
+        [(ngModel)]="selectedCompanyId"
+        (ngModelChange)="onCompanyChange($event)">
+  <option [ngValue]="null">-- Select Company --</option>
+  <option *ngFor="let company of companyList"
+          [ngValue]="company.CompanyMasterSid">
+    {{ company.companyName }}
+  </option>
+</select>
+
+
+    <!-- Branch Dropdown -->
+    <label class="form-label fw-bold text-black">Select Branch</label>
+    <select class="form-select mb-3"
+        [(ngModel)]="selectedBranchId">
+  <option [ngValue]="null">-- Select Branch --</option>
+  <option *ngFor="let branch of branchList"
+          [ngValue]="branch.UserBranchMasterSid">
+    {{ branch.branchMaster.branchName }} ({{ branch.companyMaster.companyName }})
+  </option>
+</select>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+    <button type="button"
+            class="btn btn-primary"
+            [disabled]="!selectedBranchId"
+            (click)="onBranchChangeFromModal(selectedBranchId, modal)">
+      Switch
+    </button>
+  </div>
+</ng-template>

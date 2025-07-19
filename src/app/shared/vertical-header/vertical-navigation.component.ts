@@ -1,13 +1,15 @@
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CommonModule } from '@angular/common';
-import { Component, AfterViewInit, EventEmitter, Output, ViewChild, TemplateRef, NgModule, OnInit } from '@angular/core';
-import { NgbAccordionModule, NgbCarouselModule, NgbDropdown, NgbDropdownModule, NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { Component, AfterViewInit, EventEmitter, Output, ViewChild, TemplateRef, NgModule, OnInit, ChangeDetectorRef } from '@angular/core';
+import { NgbAccordionModule, NgbCarouselModule, NgbDropdown, NgbDropdownModule, NgbModal, NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateService } from '@ngx-translate/core';
 import { FeatherModule } from 'angular-feather';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { Router, RouterModule } from '@angular/router';
 import { VerticalNavService } from './vertical-navigation.service';
 import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
+import { FormsModule } from '@angular/forms';
+import { Branch } from 'src/app/modules/crm-mobile/Interfaces/branch.interface';
 
 declare var $: any;
 
@@ -31,7 +33,7 @@ interface messages {
 @Component({
   selector: 'app-vertical-navigation',
   standalone: true,
-  imports: [NgbDropdownModule, RouterModule, FeatherModule, NgScrollbarModule, CommonModule, NgbAccordionModule, NgbCarouselModule, NgbModule, TimeAgoPipe],
+  imports: [NgbDropdownModule, RouterModule, FeatherModule, NgScrollbarModule, CommonModule, NgbAccordionModule, NgbCarouselModule, NgbModule, TimeAgoPipe, FormsModule],
   templateUrl: './vertical-navigation.component.html'
 })
 export class VerticalNavigationComponent implements OnInit, AfterViewInit {
@@ -46,9 +48,15 @@ export class VerticalNavigationComponent implements OnInit, AfterViewInit {
   branchName: string = '';
   companyName: string = '';
   public showSearch = false;
+  companyList: any[] = [];
+branchList: any[] = [];
   selectedBranchCompany: any;
+  selectedBranchId: any;
+  selectedCompanyId: any = null;
+  @ViewChild('branchSwitchModal') branchSwitchModal!: TemplateRef<any>;
+  private modalRef!: NgbModalRef;
 
-  constructor(private router: Router, private appSettingsService: AppSettingsService, private translate: TranslateService, private verticalNavService: VerticalNavService) {
+  constructor(private router: Router, private appSettingsService: AppSettingsService, private translate: TranslateService, private verticalNavService: VerticalNavService, private modalService: NgbModal, private cdr: ChangeDetectorRef) {
 
     // translate.setDefaultLang('en');
 
@@ -62,7 +70,69 @@ export class VerticalNavigationComponent implements OnInit, AfterViewInit {
       this.companyName = user?.userBranchMaster?.[0]?.companyMaster?.companyName || '';
     }
   });
+  this.extractCompanies();
 }
+
+extractCompanies() {
+  const uniqueCompanies = new Map();
+  this.userData?.userBranchMaster?.forEach((item: any) => {
+    const company = item.companyMaster;
+    if (!uniqueCompanies.has(company.companyId)) {
+      uniqueCompanies.set(company.companyId, company);
+    }
+  });
+
+  this.companyList = Array.from(uniqueCompanies.values());
+}
+
+onCompanyChange(companyId: string) {
+  this.selectedCompanyId = companyId;
+  const selectedCompanyId = Number(companyId);
+
+  console.log('Selected company ID:', selectedCompanyId);
+  console.log('All user branches:', this.userData?.userBranchMaster);
+
+  this.branchList = this.userData?.userBranchMaster?.filter(
+    (branch: any) => branch.CompanyMasterSid === selectedCompanyId
+  );
+
+  console.log('Filtered branches:', this.branchList);
+  this.selectedBranchId = null;
+}
+
+
+
+openBranchSwitchModal(content: TemplateRef<any>) {
+  this.modalRef = this.modalService.open(content, { centered: true, size: 'md', backdrop: 'static'});
+}
+
+
+onBranchChangeFromModal(selectedId: string | number, modalRef: NgbModalRef): void {
+  const selectedBranch = this.userData?.userBranchMaster?.find(
+    (b: any) => b.UserBranchMasterSid == +selectedId
+  );
+
+  if (selectedBranch) {
+    this.selectedBranchId = selectedBranch.UserBranchMasterSid;
+    this.selectedCompanyId = selectedBranch.CompanyMasterSid;
+
+    this.onCompanyChange(this.selectedCompanyId);
+
+    // ✅ Update userData.branchMaster and companyMaster to reflect in HTML
+    this.userData.branchMaster = selectedBranch.branchMaster;
+    this.userData.companyMaster = selectedBranch.companyMaster;
+
+    this.branchName = selectedBranch.branchMaster.branchName;
+    this.companyName = selectedBranch.companyMaster.companyName;
+
+    modalRef.close();
+  } else {
+    console.warn('Branch not found for selected ID:', selectedId);
+  }
+}
+
+
+
 
 
 onBranchChange(event: Event): void {
@@ -72,7 +142,7 @@ onBranchChange(event: Event): void {
   );
 
   if (selectedBranch) {
-    this.selectedBranchCompany = selectedBranch;
+    this.selectedCompanyId = selectedBranch;
 
     console.log('Switched to Branch:', selectedBranch.branchMaster.branchName);
     console.log('Switched to Company:', selectedBranch.companyMaster.companyName);
