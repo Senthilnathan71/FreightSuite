@@ -14,7 +14,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
-  selector: 'app-generation-list',
+  selector: 'app-hawb-stock-list',
   standalone: true,
   imports: [
     CommonModule, 
@@ -26,10 +26,10 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     CustomDatePipe,
     FavoriteStarComponent
   ],
-  templateUrl: './generation-list.component.html',
-  styleUrl: './generation-list.component.scss'
+  templateUrl: './hawb-stock-list.component.html',
+  styleUrl: './hawb-stock-list.component.scss'
 })
-export class GenerationListComponent {
+export class HawbStockListComponent {
   searchType = 'AirwayBillType';
   filterValue = '';
   results: any[] = [];

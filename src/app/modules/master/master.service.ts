@@ -2495,7 +2495,7 @@ export class MasterService {
 
   //Hawb
   getAllHawbStocks() {
-    return this.http.get<{ data: any[] }>('generation').pipe(
+    return this.http.get<{ data: any[] }>('hawb-stock').pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2504,7 +2504,7 @@ export class MasterService {
   }
 
   createNewHawbStock(payload) {
-    return this.http.post<{ data: any }>('generation/create', payload).pipe(
+    return this.http.post<{ data: any }>('hawb-stock/create', payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2513,7 +2513,7 @@ export class MasterService {
   }
 
   fetchHawbStockById(HawbStockSid) {
-    return this.http.get<{ data: any }>(`generation/fetch/${HawbStockSid}`).pipe(
+    return this.http.get<{ data: any }>(`hawb-stock/fetch/${HawbStockSid}`).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2522,7 +2522,7 @@ export class MasterService {
   }
 
   updateHawbStockById(HawbStockSid, payload) {
-    return this.http.patch<{ data: any }>(`generation/update/${HawbStockSid}`, payload).pipe(
+    return this.http.patch<{ data: any }>(`hawb-stock/update/${HawbStockSid}`, payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2531,7 +2531,7 @@ export class MasterService {
   }
 
   deleteHawbStock(HawbStockSid) {
-    return this.http.delete<{ data: any }>(`generation/delete/${HawbStockSid}`).pipe(
+    return this.http.delete<{ data: any }>(`hawb-stock/delete/${HawbStockSid}`).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2540,7 +2540,7 @@ export class MasterService {
   }
 
   searchHawbStock(payload) {
-    return this.http.post<{ data: any[] }>('generation/search-list', payload).pipe(
+    return this.http.post<{ data: any[] }>('hawb-stock/search-list', payload).pipe(
       map((resp) => {
         let response = resp;
         return response;

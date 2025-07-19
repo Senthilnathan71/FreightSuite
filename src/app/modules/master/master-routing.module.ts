@@ -65,10 +65,10 @@ import { YearListComponent } from './year/year-list/year-list.component';
 import { YearEntryComponent } from './year/year-entry/year-entry.component';
 import { DoctypeComponent } from './document-type/doctype-entry/doctype.component';
 import { DoctypeListComponent } from './document-type/doctype-list/doctype-list.component';
-import { GenerationListComponent } from './generation/generation-list/generation-list.component';
-import { GenerationEntryComponent } from './generation/generation-entry/generation-entry.component';
 import { CostCenterComponent } from './cost-center/cost-center/cost-center.component';
 import { ProfitCenterComponent } from './profit-center/profit-center/profit-center.component';
+import { HawbStockListComponent } from './Hawb-Stock/hawb-stock-list/hawb-stock-list.component';
+import { HawbStockEntryComponent } from './Hawb-Stock/hawb-stock-entry/hawb-stock-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -997,7 +997,7 @@ export const MasterRoutes: Routes = [
       },
         {
         path: 'hawbstock/list',
-        component: GenerationListComponent,
+        component: HawbStockListComponent,
         data: {
           title: 'Hawbs tock',
           urls: [
@@ -1008,7 +1008,7 @@ export const MasterRoutes: Routes = [
       },
       {
         path: 'hawbstock/entry',
-        component: GenerationEntryComponent,
+        component: HawbStockEntryComponent,
         data: {
           title: 'Hawb stock',
           urls: [
@@ -1019,13 +1019,13 @@ export const MasterRoutes: Routes = [
       },
       {
         path: 'hawbstock/entry/:id',
-        component: GenerationEntryComponent,
+        component: HawbStockEntryComponent,
         data: {
           title: 'Hawb stock',
           urls: [
             { title: 'Master', url: '/master' },
             { title: 'Hawb stock ' },
-          ]
+          ] 
         }
       },
       {
