@@ -6,7 +6,7 @@ import { MasterService } from '../../master.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { FfUser, UserRole } from 'src/app/modules/crm-mobile/Interfaces/ffuser.interface';
 import { CommonModule } from '@angular/common';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
@@ -21,19 +21,21 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 import { PasswordValidators } from 'src/app/core/ValidationFn/password.validators';
+import { TogglerComponent } from 'src/app/component/simple-toggler/toggle.component';
 
 @Component({
 	selector: 'app-user-entry',
 	standalone: true,
 	imports: [
-		NgSelectModule, 
+		NgSelectModule,
 		FeatherModule,
 		ReactiveFormsModule,
 		CommonModule,
 		OnlyTextDirective,
 		OnlyNumbersDirective,
 		TextWithNumbersDirective,
-		MultiSelectComponent
+		MultiSelectComponent,
+		FormsModule
 	],
 	templateUrl: './user-entry.component.html',
 	styleUrl: './user-entry.component.scss'
@@ -41,29 +43,30 @@ import { PasswordValidators } from 'src/app/core/ValidationFn/password.validator
 export class UserEntryComponent implements OnInit {
 
 	UserMasterSid: number;
-	isEditMode : boolean;
+	isEditMode: boolean;
 	userData: FfUser;
 	userForm !: FormGroup;
-	userCompanyForm !: FormGroup;
-	userRoleForm !:FormGroup;
 
-	departmentList : any[];
-	filteredDeptList : any[] = [];
-	userTypeList : any[];
-	companyList : any[];
-	branchList : any[];
-	filteredBranchList : any[] = []
-	roleList : any[] = [];
-	filteredRoleList : any[] = [];
-	countryList : any[];
-	passwordView : boolean
+	departmentList: any[];
+	userTypeList: any[];
+	companyList: any[];
+	branchList: any[];
+	menuList: any[];
+	roleList: any[] = [];
+	countryList: any[];
+	passwordView: boolean
 	btnDisable: boolean = true;
-	
+
 	permissions: string[] = [];
-    currentMenuPermissions: any = {};
+	currentMenuPermissions: any = {};
+	userInfos: any[] = [];  // for displaying branches 
+	selectedCompanies: any[];
+	selectedBranches: { [key: number]: number[] } = {};
+	selectedRoles: any[] = [];
+
 	modeOfStatus = [
-		{name : 'Active'},
-		{name : 'Suspended'}
+		{ name: 'Active' },
+		{ name: 'Suspended' }
 	]
 	currentMenuId: number;
 	TandCList: any;
@@ -76,17 +79,16 @@ export class UserEntryComponent implements OnInit {
 		private router: Router,
 		private currentRoute: ActivatedRoute,
 		private modalService: NgbModal,
-		private fb:FormBuilder,
-		private settingService : SettingsService
+		private fb: FormBuilder,
+		private settingService: SettingsService
 	) { }
 
 	ngOnInit(): void {
-		this.initUserForm(); 
+		this.initUserForm();
 		this.loadAllFields();
 		this.userForm.statusChanges.subscribe(status => {
-		this.btnDisable = status !== 'VALID';
-	});
-
+			this.btnDisable = status !== 'VALID';
+		});
 		this.currentRoute.paramMap.subscribe((param) => {
 			this.UserMasterSid = +param.get('id');
 			if (this.UserMasterSid) {
@@ -94,93 +96,89 @@ export class UserEntryComponent implements OnInit {
 				this.loadUserData(this.UserMasterSid);
 			}
 		});
-		  this.appSettingService.getUser().subscribe((user) => {
-      if (user) {
-        this.userData = user;
-        this.checkPermissions();
-      }
-    });
+		this.appSettingService.getUser().subscribe((user) => {
+			if (user) {
+				this.userData = user;
+				this.checkPermissions();
+			}
+		});
+		if(!this.isEditMode){
+			this.userForm.get('userPassword')?.setValidators([Validators.required,PasswordValidators.validate()])
+		}
 	}
 
-	  checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId);
-    console.log(userRole);
-    if (currentMenuId && userRole) {
-      this.masterService
-        .getRoleMenuPermissions(currentMenuId, userRole)
-        .subscribe({
-          next: (response) => {
-            this.currentMenuPermissions = response.data.MenuPermissions || {};
-            this.permissions = Object.keys(this.currentMenuPermissions).filter(
-              (key) => this.currentMenuPermissions[key] === 'isTrue'
-            );
-            console.log(this.permissions);
-          },
-        });
-    }
-  }
+	//  Checks permissions based on userRole
+	checkPermissions() {
+		const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+		if (currentMenuId && userRole) {
+			this.masterService
+				.getRoleMenuPermissions(currentMenuId, userRole)
+				.subscribe({
+					next: (response) => {
+						this.currentMenuPermissions = response.data.MenuPermissions || {};
+						this.permissions = Object.keys(this.currentMenuPermissions).filter(
+							(key) => this.currentMenuPermissions[key] === 'isTrue'
+						);
+					},
+				});
+		}
+	}
 
-  hasPermission(permission: string): boolean {
-    return this.permissions.includes(permission);
-  }
+	//  checks for menu permission
+	hasPermission(permission: string): boolean {
+		return this.permissions.includes(permission);
+	}
 
+	// initializes userForm
 	initUserForm() {
 		this.userForm = this.fb.group({
 			userName: ['', [Validators.required]],
-			userEmail: ['', [Validators.required,EmailValidators.singleEmail()]],
-			department: [[], [Validators.required]], 
+			userEmail: ['', [Validators.required, EmailValidators.singleEmail()]],
+			department: [[], [Validators.required]],
 			DefaultDept: [''],
 			isSalesperson: [false],
-			userTypeId: [,[Validators.required]],
+			userTypeId: [, [Validators.required]],
 			contactNumber: [],
 			status: ['Active'],
-			userPassword: [,[PasswordValidators.validate()]],
-			CountryMasterSid: [,[Validators.required]],
-			CompanyMasterSid : [,[Validators.required]],
-			branches : [[],[Validators.required]],
-			roles : [[],[Validators.required]]
+			userPassword: [, [PasswordValidators.validate()]],
+			CountryMasterSid: [, [Validators.required]],
+			companies : [null,[Validators.required]],
+			roles: [null,[Validators.required]]
 		});
 		this.userForm.get('DefaultDept').disable()
 	}
 
-
-
-	loadAllFields(){
+	// loads all lookups
+	loadAllFields() {
 		forkJoin({
-			departments : this.masterService.getAllDepartments(),
-			userType : this.masterService.getAllUserType(),
-			companies : this.masterService.getAllCompanies(),
-			roles : this.settingService.getAllRole(),
-			countries : this.masterService.getAllCountry()
-		}).subscribe(({departments,userType,companies,roles,countries})=>{
+			departments: this.masterService.getAllDepartments(),
+			userType: this.masterService.getAllUserType(),
+			companies: this.masterService.getAllCompanies(),
+			roles: this.settingService.getAllRole(),
+			countries: this.masterService.getAllCountry(),
+			menus: this.settingService.getAllMenu()
+		}).subscribe(({ departments, userType, companies, roles, countries, menus }) => {
 			this.departmentList = departments,
-			this.filteredDeptList = departments,
 			this.userTypeList = userType.data,
 			this.companyList = companies
-			this.filteredRoleList = roles.data;
 			this.roleList = roles.data;
 			this.countryList = countries.data;
+			this.menuList = menus;
+			this.handleCompanySelect(this.selectedCompanies);
 		})
 	}
 
 	// Load Data for Edit Mode
-	loadUserData(UserMasterSid:number){
+	loadUserData(UserMasterSid: number) {
 		this.masterService.getFfUserById(UserMasterSid).subscribe(
-			(resp :any)=>{
-				if(resp.status){
+			(resp: any) => {
+				if (resp.status) {
 					this.userData = resp.data;
 					const user = resp.data;
-					const userCompanyMasterSid = user.userCompanyMaster[0].CompanyMasterSid;
-					this.getBranchesByCompanyId({ CompanyMasterSid : userCompanyMasterSid});
-					const userBranches = user.userBranchMaster.map(
-						(branch) => 
-							branch.BranchMasterSid
-					)
-					const userRoles = user.userRoleMaster.map(
-						(role:UserRole) => role.RoleMasterSid
-					)
+					this.patchCompanies(user.userCompanyMaster);
+					this.patchBranches(user.userBranchMaster);
+					const rolePatchValue = user.userRoleMaster.map(userRole => userRole.RoleMasterSid);
 					this.userForm.patchValue({
 						userName: user.userName,
 						userEmail: user.userEmail,
@@ -192,25 +190,23 @@ export class UserEntryComponent implements OnInit {
 						status: user.status === 'A' ? 'Active' : 'Suspended',
 						userPassword: user.userPassword,
 						CountryMasterSid: user.CountryMasterSid,
-						CompanyMasterSid: userCompanyMasterSid,
-						branches: userBranches,
-						roles:userRoles
+						roles : rolePatchValue,
 					})
 					this.setDefaultDept();
-					
+
 				} else {
 					this.appSettingService.showError('Error Loading User Data')
 				}
 			},
-			(error)=>{
+			(error) => {
 				this.appSettingService.showError('Error Loading User Data');
-				console.error('Error Loading User Data',error);
+				console.error('Error Loading User Data', error);
 			}
 		)
 	}
 
-	onSubmit(){
-		if(this.userForm.invalid){
+	onSubmit() {
+		if (this.userForm.invalid) {
 			this.userForm.markAllAsTouched();
 			this.userForm.updateValueAndValidity();
 			this.appSettingService.showWarning('Please fill all the required fields');
@@ -221,41 +217,50 @@ export class UserEntryComponent implements OnInit {
 		const formValue = this.userForm.getRawValue();
 
 		const payload = {
-			...formValue,
-			userCode: this.getUserCode(formValue.userName),
+			userName: formValue.userName,
+			userEmail: formValue.userEmail,
+			department: formValue.department,
+			DefaultDept: formValue.DefaultDept,
 			isSalesperson: formValue.isSalesperson ? '1' : '0',
+			userTypeId: formValue.userTypeId,
+			contactNumber: formValue.contactNumber,
+			CountryMasterSid: formValue.CountryMasterSid,
 			status: formValue.status === 'Active' ? 'A' : 'S',
-			...(this.isEditMode ?  { updatedBy: currentUserEmail } : { createdBy: currentUserEmail }),
+			companies: formValue.companies,
+			branches: this.selectedBranches,
+			roles : formValue.roles,
+			userCode: this.getUserCode(formValue.userName),
+			...(this.isEditMode ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail,userPassword: formValue.userPassword, }),
 		}
 
-		if(this.isEditMode){
-			this.masterService.updateFfUserById(this.UserMasterSid,payload).subscribe(
-				(resp:any)=>{
-					if(resp.status){
+		if (this.isEditMode) {
+			this.masterService.updateFfUserById(this.UserMasterSid, payload).subscribe(
+				(resp: any) => {
+					if (resp.status) {
 						this.appSettingService.showSuccess('User Updated Successfully');
 						this.router.navigate(['master/user/list']);
 					} else {
 						this.appSettingService.showError('Error Updating User');
 					}
 				},
-				(error)=>{						
+				(error) => {
 					this.appSettingService.showError('Error Updating User');
-					console.error('Error Updating User',error);
+					console.error('Error Updating User', error);
 				}
 			)
 		} else {
 			this.masterService.createNewFfUser(payload).subscribe(
-				(resp : any)=>{
-					if(resp.status){
+				(resp: any) => {
+					if (resp.status) {
 						this.appSettingService.showSuccess('New User Successfully Created');
 						this.router.navigate(['master/user/list']);
 					} else {
 						this.appSettingService.showError('Error Creating User');
 					}
 				},
-				(error)=>{						
+				(error) => {
 					this.appSettingService.showError('Error Creating User');
-					console.error('Error Creating User',error);
+					console.error('Error Creating User', error);
 				}
 			)
 		}
@@ -265,25 +270,124 @@ export class UserEntryComponent implements OnInit {
 
 	// ====== Helper Functions ========= \\
 
-	getBranchesByCompanyId(company){
-		if(!company) return;
-		this.userForm.get('branches')?.setValue([]);
-		this.branchList = [];
-		this.masterService.getBranchesByCompanyId(company.CompanyMasterSid).subscribe(
-			(resp:any)=>{
-				this.branchList = resp;
-				this.filteredBranchList = resp;
+	toggleCheckbox(event :Event){
+		event.preventDefault();
+		const element = event.target as HTMLInputElement;
+		element.checked = !element.checked;
+		this.userForm.get('isSalesperson').setValue(!this.userForm.get('isSalesperson').value)
+		this.userForm.get('isSalesperson').updateValueAndValidity();
+	}
+
+	// ====== Company Related Functions ========= \\
+
+	//  Handles Selected Company during patching
+	patchCompanies(companyList: any[]) {
+		if (!companyList) {
+			return;
+		}
+		const companies = companyList.map(userCompany => userCompany.CompanyMasterSid);
+		this.userForm.get('companies').setValue(companies);
+		this.addToSelectedCompanies(companies)
+
+	}
+
+	// handles selected Company during user event
+	addToSelectedCompanies(value: any[]) {
+		this.selectedCompanies = value;
+		this.userForm.get('companies').setValue(value);
+		this.lookAfterBranch();
+		if (this.companyList !== undefined) {
+			this.handleCompanySelect(value);
+		}
+	}
+	// Once a company is removed it filter out the related branch
+	lookAfterBranch() {
+		if (!this.selectedBranches || !this.selectedCompanies) {
+			return;
+		}
+		const updatedBranches: any = {};
+		for (const companyId of Object.keys(this.selectedBranches)) {
+			if (this.selectedCompanies.includes(Number(companyId))) {
+				updatedBranches[companyId] = this.selectedBranches[companyId];
 			}
-		)
+		}
+		this.selectedBranches = updatedBranches;
 	}
 
-	clearCompany(){
-		this.userForm.get('branches')?.setValue([]);
-		this.branchList = [];
-		this.filteredBranchList = []
+	//  On selecting a company it takes Company and branchMaster to UI through userInfo variable
+	handleCompanySelect(company: any[]) {
+		if (!company) {
+			return;
+		}
+		const newArr = company.map(companyId => {
+			const ourCompany = this.companyList.find(company => company.CompanyMasterSid === companyId);
+			let companyName = ourCompany.companyName;
+			let branchMaster = ourCompany.branchMaster;
+			return {
+				CompanyMasterSid: companyId,
+				companyName: companyName,
+				branches: branchMaster
+			};
+		})
+		this.userInfos = newArr;
 	}
 
-	getUserCode(userName : string){
+
+	// ====== Branch Related Functions ========= \\\
+
+	//  Check if a branch is selected
+	isCheckedBranch(BranchMasterSid){
+		if(!BranchMasterSid || !this.selectedBranches){
+			return false;
+		}
+		const branches = Object.values(this.selectedBranches).flat();
+		return branches.includes(BranchMasterSid);
+	}
+
+	patchBranches(branchList: any[]) {
+		if (!branchList) {
+			return;
+		}
+		branchList.map(branch => this.handleBranchToggle(true, branch))
+	}
+
+
+	toggleBranchCheckBox(event:Event,branch){
+		event.preventDefault();
+		const element = event.target as HTMLInputElement;
+		if(event instanceof KeyboardEvent){
+			element.checked = !element.checked;
+		}
+		this.handleBranchToggle(element.checked,branch);
+	}
+
+	handleBranchToggle(event, branch) {
+		let key = branch.CompanyMasterSid;
+		if (event) {
+			if (this.selectedBranches[key] !== null) {
+				const existArr = this.selectedBranches[key] || [];
+				if (existArr.includes(branch.BranchMasterSid)) {
+					return;
+				}
+				const newArr = [...existArr, branch.BranchMasterSid]
+				this.selectedBranches[key] = [...newArr];
+			}
+			else {
+				this.selectedBranches[key] = [branch.BranchMasterSid];
+			}
+		}
+		else {
+			const existArr = this.selectedBranches[branch.CompanyMasterSid] || [];
+			const newArr = existArr.filter(ex => ex !== branch.BranchMasterSid);
+			if (newArr.length === 0) {
+				delete this.selectedBranches[branch.CompanyMasterSid];
+			} else {
+				this.selectedBranches[branch.CompanyMasterSid] = newArr;
+			}
+		}
+	}
+
+	getUserCode(userName: string) {
 		return userName.replace(/\s+/g, '_');
 	}
 
@@ -291,14 +395,9 @@ export class UserEntryComponent implements OnInit {
 		const departmentSelected: string[] = this.userForm.get('department')?.value || [];
 		if (departmentSelected.length > 0) {
 			this.userForm.get('DefaultDept')?.setValue(departmentSelected[0]);
-		} else { 
+		} else {
 			this.userForm.get('DefaultDept')?.setValue('');
 		}
-	}
-
-	
-	clearDefaultDept(){
-		this.userForm.get('DefaultDept').reset();
 	}
 
 	navigateBack() {
@@ -324,10 +423,26 @@ export class UserEntryComponent implements OnInit {
 		input.type = 'password'; // Hide password on mouseup or mouseleave
 	}
 
-	resetForm(){
+	resetForm() {
 		this.userForm.reset({
-			status : 'Active'
-		})
+			userName: '',
+			userEmail: '',
+			department: [],
+			DefaultDept: '',
+			isSalesperson: false,
+			userTypeId: null,
+			contactNumber: '',
+			status: 'Active',
+			userPassword: null,
+			CountryMasterSid: null,
+			companies: [],
+			roles: [] 
+		});
+
+		this.selectedCompanies = [];
+		this.selectedBranches = {};
+		this.userInfos = [];
+		this.setDefaultDept();
 	}
 
 
@@ -366,28 +481,96 @@ export class UserEntryComponent implements OnInit {
 		});
 	}
 
-openAuthority() {
-  if (!this.userData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.userData;
-  modalRef.componentInstance.idLabel = 'User Id';
-  modalRef.componentInstance.idValue = this.userData?.UserMasterSid;
-}
+	openAuthority() {
+		if (!this.userData) return;
+		const modalRef = this.modalService.open(AuthorityEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+		modalRef.componentInstance.item = this.userData;
+		modalRef.componentInstance.idLabel = 'User Id';
+		modalRef.componentInstance.idValue = this.userData?.UserMasterSid;
+	}
 
-openEDoc() {
-  if (!this.userData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.userData;
-  modalRef.componentInstance.idLabel = 'User Id';
-  modalRef.componentInstance.idValue = this.userData?.UserMasterSid;
+	openEDoc() {
+		if (!this.userData) return;
+		const modalRef = this.modalService.open(EdocComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+		modalRef.componentInstance.item = this.userData;
+		modalRef.componentInstance.idLabel = 'User Id';
+		modalRef.componentInstance.idValue = this.userData?.UserMasterSid;
+	}
+	
 }
+// constructRoleForm(data?: any) {
+	// 	if (data) {
+	// 		return this.fb.group({
+	// 			RoleMasterSid: [data.RoleMasterSid || '', [Validators.required]],
+	// 			MenuMasterSid: [data.MenuMasterSid || null, [Validators.required]],
+	// 			GiveAccess: [data.GiveAccess || false],
+	// 			IsDefault: [data.IsDefault || false],
+	// 			UserRoleName: [data.UserRoleName || '']  // Only for Displaying purpose
+	// 		})
+	// 	}
+	// 	return this.fb.group({
+	// 		RoleMasterSid: ['', [Validators.required]],
+	// 		MenuMasterSid: [null, [Validators.required]],
+	// 		GiveAccess: [false],
+	// 		IsDefault: [false],
+	// 		UserRoleName: ['']  // Only for Displaying purpose
+	// 	})
+	// }
 
-}
+	// get roles(): FormArray {
+	// 	return this.userForm.get('roles') as FormArray;
+	// }
+	
+	// addRoleChanges(role: any) {
+	// 	const roleFormWithRoleId = this.constructRoleForm({ RoleMasterSid: role.RoleMasterSid, UserRoleName: role.UserRoleName });
+	// 	this.roles.push(roleFormWithRoleId)
+	// }
+
+	// removeRoleChanges(role: any) {
+	// 	const requiredId = this.roles.value.findIndex(
+	// 		roleFromArr => roleFromArr.RoleMasterSid === role.RoleMasterSid
+	// 	)
+	// 	this.roles.removeAt(requiredId);
+	// }
+
+	// clearRoleChanges() {
+	// 	this.roles.clear();
+	// }
+
+	// patchRoles(userRoleList:any[]){
+	// 	userRoleList.map(userRole => {
+	// 		this.selectedRoles = [...this.selectedRoles,userRole.RoleMasterSid];
+	// 		const formGroupWithData = this.constructRoleForm({
+	// 			RoleMasterSid : userRole.RoleMasterSid,
+	// 			UserRoleName : userRole.roleMaster?.UserRoleName,
+	// 			MenuMasterSid : userRole.MenuMasterSid,
+	// 			GiveAccess : userRole.GiveAccess === 'Y' ? true : false,
+	// 			IsDefault : userRole.IsDefault === 'Y' ? true : false,
+	// 		})
+	// 		this.roles.push(formGroupWithData);
+	// 	})
+	// }
+
+	// prepareRolePayload(){
+	// 	const rolesArray :any[] = this.roles.value;
+	// 	let result = [];
+	// 	if(rolesArray.length > 0){
+	// 		result = rolesArray.map(roleItem => {
+	// 			return ({
+	// 				RoleMasterSid: roleItem.RoleMasterSid,
+	// 				MenuMasterSid: roleItem.MenuMasterSid,
+	// 				GiveAccess: roleItem.GiveAccess ? 'Y' : 'N',
+	// 				IsDefault: roleItem.IsDefault ? 'Y' : 'N'
+	// 			})
+	// 		})
+	// 	}
+	// 	return result;
+	// }

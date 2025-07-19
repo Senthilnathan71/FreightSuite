@@ -61,6 +61,9 @@ export class MultiSelectComponent implements ControlValueAccessor {
       this.control = new FormControl([]);
     }
     this.updateInternalValue();
+    this.control.valueChanges.subscribe(value => {
+      this.internalValue = value || [];
+    });
   }
 
   ngOnChanges() {
