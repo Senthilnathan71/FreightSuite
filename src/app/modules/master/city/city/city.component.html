@@ -184,7 +184,7 @@
                 <div class="col-md-12">
 
                     <div class="row">
-                        <aside class="col-md-4">
+                        <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input formControlName="cityName" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm" [onlyText]="100">
@@ -204,7 +204,7 @@
                             </div>
                         </aside>
 
-                        <aside class="col-md-4">
+                        <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input formControlName="cityCode" type="text" id="text-input" placeholder=""
                                     class="custom-input-field sm" [textWithNumbers]="3">
@@ -222,7 +222,7 @@
                             </div>
                         </aside>
 
-                        <aside class="col-md-4">
+                        <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <select formControlName="CountryMasterSid" class="form-select">
                                     <option value="" disabled selected>Select Country</option>
@@ -242,7 +242,7 @@
                             </div>
                         </aside>
 
-                        <aside class="col-md-4">
+                        <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <select formControlName="StateMasterSid" class="form-select">
                                     <option value="" disabled selected>Select State</option>
@@ -261,7 +261,7 @@
                                 }
                             </div>
                         </aside>
-                        <aside class="col-md-4">
+                        <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select [items]="statusList" formControlName="status"
                                     [class.is-invalid]="cityForm.get('status')?.invalid && cityForm.get('status')?.touched"
@@ -304,8 +304,8 @@
       </button>
     }
             }
-            <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-            <button type="button" class="btn btn-info" (click)="onSubmit()" [disabled]="btnDisable || cityForm.invalid">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()" [disabled]="btnDisable || cityForm.invalid">
                 {{ isEditMode ? 'Update' : 'Save' }}
             </button>
         </div>

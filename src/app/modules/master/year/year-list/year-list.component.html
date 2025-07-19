@@ -68,8 +68,8 @@
     </div>
 
 
-
-    <div class="col-12" *ngIf="totalLengthOfCollection > 0">
+<div  class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+     <div class="col-12 p-0" >
         <div class="card">
             <div class="card-body p-2">
                 <div class="table-responsive">
@@ -175,13 +175,16 @@
                     </table>
                 </div>
             </div>
-        </div>
-        <div>
+            <div>
             <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
                 [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [maxSize]="10" [rotate]="true" [ellipses]="false">
             </ngb-pagination>
         </div>
+        </div>
+        
     </div>
+</div>
+   
     <!-- No records found -->
     <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searched">
         <div>No records found</div>
