@@ -16,7 +16,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
-  selector: 'app-generation-entry',
+   selector: 'app-hawb-stock-entry',
   standalone: true,
   imports: [
     CommonModule, 
@@ -26,14 +26,14 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     NgbDatepickerModule,
     DatePipe
   ],
-  templateUrl: './generation-entry.component.html',
-  styleUrls: ['./generation-entry.component.scss'],
+   templateUrl: './hawb-stock-entry.component.html',
+  styleUrl: './hawb-stock-entry.component.scss',
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
 })
-export class GenerationEntryComponent implements OnInit {
+export class HawbStockEntryComponent implements OnInit {
   hawbForm!: FormGroup;
   isEditMode = false;
   HawbStockSid: number | null = null;
@@ -239,11 +239,13 @@ generateAWB(): void {
   }
 
   onSubmit(): void {
+     if (this.btnDisable) return; 
     if (this.hawbForm.invalid) {
       this.hawbForm.markAllAsTouched();
       this.appSettingsService.showWarning('Please fill all required fields correctly.');
       return;
     }
+    this.btnDisable = true; 
 
     const payload = this.preparePayload();
     

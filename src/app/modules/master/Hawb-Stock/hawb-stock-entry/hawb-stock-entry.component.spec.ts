@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GenerationEntryComponent } from './generation-entry.component';
+import { HawbStockEntryComponent } from './hawb-stock-entry.component';
 
-describe('GenerationEntryComponent', () => {
-  let component: GenerationEntryComponent;
-  let fixture: ComponentFixture<GenerationEntryComponent>;
+describe('HawbStockEntryComponent', () => {
+  let component: HawbStockEntryComponent;
+  let fixture: ComponentFixture<HawbStockEntryComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [GenerationEntryComponent]
+      imports: [HawbStockEntryComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(GenerationEntryComponent);
+    fixture = TestBed.createComponent(HawbStockEntryComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
