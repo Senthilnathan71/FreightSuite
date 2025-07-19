@@ -3112,6 +3112,68 @@ export class MasterService {
     );
   }
 
+
+  ///SubledgerMaster
+
+
+    getAllSuledgermaster() {
+    return this.http.get<{ data: any[] }>('subledgermaster').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  fetchSubledgerMasterId(id: number) {
+    return this.http.get<{ data: any }>(`subledgermaster/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+
+   createNewSubledgerMaster(payload: any) {
+    return this.http.post<{ data: any }>('subledgermaster/create', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  updateSubledgerMasterById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`subledgermaster/update/${id}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+
+    )
+  }
+
+
+  deleteSudledgerMaster(id: number) {
+    return this.http.delete<{ data: any }>(`subledgermaster/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  searchSubledgerMaster(payload) {
+    return this.http.post<{ data: any }>("subledgermaster/search-list", payload).pipe(
+      map((res: any) => {
+        let response = res;
+        return response
+      })
+    );
+  }
+
+
 }
 
 
