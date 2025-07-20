@@ -76,11 +76,12 @@
                         <tr *ngFor="let item of ledgerMappingList; let i = index">
                             <td>
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
-                                    <button class="btn btn-sm btn-link text-primary p-0 mx-2" title="Edit" >
+                                    <button class="btn btn-sm btn-link text-primary p-0 mx-2" title="Edit"
+                                        (click)="editLedgerMapping(item.SubledgerMasterSid, content)">
                                         <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </button>
-                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3"
-                                        title="Delete"  (click)="deleteSudledgerMaster(item.selectedId)">
+                                    <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3" title="Delete"
+                                        (click)="deleteSudledgerMaster(item.SubledgerMasterSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </button>
                                 </div>
@@ -89,9 +90,9 @@
                                 <div class="text-truncate">{{ item.SubledgerName }}</div>
                             </td>
                             <td>
-                                 <div class="text-truncate">{{ item.SubledgerType }}</div>
+                                <div class="text-truncate">{{ item.SubledgerType }}</div>
                             </td>
-                          <td>
+                            <td>
                                 @if(item.Status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
@@ -122,7 +123,7 @@
     <ng-template #content let-modal>
 
         <div class="modal-header bg-info text-white p-2">
-            <h5 class="modal-title">Subledger Mapping</h5>
+            <h5 class="modal-title">{{ isEditMode ? 'Edit subledger Mapping' : 'Add subledger Mapping' }}</h5>
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
                 (click)="modal.dismiss()"></button>
         </div>
@@ -134,57 +135,73 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="Name" placeholder="" class="custom-input-field sm"
-                                    formControlName="ledgerName">
-                                <label for="Name" class="input-label">Subledger Name <span
+                                    formControlName="SubledgerName">
+                                <label for="Name" class="input-label">Name <span
                                         class="text-danger fw-bold"></span></label>
                                 <div class="error-message text-danger small">
-                                    @if (ledgerForm.get('ledgerName')?.touched && ledgerForm.get('ledgerName')?.invalid) {
+                                    @if (ledgerForm.get('SubledgerName')?.touched && ledgerForm.get('SubledgerName')?.invalid)
+                                    {
                                     <span>Subledger Name is required</span>
                                     }
                                 </div>
                             </div>
                         </aside>
 
+                       <!-- Subledger Type -->
                         <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="Code" placeholder="" class="custom-input-field sm"
-                                    formControlName="Code">
-                                <label for="Code" class="input-label"> Code <span
-                                        class="text-danger fw-bold"></span></label>
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select
+                            [items]="['Customer', 'Charge']"
+                            bindLabel="name"
+                            bindValue="id"
+                            formControlName="subledgerType"
+                           
+                            (change)="onSubledgerTypeChange($event)">
+                            </ng-select>
+                            <label class="input-label">Subledger Type <span class="text-danger">*</span></label>
+                            <div class="error-message text-danger small">
+                            @if (ledgerForm.get('subledgerType')?.touched && ledgerForm.get('subledgerType')?.invalid) {
+                                <span>Subledger Type is required</span>
+                            }
+                            </div>
+                        </div>
+                        <!-- subledgerMapping -->
+                        </aside>
+                            <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select
+                                [items]="subledgerMappingOptions"
+                                 bindLabel="name"
+                                 bindValue="id"
+                                formControlName="SubledgerMapping"
+                                >
+                                </ng-select>
+                                <label class="input-label">Subledger Mapping <span class="text-danger">*</span></label>
                                 <div class="error-message text-danger small">
-                                    @if (ledgerForm.get('Code')?.touched && ledgerForm.get('Code')?.invalid) {
-                                    <span>Code is required</span>
-                                    }
+                                @if (ledgerForm.get('SubledgerMapping')?.touched && ledgerForm.get('SubledgerMapping')?.invalid) {
+                                    <span>Subledger Mapping is required</span>
+                                }
                                 </div>
                             </div>
-                        </aside>
+                            </aside>
+
 
 
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
-                               
-                                <ng-select [items]="modeOfSubledgerType" bindLabel="name" bindValue="id"
-                                    formControlName="subledgerType" >
+                                <ng-select [items]="ledgerList" bindLabel="Ledgername2" bindValue="COAMasterSid"
+                                 [(ngModel)]="selectedLedger"
+                                    formControlName="COAmaster">
                                 </ng-select>
-                                 <label class="input-label">Subledger Type <span class="text-danger">*</span></label>
-                               <div class="error-message text-danger small">
-                                    @if (ledgerForm.get('subledgerType')?.touched && ledgerForm.get('subledgerType')?.invalid) {
-                                    <span>subledgerType is required</span>
-                                    }
+                                <label class="input-label">COA Master <span class="text-danger"></span></label>
+                                  <div class="error-message text-danger small">
+                                @if (ledgerForm.get('COAmaster')?.touched && ledgerForm.get('COAmaster')?.invalid) {
+                                    <span>COA Master is required</span>
+                                }
                                 </div>
                             </div>
-                       
                         </aside>
 
-
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="number" id="text-input" class="custom-input-field sm"
-                                    formControlName="CoaMaster" placeholder="">
-                                <label for="text-input" class="input-label">CoaMaster <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
 
                         <aside class="col-md-6">
                             <div class="custom-form-group">
