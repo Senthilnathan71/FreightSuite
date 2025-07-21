@@ -11,20 +11,20 @@
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
-                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                            <input name="filterValue" type="text" [(ngModel)]="filterValue" class="form-control pe-5" placeholder="Search"
                                  aria-label="Search input">
                             <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                  tabindex="0" aria-label="Clear search"
                                 data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
                                 onfocus="this.classList.replace('text-secondary','text-danger')"
-                                onblur="this.classList.replace('text-danger','text-secondary')">
+                                onblur="this.classList.replace('text-danger','text-secondary')" (click)="clearFilterValue()">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
                             <button type="submit" 
-                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchSupplierTDS()">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
                         </div>
@@ -42,13 +42,13 @@
                         <i class="fas fa-plus me-1"></i> Create
                     </button>
 
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                       >
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
+                      [disabled]="!searchPerformed" >
                         <i class="fas fa-file-alt me-1"></i> Report
                     </button>
 
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                        >
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()" 
+                       [disabled]="!searchPerformed" >
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </button>
                 </form>
@@ -59,65 +59,76 @@
     </div>
 
 
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered">
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Ledger Name</th>
-                            <th class="bg-transparent text-light" scope="col">Vendor Name</th>
-                            <th class="bg-transparent text-light" scope="col">Pan No</th>
-                            <th class="bg-transparent text-light" scope="col">Person Type</th>
-                            <th class="bg-transparent text-light" scope="col">Country Name</th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('CustomerName')">Supplier Name <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CustomerName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CustomerName'}"></i></th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('PanNo')">PAN No <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PanNo', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PanNo'}"></i></th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('CompanyType')">Company Type <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CompanyType', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CompanyType'}"></i></th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('CountryName')">Country <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CountryName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CountryName'}"></i></th>
                             <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
 
                         </tr>
                     </thead>
                     <tbody>
-                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
+                        @for (item of allSupplierTDS; track trackBy(item.SupplierTdsMappingSid,item)) {
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2" class="link mx-2 ps-3 ">
-                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                    <a class="text-info mx-2" class="link mx-2 ps-3 " [routerLink]="['/accounts/supplier-tds/entry',item.SupplierTdsMappingSid]" >
+                                        <i-feather class="feather-sm text-info" name="eye" ></i-feather>
                                     </a>
-                                    <a class="text-danger mx-2 ps-3 border-start">
+                                    <a class="text-danger mx-2 ps-3 border-start" (click)="deleteSupplierTDS(item.SupplierTdsMappingSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
                                 </div>
                             </td>
                             <td>
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.SupplierName}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">RO</div>
+                                <div class="text-truncate">{{item.PanNo}}</div>
                             </td>
                              <td>
-                                <div class="text-truncate">RO</div>
+                                <div class="text-truncate">{{item.CompanyType}}</div>
                             </td>
                              <td>
-                                <div class="text-truncate">RO</div>
+                                <div class="text-truncate">{{item.CountryName}}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">Rial</div>
-                            </td>
-                            <td>
-                                <span
-                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                @if(item.status === "Active"){
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Active</span>
+                                    Active
+                                </div>
+                                } @else {
+                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Suspended
+                                </div>
+                                }
                             </td>
-
-
-
                         </tr>
                         }
                     </tbody>
                 </table>
             </div>
         </div>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginationData()">
+            </ngb-pagination>
+        </div>
     </div>
-
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0">
+        <div class="alert alert-info text-center">No records found</div>
+    </div>
 </div>

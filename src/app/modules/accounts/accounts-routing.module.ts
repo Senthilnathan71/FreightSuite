@@ -132,7 +132,7 @@ export const AccountRoutes: Routes = [
         },
       },
        {
-        path: "vendor-tds/list",
+        path: "supplier-tds/list",
         component: VendorTdsListComponent,
         data: {
           title: "Supplier TDS Mapping",
@@ -143,7 +143,18 @@ export const AccountRoutes: Routes = [
         },
       },
       {
-        path: "vendor-tds/entry",
+        path: "supplier-tds/entry",
+        component: VendorTdsEntryComponent,
+        data: {
+          title: "Supplier TDS Mapping",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Vendor TDS" },
+          ],
+        },
+      },
+      {
+        path: "supplier-tds/entry/:id",
         component: VendorTdsEntryComponent,
         data: {
           title: "Supplier TDS Mapping",
