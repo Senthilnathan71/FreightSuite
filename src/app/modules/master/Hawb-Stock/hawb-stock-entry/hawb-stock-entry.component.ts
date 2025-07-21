@@ -54,6 +54,8 @@ export class HawbStockEntryComponent implements OnInit {
   TandCList: any[]=[];
   hawstockData: any;
   btnDisable: boolean = false;
+   permissions: string[] = [];
+  currentMenuPermissions: any = {};
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -67,6 +69,13 @@ export class HawbStockEntryComponent implements OnInit {
 
   ngOnInit(): void {
     
+    
+       this.appSettingService.getUser().subscribe(user => {
+    if(user) {
+      this.userData = user;
+      this.checkPermissions();
+    }
+  });
     this.initForm();
     this.loadUserData();
     this.loadCustomers();
@@ -81,6 +90,27 @@ export class HawbStockEntryComponent implements OnInit {
       }
     });
   }
+
+        checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
 
   loadCompanies(): void {
   this.masterService.getAllCompanies().subscribe(

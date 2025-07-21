@@ -185,6 +185,7 @@
     </form>
 </div>
 @if(isEditMode){
+      @if(hasPermission('Edoc')) {
     <div class="col-12 mt-3">
     <div class="card">
         <div class="card-body">
@@ -211,4 +212,5 @@
         </div>
     </div>
 </div>
+      }
      } 

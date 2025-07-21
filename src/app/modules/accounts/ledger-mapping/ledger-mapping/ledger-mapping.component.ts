@@ -1,61 +1,3 @@
-// import { Component } from '@angular/core';
-// import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-// import { NgbModal, NgbModalModule, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-// import { NgSelectModule } from '@ng-select/ng-select';
-// import { FeatherModule } from 'angular-feather';
-// import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
-
-// @Component({
-//   selector: 'app-ledger-mapping',
-//   standalone: true,
-//   imports: [
-//     FavoriteStarComponent,
-//     NgbModalModule,
-//     FeatherModule,
-//     ReactiveFormsModule,
-//     NgSelectModule
-//   ],
-//   templateUrl: './ledger-mapping.component.html',
-//   styleUrl: './ledger-mapping.component.scss'
-// })
-// export class LedgerMappingComponent {
-//   modalRef!: NgbModalRef;
-//   ledgerForm!: FormGroup;
-
-//   constructor(private modalService: NgbModal, private fb: FormBuilder) {}
-
-//    modeOfStatus=[
-//     {id:"Active",name:"Active"},
-//     {id:"Suspended",name:"Suspended"},
-//   ]
-//   openModal(content: any): void {
-//     this.initForm();
-//     this.modalRef = this.modalService.open(content, {
-//       centered: true,
-//       size: 'lg',
-//       backdrop: 'static'
-//     });
-//   }
-
-//   initForm(): void {
-//     this.ledgerForm = this.fb.group({
-//       Name: ['', Validators.required],
-//       Code: ['', Validators.required],
-//       Remarks:['']
-//     });
-//   }
-
-//   onSubmit() {
-//     if (this.ledgerForm.invalid) {
-//       this.ledgerForm.markAllAsTouched();
-//       return;
-//     }
-
-//     console.log('Form Submitted:', this.ledgerForm.value);
-//     this.modalRef.close();
-//   }
-// }
-
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import {
@@ -73,7 +15,6 @@ import {
   NgbDatepickerModule,
   NgbDateAdapter,
   NgbDateParserFormatter,
-  NgbCalendar,
 } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
@@ -140,6 +81,7 @@ export class LedgerMappingComponent {
   isFavorite = false;
   filterValue = '';
   searchPerformed = false;
+  searched = false;
   ledgerMappingData: any;
   errorMessage = '';
   userData: any;
@@ -187,13 +129,23 @@ export class LedgerMappingComponent {
     });
   }
 
+  modeOfStatus = [
+    { id: 'A', name: 'Active' },
+    { id: 'S', name: 'Suspended' },
+  ];
+
+  modeOfSubledgerType = [
+    { id: 1, name: 'Customer', value: 'customer' },
+    { id: 2, name: 'Charge', value: 'charge' },
+  ];
+
   initForm(): void {
     this.ledgerForm = this.fb.group({
       SubledgerName: ['', Validators.required],
-      subledgerType: ['', Validators.required],
-      SubledgerMapping: ['', Validators.required],
-      COAmaster: ['',Validators.required],
-      Status: ['A'],
+      SubledgerType: ['', Validators.required],
+      SubledgerMappingSid: ['', Validators.required],
+      COAMasterSid: ['', Validators.required],
+      Status: ['Active'],
       Remarks: [''],
     });
   }
@@ -213,6 +165,7 @@ export class LedgerMappingComponent {
           this.applySorting();
           // this.updatePaginationData();
           this.ledgerMappingList = [...this.results];
+          this.searched = true;
           this.totalLengthOfCollection = response.data.totalCount || 0;
         } else {
           this.results = [];
@@ -220,6 +173,7 @@ export class LedgerMappingComponent {
           this.totalLengthOfCollection = 0;
         }
         this.searchPerformed = true;
+
         this.isLoading = false;
       },
       error: (err) => {
@@ -252,97 +206,49 @@ export class LedgerMappingComponent {
     });
   }
 
-// onSubledgerTypeChange(selectedId: number): void {
-//   this.ledgerForm.get('SubledgerMapoing')?.reset();
-
-//   const selected = this.modeOfSubledgerType.find(item => item.id === selectedId);
-
-//   if (!selected) {
-//     this.subledgerMappingOptions = [];
-//     return;
-//   }
-
-//   const selectedValue = selected.value;
-
-//   if (selectedValue === 'customer') {
-//     this.masterService.getAllCustomers().subscribe({
-//       next: (res) => {
-//         console.log('Customer API response:', res);
-//         if (res?.data) {
-//           this.subledgerMappingOptions = res.data.map((c: any) => ({
-//             id: c.id,
-//             name: c.CustomerName
-//           }));
-//         } else {
-//           this.subledgerMappingOptions = [];
-//         }
-//       },
-//       error: (err) => {
-//         console.error('Customer API error:', err);
-//         this.subledgerMappingOptions = [];
-//       }
-//     });
-//   } else if (selectedValue === 'charge') {
-//     this.masterService.getAllCharges().subscribe({
-//       next: (res) => {
-//         console.log('Charge API response:', res);
-//         if (res?.data) {
-//           this.subledgerMappingOptions = res.data.map((c: any) => ({
-//             id: c.id,
-//             name: c.chargeName
-//           }));
-//         } else {
-//           this.subledgerMappingOptions = [];
-//         }
-//       },
-//       error: (err) => {
-//         console.error('Charge API error:', err);
-//         this.subledgerMappingOptions = [];
-//       }
-//     });
-//   }
-// }
-
-onSubledgerTypeChange(selectedType: string): void {
-  this.ledgerForm.get('SubledgerMapoing')?.reset();
-
-  if (selectedType === 'Customer') {
-  this.masterService.getAllCustomers().subscribe((res: any) => {
-  console.log('API Response:', res);
-
-  const data = res?.data ?? res; 
-
-  if (Array.isArray(data)) {
-    this.subledgerMappingOptions = data.map((item: any) => ({
-      id: item.CustomerMasterSid,
-      name: item.CustomerName
-    }));
-    console.log('Mapped Options:', this.subledgerMappingOptions);
-  } else {
-    console.warn('Subledger data is not an array:', data);
+  updatePaginationData(): void {
+    const start = (this.page - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.loadLedgerMappings();
   }
-});
 
-  } else if (selectedType === 'Charge') {
-   this.masterService.getAllCharges().subscribe((res: any) => {
-  console.log('API Response:', res); 
+  onSubledgerTypeChange(selectedType: string): void {
+    this.ledgerForm.get('SubledgerMappingSid')?.reset();
 
-  const data = res?.data ?? res;
+    if (selectedType === 'Customer') {
+      this.masterService.getAllCustomers().subscribe((res: any) => {
+        console.log('API Response:', res);
 
-  if (Array.isArray(data)) {
-    this.subledgerMappingOptions = data.map((item: any) => ({
-      id: item.ChargeMasterSid,
-      name: item.chargeName
-    }));
-    console.log('Mapped Options:', this.subledgerMappingOptions);
-  } else {
-    console.warn('Subledger data is not an array:', data);
+        const data = res?.data ?? res;
+
+        if (Array.isArray(data)) {
+          this.subledgerMappingOptions = data.map((item: any) => ({
+            id: item.CustomerMasterSid,
+            name: item.CustomerName,
+          }));
+          console.log('Mapped Options:', this.subledgerMappingOptions);
+        } else {
+          console.warn('Subledger data is not an array:', data);
+        }
+      });
+    } else if (selectedType === 'Charge') {
+      this.masterService.getAllCharges().subscribe((res: any) => {
+        console.log('API Response:', res);
+
+        const data = res?.data ?? res;
+
+        if (Array.isArray(data)) {
+          this.subledgerMappingOptions = data.map((item: any) => ({
+            id: item.ChargeMasterSid,
+            name: item.chargeName,
+          }));
+          console.log('Mapped Options:', this.subledgerMappingOptions);
+        } else {
+          console.warn('Subledger data is not an array:', data);
+        }
+      });
+    }
   }
-});
-  }
-}
-
-
 
   deleteSudledgerMaster(id: number) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
@@ -355,17 +261,6 @@ onSubledgerTypeChange(selectedType: string): void {
     });
   }
 
-  modeOfStatus = [
-    { id: 'Active', name: 'Active' },
-    { id: 'Suspended', name: 'Suspended' },
-  ];
-
-modeOfSubledgerType = [
-  { id: 1, name: 'Customer', value: 'customer' },
-  { id: 2, name: 'Charge', value: 'charge' }
-];
-
-
   openModal(content: TemplateRef<any>, id?: number): void {
     this.modalRef = this.modalService.open(content, {
       size: 'lg',
@@ -376,36 +271,13 @@ modeOfSubledgerType = [
     if (id) {
       this.isEditMode = true;
       this.LedgerMappingId = id;
-      this.loadLedgerMappingData(id); // patch form
+      this.loadLedgerMappingData(id);
+      console.log(this.loadLedgerMappingData);
     } else {
       this.isEditMode = false;
-      this.ledgerForm.reset(); // Reset the form
+      this.ledgerForm.reset();
     }
   }
-
-  // openEditModal(content: any, id: number): void {
-  //   this.isEditMode = true;
-  //   this.LedgerMappingId = id;
-  //   this.masterService.fetchSubledgerMasterId(id).pipe(take(1)).subscribe({
-  //     next: (data: any) => {
-  //       this.ledgerMappingData = data;
-  //       this.ledgerForm.patchValue({
-  //         ledgerName: data.ledgerName,
-  //         subledgerType: data.subledgerType,
-  //         Status: data.Status,
-  //       });
-
-  //       this.modalRef = this.modalService.open(content, {
-  //         centered: true,
-  //         size: 'lg',
-  //         backdrop: 'static',
-  //       });
-  //     },
-  //     error: () => {
-  //       this.appSettingService.showError('Error loading data for editing.');
-  //     },
-  //   });
-  // }
 
   editLedgerMapping(id: number, content: any): void {
     this.isEditMode = true;
@@ -415,10 +287,12 @@ modeOfSubledgerType = [
       next: (res: any) => {
         if (res && res.data) {
           const data = res.data;
-
+          this.onSubledgerTypeChange(data.SubledgerType);
           this.ledgerForm.patchValue({
             SubledgerName: data.SubledgerName,
-
+            SubledgerType: data.SubledgerType,
+            COAMasterSid: data.COAMasterSid,
+            SubledgerMappingSid: data.SubledgerMappingSid,
             CompanyMasterSid: data.CompanyMasterSid,
             Status: data.Status === 'A' ? 'Active' : 'Suspended',
           });
@@ -443,11 +317,13 @@ modeOfSubledgerType = [
         const data = res.data;
         this.ledgerForm.patchValue({
           SubledgerName: data.SubledgerName,
-          LedgerCode: data.LedgerCode,
-          Description: data.Description,
-          CompanyMasterSid: data.CompanyMasterSid,
+          SubledgerType: data.SubledgerType,
+          SubledgerMappingSid: data.SubledgerMappingSid,
+          COAMasterSid: data.LedgerName,
+          Remarks: data.Remarks,
           Status: data.Status === 'A' ? 'Active' : 'Suspended',
         });
+        this.onSubledgerTypeChange(data.SubledgerType);
       },
       error: () =>
         this.appSettingService.showError('Error loading ledger mapping'),
@@ -465,46 +341,6 @@ modeOfSubledgerType = [
       }
     });
   }
-  // onSubmit(): void {
-  //   if (this.ledgerForm.invalid) {
-  //     this.ledgerForm.markAllAsTouched();
-  //     this.appSettingService.showWarning('Please fill all required fields.');
-  //     return;
-  //   }
-
-  //   const formValue = this.ledgerForm.value;
-  //   const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
-  //   const payload = {
-  //   LedgerName: formValue.LedgerName,
-  //   LedgerCode: formValue.LedgerCode,
-  //   MappingType: formValue.MappingType,
-  //   Status: formValue.Status === 'Active' ? 'A' : 'S',
-  //   CompanyMasterSid: formValue.CompanyMasterSid,
-  //     ...(this.isEditMode ? { UpdatedBy: userEmail } : { CreatedBy: userEmail }),
-  //   };
-
-  //   if (this.isEditMode) {
-  //     this.masterService.updateSubledgerMasterById(this.LedgerMappingMasterSid, payload).subscribe({
-  //       next: (res: any) => {
-  //         this.appSettingService.showSuccess(res.message);
-  //         this.closeModal();
-  //       },
-  //       error: (error) => {
-  //         this.errorMessage = error.message;
-  //       },
-  //     });
-  //   } else {
-  //     this.masterService.createNewSubledgerMaster(payload).subscribe({
-  //       next: (res: any) => {
-  //         this.appSettingService.showSuccess(res.message);
-  //         this.closeModal();
-  //       },
-  //       error: (error) => {
-  //         this.errorMessage = error.message;
-  //       },
-  //     });
-  //   }
-  // }
 
   onSubmit(): void {
     if (this.ledgerForm.invalid) {
@@ -514,28 +350,21 @@ modeOfSubledgerType = [
     }
 
     const form = this.ledgerForm.value;
-     const CreatedBy = {
-      CreatedBy: this.appSettingService.userSettingSource.value['userEmail'],
-    };
-    const UpdatedBy = {
-      UpdatedBy: this.appSettingService.userSettingSource.value['userEmail'],
-    };
-    const payload = {
-      // SubledgerName: form.SubledgerName,
-      // subledgerType: form.subledgerType,
-      // SubledgerMapping: form.SubledgerMapping,
-      // COAmaster: form.COAmaster,
-      // SubledgerMappingSid: form.SubledgerMappingSid,
-      // Status: form.Status === 'Active' ? 'A' : 'S',
 
-      ...form,
-      SubledgerMasterSid: form.SubledgerMasterSid?.id, 
-      ...CreatedBy,
-      
-      ...(this.isEditMode
-        ? { UpdatedBy: this.userData?.userEmail }
-        : { CreatedBy: this.userData?.userEmail }),
-    };
+    const mappedStatus = form.Status === 'Active' ? 'A' : 'S';
+    const currentuseremail =
+    this.appSettingService.userSettingSource.value['userEmail'];
+    const payload = this.isEditMode
+      ? {
+          ...this.ledgerForm.value,
+          Status: mappedStatus,
+          UpdatedBy: currentuseremail,
+        }
+      : {
+          ...this.ledgerForm.value,
+          Status: mappedStatus,
+          CreatedBy: currentuseremail,
+        };
 
     if (this.isEditMode) {
       this.masterService
@@ -563,7 +392,12 @@ modeOfSubledgerType = [
   }
 
   resetForm(): void {
-    this.ledgerForm.reset();
+    this.ledgerList = [];
+    this.totalLengthOfCollection = 0;
+    this.sortColumn = 'ledgerName';
+    this.sortDirection = 'asc';
+    this.searched = false;
+    this.filterValue = '';
   }
 
   closeModal(): void {
@@ -572,6 +406,7 @@ modeOfSubledgerType = [
     }
   }
 
+ 
   sort(column: string): void {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -579,18 +414,37 @@ modeOfSubledgerType = [
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
-    this.loadLedgerMappings();
+    this.applySorting();
   }
 
   applySorting(): void {
     this.ledgerMappingList.sort((a, b) => {
-      let valA = (a[this.sortColumn] || '').toString().toLowerCase();
-      let valB = (b[this.sortColumn] || '').toString().toLowerCase();
+      const valA = (this.getNestedValue(a, this.sortColumn) ?? '').toString().toLowerCase();
+      const valB = (this.getNestedValue(b, this.sortColumn) ?? '').toString().toLowerCase();
+
       return this.sortDirection === 'asc'
         ? valA.localeCompare(valB)
         : valB.localeCompare(valA);
     });
   }
+
+  getNestedValue(item: any, column: string): any {
+    switch (column) {
+      case 'COAName':
+        return item.CoaMaster?.LedgerName;
+      case 'COACode':
+        return item.CoaMaster?.LedgerCode;
+      case 'Branch':
+        return item.CoaMaster?.CompanyMaster?.branchMaster?.[0]?.branchName;
+      case 'Currency':
+        return item.CoaMaster?.CurrencyMaster?.currencyName;
+      case 'Status':
+        return item.Status === 'A' ? 'Active' : 'Suspended';
+      default:
+        return item[column];
+    }
+  }
+
 
   trackByIndex(index: number): number {
     return index;
@@ -604,6 +458,7 @@ modeOfSubledgerType = [
   report(): void {
     const formattedData = this.ledgerMappingList.map((item) => ({
       ...item,
+      Status: item.Status === 'A' ? 'Active' : 'Suspended',
     }));
     const companyName =
       this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ??
@@ -612,9 +467,11 @@ modeOfSubledgerType = [
     this.excelReportService.exportAsExcel({
       data: formattedData,
       headers: [
-        { key: 'ledgerName', label: 'Ledger Name' },
-        { key: 'accountCode', label: 'Account Code' },
-        { key: 'description', label: 'Description' },
+        { key: 'LedgerCode', label: 'COA code' },
+        { key: 'LedgerName', label: 'COA Name' },
+        { key: 'branchName', label: 'Branch Name' },
+        { key: 'currencyName', label: 'Currenecy' },
+        { key: 'Status', label: 'Status' },
       ],
       fileName: 'Ledger-Mapping-Report',
       title: companyName,

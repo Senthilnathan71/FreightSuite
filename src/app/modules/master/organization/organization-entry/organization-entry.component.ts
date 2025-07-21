@@ -527,6 +527,9 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
   CustomerBrEmailSid: any;
   customerBranchResults: any;
   btnCustomerSaveDisabled: boolean = true;
+  userData: any;
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -541,6 +544,12 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
 
 
   ngOnInit(): void {
+        this.appSettingService.getUser().subscribe(user => {
+    if(user) {
+      this.userData = user;
+      this.checkPermissions();
+    }
+  });
     this.getAllCountries();
     this.initForm();
     // this.getAllState();
@@ -592,6 +601,26 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
   this.customerForm.get('CustomerShortCode')?.setValue(`${namePart}${countryPart}`);
 }
 
+     checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
   initForm() {
     this.customerForm = this.fb.group({
       CustomerName: ['', [Validators.required]],
