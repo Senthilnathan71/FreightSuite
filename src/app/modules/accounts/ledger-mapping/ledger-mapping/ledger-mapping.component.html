@@ -20,7 +20,7 @@
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
-                            <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="loadLedgerMappings()">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
                         </div>
@@ -33,17 +33,17 @@
             <div class="col-auto pb-2">
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <app-favorite-star screenName="Ledger Mapping" class="mt-1 me-1"></app-favorite-star>
+                    <app-favorite-star screenName="Subledger Mapping" class="mt-1 me-1"></app-favorite-star>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="openModal(content)">
                         <i class="fas fa-plus me-1"></i> Create
                     </button>
 
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  [disabled]="!searched" (click)="report()">
                         <i class="fas fa-file-alt me-1"></i> Report
                     </button>
 
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  [disabled]="!searched" (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </button>
                 </form>
@@ -59,15 +59,23 @@
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th (click)="sort('LedgerName')" class="bg-transparent text-light">Ledger Name
+                           
+                            <th (click)="sort('COAName')" class="bg-transparent text-light">COA Name
                                 <i class="fas fa-sort ms-1"
-                                    [ngClass]="{ 'fa-sort-up': sortColumn === 'LedgerName' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'LedgerName' && sortDirection === 'desc' }"></i>
+                                    [ngClass]="{ 'fa-sort-up': sortColumn === 'COAName' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'COAName' && sortDirection === 'desc' }"></i>
                             </th>
-                            <th (click)="sort('SubledgerType')" class="bg-transparent text-light">Subledger Type
+                             <th (click)="sort('COACode')" class="bg-transparent text-light">COACode
                                 <i class="fas fa-sort ms-1"
-                                    [ngClass]="{ 'fa-sort-up': sortColumn === 'SubledgerType' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'SubledgerType' && sortDirection === 'desc' }"></i>
+                                    [ngClass]="{ 'fa-sort-up': sortColumn === 'COACode' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'COACode' && sortDirection === 'desc' }"></i>
                             </th>
-                            <!-- <th class="bg-transparent text-light" scope="col">Remarks</th> -->
+                            <th (click)="sort('Branch')" class="bg-transparent text-light">Branch
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{ 'fa-sort-up': sortColumn === 'Branch' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'Branch' && sortDirection === 'desc' }"></i>
+                            </th>
+                            <th (click)="sort('Currency')" class="bg-transparent text-light">Currency
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{ 'fa-sort-up': sortColumn === 'Currency' && sortDirection === 'asc', 'fa-sort-down': sortColumn === 'Currency' && sortDirection === 'desc' }"></i>
+                            </th>
                             <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
 
                         </tr>
@@ -86,12 +94,119 @@
                                     </button>
                                 </div>
                             </td>
+                            
                             <td>
-                                <div class="text-truncate">{{ item.SubledgerName }}</div>
+                                <div class="text-truncate">{{ item.CoaMaster?.LedgerName }}</div>
                             </td>
                             <td>
-                                <div class="text-truncate">{{ item.SubledgerType }}</div>
+                                <div class="text-truncate">{{ item.CoaMaster?.LedgerCode}}</div>
                             </td>
+                            <td>
+                                <div class="text-truncate">{{ item.CoaMaster?.CompanyMaster?.branchMaster[0]?.branchName
+                                    }}</div>
+                            </td>
+                            <td>
+                                <div class="text-truncate">{{ item.CoaMaster?.CurrencyMaster?.currencyName }}</div>
+                            </td>
+
+                            <!-- "CoaMaster": {
+                    "COAMasterSid": 2,
+                    "GroupName": "Indirect Expenses",
+                    "SubGroupName": "Logistics",
+                    "LedgerName": "Ocean Freight Charges",
+                    "SubledgerName": "Import Shipments",
+                    "LedgerCode": "FREIGHT001",
+                    "LedgerType": "Expense",
+                    "LedgerLocation": null,
+                    "Ledgername2": "INDIRECT EXP",
+                    "LedgerCurrency": 1,
+                    "JobNoRequire": "N",
+                    "HSNRequire": "N",
+                    "ProfitandLoss": "N",
+                    "BalanceSheet": "N",
+                    "Category": null,
+                    "ReportType": null,
+                    "Remarks": "Monthly freight charges for imports",
+                    "CreatedOn": "2025-07-11T09:06:12.180Z",
+                    "CreatedBy": "ffadmin@crm.com",
+                    "UpdatedOn": "2025-07-11T17:14:57.107Z",
+                    "UpdatedBy": "ffadmin@crm.com",
+                    "deletedAt": null,
+                    "CompanyMasterSid": 2,
+                    "Status": "A",
+                    "CompanyMaster": {
+                        "companyName": "Infosys",
+                        "companyCode": "info      ",
+                        "createdBy": "admin@crm.com",
+                        "createdOn": "2025-04-08T17:38:36.804Z",
+                        "updatedOn": "2025-05-21T14:39:21.077Z",
+                        "deletedAt": null,
+                        "updatedBy": null,
+                        "addressLine1": "Dubai",
+                        "addressLine2": null,
+                        "postal_code": "34554",
+                        "webSite": null,
+                        "phoneNumber": null,
+                        "email": null,
+                        "isHo": "A",
+                        "remarks": null,
+                        "companyLogo": null,
+                        "reportLogo": null,
+                        "status": "A",
+                        "CityMasterSid": 2,
+                        "CompanyMasterSid": 2,
+                        "CountryMasterSid": 1549,
+                        "CurrencyMasterSid": 1,
+                        "LoginSid": null,
+                        "StateMasterSid": 14,
+                        "Pan": null,
+                        "branchMaster": [
+                            {
+                                "branchName": "Hyderabad"
+                            },
+                            {
+                                "branchName": "Columbo Logistics Hub"
+                            },
+                            {
+                                "branchName": "Tech Park Branch"
+                            },
+                            {
+                                "branchName": "Mongolia Exports"
+                            },
+                            {
+                                "branchName": "Austria Exports"
+                            },
+                            {
+                                "branchName": "Singapore Migrators"
+                            },
+                            {
+                                "branchName": "Singapore Freights"
+                            },
+                            {
+                                "branchName": "American Freights"
+                            },
+                            {
+                                "branchName": "Russian Freights"
+                            },
+                            {
+                                "branchName": "Andartic Vessels"
+                            },
+                            {
+                                "branchName": "CHENNAI"
+                            },
+                            {
+                                "branchName": "Mumbai"
+                            },
+                            {
+                                "branchName": "DUBAI"
+                            }
+                        ]
+                    },
+                    "CurrencyMaster": {
+                        "currencyName": "Indian Rupee"
+                    }
+                } -->
+
                             <td>
                                 @if(item.Status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
@@ -109,11 +224,11 @@
                     </tbody>
                 </table>
             </div>
-            <!-- <div class="d-flex justify-content-end mt-3">
+            <div class="d-flex justify-content-end mt-3">
                 <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
                     (pageChange)="updatePaginationData()">
                 </ngb-pagination>
-            </div> -->
+            </div>
         </div>
     </div>
     <div class="col-12" *ngIf="searchPerformed && totalLengthOfCollection === 0">
@@ -123,7 +238,7 @@
     <ng-template #content let-modal>
 
         <div class="modal-header bg-info text-white p-2">
-            <h5 class="modal-title">{{ isEditMode ? 'Edit subledger Mapping' : 'Add subledger Mapping' }}</h5>
+            <h5 class="modal-title">{{ isEditMode ? 'Edit Subledger Mapping' : 'Subledger Mapping' }}</h5>
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
                 (click)="modal.dismiss()"></button>
         </div>
@@ -132,6 +247,7 @@
 
                 <div class="col-12">
                     <div class="row">
+                        <!-- SubledgerName -->
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="Name" placeholder="" class="custom-input-field sm"
@@ -139,7 +255,8 @@
                                 <label for="Name" class="input-label">Name <span
                                         class="text-danger fw-bold"></span></label>
                                 <div class="error-message text-danger small">
-                                    @if (ledgerForm.get('SubledgerName')?.touched && ledgerForm.get('SubledgerName')?.invalid)
+                                    @if (ledgerForm.get('SubledgerName')?.touched &&
+                                    ledgerForm.get('SubledgerName')?.invalid)
                                     {
                                     <span>Subledger Name is required</span>
                                     }
@@ -147,62 +264,56 @@
                             </div>
                         </aside>
 
-                       <!-- Subledger Type -->
+                        <!-- Subledger Type -->
                         <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select
-                            [items]="['Customer', 'Charge']"
-                            bindLabel="name"
-                            bindValue="id"
-                            formControlName="subledgerType"
-                           
-                            (change)="onSubledgerTypeChange($event)">
-                            </ng-select>
-                            <label class="input-label">Subledger Type <span class="text-danger">*</span></label>
-                            <div class="error-message text-danger small">
-                            @if (ledgerForm.get('subledgerType')?.touched && ledgerForm.get('subledgerType')?.invalid) {
-                                <span>Subledger Type is required</span>
-                            }
-                            </div>
-                        </div>
-                        <!-- subledgerMapping -->
-                        </aside>
-                            <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select
-                                [items]="subledgerMappingOptions"
-                                 bindLabel="name"
-                                 bindValue="id"
-                                formControlName="SubledgerMapping"
-                                >
+                                <ng-select [items]="['Customer', 'Charge']" bindLabel="name" bindValue="name"
+                                    formControlName="SubledgerType" (change)="onSubledgerTypeChange($event)">
+                                </ng-select>
+                                <label class="input-label">Subledger Type <span class="text-danger">*</span></label>
+                                <div class="error-message text-danger small">
+                                    @if (ledgerForm.get('subledgerType')?.touched &&
+                                    ledgerForm.get('subledgerType')?.invalid) {
+                                    <span>Subledger Type is required</span>
+                                    }
+                                </div>
+                            </div>
+
+                        </aside>
+                        <!-- subledgerMapping -->
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="subledgerMappingOptions" bindLabel="name" bindValue="id"
+                                    formControlName="SubledgerMappingSid">
                                 </ng-select>
                                 <label class="input-label">Subledger Mapping <span class="text-danger">*</span></label>
                                 <div class="error-message text-danger small">
-                                @if (ledgerForm.get('SubledgerMapping')?.touched && ledgerForm.get('SubledgerMapping')?.invalid) {
+                                    @if (ledgerForm.get('SubledgerMappingSid')?.touched &&
+                                    ledgerForm.get('SubledgerMappingSid')?.invalid) {
                                     <span>Subledger Mapping is required</span>
-                                }
-                                </div>
-                            </div>
-                            </aside>
-
-
-
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select [items]="ledgerList" bindLabel="Ledgername2" bindValue="COAMasterSid"
-                                 [(ngModel)]="selectedLedger"
-                                    formControlName="COAmaster">
-                                </ng-select>
-                                <label class="input-label">COA Master <span class="text-danger"></span></label>
-                                  <div class="error-message text-danger small">
-                                @if (ledgerForm.get('COAmaster')?.touched && ledgerForm.get('COAmaster')?.invalid) {
-                                    <span>COA Master is required</span>
-                                }
+                                    }
                                 </div>
                             </div>
                         </aside>
 
 
+                        <!-- CoA master -->
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="ledgerList" bindLabel="LedgerName" bindValue="COAMasterSid"
+                                    formControlName="COAMasterSid">
+                                </ng-select>
+                                <label class="input-label">COA Master <span class="text-danger"></span></label>
+                                <div class="error-message text-danger small">
+                                    @if (ledgerForm.get('COAmaster')?.touched && ledgerForm.get('COAmaster')?.invalid) {
+                                    <span>COA Master is required</span>
+                                    }
+                                </div>
+                            </div>
+                        </aside>
+
+
+                        <!-- Remarks -->
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="textarea" id="text-input" class="custom-input-field sm"
@@ -212,11 +323,11 @@
                             </div>
                         </aside>
 
-
+                        <!-- Status -->
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
-                                    bindValue="name">
+                                    bindValue="id">
 
                                 </ng-select>
                                 <label for="" class="input-label">Status <span class="text-danger"></span></label>
@@ -228,10 +339,24 @@
 
 
                 <div class="modal-footer mt-2 p-0 pt-1">
+                     @if(isEditMode){
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+                            <i class="fas fa-file-alt me-1"></i> e-Doc
+                        </button>
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
+                            <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                        </button>
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
+                            <i class="fas fa-shield-alt me-1"></i> Authorize
+                        </button>
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto " (click)="openEmail()">
+                            <i class="fas fa-envelope me-1"></i> Email
+                        </button>
+                        }
                     <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
                     <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
                         [disabled]="ledgerForm.invalid">
-                        Save
+                        {{isEditMode ? 'Update' : 'Save' }}
                     </button>
                 </div>
             </form>

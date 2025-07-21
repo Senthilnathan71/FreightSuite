@@ -59,6 +59,9 @@ export class YearEntryComponent {
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }
   ];
+  userData: any;
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
   currentMenuId: any;
   TandCList: any[]=[];
   
@@ -72,6 +75,12 @@ export class YearEntryComponent {
     private calendar : NgbCalendar
   ) {  }
   ngOnInit(): void {
+       this.appSettingService.getUser().subscribe(user => {
+    if(user) {
+      this.userData = user;
+      this.checkPermissions();
+    }
+  });
     this.getAllCompanies();
     this.loadYear();
     this.initForm();
@@ -101,6 +110,27 @@ export class YearEntryComponent {
       }
     );
   }
+
+      checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
 
   initForm() {
     this.yearForm = this.fb.group({
