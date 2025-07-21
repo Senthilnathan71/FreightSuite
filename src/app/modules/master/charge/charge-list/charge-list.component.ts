@@ -37,6 +37,9 @@ export class ChargeListComponent {
   loading: boolean = false;
    permissions: string[] = [];
   currentMenuPermissions: any = {};
+  uoms: any[] = [];
+tdsSets: any[] = [];
+hssacList: any[] = [];
 
   // pagination
   page = 1;
@@ -61,9 +64,14 @@ export class ChargeListComponent {
         this.userData = user;
       }
     });
+   this.masterService.getAllUom().subscribe(res => this.uoms = res.data );
+  this.masterService.getAllHssac().subscribe(res => this.hssacList = res);
+  this.masterService.getAllTdsSet().subscribe(res => this.tdsSets = res.data);
     this.loadCharges();
     this.checkPermissions();
   }
+ 
+
   checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
@@ -95,7 +103,12 @@ loadCharges(): void {
     pageSize: this.pageSize
   }).subscribe({
     next: (res) => {
-      this.chargeList = res?.items || res || []; // Handle both formats
+      this.chargeList = (res?.items || res || []).map(item => ({
+        ...item,
+        UOM:  item.UOM,
+        SAC:  item.HSNSAC,
+        TDSset:  item.TDSMasterSid
+      }));
       this.totalLengthOfCollection = res.data?.totalCount || this.chargeList.length;
       this.applySorting();
       this.searchPerformed = true;
@@ -107,7 +120,33 @@ loadCharges(): void {
       this.loading = false;
     }
   });
-}
+} 
+
+  getUomCode(UOMMasterSid){
+    if(!UOMMasterSid && !this.uoms){
+      return;
+    }
+    console.log(UOMMasterSid);
+    console.log(this.uoms);
+    return (this.uoms.find(uom => UOMMasterSid === uom.UOMMasterSid)).UOMCode;
+  }
+  // getHssacCode(HSSACCode){
+  //   if(!HSSACCode && !this.hssacList){
+  //     return;
+  //   }
+  //   console.log(HSSACCode);
+  //   console.log(this.hssacList);
+  //   return (this.hssacList.find(sac => HSSACCode === sac.HSSACCode)).HSSACCode;
+  // }
+  getTdssetCode(TDSSetHeaderSid){
+    if(!TDSSetHeaderSid && !this.tdsSets && TDSSetHeaderSid!== undefined){
+      return;
+    }
+    console.log(TDSSetHeaderSid);
+    console.log(this.tdsSets);
+    return (this.tdsSets.find(tdsSets => TDSSetHeaderSid === tdsSets.TDSSetHeaderSid)).TDSSetName;
+  }
+
 
   sort(column: string) {
     if (this.sortColumn === column) {
@@ -168,6 +207,8 @@ loadCharges(): void {
   navigateToCreateCharge() {
     this.router.navigate(['master/charge/entry']);
   }
+
+  
 
   resetPage() {
     this.filterValue = '';

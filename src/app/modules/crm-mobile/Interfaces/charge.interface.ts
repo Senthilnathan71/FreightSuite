@@ -14,6 +14,7 @@ export interface Charge {
     CompanyMasterSid?: number;
     CurrencyMasterSid: number;
     DepartmentMasterSid: number;
+    EffectiveFrom?: Date;
     chargeGroup?: {
         chargeGroupName: string;
     };
@@ -26,4 +27,5 @@ export interface Charge {
     departmentMaster?: {
         departmentName: string;
     };
+    
 }

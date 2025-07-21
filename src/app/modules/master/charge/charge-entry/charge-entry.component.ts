@@ -1,335 +1,482 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit, TemplateRef } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { Router, ActivatedRoute } from '@angular/router';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
-import { formatDate } from '@angular/common';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
-import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-charge-entry',
   standalone: true,
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     FeatherModule,
     NgSelectModule,
-    ReactiveFormsModule,
     NgbDatepickerModule,
     DatePipe,
-    PreventMultiClickDirective,
     FormsModule,
     MultiSelectComponent
   ],
   templateUrl: './charge-entry.component.html',
   styleUrls: ['./charge-entry.component.scss'],
   providers: [
-      { provide: NgbDateAdapter, useClass: CustomDateAdapter },
-      { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
-    ],
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+  ],
 })
 export class ChargeEntryComponent implements OnInit {
-  chargeForm!: FormGroup;
+  chargeForm: FormGroup;
+  gstForm: FormGroup;
+  tdsForm: FormGroup;
+  
   isEditMode = false;
   btnDisable = false;
-  errorMessage: any;
-  idParam: number;
+  loading = false;
+  chargeID: number;
   chargeData: any;
-  displayedDepartments: any[] = [];
- extraDepartmentsCount = 0;
- selectedDepartments: string[] = [];
- userData: any;
-
-  // Lookup options
-  companyOptions: any[] = [];
+  userData: any;
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
+  currentMenuId: any;
+  TandCList: any;
+  
+  // Modal references
+  gstModalRef: NgbModalRef;
+  tdsModalRef: NgbModalRef;
+  
+  // Lookup data
+  chargeGroupOptions: any[] = [];
   currencyOptions: any[] = [];
   departmentOptions: any[] = [];
-  chargeGroupOptions: any[] = [];
   uomOptions: any[] = [];
   hsnsacOptions: any[] = [];
   tdsOptions: any[] = [];
-	today = this.calendar.getToday();
-	todayDate = new Date(this.today.year,this.today.month,this.today.day);
-  currentMenuId: any;
-  TandCList: any;
-  permissions: string[] = [];
-  currentMenuPermissions: any = {};
+  selectedDepartments: any[] = [];
+  today = this.calendar.getToday();
+
+  statusOptions = [
+    { id: 'A', name: 'Active' },
+    { id: 'S', name: 'Suspended' }
+  ];
+
+  // GST and TDS lists
+  gstList: any[] = [];
+  tdsList: any[] = [];
+  currentGstIndex: number;
+  currentTdsIndex: number;
+  isGstEditMode = false;
+  isTdsEditMode = false;
 
   constructor(
     private fb: FormBuilder,
+    private masterService: MasterService,
     private route: ActivatedRoute,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private masterService: MasterService,
-    private calendar : NgbCalendar,
-    private modalService : NgbModal
-  ) { }
-  updateDisplayedDepartments(): void {
-  this.displayedDepartments = this.departmentOptions
-    .filter(dept => this.selectedDepartments.includes(dept.departmentName))
-    .slice(0, 3);
-  this.extraDepartmentsCount = Math.max(0, this.selectedDepartments.length - 3);
-}
-
-toggleDepartmentSelection(item: any): void {
-  const index = this.selectedDepartments.indexOf(item.departmentName);
-  if (index === -1) {
-    this.selectedDepartments.push(item.departmentName);
-  } else {
-    this.selectedDepartments.splice(index, 1);
+    private calendar: NgbCalendar,
+    private modalService: NgbModal
+  ) {
+    this.initForms();
   }
-  this.updateDisplayedDepartments();
-  this.updateDepartmentValue();
-}
-isDepartmentSelected(item: any): boolean {
-  return this.selectedDepartments.includes(item.departmentName);
-}
-
-updateDepartmentValue(): void {
-  
-  const selectedIds = this.departmentOptions
-    .filter(dept => this.selectedDepartments.includes(dept.departmentName))
-    .map(dept => dept.DepartmentMasterSid);
-  
-  this.chargeForm.get('DepartmentMasterSid').setValue(selectedIds);
-}
-
 
   ngOnInit(): void {
-    this.loadLookupData();
-    this.initForm();
-
-    this.route.paramMap.subscribe(params => {
-      this.idParam = Number(params.get('id'));
-      if (this.idParam) {
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.chargeID = +params['id'];
         this.isEditMode = true;
-        this.loadCharge(this.idParam);
+        this.getChargeById(this.chargeID);
       }
     });
-    this.appSettingService.getUser().subscribe(user => {
-    if(user) {
-      this.userData = user;
-      this.checkPermissions();
-    }
-  });
-    
-    
+
+    this.appSettingService.getUser().subscribe(
+      user => {
+        if (user) {
+          this.userData = user;
+          this.checkPermissions();
+        }
+      }
+    );
+
+    this.loadLookupData();
   }
-   checkPermissions() {
+
+  initForms() {
+    // Main charge form
+    this.chargeForm = this.fb.group({
+      chargeCode: ['', [
+        Validators.required,
+        Validators.maxLength(5),
+        Validators.pattern(/^[A-Z0-9]+$/)
+      ]],
+      chargeName: ['', [
+        Validators.required,
+        Validators.maxLength(100)
+      ]],
+      UOM: ['', Validators.required],
+      ChargeGroupSid: ['', Validators.required],
+      CurrencyMasterSid: ['', Validators.required],
+      DepartmentMasterSid: [[], Validators.required],
+      Status: [{value: 'A', disabled: !this.isEditMode}, Validators.required],
+      chargeTaxMasters: this.fb.array([]),
+      chargeTds: this.fb.array([])
+    });
+
+    // GST form
+    this.gstForm = this.fb.group({
+      HSNCode: ['', Validators.required],
+      description: [''],
+      TaxGroup: ['', Validators.required],
+      TaxRate: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
+      Status: ['A', Validators.required]
+    });
+
+    // TDS form
+    this.tdsForm = this.fb.group({
+      TDSSet: ['', Validators.required],
+      EffectiveFrom: ['', Validators.required],
+      Status: ['A', Validators.required]
+    });
+  }
+
+  get chargeTaxMasters(): FormArray {
+    return this.chargeForm.get('chargeTaxMasters') as FormArray;
+  }
+
+  get chargeTds(): FormArray {
+    return this.chargeForm.get('chargeTds') as FormArray;
+  }
+
+  checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
     if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
+      this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+        next: (response) => {
+          this.currentMenuPermissions = response.data.MenuPermissions || {};
+          this.permissions = Object.keys(this.currentMenuPermissions)
+            .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+        }
+      });
     }
   }
 
   hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
-  onHsnsacSelect(event: any): void {
-  if (event) {
-    const selectedHsnsac = this.hsnsacOptions.find(item => item.code === event);
-    if (selectedHsnsac) {
-      this.chargeForm.patchValue({
-        TaxRate: selectedHsnsac.rate,
-        GSTDescription: selectedHsnsac.description
-      });
-    }
+    return this.permissions.includes(permission);
   }
-}
 
-  initForm(): void {
-    this.chargeForm = this.fb.group({
-      chargeCode: ['', [Validators.required, Validators.maxLength(5)]],
-      chargeName: ['', [Validators.required, Validators.maxLength(100)]],
-      UOM: [null],
-      HSNSAC: ['', Validators.required],
-      Status: ['A', Validators.required],
-      ChargeGroupSid: [null],
-      // CompanyMasterSid: [null],
-      CurrencyMasterSid: [null],
-      DepartmentMasterSid: [null, Validators.required],
-      TDSMasterSid: [null],
-      // GST fields
-      GSTDescription: [''],
-      TaxRate: [null],
-      // TDS fields
-      EffectiveFrom: [, Validators.required],
-      Remarks: ['']
+  loadLookupData() {
+    forkJoin([
+      this.masterService.getAllChargeGroups(),
+      this.masterService.getAllCurrencies(),
+      this.masterService.getAllDepartments(),
+      this.masterService.getAllUom(),
+      this.masterService.getAllHssac(),
+      this.masterService.getAllTdsSet()
+    ]).subscribe({
+      next: ([chargeGroups, currencies, departments, uoms, hsnsacs, tdsSets]) => {
+        this.chargeGroupOptions = Array.isArray(chargeGroups) ? chargeGroups : chargeGroups.data;
+        this.currencyOptions = currencies.data || currencies;
+        this.departmentOptions = departments.data || departments;
+        this.uomOptions = uoms.data || uoms;
+        this.hsnsacOptions = hsnsacs.data || hsnsacs;
+        this.tdsOptions = tdsSets.data || tdsSets;
+      },
+      error: (err) => {
+        console.error('Error loading lookup data:', err);
+        this.appSettingService.showError('Failed to load required data');
+      }
     });
   }
 
-
-loadLookupData(): void {
-  // this.masterService.getAllCompanies().subscribe(companies => {
-  //   this.companyOptions = companies.data || companies;
-  // });
-
-  this.masterService.getAllCurrencies().subscribe(currencies => {
-    this.currencyOptions = currencies.data || currencies;
-  });
-
-  this.masterService.getAllDepartments().subscribe(departments => {
-    this.departmentOptions = departments.data || departments;
-  });
-
-  
-  this.masterService.getAllChargeGroups().subscribe({
-    next: (response: any) => {
-      // Handle different response structures
-      if (Array.isArray(response)) {
-        this.chargeGroupOptions = response;
-      } else if (response.data && Array.isArray(response.data)) {
-        this.chargeGroupOptions = response.data;
-      } else {
-        this.chargeGroupOptions = [];
-        console.warn('Unexpected charge groups response format:', response);
-      }
-    },
-    error: (error) => {
-      console.error('Error loading charge groups:', error);
-      this.chargeGroupOptions = [];
-    }
-  });
-
-  this.masterService.getAllUom().subscribe(
-    (resp: any) => {
-      // Handle both array response and data.array response
-      this.uomOptions = resp.data || resp;
-    },
-    (error) => {
-      console.error('Error loading UOM', error);
-      this.uomOptions = [];
-    }
-  );
-  this.masterService.getAllHssac().subscribe({
-    next: (resp: any) => {
-      this.hsnsacOptions = resp;
-      // if (this.isEditMode && this.chargeForm.value.HSNSAC) {
-      //   this.onHsnsacSelect(this.chargeForm.value.HSNSAC);
-      // }
-    },
-    error: (error) => {
-      console.error('Error loading HSN/SAC codes:', error);
-      this.hsnsacOptions = [];
-    }
-  });
-    // this.masterService.getAllTdsSets().subscribe(tdsSets => {
-    //   this.tdsOptions = tdsSets.data || tdsSets;
-    // });
-}
-  loadCharge(ChargeMasterSid: number): void {
-    this.masterService.getChargeById(ChargeMasterSid).subscribe(
-      (resp) => {
-        this.chargeData = resp;
-        const chargeData = {
-          ...resp,
-          // EffectiveFrom: new Date(resp.EffectiveFrom)
-        };
-        this.chargeForm.patchValue(chargeData);
-        if (this.isEditMode && resp.DepartmentMasterSid) {
-        const departmentIds = Array.isArray(resp.DepartmentMasterSid) ? 
-          resp.DepartmentMasterSid : [resp.DepartmentMasterSid];
+  getChargeById(id: number) {
+    this.loading = true;
+    this.masterService.getChargeById(id).subscribe({
+      next: (charge: any) => {
+        this.chargeData = charge;
         
-        this.selectedDepartments = this.departmentOptions
-          .filter(dept => departmentIds.includes(dept.DepartmentMasterSid))
-          .map(dept => dept.departmentName);
-        
-        this.updateDisplayedDepartments();
+        // Patch main charge form
+        this.chargeForm.patchValue({
+          chargeCode: charge.chargeCode,
+          chargeName: charge.chargeName,
+          UOM: charge.UOM,
+          ChargeGroupSid: charge.ChargeGroupSid,
+          CurrencyMasterSid: charge.CurrencyMasterSid,
+          DepartmentMasterSid: charge.DepartmentMasterSid,
+          Status: charge.Status || 'A'
+        });
+        this.chargeForm.get('Status')?.enable();
+
+        // Load GST data
+        if (charge.chargeTaxMaster && charge.chargeTaxMaster.length > 0) {
+          charge.chargeTaxMaster.forEach(gst => {
+            this.addGstToForm(gst);
+          });
         }
+
+        // Load TDS data
+        if (charge.chargeTds && charge.chargeTds.length > 0) {
+          charge.chargeTds.forEach(tds => {
+            this.addTdsToForm(tds);
+          });
+        }
+
+        this.loading = false;
       },
-      (error) => {
-        this.errorMessage = error.message;
-        console.error('Error loading charge:', error);
+      error: (err) => {
+        console.error('Error loading charge:', err);
+        this.loading = false;
+        this.appSettingService.showError('Failed to load charge data');
       }
-    );
+    });
   }
 
-  goBack(): void {
-    this.router.navigate(['master/charge/list']);
+  addGstToForm(gstData?: any) {
+    const gstGroup = this.fb.group({
+      HSNCode: [gstData?.HSNCode || '', Validators.required],
+      description: [gstData?.description || ''],
+      TaxGroup: [gstData?.TaxGroup || '', Validators.required],
+      TaxRate: [gstData?.TaxRate || '', [Validators.required, Validators.min(0), Validators.max(100)]],
+      Status: [gstData?.Status || 'A', Validators.required],
+      ChargeTaxMasterSid: [gstData?.ChargeTaxMasterSid || null]
+    });
+    this.chargeTaxMasters.push(gstGroup);
   }
 
-  resetForm(): void {
-    if (this.isEditMode) {
-      this.loadCharge(this.idParam);
+  addTdsToForm(tdsData?: any) {
+    const tdsGroup = this.fb.group({
+      TDSSet: [tdsData?.TDSSet || '', Validators.required],
+      EffectiveFrom: [tdsData?.EffectiveFrom ? new Date(tdsData.EffectiveFrom) : '', Validators.required],
+      Status: [tdsData?.status || 'A', Validators.required],
+      ChargeTdsSid: [tdsData?.ChargeTdsSid || null]
+    });
+    this.chargeTds.push(tdsGroup);
+  }
+
+  openGstModal(content: TemplateRef<any>, gstIndex?: number) {
+    if (gstIndex !== undefined) {
+      this.isGstEditMode = true;
+      this.currentGstIndex = gstIndex;
+      const gstData = this.chargeTaxMasters.at(gstIndex).value;
+      this.gstForm.patchValue(gstData);
     } else {
-      this.chargeForm.reset();
-      this.chargeForm.patchValue({ 
-        Status: 'A',
-        EffectiveFrom: formatDate(new Date(), 'yyyy-MM-dd', 'en')
+      this.isGstEditMode = false;
+      this.currentGstIndex = null;
+      this.gstForm.reset({
+        HSNCode: '',
+        description: '',
+        TaxGroup: '',
+        TaxRate: '',
+        Status: 'A'
       });
     }
+
+    this.gstModalRef = this.modalService.open(content, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
   }
 
-  onSubmit(): void {
-    if (this.chargeForm.invalid) {
-      this.chargeForm.markAllAsTouched();
-      this.chargeForm.updateValueAndValidity();
-      this.appSettingService.showWarning('Please fill all required fields correctly.');
+  openTdsModal(content: TemplateRef<any>, tdsIndex?: number) {
+    if (tdsIndex !== undefined) {
+      this.isTdsEditMode = true;
+      this.currentTdsIndex = tdsIndex;
+      const tdsData = this.chargeTds.at(tdsIndex).value;
+      this.tdsForm.patchValue({
+        TDSSet: tdsData.TDSSet,
+        EffectiveFrom: tdsData.EffectiveFrom,
+        Status: tdsData.Status
+      });
+    } else {
+      this.isTdsEditMode = false;
+      this.currentTdsIndex = null;
+      this.tdsForm.reset({
+        TDSSet: '',
+        EffectiveFrom: '',
+        Status: 'A'
+      });
+    }
+
+    this.tdsModalRef = this.modalService.open(content, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
+
+  submitGstForm() {
+    if (this.gstForm.invalid) {
+      this.gstForm.markAllAsTouched();
       return;
     }
 
+    const gstValue = this.gstForm.value;
+    
+    if (this.isGstEditMode && this.currentGstIndex !== null) {
+      this.chargeTaxMasters.at(this.currentGstIndex).patchValue(gstValue);
+    } else {
+      this.addGstToForm(gstValue);
+    }
+
+    this.gstModalRef.close();
+    this.appSettingService.showSuccess('GST details saved successfully');
+  }
+
+  submitTdsForm() {
+    if (this.tdsForm.invalid) {
+      this.tdsForm.markAllAsTouched();
+      return;
+    }
+
+    const tdsValue = this.tdsForm.value;
+    
+    if (this.isTdsEditMode && this.currentTdsIndex !== null) {
+      this.chargeTds.at(this.currentTdsIndex).patchValue(tdsValue);
+    } else {
+      this.addTdsToForm(tdsValue);
+    }
+
+    this.tdsModalRef.close();
+    this.appSettingService.showSuccess('TDS details saved successfully');
+  }
+
+  deleteGst(index: number) {
+    this.chargeTaxMasters.removeAt(index);
+    this.appSettingService.showSuccess('GST record removed');
+  }
+
+  deleteTds(index: number) {
+    this.chargeTds.removeAt(index);
+    this.appSettingService.showSuccess('TDS record removed');
+  }
+  getTdsSetName(tdsSetId: number): string {
+  const tdsSet = this.tdsOptions.find(item => item.TDSSetHeaderSid === tdsSetId);
+  return tdsSet ? tdsSet.SetName : '';
+}
+
+  onSubmit() {
+    if (this.chargeForm.invalid) {
+      this.markFormGroupTouched(this.chargeForm);
+      return;
+    }
+
+    this.btnDisable = true;
+    this.loading = true;
+
+    const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+    
     const payload = {
-      ...this.chargeForm.value,
-      createdBy: this.appSettingService.userSettingSource.value['userEmail'],
-      updatedBy: this.isEditMode ? this.appSettingService.userSettingSource.value['userEmail'] : null
+      chargeCode: this.chargeForm.value.chargeCode,
+      chargeName: this.chargeForm.value.chargeName,
+      UOM: this.chargeForm.value.UOM,
+      ChargeGroupSid: this.chargeForm.value.ChargeGroupSid,
+      CurrencyMasterSid: this.chargeForm.value.CurrencyMasterSid,
+      DepartmentMasterSid: this.chargeForm.value.DepartmentMasterSid,
+      Status: 'A',
+      chargeTaxMaster: this.chargeTaxMasters.value.map(gst => ({
+        HSNCode: gst.HSNCode,
+        description: gst.description,
+        TaxGroup: gst.TaxGroup,
+        TaxRate: gst.TaxRate,
+        Status: gst.Status,
+        ...(gst.ChargeTaxMasterSid ? { ChargeTaxMasterSid: gst.ChargeTaxMasterSid } : {})
+      })),
+      chargeTds: this.chargeTds.value.map(tds => ({
+        TDSSet: tds.TDSSet,
+        EffectiveFrom: tds.EffectiveFrom,
+        status: tds.status,
+        ...(tds.ChargeTdsSid ? { ChargeTdsSid: tds.ChargeTdsSid } : {})
+      })),
+      ...(this.isEditMode ? 
+        { updatedBy: currentUserEmail } : 
+        { createdBy: currentUserEmail })
     };
 
+    const operation = this.isEditMode 
+      ? this.masterService.updateChargeById(this.chargeID, payload)
+      : this.masterService.createCharge(payload);
+
+    operation.subscribe({
+      next: (resp) => {
+        this.loading = false;
+        this.btnDisable = false;
+        const message = this.isEditMode 
+          ? 'Charge updated successfully!' 
+          : 'Charge created successfully!';
+        
+        this.appSettingService.showSuccess(message);
+        
+        if (!this.isEditMode && resp.data?.ChargeMasterSid) {
+          this.router.navigate(['/master/charge/entry', resp.data.ChargeMasterSid]);
+        } else {
+          this.router.navigate(['/master/charge/list']);
+        }
+      },
+      error: (err) => {
+        console.error(err);
+        this.loading = false;
+        this.btnDisable = false;
+        if (err.status === 400 && err.error.message.includes('already exists')) {
+          this.appSettingService.showError(err.error.message);
+        } else {
+          this.appSettingService.showError('Failed to process charge. Please try again.');
+        }      
+      }
+    });
+  }
+
+  resetForm() {
     if (this.isEditMode) {
-      this.masterService.updateChargeById(this.idParam, payload).subscribe(
-        (resp: any) => {
-          if (resp.status) {
-            this.appSettingService.showSuccess(resp.message);
-            this.router.navigate(['master/charge/list']);
-          } else {
-            this.appSettingService.showError(resp.message);
-          }
-        },
-        (error) => {
-          this.errorMessage = error.message;
-          console.error('Error updating charge:', error);
-        }
-      );
+      this.getChargeById(this.chargeID);
     } else {
-      this.masterService.createCharge(payload).subscribe(
-        (resp: any) => {
-          if (resp.status) {
-            this.appSettingService.showSuccess(resp.message);
-            this.router.navigate(['master/charge/list']);
-          } else {
-            this.appSettingService.showError(resp.message);
-          }
-        },
-        (error) => {
-          this.errorMessage = error.message;
-          console.error('Error creating charge:', error);
-        }
-      );
+      this.chargeForm.reset({
+        chargeCode: '',
+        chargeName: '',
+        UOM: null,
+        ChargeGroupSid: null,
+        CurrencyMasterSid: null,
+        DepartmentMasterSid: [],
+        Status: 'A'
+      });
+      this.chargeForm.get('Status')?.disable();
+      this.chargeTaxMasters.clear();
+      this.chargeTds.clear();
+      this.selectedDepartments = [];
     }
   }
 
+  goBack() {
+    this.router.navigate(['master/charge/list']);
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup) {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      } else if (control instanceof FormArray) {
+        control.controls.forEach(arrayControl => {
+          this.markFormGroupTouched(arrayControl as FormGroup);
+        });
+      }
+    });
+  }
+
   showInfo() {
-    if(!this.chargeData) return;
+    if (!this.chargeData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.chargeData;
     modalRef.componentInstance.idLabel = 'Charge Id';
@@ -341,7 +488,7 @@ loadLookupData(): void {
     const payload = { MenuMasterSid: this.currentMenuId };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
-        if (resp.status) {
+        if (resp.Status) {
           this.TandCList = resp.data;
           const modalRef = this.modalService.open(TermsAndConditionsComponent, {
             size: 'lg',
@@ -350,8 +497,7 @@ loadLookupData(): void {
           });
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.idParam;
-
+          modalRef.componentInstance.DocumentSid = this.chargeID;
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');
         }
@@ -371,29 +517,50 @@ loadLookupData(): void {
     });
   }
 
-openAuthority() {
-  if (!this.chargeData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.chargeData;
-  modalRef.componentInstance.idLabel = 'charge Id';
-  modalRef.componentInstance.idValue = this.chargeData?.ChargeMasterSid;
+  openAuthority() {
+    if (!this.chargeData) return;
+    const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.chargeData;
+    modalRef.componentInstance.idLabel = 'Charge Id';
+    modalRef.componentInstance.idValue = this.chargeData?.ChargeMasterSid;
+  }
+
+  openEDoc() {
+    if (!this.chargeData) return;
+    const modalRef = this.modalService.open(EdocComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.chargeData;
+    modalRef.componentInstance.idLabel = 'Charge Id';
+    modalRef.componentInstance.idValue = this.chargeData?.ChargeMasterSid;
+  }
+
+  onDepartmentChange(selectedNames: string[]) {
+  this.selectedDepartments = selectedNames;
+
+  const selectedIds = this.departmentOptions
+    .filter(dept => selectedNames.includes(dept.departmentName))
+    .map(dept => dept.DepartmentMasterSid);
+
+  this.chargeForm.get('DepartmentMasterSid')?.setValue(selectedIds);
 }
+  
 
-openEDoc() {
-  if (!this.chargeData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.chargeData;
-  modalRef.componentInstance.idLabel = 'charge Id';
-  modalRef.componentInstance.idValue = this.chargeData?.ChargeMasterSid;
-}
-
-
+  onHsnsacSelect(event: any) {
+    if (event) {
+      const selectedHsnsac = this.hsnsacOptions.find(item => item.HSSACCode === event);
+      if (selectedHsnsac) {
+        this.gstForm.patchValue({
+          TaxRate: selectedHsnsac.rate,
+          description: selectedHsnsac.description
+        });
+      }
+    }
+  }
 }
