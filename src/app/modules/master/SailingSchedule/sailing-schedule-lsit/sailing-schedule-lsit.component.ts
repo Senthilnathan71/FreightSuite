@@ -13,6 +13,7 @@ import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
     selector: 'app-sailing-schedule-lsit',
@@ -26,7 +27,8 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
         NgbPaginationModule,
         NgSelectModule,
         CustomDatePipe,
-        ListpageComponent
+        ListpageComponent,
+        FavoriteStarComponent
     ],
     templateUrl: './sailing-schedule-lsit.component.html',
     styleUrl: './sailing-schedule-lsit.component.scss'
@@ -38,7 +40,7 @@ export class SailingScheduleLsitComponent implements OnInit {
     sortDirection: string = 'asc';
     portList : any[];
     filterValue :any;
-    searchPerformed : boolean;
+    searched : boolean;
     scheduleList : any[];
     slicedScheduleList : any[];
     portOfLoading :"" ;
@@ -71,7 +73,31 @@ export class SailingScheduleLsitComponent implements OnInit {
                     this.userData = user;
                 }
             }
-        )
+        );
+        this.loadVoyages();
+    }
+    loadVoyages(): void {
+        const params = {
+            search: this.filterValue?.trim() || '',
+            page: this.page,
+            pageSize: this.pageSize,
+        };
+
+        this.masterService.searchSailingSchedule(params).subscribe({
+            next: (response) => {
+                if(response.data) {
+                    this.scheduleList = response.data.items;
+                    this.totalAmountOfCollections = response.data.totalCount
+                    this.applySorting();
+                    this.searched = true;
+                }
+            },
+            error: (err) => {
+                console.error('Error fetching schedules:', err);
+                this.scheduleList = [];
+                this.totalAmountOfCollections = 0;
+            },
+        });
     }
 
     onSearch(event: { type: string, value: string }) {
@@ -92,10 +118,13 @@ sort(column: string) {
   }
   
   this.applySorting();
-  this.updatePaginationData();
 }
 
 applySorting() {
+    if (!Array.isArray(this.scheduleList)){
+        this.scheduleList = [];
+        return;
+    }
   this.scheduleList.sort((a, b) => {
     let valueA = this.getSortValue(a);
     let valueB = this.getSortValue(b);
@@ -150,7 +179,7 @@ getSortValue(item: any): any {
         this.masterService.searchSailingSchedule(payload).subscribe(
             (resp:any)=>{
                 if(resp.status){
-                    this.searchPerformed = true;
+                    this.searched = true;
                     this.scheduleList = resp.data;
                     this.applySorting();
                     this.totalAmountOfCollections = this.scheduleList.length;
@@ -168,7 +197,7 @@ getSortValue(item: any): any {
             this.masterService.searchSailingSchedule(payload).subscribe(
                 (resp: any) => {
                     if (resp.status) {
-                        this.searchPerformed = true;
+                        this.searched = true;
                         this.scheduleList = resp.data;
                         this.applySorting();
                         this.totalAmountOfCollections = this.scheduleList.length;
@@ -192,7 +221,7 @@ getSortValue(item: any): any {
         this.masterService.specialScheduleSearch(payload).subscribe(
             (resp:any)=>{
                 if (resp.status) {
-                    this.searchPerformed = true;
+                    this.searched = true;
                     this.scheduleList = resp.data;
                     this.totalAmountOfCollections = this.scheduleList.length;
                     this.updatePaginationData();
@@ -204,7 +233,7 @@ getSortValue(item: any): any {
     updatePaginationData(){
         let start = (this.page-1)*this.pageSize;
         let end = start + this.pageSize;
-        this.slicedScheduleList = this.scheduleList.slice(start,end);
+        this.loadVoyages();
     }
 
     nagivateTocreateSailingSchedule() {
@@ -220,7 +249,6 @@ getSortValue(item: any): any {
                         (resp:any)=>{
                             if(resp.status){
                                 this.appSettingService.showSuccess('Sailing Schedule Deleted Successfully');
-                                this.search();
                             } else {
                                 this.appSettingService.showError('Error Deleting Sailing Schedule');
                             }
@@ -286,7 +314,7 @@ getSortValue(item: any): any {
     }
 
     reset(){
-        this.searchPerformed = false;
+        this.searched = false;
         this.scheduleList = [];
         this.slicedScheduleList = [];
         this.totalAmountOfCollections = 0;
@@ -308,5 +336,9 @@ getSortValue(item: any): any {
         const port = this.portList.find(p => p.PortMasterSid === PortMasterSid)
         return `${port.PortName} (${port.PortCode})`
     }
+
+    clearFilterValue() {
+    this.filterValue = '';
+  }
 
 }

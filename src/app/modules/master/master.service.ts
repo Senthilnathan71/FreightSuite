@@ -1963,11 +1963,19 @@ export class MasterService {
     )
   }
 
-  searchSailingSchedule(payload) {
-    return this.http.post<{ data: any[] }>('voyage/search-list', payload).pipe(
-      map((resp) => {
-        let response = resp;
-        return response;
+  // searchSailingSchedule(payload) {
+  //   return this.http.post<{ data: any[] }>('voyage/search-list', payload).pipe(
+  //     map((resp) => {
+  //       let response = resp;
+  //       return response;
+  //     })
+  //   )
+  // }
+
+  searchSailingSchedule(params) {
+    return this.http.post("voyage/search-list", params).pipe(
+      map((resp: any) => {
+        return resp;
       })
     )
   }
