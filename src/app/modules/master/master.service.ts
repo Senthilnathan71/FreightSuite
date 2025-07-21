@@ -3172,6 +3172,60 @@ export class MasterService {
       })
     );
   }
+  // Charge TDS Master Methods
+  getAllChargeTds() {
+  return this.http.get<{ data: any[] }>('charge-tds').pipe(
+    map((resp: any) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+getChargeTdsById(ChargeTdsSid: number) {
+  return this.http.get<{ data: any }>(`charge-tds/fetch/${ChargeTdsSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+createNewChargeTds(payload: any) {
+  return this.http.post<{ data: any }>('charge-tds/create', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+updateChargeTdsById(ChargeTdsSid: number, payload: any) {
+  return this.http.patch<{ data: any }>(`charge-tds/update/${ChargeTdsSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+deleteChargeTdsById(ChargeTdsSid: number) {
+  return this.http.delete<{ data: any }>(`charge-tds/delete/${ChargeTdsSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+searchChargeTds(payload: any) {
+  return this.http.post<{ data: any[] }>('charge-tds/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
 
 
 }
