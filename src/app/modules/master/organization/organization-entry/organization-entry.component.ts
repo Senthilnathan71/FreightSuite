@@ -141,6 +141,7 @@ export class OrganizationEntryComponent {
     { id: '24', name: 'Warehouse' },
     { id: '25', name: 'Agent' },
     { id: '26', name: 'Carrier' },
+    { id: '26', name: 'Vendor' },
   ];
 
   // isSelected(item: any): boolean {

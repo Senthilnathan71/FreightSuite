@@ -1,51 +1,354 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormBuilder,FormGroup, ReactiveFormsModule, Validators  } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { AccountsService } from '../../accounts.service';
+import { forkJoin } from 'rxjs';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
   selector: 'app-vendor-tds-entry',
   standalone: true,
-  imports: [NgSelectModule,FeatherModule,ReactiveFormsModule,CommonModule],
+  imports: [
+    NgSelectModule,
+    FeatherModule,
+    ReactiveFormsModule,
+    CommonModule,
+    NgbDatepickerModule,
+    DecimalPrecisionDirective,
+    OnlyNumbersDirective,
+    TextWithNumbersDirective
+  ],
   templateUrl: './vendor-tds-entry.component.html',
-  styleUrl: './vendor-tds-entry.component.scss'
+  styleUrl: './vendor-tds-entry.component.scss',
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+  ],
 })
 export class VendorTdsEntryComponent {
-  tdsForm!: FormGroup;
 
-   constructor(private fb: FormBuilder) {}
+  SupplierTdsMappingSid: number;
+  isEditMode: boolean;
+  userData: any;
+  supplierTDSdata: any;
+  deleteToggler = false;
 
- ngOnInit(): void {
-    this.tdsForm = this.fb.group({
-      LedgerName: ['', Validators.required],
-      VendorName: ['', Validators.required],
-      PlanNO: ['', Validators.required],
-      PersonType: ['', Validators.required],
-      CountryName: ['', Validators.required],
-      Status: [null, Validators.required]
+  supplierTDSForm!: FormGroup;
+  supplierList: any[] = [];
+  tdsList: any[] = [];
+  cusBranchList: any[] = [];
+
+  // Datepicker related variable
+  today = this.calendar.getToday();
+  todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
+  minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
+
+  constructor(
+    private fb: FormBuilder,
+    private currRoute: ActivatedRoute,
+    private router: Router,
+    private appSettingService: AppSettingsService,
+    private calendar: NgbCalendar,
+    private accountService: AccountsService,
+  ) { }
+
+  ngOnInit(): void {
+    this.initTdsForm();
+    this.loadLookUps();
+    this.accountService.getAllSupplierTDSMapping().subscribe();
+    this.currRoute.paramMap.subscribe(
+      (param) => {
+        this.SupplierTdsMappingSid = +param.get('id');
+        if (this.SupplierTdsMappingSid) {
+          this.isEditMode = true;
+          this.minEffectiveFromDate = undefined;
+          this.loadSupplierTDS();
+        } else {
+          this.addTDSDetail();
+        }
+      }
+    );
+    this.appSettingService.getUser().subscribe(
+      (resp) => {
+        this.userData = resp;
+      }
+    );
+    if (!this.isEditMode) {
+      this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
+    }
+  }
+
+  initTdsForm() {
+    this.supplierTDSForm = this.fb.group({
+      CustomerMasterSid: [null, [Validators.required]],
+      TDSDetail: this.fb.array([]),
+      Status: ['Active'],
+      CompanyType: [{ value: '', disabled: true }],
+      VendorName: [{ value: '', disabled: true }],
+      PanNO: [{ value: '', disabled: true }],
+      CountryName: [{ value: '', disabled: true }],
+    });
+  }
+
+  get tdsDetailArray(): FormArray {
+    return this.supplierTDSForm.get('TDSDetail') as FormArray;
+  }
+
+  removeTDSDetail(index: number) {
+    this.tdsDetailArray.removeAt(index);
+  }
+
+  addTDSDetail() {
+    const tdsDetailGroup = this.fb.group({
+      CustomerBranchSid: [this.cusBranchList[0]?.CustomerBranchSid || null, [Validators.required]],
+      TDSSetHeaderSid: [null, [Validators.required]],
+      ITSecCode: [''],
+      TaxExempt: [false],
+      TransactionLimit: ['',[
+        Validators.required,
+        Validators.max(10000000), 
+      ]],
+      CertificateNo: [''],
+      CertificatePercentage: [''],
+      CertificateAmt: [''],
+      EffectiveFrom: [null],
+      EffectiveTo: [null],
+    });
+    this.tdsDetailArray.push(tdsDetailGroup);
+  }
+
+  loadLookUps() {
+    forkJoin({
+      suppliers: this.accountService.getAllSuppliers(),
+      tdsSet: this.accountService.getAllTDSSet(),
+    }).subscribe(({ suppliers, tdsSet }) => {
+      this.supplierList = suppliers.data;
+      this.tdsList = tdsSet.data;
+    });
+  }
+
+  loadSupplierTDS() {
+    this.accountService.getSupplierTDSById(this.SupplierTdsMappingSid).subscribe({
+      next: (resp: any) => {
+        if (resp.status) {
+          const response = resp.data;
+          this.supplierTDSdata = response;
+          this.supplierTDSForm.patchValue({
+            CustomerMasterSid: response.CustomerMasterSid,
+            Status: response.Status === 'A' ? 'Active' : 'Suspended',
+          });
+          this.tdsDetailArray.clear();
+          // response.TDSDetails.forEach((detail: any) => {
+          //   this.tdsDetailArray.push(this.fb.group({
+          //     TDSSetHeaderSid: [detail.TDSSetHeaderSid, [Validators.required]],
+          //     ITSecCode: [detail.ITSecCode],
+          //     TaxExempt: [detail.TaxExempt === 'Y' ? true : false],
+          //     TransactionLimit: [detail.TransactionLimit],
+          //     CertificateNo: [detail.CertificateNo],
+          //     CertificatePercentage: [detail.CertificatePercentage],
+          //     CertificateAmt: [detail.CertificateAmt],
+          //     EffectiveFrom: [new Date(detail.EffectiveFrom)],
+          //     EffectiveTo: [new Date(detail.EffectiveTo)],
+          //   }));
+          // });
+          this.tdsDetailArray.push(this.fb.group({
+            CustomerBranchSid: [response.CustomerBranchSid, [Validators.required]],
+            TDSSetHeaderSid: [response.TDSSetHeaderSid, [Validators.required]],
+            ITSecCode: [response.ITSecCode],
+            TaxExempt: [response.TaxExempt === 'Y' ? true : false],
+            TransactionLimit: [response.TransactionLimit,[Validators.max(10000000)]],
+            CertificateNo: [response.CertificateNo],
+            CertificatePercentage: [response.CertificatePercentage],
+            CertificateAmt: [response.CertificateAmt],
+            EffectiveFrom: [new Date(response.EffectiveFrom)],
+            EffectiveTo: [new Date(response.EffectiveTo)],
+          }));
+          this.handleLedgerChange(response.customerMaster);
+        } else {
+          this.appSettingService.showError('Error loading supplier TDS');
+          console.error('Error loading supplier TDS', resp.message);
+        }
+      },
+      error: (error: any) => {
+        console.error(error);
+      },
     });
   }
 
   onSubmit() {
-    if (this.tdsForm.invalid) {
-      this.tdsForm.markAllAsTouched();
+    console.log("Submit triggered")
+    if (this.supplierTDSForm.invalid) {
+      this.supplierTDSForm.markAllAsTouched();
+      this.supplierTDSForm.updateValueAndValidity();
+      this.appSettingService.showWarning('Please fill all the required fields correctly.');
       return;
     }
+    this.supplierTDSForm.get('CompanyType').enable();
+    const formValue = this.supplierTDSForm.value;
+    const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
 
-    console.log('Submitted:', this.tdsForm.value);
+    const detailFormValue = this.tdsDetailArray.at(0).value;
+    console.log(formValue);
+    console.log(detailFormValue);
+
+    const payload = {
+      CustomerMasterSid: formValue.CustomerMasterSid,
+      CustomerBranchSid: detailFormValue.CustomerBranchSid,
+      TDSSetHeaderSid: detailFormValue.TDSSetHeaderSid,
+      CompanyType : formValue.CompanyType,
+      ITSecCode: detailFormValue.ITSecCode,
+      TaxExempt: detailFormValue.TaxExempt ? 'Y' : 'N',
+      TransactionLimit: parseFloat(detailFormValue.TransactionLimit) || 0,
+      CertificateNo: detailFormValue.CertificateNo,
+      CertificatePercentage: parseFloat(detailFormValue.CertificatePercentage) || 0,
+      CertificateAmt: detailFormValue.CertificateAmt,
+      EffectiveFrom: detailFormValue.EffectiveFrom,
+      EffectiveTo: detailFormValue.EffectiveTo,
+      Status: formValue.Status === 'Active' ? 'A' : 'S',
+      ...(this.isEditMode ? { UpdatedBy: currUserEmail } : { CreatedBy: currUserEmail }),
+    };
+
+    console.log('Submitted:', payload);
+
+    if (this.isEditMode) {
+      this.accountService.updateSupplierTDSById(this.SupplierTdsMappingSid, payload).subscribe({
+        next: (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess('Supplier TDS mapping is successfully updated.');
+            this.router.navigate(['/accounts/supplier-tds/list']);
+          } else {
+            this.appSettingService.showError('Error updating supplier TDS mapping.');
+            console.error(resp.message);
+          }
+        },
+      });
+    } else {
+      this.accountService.createSupplierTDS(payload).subscribe({
+        next: (resp: any) => {
+          if (resp.status) {
+            this.appSettingService.showSuccess('New supplier TDS mapping successfully created.');
+            this.router.navigate(['/accounts/supplier-tds/list']);
+            
+          } else {
+            this.appSettingService.showError('Error creating supplier TDS mapping.');
+            console.error(resp.message);
+          }
+        },
+      });
+    }
   }
-   modeOfStatus=[
-    {id:"Active",name:"Active"},
-    {id:"Suspended",name:"Suspended"},
-  ]
+
+  handleLedgerChange(ledger: any) {
+    this.supplierTDSForm.get('VendorName')?.setValue(ledger?.CustomerName || '');
+    this.supplierTDSForm.get('PanNO')?.setValue(ledger?.PanName || '');
+    this.supplierTDSForm.get('CompanyType')?.setValue(ledger?.CompanyType || '');
+    this.supplierTDSForm.get('CountryName')?.setValue(ledger?.countryMaster?.countryName || '');
+    if (ledger && ledger.CustomerMasterSid !== undefined) {
+      this.accountService.getCustomerBranchByCusId(ledger.CustomerMasterSid).subscribe({
+        next: (resp: any) => {
+          if (resp.status) {
+            this.cusBranchList = resp.data || [];
+            const firstBranchSid = this.cusBranchList.length > 0 ? this.cusBranchList[0].CustomerBranchSid : null;
+            // Set CustomerBranchSid for each FormGroup in TDSDetail FormArray
+            this.tdsDetailArray.controls.forEach((group: FormGroup) => {
+              group.get('CustomerBranchSid')?.setValue(firstBranchSid);
+            });
+          } else {
+            this.appSettingService.showError('Error loading Customer Branch');
+            console.error('Error loading Customer Branch', resp.message);
+            this.cusBranchList = [];
+          }
+        },
+        error: (error) => {
+          console.error(error);
+          this.cusBranchList = [];
+        },
+      });
+    } else {
+      this.supplierTDSForm.get('CustomerBranchSid')?.setValue(null);
+      this.cusBranchList = [];
+      this.tdsDetailArray.controls.forEach((group: FormGroup) => {
+        group.get('CustomerBranchSid')?.setValue(null);
+      });
+    }
+    this.tdsDetailArray.controls.forEach((group: FormGroup) => {
+      group.get('CustomerBranchSid')?.updateValueAndValidity();
+    });
+  }
+
+  handleTDSChange(tds: any, detailIndex: number) {
+    if(tds === undefined || tds.TDSSetHeaderSid === undefined){
+      this.tdsDetailArray.at(detailIndex).get('ITSecCode').setValue('');
+      return;
+    }
+    this.accountService.getTDSDetailByHeader(tds.TDSSetHeaderSid).subscribe({
+      next :(resp: any) => {
+        if (resp.status) {
+          if (resp.data.length > 0) {
+            const ITSecCode = resp.data[0].ITSectionCode
+            this.tdsDetailArray.at(detailIndex).get('ITSecCode').setValue(ITSecCode);
+          } else {
+            this.tdsDetailArray.at(detailIndex).get('ITSecCode').setValue('');
+          }
+        } else {
+          this.tdsDetailArray.at(detailIndex).get('ITSecCode').setValue('');
+          this.appSettingService.showError('Error loading ITSecCode');
+        }
+      },
+      error : (error:any) => {
+        this.tdsDetailArray.at(detailIndex).get('ITSecCode').setValue('');
+        console.error(error);
+      }
+    })
+  }
+
+  preventTableTouch(event: Event): void {
+    const target = event.target as HTMLElement;
+    // Only stop propagation if the click is not on a form control
+    if (!target.closest('input, select, ng-select')) {
+      event.stopPropagation();
+    }
+  }
+
+  toggleCheckBox(event: Event, tdsDetailIndex: number) {
+    const element = event.target as HTMLInputElement;
+    element.checked = !element.checked;
+    const tdsDetail = this.tdsDetailArray.at(tdsDetailIndex) as FormGroup;
+    tdsDetail.get('TaxExempt')?.setValue(!tdsDetail.get('TaxExempt')?.value);
+    tdsDetail.get('TaxExempt')?.updateValueAndValidity();
+  }
+
+  toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+    if (!date) return null;
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+    };
+  }
+
+  toggleDelete() {
+    this.deleteToggler = !this.deleteToggler;
+  }
+
   navigateBack() {
     history.back();
   }
 
-
   onReset() {
-  this.tdsForm.reset();
-}
-
+    this.supplierTDSForm.reset({
+      Status: 'Active',
+    });
+    this.tdsDetailArray.clear();
+    this.addTDSDetail();
+  }
 }

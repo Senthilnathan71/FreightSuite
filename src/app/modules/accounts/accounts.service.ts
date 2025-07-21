@@ -76,5 +76,96 @@ export class AccountsService {
       })
     )
   }
+
+  // Supplier TDS Mapping
+
+  getAllSupplierTDSMapping() {
+    return this.http.get<{data : any[]}>('supplier-tds-mapping').pipe(
+      map((resp: any) => {
+         let response = resp;
+        return response;
+      })
+    );
+  }
+  getSupplierTDSById(id: number) {
+    return this.http.get<{ data: any }>(`supplier-tds-mapping/fetch/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  createSupplierTDS(payload: any) {
+    return this.http.post('supplier-tds-mapping/create', payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  updateSupplierTDSById(SupplierTdsMappingSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`supplier-tds-mapping/update/${SupplierTdsMappingSid}`, payload).pipe(
+      map((resp) => {
+       let response = resp;
+        return response;
+      })
+    );
+  }
+
+  deleteSupplierTDSById(SupplierTdsMappingSid: number) {
+    return this.http.delete<{ data: any }>(`supplier-tds-mapping/delete/${SupplierTdsMappingSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  searchSupplierTDS(payload: any) {
+    return this.http.post("supplier-tds-mapping/search-list", payload).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getAllSuppliers(){
+    return this.http.get<{data:any}>('customer/suppliers').pipe(
+      map((resp:any)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+  getAllTDSSet(){
+    return this.http.get<{data:any}>('tds').pipe(
+      map((resp:any)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getCustomerBranchByCusId(CustomerMasterSid:number){
+    return this.http.get<{data:any}>(`customer-branch/fetch-by/${CustomerMasterSid}`).pipe(
+      map((resp:any)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+  getTDSDetailByHeader(TDSSetHeaderSid:number){
+    return this.http.get<{data:any}>(`tds-detail/fetchByHeader/${TDSSetHeaderSid}`).pipe(
+      map((resp:any)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+
   
 }
