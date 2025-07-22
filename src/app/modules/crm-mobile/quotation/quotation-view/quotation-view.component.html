@@ -92,8 +92,8 @@
         </div>
         <div class="card-body">
             <!-- #region Pagination -->
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection" [pageSize]="pageSize"
-                [(page)]="page" (pageChange)="updatePaginatedData()">
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
             </ngb-pagination>
             <!-- #endregion -->
         </div>
@@ -118,20 +118,23 @@
                                 <tr class="bg-info">
                                     <th class="bg-transparent text-light" scope="col">Action</th>
                                     <th class="bg-transparent text-light" scope="col">Quote Number</th>
-                                     <!-- <th class="bg-transparent text-light" scope="col">Enquiry No</th> -->
+                                    <!-- <th class="bg-transparent text-light" scope="col">Enquiry No</th> -->
                                     <th class="bg-transparent text-light" scope="col">Customer Name</th>
                                     <th class="bg-transparent text-light" scope="col">Customer Address</th>
                                     <th class="bg-transparent text-light" scope="col">Quote Date</th>
                                     <th class="bg-transparent text-light" scope="col">Status</th>
-                                    
+
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let enq of quoteItems">
-                                     <td data-label="Action">
+                                    <td data-label="Action">
                                         <section class="ms-auto d-flex align-items-center gap-1">
                                             <a class="text-info" (click)="editEnquiry(enq.QuoteHeaderSid)">
                                                 <i-feather name="eye" class="feather-sm"></i-feather>
+                                            </a>
+                                            <a class="mx-2" (click)="reportAndEmailModel(enq,reportModel)">
+                                                <i-feather name="file-text" class="feather-sm"></i-feather>
                                             </a>
                                         </section>
                                     </td>
@@ -163,7 +166,7 @@
                                             {{ enq.status ==="A"? "Active":"Suspend" }}
                                         </div>
                                     </td>
-                                   
+
                                 </tr>
                             </tbody>
                         </table>
@@ -235,7 +238,7 @@
         </div>
         <div class="card-body">
             <!-- #region Pagination -->
-        
+
             <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection1"
                 [pageSize]="pageSize1" [(page)]="page1" (pageChange)="updateEnquiryPaginatedData()">
             </ngb-pagination>
@@ -263,11 +266,11 @@
                                     <th class="bg-transparent text-light" scope="col">Action</th>
                                     <th class="bg-transparent text-light" scope="col">Rate Request No:</th>
                                     <th class="bg-transparent text-light" scope="col">Customer</th>
-                                   
+
                                     <th class="bg-transparent text-light" scope="col">Department</th>
                                     <th class="bg-transparent text-light" scope="col">POL</th>
                                     <th class="bg-transparent text-light" scope="col">POD</th>
-                                    
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -305,7 +308,7 @@
                                             {{ enq.PODCode || '' }}
                                         </div>
                                     </td>
-                                    
+
                                 </tr>
                             </tbody>
                         </table>
@@ -324,5 +327,157 @@
 
             </div>
         </div>
+    </div>
+</ng-template>
+
+
+<ng-template #reportModel let-modal>
+    <div class="modal-header d-flex justify-content-between align-items-start">
+        <h5 class="modal-title">Quotation Preview</h5>
+        <div class="d-flex gap-2">
+            <!-- Loader (simple spinner example) -->
+            <div *ngIf="isLoading" class="spinner-overlay">
+                <div class="spinner"></div>
+            </div>
+
+            <button class="btn btn-outline-primary btn-sm" (click)="downloadPDF()">
+                <i-feather name="download" class="feather-sm"></i-feather> Download
+            </button>
+            <button class="btn btn-outline-success btn-sm" (click)="sendEmail()">
+                <i-feather name="mail" class="feather-sm"></i-feather> Email
+            </button>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+    </div>
+    <div class="modal-body">
+        <section class="container py-5 " id="pdfContent">
+            <div class="px-3 border border-2 border-dark printTable py-3" style="font-size: 14px;">
+                <div class="row px-5">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center gap-4">
+                            <img src="assets/logo/dofi-logo.svg" width="100" height="100" class="img-fluid" alt="">
+                            <h4> DOFI <br>Infosys LLC </h4>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <aside class="d-flex gap-3">
+                            <p class="mb-0 col h5 fw-bold text-center">Total Transport Systems Limited</p>
+                        </aside>
+                        <aside class="d-flex flex-column">
+                            <p class="mb-0 col-12 text-center text-muted fw-normal">7th floor. T Square. opp. Chandivali
+                                Petrol Pump.
+                            </p>
+                            <p class="mb-0 col-12 text-center text-muted fw-normal">Sakinaka. Andheri (E). Murnbai - 400
+                                072.
+                                Maharashtra
+                                India.</p>
+                            <p class="mb-0 col-12 text-center text-muted fw-normal">TEL: 02266441500</p>
+                        </aside>
+                    </div>
+                </div>
+
+                <div class="text-center h5 fw-bold">QUOTATION</div>
+                <div class="row mx-auto my-3">
+                    <div class="col-md-6">
+                        <section class="d-flex flex-column">
+                            <aside class="d-flex">
+                                <p class="mb-0 col-12 h6 fw-bold">VisVas Logistics Pvt Ltd.,</p>
+                            </aside>
+                            <aside class="d-flex">
+                                <p class="mb-0 col-12">Thane. Mumbai </p>
+                            </aside>
+                        </section>
+                    </div>
+                    <div class="col-md-6">
+                        <section class="d-flex flex-column gap-1">
+                            <aside class="d-flex gap-3 justify-content-end">
+                                <p class="mb-0 col-3 fw-bold">Qauotation No</p>
+                                <p class="mb-0 fw-normal col-4">: #985345</p>
+                            </aside>
+                            <aside class="d-flex gap-3 justify-content-end">
+                                <p class="mb-0 col-3 fw-bold">Quotation Date</p>
+                                <p class="mb-0 fw-normal col-4">: 12/12/2025</p>
+                            </aside>
+                            <aside class="d-flex gap-3 justify-content-end">
+                                <p class="mb-0 col-3 fw-bold">Reference</p>
+                                <p class="mb-0 fw-normal col-4">: Lorem, ipsum dolor.</p>
+                            </aside>
+                        </section>
+                    </div>
+                </div>
+
+
+                <aside class="table-responsive">
+                    <table class="table">
+
+
+                        <tr>
+                            <td colspan="6" style="border:2px solid black">
+                                <aside class="d-flex gap-3 justify-content-between">
+                                    <div>
+                                        <p class="mb-0  fw-bold">FCL Export </p>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0 fw-normal col">Jebel Ali (AEJEA) - Singapore (SGSIN) - Port Klang
+                                            (MYPKL).</p>
+                                    </div>
+                                </aside>
+                            </td>
+                        </tr>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="p-0" style="border:2px solid black">
+                                    <aside class="d-flex flex-wrap">
+                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Carrier :</span> CMA
+                                        </p>
+                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Cargo Type :</span>
+                                            General</p>
+                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Valid From : </span>
+                                            3/3/2025</p>
+                                        <p class="mb-0 col-3 p-2"><span class="fw-bold">Valid To : </span> 11/11/2025
+                                        </p>
+                                    </aside>
+                                </td>
+                            </tr>
+
+                            <tr style="border:2px solid black">
+                                <td class="fw-bold table-secondary border border-dark">Charge</td>
+                                <td class="fw-bold table-secondary border border-dark">Unit</td>
+                                <td class="fw-bold table-secondary border border-dark">Qty</td>
+                                <td class="fw-bold table-secondary border border-dark">Curr</td>
+                                <td class="fw-bold table-secondary border border-dark">Rate</td>
+                                <td class="fw-bold table-secondary border border-dark">Total Amt</td>
+                            </tr>
+
+                            <tr style="border:2px solid black">
+                                <td class="border border-dark">Freight</td>
+                                <td class="border border-dark">20Ft</td>
+                                <td class="border border-dark">1</td>
+                                <td class="border border-dark">USD</td>
+                                <td class="border border-dark">450</td>
+                                <td class="border border-dark">450</td>
+                            </tr>
+
+                            <tr style="border:2px solid black">
+                                <td class="border border-dark">THC</td>
+                                <td class="border border-dark">20Ft</td>
+                                <td class="border border-dark">1</td>
+                                <td class="border border-dark">INR</td>
+                                <td class="border border-dark">1200</td>
+                                <td class="border border-dark">1200</td>
+                            </tr>
+
+
+                        </tbody>
+                    </table>
+                </aside>
+
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between pt-5 mt-5">
+                <div class=""><span class="fw-bold">Printed By :</span> Lorem ipsum </div>
+                <div><span class="fw-bold">Printed On :</span> {{ currentDate }}</div>
+            </div>
+        </section>
     </div>
 </ng-template>

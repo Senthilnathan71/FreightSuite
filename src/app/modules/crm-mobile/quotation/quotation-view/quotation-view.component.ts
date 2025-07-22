@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, ViewChild } from '@angular/core';
-import { NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { NgbModal, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { LeadService } from '../../Services/lead.service';
 import { Router } from '@angular/router';
 import { AppService } from 'src/app/service/app.service';
@@ -8,6 +8,8 @@ import { FormsModule } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { DateFormatPipe } from 'src/app/core/pipes/date-format.pipe';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import * as html2pdf from 'html2pdf.js';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-quotation-view',
@@ -24,6 +26,8 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
   styleUrl: './quotation-view.component.scss'
 })
 export class QuotationViewComponent {
+  isLoading = false;
+
   active = 1;
   @ViewChild('nav', { static: true }) nav!: NgbNavModule;
   errorMessage: string = '';  // To store any error messages
@@ -41,7 +45,10 @@ export class QuotationViewComponent {
   enquiryItems: any[] = [];
   enquiryData: any
   ports: any
-  constructor(private leadService: LeadService, private route: Router, private appService: AppService) { }
+  selectedItem: any;
+  currentDate = new Date().toLocaleDateString(); // or any formatted string
+
+  constructor(private toastr: ToastrService, private modalService: NgbModal, private leadService: LeadService, private route: Router, private appService: AppService) { }
 
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice()
@@ -200,10 +207,53 @@ export class QuotationViewComponent {
     this.route.navigate(['crm/quotation/view']);
   }
 
-    findEnquiryName(EnquiryId : number){
-      if(!EnquiryId) return;
-      return (this.enquiryData.find(data => data.EnquiryHeaderSid === EnquiryId )).EnquiryNumber;
+  findEnquiryName(EnquiryId: number) {
+    if (!EnquiryId) return;
+    return (this.enquiryData.find(data => data.EnquiryHeaderSid === EnquiryId)).EnquiryNumber;
+  }
+
+  reportAndEmailModel(data: any, content: TemplateRef<any>) {
+    this.selectedItem = data;
+    this.modalService.open(content, {
+      size: 'lg', // or omit this to avoid interference
+      scrollable: true,
+      windowClass: 'custom-wide-modal'
+    });
+  }
+
+  downloadPDF() {
+    const element = document.getElementById('pdfContent');
+
+    const opt = {
+      margin: 0.5,
+      filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    if (element) {
+      this.isLoading = true;
+
+      setTimeout(() => {
+        html2pdf().from(element).set(opt).save().then(() => {
+          this.isLoading = false;
+
+          // ✅ Success message
+          this.toastr.success('PDF downloaded successfully!');
+        }).catch((err: any) => {
+          this.isLoading = false;
+          console.error('PDF download error:', err);
+          this.toastr.error('Something went wrong while downloading PDF.');
+        });
+      }, 100); // short delay to allow loader to show
     }
-  
+  }
+
+
+  sendEmail() {
+    console.log("Send email triggered");
+  }
+
 
 }
