@@ -357,42 +357,42 @@ export class LeadService {
     )
   }
 
-  getAllCompanies(){
-    return this.http.get<{data:any[]}>('company').pipe(
-      map((resp)=>{
+  getAllCompanies() {
+    return this.http.get<{ data: any[] }>('company').pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  fetchAllCountries(){
-    return this.http.get<{data:any[]}>('country').pipe(
-      map((resp:any)=>{
+  fetchAllCountries() {
+    return this.http.get<{ data: any[] }>('country').pipe(
+      map((resp: any) => {
         let response = resp.data;
         return response;
       })
     )
   }
 
-  getStateByCountryId(CountryMasterSid){
-    return this.http.get<{data:any}>(`state/fetchByCountry/${CountryMasterSid}`).pipe(
-      map((resp)=>{
+  getStateByCountryId(CountryMasterSid) {
+    return this.http.get<{ data: any }>(`state/fetchByCountry/${CountryMasterSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
-  
-  getCityByStateId(StateMasterSid:number){
-    return this.http.get<{data:any[]}>(`city/fetchByState/${StateMasterSid}`).pipe(
-      map((resp)=>{
+
+  getCityByStateId(StateMasterSid: number) {
+    return this.http.get<{ data: any[] }>(`city/fetchByState/${StateMasterSid}`).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
-   // Get all pre-customer meetings
+  // Get all pre-customer meetings
   getAllPreCustomerMeetings() {
     return this.http.get<{ data: any[] }>('pre-customer-meeting').pipe(
       map((resp) => {
@@ -452,25 +452,32 @@ export class LeadService {
     )
   }
 
-  
-  getTandCByCondition(payload){
-    return this.http.post<{data : any[]}>('terms-and-conditions/fetchByCondition',payload).pipe(
-      map((resp)=>{
+
+  getTandCByCondition(payload) {
+    return this.http.post<{ data: any[] }>('terms-and-conditions/fetchByCondition', payload).pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  getAllProducts(){
-    return this.http.get<{data : any[]}>('product').pipe(
-      map((resp)=>{
+  getAllProducts() {
+    return this.http.get<{ data: any[] }>('product').pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
     )
   }
 
-  
+  quotationReport(payload: any) {
+    return this.http.post<{ data: any[] }>('quotation/send/email', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
 
 }

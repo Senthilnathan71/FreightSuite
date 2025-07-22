@@ -253,6 +253,46 @@ export class QuotationViewComponent {
 
   sendEmail() {
     console.log("Send email triggered");
+    let payload = {
+      EmailTo: "developer1@dofi.co",
+      EmailCC: "developer1@dofi.co",
+      Subject: "Quotation Report",
+      Mailbody: `
+    <div style="font-family: Arial, sans-serif; padding: 10px;">
+      <h2 style="color: #2c3e50;">Quotation Report</h2>
+      <p>Dear Customer,</p>
+      <p>Please find the attached quotation report for your reference.</p>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+        <thead>
+          <tr style="background-color: #f2f2f2;">
+            <th style="border: 1px solid #ddd; padding: 8px;">Item</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Description</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">1</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">Product A</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">₹5,000</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">2</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">Product B</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">₹3,200</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top: 20px;">Regards,<br><strong>Sales Team</strong></p>
+    </div>
+  `
+    };
+
+    this.leadService.quotationReport(payload).subscribe((resp: any) => {
+      if (resp.status) {
+        this.toastr.success('Report Email Sent successfully!');
+      }
+    })
   }
 
 
