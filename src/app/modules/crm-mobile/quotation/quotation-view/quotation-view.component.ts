@@ -215,7 +215,7 @@ export class QuotationViewComponent {
   reportAndEmailModel(data: any, content: TemplateRef<any>) {
     this.selectedItem = data;
     this.modalService.open(content, {
-      size: 'lg', // or omit this to avoid interference
+      size: 'xl', // or omit this to avoid interference
       scrollable: true,
       windowClass: 'custom-wide-modal'
     });

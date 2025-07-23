@@ -93,3 +93,32 @@ input{
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
+
+.search-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-grow: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding-right: 2.5rem; 
+  padding-left: 0.75rem;
+  height: 38px;
+  border: 1px solid #d6d2d2;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.search-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  pointer-events: none;
+}
+
+

@@ -8,7 +8,7 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="mb-2">
-                                <label for="quoteNo" class="form-label">Quote No : </label>
+                                <label for="quoteNo" class="form-label">Quote No </label>
                                 <input type="text" class="form-control" id="quoteNo" formControlName="quoteNo">
                             </div>
                         </div>
@@ -49,7 +49,7 @@
                         </div> -->
                          <aside class="col-md-4">
                            <div class="mb-2">
-                                <label for="" class="form-label">Enquiry No : </label>
+                                <label for="" class="form-label">Enquiry No </label>
                                 <input type="text" class="form-control" id="" [value]="rateEnquiryNumber" disabled>
                             </div>
                         </aside>
@@ -70,6 +70,44 @@
                                 </small>
                             </div>
                         </div>
+                          <div class="col-md-4">
+                            <div class="mb-2">
+                                <label for="" class="form-label">Customer Address </label>
+                                <input type="text" class="form-control" id="" formControlName="CustomerAddress">
+                            </div>
+                        </div>
+                         <div class="col-md-4">
+                            <div class="mb-2">
+                                <label for="" class="form-label">Email </label>
+                                <input type="text" class="form-control" id="" formControlName="Email">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-2">
+                                <label for="" class="form-label">Inco </label>
+                                <input type="text" class="form-control" id="" formControlName="Inco">
+                            </div>
+                        </div>
+                         <div class="col-md-4">
+                            <div class="mb-2">
+                                <label for="" class="form-label">Clearance By </label>
+                                <input type="text" class="form-control" id="" formControlName="Clearanceby">
+                            </div>
+                        </div>
+                          <div class="col-md-4">
+                            <div class="mb-2">
+                                <label for="" class="form-label">Transport By </label>
+                                <input type="text" class="form-control" id="" formControlName="Transportby">
+                            </div>
+                        </div>
+                           <aside class="col-md-4">
+                        
+                             <label for="" class="form-label">Remarks </label>
+                            <textarea id="" placeholder="" rows="1"  class="form-control"
+                                formControlName="Remarks"></textarea>
+                           
+                    </aside>
+
                         <!-- <div class="col-6 col-md-3">
                                     <div class="mb-2">
                                         <label for="customer" class="form-label">Dept Name</label>
@@ -107,6 +145,8 @@
 
                 </div>
             </div>
+
+         
             <!-- #endregion -->
             <div class="col-12 mb-3 d-flex align-items-center justify-content-end">
                 @if (isMobile) {
@@ -121,6 +161,8 @@
                 <!-- (click)="addNewRoute()" -->
                 }
             </div>
+
+
             <div formArrayName="routes">
                 <div *ngFor="let route of routes.controls; let routeIndex = index" [formGroupName]="routeIndex">
                     <div class="card border border-info position-relative">
@@ -158,7 +200,7 @@
 
                                 <div class="col-6 col-md-3">
                                     <div class="mb-1">
-                                        <label for="CarrierMasterSid" class="form-label">Carrier: </label>
+                                        <label for="CarrierMasterSid" class="form-label">Carrier </label>
                                         <select formControlName="CarrierMasterSid" class="form-select"
                                             (change)="onCarrierChange($event,routeIndex)">
                                             <option value="" disabled>Select Carrier</option>
@@ -240,7 +282,7 @@
                         </aside> -->
                         <div class="col-6 col-md-3">
                             <div class="mb-2">
-                                <label for="effectiveDate" class="form-label">Eff. Date:
+                                <label for="effectiveDate" class="form-label">Eff. Date
                                 </label>
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
@@ -273,7 +315,7 @@
                                 </div> -->
                         <div class="col-6 col-md-3">
                             <div class="mb-2">
-                                <label for="expiredDate" class="form-label">Exp. Date:
+                                <label for="expiredDate" class="form-label">Exp. Date
                                 </label>
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d3="ngbDatepicker"

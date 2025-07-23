@@ -11,29 +11,26 @@
         <button ngbNavLink>Quotation</button>
         <ng-template ngbNavContent>
 
-
-
-
-
-
-
-
             <div class="row">
                 <!-- #region Search Panel -->
                 <div class="col-12">
                     <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
-                        <form class="d-flex align-items-center gap-2">
-                            <div class="form-outline col">
-                                <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
+                        <form class="d-flex align-items-center gap-2 ">
+                            <div class="form-outline col search-wrapper">
+                                 <i class="fas fa-search ms-3 search-icon "></i>
+                                <input type="search" class="form-control ps-5 search-input " [(ngModel)]="searchText" name="search"
                                     (input)="searchEnquiry()" autocomplete="off" placeholder="Search">
-                                <i class="fas fa-search ms-3"></i>
+                               
                             </div>
-                            <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
-                                <i class="mdi mdi-plus" [class.me-1]="!isMobile"></i>
+                            <div>
+                                <button type="button" class="btn btn-info btn-sm m-0" (click)="createNew()">
+                                  <i class="fas fa-plus me-2 "[class.me-1]="!isMobile"></i>
                                 @if (!isMobile) {
                                 New Quotation
                                 }
                             </button>
+                            </div>
+                         
                         </form>
                     </div>
                 </div>
@@ -116,24 +113,24 @@
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
                                 <tr class="bg-info">
-                                    <th class="bg-transparent text-light" scope="col">Action</th>
+                                    <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                                     <th class="bg-transparent text-light" scope="col">Quote Number</th>
                                     <!-- <th class="bg-transparent text-light" scope="col">Enquiry No</th> -->
                                     <th class="bg-transparent text-light" scope="col">Customer Name</th>
                                     <th class="bg-transparent text-light" scope="col">Customer Address</th>
                                     <th class="bg-transparent text-light" scope="col">Quote Date</th>
-                                    <th class="bg-transparent text-light" scope="col">Status</th>
+                                    <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
 
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let enq of quoteItems">
                                     <td data-label="Action">
-                                        <section class="ms-auto d-flex align-items-center gap-1">
+                                        <section class="ms-auto d-flex align-items-center gap-1 justify-content-center" >
                                             <a class="text-info" (click)="editEnquiry(enq.QuoteHeaderSid)">
                                                 <i-feather name="eye" class="feather-sm"></i-feather>
                                             </a>
-                                            <a class="mx-2" (click)="reportAndEmailModel(enq,reportModel)">
+                                            <a class="mx-2 border-start ps-3 " (click)="reportAndEmailModel(enq,reportModel)">
                                                 <i-feather name="file-text" class="feather-sm"></i-feather>
                                             </a>
                                         </section>
