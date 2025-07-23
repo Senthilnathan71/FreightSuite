@@ -81,7 +81,7 @@
 <!-- DESKTOP CODE -->
 <ng-template #desktopTemplate>
     <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
-        <div class="row">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-1">
 
             <div class="col-12">
                 <!-- #region filter and add new -->
@@ -107,7 +107,7 @@
                             <tbody>
                                 <tr *ngFor="let enq of enquiryItems">
                                     <td data-label="Action">
-                                        <section class="action-items">
+                                        <section class="action-items text-center">
                                             <a class="text-info mx-2" (click)="editEnquiry(enq.EnquiryHeaderSid)">
                                                 <i-feather name="eye" class="feather-sm"></i-feather>
                                             </a>

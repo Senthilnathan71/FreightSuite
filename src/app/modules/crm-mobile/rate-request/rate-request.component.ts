@@ -130,6 +130,31 @@ export class RateRequestComponent implements OnInit {
     });
   }
 
+  modeOfEnquiry=[
+    {id:1,name:"Email"},
+    {id:2,name:"Phone"},
+    {id:3,name:"Lead"},
+    {id:4,name:"Visit"},
+    {id:5,name:"Others"}
+  ]
+
+  terms=[
+    {id:1,name:"FCL"},
+    {id:2,name:"FCL.FCL"},
+    {id:3,name:"LCL,LCL"},
+    {id:4,name:"LCL,LCL"},
+    {id:5,name:"FCL,FLT HH"},
+    {id:6,name:"FTL,LTL"}
+  ]
+
+  modeOfAddtionalService=[
+    {id:1,name:'Lashing'},
+    {id:2,name:'Labelling'},
+    {id:3,name:"Choking"},
+    {id:4,name:"Fumigation"},
+    {id:5,name:"Palletization"}
+  ]
+
   initializeForm() {
     this.rateRequestForm = this.fb.group({
       // Header Data
