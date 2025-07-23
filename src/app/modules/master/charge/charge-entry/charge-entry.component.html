@@ -18,10 +18,11 @@
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </button>
                     <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
-                        [disabled]="btnDisable || chargeForm.invalid">
-                        <i class="fas fa-save me-1"></i>
-                        {{ isEditMode ? 'Update' : 'Save' }}
-                    </button>
+    [disabled]="btnDisable || chargeForm.invalid || !canSaveCharge()"
+    [title]="!canSaveCharge() ? 'Please add at least one GST and one TDS record' : ''">
+    <i class="fas fa-save me-1"></i>
+    {{ isEditMode ? 'Update' : 'Save' }}
+</button>
                 </div>
             </div>
         </div>
@@ -36,40 +37,42 @@
                             <div class="row">
                                 <!-- Charge Code -->
                                 <aside class="col-md-4">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="chargeCode" formControlName="chargeCode"
-                                            class="custom-input-field sm" placeholder="" maxlength="5" />
-                                        <label for="chargeCode" class="input-label">Charge Code <span
-                                                class="text-danger">*</span></label>
+    <div class="custom-form-group">
+        <input type="text" id="chargeCode" formControlName="chargeCode"
+            class="custom-input-field sm" placeholder="" maxlength="5" />
+        <label for="chargeCode" class="input-label">Charge Code <span
+                class="text-danger">*</span></label>
 
-                                        <div *ngIf="chargeForm.get('chargeCode')?.touched && chargeForm.get('chargeCode')?.invalid"
-                                            class="error-message">
-                                            <span *ngIf="chargeForm.get('chargeCode')?.hasError('required')">Charge Code
-                                                is required</span>
-                                            <span *ngIf="chargeForm.get('chargeCode')?.hasError('maxlength')">Maximum 5
-                                                characters allowed</span>
-                                            <span *ngIf="chargeForm.get('chargeCode')?.hasError('pattern')">Only uppercase letters and numbers allowed</span>
-                                        </div>
-                                    </div>
-                                </aside>
+        <div *ngIf="chargeForm.get('chargeCode')?.touched && chargeForm.get('chargeCode')?.invalid"
+            class="error-message">
+            <span *ngIf="chargeForm.get('chargeCode')?.hasError('required')">Charge Code
+                is required</span>
+            <span *ngIf="chargeForm.get('chargeCode')?.hasError('maxlength')">Maximum 5
+                characters allowed</span>
+            <span *ngIf="chargeForm.get('chargeCode')?.hasError('pattern')">Only uppercase letters and numbers allowed</span>
+            <span *ngIf="chargeForm.get('chargeCode')?.hasError('duplicate')">This charge code already exists</span>
+        </div>
+    </div>
+</aside>
 
                                 <!-- Charge Name -->
                                 <aside class="col-md-4">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="chargeName" formControlName="chargeName"
-                                            class="custom-input-field sm" placeholder="" maxlength="100" />
-                                        <label for="chargeName" class="input-label">Charge Name <span
-                                                class="text-danger">*</span></label>
+    <div class="custom-form-group">
+        <input type="text" id="chargeName" formControlName="chargeName"
+            class="custom-input-field sm" placeholder="" maxlength="100" />
+        <label for="chargeName" class="input-label">Charge Name <span
+                class="text-danger">*</span></label>
 
-                                        <div *ngIf="chargeForm.get('chargeName')?.touched && chargeForm.get('chargeName')?.invalid"
-                                            class="error-message">
-                                            <span *ngIf="chargeForm.get('chargeName')?.hasError('required')">Charge Name
-                                                is required</span>
-                                            <span *ngIf="chargeForm.get('chargeName')?.hasError('maxlength')">Maximum 100
-                                                characters allowed</span>
-                                        </div>
-                                    </div>
-                                </aside>
+        <div *ngIf="chargeForm.get('chargeName')?.touched && chargeForm.get('chargeName')?.invalid"
+            class="error-message">
+            <span *ngIf="chargeForm.get('chargeName')?.hasError('required')">Charge Name
+                is required</span>
+            <span *ngIf="chargeForm.get('chargeName')?.hasError('maxlength')">Maximum 100
+                characters allowed</span>
+            <span *ngIf="chargeForm.get('chargeName')?.hasError('duplicate')">This charge name already exists</span>
+        </div>
+    </div>
+</aside>
 
                                 <!-- Departments -->
                                 <aside class="col-md-4">
@@ -108,21 +111,6 @@
                                     </div>
                                 </aside>
 
-                                <!-- Charge Group -->
-                                <aside class="col-md-4">
-                                    <div class="custom-form-group custom-form-group-select">
-                                        <ng-select formControlName="ChargeGroupSid" [items]="chargeGroupOptions" 
-                                            bindLabel="GroupName" bindValue="ChargeGroupSid"
-                                            placeholder="Select Charge Group">
-                                        </ng-select>
-                                        <label class="input-label">Charge Group <span class="text-danger">*</span></label>
-                                        <div *ngIf="chargeForm.get('ChargeGroupSid')?.touched && chargeForm.get('ChargeGroupSid')?.invalid"
-                                            class="error-message">
-                                            <span *ngIf="chargeForm.get('ChargeGroupSid')?.hasError('required')">Charge Group is required</span>
-                                        </div>
-                                    </div>
-                                </aside>
-
                                 <!-- Currency -->
                                 <aside class="col-md-4">
                                     <div class="custom-form-group custom-form-group-select">
@@ -138,12 +126,30 @@
                                     </div>
                                 </aside>
 
+                                <!-- Charge Group -->
+                                <aside class="col-md-4">
+                                    <div class="custom-form-group custom-form-group-select">
+                                        <ng-select formControlName="ChargeGroupSid" [items]="chargeGroupOptions" 
+                                            bindLabel="GroupName" bindValue="ChargeGroupSid"
+                                            placeholder="Select Charge Group">
+                                        </ng-select>
+                                        <label class="input-label">Charge Group <span class="text-danger">*</span></label>
+                                        <div *ngIf="chargeForm.get('ChargeGroupSid')?.touched && chargeForm.get('ChargeGroupSid')?.invalid"
+                                            class="error-message">
+                                            <span *ngIf="chargeForm.get('ChargeGroupSid')?.hasError('required')">Charge Group is required</span>
+                                        </div>
+                                    </div>
+                                </aside>
+
+                                
+
                                 <!-- Status -->
                                 <aside class="col-md-4">
                                     <div *ngIf="!isEditMode" class="custom-form-group">
-                                        <input type="text"  formControlName="Status" class="custom-input-field sm" value="Active" readonly>
+                                        <input type="text" class="custom-input-field sm" value="Active" readonly>
                                         <label class="input-label">Status</label>
                                     </div>
+
 
                                     <div *ngIf="isEditMode" class="custom-form-group custom-form-group-select">
                                         <ng-select formControlName="Status" [items]="statusOptions" 
@@ -168,12 +174,19 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-12 d-flex justify-content-between align-items-center mb-3">
-                                    <h4 class="mb-0">GST Details</h4>
-                                    <button type="button" class="btn btn-sm btn-info" 
-                                        (click)="openGstModal(gstModalContent)">
-                                        <i class="fas fa-plus me-1"></i> Add GST
-                                    </button>
-                                </div>
+    <h4 class="mb-0">GST </h4>
+    <button type="button" class="btn btn-sm btn-info" 
+        (click)="openGstModal(gstModalContent)"
+        [disabled]="chargeForm.invalid">
+        <i class="fas fa-plus me-1"></i> Add GST
+    </button>
+</div>
+
+@if(chargeTaxMasters.controls.length === 0) {
+<div class="col-12 text-center py-3 text-danger">
+    At least one GST record is required
+</div>
+}
 
                                 @if(chargeTaxMasters.controls.length > 0) {
                                 <div class="col-12">
@@ -182,7 +195,7 @@
                                             <thead class="bg-info">
                                                 <tr>
                                                     <th class="bg-transparent text-light">Action</th>
-                                                    <th class="bg-transparent text-light">HSN/SAC Code</th>
+                                                    <th class="bg-transparent text-light">SAC Code</th>
                                                     <th class="bg-transparent text-light">Description</th>
                                                     <th class="bg-transparent text-light">Tax Rate</th>
                                                 </tr>
@@ -229,12 +242,19 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-12 d-flex justify-content-between align-items-center mb-3">
-                                    <h4 class="mb-0">TDS Details</h4>
-                                    <button type="button" class="btn btn-sm btn-info" 
-                                        (click)="openTdsModal(tdsModalContent)">
-                                        <i class="fas fa-plus me-1"></i> Add TDS
-                                    </button>
-                                </div>
+    <h4 class="mb-0">TDS </h4>
+    <button type="button" class="btn btn-sm btn-info" 
+        (click)="openTdsModal(tdsModalContent)"
+        [disabled]="chargeTaxMasters.controls.length === 0">
+        <i class="fas fa-plus me-1"></i> Add TDS
+    </button>
+</div>
+
+@if(chargeTaxMasters.controls.length > 0 && chargeTds.controls.length === 0) {
+<div class="col-12 text-center py-3 text-danger">
+    At least one TDS record is required when GST records exist
+</div>
+}
 
                                 @if(chargeTds.controls.length > 0) {
                                 <div class="col-12">
@@ -263,9 +283,9 @@
 
                                                         </div>
                                                     </td>
-                                                    <td>
-                                                        {{ getTdsSetName(tds.value.TDSSetHeaderSid) }}
-                                                    </td>
+                                                   <td>
+  {{ getTdsSetName(tds.value.TDSSet) }}
+</td>
                                                     <td>
                                                         {{ tds.value.EffectiveFrom | date:'dd/MM/yyyy' }}
                                                     </td>
@@ -326,7 +346,7 @@
 <!-- GST Modal -->
 <ng-template #gstModalContent let-modal>
     <div class="modal-header bg-info text-white p-2">
-        <h4 class="modal-title">{{ isGstEditMode ? 'Edit' : 'Add' }} GST Details</h4>
+        <h4 class="modal-title">{{ isGstEditMode ? 'Edit' : 'Add' }} GST </h4>
         <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
@@ -416,7 +436,7 @@
 <!-- TDS Modal -->
 <ng-template #tdsModalContent let-modal>
     <div class="modal-header bg-info text-white p-2">
-        <h4 class="modal-title">{{ isTdsEditMode ? 'Edit' : 'Add' }} TDS Details</h4>
+        <h4 class="modal-title">{{ isTdsEditMode ? 'Edit' : 'Add' }} TDS </h4>
         <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
