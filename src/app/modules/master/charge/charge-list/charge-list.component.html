@@ -111,11 +111,11 @@
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'SAC', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'SAC'}"></i>
                             </th>
-                            <!-- <th class="bg-transparent text-light" scope="col" (click)="sort('TDSset')">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('TDSset')">
                                 TDS Set
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'TDSset', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'TDSset'}"></i>
-                            </th> -->
+                            </th>
                             <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                         </tr>
                     </thead>
@@ -140,9 +140,9 @@
                             <td>{{item.chargeCode}}</td>
                             <td>{{item.chargeName}}</td>
                             <td>{{getUomCode(item.UOM)}}</td>
-                            <td>{{item.HSNSAC}}</td>
-                            <!-- <td>{{getHssacCode(item.SAC)}}</td> -->
-                            <!-- <td>{{getTdssetCode(item.TDSSetHeaderSid)}}</td> -->
+                            <!-- <td>{{item.HSNSAC}}</td> -->
+                           <td>{{item.HSNSAC}}</td>
+<td>{{item.TDSSet}}</td>
                             <td>
                                 @if(item.Status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">

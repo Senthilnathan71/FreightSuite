@@ -202,46 +202,49 @@ export class ChargeEntryComponent implements OnInit {
   }
 
   getChargeById(id: number) {
-    this.loading = true;
-    this.masterService.getChargeById(id).subscribe({
-      next: (charge: any) => {
-        this.chargeData = charge;
-        
-        // Patch main charge form
-        this.chargeForm.patchValue({
-          chargeCode: charge.chargeCode,
-          chargeName: charge.chargeName,
-          UOM: charge.UOM,
-          ChargeGroupSid: charge.ChargeGroupSid,
-          CurrencyMasterSid: charge.CurrencyMasterSid,
-          DepartmentMasterSid: charge.DepartmentMasterSid,
-          Status: charge.Status || 'A'
+  this.loading = true;
+  this.masterService.getChargeById(id).subscribe({
+    next: (charge: any) => {
+      this.chargeData = charge;
+      
+      // Clear existing arrays first
+      this.clearFormArrays();
+      
+      // Patch main charge form
+      this.chargeForm.patchValue({
+        chargeCode: charge.chargeCode,
+        chargeName: charge.chargeName,
+        UOM: charge.UOM,
+        ChargeGroupSid: charge.ChargeGroupSid,
+        CurrencyMasterSid: charge.CurrencyMasterSid,
+        DepartmentMasterSid: charge.DepartmentMasterSid,
+        Status: charge.Status || 'A'
+      });
+      this.chargeForm.get('Status')?.enable();
+
+      // Load GST data
+      if (charge.chargeTaxMaster && charge.chargeTaxMaster.length > 0) {
+        charge.chargeTaxMaster.forEach(gst => {
+          this.addGstToForm(gst);
         });
-        this.chargeForm.get('Status')?.enable();
-
-        // Load GST data
-        if (charge.chargeTaxMaster && charge.chargeTaxMaster.length > 0) {
-          charge.chargeTaxMaster.forEach(gst => {
-            this.addGstToForm(gst);
-          });
-        }
-
-        // Load TDS data
-        if (charge.chargeTds && charge.chargeTds.length > 0) {
-          charge.chargeTds.forEach(tds => {
-            this.addTdsToForm(tds);
-          });
-        }
-
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading charge:', err);
-        this.loading = false;
-        this.appSettingService.showError('Failed to load charge data');
       }
-    });
-  }
+
+      // Load TDS data
+      if (charge.chargeTds && charge.chargeTds.length > 0) {
+        charge.chargeTds.forEach(tds => {
+          this.addTdsToForm(tds);
+        });
+      }
+
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error loading charge:', err);
+      this.loading = false;
+      this.appSettingService.showError('Failed to load charge data');
+    }
+  });
+}
 
   addGstToForm(gstData?: any) {
     const gstGroup = this.fb.group({
@@ -364,13 +367,25 @@ export class ChargeEntryComponent implements OnInit {
   }
   getTdsSetName(tdsSetId: number): string {
   const tdsSet = this.tdsOptions.find(item => item.TDSSetHeaderSid === tdsSetId);
-  return tdsSet ? tdsSet.SetName : '';
+  return tdsSet ? tdsSet.TDSSetName : '';
 }
 
   onSubmit() {
     if (this.chargeForm.invalid) {
-      this.markFormGroupTouched(this.chargeForm);
-      return;
+        this.markFormGroupTouched(this.chargeForm);
+        return;
+    }
+
+    // Check if at least one GST record exists
+    if (this.chargeTaxMasters.controls.length === 0) {
+        this.appSettingService.showError('Please add at least one GST record before saving');
+        return;
+    }
+
+    // Check if at least one TDS record exists when GST exists
+    if (this.chargeTaxMasters.controls.length > 0 && this.chargeTds.controls.length === 0) {
+        this.appSettingService.showError('Please add at least one TDS record before saving');
+        return;
     }
 
     this.btnDisable = true;
@@ -379,84 +394,123 @@ export class ChargeEntryComponent implements OnInit {
     const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     
     const payload = {
-      chargeCode: this.chargeForm.value.chargeCode,
-      chargeName: this.chargeForm.value.chargeName,
-      UOM: this.chargeForm.value.UOM,
-      ChargeGroupSid: this.chargeForm.value.ChargeGroupSid,
-      CurrencyMasterSid: this.chargeForm.value.CurrencyMasterSid,
-      DepartmentMasterSid: this.chargeForm.value.DepartmentMasterSid,
-      Status: 'A',
-      chargeTaxMaster: this.chargeTaxMasters.value.map(gst => ({
-        HSNCode: gst.HSNCode,
-        description: gst.description,
-        TaxGroup: gst.TaxGroup,
-        TaxRate: gst.TaxRate,
-        Status: gst.Status,
-        ...(gst.ChargeTaxMasterSid ? { ChargeTaxMasterSid: gst.ChargeTaxMasterSid } : {})
-      })),
-      chargeTds: this.chargeTds.value.map(tds => ({
-        TDSSet: tds.TDSSet,
-        EffectiveFrom: tds.EffectiveFrom,
-        status: tds.status,
-        ...(tds.ChargeTdsSid ? { ChargeTdsSid: tds.ChargeTdsSid } : {})
-      })),
-      ...(this.isEditMode ? 
-        { updatedBy: currentUserEmail } : 
-        { createdBy: currentUserEmail })
+        chargeCode: this.chargeForm.value.chargeCode,
+        chargeName: this.chargeForm.value.chargeName,
+        UOM: this.chargeForm.value.UOM,
+        ChargeGroupSid: this.chargeForm.value.ChargeGroupSid,
+        CurrencyMasterSid: this.chargeForm.value.CurrencyMasterSid,
+        DepartmentMasterSid: this.chargeForm.value.DepartmentMasterSid,
+        Status: 'A',
+        chargeTaxMaster: this.chargeTaxMasters.value.map(gst => ({
+            HSNCode: gst.HSNCode,
+            description: gst.description,
+            TaxGroup: gst.TaxGroup,
+            TaxRate: gst.TaxRate,
+            Status: gst.Status,
+            ...(gst.ChargeTaxMasterSid ? { ChargeTaxMasterSid: gst.ChargeTaxMasterSid } : {})
+        })),
+        chargeTds: this.chargeTds.value.map(tds => ({
+            TDSSet: tds.TDSSet,
+            EffectiveFrom: tds.EffectiveFrom,
+            status: tds.status,
+            ...(tds.ChargeTdsSid ? { ChargeTdsSid: tds.ChargeTdsSid } : {})
+        })),
+        ...(this.isEditMode ? 
+            { updatedBy: currentUserEmail } : 
+            { createdBy: currentUserEmail })
     };
 
     const operation = this.isEditMode 
-      ? this.masterService.updateChargeById(this.chargeID, payload)
-      : this.masterService.createCharge(payload);
+        ? this.masterService.updateChargeById(this.chargeID, payload)
+        : this.masterService.createCharge(payload);
 
     operation.subscribe({
-      next: (resp) => {
-        this.loading = false;
-        this.btnDisable = false;
-        const message = this.isEditMode 
-          ? 'Charge updated successfully!' 
-          : 'Charge created successfully!';
-        
-        this.appSettingService.showSuccess(message);
-        
-        if (!this.isEditMode && resp.data?.ChargeMasterSid) {
-          this.router.navigate(['/master/charge/entry', resp.data.ChargeMasterSid]);
-        } else {
-          this.router.navigate(['/master/charge/list']);
+        next: (resp) => {
+            this.loading = false;
+            this.btnDisable = false;
+            const message = this.isEditMode 
+                ? 'Charge updated successfully!' 
+                : 'Charge created successfully!';
+            
+            this.appSettingService.showSuccess(message);
+            
+            if (!this.isEditMode && resp.data?.ChargeMasterSid) {
+                this.router.navigate(['/master/charge/entry', resp.data.ChargeMasterSid]);
+            } else {
+                this.router.navigate(['/master/charge/list']);
+            }
+        },
+        error: (err) => {
+            console.error(err);
+            this.loading = false;
+            this.btnDisable = false;
+            
+            if (err.status === 400) {
+                // Handle duplicate errors
+                if (err.error.message.includes('Charge name')) {
+                    this.chargeForm.get('chargeName').setErrors({ duplicate: true });
+                    this.appSettingService.showError(err.error.message);
+                } else if (err.error.message.includes('Charge code')) {
+                    this.chargeForm.get('chargeCode').setErrors({ duplicate: true });
+                    this.appSettingService.showError(err.error.message);
+                } else {
+                    this.appSettingService.showError(err.error.message || 'Failed to process charge');
+                }
+            } else {
+                this.appSettingService.showError('Failed to process charge. Please try again.');
+            }
         }
-      },
-      error: (err) => {
-        console.error(err);
-        this.loading = false;
-        this.btnDisable = false;
-        if (err.status === 400 && err.error.message.includes('already exists')) {
-          this.appSettingService.showError(err.error.message);
-        } else {
-          this.appSettingService.showError('Failed to process charge. Please try again.');
-        }      
-      }
     });
-  }
+}
+
+isChargeFormValid(): boolean {
+    return this.chargeForm.valid;
+}
+canSaveCharge(): boolean {
+    
+    if (this.chargeForm.invalid) return false;
+    
+    // Must have at least one GST record
+    if (this.chargeTaxMasters.controls.length === 0) return false;
+    
+    // Must have at least one TDS record if GST exists
+    if (this.chargeTaxMasters.controls.length > 0 && this.chargeTds.controls.length === 0) return false;
+    
+    return true;
+}
 
   resetForm() {
-    if (this.isEditMode) {
-      this.getChargeById(this.chargeID);
-    } else {
-      this.chargeForm.reset({
-        chargeCode: '',
-        chargeName: '',
-        UOM: null,
-        ChargeGroupSid: null,
-        CurrencyMasterSid: null,
-        DepartmentMasterSid: [],
-        Status: 'A'
-      });
-      this.chargeForm.get('Status')?.disable();
-      this.chargeTaxMasters.clear();
-      this.chargeTds.clear();
-      this.selectedDepartments = [];
-    }
+  if (this.isEditMode) {
+    
+    this.clearFormArrays();
+    
+    this.getChargeById(this.chargeID);
+  } else {
+    this.clearFormArrays();
+    this.chargeForm.reset({
+      chargeCode: '',
+      chargeName: '',
+      UOM: null,
+      ChargeGroupSid: null,
+      CurrencyMasterSid: null,
+      DepartmentMasterSid: [],
+      Status: 'A'
+    });
+    this.chargeForm.get('Status')?.disable();
+    this.selectedDepartments = [];
   }
+}
+clearFormArrays() {
+  
+  while (this.chargeTaxMasters.length !== 0) {
+    this.chargeTaxMasters.removeAt(0);
+  }
+  
+  
+  while (this.chargeTds.length !== 0) {
+    this.chargeTds.removeAt(0);
+  }
+}
 
   goBack() {
     this.router.navigate(['master/charge/list']);
