@@ -7,24 +7,24 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4">
-                            <div class="mb-2">
-                                <label for="quoteNo" class="form-label">Quote No </label>
-                                <input type="text" class="form-control" id="quoteNo" formControlName="quoteNo">
+                            <div class="custom-form-group">
+                                <input type="text"  class="custom-input-field sm" id="quoteNo" formControlName="quoteNo">
+                                <label for="quoteNo" class="input-label">Quote No </label>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="mb-2">
-                                <label for="shipmentDateExpected" class="form-label">Quote Date
-                                </label>
-                                <div class="input-group">
+                             <div class=" custom-form-group custom-form-group-select">
+                                <div  class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
                                         (click)="d1.toggle()" formControlName="quoteDate" readonly 
                                         [footerTemplate]="footerTemplateQuo" [minDate]="minQuoteDate"/>
                                     <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()" type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                                 </div>
-                                <small *ngIf="f['quoteDate'].touched && f['quoteDate'].invalid" class="text-danger">
+                                <label for="shipmentDateExpected" class="input-label">Quote Date
+                                </label>
+                                <div *ngIf="f['quoteDate'].touched && f['quoteDate'].invalid" class="error-message">
                                     Quote Date is required.
-                                </small>
+                                </div>
                             </div>
                         </div>
                         <ng-template #footerTemplateQuo>
@@ -48,15 +48,16 @@
                             </div>
                         </div> -->
                          <aside class="col-md-4">
-                           <div class="mb-2">
-                                <label for="" class="form-label">Enquiry No </label>
-                                <input type="text" class="form-control" id="" [value]="rateEnquiryNumber" disabled>
+                           <div class="custom-form-group">
+                                
+                                <input type="text" class="custom-input-field sm" id="" [value]="rateEnquiryNumber" disabled>
+                                <label for="" class="input-label">Enquiry No </label>
                             </div>
                         </aside>
 
                         <div class="col-md-4">
-                            <div class="mb-2">
-                                <label class="form-label">Customer</label>
+                           <div class=" custom-form-group custom-form-group-select">
+                               
                                 <select formControlName="customerName" (change)="onCustomerChange($event)"
                                     class="form-select">
                                     <option value="" disabled>Select Customer</option>
@@ -64,48 +65,50 @@
                                         {{ item.CustomerName }}
                                     </option>
                                 </select>
-                                <small *ngIf="f['customerName'].touched && f['customerName'].invalid"
-                                    class="text-danger">
+                                 <label class="input-label">Customer</label>
+                                <div *ngIf="f['customerName'].touched && f['customerName'].invalid"
+                                    class="error-message">
                                     Customer Name is required.
-                                </small>
-                            </div>
-                        </div>
-                          <div class="col-md-4">
-                            <div class="mb-2">
-                                <label for="" class="form-label">Customer Address </label>
-                                <input type="text" class="form-control" id="" formControlName="CustomerAddress">
-                            </div>
-                        </div>
-                         <div class="col-md-4">
-                            <div class="mb-2">
-                                <label for="" class="form-label">Email </label>
-                                <input type="text" class="form-control" id="" formControlName="Email">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-2">
-                                <label for="" class="form-label">Inco </label>
-                                <input type="text" class="form-control" id="" formControlName="Inco">
-                            </div>
-                        </div>
-                         <div class="col-md-4">
-                            <div class="mb-2">
-                                <label for="" class="form-label">Clearance By </label>
-                                <input type="text" class="form-control" id="" formControlName="Clearanceby">
-                            </div>
-                        </div>
-                          <div class="col-md-4">
-                            <div class="mb-2">
-                                <label for="" class="form-label">Transport By </label>
-                                <input type="text" class="form-control" id="" formControlName="Transportby">
+                                </div>
                             </div>
                         </div>
                            <aside class="col-md-4">
-                        
-                             <label for="" class="form-label">Remarks </label>
-                            <textarea id="" placeholder="" rows="1"  class="form-control"
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder=""
+                                class="custom-input-field sm" formControlName="">
+                                    <label for="text-input" class="input-label">Customer Address  <span class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                         <div class="col-md-4">
+                          <div class="custom-form-group">
+                              <input type="text" id="text-input" class="custom-input-field sm" id="" formControlName="Email"    placeholder="">
+                              <label for="text-input" class="input-label">Email </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input"  class="custom-input-field sm"  id="" formControlName="Inco"  placeholder="">
+                                    <label for="text-input" class="input-label">Inco </label>
+                            </div>
+                        </div>
+                         <div class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input"  class="custom-input-field sm" id="" formControlName="Clearanceby"  placeholder="">
+                                <label for="text-input" class="input-label">Clearance By </label>
+                            </div>
+                        </div>
+                          <div class="col-md-4">
+                           <div class="custom-form-group">
+                               <input type="text"  id="text-input" class="custom-input-field sm" id="" formControlName="Transportby"  placeholder="">
+                               <label for="text-input" class="input-label">Transport By </label>
+                            </div>
+                        </div>
+                           <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <textarea id="" placeholder="" rows="1" class="input-field sm"
                                 formControlName="Remarks"></textarea>
-                           
+                            <label for="text-input" class="input-label">Remarks </label>
+                        </div>
                     </aside>
 
                         <!-- <div class="col-6 col-md-3">
@@ -183,15 +186,15 @@
                         <section class="card-body p-2 requestLooper">
                             <div class="row mb-2">
                                 <div class="col-6 col-md-3">
-                                    <div class="mb-2">
-                                        <label for="Segment" class="form-label">Dept Name</label>
-                                        <select formControlName="Segment" class="form-select"
-                                            (change)="onSegmentChange($event,routeIndex)">
-                                            <option value="" disabled>Select Department</option>
-                                            <option *ngFor="let item of departments" [value]="item.DepartmentMasterSid">
-                                                {{ item.departmentName }}
-                                            </option>
-                                        </select>
+                                   <div class="custom-form-group custom-form-group-select">
+                                       <select formControlName="Segment" class="form-select"
+                                       (change)="onSegmentChange($event,routeIndex)">
+                                       <option value="" disabled>Select Department</option>
+                                       <option *ngFor="let item of departments" [value]="item.DepartmentMasterSid">
+                                           {{ item.departmentName }}
+                                        </option>
+                                    </select>
+                                    <label for="Segment" class="input-label">Dept Name</label>
                                         <!-- <small *ngIf="f['Segment'].touched && f['Segment'].invalid" class="text-danger">
                                                     Segment is required.
                                                 </small> -->
@@ -199,73 +202,73 @@
                                 </div>
 
                                 <div class="col-6 col-md-3">
-                                    <div class="mb-1">
-                                        <label for="CarrierMasterSid" class="form-label">Carrier </label>
+                                    <div class="custom-form-group custom-form-group-select">
                                         <select formControlName="CarrierMasterSid" class="form-select"
-                                            (change)="onCarrierChange($event,routeIndex)">
-                                            <option value="" disabled>Select Carrier</option>
-                                            <option *ngFor="let item of carriers" [value]="item.CustomerMasterSid">
-                                                {{ item.CustomerName }}
-                                            </option>
-                                        </select>
+                                        (change)="onCarrierChange($event,routeIndex)">
+                                        <option value="" disabled>Select Carrier</option>
+                                        <option *ngFor="let item of carriers" [value]="item.CustomerMasterSid">
+                                            {{ item.CustomerName }}
+                                        </option>
+                                    </select>
+                                    <label for="CarrierMasterSid" class="input-label">Carrier </label>
                                     </div>
                                 </div>
                                 @if(routes.controls[routeIndex].get('segmentType')?.value === 'LCL'){
                                 <div class="col-6 col-md-3">
-                                    <div class="mb-1">
-                                        <label for="cargoType" class="form-label">Cargo Type </label>
+                                    <div class="custom-form-group custom-form-group-select">
                                         <select formControlName="cargoType" class="form-select">
                                             <option value="" disabled>Select Cargo Type</option>
                                             <option *ngFor="let item of packageTypes" [value]="item.PackageName">
                                                 {{ item.PackageName }}
                                             </option>
                                         </select>
+                                        <label for="cargoType" class="input-label">Cargo Type </label>
                                     </div>
                                 </div>
                                 }
                                 <div class="col-6 col-md-3">
-                                    <div class="mb-1">
-                                        <label class="form-label">POR</label>
+                                    <div class="custom-form-group custom-form-group-select">
                                         <select formControlName="POR" class="form-select">
                                             <option value="" disabled>Select POR</option>
                                             <option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
                                                 {{ item.PortCode }}
                                             </option>
                                         </select>
+                                        <label class="input-label">POR</label>
                                     </div>
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <div class="mb-1">
-                                        <label class="form-label">POL <span class="text-danger">*</span></label>
+                                    <div class="custom-form-group custom-form-group-select">
                                         <select formControlName="POL" class="form-select">
                                             <option value="" disabled>Select POL</option>
                                             <option *ngFor="let item of getFilteredPOLPorts(routeIndex)" [value]="item.PortMasterSid">
                                                 {{ item.PortCode }}
                                             </option>
                                         </select>
+                                        <label class="input-label">POL <span class="text-danger">*</span></label>
 
                                     </div>
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <div class="mb-1">
-                                        <label class="form-label">POD <span class="text-danger">*</span></label>
-                                        <select formControlName="POD" class="form-select">
-                                            <option value="" disabled>Select POD</option>
-                                            <option *ngFor="let item of getFilteredPODPorts(routeIndex)" [value]="item.PortMasterSid">
-                                                {{ item.PortCode }}
-                                            </option>
-                                        </select>
+                                     <div class="custom-form-group custom-form-group-select">
+                                         <select formControlName="POD" class="form-select">
+                                             <option value="" disabled>Select POD</option>
+                                             <option *ngFor="let item of getFilteredPODPorts(routeIndex)" [value]="item.PortMasterSid">
+                                                 {{ item.PortCode }}
+                                                </option>
+                                            </select>
+                                            <label class="input-label">POD <span class="text-danger">*</span></label>
                                     </div>
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <div class="mb-1">
-                                        <label class="form-label">FPOD</label>
+                                    <div class="custom-form-group custom-form-group-select">
                                         <select formControlName="FPOD" class="form-select">
                                             <option value="" disabled>Select FPOD</option>
                                             <option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
                                                 {{ item.PortCode }}
                                             </option>
                                         </select>
+                                        <label class="input-label">FPOD</label>
                                     </div>
                                 </div>
                                      <!-- <aside class="col-md-3">
@@ -281,18 +284,18 @@
                             </div>
                         </aside> -->
                         <div class="col-6 col-md-3">
-                            <div class="mb-2">
-                                <label for="effectiveDate" class="form-label">Eff. Date
-                                </label>
-                                <div class="input-group">
-                                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
-                                        (click)="d2.toggle()" formControlName="effDate" readonly 
-                                        [footerTemplate]="footerTemplateEff" [maxDate]="toNgbDateStruct(routes.controls.at(routeIndex).get('expDate').value)"/>
-                                    <button class="btn btn-info text-white" (click)="d2.toggle()" type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                                </div>
-                                <small *ngIf="routes.controls.at(routeIndex).get('effDate').touched && routes.controls.at(routeIndex).get('effDate').invalid" class="text-danger">
+                             <div class="custom-form-group custom-form-group-select">
+                            
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                                (click)="d2.toggle()" formControlName="effDate" readonly 
+                                [footerTemplate]="footerTemplateEff" [maxDate]="toNgbDateStruct(routes.controls.at(routeIndex).get('expDate').value)"/>
+                                <button class="btn btn-info text-white" (click)="d2.toggle()" type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="effectiveDate" class="input-label">Eff. Date</label>
+                                <div *ngIf="routes.controls.at(routeIndex).get('effDate').touched && routes.controls.at(routeIndex).get('effDate').invalid" class="error-message">
                                     Effective Date is required.
-                                </small>
+                                </div>
                             </div>
                         </div>
                         <ng-template #footerTemplateEff>
@@ -314,18 +317,18 @@
                                     </div>
                                 </div> -->
                         <div class="col-6 col-md-3">
-                            <div class="mb-2">
-                                <label for="expiredDate" class="form-label">Exp. Date
-                                </label>
+                           <div class="custom-form-group custom-form-group-select">
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d3="ngbDatepicker"
                                         (click)="d3.toggle()" formControlName="expDate" readonly 
                                         [footerTemplate]="footerTemplateExp" [minDate]="toNgbDateStruct(routes.controls.at(routeIndex).get('effDate').value)" />
                                     <button class="btn btn-info text-white" (click)="d3.toggle()" type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                                 </div>
-                                <small *ngIf="routes.controls.at(routeIndex).get('expDate').touched && routes.controls.at(routeIndex).get('expDate').invalid" class="text-danger">
+                                  <label for="expiredDate" class="input-label">Exp. Date
+                                </label>
+                                <div *ngIf="routes.controls.at(routeIndex).get('expDate').touched && routes.controls.at(routeIndex).get('expDate').invalid" class="error-message">
                                     Expired Date is required.
-                                </small>
+                                </div>
                             </div>
                         </div>
                         <ng-template #footerTemplateExp>

@@ -23,7 +23,7 @@
                                
                             </div>
                             <div>
-                                <button type="button" class="btn btn-info btn-sm m-0" (click)="createNew()">
+                            <button type="button" class="btn btn-info btn-sm m-0" (click)="createNew()">
                                   <i class="fas fa-plus me-2 "[class.me-1]="!isMobile"></i>
                                 @if (!isMobile) {
                                 New Quotation
@@ -100,7 +100,7 @@
 <!-- DESKTOP CODE -->
 <ng-template #desktopTemplate>
     <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
-        <div class="row">
+        <div class="row  bg-white py-2 rounded shadow-sm mx-auto">
 
             <div class="col-12">
                 <!-- #region filter and add new -->
@@ -247,7 +247,7 @@
 <!-- DESKTOP CODE -->
 <ng-template #rrdesktopTemplate>
     <div class="desktop-view" *ngIf="totalLengthOfCollection1 > 0; else noDataTemplate">
-        <div class="row">
+        <div class="row bg-white py-2 rounded shadow-sm mx-auto">
 
             <div class="col-12">
                 <!-- #region filter and add new -->
@@ -260,8 +260,8 @@
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
                                 <tr class="bg-info">
-                                    <th class="bg-transparent text-light" scope="col">Action</th>
-                                    <th class="bg-transparent text-light" scope="col">Rate Request No:</th>
+                                    <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                                    <th class="bg-transparent text-light" scope="col">Rate Request No</th>
                                     <th class="bg-transparent text-light" scope="col">Customer</th>
 
                                     <th class="bg-transparent text-light" scope="col">Department</th>
@@ -272,7 +272,7 @@
                             </thead>
                             <tbody>
                                 <tr *ngFor="let enq of enquiryItems">
-                                    <td data-label="Action" style="width: 100px;">
+                                    <td data-label="Action"  class="text-center">
 
                                         <section class="action-items">
                                             <a class="mx-2" (click)="createQuotation(enq)">

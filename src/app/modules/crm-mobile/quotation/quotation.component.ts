@@ -233,6 +233,7 @@ export class QuotationComponent implements OnInit {
       // DepartmentMasterSid: [this.rateRequestDepartmentMasterSid ||''],
       CustomerMasterSid: [''],
       CustomerAddress: [''],
+      Remarks:[''],
       // Routes (Multiple)
       routes: this.fb.array([]),
     });

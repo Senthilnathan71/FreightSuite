@@ -164,6 +164,7 @@ export class RateRequestComponent implements OnInit {
       status: [''], // Default
       DepartmentMasterSid: [''],
       CustomerMasterSid: [''],
+      Remarks:[''],
       // Routes (Multiple)
       routes: this.fb.array([]),
     });
@@ -318,6 +319,9 @@ export class RateRequestComponent implements OnInit {
           cargoForm.get('cbm')?.setValidators([Validators.required]); // cbm IS required
         } else if (this.selectedFCLLCL === 'FCL') {
           cargoForm.get('contentType')?.setValidators([Validators.required]); // contentType IS required
+          cargoForm.get('cbm')?.clearValidators(); // cbm NOT required
+        } else  if(this.selectedFCLLCL==='AIR'){
+              cargoForm.get('contentType')?.setValidators([Validators.required]); // contentType IS required
           cargoForm.get('cbm')?.clearValidators(); // cbm NOT required
         }
 
