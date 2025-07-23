@@ -244,6 +244,14 @@ export class LeadService {
     )
   }
 
+  searchQuotation(param) {
+    return this.http.post<{data:any}>("quotation/search-list", param).pipe(
+      map((res: any) => {
+        return res;
+      })
+    )
+  }
+
 
   getAllEnquiries() {
     return this.http.get<any>('enquiry').pipe(

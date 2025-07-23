@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -13,6 +13,11 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { DetailsComponent } from 'src/app/component/details/details.component';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-vendor-tds-entry',
@@ -41,6 +46,8 @@ export class VendorTdsEntryComponent {
   userData: any;
   supplierTDSdata: any;
   deleteToggler = false;
+  permissions : string[] = [];
+  currentMenuPermissions: any = {};
 
   supplierTDSForm!: FormGroup;
   supplierList: any[] = [];
@@ -51,6 +58,8 @@ export class VendorTdsEntryComponent {
   today = this.calendar.getToday();
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
   minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
+  currentMenuId: number;
+  TandCList: any;
 
   constructor(
     private fb: FormBuilder,
@@ -59,12 +68,12 @@ export class VendorTdsEntryComponent {
     private appSettingService: AppSettingsService,
     private calendar: NgbCalendar,
     private accountService: AccountsService,
+    private modalService : NgbModal
   ) { }
 
   ngOnInit(): void {
     this.initTdsForm();
     this.loadLookUps();
-    this.accountService.getAllSupplierTDSMapping().subscribe();
     this.currRoute.paramMap.subscribe(
       (param) => {
         this.SupplierTdsMappingSid = +param.get('id');
@@ -80,11 +89,36 @@ export class VendorTdsEntryComponent {
     this.appSettingService.getUser().subscribe(
       (resp) => {
         this.userData = resp;
+        this.checkPermissions();
       }
     );
     if (!this.isEditMode) {
       this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
     }
+  }
+
+  checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId);
+    console.log(userRole);
+    if (currentMenuId && userRole) {
+      this.accountService
+        .getRoleMenuPermissions(currentMenuId, userRole)
+        .subscribe({
+          next: (response) => {
+            this.currentMenuPermissions = response.data.MenuPermissions || {};
+            this.permissions = Object.keys(this.currentMenuPermissions).filter(
+              (key) => this.currentMenuPermissions[key] === 'isTrue'
+            );
+            console.log(this.permissions);
+          },
+        });
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
   }
 
   initTdsForm() {
@@ -343,6 +377,67 @@ export class VendorTdsEntryComponent {
   navigateBack() {
     history.back();
   }
+
+  showInfo() {
+    if (!this.supplierTDSdata) return;
+    const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.item = this.supplierTDSdata;
+    modalRef.componentInstance.idLabel = 'Supplier TDS Mapping Id';
+    modalRef.componentInstance.idValue = this.supplierTDSdata?.SupplierTdsMappingSid;
+  }
+
+  openTandC() {
+      this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+      const payload = { MenuMasterSid: this.currentMenuId };
+      this.accountService.getTandCByCondition(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            this.TandCList = resp.data;
+            const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+              size: 'lg',
+              backdrop: 'static',
+              centered: true
+            });
+            modalRef.componentInstance.terms = this.TandCList;
+            modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+            modalRef.componentInstance.DocumentSid = this.SupplierTdsMappingSid;
+  
+          } else {
+            this.appSettingService.showError('Error loading Terms and Conditions');
+          }
+        },
+        (error) => {
+          this.appSettingService.showError('Error loading Terms and Conditions', error);
+        }
+      );
+    }
+  
+    openEmail() {
+      if (!this.supplierTDSdata) return;
+      const modalRef = this.modalService.open(EmailEntryComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
+      });
+    }
+  
+    openAuthority() {
+      if (!this.supplierTDSdata) return;
+      const modalRef = this.modalService.open(AuthorityEntryComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
+      });
+    }
+  
+    openEDoc() {
+      if (!this.supplierTDSdata) return;
+      const modalRef = this.modalService.open(EdocComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
+      });
+    }
 
   onReset() {
     this.supplierTDSForm.reset({

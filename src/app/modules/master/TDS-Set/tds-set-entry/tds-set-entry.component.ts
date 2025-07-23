@@ -517,7 +517,7 @@ export class TdsSetEntryComponent implements OnInit {
         })
     }
 
-    showHeaderInfo() {
+    showInfo() {
         if (!this.tdsData) return;
         const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
         modalRef.componentInstance.item = this.tdsData;

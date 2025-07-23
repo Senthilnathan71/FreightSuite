@@ -1,8 +1,13 @@
 <div class="row">
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-      <div class="col-md-4 pb-2">
+      <div class="col-md-4 d-flex pb-2">
         <h4 class="page-title mb-0">Supplier TDS Mapping</h4>
+        @if(isEditMode){
+        <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+          <i class="fas fs-6 fa-info-circle"></i>
+        </a>
+        }
       </div>
       <div class="col-md-8 pb-2">
         <div
@@ -168,7 +173,7 @@
               </td>
 
               <td class="p-2">
-                <ng-select class="ng-select w-100" [items]="tdsList" bindLabel="TDSSetName" bindValue="TDSSetHeaderSid"
+                <ng-select class="ng-select" [items]="tdsList" bindLabel="TDSSetName" bindValue="TDSSetHeaderSid"
                   placeholder="Select TDS Set Name" formControlName="TDSSetHeaderSid" (change)="handleTDSChange($event,i)"
                   [appendTo]="'body'">
                 </ng-select>
@@ -328,6 +333,43 @@
     </div>
   </div>
 </div>
+
+@if(isEditMode && permissions.length > 0){
+<div class="col-12 mt-3">
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
+          <!-- eDoc Button -->
+
+          @if(hasPermission('Edoc')) {
+          <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
+            <i class="fas fa-file-alt me-1"></i> e-Doc
+          </button>
+          }
+          @if(hasPermission('Terms and Condition')) {
+          <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openTandC()">
+            <i class="fas fa-clipboard me-1"></i> Terms & Condition
+          </button>
+          }
+          @if(hasPermission('Authority')) {
+          <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
+            <i class="fas fa-shield-alt me-1"></i> Authorize
+          </button>
+          }
+
+          @if(hasPermission('Email')) {
+          <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto" (click)="openEmail()">
+            <i class="fas fa-envelope me-1"></i> Email
+          </button>
+          }
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}
 
 <!-- If it is modal kind we need this -->
   <!-- <div class="col-12 mt-2" [formGroup]="supplierTDSForm">

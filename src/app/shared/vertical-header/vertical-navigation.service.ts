@@ -43,4 +43,13 @@ export class VerticalNavService {
         )
     }
 
+    getAllMenus(){
+        return this.http.get<{data:any}>('menu').pipe(
+            map((resp:any)=>{
+                let response = resp;
+                return response;
+            })
+        )
+    }
+
 }

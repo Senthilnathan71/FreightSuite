@@ -83,12 +83,16 @@
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center justify-content-center">
+                                    @if(hasPermission('View')) {
                                     <a class="text-info mx-2" class="link mx-2 ps-3 " [routerLink]="['/accounts/supplier-tds/entry',item.SupplierTdsMappingSid]" >
                                         <i-feather class="feather-sm text-info" name="eye" ></i-feather>
                                     </a>
+                                    }
+                                    @if(hasPermission('Delete')) {
                                     <a class="text-danger mx-2 ps-3 border-start" (click)="deleteSupplierTDS(item.SupplierTdsMappingSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
+                                    }
                                 </div>
                             </td>
                             <td>

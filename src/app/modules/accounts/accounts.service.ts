@@ -166,6 +166,24 @@ export class AccountsService {
     )
   }
 
+  getRoleMenuPermissions(menuId: number, roleId: number) {
+    return this.http.get<{ data: any }>(`role-menu/permissions/${menuId}/${roleId}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getTandCByCondition(payload) {
+    return this.http.post<{ data: any[] }>('terms-and-conditions/fetchByCondition', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
 
   
 }

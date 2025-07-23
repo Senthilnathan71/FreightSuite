@@ -1,6 +1,6 @@
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CommonModule } from '@angular/common';
-import { Component, AfterViewInit, EventEmitter, Output, ViewChild, TemplateRef, NgModule, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, AfterViewInit, EventEmitter, Output, ViewChild, TemplateRef, NgModule, OnInit, ChangeDetectorRef, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { NgbAccordionModule, NgbCarouselModule, NgbDropdown, NgbDropdownModule, NgbModal, NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateService } from '@ngx-translate/core';
 import { FeatherModule } from 'angular-feather';
@@ -40,10 +40,8 @@ export class VerticalNavigationComponent implements OnInit, AfterViewInit {
   recentList: any[] = [];
   favouriteList: any[] = [];
   outside = 'outside'
-  menuSearchResults: any[] = [];
-  docSearchResults: any[] = [];
+  
   @Output() toggleSidebar = new EventEmitter<void>();
-  @ViewChild('menuSearchDropdown') menuSearchDropdown!: NgbDropdown;
   userData:any;
   branchName: string = '';
   companyName: string = '';
@@ -55,6 +53,16 @@ branchList: any[] = [];
   selectedCompanyId: any = null;
   @ViewChild('branchSwitchModal') branchSwitchModal!: TemplateRef<any>;
   private modalRef!: NgbModalRef;
+
+  // Menu Search Related Variable Declaration
+  activeIndex = -1;
+  allMenus :any[] = [];
+  menuSearchResults: any[] = [];
+  menusLoaded = false;
+  @ViewChildren('menuItem') menuItems!: QueryList<ElementRef>;
+  @ViewChild('menuSearchDropdown') menuSearchDropdown!: NgbDropdown;
+
+  docSearchResults: any[] = [];
 
   constructor(private router: Router, private appSettingsService: AppSettingsService, private translate: TranslateService, private verticalNavService: VerticalNavService, private modalService: NgbModal, private cdr: ChangeDetectorRef) {
 
@@ -185,33 +193,126 @@ onBranchChange(event: Event): void {
     )
   }
 
-  searchMenu(event) {
-    const searchText = event.target.value;
-    const payload = {
-      searchType: 'MenuName',
-      filterValue: searchText
+  // ===== MENU SEARCH RELATED FUNCTIONS ===== \\
+
+  // Triggered on input click
+  onSearchClick() {
+    this.activeIndex = -1;
+
+    if (this.menusLoaded) {
+      this.menuSearchDropdown.open();
+    } else {
+      this.fetchAllMenus(() => {
+        this.menusLoaded = true;
+        this.menuSearchResults = [...this.allMenus];
+        this.menuSearchDropdown.open();
+      });
     }
-    this.verticalNavService.searchMenu(payload).subscribe(
-      (resp: any) => {
-        if (resp) {
-          this.menuSearchResults = resp;
+  }
+
+  // Fetch all menus and call callback after loading
+  fetchAllMenus(callback: () => void) {
+    this.verticalNavService.getAllMenus().subscribe({
+      next: (resp: any) => {
+        if (resp.status) {
+          this.allMenus = resp.data;
+          callback();
+        } else {
+          this.appSettingsService.showError('Error loading menus');
         }
       },
-      (error: any) => {
-        console.error('Error Searching Menus')
+      error: () => {
+        this.appSettingsService.showError('Failed to fetch menus');
       }
-    )
+    });
   }
 
-  toggleMenuDropdown() {
-    this.menuSearchDropdown.toggle();
+
+  //  on every keystroke filtering done here
+  searchMenu(event) {
+    const searchText = event.target.value;
+    if(!searchText || this.allMenus.length === 0){
+      this.menuSearchResults = [...this.allMenus];
+      this.activeIndex = -1;
+      return;
+    }
+    this.menuSearchResults = this.allMenus.filter((menu:any) => menu.MenuName.toLowerCase().includes(searchText.toLowerCase()));
+    this.activeIndex = -1;
   }
 
-  ensureMenuDropdownOpen() {
-    if (!this.menuSearchDropdown.isOpen()) {
-      this.menuSearchDropdown.open();
+  // For arrow key navigation 
+  onKeyDown(event: KeyboardEvent) {
+    const max = this.menuSearchResults.length - 1;
+    if (event.key === 'ArrowDown') {
+      this.activeIndex = this.activeIndex < max ? this.activeIndex + 1 : 0;
+      this.scrollToActive();
+      event.preventDefault();
+    } else if (event.key === 'ArrowUp') {
+      this.activeIndex = this.activeIndex > 0 ? this.activeIndex - 1 : max;
+      this.scrollToActive();
+      event.preventDefault();
+    } else if (event.key === 'Enter' && this.activeIndex !== -1) {
+      const item = this.menuSearchResults[this.activeIndex];
+      this.addToRecent(item);
+      this.router.navigate([item.path]);
+      this.resetMenuSearch(event);
     }
   }
+
+  //  On click event
+  onClickEvent(event,menu){
+    this.addToRecent(menu);
+    this.resetMenuSearch(event);
+  }
+  
+
+  resetMenuSearch(event) {
+    const element = (event.target) as HTMLInputElement
+    console.log(event);
+    console.log(element)
+    event.target.value = ''
+    element.blur();
+    this.menuSearchResults = [...this.allMenus];
+    this.activeIndex = -1;
+    this.menuSearchDropdown.close()
+  }
+  
+  // auto scroll dropdown if arrow reaches end of menu list
+  private scrollToActive() {
+    const items = this.menuItems?.toArray();
+    if (items && this.activeIndex >= 0 && items[this.activeIndex]) {
+      items[this.activeIndex].nativeElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
+  }
+
+  //  Add selected Menu to Recent List
+  addToRecent(menu){
+    const newlyVisited = {
+      path: menu.path,
+      screenName: menu.MenuName,
+      createdOn: new Date()
+    };
+
+    let recentlyVisited = JSON.parse(localStorage.getItem('recentlyVisited')) || [];
+    const existingIndex = recentlyVisited.findIndex(item => item.path === newlyVisited.path);
+
+    if (existingIndex !== -1) {
+      recentlyVisited.splice(existingIndex, 1);
+    }
+
+    recentlyVisited.unshift(newlyVisited);
+
+    if (recentlyVisited.length > 10) {
+      recentlyVisited.pop();
+    }
+
+    localStorage.setItem('recentlyVisited', JSON.stringify(recentlyVisited));
+  }
+
+  // ------------ END OF MENU SEARCH RELATED FUNCTION ----------------- \\
 
   searchDocuments(text) {
 
