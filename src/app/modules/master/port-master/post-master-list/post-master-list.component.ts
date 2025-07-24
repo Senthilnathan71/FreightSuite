@@ -70,7 +70,6 @@ export class PostMasterListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // this.loadMasterData();
     this.loadAllRegions();
     this.appSettingService.getUser().subscribe(user => {
       if (user) {
@@ -103,7 +102,7 @@ export class PostMasterListComponent implements OnInit {
 }
   loadPorts(): void {
     const params = {
-      search: this.filterValue ? this.filterValue.trim() : '',
+      search: this.filterValue?.trim() || '',
       page: this.page,
       pageSize: this.pageSize,
     };
@@ -112,7 +111,6 @@ export class PostMasterListComponent implements OnInit {
       next: (response) => {
         if(response.data) {
           this.portList = response.data.items;
-          this.results = [...this.portList];
           this.totalLengthOfCollection = response.data.totalCount;
           this.applySorting();
           this.searched = true;
@@ -121,7 +119,6 @@ export class PostMasterListComponent implements OnInit {
       error: (err) => {
         console.error('Error fetching ports:', err);
         this.portList = [];
-        this.results = [];
         this.totalLengthOfCollection = 0;
       },
     });
@@ -194,7 +191,11 @@ sort(column: string) {
 }
 
 applySorting() {
-  this.results.sort((a, b) => {
+  if (!Array.isArray(this.portList)){
+    this.portList = [];
+    return;
+  }
+  this.portList.sort((a, b) => {
     let valueA = a[this.sortColumn];
     let valueB = b[this.sortColumn];
     
@@ -214,7 +215,6 @@ applySorting() {
     }
     return 0;
   });
-  this.portList = [...this.results];
 }
 
 
@@ -225,8 +225,8 @@ applySorting() {
     this.loadPorts();
   }
 
-  trackByIndex(_: number, __: any): number {
-    return _;
+  trackByIndex(index: number, item: any): number {
+    return item.PortMasterSid || index;
   }
 
   deletePort(id: number): void {
@@ -253,16 +253,16 @@ applySorting() {
     )
   }
 
-  getRegionNameById(RegionMasterSid){
-    let region = this.regionList.find(region => region.ZoneMasterSid ===RegionMasterSid);
-    return region.ZoneName;
-  }
+  getRegionNameById(RegionMasterSid: number): string {
+  if (!this.regionList || !Array.isArray(this.regionList)) return '';
+  const region = this.regionList.find(r => r.ZoneMasterSid === RegionMasterSid);
+  return region?.ZoneName || '';
+}
 
   resetPage(): void {
     this.page = 1;
     this.filterValue = '';
     this.searched = false;
-    this.results = [];
     this.portList = [];
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'PortName';
