@@ -13,25 +13,62 @@
 
             <div class="row">
                 <!-- #region Search Panel -->
-                <div class="col-12">
-                    <div class="rounded-3 p-2 bg-body-tertiary shadow mb-2" data-bs-theme="light">
-                        <form class="d-flex align-items-center gap-2 ">
-                            <div class="form-outline col search-wrapper">
+                             <div class="col-12">
+                                    <div class="row  bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between mx-1" data-bs-theme="light">
+                                        <div class="col pb-2">
+                                <h4 class="page-title mb-0">Quotation</h4>
+                            </div>
+
+                        
+                            <!-- <div class="form-outline col search-wrapper">
                                  <i class="fas fa-search ms-3 search-icon "></i>
                                 <input type="search" class="form-control ps-5 search-input " [(ngModel)]="searchText" name="search"
                                     (input)="searchEnquiry()" autocomplete="off" placeholder="Search">
                                
+                            </div> -->
+                             <div class="col-md-8 pb-2">
+                            <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                                <div class="d-flex gap-2 col-12 col-md-6 px-0 align-items-stretch align-items-md-center">
+                                    <div class="form-outline flex-grow-1 position-relative">
+                                        <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                                            [(ngModel)]="searchText"  aria-label="Search input"  (input)="searchEnquiry()">
+                                        <button 
+                                            class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                            tabindex="0" aria-label="Clear search"
+                                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
+                                            onfocus="this.classList.replace('text-secondary','text-danger')"
+                                            onblur="this.classList.replace('text-danger','text-secondary')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                <div class="mt-md-0 mt-1">
+                                    <button type="submit" 
+                                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (input)="searchEnquiry()">
+                                        <i class="fas fa-search me-1"></i> Search
+                                    </button>
+                                </div>
+
+                                    </div>
+                                </form>
                             </div>
-                            <div>
-                            <button type="button" class="btn btn-info btn-sm m-0" (click)="createNew()">
-                                  <i class="fas fa-plus me-2 "[class.me-1]="!isMobile"></i>
+                            <div class="col-md-auto pb-2">
+                                <form  class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                            <button type="button" class="btn btn-info btn-sm " (click)="createNew()">
+                                  <i class="fas fa-plus me-1 "[class.me-1]="!isMobile"></i>
                                 @if (!isMobile) {
-                                New Quotation
+                                Create
                                 }
                             </button>
+                            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                    <i class="fas fa-file-alt me-1"></i> Report
+                                </button>
+
+                                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" >
+                                    <i class="fas fa-sync-alt me-1"></i> Reset
+                                </button>
+                                </form>
                             </div>
                          
-                        </form>
                     </div>
                 </div>
                 <!-- #endregion -->
@@ -70,7 +107,7 @@
                         <i-feather class="feather-sm me-1" name="user"></i-feather>
                         <div class="ms-2">{{ enq.CustomerName }}</div>
                         <div class="ms-auto d-flex align-items-center gap-1">
-                            <a class="text-info" (click)="editEnquiry(enq.QuoteHeaderSid)">
+                            <a class="text-info" (click)="editEnquiry(enq.QuoteHeaderSid)" style="cursor: pointer;">
                                 <i-feather name="eye" class="feather-sm"></i-feather>
                             </a>
                         </div>
@@ -127,10 +164,10 @@
                                 <tr *ngFor="let enq of quoteItems">
                                     <td data-label="Action">
                                         <section class="ms-auto d-flex align-items-center gap-1 justify-content-center" >
-                                            <a class="text-info" (click)="editEnquiry(enq.QuoteHeaderSid)">
+                                            <a class="text-info" (click)="editEnquiry(enq.QuoteHeaderSid)" style="cursor: pointer;">
                                                 <i-feather name="eye" class="feather-sm"></i-feather>
                                             </a>
-                                            <a class="mx-2 border-start ps-3 " (click)="reportAndEmailModel(enq,reportModel)">
+                                            <a class="mx-2 border-start ps-3 " (click)="reportAndEmailModel(enq,reportModel)" style="cursor: pointer;">
                                                 <i-feather name="file-text" class="feather-sm"></i-feather>
                                             </a>
                                         </section>
@@ -160,8 +197,17 @@
                                     </td>
                                     <td data-label="Company">
                                         <div class="text-truncate">
-                                            {{ enq.status ==="A"? "Active":"Suspend" }}
-                                        </div>
+  <span
+    class="badge"
+    [ngClass]="{
+      'bg-success': enq.status === 'A',
+      'bg-danger': enq.status !== 'A'
+    }"
+  >
+    {{ enq.status === 'A' ? 'Active' : 'Suspend' }}
+  </span>
+</div>
+
                                     </td>
 
                                 </tr>
@@ -217,7 +263,7 @@
                         <i-feather class="feather-sm me-1" name="user"></i-feather>
                         <div class="ms-2">{{ enq.CustomerName }}</div>
                         <div class="ms-auto d-flex align-items-center gap-1">
-                            <a class="text-info" (click)="createQuotation(enq)">
+                            <a class="text-info" (click)="createQuotation(enq)" >
                                 <i-feather name="eye" class="feather-sm"></i-feather>
                             </a>
                         </div>
@@ -329,53 +375,44 @@
 
 
 <ng-template #reportModel let-modal>
-    <div class="modal-header d-flex justify-content-between align-items-start">
-        <h5 class="modal-title">Quotation Preview</h5>
-        <div class="d-flex gap-2">
-            <!-- Loader (simple spinner example) -->
+
+    <div class="modal-header d-flex justify-content-between align-items-center p-2 bg-info">
+        <h5 class="modal-title text-white mb-0" >Quotation Preview</h5>
+        <div class="d-flex gap-2 align-items-center">
+           
             <div *ngIf="isLoading" class="spinner-overlay">
                 <div class="spinner"></div>
             </div>
-
-            <button class="btn btn-outline-primary btn-sm" (click)="downloadPDF()">
-                <i-feather name="download" class="feather-sm"></i-feather> Download
+            <button type="button" class="btn btn-light-secondary btn-sm" (click)="downloadPDF()">
+                 <i class="fas fa-download me-1"></i> Download
             </button>
-            <button class="btn btn-outline-success btn-sm" (click)="sendEmail()">
-                <i-feather name="mail" class="feather-sm"></i-feather> Email
+            <button type="button" class="btn btn-light-secondary btn-sm email-btn" (click)="sendEmail()">
+                  <i class="fas fa-envelope me-1"></i> Email
             </button>
-            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+            <div class="ms-3">
+                <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+            </div>
         </div>
     </div>
     <div class="modal-body">
-        <section class="container py-5 " id="pdfContent">
+        <section class="container-fluid py-3" id="pdfContent">
             <div class="px-3 border border-2 border-dark printTable py-3" style="font-size: 14px;">
-                <div class="row px-5">
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center gap-4">
+                <div class="d-flex px-3 px-md-5 align-items-center">
+                    <div class="col-md-6 d-flex align-items-center gap-4 mb-3 mb-md-0">
                             <img src="assets/logo/dofi-logo.svg" width="100" height="100" class="img-fluid" alt="">
                             <h4> DOFI <br>Infosys LLC </h4>
-                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <aside class="d-flex gap-3">
-                            <p class="mb-0 col h5 fw-bold text-center">Total Transport Systems Limited</p>
-                        </aside>
-                        <aside class="d-flex flex-column">
-                            <p class="mb-0 col-12 text-center text-muted fw-normal">7th floor. T Square. opp. Chandivali
-                                Petrol Pump.
-                            </p>
-                            <p class="mb-0 col-12 text-center text-muted fw-normal">Sakinaka. Andheri (E). Murnbai - 400
-                                072.
-                                Maharashtra
-                                India.</p>
-                            <p class="mb-0 col-12 text-center text-muted fw-normal">TEL: 02266441500</p>
-                        </aside>
+                    <div class="col-md-6 text-md-end text-center">
+                         <p class="h5 fw-bold mb-0">Total Transport Systems Limited</p>
+                        <p class="text-muted mb-0">7th floor. T Square, opp. Chandivali Petrol Pump</p>
+                        <p class="text-muted mb-0">Sakinaka, Andheri (E), Mumbai - 400 072</p>
+                        <p class="text-muted mb-0">Maharashtra, India. TEL: 02266441500</p>
                     </div>
                 </div>
 
                 <div class="text-center h5 fw-bold">QUOTATION</div>
                 <div class="row mx-auto my-3">
-                    <div class="col-md-6">
+                    <div class="col-md-6 px-3 px-md-5">
                         <section class="d-flex flex-column">
                             <aside class="d-flex">
                                 <p class="mb-0 col-12 h6 fw-bold">VisVas Logistics Pvt Ltd.,</p>
@@ -404,7 +441,7 @@
                 </div>
 
 
-                <aside class="table-responsive">
+                <aside class="table-responsive  px-3 px-md-5">
                     <table class="table">
 
 
@@ -471,10 +508,13 @@
 
             </div>
 
-            <div class="d-flex align-items-center justify-content-between pt-5 mt-5">
+            <div class="d-flex align-items-center justify-content-between mt-5 pt-3">
                 <div class=""><span class="fw-bold">Printed By :</span> Lorem ipsum </div>
                 <div><span class="fw-bold">Printed On :</span> {{ currentDate }}</div>
             </div>
         </section>
     </div>
 </ng-template>
+
+
+

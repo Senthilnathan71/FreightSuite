@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { AppService } from 'src/app/service/app.service';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { DateFormatPipe } from 'src/app/core/pipes/date-format.pipe';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-rate-request-view',
@@ -17,7 +18,8 @@ import { DateFormatPipe } from 'src/app/core/pipes/date-format.pipe';
     FeatherModule,
     FormsModule,
     NgbPaginationModule,
-    DateFormatPipe
+    DateFormatPipe,
+    FavoriteStarComponent
   ],
   templateUrl: './rate-request-view.component.html',
   styleUrl: './rate-request-view.component.scss'

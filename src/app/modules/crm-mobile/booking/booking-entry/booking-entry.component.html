@@ -1,0 +1,76 @@
+<section class=" py-4">
+  <div class="mx-auto">
+   
+    <!-- <h5 class=" fw-bold mb-4">Unreserved E-Ticket</h5> -->
+
+  
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav nav-tabs nav-justified mb-3 rounded shadow-sm bg-white rounded-5">
+      <li [ngbNavItem]="'normal'">
+        <button ngbNavLink class="fw-semibold">Normal</button>
+        <ng-template ngbNavContent>
+          <ng-container *ngTemplateOutlet="ticketForm"></ng-container>
+        </ng-template>
+      </li>
+      <li [ngbNavItem]="'season'">
+        <button ngbNavLink class="fw-semibold">Season</button>
+        <ng-template ngbNavContent>
+          <ng-container *ngTemplateOutlet="ticketForm"></ng-container>
+        </ng-template>
+      </li>
+    </ul>
+    
+
+    <div [ngbNavOutlet]="nav"></div>
+
+  
+    <ng-template #ticketForm>
+
+      <div class="d-flex   justify-content-between mb-3 gap-2">
+        <button class="btn btn-info w-100 rounded-5">
+          Outside Station <i class="bi bi-info-circle ms-1"></i>
+        </button>
+        <button class="btn btn-outline-secondary w-100 rounded-5">
+          At Station <i class="bi bi-info-circle ms-1"></i>
+        </button>
+      </div>
+
+      
+      <div class="mb-3">
+        <label class="form-label text-info">From</label>
+        <div class="input-container">
+          <span class="icon"><i class="bi bi-train-front"></i></span>
+          <input type="text" class="input-field" placeholder="Source"   [(ngModel)]="fromStation"
+      name="fromStation">
+        </div>
+      </div>
+
+     
+      <div class="mb-4 to-input">
+        <label class="form-label text-info">To</label>
+        <div class="input-container">
+          <span class="icon"><i class="bi bi-train-front"></i></span>
+          <input type="text" class="input-field" placeholder="Destination"   [(ngModel)]="toStation"  name="toStation">
+          <button type="button" class="btn btn-light arrow-icon rounded-circle"   (click)="swapStations()">
+            <i class="bi bi-arrow-down-up fw-semibold"></i>
+          </button>
+        </div>
+      </div>
+
+   
+      <div class="d-grid gap-3 mb-4">
+        <button class="btn btn-info fw-bold py-2 rounded-5">Proceed To Book</button>
+        <button class="btn btn-outline-secondary fw-bold py-2 rounded-5">Check Upcoming Trains</button>
+      </div>
+
+     
+      <div class="">
+        <h6 class="fw-semibold ">Recent Searches</h6>
+        <div class="search-card m-0 text-center shadow-sm recent">
+          <div class="fw-semibold">NEW DELHI, NDLS</div>
+          <div class="text-primary my-1"><i class="bi bi-shuffle "></i></div>
+          <div class="fw-semibold">LUCKNOW JN., LKO</div>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+</section>

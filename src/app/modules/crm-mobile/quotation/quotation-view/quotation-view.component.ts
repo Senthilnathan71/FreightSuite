@@ -216,7 +216,7 @@ export class QuotationViewComponent {
     this.selectedItem = data;
     this.modalService.open(content, {
       size: 'xl', // or omit this to avoid interference
-      scrollable: true,
+      scrollable: false,
       windowClass: 'custom-wide-modal'
     });
   }

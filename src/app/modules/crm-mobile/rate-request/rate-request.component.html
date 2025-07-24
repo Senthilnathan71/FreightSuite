@@ -1,4 +1,37 @@
 <div class="row">
+
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-2">
+                <h4 class="page-title mb-0">Rate Request</h4>
+                @if(isEditMode){
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                         <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
+                }
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                   
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="goBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                       (click)="resetForm()" >
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()" >
+                   <i class="fas fa-save me-1"></i> {{isEditMode ? 'Update' : "Save"}}
+                </button>
+            
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- #region Rate Request Form -->
     <form [formGroup]="rateRequestForm">
 
@@ -222,19 +255,17 @@
                     <i class="fas fs-6 fa-info-circle"></i> 
                     Details
                 </button> -->
-                <button class="btn btn-info btn-sm" (click)="addRoute()" type="button" [disabled]="!(f['customerName'].value && selectedDepartment)"><i-feather
-                        class="feather-sm ms-2" name="plus"></i-feather> New
+                <button class="btn btn-info btn-sm" (click)="addRoute()" type="button" [disabled]="!(f['customerName'].value && selectedDepartment)"> <i class="fas fa-plus me-1"></i> New
                     Route</button>
                 <button *ngIf="EnquiryHeaderSid" class="btn btn-info btn-sm" (click)="navigateQuotation()"
-                    type="button"><i-feather class="feather-sm ms-2" name="file-plus"></i-feather> Create
+                    type="button"> <i class="fas fa-plus me-1"></i> Create
                     Quotation</button>
                 }
                 @if (!isMobile) {
-                <button class="btn btn-info btn-sm" type="button" (click)="addRoute()" [disabled]="!(f['customerName'].value && selectedDepartment)"><i-feather
-                        class="feather-sm ms-2" name="plus"></i-feather> Add
+                <button class="btn btn-info btn-sm" type="button" (click)="addRoute()" [disabled]="!(f['customerName'].value && selectedDepartment)"> <i class="fas fa-plus me-1"></i>Add
                     Route</button>
                 <button *ngIf="EnquiryHeaderSid" class="btn btn-info btn-sm" (click)="navigateQuotation()"
-                    type="button"><i-feather class="feather-sm ms-2" name="file-plus"></i-feather> Create
+                    type="button"> <i class="fas fa-plus me-1"></i> Create
                     Quotation</button>
                 <!-- (click)="addNewRoute()" -->
                 }
@@ -854,10 +885,10 @@
 
         <!-- #region Quote btn -->
         <div class="d-flex align-items-center">
-            <button class="btn btn-sm btn-outline-secondary waves-effect waves-light btn-min-width me-1" type="button"
+            <!-- <button class="btn btn-sm btn-outline-secondary waves-effect waves-light btn-min-width me-1" type="button"
                 (click)="goBack()">
                 <i-feather class="feather-sm me-1" name="arrow-left"></i-feather> Back
-            </button>
+            </button> -->
             <div class="me-1" *ngIf="isEditMode">
                 <button class="btn btn-outline-info btn-sm" (click)="openEDoc()">
                     <i class="fas fa-file-alt me-1"></i> e-Doc </button>
@@ -879,10 +910,10 @@
                 <button class="btn btn-outline-info btn-sm" (click)="showInfo()">
                     <i class="fas fs-4 fa-info-circle"></i> Details</button>
             </div>
-            <div [class.ms-auto]="!isEditMode">
+            <!-- <div [class.ms-auto]="!isEditMode">
                 <button class="btn btn-outline-info btn-sm" type="submit" (click)="onSubmit()">
                     <i-feather class="feather-sm me-2" name="upload-cloud"></i-feather>Save</button>
-            </div>
+            </div> -->
         </div>
         <!-- #endregion -->
     </form>

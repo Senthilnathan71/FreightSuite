@@ -21,50 +21,33 @@
     min-height: 100vh;
     margin: 0 100px 0 100px;
 }
-h4{
-    color: orange;
-    margin: 20px;
+
+
+.email-btn{
+  color: grey;
 }
-button:hover{
-    background-color:orange;
-    color: white;
+::ng-deep .modal.custom-wide-modal .modal-dialog {
+  max-width: 80vw !important;
+  width: 80vw;
 }
-button{
-    padding: 10px 50px;
-    border: none;
-    border-radius: 1px;
-    margin-top: 5px;
-}
-input{
-    width: 300px;
-    padding: 10px ;
-    margin: 5px;
-    border-radius: 2px;
-    border:1px solid grey;
-}
-::ng-deep .modal-dialog.full-height-modal {
-  height: 100vh;
-  max-height: 100vh;
+
+::ng-deep .modal.custom-wide-modal .modal-dialog.full-height-modal {
+  height: 90vh;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-::ng-deep .modal-content {
-  height: 95vh;
-  max-height: 95vh;
+::ng-deep .modal.custom-wide-modal .modal-content {
+  height: 90vh;
+  max-height: 90vh;
   overflow: hidden;
 }
 
-::ng-deep .modal-body {
-  overflow-y: auto;
+::ng-deep .modal.custom-wide-modal .modal-body {
   padding: 0;
   height: 100%;
-}
-
-::ng-deep .modal-dialog.custom-wide-modal {
-  max-width: 90vw !important;
-  width: 90vw;
 }
 
 .spinner-overlay {

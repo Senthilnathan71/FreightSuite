@@ -158,8 +158,8 @@
         </div>
     </div>
 
-    <div class="col-12 mt-3">
-        <div class="card h-100">
+    <div class="col-12">
+        <div class="card">
             <div class="card-body">
                 <div class="row">
                     <ul ngbNav #nav1="ngbNav" [(activeId)]="active" class="nav-tabs">
@@ -229,9 +229,7 @@
 </div>
 
 <ng-template #authorityDetailContent let-modal>
-    <div class="modal-container"> 
-        <div class="modal-responsive-wrapper">
-            <div class="modal-content custom-modal">
+    
                 <div [formGroup]="authorityDetailForm">
                     <div class="modal-header">
                         <h4 class="modal-title" id="modal-basic-title">{{isModalEditMode ? 'Edit Authority Detail' : 'Add Authority Detail'}}</h4>
@@ -299,7 +297,7 @@
     }
   </div>
 </aside>
-<aside class="col-md-8">
+<aside class="col-md-4">
                                             <div class="custom-form-group">
                                                 <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
                                                     formControlName="Remarks"></textarea>
@@ -333,11 +331,9 @@
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
                             [disabled]="authorityDetailForm.invalid" (click)="submitAuthorityDetailForm()">
                             <i class="fas fa-save me-1"></i>
-                            {{isModalEditMode ? 'Update' : 'Create'}}
+                            {{isModalEditMode ? 'Update' : 'Save'}}
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
+        
 </ng-template>
