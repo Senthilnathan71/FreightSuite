@@ -35,7 +35,7 @@ export class RateRequestViewComponent {
   searchText: string = '';
   enquiryItems: any[] = [];
   isMobile: boolean = false;
-
+  isDataLoaded: boolean = false;
   enquiryData: any
   constructor(private leadService: LeadService, private route: Router, private appService: AppService) { }
 
@@ -54,10 +54,11 @@ export class RateRequestViewComponent {
         this.enquiryItems = [...this.enquiryData]
         this.totalLengthOfCollection = this.enquiryData.length || 0;
         this.updatePaginatedData();  // Update paginated data
-
+        this.isDataLoaded = true; // Enable buttons after load
       },
       (error) => {
         this.errorMessage = error.message;  // On error, store the error message
+         this.isDataLoaded = false; // Keep buttons disabled on error
         console.error('Error loading enquiry:', error);  // Optionally log the error
       }
     );
@@ -108,5 +109,13 @@ export class RateRequestViewComponent {
 
   editEnquiry(id) {
     this.route.navigate(['crm/rate-request', id])
+  }
+
+    resetFilters(): void {
+    this.searchText = '';
+    this.enquiryItems = [...this.enquiryData];
+    this.totalLengthOfCollection = this.enquiryItems.length;
+    this.page = 1;
+    this.updatePaginatedData();
   }
 }
