@@ -12,12 +12,7 @@
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    @if(isEditMode){
-                    <button type="button" appPreventMultiClick
-                        class="btn btn-outline-info btn-sm dofi-min-w-160 dofi-max-w-160">
-                        <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                    </button>
-                    }
+                   
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
@@ -64,6 +59,32 @@
                             }
                         </div>
                     </aside>
+                    <aside class="col-md-4">
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="isSubMenu" 
+           [checked]="isSubMenuChecked"
+           (change)="onParentMenuChange($any($event.target).checked)">
+    <label class="form-check-label" for="isSubMenu">Is Sub Menu</label>
+  </div>
+</aside>
+
+<aside class="col-md-4" *ngIf="isSubMenu">
+  <div class="custom-form-group custom-form-group-select">
+    <ng-select [items]="mainMenus" bindLabel="MenuName" bindValue="MenuMasterSid"
+        formControlName="parentId" placeholder="Select Parent Menu"
+        [class.is-invalid]="menuForm.get('parentId')?.invalid && menuForm.get('parentId')?.touched">
+        <ng-template ng-option-tmp let-item="item">
+            {{item.MenuName}}
+        </ng-template>
+    </ng-select>
+    <label class="input-label">Parent Menu <span class="text-danger">*</span></label>
+    @if(isSubMenu && menuForm.get('parentId')?.touched && menuForm.get('parentId')?.invalid){
+    <div class="error-message">
+        <span>Parent menu is required for submenus</span>
+    </div>
+    }
+  </div>
+</aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" formControlName="MenuCode" id="MenuCode" placeholder=""
@@ -255,6 +276,7 @@
             </div>
         </div>
     </div>
+    
 @if(isEditMode){
     <div class="col-12 mt-3">
     <div class="card">

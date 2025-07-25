@@ -57,6 +57,9 @@ export class MenuEntryComponent implements OnInit {
   isLoading = false;
   userData: any;
   menuData: any;
+  isSubMenu: boolean = false;
+  mainMenus: any[] = [];
+  displayMenus: any[] = [];
 
   modeOfPermissions = [
     { value: 'Y', name: "Allowed" },
@@ -106,6 +109,7 @@ export class MenuEntryComponent implements OnInit {
   allPermissions :any[]
 
   constructor(
+    private cdr: ChangeDetectorRef,
     private modalService: NgbModal,
     private fb: FormBuilder,
     private settingsService: SettingsService,
@@ -128,6 +132,8 @@ export class MenuEntryComponent implements OnInit {
 
     this.initForm();
     this.loadModules();
+    this.loadMainMenus();
+    // this.loadDisplayMenus();
     this.route.paramMap.subscribe(
       (param: any) => {
         this.MenuMasterSid = +param.get('id');
@@ -141,6 +147,43 @@ export class MenuEntryComponent implements OnInit {
       }
     )
   }
+loadMainMenus() {
+  
+  this.mainMenus = [
+    { MenuMasterSid: -1, MenuName: 'Global Master' },
+    { MenuMasterSid: -2, MenuName: 'Finance Master' }
+  ];
+
+  
+  this.settingsService.getMainMenus().subscribe({
+    next: (response: any) => {
+      
+      const additionalMenus = response.data.filter((menu: any) => 
+        menu.MenuName !== 'Global Master' && menu.MenuName !== 'Finance Master'
+      ).map((menu: any) => ({
+        MenuMasterSid: menu.MenuMasterSid,
+        MenuName: menu.MenuName
+      }));
+      
+      
+      this.mainMenus = [...this.mainMenus, ...additionalMenus];
+    },
+    error: (error) => {
+      console.error('Error loading main menus:', error);
+      
+    }
+  });
+}
+// loadDisplayMenus() {
+//         this.settingsService.getAllMenu().subscribe({
+//             next: (menus) => {
+//                 this.displayMenus = menus;
+//             },
+//             error: (error) => {
+//                 console.error('Error loading menu hierarchy:', error);
+//             }
+//         });
+//     }
 
   // Load all modules for dropdown
   loadModules() {
@@ -163,10 +206,21 @@ export class MenuEntryComponent implements OnInit {
       MenuCode: ['', [Validators.required, Validators.maxLength(3), this.uppercaseValidator()]],
       ModuleMasterSid: ['', Validators.required],
       ModuleName: [''],
+      parentId: ['', []],
       path: ['', [Validators.required, this.pathValidator()]],
       icon: [''],
       status: [{ value: 'Active', disabled: false }, Validators.required],
       permissions: this.fb.array([])
+    });
+    this.menuForm.get('isSubMenu')?.valueChanges.subscribe(isSubMenu => {
+        const parentIdControl = this.menuForm.get('parentId');
+        if (isSubMenu) {
+            parentIdControl?.setValidators([Validators.required]);
+        } else {
+            parentIdControl?.clearValidators();
+            parentIdControl?.setValue(null);
+        }
+        parentIdControl?.updateValueAndValidity();
     });
   }
 
@@ -222,7 +276,9 @@ export class MenuEntryComponent implements OnInit {
     }
   }
 
-
+get isSubMenuChecked(): boolean {
+  return !!this.menuForm.get('parentId')?.value;
+}
 
 
   loadMenuData(id: number) {
@@ -237,15 +293,36 @@ export class MenuEntryComponent implements OnInit {
           ModuleName: data.ModuleName, 
           path: data.path,
           icon: data.icon,
-          status: data.status === 'A' ? 'Active' : 'Suspended'
+          status: data.status === 'A' ? 'Active' : 'Suspended',
+          parentId: data.parentId
         });
-      },
-      (error) => {
-        this.appSettingService.showError('Error loading data.');
+        this.isSubMenu = !!data.parentId;
+         const parentIdControl = this.menuForm.get('parentId');
+      if (this.isSubMenu) {
+        parentIdControl?.setValidators([Validators.required]);
+      } else {
+        parentIdControl?.clearValidators();
       }
-    );
+      parentIdControl?.updateValueAndValidity();
+    },
+    (error) => {
+      this.appSettingService.showError('Error loading data.');
+    }
+  );
   }
 
+  onParentMenuChange(isChecked: boolean) {
+  this.isSubMenu = isChecked;
+  const parentIdControl = this.menuForm.get('parentId');
+  if (this.isSubMenu) {
+    parentIdControl?.setValidators([Validators.required]);
+  } else {
+    parentIdControl?.clearValidators();
+    parentIdControl?.setValue(null);
+  }
+  parentIdControl?.updateValueAndValidity();
+}
+      
   loadMenuPermissions(MenuMasterSid){
     this.settingsService.getMenuPermissions(MenuMasterSid).subscribe(
       (resp:any)=>{
@@ -273,71 +350,105 @@ export class MenuEntryComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.menuForm.invalid) {
-      this.menuForm.markAllAsTouched();
-      this.menuForm.updateValueAndValidity();
-      this.appSettingService.showWarning('Please fill all required fields correctly.');
-      return;
-    } else {
+  if (this.menuForm.invalid) {
+    this.menuForm.markAllAsTouched();
+    this.menuForm.updateValueAndValidity();
+    this.appSettingService.showWarning('Please fill all required fields correctly.');
+    return;
+  }
 
-      let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      const formValue = this.menuForm.getRawValue();
+  // Prepare payload data
+  const formValue = this.menuForm.getRawValue();
+  const selectedModule = this.moduleList.find(
+    module => module.ModuleMasterSid == formValue.ModuleMasterSid
+  );
 
-      const selectedModule = this.moduleList.find(
-        module => module.ModuleMasterSid == this.menuForm.value.ModuleMasterSid
-      );
-      
+  // Process parentId - convert empty/undefined/falsey values to null
+  const parentId = formValue.parentId ? formValue.parentId : null;
 
-      const payload = {
-        ...formValue,
-        ...createdBy,
-        ...updatedBy,
-        ModuleName: selectedModule?.ModuleName || '',
-        status: formValue.status === "Active" ? "A" : "S",
-        permissions: this.preparePermissionsPayload() 
-      };
-
-      if (this.isEditMode) {
-        this.settingsService.updateMenuById(this.MenuMasterSid, payload).subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.appSettingService.showSuccess('Menu updated successfully.');
-              const menuId = resp.data?.menu?.MenuMasterSid;
-              if(menuId){
-                this.loadMenuData(menuId);
-                this.loadMenuPermissions(menuId);
-              }
-            } else {
-              this.appSettingService.showError('Error updating menu.');
-            }
-          },
-          (error) => {
-            this.errorMessage = error.message;
-            console.error('Error loading:', error);
-          }
-        );
-      } else {
-        this.settingsService.createMenu(payload).subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.appSettingService.showSuccess('Menu created successfully.');
-              const menuId = resp.data?.menu?.MenuMasterSid;
-              if(menuId){
-                this.router.navigate(['settings/menu/entry',menuId])
-              }
-            } else {
-              this.appSettingService.showError('Error creating menu.');
-            }
-          },
-          (error) => {
-            this.errorMessage = error.message;
-            console.error('Error loading:', error);
-          }
-        );
-      }
-    }
+  const payload = {
+    ...formValue,
+    createdBy: this.appSettingService.userSettingSource.value['userEmail'],
+    updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
+    ModuleName: selectedModule?.ModuleName || '',
+    status: formValue.status === "Active" ? "A" : "S",
+    parentId: parentId, // Use the processed parentId
+    permissions: this.preparePermissionsPayload()
   };
+
+  if (this.isEditMode) {
+    this.btnDisable = true; // Disable button during submission
+    this.isLoading = true; // Show loading indicator
+    
+    this.settingsService.updateMenuById(this.MenuMasterSid, payload).subscribe(
+      (resp: any) => {
+        this.btnDisable = false;
+        this.isLoading = false;
+        
+        if (resp.status) {
+          this.appSettingService.showSuccess('Menu updated successfully.');
+          const updatedMenu = resp.data?.updatedMenu || resp.data?.menu;
+          
+          // Update form with exact values from server
+          this.menuForm.patchValue({
+            MenuName: updatedMenu.MenuName,
+            MenuCode: updatedMenu.MenuCode,
+            ModuleMasterSid: updatedMenu.ModuleMasterSid,
+            path: updatedMenu.path,
+            icon: updatedMenu.icon,
+            status: updatedMenu.status === 'A' ? 'Active' : 'Suspended',
+            parentId: updatedMenu.parentId // This will be null if cleared
+          });
+
+          // Update flags based on actual response
+          this.isSubMenu = !!updatedMenu.parentId;
+          
+          // Update local data for display
+          this.menuData = updatedMenu;
+          
+          // Force UI update if using change detection strategy OnPush
+          this.cdr.detectChanges();
+        } else {
+          this.appSettingService.showError(resp.message || 'Error updating menu.');
+        }
+      },
+      (error) => {
+        this.btnDisable = false;
+        this.isLoading = false;
+        this.errorMessage = error.message;
+        console.error('Error updating menu:', error);
+        this.appSettingService.showError(error.message || 'Error updating menu.');
+      }
+    );
+  } else {
+    this.btnDisable = true;
+    this.isLoading = true;
+    
+    this.settingsService.createMenu(payload).subscribe(
+      (resp: any) => {
+        this.btnDisable = false;
+        this.isLoading = false;
+        
+        if (resp.status) {
+          this.appSettingService.showSuccess('Menu created successfully.');
+          const menuId = resp.data?.menu?.MenuMasterSid;
+          if (menuId) {
+            this.router.navigate(['settings/menu/entry', menuId]);
+          }
+        } else {
+          this.appSettingService.showError(resp.message || 'Error creating menu.');
+        }
+      },
+      (error) => {
+        this.btnDisable = false;
+        this.isLoading = false;
+        this.errorMessage = error.message;
+        console.error('Error creating menu:', error);
+        this.appSettingService.showError(error.message || 'Error creating menu.');
+      }
+    );
+  }
+}
 
   private preparePermissionsPayload(): any[] {
     const permissionNames =  this.permissions.controls.map(permissionGroup => ({

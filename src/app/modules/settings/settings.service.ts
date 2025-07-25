@@ -20,6 +20,13 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
       })
     )
   }
+  getMainMenus() {
+  return this.http.get<{ data: any[] }>('menu/main-menus').pipe(
+    map((resp) => {
+      return resp.data;
+    })
+  );
+}
 
   createMenu(payload: any){
     return this.http.post<{data:any}>('menu/create',payload).pipe(
