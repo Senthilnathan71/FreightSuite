@@ -164,6 +164,8 @@ export class RateRequestComponent implements OnInit {
       status: [''], // Default
       DepartmentMasterSid: [''],
       CustomerMasterSid: [''],
+      modeOfEnquiry: [''],             
+      additionalService: [''], 
       Remarks:[''],
       // Routes (Multiple)
       routes: this.fb.array([]),
