@@ -70,74 +70,104 @@ branchList: any[] = [];
 
   }
 
- ngOnInit(): void {
-  this.appSettingsService.getUser().subscribe(user => {
-    if (user) {
-      this.userData = user;
-      this.branchName = user?.userBranchMaster?.[0]?.branchMaster?.branchName || '';
-      this.companyName = user?.userBranchMaster?.[0]?.companyMaster?.companyName || '';
-    }
-  });
-  this.extractCompanies();
-}
+ngOnInit(): void {
+    this.appSettingsService.getUser().subscribe(user => {
+      if (user) {
+        this.userData = user;
 
-extractCompanies() {
-  const uniqueCompanies = new Map();
-  this.userData?.userBranchMaster?.forEach((item: any) => {
-    const company = item.companyMaster;
-    if (!uniqueCompanies.has(company.companyId)) {
-      uniqueCompanies.set(company.companyId, company);
-    }
-  });
+        // Set default selected branch/company
+        this.selectedBranchCompany =
+          user.userBranchMaster?.find((b: any) => b.isDefault) ||
+          user.userBranchMaster?.[0];
 
-  this.companyList = Array.from(uniqueCompanies.values());
-}
+        if (this.selectedBranchCompany) {
+          this.branchName =
+            this.selectedBranchCompany.branchMaster?.branchName || '';
+          this.companyName =
+            this.selectedBranchCompany.companyMaster?.companyName || '';
 
-onCompanyChange(companyId: string) {
-  this.selectedCompanyId = companyId;
-  const selectedCompanyId = Number(companyId);
+          this.selectedCompanyId =
+            this.selectedBranchCompany.companyMaster?.CompanyMasterSid;
+          this.selectedBranchId =
+            this.selectedBranchCompany.UserBranchMasterSid;
+        }
 
-  console.log('Selected company ID:', selectedCompanyId);
-  console.log('All user branches:', this.userData?.userBranchMaster);
-
-  this.branchList = this.userData?.userBranchMaster?.filter(
-    (branch: any) => branch.CompanyMasterSid === selectedCompanyId
-  );
-
-  console.log('Filtered branches:', this.branchList);
-  this.selectedBranchId = null;
-}
-
-
-
-openBranchSwitchModal(content: TemplateRef<any>) {
-  this.modalRef = this.modalService.open(content, { centered: true, size: 'md', backdrop: 'static'});
-}
-
-
-onBranchChangeFromModal(selectedId: string | number, modalRef: NgbModalRef): void {
-  const selectedBranch = this.userData?.userBranchMaster?.find(
-    (b: any) => b.UserBranchMasterSid == +selectedId
-  );
-
-  if (selectedBranch) {
-    this.selectedBranchId = selectedBranch.UserBranchMasterSid;
-    this.selectedCompanyId = selectedBranch.CompanyMasterSid;
-
-    this.onCompanyChange(this.selectedCompanyId);
-
-    // ✅ Update userData.branchMaster and companyMaster to reflect in HTML
-    this.userData.branchMaster = selectedBranch.branchMaster;
-    this.userData.companyMaster = selectedBranch.companyMaster;
-
-    this.branchName = selectedBranch.branchMaster.branchName;
-    this.companyName = selectedBranch.companyMaster.companyName;
-
-    modalRef.close();
-  } else {
-    console.warn('Branch not found for selected ID:', selectedId);
+        this.extractCompanies();
+      }
+    });
   }
-}
+
+  extractCompanies(): void {
+    const allCompanies = this.userData?.userBranchMaster?.map(
+      (b: any) => b.companyMaster
+    );
+
+    this.companyList = allCompanies
+      ? allCompanies.filter(
+          (company, index, self) =>
+            index ===
+            self.findIndex(
+              (c: any) => c.CompanyMasterSid === company.CompanyMasterSid
+            )
+        )
+      : [];
+  }
+
+  onCompanyChange(companyId: number): void {
+    this.branchList = this.userData?.userBranchMaster?.filter(
+      (b: any) => b.companyMaster?.CompanyMasterSid === +companyId
+    ) || [];
+
+    // Reset selectedBranchId if it's not in new list
+    const exists = this.branchList.find(
+      (b: any) => b.UserBranchMasterSid === this.selectedBranchId
+    );
+    if (!exists && this.branchList.length > 0) {
+      this.selectedBranchId = this.branchList[0].UserBranchMasterSid;
+    }
+  }
+
+  openBranchSwitchModal(content: TemplateRef<any>): void {
+    if (this.selectedBranchCompany) {
+      this.selectedCompanyId =
+        this.selectedBranchCompany.companyMaster?.CompanyMasterSid;
+      this.onCompanyChange(this.selectedCompanyId);
+      this.selectedBranchId = this.selectedBranchCompany.UserBranchMasterSid;
+    }
+
+    this.modalRef = this.modalService.open(content, {
+      centered: true,
+      size: 'md',
+      backdrop: 'static',
+    });
+  }
+
+  onBranchChangeFromModal(selectedId: number | string, modalRef: NgbModalRef): void {
+    const selectedBranch = this.userData?.userBranchMaster?.find(
+      (b: any) => b.UserBranchMasterSid === +selectedId
+    );
+
+    if (selectedBranch) {
+      this.selectedBranchId = selectedBranch.UserBranchMasterSid;
+      this.selectedCompanyId =
+        selectedBranch.companyMaster?.CompanyMasterSid;
+
+      this.onCompanyChange(this.selectedCompanyId);
+
+      this.selectedBranchCompany = selectedBranch;
+
+      this.userData.branchMaster = selectedBranch.branchMaster;
+      this.userData.companyMaster = selectedBranch.companyMaster;
+
+      this.branchName = selectedBranch.branchMaster?.branchName || '';
+      this.companyName = selectedBranch.companyMaster?.companyName || '';
+
+      modalRef.close();
+    } else {
+      console.warn('Branch not found for selected ID:', selectedId);
+    }
+  }
+
 
 
 
