@@ -29,8 +29,6 @@ import { OrganizationListComponent } from './organization/organization-list/orga
 import { OrganizationEntryComponent } from './organization/organization-entry/organization-entry.component';
 import { ContainerTypeListComponent } from './container-type/container-type-list/container-type-list.component';
 import { ContainerTypeEntryComponent } from './container-type/container-type-entry/container-type-entry.component';
-import { CommodityListComponent } from './commodity/commodity-list/commodity-list.component';
-import { CommodityEntryComponent } from './commodity/commodity-entry/commodity-entry.component';
 import { PackageTypeListComponent } from './package-type/package-type-list/package-type-list.component';
 import { ServiceLevelListComponent } from './service-level/service-level-list/service-level-list.component';
 import { ServiceLevelComponent } from './service-level/service-level.component';
@@ -480,30 +478,7 @@ export const MasterRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Organization' }],
         },
       },
-      {
-        path: 'commodity/list',
-        component: CommodityListComponent,
-        data: {
-          title: 'Commodity',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Commodity' }],
-        },
-      },
-      {
-        path: 'commodity/entry',
-        component: CommodityEntryComponent,
-        data: {
-          title: 'Commodity',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Commodity' }],
-        },
-      },
-      {
-        path: 'commodity/entry/:id',
-        component: CommodityEntryComponent,
-        data: {
-          title: 'Edit City',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Commodity' }],
-        },
-      },
+      
       {
         path: 'package-type/list',
         component: PackageTypeListComponent,
