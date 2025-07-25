@@ -221,79 +221,76 @@ export class QuotationViewComponent {
     });
   }
 
-  downloadPDF() {
-    const element = document.getElementById('pdfContent');
 
-    const opt = {
-      margin: 0.5,
-      filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    };
+  downloadPDF(): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const element = document.getElementById('pdfContent');
 
-    if (element) {
+      const opt = {
+        margin: 0.5,
+        filename: (this.selectedItem?.QuotationName || 'quotation') + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      if (!element) return reject('No element found');
+
+      html2pdf().from(element).set(opt).outputPdf('blob')
+        .then((blob: Blob) => resolve(blob))
+        .catch((err: any) => reject(err));
+    });
+  }
+
+
+  orgEmail: any
+  quotationEmail: any
+  loggedInUserEmail: any
+  async sendEmail() {
+    try {
       this.isLoading = true;
 
-      setTimeout(() => {
-        html2pdf().from(element).set(opt).save().then(() => {
-          this.isLoading = false;
+      const pdfBlob = await this.downloadPDF();
 
-          // ✅ Success message
-          this.toastr.success('PDF downloaded successfully!');
-        }).catch((err: any) => {
-          this.isLoading = false;
-          console.error('PDF download error:', err);
-          this.toastr.error('Something went wrong while downloading PDF.');
-        });
-      }, 100); // short delay to allow loader to show
+      const formData = new FormData();
+      formData.append('EmailTo', "developer1@dofi.co");
+      formData.append('EmailCC', "developer1@dofi.co");
+      formData.append('Subject', `Quotation No.AE072500089 Date:${new Date()} Jebel Ali(AEJEA) - Singapore(SGSIN)`);
+      formData.append('Mailbody', `
+      <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+        <p>Dear Sir/Madam,</p>
+        <p>Please find enclosed the quotation as requested.</p>
+        <p>Kindly review the details at your convenience.</p>
+        <p>Looking forward to your feedback and the opportunity to work together.</p>
+        <p>
+          Approval Hyperlink: 
+          <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+        </p>
+        <p>Best Regards,</p>
+        <p>user name</p>
+      </div>
+    `);
+      formData.append('file', pdfBlob, (this.selectedItem?.QuotationName || 'quotation') + '.pdf');
+
+
+      this.leadService.quotationReport(formData).subscribe((resp: any) => {
+        this.isLoading = false;
+        if (resp?.data) {
+          this.toastr.success('Report Email Sent successfully!');
+        }
+      }, error => {
+        this.isLoading = false;
+        this.toastr.error('Failed to send email.');
+      });
+
+    } catch (err) {
+      this.isLoading = false;
+      console.error('PDF generation error:', err);
+      this.toastr.error('Error generating PDF.');
     }
   }
 
 
-  sendEmail() {
-    console.log("Send email triggered");
-    let payload = {
-      EmailTo: "developer1@dofi.co",
-      EmailCC: "developer1@dofi.co",
-      Subject: "Quotation Report",
-      Mailbody: `
-    <div style="font-family: Arial, sans-serif; padding: 10px;">
-      <h2 style="color: #2c3e50;">Quotation Report</h2>
-      <p>Dear Customer,</p>
-      <p>Please find the attached quotation report for your reference.</p>
-      <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-        <thead>
-          <tr style="background-color: #f2f2f2;">
-            <th style="border: 1px solid #ddd; padding: 8px;">Item</th>
-            <th style="border: 1px solid #ddd; padding: 8px;">Description</th>
-            <th style="border: 1px solid #ddd; padding: 8px;">Price</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;">1</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Product A</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">₹5,000</td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;">2</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Product B</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">₹3,200</td>
-          </tr>
-        </tbody>
-      </table>
-      <p style="margin-top: 20px;">Regards,<br><strong>Sales Team</strong></p>
-    </div>
-  `
-    };
-
-    this.leadService.quotationReport(payload).subscribe((resp: any) => {
-      if (resp.status) {
-        this.toastr.success('Report Email Sent successfully!');
-      }
-    })
-  }
 
 
 }
