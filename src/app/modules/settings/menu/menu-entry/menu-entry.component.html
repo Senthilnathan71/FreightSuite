@@ -68,19 +68,22 @@
   </div>
 </aside>
 
-<aside class="col-md-4" *ngIf="isSubMenu">
+<aside class="col-md-4" *ngIf="isSubMenu && mainMenus.length > 0">
   <div class="custom-form-group custom-form-group-select">
-    <ng-select [items]="mainMenus" bindLabel="MenuName" bindValue="MenuMasterSid"
-        formControlName="parentId" placeholder="Select Parent Menu"
-        [class.is-invalid]="menuForm.get('parentId')?.invalid && menuForm.get('parentId')?.touched">
-        <ng-template ng-option-tmp let-item="item">
-            {{item.MenuName}}
-        </ng-template>
+    <ng-select [items]="mainMenus" 
+               bindLabel="MenuName" 
+               bindValue="MenuMasterSid"
+               formControlName="parentId" 
+               placeholder="Select Parent Menu"
+               [class.is-invalid]="menuForm.get('parentId')?.invalid && menuForm.get('parentId')?.touched">
+      <ng-template ng-option-tmp let-item="item">
+        {{item.MenuName}}
+      </ng-template>
     </ng-select>
     <label class="input-label">Parent Menu <span class="text-danger">*</span></label>
-    @if(isSubMenu && menuForm.get('parentId')?.touched && menuForm.get('parentId')?.invalid){
+    @if(menuForm.get('parentId')?.touched && menuForm.get('parentId')?.invalid){
     <div class="error-message">
-        <span>Parent menu is required for submenus</span>
+      <span>Parent menu is required for submenus</span>
     </div>
     }
   </div>

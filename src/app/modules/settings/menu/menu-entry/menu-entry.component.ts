@@ -123,72 +123,70 @@ export class MenuEntryComponent implements OnInit {
     private excelReportService: ExcelExportService,
   ) { }
 
-  ngOnInit(): void {
-    this.appSettingService.getUser().subscribe(
-      user => {
-        if (user) {
-          this.userData = user;
-        }
+ ngOnInit(): void {
+  this.appSettingService.getUser().subscribe(
+    user => {
+      if (user) {
+        this.userData = user;
       }
-    )
+    }
+  );
 
-    this.initForm();
-    this.loadModules();
-    this.loadMainMenus();
-    // this.loadDisplayMenus();
-    this.route.paramMap.subscribe(
-      (param: any) => {
-        this.MenuMasterSid = +param.get('id');
-        if (this.MenuMasterSid) {
-          this.isEditMode = true;
-          this.loadMenuData(this.MenuMasterSid);
-          this.loadMenuPermissions(this.MenuMasterSid);
-        } else {
-          this.addPermission();
-        }
+  this.initForm();
+  this.loadModules();
+
+  // Watch for module changes
+  this.menuForm.get('ModuleMasterSid')?.valueChanges.subscribe(moduleId => {
+    if (this.isSubMenu && moduleId) {
+      this.loadMainMenus(moduleId);
+    }
+  });
+
+  this.route.paramMap.subscribe(
+    (param: any) => {
+      this.MenuMasterSid = +param.get('id');
+      if (this.MenuMasterSid) {
+        this.isEditMode = true;
+        this.loadMenuData(this.MenuMasterSid);
+        this.loadMenuPermissions(this.MenuMasterSid);
+      } else {
+        this.addPermission();
       }
-    )
+    }
+  );
+}
+
+  onModuleChange(moduleId: number) {
+  if (this.isSubMenu) {
+    this.loadMainMenus(moduleId);
   }
-  loadMainMenus() {
-
-    this.mainMenus = [
-      { MenuMasterSid: -1, MenuName: 'Global Master' },
-      { MenuMasterSid: -2, MenuName: 'Finance Master' }
-    ];
-
-
-    this.settingsService.getMainMenus().subscribe({
-      next: (response: any) => {
-
-        const additionalMenus = response.data.filter((menu: any) =>
-          menu.MenuName !== 'Global Master' && menu.MenuName !== 'Finance Master'
-        ).map((menu: any) => ({
-          MenuMasterSid: menu.MenuMasterSid,
-          MenuName: menu.MenuName
-        }));
-
-
-        this.mainMenus = [...this.mainMenus, ...additionalMenus];
-      },
-      error: (error) => {
-        console.error('Error loading main menus:', error);
-
-      }
-    });
+}
+  loadMainMenus(moduleId: number) {
+  if (!moduleId) {
+    this.mainMenus = [];
+    return;
   }
-  // loadDisplayMenus() {
-  //         this.settingsService.getAllMenu().subscribe({
-  //             next: (menus) => {
-  //                 this.displayMenus = menus;
-  //             },
-  //             error: (error) => {
-  //                 console.error('Error loading menu hierarchy:', error);
-  //             }
-  //         });
-  //     }
 
-  // Load all modules for dropdown
-  loadModules() {
+  this.isLoading = true;
+  this.settingsService.getSubMenuList(moduleId).subscribe({
+    next: (menus: any[]) => {
+      this.mainMenus = menus.map(menu => ({
+        MenuMasterSid: menu.MenuMasterSid,
+        MenuName: menu.MenuName
+      }));
+      this.isLoading = false;
+      this.cdr.detectChanges(); // Force UI update
+    },
+    error: (error) => {
+      console.error('Error loading main menus:', error);
+      this.mainMenus = [];
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
+
+   loadModules() {
     this.settingsService.getAllModule().subscribe({
       next: (response: any) => {
         this.moduleList = response.data.map((module: any) => ({
@@ -314,16 +312,28 @@ export class MenuEntryComponent implements OnInit {
   }
 
   onParentMenuChange(isChecked: boolean) {
-    this.isSubMenu = isChecked;
-    const parentIdControl = this.menuForm.get('parentId');
-    if (this.isSubMenu) {
-      parentIdControl?.setValidators([Validators.required]);
+  console.log('IsSubMenu changed:', isChecked);
+  this.isSubMenu = isChecked;
+  const parentIdControl = this.menuForm.get('parentId');
+  const moduleId = this.menuForm.get('ModuleMasterSid')?.value;
+  console.log('Current moduleId:', moduleId);
+
+  if (this.isSubMenu) {
+    parentIdControl?.setValidators([Validators.required]);
+    if (moduleId) {
+      console.log('Loading main menus for module:', moduleId);
+      this.loadMainMenus(moduleId);
     } else {
-      parentIdControl?.clearValidators();
-      parentIdControl?.setValue(null);
+      console.log('No module selected');
+      this.mainMenus = [];
     }
-    parentIdControl?.updateValueAndValidity();
+  } else {
+    parentIdControl?.clearValidators();
+    parentIdControl?.setValue(null);
+    this.mainMenus = [];
   }
+  parentIdControl?.updateValueAndValidity();
+}
 
   loadMenuPermissions(MenuMasterSid) {
     this.settingsService.getMenuPermissions(MenuMasterSid).subscribe(

@@ -20,13 +20,17 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
       })
     )
   }
-  getMainMenus() {
-  return this.http.get<{ data: any[] }>('menu/main-menus').pipe(
+
+
+  getSubMenuList(ModuleMasterSid: number) {
+  return this.http.get<{ data: any[] }>(`menu/sub-menu/list/${ModuleMasterSid}`).pipe(
     map((resp) => {
-      return resp.data;
+      let response = resp.data;
+        return response;
     })
   );
 }
+  
 
   createMenu(payload: any){
     return this.http.post<{data:any}>('menu/create',payload).pipe(
