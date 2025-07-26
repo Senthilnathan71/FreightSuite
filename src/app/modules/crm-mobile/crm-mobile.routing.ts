@@ -1,8 +1,6 @@
 import { Routes } from '@angular/router';
 import { LeadComponent } from './lead/lead.component';
 import { ViewComponent } from './lead/view/view.component';
-import { RateRequestComponent } from './rate-request/rate-request.component';
-import { RateRequestViewComponent } from './rate-request/rate-request-view/rate-request-view.component';
 import { QuotationComponent } from './quotation/quotation.component';
 import { QuotationViewComponent } from './quotation/quotation-view/quotation-view.component';
 import { FullcalendarComponent } from './fullcalendar/fullcalendar.component';
@@ -12,6 +10,8 @@ import { PendingComponent } from './lead-schedule/pending/pending.component';
 import { MeetingUpdateListComponent } from './Meeting-Update/meeting-update-list/meeting-update-list.component';
 import { BookingListComponent } from './booking/booking-list/booking-list.component';
 import { BookingEntryComponent } from './booking/booking-entry/booking-entry.component';
+import { EnquiryEntryComponent } from './enquiry/enquiry-entry/enquiry-entry.component';
+import { EnquiryListComponent } from './enquiry/enquiry-list/enquiry-list.component';
 
 
 export const CrmMobileRoutes: Routes = [
@@ -63,10 +63,10 @@ export const CrmMobileRoutes: Routes = [
                 },
             },
             {
-                path: 'rate-request/list',
-                component: RateRequestViewComponent,
+                path: 'enquiry/list',
+                component: EnquiryListComponent,
                 data: {
-                    title: 'Rate Request',
+                    title: 'Enquiry',
                     backOption: [
                         { title: 'Back', url: '/crm' },
                     ],
@@ -78,12 +78,12 @@ export const CrmMobileRoutes: Routes = [
                 },
             },
             {
-                path: 'rate-request',
-                component: RateRequestComponent,
+                path: 'enquiry',
+                component: EnquiryEntryComponent,
                 data: {
-                    title: 'Rate Request',
+                    title: 'Enquiry',
                     backOption: [
-                        { title: 'Back', url: '/crm/rate-request/list' },
+                        { title: 'Back', url: '/crm/enquiry/list' },
                     ],
                     // urls: [
                     //     { title: 'CRM', url: '/crm' },
@@ -91,12 +91,12 @@ export const CrmMobileRoutes: Routes = [
                     // ],
                 },
             }, {
-                path: 'rate-request/:id',
-                component: RateRequestComponent,
+                path: 'enquiry/:id',
+                component: EnquiryEntryComponent,
                 data: {
-                    title: 'Rate Request',
+                    title: 'Enquiry',
                     backOption: [
-                        { title: 'Back', url: '/crm/rate-request/list' },
+                        { title: 'Back', url: '/crm/enquiry/list' },
                     ],
                     // urls: [
                     //     { title: 'CRM', url: '/crm' },

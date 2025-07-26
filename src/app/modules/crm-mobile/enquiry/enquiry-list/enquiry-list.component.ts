@@ -11,7 +11,7 @@ import { DateFormatPipe } from 'src/app/core/pipes/date-format.pipe';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
-  selector: 'app-rate-request-view',
+  selector: 'app-enquiry-list',
   standalone: true,
   imports: [
     CommonModule,
@@ -21,10 +21,10 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     DateFormatPipe,
     FavoriteStarComponent
   ],
-  templateUrl: './rate-request-view.component.html',
-  styleUrl: './rate-request-view.component.scss'
+  templateUrl: './enquiry-list.component.html',
+  styleUrl: './enquiry-list.component.scss'
 })
-export class RateRequestViewComponent {
+export class EnquiryListComponent {
 
 
   errorMessage: string = '';  // To store any error messages
@@ -104,11 +104,11 @@ export class RateRequestViewComponent {
 
 
   createNew() {
-    this.route.navigate(['crm/rate-request'])
+    this.route.navigate(['crm/enquiry'])
   }
 
   editEnquiry(id) {
-    this.route.navigate(['crm/rate-request', id])
+    this.route.navigate(['crm/enquiry', id])
   }
 
     resetFilters(): void {

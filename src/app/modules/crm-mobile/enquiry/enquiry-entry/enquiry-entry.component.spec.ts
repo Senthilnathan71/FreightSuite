@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RateRequestComponent } from './rate-request.component';
+import { EnquiryEntryComponent } from './enquiry-entry.component';
 
-describe('RateRequestComponent', () => {
-  let component: RateRequestComponent;
-  let fixture: ComponentFixture<RateRequestComponent>;
+describe('EnquiryEntryComponent', () => {
+  let component: EnquiryEntryComponent;
+  let fixture: ComponentFixture<EnquiryEntryComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RateRequestComponent]
+      imports: [EnquiryEntryComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(RateRequestComponent);
+    fixture = TestBed.createComponent(EnquiryEntryComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
