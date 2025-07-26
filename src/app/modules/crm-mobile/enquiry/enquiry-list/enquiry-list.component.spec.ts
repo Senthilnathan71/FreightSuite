@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RateRequestViewComponent } from './rate-request-view.component';
+import { EnquiryListComponent } from './enquiry-list.component';
 
-describe('RateRequestViewComponent', () => {
-  let component: RateRequestViewComponent;
-  let fixture: ComponentFixture<RateRequestViewComponent>;
+describe('EnquiryListComponent', () => {
+  let component: EnquiryListComponent;
+  let fixture: ComponentFixture<EnquiryListComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RateRequestViewComponent]
+      imports: [EnquiryListComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(RateRequestViewComponent);
+    fixture = TestBed.createComponent(EnquiryListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

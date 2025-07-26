@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { AppService } from 'src/app/service/app.service';
-import { LeadService } from '../Services/lead.service';
+
 import {
   AbstractControl,
   FormArray,
@@ -24,10 +24,12 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
-import { EmailEntryComponent } from '../../settings/email/email-entry/email-entry.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { LeadService } from '../../Services/lead.service';
+
 
 @Component({
-  selector: 'app-rate-request',
+  selector: 'app-enquiry-entry',
   standalone: true,
   imports: [
     FeatherModule,
@@ -38,14 +40,14 @@ import { EmailEntryComponent } from '../../settings/email/email-entry/email-entr
     NgbDatepickerModule,
     DatePipe
   ],
-  templateUrl: './rate-request.component.html',
-  styleUrl: './rate-request.component.scss',
+  templateUrl: './enquiry-entry.component.html',
+  styleUrl: './enquiry-entry.component.scss',
     providers: [
       { provide: NgbDateAdapter, useClass: CustomDateAdapter },
       { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
     ],
 })
-export class RateRequestComponent implements OnInit {
+export class EnquiryEntryComponent implements OnInit {
   selectedDepartment: any;
   isMobile: boolean = false;
   rateRequestForm!: FormGroup;
@@ -510,7 +512,7 @@ onFilter(search: string) {
             this.modalService.openSuccessModal('Enquiry Updated Successfully');
             this.btnDisable = false;
             // this.rateRequestForm.patchValue(resp.data);
-            this.router.navigate(['crm/rate-request/list']);
+            this.router.navigate(['crm/enquiry/list']);
           } else {
             // this.appSettingsService.showError("Enquiry Update Failed");
             this.modalService.openErrorModal('Enquiry Update Failed');
@@ -532,7 +534,7 @@ onFilter(search: string) {
           this.modalService.openSuccessModal('Enquiry Created Successfully');
           this.btnDisable = false;
           // this.rateRequestForm.patchValue(resp.data);
-          this.router.navigate(['crm/rate-request/list']);
+          this.router.navigate(['crm/enquiry/list']);
         } else {
           // this.appSettingsService.showError("Enquiry Creation Failed");
           this.modalService.openErrorModal('Enquiry Creation Failed');
