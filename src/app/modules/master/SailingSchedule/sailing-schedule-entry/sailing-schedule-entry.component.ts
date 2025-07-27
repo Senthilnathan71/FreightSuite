@@ -74,6 +74,9 @@ export class SailingScheduleEntryComponent implements OnInit {
     sailHeadData: any;
     sailDetailData: any;
     minETADate : any;
+    permissions: string[] = [];
+  currentMenuPermissions: any = {};
+  userData:any;
 
 
     modeOfStatus = [
@@ -100,6 +103,14 @@ export class SailingScheduleEntryComponent implements OnInit {
     ){}
 
     ngOnInit(): void {
+        this.appSettingService.getUser().subscribe(
+           user => {
+             if (user) {
+               this.userData = user;
+                this.checkPermissions();
+             }
+           }
+         )
         this.initScheduleForm();
         this.loadAllFields();
         this.currentRoute.paramMap.subscribe(
@@ -112,6 +123,26 @@ export class SailingScheduleEntryComponent implements OnInit {
             }
         )
     }
+    checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+ 
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
 
     initScheduleForm(){
         this.scheduleForm = this.fb.group({

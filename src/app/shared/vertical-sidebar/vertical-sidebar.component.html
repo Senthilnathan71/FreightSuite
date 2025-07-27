@@ -91,7 +91,8 @@
                         <li class="sidebar-item" routerLinkActive="active" [ngClass]="[sidebarnavSubsubItem.class]">
                             @if(!sidebarnavSubsubItem.extralink) {
                             <a class="sidebar-link" [routerLink]="[sidebarnavSubsubItem.path]"
-                                [routerLinkActive]="sidebarnavSubsubItem.submenu.length > 0 ? '' : 'router-link-active'">
+                                [routerLinkActive]="sidebarnavSubsubItem.submenu.length > 0 ? '' : 'router-link-active'"
+                                (click)="addActiveClass(sidebarnavSubsubItem)">
                                 <i-feather [name]="sidebarnavSubsubItem.icon" [ngClass]="[sidebarnavSubsubItem.icon]"></i-feather>
                                 <span class="hide-menu">{{sidebarnavSubsubItem.title| translate}}</span>
                             </a>
