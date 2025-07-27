@@ -10,6 +10,8 @@ import { DateFormatPipe } from 'src/app/core/pipes/date-format.pipe';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import * as html2pdf from 'html2pdf.js';
 import { ToastrService } from 'ngx-toastr';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-quotation-view',
@@ -33,7 +35,7 @@ export class QuotationViewComponent {
   errorMessage: string = '';  // To store any error messages
   // pagination
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   totalLengthOfCollection: number;
   page1 = 1;
   pageSize1 = 5;
@@ -43,19 +45,54 @@ export class QuotationViewComponent {
   isMobile: boolean = false;
   quoteData: any
   enquiryItems: any[] = [];
+  unitList : any[] = [];
   enquiryData: any
-  ports: any
+  ports: any[] = []
   selectedItem: any;
   currentDate = new Date().toLocaleDateString(); // or any formatted string
+  filterValue : any = ''
+  userData : any
 
-  constructor(private toastr: ToastrService, private modalService: NgbModal, private leadService: LeadService, private route: Router, private appService: AppService) { }
+  constructor(private toastr: ToastrService, private modalService: NgbModal, private leadService: LeadService, private route: Router, private appService: AppService,private appSettingService : AppSettingsService) { }
 
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice()
     this.loadPorts()
     this.loadEnquiries()
-    this.loadQuotes();
+    this.loadUnits();
+    // this.loadQuotes();
+    this.searchQuotation();
+    this.appSettingService.getUser().subscribe(
+      (res)=>{
+        this.userData = res;
+      }
+    )
   }
+
+  searchQuotation() {
+    const params = {
+      search: this.filterValue.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+    }
+    this.leadService.searchQuotation(params).subscribe({
+      next: (resp: any) => {
+        if (resp.status) {
+          this.quoteItems = resp.data?.items;
+          console.log(this.quoteItems);
+          this.totalLengthOfCollection = resp.data?.totalCount || 0;
+        } else {
+          this.appSettingService.showError('Error searching supplier TDS mapping.');
+          console.error('Error searching supplier TDS mapping', resp.message)
+          this.quoteItems = [];
+          this.totalLengthOfCollection1 = 0;
+        }
+      }, error: (error: any) => {
+        console.error(error);
+      }
+    })
+  }
+
 
   // Method to load the leads
   loadQuotes(): void {
@@ -128,6 +165,17 @@ export class QuotationViewComponent {
       });
   }
 
+  loadUnits(){
+    this.leadService.getAllUnits().subscribe(
+      (resp:any) => {
+        if(resp.status){
+          this.unitList = resp.data;
+        }
+      }
+    )
+  }
+
+
 
   mapPortsToEnquiries(): void {
     if (!this.ports || !this.enquiryItems) return;
@@ -156,9 +204,12 @@ export class QuotationViewComponent {
   }
 
   updatePaginatedData(): void {
-    const startIndex = (this.page - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.quoteItems = this.quoteData.slice(startIndex, endIndex);
+    this.searchQuotation();
+  }
+
+  clearFilterValue(){
+    this.filterValue = '';
+    this.searchQuotation();
   }
 
   createNew() {
@@ -207,6 +258,21 @@ export class QuotationViewComponent {
     this.route.navigate(['crm/quotation/view']);
   }
 
+  getFormattedPort(PortMasterSid){
+    if(!PortMasterSid || PortMasterSid === undefined || this.ports.length === 0 ){
+      return '';
+    }
+    const ourPort = this.ports.find(p=>p.PortMasterSid === PortMasterSid);
+    return `${ourPort.PortName} (${ourPort.PortCode})`
+  }
+
+  findUnitName(UnitMasterSid:number){
+    if(!UnitMasterSid || this.unitList.length === 0){
+      return;
+    }
+    return (this.unitList.find(u => u.UnitMasterSid === UnitMasterSid)).unitName;
+  }
+
   findEnquiryName(EnquiryId: number) {
     if (!EnquiryId) return;
     return (this.enquiryData.find(data => data.EnquiryHeaderSid === EnquiryId)).EnquiryNumber;
@@ -221,7 +287,6 @@ export class QuotationViewComponent {
     });
   }
 
-
   downloadPDF(): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const element = document.getElementById('pdfContent');
@@ -233,15 +298,15 @@ export class QuotationViewComponent {
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
-
+      
       if (!element) return reject('No element found');
-
+      
       html2pdf().from(element).set(opt).outputPdf('blob')
-        .then((blob: Blob) => resolve(blob))
-        .catch((err: any) => reject(err));
+      .then((blob: Blob) => resolve(blob))
+      .catch((err: any) => reject(err));
     });
   }
-
+  
 
   orgEmail: any
   quotationEmail: any
@@ -249,13 +314,48 @@ export class QuotationViewComponent {
   async sendEmail() {
     try {
       this.isLoading = true;
-
+      
       const pdfBlob = await this.downloadPDF();
-
+      
       const formData = new FormData();
-      formData.append('EmailTo', "developer1@dofi.co");
-      formData.append('EmailCC', "developer1@dofi.co");
-      formData.append('Subject', `Quotation No.AE072500089 Date:${new Date()} Jebel Ali(AEJEA) - Singapore(SGSIN)`);
+      const toEmailSet = new Set<string>();
+      
+      if (this.selectedItem?.Email) {
+        toEmailSet.add(this.selectedItem.Email);
+      }
+
+      if (toEmailSet.size === 0 && this.selectedItem?.CustomerBranchSid) {
+        const resp: any = await firstValueFrom(
+          this.leadService.getCustomerBranchEmail(this.selectedItem.CustomerBranchSid)
+        );
+
+        if (resp?.status && resp.data?.Email) {
+          toEmailSet.add(resp.data.Email);
+        }
+      }
+
+      if(toEmailSet.size === 0){
+        this.appSettingService.showError('To Email is missing.')
+        this.isLoading = false;
+        return;
+      }
+
+      const toEmail = Array.from(toEmailSet);
+      toEmail.forEach(email => {
+        if (email) {
+          formData.append("EmailTo[]", email);
+        }
+      });
+
+      const ccEmailSet = new Set<string>([this.userData['userEmail']]);
+      const ccEmail = Array.from(ccEmailSet);
+
+      ccEmail.forEach(email => {
+        if (email) {
+          formData.append("EmailCC[]", email);
+        }
+      });
+      formData.append('Subject', `Quotation No.${this.selectedItem.QuoteNumber} Date:${new Date(this.selectedItem.QuoteDate)} ${this.getFormattedPort(this.selectedItem.quoteRoute[0].POLSid)} - ${this.getFormattedPort(this.selectedItem.quoteRoute[0].PODSid)}`);
       formData.append('Mailbody', `
       <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
         <p>Dear Sir/Madam,</p>
@@ -267,12 +367,12 @@ export class QuotationViewComponent {
           <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
         </p>
         <p>Best Regards,</p>
-        <p>user name</p>
+        <p>${this.userData['userEmail']}</p>
       </div>
     `);
       formData.append('file', pdfBlob, (this.selectedItem?.QuotationName || 'quotation') + '.pdf');
 
-
+      console.log(formData)
       this.leadService.quotationReport(formData).subscribe((resp: any) => {
         this.isLoading = false;
         if (resp?.data) {

@@ -16,6 +16,8 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from '../../settings/email/email-entry/email-entry.component';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 
 
 @Component({
@@ -28,7 +30,8 @@ import { EmailEntryComponent } from '../../settings/email/email-entry/email-entr
     ReactiveFormsModule,
     FeatherModule,
     NgbPaginationModule,
-    NgbDatepickerModule
+    NgbDatepickerModule,
+    NgSelectModule
   ],
   templateUrl: './quotation.component.html',
   styleUrl: './quotation.component.scss',
@@ -56,7 +59,8 @@ export class QuotationComponent implements OnInit {
   packageTypes: any
   ports: any
   filteredPorts : any[]
-  departments: any
+  incoList : any[] = [];
+  departments: any[] = []
   enquiryForm: FormGroup;
   errorMessage: string = '';  // To store any error messages
   btnDisable: boolean = false;
@@ -81,9 +85,16 @@ export class QuotationComponent implements OnInit {
 	today = this.calendar.getToday();
 	todayDate = new Date(this.today.year,this.today.month,this.today.day);
   minQuoteDate :any;
+  minEffDate : any;
   quotationData : any;
   TandCList : any[] = [];
   currentMenuId : number;
+  salesmanList : any[] = [];
+  userData : any;
+  permissions : any[] = [];
+  cusBranchList : any[] = [];
+  currentMenuPermissions = {}
+  cusBranchEmail :any;
   constructor(
     private appService: AppService,
     private appSettingsService: AppSettingsService,
@@ -111,19 +122,25 @@ export class QuotationComponent implements OnInit {
       this.active = quotationData.active;
     }
 
-    console.log(quotationData, 'quotationData')
-    console.log(this.rateEnquirySid,'EnquirySid');
     this.setMinDate();
     this.initializeForm();
     this.isMobile = this.appService.getDevice();
+    this.appSettingsService.getUser().subscribe(
+      (resp) => {
+        this.userData = resp;
+        this.checkPermissions();
+      }
+    );
     forkJoin({
       cargoTypes: this.leadService.getAllCargoTypes().pipe(catchError(err => of([]))),
       carriers: this.leadService.getAllCarrier().pipe(catchError(err => of([]))),
       customers: this.leadService.getAllCustomers().pipe(catchError(err => of([]))),
       departments: this.leadService.getAllDepartments().pipe(catchError(err => of([]))),
       ports: this.leadService.getAllPorts().pipe(catchError(err => of([]))),
+      incos : this.leadService.getAllIncos().pipe(catchError(err => of([]))),
+      salesman : this.leadService.getAllSalesman().pipe(catchError(err => of([]))),
       masters: this.leadService.getAllMasters().pipe(catchError(err => of({ charges: [], currencies: [], units: [] })))
-    }).subscribe(({ cargoTypes, carriers, customers, departments, ports, masters }) => {
+    }).subscribe(({ cargoTypes, carriers, customers, departments, ports,incos,salesman, masters }) => {
       this.packageTypes = cargoTypes || [];
       this.carriers = carriers || [];
       this.customers = customers || []; // Ensure customers is always defined
@@ -132,6 +149,8 @@ export class QuotationComponent implements OnInit {
       this.chargeMaster = masters.charges;
       this.currencyMaster = masters.currencies;
       this.unitMaster = masters.units;
+      this.incoList = incos;
+      this.salesmanList = salesman;
 
       this.activatedRoute.paramMap.subscribe(params => {
         this.QuoteHeaderSid = +params.get('id');
@@ -154,6 +173,27 @@ export class QuotationComponent implements OnInit {
     this.quotationForm.statusChanges.subscribe(() => {
       this.showToasterForErrors();
     });
+  }
+
+  checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    if (currentMenuId && userRole) {
+      this.leadService
+        .getRoleMenuPermissions(currentMenuId, userRole)
+        .subscribe({
+          next: (response) => {
+            this.currentMenuPermissions = response.data.MenuPermissions || {};
+            this.permissions = Object.keys(this.currentMenuPermissions).filter(
+              (key) => this.currentMenuPermissions[key] === 'isTrue'
+            );
+          },
+        });
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
   }
 
 
@@ -231,9 +271,15 @@ export class QuotationComponent implements OnInit {
       EnquirySid : [],
       status: [''], // Default
       // DepartmentMasterSid: [this.rateRequestDepartmentMasterSid ||''],
-      CustomerMasterSid: [''],
-      CustomerAddress: [''],
+      CustomerMasterSid: [null],
+      CustomerAddress: [null],
+      CustomerBranchSid : [''],
       Remarks:[''],
+      IncoTerms : [null],
+      Email : ['',[EmailValidators.multipleEmails()]],
+      SalesmanSid : [null],
+      ClearanceBy : [null],
+      TransportBy : [null],
       // Routes (Multiple)
       routes: this.fb.array([]),
     });
@@ -253,15 +299,18 @@ export class QuotationComponent implements OnInit {
   // Add New Route
   addRoute() {
     const routeForm = this.fb.group({
-      POR: ['', Validators.required],
-      POL: ['', Validators.required],
-      POD: ['', Validators.required],
-      FPOD: ['', Validators.required],
+      POR: [null, Validators.required],
+      POL: [null, Validators.required],
+      POD: [null, Validators.required],
+      FPOD: [null, Validators.required],
       Carrier: ['', Validators.required],
-      CarrierMasterSid: [''],
-      Segment: ['', Validators.required],
+      CarrierMasterSid: [null],
+      POLFreeDays : [,[Validators.min(0),Validators.max(99)]],
+      PODFreeDays : [,[Validators.min(0),Validators.max(99)]],
+      TransitDays : [,[Validators.min(0),Validators.max(999)]],
+      Segment: [null, Validators.required],
       segmentType: ['LCL'],
-      cargoType: ['', Validators.required],
+      cargoType: [null, Validators.required],
       DepartmentMasterSid: [''],
       effDate: ['', Validators.required],
       expDate: ['', Validators.required],
@@ -286,15 +335,17 @@ export class QuotationComponent implements OnInit {
 
   // Add New Cargo Row to a Route
   addCargo(routeIndex: number) {
+    const isFCL = this.routes.at(routeIndex).get('segmentType')?.value === 'FCL';
     const cargoForm = this.fb.group({
-      charge: ['', Validators.required],
-      unit: ['', Validators.required],
-      currency: ['', Validators.required],
-      twentyft: ['', Validators.required],
-      fortyft: ['', Validators.required],
+      charge: [null, Validators.required],
+      Qty : ['',[Validators.required,Validators.min(1),Validators.max(9999)]],
+      unit: [null, Validators.required],
+      currency: [null, Validators.required],
+      // twentyft: ['', isFCL ? Validators.required : []],
+      // fortyft: ['', isFCL ? Validators.required : []],
       perUnit: ['', Validators.required],
-      costUnit: ['', Validators.required],
-      costCurrency: ['', Validators.required],
+      costUnit: [null, Validators.required],
+      costCurrency: [null, Validators.required],
       costPerUnit: ['', Validators.required]
     });
 
@@ -328,13 +379,11 @@ export class QuotationComponent implements OnInit {
 
   setMinDate() {
     const today = new Date();
-    // Convert to YYYY-MM-DD (required for [min] attribute)
-    const yyyy = today.getFullYear();
-    const mm = (today.getMonth() + 1).toString().padStart(2, '0');
-    const dd = today.getDate().toString().padStart(2, '0');
-
-    this.minExpDate = `${yyyy}-${mm}-${dd}`; // For input restriction
-    this.formattedExpDate = `${mm}/${dd}/${yyyy}`; // For display in MM/DD/YYYY
+    if(this.isEditMode){
+      this.minEffDate = undefined
+    } else {
+      this.minEffDate = this.toNgbDateStruct(this.todayDate)
+    }
   }
 
 
@@ -387,29 +436,38 @@ export class QuotationComponent implements OnInit {
     // Find the department based on DepartmentMasterSid
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectCustomer = this.customers.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid)
+    this.selectedCustomerName = selectCustomer.CustomerName;
     if (selectedDept) {
       this.selectedDepartment = selectedDept;
       this.selectedFCLLCL = selectedDept.departmentName.includes('FCL') ? 'FCL' : 'LCL';
     }
     this.getEnquiryName(response.EnquirySid);
-    console.log('Enquiry Number',this.rateEnquiryNumber)
     // Patch header fields
     this.quotationForm.patchValue({
-      customerName: selectCustomer.CustomerMasterSid,
-      CustomerAddress: selectCustomer.CustomerAddress1,
+      CustomerMasterSid: selectCustomer.CustomerMasterSid,
+      CustomerName : selectCustomer.CustomerName,
+      CustomerAddress: response.CustomerAddress,
+      Email : response.Email,
+      IncoTerms : response.IncoTerms || null,
+      ClearanceBy : response.ClearanceBy,
+      TransportBy : response.TransportBy,
       EnquirySid : response.EnquirySid,
+      SalesmanSid : response.SalesmanSid,
+      CustomerBranchSid : response.CustomerBranchSid,
+      Remarks : response.Remarks,
       quoteNo: response.QuoteNumber,
       quoteDate: new Date(response.QuoteDate),
       Segment: response.DepartmentMasterSid,
-      status: response.status === "A" ? "Active" : "Suspend"
+      status: response.status === "A" ? "Active" : "Suspended"
     });
+    this.getCustomerBranches(selectCustomer.CustomerMasterSid);
     this.quotationForm.get('Segment')?.disable();
     // Get the FormArray for routes and clear existing data
     const routesArray = this.quotationForm.get('routes') as FormArray;
     routesArray.clear();
 
     // Loop through enquiryRoute and add routes dynamically
-    response.quoteRoute.forEach(route => {
+    response.quoteRoute.forEach((route,index) => {
       const routeFormGroup = this.fb.group({
         QuoteRouteSid: [route.QuoteRouteSid || null], // Ensure Route ID is captured
         POR: [route.PORSid, Validators.required],
@@ -425,7 +483,10 @@ export class QuotationComponent implements OnInit {
         transit: [route.TransitDays, Validators.required],
         fortyft: [route.fortyft],
         twentyft: [route.twentyft],
-        routeStatus: route.status === "A" ? "Active" : "Suspend",
+        POLFreeDays: [route.POLFreeDays, [Validators.min(0), Validators.max(99)]],
+        PODFreeDays: [route.PODFreeDays, [Validators.min(0), Validators.max(99)]],
+        TransitDays: [route.TransitDays, [Validators.min(0), Validators.max(999)]],
+        routeStatus: route.status === "A" ? "Active" : "Suspended",
         cargo: this.fb.array([]) // Initialize cargo array
       });
 
@@ -439,6 +500,7 @@ export class QuotationComponent implements OnInit {
         cargoArray.push(this.fb.group({
           QuoteChargeSid: [cargo.QuoteChargeSid || null], // Ensure Cargo ID is captured
           charge: [cargo.ChargeDisplayName, Validators.required],
+          Qty : [cargo.Qty,[Validators.required,Validators.min(1),Validators.max(9999)]],
           unit: [selectedUnit ? selectedUnit.UnitMasterSid : '', Validators.required],
           currency: [selectedCurrency ? selectedCurrency.CurrencyMasterSid : '', Validators.required],
           perUnit: [cargo.perUnit, Validators.required],
@@ -450,43 +512,57 @@ export class QuotationComponent implements OnInit {
 
       // Push the route to the FormArray
       routesArray.push(routeFormGroup);
+
+      const department = this.departments.find(d => d.DepartmentMasterSid === route.DepartmentMasterSid)
+      this.onSegmentChange(department,index);
     });
   }
 
 
 
-  onSegmentChange(event: Event, routeIndex: number) {
-
-    const selectedDepartmentId = Number((event.target as HTMLSelectElement).value);
-
+  onSegmentChange(event: any, routeIndex: number) {
+    if(!event || event === null || event === undefined || !this.departments || this.departments === undefined){
+      const routeForm = this.routes.at(routeIndex) as FormGroup;
+      routeForm.get('DepartmentMasterSid').reset();
+      routeForm.get('POR').reset();
+      routeForm.get('POL').reset();
+      routeForm.get('POD').reset();
+      routeForm.get('FPOD').reset();
+      routeForm.get('segmentType')?.setValue('LCL');
+      routeForm.get('twentyft')?.clearValidators();
+      routeForm.get('fortyft')?.clearValidators();
+      routeForm.get('twentyft')?.updateValueAndValidity();
+      routeForm.get('fortyft')?.updateValueAndValidity();
+      return;
+    }
+    
+    const selectedDepartmentId = event.DepartmentMasterSid;
+    
     // Get the specific route form group
     const routeForm = this.routes.at(routeIndex) as FormGroup;
     routeForm.get('DepartmentMasterSid')?.setValue(selectedDepartmentId);
-
-    // Once it is initialized and then made a segment change. The Value of previously selected segment will be still there.
-    // So remove it
-    routeForm.get('POR').reset();
-    routeForm.get('POL').reset();
-    routeForm.get('POD').reset();
-    routeForm.get('FPOD').reset();
-
-    const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === selectedDepartmentId);
+    
+    
+    const selectedDept =event;
     const selectedFCLLCL = selectedDept ? selectedDept.FCLLCL : 'LCL';
-
+    
     // **Set segmentType (FCL or LCL) in the form group**
     routeForm.get('segmentType')?.setValue(selectedFCLLCL);
-
+    
     // Update field visibility based on segment
-    if (selectedFCLLCL === 'LCL') {
-      routeForm.get('twentyft')?.clearValidators();
-      routeForm.get('fortyft')?.clearValidators();
-    } else if (selectedFCLLCL === 'FCL') {
-      routeForm.get('twentyft')?.setValidators([Validators.required]);
-      routeForm.get('fortyft')?.setValidators([Validators.required]);
-    }
+    const cargoArray = this.routeCargo(routeIndex);
+    cargoArray.controls.forEach((cargoForm: FormGroup) => {
+      if (selectedFCLLCL === 'LCL') {
+        cargoForm.get('twentyft')?.clearValidators();
+        cargoForm.get('fortyft')?.clearValidators();
+      } else {
+        cargoForm.get('twentyft')?.setValidators([Validators.required]);
+        cargoForm.get('fortyft')?.setValidators([Validators.required]);
+      }
+      cargoForm.get('twentyft')?.updateValueAndValidity();
+      cargoForm.get('fortyft')?.updateValueAndValidity();
+    });
 
-    routeForm.get('twentyft')?.updateValueAndValidity();
-    routeForm.get('fortyft')?.updateValueAndValidity();
 
 
 
@@ -501,20 +577,62 @@ export class QuotationComponent implements OnInit {
 
 
 
-  onCustomerChange(event: Event): void {
-    const selectedCustomerId = Number((event.target as HTMLSelectElement).value);
+  onCustomerChange(event: any): void {
+    if (!event || event === null || event === undefined) {
+      this.selectedCustomerName = '';
+      this.selectCustomerAddress = '';
+      this.cusBranchList = [];
+      this.quotationForm.get('customerName').setValue('')
+      this.quotationForm.get('CustomerAddress').setValue(null);
+      this.quotationForm.get('Email').setValue('');
+      return;
+    }
+    const selectedCustomerId = event.CustomerMasterSid;
+    this.quotationForm.get('customerName').setValue('');
+    this.quotationForm.get('CustomerAddress').setValue(null);
     this.quotationForm.get('CustomerMasterSid')?.setValue(selectedCustomerId);
+    this.quotationForm.get('Email').setValue('');
 
-    const selectedCustomer = this.customers.find(cust => cust.CustomerMasterSid === selectedCustomerId);
-    console.log(selectedCustomer)
+    const selectedCustomer = event;
     this.selectedCustomerName = selectedCustomer?.CustomerName; // Store customer name if needed
     this.selectCustomerAddress = selectedCustomer?.CustomerAddress1
+    this.quotationForm.get('customerName').setValue(this.selectedCustomerName)
+    // this.quotationForm.get('CustomerAddress').setValue(this.selectCustomerAddress)
+    this.getCustomerBranches(selectedCustomerId);    
   }
 
-  onCarrierChange(event: Event, routeIndex: number): void {
+  getCustomerBranches(CustomerMasterSid:number){
+    this.leadService.getCustomerBranchByCustomerId(CustomerMasterSid).subscribe(
+      (resp:any) => {
+        if(resp.status){
+          this.cusBranchList = resp.data;
+        } else {
+          this.appSettingsService.showError('Error loading customer branches.')
+          console.error(resp.message);
+        }
+      }
+    )
+  }
+
+  onCustomerAddressChange(event){
+    if(event === null || event === undefined || !event){
+      this.quotationForm.get('CustomerBranchSid').setValue(null);
+      this.quotationForm.get('Email').setValue('');
+      return;
+    }
+    this.quotationForm.get('CustomerBranchSid').setValue(event.CustomerBranchSid);
+    this.quotationForm.get('Email').setValue(event.Email);
+  }
+
+  onCarrierChange(event: any, routeIndex: number): void {
+    if(!event || event === null || event === undefined){
+      const routeForm = this.routes.at(routeIndex) as FormGroup;
+      routeForm.get('CarrierMasterSid')?.setValue(null);
+      routeForm.get('Carrier')?.setValue('');
+    }
     const routeForm = this.routes.at(routeIndex) as FormGroup;
-    const selectedCustomerId = Number((event.target as HTMLSelectElement).value);
-    const selectedCustomer = this.carriers.find(cust => cust.CustomerMasterSid === selectedCustomerId);
+    const selectedCustomerId = event.CustomerMasterSid;
+    const selectedCustomer = event;
 
     if (selectedCustomer) {
       routeForm.get('CarrierMasterSid')?.setValue(selectedCustomerId);
@@ -549,12 +667,12 @@ export class QuotationComponent implements OnInit {
 
   onSubmit() {
     this.btnDisable = true;
-    console.log(this.quotationForm.value)
     // return false;
     if (this.QuoteHeaderSid) {
       const updatePayload = {
         ...this.quotationForm.value,
         CustomerMasterSid: this.quotationForm.get('CustomerMasterSid')?.value,
+        CustomerName: this.selectedCustomerName,
         Segment: this.selectedDepartment,
         QuoteHeaderSid: this.QuoteHeaderSid,
         status: this.quotationForm.get('status')?.value,
@@ -569,7 +687,6 @@ export class QuotationComponent implements OnInit {
       };
       this.leadService.updateQuoteById(this.QuoteHeaderSid, updatePayload).subscribe(
         resp => {
-          console.log('API Response:', resp); // Debugging step
 
           if (resp) {
             // this.appSettingsService.showSuccess("Enquiry Updated SuccessFully");
@@ -592,7 +709,6 @@ export class QuotationComponent implements OnInit {
         Segment: this.selectedDepartment, // Ensure the segment name is included
         CustomerAddress: this.selectCustomerAddress
       }
-      console.log(createPayload,'createPayload')
       this.leadService.createQuotation(createPayload).subscribe(
         resp => {
           if (resp.status) {
