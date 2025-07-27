@@ -4,6 +4,7 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-booking-list',
@@ -12,6 +13,7 @@ import { FormsModule } from '@angular/forms';
     CommonModule,
     NgbDropdownModule,
     FormsModule,
+    FavoriteStarComponent
   ],
   templateUrl: './booking-list.component.html',
   styleUrl: './booking-list.component.scss'
@@ -20,8 +22,10 @@ export class BookingListComponent {
 
   
   searchValue: any
+  filterValue : string = ''
   bookingList: any
   departmentList: any
+  searchPerformed : boolean;
   constructor(private router: Router ) { }
 
   // ngOnInit() {
@@ -145,6 +149,31 @@ getDepartmentName(id: number): string {
 
 trackByBookingId(index: number, item: any) {
   return item.BookingId;
+}
+
+searchBooking(){
+
+}
+
+resetPage(){
+  
+}
+
+report(){
+
+}
+
+clearFilterValue(){
+  
+}
+
+
+goBack(){
+  history.back()
+}
+
+goToCreateBooking(){
+  this.router.navigate(['crm/booking/entry'])
 }
 
 

@@ -4,7 +4,7 @@
      <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                <h4 class="page-title mb-0">Qauotation</h4>
+                <h4 class="page-title mb-0">Quotation</h4>
                 @if(isEditMode){
                     <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
                          <i class="fas fs-6 fa-info-circle"></i>
@@ -37,7 +37,7 @@
         <div class="col-12">
             <!-- #region Top section -->
             <div class="card">
-                <div class="card-body">
+                <div class="card-body pb-0">
                     <div class="row">
                         <div class="col-md-4">
                             <div class="custom-form-group">
@@ -91,13 +91,9 @@
                         <div class="col-md-4">
                            <div class=" custom-form-group custom-form-group-select">
                                
-                                <select formControlName="customerName" (change)="onCustomerChange($event)"
-                                    class="form-select">
-                                    <option value="" disabled>Select Customer</option>
-                                    <option *ngFor="let item of customers" [value]="item.CustomerMasterSid">
-                                        {{ item.CustomerName }}
-                                    </option>
-                                </select>
+                                <ng-select formControlName="CustomerMasterSid" (change)="onCustomerChange($event)"
+                                    class="ng-select" [items]="customers" bindLabel="CustomerName" bindValue="CustomerMasterSid" placeholder="Select Customer">
+                                </ng-select>
                                  <label class="input-label">Customer</label>
                                 <div *ngIf="f['customerName'].touched && f['customerName'].invalid"
                                     class="error-message">
@@ -105,13 +101,26 @@
                                 </div>
                             </div>
                         </div>
-                           <aside class="col-md-4">
+                        <div class="col-md-4">
+                           <div class=" custom-form-group custom-form-group-select">
+                               
+                                <ng-select formControlName="CustomerAddress" (change)="onCustomerAddressChange($event)"
+                                    class="ng-select" [items]="cusBranchList" bindLabel="Address" bindValue="Address" placeholder="Select Customer Address">
+                                </ng-select>
+                                 <label class="input-label">Customer Address</label>
+                                <div *ngIf="f['CustomerAddress'].touched && f['CustomerAddress'].invalid"
+                                    class="error-message">
+                                    Address is required.
+                                </div>
+                            </div>
+                        </div>
+                           <!-- <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder=""
-                                class="custom-input-field sm" formControlName="">
+                                class="custom-input-field sm" formControlName="CustomerAddress">
                                     <label for="text-input" class="input-label">Customer Address  <span class="text-danger"></span></label>
                             </div>
-                        </aside>
+                        </aside> -->
                          <div class="col-md-4">
                           <div class="custom-form-group">
                               <input type="text" id="text-input" class="custom-input-field sm" id="" formControlName="Email"    placeholder="">
@@ -119,21 +128,43 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                                <div class="custom-form-group">
-                                    <input type="text" id="text-input"  class="custom-input-field sm"  id="" formControlName="Inco"  placeholder="">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select class="ng-select" formControlName="IncoTerms" [items]="incoList" bindLabel="IncoName" bindValue="IncoName" placeholder="Select Inco"></ng-select>
+                                    <!-- <input type="text" id="text-input"  class="custom-input-field sm"  id="" formControlName="IncoTerms"  placeholder=""> -->
                                     <label for="text-input" class="input-label">Inco </label>
                             </div>
                         </div>
                          <div class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input"  class="custom-input-field sm" id="" formControlName="Clearanceby"  placeholder="">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" formControlName="ClearanceBy" placeholder="Select Clearance by">
+                                    <ng-option value="Own">Own</ng-option>
+                                    <ng-option value="CHA">CHA</ng-option>
+                                    <ng-option value="By us">By us</ng-option>
+                                </ng-select>
                                 <label for="text-input" class="input-label">Clearance By </label>
                             </div>
                         </div>
                           <div class="col-md-4">
-                           <div class="custom-form-group">
-                               <input type="text"  id="text-input" class="custom-input-field sm" id="" formControlName="Transportby"  placeholder="">
+                           <div class="custom-form-group custom-form-group-select">
+                               <ng-select class="ng-select" formControlName="TransportBy" placeholder="Select Transport by">
+                                    <ng-option value="Own">Own</ng-option>
+                                    <ng-option value="CHA">CHA</ng-option>
+                                    <ng-option value="By us">By us</ng-option>
+                                </ng-select>
                                <label for="text-input" class="input-label">Transport By </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                           <div class=" custom-form-group custom-form-group-select">
+                               
+                                <ng-select formControlName="SalesmanSid"
+                                    class="ng-select" [items]="salesmanList" bindLabel="userName" bindValue="CustomerSalesSid" placeholder="Select Salesman">
+                                </ng-select>
+                                 <label class="input-label">Salesman</label>
+                                <div *ngIf="f['SalesmanSid']?.touched && f['SalesmanSid']?.invalid"
+                                    class="error-message">
+                                    Salesman is required.
+                                </div>
                             </div>
                         </div>
                            <aside class="col-md-4">
@@ -160,14 +191,13 @@
                                     </div>
                                 </div> -->
                         @if(QuoteHeaderSid){
-                        <div class="col-12 col-md-3">
-                            <div class="mb-2">
-                                <label for="status" class="form-label">Status</label>
-                                <select formControlName="status" class="form-select">
-                                   
-                                    <option *ngFor="let option of statusList" [value]="option">{{ option }}
-                                    </option>
-                                </select>
+                        <div class="col-12 col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="status" class="ng-select">
+                                    <ng-option *ngFor="let option of statusList" [value]="option">{{ option }}
+                                    </ng-option>
+                                </ng-select>
+                                <label for="status" class="input-label">Status</label>
                                 <small *ngIf="f['status'].touched && f['status'].invalid" class="text-danger">
                                     Status is required.
                                 </small>
@@ -218,13 +248,9 @@
                             <div class="row mb-2">
                                 <div class="col-6 col-md-3">
                                    <div class="custom-form-group custom-form-group-select">
-                                       <select formControlName="Segment" class="form-select"
-                                       (change)="onSegmentChange($event,routeIndex)">
-                                       <option value="" disabled>Select Department</option>
-                                       <option *ngFor="let item of departments" [value]="item.DepartmentMasterSid">
-                                           {{ item.departmentName }}
-                                        </option>
-                                    </select>
+                                       <ng-select formControlName="Segment" class="ng-select"
+                                       (change)="onSegmentChange($event,routeIndex)" [items]="departments" bindLabel="departmentName" bindValue="DepartmentMasterSid" placeholder="Select Department">
+                                    </ng-select>
                                     <label for="Segment" class="input-label">Dept Name</label>
                                         <!-- <small *ngIf="f['Segment'].touched && f['Segment'].invalid" class="text-danger">
                                                     Segment is required.
@@ -234,71 +260,62 @@
 
                                 <div class="col-6 col-md-3">
                                     <div class="custom-form-group custom-form-group-select">
-                                        <select formControlName="CarrierMasterSid" class="form-select"
-                                        (change)="onCarrierChange($event,routeIndex)">
-                                        <option value="" disabled>Select Carrier</option>
-                                        <option *ngFor="let item of carriers" [value]="item.CustomerMasterSid">
-                                            {{ item.CustomerName }}
-                                        </option>
-                                    </select>
+                                        <ng-select formControlName="CarrierMasterSid" class="ng-select"
+                                        (change)="onCarrierChange($event,routeIndex)" [items]="carriers" bindLabel="CustomerName" bindValue="CustomerMasterSid" placeholder="Select Carrier">
+                                    </ng-select>
                                     <label for="CarrierMasterSid" class="input-label">Carrier </label>
                                     </div>
                                 </div>
                                 @if(routes.controls[routeIndex].get('segmentType')?.value === 'LCL'){
                                 <div class="col-6 col-md-3">
                                     <div class="custom-form-group custom-form-group-select">
-                                        <select formControlName="cargoType" class="form-select">
-                                            <option value="" disabled>Select Cargo Type</option>
-                                            <option *ngFor="let item of packageTypes" [value]="item.PackageName">
+                                        <ng-select formControlName="cargoType" class="ng-select" placeholder="Select Cargo Type">
+                                            <ng-option *ngFor="let item of packageTypes" [value]="item.PackageName">
                                                 {{ item.PackageName }}
-                                            </option>
-                                        </select>
+                                            </ng-option>
+                                        </ng-select>
                                         <label for="cargoType" class="input-label">Cargo Type </label>
                                     </div>
                                 </div>
                                 }
                                 <div class="col-6 col-md-3">
                                     <div class="custom-form-group custom-form-group-select">
-                                        <select formControlName="POR" class="form-select">
-                                            <option value="" disabled>Select POR</option>
-                                            <option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
-                                                {{ item.PortCode }}
-                                            </option>
-                                        </select>
+                                        <ng-select formControlName="POR" class="ng-select" placeholder="Select POR">
+                                            <ng-option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
+                                                {{item.PortName}} ({{ item.PortCode }})
+                                            </ng-option>
+                                        </ng-select>
                                         <label class="input-label">POR</label>
                                     </div>
                                 </div>
                                 <div class="col-6 col-md-3">
                                     <div class="custom-form-group custom-form-group-select">
-                                        <select formControlName="POL" class="form-select">
-                                            <option value="" disabled>Select POL</option>
-                                            <option *ngFor="let item of getFilteredPOLPorts(routeIndex)" [value]="item.PortMasterSid">
-                                                {{ item.PortCode }}
-                                            </option>
-                                        </select>
+                                        <ng-select formControlName="POL" class="ng-select" placeholder="Select POL">
+                                            <ng-option *ngFor="let item of getFilteredPOLPorts(routeIndex)" [value]="item.PortMasterSid">
+                                                {{item.PortName}} ({{ item.PortCode }})
+                                            </ng-option>
+                                        </ng-select>
                                         <label class="input-label">POL <span class="text-danger">*</span></label>
 
                                     </div>
                                 </div>
                                 <div class="col-6 col-md-3">
                                      <div class="custom-form-group custom-form-group-select">
-                                         <select formControlName="POD" class="form-select">
-                                             <option value="" disabled>Select POD</option>
-                                             <option *ngFor="let item of getFilteredPODPorts(routeIndex)" [value]="item.PortMasterSid">
-                                                 {{ item.PortCode }}
-                                                </option>
-                                            </select>
+                                         <ng-select formControlName="POD" class="ng-select" placeholder="Select POD">
+                                             <ng-option *ngFor="let item of getFilteredPODPorts(routeIndex)" [value]="item.PortMasterSid">
+                                                 {{item.PortName}} ({{ item.PortCode }})
+                                                </ng-option>
+                                            </ng-select>
                                             <label class="input-label">POD <span class="text-danger">*</span></label>
                                     </div>
                                 </div>
                                 <div class="col-6 col-md-3">
                                     <div class="custom-form-group custom-form-group-select">
-                                        <select formControlName="FPOD" class="form-select">
-                                            <option value="" disabled>Select FPOD</option>
-                                            <option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
-                                                {{ item.PortCode }}
-                                            </option>
-                                        </select>
+                                        <ng-select formControlName="FPOD" class="ng-select" placeholder="Select FPOD">
+                                            <ng-option *ngFor="let item of filteredPorts" [value]="item.PortMasterSid">
+                                                {{item.PortName}} ({{ item.PortCode }})
+                                            </ng-option>
+                                        </ng-select>
                                         <label class="input-label">FPOD</label>
                                     </div>
                                 </div>
@@ -319,8 +336,8 @@
                             
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
-                                (click)="d2.toggle()" formControlName="effDate" readonly 
-                                [footerTemplate]="footerTemplateEff" [maxDate]="toNgbDateStruct(routes.controls.at(routeIndex).get('expDate').value)"/>
+                                (click)="d2.toggle()" formControlName="effDate" (keydown.arrowDown)="d2.open()" readonly 
+                                [footerTemplate]="footerTemplateEff" [minDate]="minEffDate" [maxDate]="toNgbDateStruct(routes.controls.at(routeIndex).get('expDate').value)"/>
                                 <button class="btn btn-info text-white" (click)="d2.toggle()" type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label for="effectiveDate" class="input-label">Eff. Date</label>
@@ -351,7 +368,8 @@
                            <div class="custom-form-group custom-form-group-select">
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d3="ngbDatepicker"
-                                        (click)="d3.toggle()" formControlName="expDate" readonly 
+                                        (click)="d3.toggle()" 
+                                        (keydown.arrowDown)="d3.toggle()" formControlName="expDate" readonly 
                                         [footerTemplate]="footerTemplateExp" [minDate]="toNgbDateStruct(routes.controls.at(routeIndex).get('effDate').value)" />
                                     <button class="btn btn-info text-white" (click)="d3.toggle()" type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                                 </div>
@@ -380,12 +398,47 @@
                                             [min]="minExpDate" />
                                     </div>
                                 </div> -->
+                                @if(routes.controls[routeIndex].get('segmentType')?.value === 'FCL' || routes.controls[routeIndex].get('segmentType')?.value === 'LCL'){
+                                <div class="col-6 col-md-3">
+                                    <div class="custom-form-group">
+                                        <input type="number" min="0" class="custom-input-field sm" id="POLFreeDays"
+                                        formControlName="POLFreeDays" placeholder="">
+                                        <label for="POLFreeDays" class="input-label">POL Free Days </label>
+                                        <!-- <small *ngIf="f['twentyft'].touched && f['twentyft'].invalid"
+                                                            class="text-danger">
+                                                            20ft is required.
+                                                        </small> -->
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="custom-form-group">
+                                        <input type="number" min="0" class="custom-input-field sm" id="PODFreeDays"
+                                        formControlName="PODFreeDays" placeholder="">
+                                        <label for="PODFreeDays" class="input-label">POD Free Days </label>
+                                        <!-- <small *ngIf="f['twentyft'].touched && f['twentyft'].invalid"
+                                                            class="text-danger">
+                                                            20ft is required.
+                                                        </small> -->
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="custom-form-group">
+                                        <input type="number" min="0" class="custom-input-field sm" id="TransitDays"
+                                        formControlName="TransitDays" placeholder="">
+                                        <label for="TransitDays" class="input-label">Transit Days </label>
+                                        <!-- <small *ngIf="f['twentyft'].touched && f['twentyft'].invalid"
+                                                            class="text-danger">
+                                                            20ft is required.
+                                                        </small> -->
+                                    </div>
+                                </div>
+                                }
                                 @if(routes.controls[routeIndex].get('segmentType')?.value === 'FCL'){
                                 <div class="col-6 col-md-3">
-                                    <div class="mb-1">
-                                        <label for="twentyft" class="form-label">20ft: </label>
-                                        <input type="number" min="0" class="form-control" id="twentyft"
-                                            formControlName="twentyft">
+                                    <div class="custom-form-group">
+                                        <input type="number" min="0" class="custom-input-field sm" id="twentyft"
+                                        formControlName="twentyft" placeholder="">
+                                        <label for="twentyft" class="input-label">20ft </label>
                                         <!-- <small *ngIf="f['twentyft'].touched && f['twentyft'].invalid"
                                                             class="text-danger">
                                                             20ft is required.
@@ -394,39 +447,38 @@
                                 </div>
 
                                 <div class="col-6 col-md-3">
-                                    <div class="mb-1">
-                                        <label for="fortyft" class="form-label">40ft: </label>
-                                        <input type="number" min="0" class="form-control" id="fortyft"
-                                            formControlName="fortyft">
+                                    <div class="custom-form-group">
+                                        <input type="number" min="0" class="custom-input-field sm" id="fortyft"
+                                        formControlName="fortyft" placeholder="">
+                                        <label for="fortyft" class="input-label">40ft </label>
                                         <!-- <small *ngIf="f['fortyft'].touched && f['fortyft'].invalid" class="text-danger">
                                                             40ft is required.
                                                         </small> -->
                                     </div>
                                 </div>
 
-                                <div class="col-6 col-md-3">
-                                    <div class="mb-1">
-                                        <label for="transit" class="form-label">Transit </label>
+                                <!-- <div class="col-6 col-md-3">
+                                    <div class="custom-form-group">
+                                        <label for="transit" class="input-label">Transit </label>
                                         <input type="number" min="0" class="form-control" id="transit"
                                             formControlName="transit">
-                                        <!-- <small *ngIf="f['fortyft'].touched && f['fortyft'].invalid" class="text-danger">
+                                        <small *ngIf="f['fortyft'].touched && f['fortyft'].invalid" class="text-danger">
                                                             40ft is required.
-                                                        </small> -->
+                                                        </small>
                                     </div>
-                                </div>
+                                </div> -->
                                 }
 
 
                                 @if(QuoteHeaderSid){
                                 <div class="col-12 col-md-3">
-                                    <div class="mb-2">
-                                        <label for="routeStatus" class="form-label">Status</label>
-                                        <select formControlName="routeStatus" class="form-select">
-                                            <option value="" disabled>Select Status</option>
-                                            <option *ngFor="let option of statusList" [value]="option">{{
+                                    <div class="custom-form-group custom-form-group-select">
+                                        <ng-select formControlName="routeStatus" class="ng-select">
+                                            <ng-option *ngFor="let option of statusList" [value]="option">{{
                                                 option }}
-                                            </option>
-                                        </select>
+                                            </ng-option>
+                                        </ng-select>
+                                        <label for="routeStatus" class="input-label">Status</label>
                                     </div>
                                 </div>
                                 }
@@ -450,6 +502,10 @@
                                                         <td class="bg-transparent text-light" rowspan="2"
                                                             [ngClass]="{ 'dofi-min-w-120 dofi-max-w-120': isMobile, '': !isMobile }">
                                                             <label for="" class="form-label mb-0">Charge<span class="text-danger">*</span></label>
+                                                        </td>
+                                                        <td class="bg-transparent text-light" rowspan="2"
+                                                            [ngClass]="{ 'dofi-min-w-120 dofi-max-w-120': isMobile, '': !isMobile }">
+                                                            <label for="" class="form-label mb-0">Qty<span class="text-danger">*</span></label>
                                                         </td>
                                                         <td class="bg-transparent text-light text-center" colspan="3"
                                                             [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
@@ -492,48 +548,47 @@
                                                     <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
                                                         [formGroupName]="cargoIndex">
                                                         <td>
-                                                            <select formControlName="charge" class="form-select">
-                                                                <option value="" disabled>Select Charge</option>
-                                                                <option *ngFor="let item of chargeMaster" [value]="item.chargeName">
+                                                            <ng-select formControlName="charge" class="ng-select" placeholder="Select Charge" appendTo="body">
+                                                                <ng-option *ngFor="let item of chargeMaster" [value]="item.chargeName">
                                                                     {{ item.chargeCode }}
-                                                                </option>
-                                                            </select>
+                                                                </ng-option>
+                                                            </ng-select>
                                                         </td>
                                                         <td>
-                                                            <select formControlName="unit" class="form-select">
-                                                                <option value="" disabled>Select Unit</option>
-                                                                <option *ngFor="let item of unitMaster" [value]="item.UnitMasterSid">
+                                                            <input type="number" min="0" formControlName="Qty" class="form-control">
+                                                        </td>
+                                                        <td>
+                                                            <ng-select formControlName="unit" class="ng-select" placeholder="Select Unit" appendTo="body">
+                                                                <ng-option *ngFor="let item of unitMaster" [value]="item.UnitMasterSid">
                                                                     {{ item.unitCode }}
-                                                                </option>
-                                                            </select>
+                                                                </ng-option>
+                                                            </ng-select>
                                                         </td>
                                                         <td>
-                                                            <select formControlName="currency" class="form-select">
-                                                                <option value="" disabled>Select Currency</option>
-                                                                <option *ngFor="let item of currencyMaster" [value]="item.CurrencyMasterSid">
+                                                            <ng-select formControlName="currency" class="ng-select" placeholder="Select Currency" appendTo="body">
+                                                                <ng-option value="" disabled>Select Currency</ng-option>
+                                                                <ng-option *ngFor="let item of currencyMaster" [value]="item.CurrencyMasterSid">
                                                                     {{ item.currencyCode }}
-                                                                </option>
-                                                            </select>
+                                                                </ng-option>
+                                                            </ng-select>
                                                         </td>
                                                         <td>
                                                             <input type="number" min="0" formControlName="perUnit" class="form-control">
                                                         </td>
                                                         <td>
-                                                            <select formControlName="costUnit" class="form-select">
-                                                                <option value="" disabled>Select Unit</option>
-                                                                <option *ngFor="let item of unitMaster" [value]="item.UnitMasterSid">
+                                                            <ng-select formControlName="costUnit" class="ng-select" placeholder="Select Unit" appendTo="body">
+                                                                <ng-option *ngFor="let item of unitMaster" [value]="item.unitCode">
                                                                     {{ item.unitCode }}
-                                                                </option>
-                                                            </select>
+                                                                </ng-option>
+                                                            </ng-select>
                                                             <!-- <input type="text" formControlName="costUnit" class="form-control"> -->
                                                         </td>
                                                         <td>
-                                                            <select formControlName="currency" class="form-select">
-                                                                <option value="" disabled>Select Currency</option>
-                                                                <option *ngFor="let item of currencyMaster" [value]="item.CurrencyMasterSid">
+                                                            <ng-select formControlName="costCurrency" class="ng-select" placeholder="Select Currency" appendTo="body">
+                                                                <ng-option *ngFor="let item of currencyMaster" [value]="item.currencyCode">
                                                                     {{ item.currencyCode }}
-                                                                </option>
-                                                            </select>
+                                                                </ng-option>
+                                                            </ng-select>
                                                             <!-- <input type="text" formControlName="costCurrency" class="form-control"> -->
                                                         </td>
                                                         <td>
@@ -605,37 +660,43 @@
         </div>
 
 
-        <!-- #region Quote btn -->
-        <div class="d-flex align-items-center">
-            <!-- <button class="btn btn-sm btn-outline-secondary waves-effect waves-light btn-min-width me-1" type="button"
-                (click)="goBack()">
-                <i-feather class="feather-sm me-1" name="arrow-left"></i-feather> Back
-            </button> -->
-            <div class="me-1" *ngIf="isEditMode">
-                <button class="btn btn-outline-info btn-sm" (click)="openEDoc()">
-                    <i class="fas fa-file-alt me-1"></i> e-Doc </button>
+    @if(isEditMode && permissions.length > 0){
+    <div class="col-12 mt-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
+                        <!-- eDoc Button -->
+    
+                        @if(hasPermission('Edoc')) {
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
+                            <i class="fas fa-file-alt me-1"></i> e-Doc
+                        </button>
+                        }
+                        @if(hasPermission('Terms and Condition')) {
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openTandC()">
+                            <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                        </button>
+                        }
+                        @if(hasPermission('Authority')) {
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
+                            <i class="fas fa-shield-alt me-1"></i> Authorize
+                        </button>
+                        }
+    
+                        @if(hasPermission('Email')) {
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto"
+                            (click)="openEmail()">
+                            <i class="fas fa-envelope me-1"></i> Email
+                        </button>
+                        }
+    
+                    </div>
+                </div>
             </div>
-            <div class="me-1" *ngIf="isEditMode">
-                <button class="btn btn-outline-info btn-sm" (click)="openTandC()">
-                    <i class="fas fa-clipboard me-1"></i> Terms & Condition </button>
-            </div>
-            <div class="me-1" *ngIf="isEditMode">
-                <button class="btn btn-outline-info btn-sm" (click)="openAuthority()">
-                    <i class="fas fa-shield-alt me-1"></i> Authorize </button>
-            </div>
-            <div class="me-1" *ngIf="isEditMode">
-                <button class="btn btn-outline-info btn-sm" (click)="openEmail()">
-                    <i class="fas fa-envelope me-1"></i> Email </button>
-            </div>
-            <div class="ms-auto me-1" *ngIf="isEditMode">
-                <button class="btn btn-outline-info btn-sm" (click)="showInfo()">
-                    <i class="fas fs-4 fa-info-circle"></i> Details</button>
-            </div>
-            <!-- <div [class.ms-auto]="!isEditMode">
-                <button class="btn btn-outline-info btn-sm" type="submit" (click)="onSubmit()">
-                    <i-feather class="feather-sm me-2" name="upload-cloud"></i-feather>Save</button>
-            </div> -->
         </div>
+    </div>
+    }
         <!-- #endregion -->
     </form>
     <!-- #endregion -->

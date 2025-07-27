@@ -31,19 +31,19 @@
                                 <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
                                     <div class="form-outline flex-grow-1 position-relative">
                                         <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                            [(ngModel)]="searchText"  aria-label="Search input"  (input)="searchEnquiry()">
+                                            [(ngModel)]="filterValue"  aria-label="Search input">
                                         <button 
                                             class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
                                             tabindex="0" aria-label="Clear search"
                                             data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
                                             onfocus="this.classList.replace('text-secondary','text-danger')"
-                                            onblur="this.classList.replace('text-danger','text-secondary')">
+                                            onblur="this.classList.replace('text-danger','text-secondary')" (click)="clearFilterValue()">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>
                                 <div class="mt-md-0 mt-1">
                                     <button type="submit" 
-                                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (input)="searchEnquiry()">
+                                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchQuotation()">
                                         <i class="fas fa-search me-1"></i> Search
                                     </button>
                                 </div>
@@ -109,6 +109,9 @@
                         <div class="ms-auto d-flex align-items-center gap-1">
                             <a class="text-info" (click)="editEnquiry(enq.QuoteHeaderSid)" style="cursor: pointer;">
                                 <i-feather name="eye" class="feather-sm"></i-feather>
+                            </a>
+                            <a class="text-info" (click)="reportAndEmailModel(enq,reportModel)" style="cursor: pointer;">
+                                <i-feather name="file-text" class="feather-sm"></i-feather>
                             </a>
                         </div>
                     </div>
@@ -415,32 +418,32 @@
                     <div class="col-md-6 px-3 px-md-5">
                         <section class="d-flex flex-column">
                             <aside class="d-flex">
-                                <p class="mb-0 col-12 h6 fw-bold">VisVas Logistics Pvt Ltd.,</p>
+                                <p class="mb-0 col-12 h6 fw-bold">{{this.selectedItem.CustomerName}}</p>
                             </aside>
                             <aside class="d-flex">
-                                <p class="mb-0 col-12">Thane. Mumbai </p>
+                                <p class="mb-0 col-12">{{this.selectedItem.CustomerAddress}}</p>
                             </aside>
                         </section>
                     </div>
                     <div class="col-md-6">
                         <section class="d-flex flex-column gap-1">
                             <aside class="d-flex gap-3 justify-content-end">
-                                <p class="mb-0 col-3 fw-bold">Qauotation No</p>
-                                <p class="mb-0 fw-normal col-4">: #985345</p>
+                                <p class="mb-0 col-3 fw-bold">Quotation No</p>
+                                <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteNumber}}</p>
                             </aside>
                             <aside class="d-flex gap-3 justify-content-end">
                                 <p class="mb-0 col-3 fw-bold">Quotation Date</p>
-                                <p class="mb-0 fw-normal col-4">: 12/12/2025</p>
+                                <p class="mb-0 fw-normal col-4">: {{selectedItem.QuoteDate | formatDate }}</p>
                             </aside>
                             <aside class="d-flex gap-3 justify-content-end">
                                 <p class="mb-0 col-3 fw-bold">Reference</p>
-                                <p class="mb-0 fw-normal col-4">: Lorem, ipsum dolor.</p>
+                                <p class="mb-0 fw-normal col-4">: {{selectedItem.CustomerRef || 'N/A'}}</p>
                             </aside>
                         </section>
                     </div>
                 </div>
 
-
+                @for(route of selectedItem.quoteRoute; track route){
                 <aside class="table-responsive  px-3 px-md-5">
                     <table class="table">
 
@@ -449,11 +452,10 @@
                             <td colspan="6" style="border:2px solid black">
                                 <aside class="d-flex gap-3 justify-content-between">
                                     <div>
-                                        <p class="mb-0  fw-bold">FCL Export </p>
+                                        <p class="mb-0  fw-bold">{{route.departmentMaster?.departmentName}} </p>
                                     </div>
                                     <div>
-                                        <p class="mb-0 fw-normal col">Jebel Ali (AEJEA) - Singapore (SGSIN) - Port Klang
-                                            (MYPKL).</p>
+                                        <p class="mb-0 fw-normal col">{{getFormattedPort(route.POLSid)}} - {{getFormattedPort(route.PODSid)}}.</p>
                                     </div>
                                 </aside>
                             </td>
@@ -462,13 +464,13 @@
                             <tr>
                                 <td colspan="6" class="p-0" style="border:2px solid black">
                                     <aside class="d-flex flex-wrap">
-                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Carrier :</span> CMA
+                                        <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Carrier :</span> {{route.CarrierName}}
                                         </p>
                                         <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Cargo Type :</span>
-                                            General</p>
+                                            {{route.cargoType}}</p>
                                         <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Valid From : </span>
-                                            3/3/2025</p>
-                                        <p class="mb-0 col-3 p-2"><span class="fw-bold">Valid To : </span> 11/11/2025
+                                            {{route.effDate | formatDate }}</p>
+                                        <p class="mb-0 col-3 p-2"><span class="fw-bold">Valid To : </span> {{route.expdate | formatDate }}
                                         </p>
                                     </aside>
                                 </td>
@@ -482,34 +484,26 @@
                                 <td class="fw-bold table-secondary border border-dark">Rate</td>
                                 <td class="fw-bold table-secondary border border-dark">Total Amt</td>
                             </tr>
-
+                            @for(charge of route.quoteCharge;track charge){
                             <tr style="border:2px solid black">
-                                <td class="border border-dark">Freight</td>
-                                <td class="border border-dark">20Ft</td>
-                                <td class="border border-dark">1</td>
-                                <td class="border border-dark">USD</td>
-                                <td class="border border-dark">450</td>
-                                <td class="border border-dark">450</td>
+                                <td class="border border-dark">{{charge.ChargeDisplayName}}</td>
+                                <td class="border border-dark">{{charge.unitMaster?.unitCode}}</td>
+                                <td class="border border-dark">{{charge.Qty}}</td>
+                                <td class="border border-dark">{{charge.currencyMaster?.currencyCode}}</td>
+                                <td class="border border-dark">{{charge.perUnit}}</td>
+                                <td class="border border-dark">{{charge.Qty * charge.perUnit}}</td>
                             </tr>
-
-                            <tr style="border:2px solid black">
-                                <td class="border border-dark">THC</td>
-                                <td class="border border-dark">20Ft</td>
-                                <td class="border border-dark">1</td>
-                                <td class="border border-dark">INR</td>
-                                <td class="border border-dark">1200</td>
-                                <td class="border border-dark">1200</td>
-                            </tr>
+                            }
 
 
                         </tbody>
                     </table>
                 </aside>
-
+                }
             </div>
 
             <div class="d-flex align-items-center justify-content-between mt-5 pt-3">
-                <div class=""><span class="fw-bold">Printed By :</span> Lorem ipsum </div>
+                <div class=""><span class="fw-bold">Printed By :</span> {{userData.userName}} </div>
                 <div><span class="fw-bold">Printed On :</span> {{ currentDate }}</div>
             </div>
         </section>

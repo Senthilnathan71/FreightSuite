@@ -488,4 +488,58 @@ export class LeadService {
     )
   }
 
+  getAllSalesman() {
+    return this.http.get<{ data: any[] }>('quotation/salesman').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  getAllIncos(){
+    return this.http.get<{ data: any[] }>('inco').pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  getAllUnits(){
+    return this.http.get<{data:any[]}>('unit').pipe(
+      map((resp)=>{
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getRoleMenuPermissions(menuId: number, roleId: number) {
+    return this.http.get<{ data: any }>(`role-menu/permissions/${menuId}/${roleId}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getCustomerBranchByCustomerId(CustomerMasterSid:number){
+    return this.http.get<{ data: any }>(`customer-branch/fetch-by/${CustomerMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getCustomerBranchEmail(CustomerBranchSid) {
+    return this.http.get<{ data: any }>(`quotation/customer-branch-email/${CustomerBranchSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
 }
