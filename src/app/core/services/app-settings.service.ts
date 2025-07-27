@@ -1,11 +1,12 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http"; 
+import { HttpClient } from "@angular/common/http";
 import { BehaviorSubject, forkJoin, map, Observable, observable } from "rxjs";
 import { StorageMap } from "@ngx-pwa/local-storage";
 import { ActiveToast, ToastrService } from "ngx-toastr";
+import * as CryptoJS from 'crypto-js';
 
 @Injectable({
-    providedIn : 'root'
+    providedIn: 'root'
 })
 
 export class AppSettingsService {
@@ -16,41 +17,71 @@ export class AppSettingsService {
 
     constructor(
         private http: HttpClient,
-        protected storage : StorageMap,
-        private toaster : ToastrService
-    ){}
+        protected storage: StorageMap,
+        private toaster: ToastrService
+    ) { }
 
-    setUserSettings(data: any){
+    private secret = 'freight-forwarding-user';
+
+
+    setUserSettings(data: any) {
         this.userSettingSource.next(data)
     }
 
-    setUserToken(token: string){
-        return this.storage.set(this.tokenName,token)
+    setUserToken(token: string) {
+        return this.storage.set(this.tokenName, token)
     }
 
-    getUserByToken(){
+
+    encrypt(data: any): string {
+        return CryptoJS.AES.encrypt(JSON.stringify(data), this.secret).toString();
+    }
+
+
+    decrypt(ciphertext: string): any {
+        const bytes = CryptoJS.AES.decrypt(ciphertext, this.secret);
+        const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+        return JSON.parse(decrypted);
+    }
+    getUserByToken() {
         return this.http.get('user/sign-in-token').pipe(
-            map((resp:any)=>{
+            map((resp: any) => {
                 let mappedUser = resp.data || {};
-                this.userSubject.next(resp.data); // ✅ Set user in BehaviorSubject
+                this.userSubject.next(resp.data);
+                const encryptedData: any = this.storeUserProfile(resp.data)
+                localStorage.setItem('userData', encryptedData)
                 return mappedUser
             }),
-            map((user:any)=>{
+            map((user: any) => {
                 this.setUserSettings(user);
                 return user;
             })
         )
     }
 
-    public sessionExpire(){
-        return new Promise((resolve)=>{
+
+    storeUserProfile(user: any): void {
+        const encrypted: any = this.encrypt(user);
+        localStorage.setItem('userProfile', encrypted);
+    }
+
+    getDecryptedUserProfile(): any {
+        const encrypted = localStorage.getItem('userProfile');
+        if (encrypted) {
+            return this.decrypt(encrypted);
+        }
+        return null;
+    }
+
+    public sessionExpire() {
+        return new Promise((resolve) => {
             let observable = [this.storage.delete(this.tokenName)];
             forkJoin(observable).subscribe(
-                (response:any)=>{
+                (response: any) => {
                     // this.httpCancelService.cancelPendingRequests();
                     return resolve(true)
                 },
-                (error)=>{
+                (error) => {
                     return resolve(false)
                 }
             );
@@ -60,28 +91,28 @@ export class AppSettingsService {
     showSuccess(
         message = '',
         title = "Success!",
-        option = {closeButton:true}
-    ): ActiveToast<any>{
-        return this.toaster.success(message,title,option)
+        option = { closeButton: true }
+    ): ActiveToast<any> {
+        return this.toaster.success(message, title, option)
     }
 
     showError(
         message = '',
         title = "Oops!",
-        option = {closeButton:true}
-    ): ActiveToast<any>{
-        return this.toaster.error(message,title,option)
+        option = { closeButton: true }
+    ): ActiveToast<any> {
+        return this.toaster.error(message, title, option)
     }
 
     showWarning(
         message = '',
         title = "Alert!",
-        option = {closeButton:true}
-    ): ActiveToast<any>{
-        return this.toaster.warning(message,title,option)
+        option = { closeButton: true }
+    ): ActiveToast<any> {
+        return this.toaster.warning(message, title, option)
     }
 
-    showInfo(message = ''){
+    showInfo(message = '') {
         return this.toaster.info(message)
     }
 
@@ -90,5 +121,5 @@ export class AppSettingsService {
         return this.userSubject.asObservable(); // ✅ Other components can subscribe to this
     }
 
-    
+
 }
