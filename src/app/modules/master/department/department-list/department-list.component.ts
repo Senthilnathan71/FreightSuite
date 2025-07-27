@@ -30,6 +30,8 @@ export class DepartmentListComponent {
   sortColumn: string = 'departmentCode'; 
   sortDirection: string = 'asc';
   loading = false;
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
 
   // pagination
   page = 1;
@@ -42,12 +44,34 @@ userData:any
   ngOnInit() {
 this.appSettingService.getUser().subscribe(user => {
       if (user) {
-        this.userData = user
-        console.log(this.userData,'userData')
+        this.userData = user;
+        console.log(this.userData,'userData');
+        this.checkPermissions();
       }
     });  
     this.loadDepartments();
   }
+
+  checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId)
+    console.log(userRole)
+    if (currentMenuId && userRole) {
+     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+  next: (response) => {
+    this.currentMenuPermissions = response.data.MenuPermissions || {};
+    this.permissions = Object.keys(this.currentMenuPermissions)
+      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
+      console.log(this.permissions)
+  }
+});
+    }
+  }
+ 
+  hasPermission(permission: string): boolean {
+  return this.permissions.includes(permission);
+}
 
   
   sort(column: string) {

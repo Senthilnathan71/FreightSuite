@@ -66,11 +66,12 @@
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <app-favorite-star screenName="charge" class="mt-1 me-1"></app-favorite-star>
+                    @if(hasPermission('Add')) {
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateToCreateDepartment()">
                         <i class="fas fa-plus me-1"></i> Create
                     </button>
-
+                }
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
                         [disabled]="!searchPerformed">
                         <i class="fas fa-file-alt me-1"></i> Report
@@ -134,14 +135,18 @@
                         <tr *ngFor="let item of departmentList; let i = index; trackBy: trackByIndex">
                             <td>
                                 <div class="d-flex align-items-center">
+                                    @if(hasPermission('View')) {
                                     <a class="text-info mx-2" class="link mx-2 ps-3 "
                                         [routerLink]="['/master/department/entry/', item.DepartmentMasterSid]">
                                         <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </a>
+                                }
+                                @if(hasPermission('Delete')) {
                                     <a class="text-danger mx-2 ps-3 border-start"
                                         (click)="deleteDepartment(item.DepartmentMasterSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
+                                }
                                 </div>
                             </td>
                             <td>

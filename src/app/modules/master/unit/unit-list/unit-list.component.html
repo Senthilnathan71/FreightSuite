@@ -45,11 +45,12 @@
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <app-favorite-star screenName="Unit" class="mt-1 me-1"></app-favorite-star>
+                    @if(hasPermission('Add')) {
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateToCreateUnit()">
                         <i class="fas fa-plus me-1"></i> Create
                     </button>
-
+                }
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
                         [disabled]="!searched">
                         <i class="fas fa-file-alt me-1"></i> Report
@@ -110,14 +111,18 @@
                         <tr *ngFor="let item of unitList; let i = index; trackBy: trackByUnitId">
                             <td>
                                 <div class="d-flex align-items-center justify-content-center">
+                                    @if(hasPermission('View')) {
                                     <a class="text-info mx-2"
                                         [routerLink]="['/master/unit/entry/', item.UnitMasterSid]">
                                         <i-feather class="feather-sm" name="eye"></i-feather>
                                     </a>
+                                }
+                                @if(hasPermission('Delete')) {
                                     <a class="text-danger mx-2 ps-3 border-start"
                                         (click)="deleteUnit(item.UnitMasterSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
+                                }
                                 </div>
                             </td>
                             <td>
