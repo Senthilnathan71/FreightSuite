@@ -24,7 +24,8 @@
                         Reset
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
-                        [disabled]=" btnDisable">
+                        [disabled]=" btnDisable"
+                        *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Update' : 'Save'}}
                     </button>
@@ -250,7 +251,7 @@
                             }
                         </div>
                     </aside> -->
-                    <!-- <aside class="col-md-4">
+                    <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select">
                             <multi-select [control]="userForm.get('roles')" [items]="roleList" bindLabel="UserRoleName"
                                 bindValue="RoleMasterSid" placeholder="Select Roles"></multi-select>
@@ -263,7 +264,7 @@
                             </div>
                             }
                         </div>
-                    </aside> -->
+                    </aside>
 
                     @if(isEditMode){
                     <aside class="col-md-4">
