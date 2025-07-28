@@ -338,7 +338,10 @@
                             <tr>
                                 <th scope="col" style="border-style: none;" width="20%">Sno.</th>
                                 <th scope="col" style="border-style: none;" width="60%">Branch Name</th>
-                                <th scope="col" style="border-style: none;" width="20%">Access</th>
+                                <th scope="col" style="border-style: none;" width="60%">Access</th>
+                                <th scope="col" style="border-style: none;" width="60%">Default</th>
+                                 <!-- <th width="20%">Access</th>
+              <th width="20%">Default</th> -->
                             </tr>
                         </thead>
                         <tbody>
@@ -353,6 +356,18 @@
                                         </div>
                                     </aside>
                                 </td>
+                                <td>
+                <div class="form-check">
+                  <input type="checkbox"
+                  id="text-input" 
+                  placeholder="" class="form-check-input focus-ring"
+                         name="defaultBranch_{{info.CompanyMasterSid}}"
+                         [disabled]="!isCheckedBranch(branch.BranchMasterSid)"
+                         [checked]="isDefaultBranch(info.CompanyMasterSid, branch.BranchMasterSid)"
+                         (change)="toggleDefaultBranch(info.CompanyMasterSid, branch.BranchMasterSid)"
+                        >
+                </div>
+              </td>
                             </tr>
                             }
                         </tbody>
@@ -369,7 +384,7 @@
     <div class="card mb-0 border border-info position-relative">
 
         <!-- Card Header -->
-        <div class="card-header bg-info rounded-top-1 d-flex align-items-center ">
+        <!-- <div class="card-header bg-info rounded-top-1 d-flex align-items-center ">
             <h6 class="font-bold mb-0 text-light">ROLE</h6>
 
         </div>
@@ -380,9 +395,9 @@
                 <aside class="col-md-5">
                         <div class="custom-form-group custom-form-group-select">
                             <multi-select [control]="userForm.get('roles')" [items]="roleList" bindLabel="UserRoleName"
-                                bindValue="RoleMasterSid" placeholder="Select Roles"></multi-select>
+                                bindValue="RoleMasterSid" placeholder="Select Roles"></multi-select> -->
                             <!-- <label for="" class="input-label">Role <span class="text-danger">*</span></label> -->
-                            @if(userForm.get('roles')?.touched && userForm.get('roles')?.invalid){
+                            <!-- @if(userForm.get('roles')?.touched && userForm.get('roles')?.invalid){
                             <div class="error-message">
                                 @if(userForm.get('roles')?.hasError('required')){
                                 <div>Role is required</div>
@@ -395,7 +410,7 @@
         </div>
 
     </div>
-</div>
+</div> -->
 <!-- <div class="col-12" [formGroup]="userForm">
     <div class="col-12" formArrayName="roles">
         @for(role of roles.controls ; track role ; let roleIndex = $index){

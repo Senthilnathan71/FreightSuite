@@ -63,6 +63,8 @@ export class UserEntryComponent implements OnInit {
 	selectedCompanies: any[];
 	selectedBranches: { [key: number]: number[] } = {};
 	selectedRoles: any[] = [];
+	defaultCompanies: { [key: number]: boolean } = {};
+    defaultBranches: { [key: number]: number } = {};
 
 	modeOfStatus = [
 		{ name: 'Active' },
@@ -215,7 +217,27 @@ export class UserEntryComponent implements OnInit {
 
 		const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
 		const formValue = this.userForm.getRawValue();
+		const companyPayload = formValue.companies.map(companyId => ({
+    CompanyMasterSid: companyId,
+    IsDefault: this.isDefaultCompany(companyId) ? 'Y' : 'N',
+    GiveAccess: 'Y', // Assuming all selected companies get access
+    status: 'A'
+  }));
 
+  const branchPayload = [];
+  for (const companyId of Object.keys(this.selectedBranches)) {
+    const companyIdNum = Number(companyId);
+    const branches = this.selectedBranches[companyIdNum];
+    
+    branches.forEach(branchId => {
+      branchPayload.push({
+        BranchMasterSid: branchId,
+        IsDefault: this.isDefaultBranch(companyIdNum, branchId) ? 'Y' : 'N',
+        GiveAccess: 'Y', // Assuming all selected branches get access
+        status: 'A'
+      });
+    });
+  }
 		const payload = {
 			userName: formValue.userName,
 			userEmail: formValue.userEmail,
@@ -361,31 +383,57 @@ export class UserEntryComponent implements OnInit {
 		this.handleBranchToggle(element.checked,branch);
 	}
 
-	handleBranchToggle(event, branch) {
-		let key = branch.CompanyMasterSid;
-		if (event) {
-			if (this.selectedBranches[key] !== null) {
-				const existArr = this.selectedBranches[key] || [];
-				if (existArr.includes(branch.BranchMasterSid)) {
-					return;
-				}
-				const newArr = [...existArr, branch.BranchMasterSid]
-				this.selectedBranches[key] = [...newArr];
-			}
-			else {
-				this.selectedBranches[key] = [branch.BranchMasterSid];
-			}
-		}
-		else {
-			const existArr = this.selectedBranches[branch.CompanyMasterSid] || [];
-			const newArr = existArr.filter(ex => ex !== branch.BranchMasterSid);
-			if (newArr.length === 0) {
-				delete this.selectedBranches[branch.CompanyMasterSid];
-			} else {
-				this.selectedBranches[branch.CompanyMasterSid] = newArr;
-			}
-		}
-	}
+	handleBranchToggle(event: boolean, branch: any) {
+  const companyId = branch.CompanyMasterSid;
+  const branchId = branch.BranchMasterSid;
+  
+  if (event) {
+   
+    const existArr = this.selectedBranches[companyId] || [];
+    if (!existArr.includes(branchId)) {
+      this.selectedBranches[companyId] = [...existArr, branchId];
+    }
+  } else {
+    
+    const existArr = this.selectedBranches[companyId] || [];
+    const newArr = existArr.filter(id => id !== branchId);
+    
+   
+    if (this.defaultBranches[companyId] === branchId) {
+      delete this.defaultBranches[companyId];
+    }
+    
+    if (newArr.length === 0) {
+      delete this.selectedBranches[companyId];
+    } else {
+      this.selectedBranches[companyId] = newArr;
+    }
+  }
+}
+
+toggleDefaultCompany(companyId: number, isDefault: boolean) {
+  if (isDefault) {
+   
+    this.defaultCompanies = { [companyId]: true };
+  } else {
+    delete this.defaultCompanies[companyId];
+  }
+}
+
+
+toggleDefaultBranch(companyId: number, branchId: number) {
+  this.defaultBranches[companyId] = branchId;
+}
+
+
+isDefaultBranch(companyId: number, branchId: number): boolean {
+  return this.defaultBranches[companyId] === branchId;
+}
+
+
+isDefaultCompany(companyId: number): boolean {
+  return this.defaultCompanies[companyId] === true;
+}
 
 	getUserCode(userName: string) {
 		return userName.replace(/\s+/g, '_');

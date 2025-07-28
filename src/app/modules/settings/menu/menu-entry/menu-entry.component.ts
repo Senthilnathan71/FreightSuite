@@ -75,7 +75,11 @@ export class MenuEntryComponent implements OnInit {
     { value: 'calendar', label: 'Calendar' },
     { value: 'mail', label: 'Mail' },
     { value: 'shopping-cart', label: 'Shopping' },
-    { value: 'disc', label: 'Disc' }
+    { value: 'disc', label: 'Disc' },
+    { value: 'dollar-sign', label: 'Finance Master' },
+    { value: 'globe', label: 'Global Master' }
+    
+
 
   ];
 
