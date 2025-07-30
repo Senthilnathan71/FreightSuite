@@ -107,7 +107,7 @@
                     <tbody>
                         @for (schedule of scheduleList; track schedule) {
                         <tr>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center">
                                     @if(hasPermission('View')) {
                                     <a class="text-info mx-2 ps-3"
@@ -125,32 +125,32 @@
                                 }
                                 </div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{schedule.vesselMaster?.VesselName}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">
                                     {{getFormattedPort(schedule.voyageMasterDetail[0]?.POLSid)}}
                                 </div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">
                                     {{schedule.voyageMasterDetail.length < 2 ? '' :
                                         getFormattedPort(schedule.voyageMasterDetail[schedule.voyageMasterDetail.length-1]?.POLSid)}}
                                         </div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">
                                     {{schedule.voyageMasterDetail[0]?.ETA | formatDate}}
                                 </div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">
                                     {{schedule.voyageMasterDetail[schedule.voyageMasterDetail.length-1]?.ETD |
                                     formatDate}}
                                 </div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">
                                     <button type="button" class="btn btn-sm btn-info"
                                         [routerLink]="['/crm/rate-request']">Get Rate</button>

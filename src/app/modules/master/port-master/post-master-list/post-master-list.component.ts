@@ -46,7 +46,7 @@ export class PostMasterListComponent implements OnInit {
   sortDirection: string = 'asc'; 
   // pagination
   page = 1;
-  pageSize = 10;
+  pageSize = 15;
 
   // lookup arrays
   countryOptions: any[] = [];

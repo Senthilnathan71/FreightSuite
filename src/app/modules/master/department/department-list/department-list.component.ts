@@ -35,7 +35,7 @@ export class DepartmentListComponent {
 
   // pagination
   page = 1;
-  pageSize = 10;
+  pageSize = 15;
   totalLengthOfCollection: number;
 userData:any
   constructor(private userService: authService,private masterService: MasterService, private excelReportService:ExcelExportService, private router: Router,

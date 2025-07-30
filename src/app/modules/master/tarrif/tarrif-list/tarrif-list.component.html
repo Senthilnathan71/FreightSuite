@@ -111,7 +111,7 @@
                     <tbody>
                         <tr *ngFor="let tariff of tariffList; let i = index; trackBy: trackByIndex">
 
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center justify-content-center">
                                     @if(hasPermission('View')) {
                                     <a class="text-info mx-2"
@@ -127,13 +127,13 @@
                                 }
                                 </div>
                             </td>
-                            <td>{{tariff.departmentMaster.departmentName}}</td>
-                            <td>{{tariff.POLTerminal}}</td>
-                            <td>{{tariff.PODTerminal}}</td>
-                            <td>{{tariff.customerCarrier.CustomerName}}</td>
-                            <td>{{tariff.customerAgent.CustomerName}}</td>
-                            <td>{{tariff.EffectiveDate | formatDate}}</td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.departmentMaster.departmentName}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.POLTerminal}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.PODTerminal}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.customerCarrier.CustomerName}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.customerAgent.CustomerName}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{tariff.EffectiveDate | formatDate}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 @if(tariff.status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>

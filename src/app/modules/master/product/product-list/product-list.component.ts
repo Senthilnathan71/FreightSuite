@@ -47,7 +47,7 @@ export class ProductListComponent {
 
     // Pagination Related Data
     page = 1;
-    pageSize = 10;
+    pageSize = 15;
     totalAmountOfCollection :number;
    
     isFavorite: boolean = false;

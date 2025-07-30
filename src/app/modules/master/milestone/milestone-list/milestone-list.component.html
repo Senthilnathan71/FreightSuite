@@ -128,7 +128,7 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of milestoneList; let i = index; trackBy: trackByMilestoneId">
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center">
                                     @if(hasPermission('View')) {
                                     <a class="mx-2 ps-3"
@@ -145,25 +145,25 @@
                                 }
                                 </div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.MilestoneName}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.MilestoneCode}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.ShipmentType}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.departmentMaster.departmentName || '-'}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.SortBy || '-'}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.AutoCapture || '-'}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 @if(item.status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>

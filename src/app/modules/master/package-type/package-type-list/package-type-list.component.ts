@@ -56,7 +56,7 @@ export class PackageTypeListComponent {
   filterValue = '';
   searched = false;
   page = 1;
-  pageSize = 10;
+  pageSize = 15;
   totalLengthOfCollection = 0;
   isLoading = false;
   userData : any;

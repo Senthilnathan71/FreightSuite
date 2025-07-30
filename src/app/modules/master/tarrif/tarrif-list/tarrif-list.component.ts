@@ -42,7 +42,7 @@ export class TarrifListComponent implements OnInit {
 
   // pagination values
   page = 1;
-  pageSize = 10;
+  pageSize = 15;
   totalNumberOfCollection: number;
   sortColumn: string = 'POLTerminal'; 
   sortDirection: string = 'asc';

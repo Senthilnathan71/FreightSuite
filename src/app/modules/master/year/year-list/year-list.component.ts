@@ -47,7 +47,7 @@ export class YearListComponent {
   currentMenuPermissions: any = {};
 
   page = 1;
-  pageSize = 10;
+  pageSize = 15;
   totalLengthOfCollection: number = 0;
 
   sortColumn: string = 'YearName';

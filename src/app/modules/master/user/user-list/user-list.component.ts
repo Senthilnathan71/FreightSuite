@@ -42,7 +42,7 @@ export class UserListComponent {
   alluser: any[] = []
   // pagination values
   page = 1;
-  pageSize = 10;
+  pageSize = 15;
   totalNumberOfCollection: number;
   isFavorite: boolean = false;
   resetPasswordForm !:FormGroup

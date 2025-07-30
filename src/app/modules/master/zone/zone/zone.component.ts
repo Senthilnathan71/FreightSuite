@@ -61,7 +61,7 @@ export class ZoneComponent {
   searched = false;
   searchResults: any[];
   page = 1;
-  pageSize = 10;
+  pageSize = 15;
   totalLengthOfCollection = 0;
   userData : any;
   zoneData : any;

@@ -120,7 +120,7 @@
                         </thead>
                         <tbody>
                             <tr *ngFor="let item of yearList; let i = index; trackBy: trackByIndex">
-                                <td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="d-flex align-items-center justify-content-center">
                                         @if(hasPermission('View')) {
 
@@ -135,31 +135,31 @@
                                         </a>}
                                     </div>
                                 </td>
-                                <td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="text-truncate">{{item.YearName}}</div>
                                 </td>
-                                <td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="text-truncate">{{item.YearCode}}</div>
                                 </td>
-                                <td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="text-truncate">{{item.StartDate | formatDate}}</div>
                                 </td>
-                                <td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="text-truncate">{{item.EndDate | formatDate}}</div>
                                 </td>
-                                <td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="text-truncate">{{item.CurrentYear}}</div>
                                 </td>
-                                <td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="text-truncate">{{item.YearEndCompleted}}</div>
                                 </td>
-                                <td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     <div class="text-truncate">{{item.Remarks}}</div>
                                 </td>
                                 <!-- <td>
                                     <div class="text-truncate">{{ companyMap[item.CompanyMasterSid] || item.CompanyMasterSid}}</div>
                                 </td> -->
-                                <td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                     @if(item.status === "A"){
                                     <div
                                         class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">

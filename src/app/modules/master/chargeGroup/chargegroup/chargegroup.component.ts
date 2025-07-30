@@ -57,7 +57,7 @@ export class ChargegroupComponent implements OnInit {
   filterValue = '';
   searchPerformed = false;
   page = 1;
-  pageSize = 10;
+  pageSize = 15;
   totalLengthOfCollection = 0;
   isLoading = false;
   companyOptions: any[] = [];

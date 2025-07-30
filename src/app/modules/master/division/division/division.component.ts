@@ -73,7 +73,7 @@ export class DivisionComponent {
   filterValue = '';
   searched = false;
   page = 1;
-  pageSize = 5;
+  pageSize = 15;
   totalLengthOfCollection = 0;
   userData: any;
   divisionData: any;

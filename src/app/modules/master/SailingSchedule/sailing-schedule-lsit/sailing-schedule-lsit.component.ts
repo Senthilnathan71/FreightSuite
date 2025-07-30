@@ -50,7 +50,7 @@ export class SailingScheduleLsitComponent implements OnInit {
   currentMenuPermissions: any = {};
 
     page = 1;
-    pageSize = 10;
+    pageSize = 15;
     totalAmountOfCollections : number;
     isFavorite: boolean = false;
 
