@@ -116,7 +116,7 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of chargeTaxList; trackBy: trackByIndex">
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
                                     @if(hasPermission('View')) {
                                     <button class="btn btn-sm btn-link text-info p-0"
@@ -132,12 +132,12 @@
                                 }
                                 </div>
                             </td>
-                            <td>{{item.HSNCode}}</td>
-                            <td>{{item.description}}</td>
-                            <td>{{item.TaxGroup}}</td>
-                            <td>{{item.TaxRate}}</td>
-                            <td>{{item.Remarks || '-'}}</td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.HSNCode}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.description}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.TaxGroup}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.TaxRate}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.Remarks || '-'}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 @if(item.Status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>

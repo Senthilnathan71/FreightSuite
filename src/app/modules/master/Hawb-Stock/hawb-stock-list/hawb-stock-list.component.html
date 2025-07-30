@@ -115,7 +115,7 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of hawbList; let i = index; trackBy: trackByIndex">
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center">
                                     @if(hasPermission('View')) {
 
@@ -132,11 +132,11 @@
                                 }
                                 </div>
                             </td>
-                            <td>{{item.AirwayBillType}}</td>
-                            <td>{{item.HAWBSerial}}</td>
-                            <td>{{item.NumberofHAWB}}</td>
-                            <td>{{item.ReceivedDate | formatDate}}</td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.AirwayBillType}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.HAWBSerial}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.NumberofHAWB}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.ReceivedDate | formatDate}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 @if(item.status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>

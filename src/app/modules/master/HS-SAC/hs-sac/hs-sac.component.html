@@ -129,7 +129,7 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of hssacList; trackBy: trackByIndex">
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
                                     @if(hasPermission('View')) {
                                     <button class="btn btn-sm btn-link text-primary p-0 mx-2"
@@ -145,28 +145,28 @@
                                 }
                                 </div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.HSSACCode}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.HSSACName}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.ServiceName}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.TaxRate}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.TaxType}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.EffectiveFrom | formatDate}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.Remarks}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 @if(item.status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>

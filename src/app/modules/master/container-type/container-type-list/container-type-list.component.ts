@@ -43,7 +43,7 @@ export class ContainerTypeListComponent {
 
   // Pagination 
   page = 1;
-  pageSize = 5;
+  pageSize = 15;
   totalLengthOfCollection = 0;
   isFavorite: boolean = false;
   permissions: string[] = [];

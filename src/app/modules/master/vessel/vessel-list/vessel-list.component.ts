@@ -40,7 +40,7 @@ export class VesselListComponent {
   currentMenuPermissions: any = {};
   // pagination
   page = 1;
-  pageSize = 10;
+  pageSize = 15;
   totalLengthOfCollection: number;
   isFavorite: boolean = false;
 

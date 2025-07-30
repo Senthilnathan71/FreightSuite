@@ -120,7 +120,7 @@
                     <tbody>
                         <tr *ngFor="let item of clauseList; trackBy: trackByClauseId">
 
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center justify-content-center">
                                      @if(hasPermission('View')) {
                   <a class="text-info mx-2" (click)="openModal(content, item)" >
@@ -134,10 +134,10 @@
                 }
                                 </div>
                             </td>
-                            <td>{{ item.ClauseDescription }}</td>
-                            <td>{{ item.Keyword }}</td>
-                            <td>{{ item.Sortorder || '-' }}</td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ item.ClauseDescription }}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ item.Keyword }}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ item.Sortorder || '-' }}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <span [class]="getStatusClass(item.status)"
                                     class="px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span [class]="item.status === 'A' ? 'bg-success' : 'bg-danger'"

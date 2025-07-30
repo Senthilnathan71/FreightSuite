@@ -38,7 +38,7 @@ export class OrganizationListComponent implements OnInit {
 
   // pagination
   page = 1;
-  pageSize = 5;
+  pageSize = 15;
   totalLengthOfCollection: number;
   isFavorite: boolean = false;
   allOrganizations: any[] = [];

@@ -42,7 +42,7 @@ export class MilestoneListComponent {
   currentMenuPermissions: any = {};
   // pagination
   page = 1;
-  pageSize = 10;
+  pageSize = 15;
   totalLengthOfCollection: number = 0;
   isFavorite: boolean = false;
 

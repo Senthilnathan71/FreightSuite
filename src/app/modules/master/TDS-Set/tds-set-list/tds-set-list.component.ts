@@ -37,7 +37,7 @@ export class TdsSetListComponent implements OnInit {
     searchPerformed: boolean;
 
     page = 1;
-    pageSize = 10;
+    pageSize = 15;
     totalLengthOfCollection: number;
     permissions: string[] = [];
     currentMenuPermissions: any = {};

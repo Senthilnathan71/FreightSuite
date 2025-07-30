@@ -68,7 +68,7 @@ export class CityComponent {
   filterValue = '';
   searchPerformed = false;
   page = 1;
-  pageSize = 10;
+  pageSize = 15;
   totalLengthOfCollection = 0;
   userData: any;
   cityData : any;

@@ -123,7 +123,7 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of chargeList; let i = index; trackBy: trackByChargeId">
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center justify-content-center">
                                     @if(hasPermission('View')) {
                                     <a class="text-info mx-2"
@@ -139,13 +139,13 @@
                                 }
                                 </div>
                             </td>
-                            <td>{{item.chargeCode}}</td>
-                            <td>{{item.chargeName}}</td>
-                            <td>{{getUomCode(item.UOM)}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.chargeCode}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.chargeName}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{getUomCode(item.UOM)}}</td>
                             <!-- <td>{{item.HSNSAC}}</td> -->
-                           <td>{{item.HSNSAC}}</td>
+                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.HSNSAC}}</td>
 <td>{{item.TDSSet}}</td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 @if(item.Status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
