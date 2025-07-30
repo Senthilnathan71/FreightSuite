@@ -191,7 +191,7 @@
                                         class="text-danger">*</span></label>
                                 <div *ngIf="biclauseForm.get('ClauseDescription')?.touched && 
                                             biclauseForm.get('ClauseDescription')?.errors"
-                                    class="invalid-feedback d-block">
+                                    class="error-message">
                                     <span *ngIf="biclauseForm.get('ClauseDescription')?.hasError('required')">
                                         Clause Description is required
                                     </span>
@@ -209,7 +209,7 @@
                                 <label for="Keyword" class="input-label">Keyword <span
                                         class="text-danger">*</span></label>
                                 <div *ngIf="biclauseForm.get('Keyword')?.touched && 
-                                            biclauseForm.get('Keyword')?.errors" class="invalid-feedback d-block">
+                                            biclauseForm.get('Keyword')?.errors" class="error-message">
                                     <span *ngIf="biclauseForm.get('Keyword')?.hasError('required')">
                                         Keyword is required
                                     </span>
@@ -226,7 +226,7 @@
                                                 biclauseForm.get('Sortorder')?.touched">
                                 <label for="Sortorder" class="input-label">Sort Order</label>
                                 <div *ngIf="biclauseForm.get('Sortorder')?.touched && 
-                                            biclauseForm.get('Sortorder')?.errors" class="invalid-feedback d-block">
+                                            biclauseForm.get('Sortorder')?.errors" class="error-message">
                                     <span *ngIf="biclauseForm.get('Sortorder')?.hasError('pattern')">
                                         Only numbers are allowed
                                     </span>
@@ -242,7 +242,7 @@
                                 </ng-select>
                                 <label class="input-label">Status <span class="text-danger">*</span></label>
                                 <div *ngIf="biclauseForm.get('status')?.touched && 
-               biclauseForm.get('status')?.errors" class="invalid-feedback d-block">
+               biclauseForm.get('status')?.errors" class="error-message">
                                     <span *ngIf="biclauseForm.get('status')?.hasError('required')">
                                         Status is required
                                     </span>

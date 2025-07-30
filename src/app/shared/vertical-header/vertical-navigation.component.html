@@ -1,7 +1,10 @@
 <!-- ============================================================== -->
 <!-- toggle and nav items -->
 <!-- ============================================================== -->
-<ul class="navbar-nav float-start me-auto d-flex align-items-center gap-3">
+
+<nav class="navbar navbar-expand-lg p-0">
+   
+<ul class="navbar-nav float-start me-auto d-flex align-items-center gap-2">
   <li class="nav-item d-none d-lg-block">
     <a (click)="toggleSidebar.emit()" class="nav-link sidebartoggler waves-effect waves-light"
       href="javascript:void(0)">
@@ -198,7 +201,7 @@
   <!-- Search Inputs with Dropdown -->
         
   
-  <li>
+  <li class="nav-item">
   <div class="d-flex gap-3">
     <div class="position-relative" ngbDropdown #menuSearchDropdown="ngbDropdown">
       <input type="text" class="form-control ps-3 pe-5 border border-info" placeholder="Search Menu"
@@ -255,7 +258,6 @@
 
 
 
-  <ul class="navbar-nav float-end">
     <!-- ============================================================== -->
     <!-- Existing home button and other items -->
     <!-- ============================================================== -->
@@ -580,6 +582,8 @@
     <!-- User profile and search -->
     <!-- ============================================================== -->
   </ul>
+
+  </nav>
   <ng-template #branchSwitchModal let-modal>
   <div class="modal-header bg-primary text-white">
     <div class="w-100 d-flex justify-content-between align-items-start flex-column">
