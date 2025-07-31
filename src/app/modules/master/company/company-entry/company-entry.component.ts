@@ -102,6 +102,33 @@ export class CompanyEntryComponent implements OnInit {
 	totalBanks = 0;
 	paginatedBranches: any[] = [];
 	paginatedBanks: any[] = [];
+	configModalData: ConfigModalData;
+configModalRef: NgbModalRef;
+companyFields: FieldSelection[] = [
+  { name: 'companyName', label: 'Company Name', selected: false },
+  { name: 'companyCode', label: 'Company Code', selected: false },
+  { name: 'addressLine1', label: 'Address Line 1', selected: false },
+//   { name: 'addressLine2', label: 'Address Line 2', selected: false },
+  { name: 'webSite', label: 'Website', selected: false },
+  { name: 'phoneNumber', label: 'Phone Number', selected: false },
+  { name: 'email', label: 'Email', selected: false },
+  { name: 'Pan', label: 'PAN', selected: false },
+  { name: 'remarks', label: 'Remarks', selected: false }
+];
+
+branchFields: FieldSelection[] = [
+  { name: 'branchName', label: 'Branch Name', selected: false },
+  { name: 'branchCode', label: 'Branch Code', selected: false },
+  { name: 'addressLine1', label: 'Address Line 1', selected: false },
+  { name: 'addressLine2', label: 'Address Line 2', selected: false },
+  { name: 'postalCode', label: 'Postal Code', selected: false },
+  { name: 'webSite', label: 'Website', selected: false },
+  { name: 'phoneNumber', label: 'Phone Number', selected: false },
+  { name: 'email', label: 'Email', selected: false },
+  { name: 'timeZone', label: 'Time Zone', selected: false },
+  { name: 'taxRegistrationNo', label: 'Tax Registration No', selected: false },
+  { name: 'remarks', label: 'Remarks', selected: false }
+];
 
 	// CONSTRUCTOR
 
@@ -163,7 +190,77 @@ export class CompanyEntryComponent implements OnInit {
   hasPermission(permission: string): boolean {
   return this.permissions.includes(permission);
 }
- 
+openConfigModal(content: TemplateRef<any>, isCompany: boolean, branchIndex?: number) {
+  this.configModalData = {
+    title: isCompany ? 'Select Company Fields' : 'Select Branch Fields',
+    fields: isCompany ? [...this.companyFields] : [...this.branchFields]
+  };
+  if (isCompany) {
+    const currentConfig = this.companyForm.get('config')?.value;
+    if (currentConfig) {
+      this.configModalData.fields.forEach(field => {
+        field.selected = currentConfig[field.name] === true;
+      });
+    }
+  } else if (branchIndex !== undefined) {
+    const branchConfig = this.branches.at(branchIndex).get('config')?.value;
+    if (branchConfig) {
+      this.configModalData.fields.forEach(field => {
+        field.selected = branchConfig[field.name] === true;
+      });
+    }
+  }
+
+  this.configModalRef = this.modalService.open(content, {
+    size: 'lg',
+    centered: true,
+    backdrop: 'static'
+  });
+}
+
+saveConfig(isCompany: boolean, branchIndex?: number) {
+  const configJson: any = {};
+  this.configModalData.fields.forEach(field => {
+    configJson[field.name] = field.selected;
+  });
+
+  if (isCompany) {
+    this.companyForm.get('config').setValue(configJson);
+    this.filterFieldsByConfig(this.companyForm, configJson, this.companyFields);
+  } else if (branchIndex !== undefined) {
+    const branchGroup = this.branches.at(branchIndex) as FormGroup;
+    branchGroup.get('config').setValue(configJson);
+    this.filterFieldsByConfig(branchGroup, configJson, this.branchFields);
+  }
+
+  this.configModalRef.close();
+  this.appSettingService.showSuccess('Configuration saved successfully');
+}
+filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]) {
+  if (!config || !formGroup) {
+    return;
+  }
+
+  fields.forEach(field => {
+    const control = formGroup.get(field.name);
+    if (control) {
+      
+      const fieldConfig = this.branchFields.find(f => f.name === field.name);
+      if (fieldConfig) {
+        fieldConfig.selected = config[field.name] === true;
+      }
+      
+      if (config[field.name] === false) {
+        control.disable();
+      } else {
+        control.enable();
+      }
+    }
+  });
+  
+  
+  this.cdRef.detectChanges();
+} 
 
 	// FORM INITIALIZATION
 
@@ -182,6 +279,7 @@ export class CompanyEntryComponent implements OnInit {
 			status: ['Active'],
 			remarks: [''],
 			StateMasterSid: [2],
+			config: [{}],
 			branches: this.fb.array([])
 		});
 		this.companyForm.get('CountryMasterSid')?.valueChanges.subscribe((countryId) => {
@@ -210,7 +308,7 @@ export class CompanyEntryComponent implements OnInit {
 			branchTaxRegistrationNo: ['', [Validators.maxLength(50),this.gstValidator]],
 			branchCompanyLogo: [],
 			branchReportLogo: [],
-
+            config: [{}],
 			company: [{}],
 			cityMaster: [{}],
 		})
@@ -253,8 +351,12 @@ export class CompanyEntryComponent implements OnInit {
 			taxRegistrationNo: [branchData?.branchTaxRegistrationNo || '', [Validators.maxLength(50)]],
 			companyLogo: [branchData?.branchCompanyLogo || null],
 			reportLogo: [branchData?.branchReportLogo || null],
+			config: [branchData?.branchconfig || {}],
 			branchBanks: this.fb.array([])
 		});
+		if (branchData?.config) {
+    this.filterFieldsByConfig(group, branchData.config, this.branchFields);
+  }
 		return group;
 	}
 
@@ -291,8 +393,15 @@ export class CompanyEntryComponent implements OnInit {
 					this.companyForm.patchValue({
 						...resp,
 						isHo: resp.isHo === 'Y' ? true : false,
-						status: resp.status === 'A' ? 'Active' : 'Suspended'
+						status: resp.status === 'A' ? 'Active' : 'Suspended',
+						config: resp.config || {} 
 					});
+					this.filterFieldsByConfig(this.companyForm, resp.config, this.companyFields);
+					if (resp.config) {
+          this.companyFields.forEach(field => {
+            field.selected = resp.config[field.name] === true;
+          });
+        }
 					this.handlePanControl({CountryMasterSid :this.companyData?.CountryMasterSid});
 
 					// Clear existing branches
@@ -324,6 +433,7 @@ export class CompanyEntryComponent implements OnInit {
 							companyLogo: branch?.companyLogo || null,
 							reportLogo: branch?.reportLogo || null,
 							cityName: branch.cityMaster?.cityName,
+							config: branch?.config,
 							branchBanks: this.fb.array([])
 						});
 						// const branchGroup = this.createBranchFormGroup(branch);
@@ -417,7 +527,12 @@ export class CompanyEntryComponent implements OnInit {
 				branchTaxRegistrationNo: this.branchData?.taxRegistrationNo,
 				branchCompanyLogo: this.branchData?.companyLogo || null,
 				branchReportLogo: this.branchData?.reportLogo || null,
+				branchconfig:this.branchData?.config
+				
 			});
+			if (this.branchData.config) {
+      this.filterFieldsByConfig(this.branchForm, this.branchData.config, this.branchFields);
+    }
 			if (this.isModalEditMode) {
 				this.getStatesByCountry(this.branchData?.CountryMasterSid, true);
 				this.getCitiesByState(this.branchData?.StateMasterSid, true);
@@ -452,6 +567,11 @@ export class CompanyEntryComponent implements OnInit {
 
 	submitBranchForm() {
 		console.log('Submitting branch:', this.branchForm.value);
+		const fullConfig: any = {};
+		this.branchFields.forEach(field => {
+		fullConfig[field.name] = field.selected; 
+		});
+		 this.branchForm.get('config')?.setValue(fullConfig);
 
 		// 1. Validate branch form
 		if (this.branchForm.invalid) {
@@ -468,6 +588,7 @@ export class CompanyEntryComponent implements OnInit {
 				return;
 			}
 		}
+		
 
 		// 3. Prepare payload
 		const formValue = this.branchForm.value;
@@ -484,6 +605,7 @@ export class CompanyEntryComponent implements OnInit {
 			remarks: formValue.branchRemarks,
 			taxRegistrationNo: formValue.branchTaxRegistrationNo,
 			status: formValue.branchStatus,
+			config: formValue.config,
 			CityMasterSid: parseInt(formValue.branchCityMasterSid),
 			StateMasterSid: parseInt(formValue.branchStateMasterSid),
 			CountryMasterSid: parseInt(formValue.branchCountryMasterSid),
@@ -613,6 +735,7 @@ export class CompanyEntryComponent implements OnInit {
 			this.appSettingService.showWarning('Please fill all required fields correctly');
 			return;
 		}
+		
 
 		if (this.branches.length === 0) {
 			this.appSettingService.showWarning('Company must have atleast one branch.');
@@ -648,6 +771,7 @@ export class CompanyEntryComponent implements OnInit {
 				remarks: branchValue.remarks,
 				taxRegistrationNo: branchValue.taxRegistrationNo,
 				status: branchValue.status === 'Active' ? 'A' : 'S',
+				config: branchValue.config || {},
 				CityMasterSid: parseInt(branchValue.CityMasterSid),
 				StateMasterSid: parseInt(branchValue.StateMasterSid),
 				CountryMasterSid: parseInt(branchValue.CountryMasterSid),
@@ -1200,4 +1324,14 @@ openEDoc() {
 	}
 	
 
+}
+interface FieldSelection {
+  name: string;
+  label: string;
+  selected: boolean;
+}
+
+interface ConfigModalData {
+  title: string;
+  fields: FieldSelection[];
 }
