@@ -82,7 +82,7 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of ledgerMappingList; let i = index">
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
                                     <button class="btn btn-sm btn-link text-primary p-0 mx-2" title="Edit"
                                         (click)="editLedgerMapping(item.SubledgerMasterSid, content)">
@@ -95,119 +95,20 @@
                                 </div>
                             </td>
                             
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{ item.CoaMaster?.LedgerName }}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{ item.CoaMaster?.LedgerCode}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{ item.CoaMaster?.CompanyMaster?.branchMaster[0]?.branchName
                                     }}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{ item.CoaMaster?.CurrencyMaster?.currencyName }}</div>
                             </td>
-
-                            <!-- "CoaMaster": {
-                    "COAMasterSid": 2,
-                    "GroupName": "Indirect Expenses",
-                    "SubGroupName": "Logistics",
-                    "LedgerName": "Ocean Freight Charges",
-                    "SubledgerName": "Import Shipments",
-                    "LedgerCode": "FREIGHT001",
-                    "LedgerType": "Expense",
-                    "LedgerLocation": null,
-                    "Ledgername2": "INDIRECT EXP",
-                    "LedgerCurrency": 1,
-                    "JobNoRequire": "N",
-                    "HSNRequire": "N",
-                    "ProfitandLoss": "N",
-                    "BalanceSheet": "N",
-                    "Category": null,
-                    "ReportType": null,
-                    "Remarks": "Monthly freight charges for imports",
-                    "CreatedOn": "2025-07-11T09:06:12.180Z",
-                    "CreatedBy": "ffadmin@crm.com",
-                    "UpdatedOn": "2025-07-11T17:14:57.107Z",
-                    "UpdatedBy": "ffadmin@crm.com",
-                    "deletedAt": null,
-                    "CompanyMasterSid": 2,
-                    "Status": "A",
-                    "CompanyMaster": {
-                        "companyName": "Infosys",
-                        "companyCode": "info      ",
-                        "createdBy": "admin@crm.com",
-                        "createdOn": "2025-04-08T17:38:36.804Z",
-                        "updatedOn": "2025-05-21T14:39:21.077Z",
-                        "deletedAt": null,
-                        "updatedBy": null,
-                        "addressLine1": "Dubai",
-                        "addressLine2": null,
-                        "postal_code": "34554",
-                        "webSite": null,
-                        "phoneNumber": null,
-                        "email": null,
-                        "isHo": "A",
-                        "remarks": null,
-                        "companyLogo": null,
-                        "reportLogo": null,
-                        "status": "A",
-                        "CityMasterSid": 2,
-                        "CompanyMasterSid": 2,
-                        "CountryMasterSid": 1549,
-                        "CurrencyMasterSid": 1,
-                        "LoginSid": null,
-                        "StateMasterSid": 14,
-                        "Pan": null,
-                        "branchMaster": [
-                            {
-                                "branchName": "Hyderabad"
-                            },
-                            {
-                                "branchName": "Columbo Logistics Hub"
-                            },
-                            {
-                                "branchName": "Tech Park Branch"
-                            },
-                            {
-                                "branchName": "Mongolia Exports"
-                            },
-                            {
-                                "branchName": "Austria Exports"
-                            },
-                            {
-                                "branchName": "Singapore Migrators"
-                            },
-                            {
-                                "branchName": "Singapore Freights"
-                            },
-                            {
-                                "branchName": "American Freights"
-                            },
-                            {
-                                "branchName": "Russian Freights"
-                            },
-                            {
-                                "branchName": "Andartic Vessels"
-                            },
-                            {
-                                "branchName": "CHENNAI"
-                            },
-                            {
-                                "branchName": "Mumbai"
-                            },
-                            {
-                                "branchName": "DUBAI"
-                            }
-                        ]
-                    },
-                    "CurrencyMaster": {
-                        "currencyName": "Indian Rupee"
-                    }
-                } -->
-
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 @if(item.Status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
@@ -224,7 +125,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="d-flex justify-content-end mt-3">
+            <div class="d-flex justify-content-end">
                 <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
                     (pageChange)="updatePaginationData()">
                 </ngb-pagination>

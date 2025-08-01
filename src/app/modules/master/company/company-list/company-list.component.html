@@ -1,4 +1,6 @@
-<div class="col-12">
+
+<div class="row">
+    <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
         <div class="col pb-2">
             <h4 class="page-title mb-0">Company</h4>
@@ -57,7 +59,7 @@
     </div>
 </div>
 
-<div class="row bg-white p-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+<div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
     <div class="col-12 p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -106,7 +108,7 @@
                 <tbody>
                     @for(company of companyList;track $index){
                     <tr>
-                        <td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="d-flex align-items-center">
                                 @if(hasPermission('View')) {
                                 <a class="text-info mx-2" class="link mx-2 ps-3 "
@@ -120,28 +122,28 @@
                                 </a> -->
                             </div>
                         </td>
-                        <td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="text-truncate">{{company.companyName}}</div>
                         </td>
-                        <td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="text-truncate">{{company.companyCode}}</div>
                         </td>
-                        <td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="text-truncate">{{company.branchName}}</div>
                         </td>
-                        <td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="text-truncate">{{company.city}}</div>
                         </td>
-                        <td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="text-truncate">{{company.state}}</div>
                         </td>
-                        <td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="text-truncate">{{company.country}}</div>
                         </td>
-                        <td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="text-truncate">{{company.gst}}</div>
                         </td>
-                        <td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <span class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1"
                                 *ngIf="company.status==='Active'">
                                 <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
@@ -168,3 +170,5 @@
         <div>No records found</div>
     </div>
 </div>
+</div>
+

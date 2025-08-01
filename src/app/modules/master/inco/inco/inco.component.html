@@ -89,7 +89,7 @@
         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
           <thead>
             <tr class="bg-info">
-              <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+              <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
               <th class="bg-transparent text-light" scope="col" (click)="sort('IncoCode')">
                 Inco Code
                 <i class="fas fa-sort ms-1"
@@ -100,17 +100,17 @@
                 <i class="fas fa-sort ms-1"
                   [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'IncoName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'IncoName'}"></i>
               </th>
-              <th class="bg-transparent text-light" scope="col" (click)="sort('IncoType')">
+              <th class="bg-transparent text-light" scope="col" (click)="sort('IncoType')" width="14%">
                 Inco Type
                 <i class="fas fa-sort ms-1"
                   [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'IncoType', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'IncoType'}"></i>
               </th>
-              <th class="bg-transparent text-light" scope="col" (click)="sort('OceanFreight')">
+              <th class="bg-transparent text-light" scope="col" (click)="sort('OceanFreight')" width="14%">
                 Ocean Freight
                 <i class="fas fa-sort ms-1"
                   [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'OceanFreight', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'OceanFreight'}"></i>
               </th>
-              <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+              <th class="bg-transparent text-light" scope="col" width="8%">Status</th>
 
             </tr>
           </thead>

@@ -76,7 +76,7 @@
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
   <tr class="bg-info">
-    <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+    <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
     <th class="bg-transparent text-light" scope="col" (click)="sort('MenuName')">
       Menu Name
       <i class="fas fa-sort ms-1" [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'MenuName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'MenuName'}"></i>
@@ -90,7 +90,7 @@
 </thead>
                     <tbody>
                         <tr *ngFor="let item of menuList; trackBy: trackByIndex">
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
                                     <button class="btn btn-sm btn-link text-info p-0 mx-2" 
         
@@ -104,13 +104,13 @@
                                     </button> -->
                                 </div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.MenuName}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.ModuleName || '-'}}</div>
                             </td>
-                            <td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 @if(item.status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>

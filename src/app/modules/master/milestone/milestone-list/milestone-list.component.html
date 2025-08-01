@@ -111,12 +111,12 @@
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'departmentName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'departmentName'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('SortBy')">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('SortBy')" width="5%">
                                 Sort By
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'SortBy', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'SortBy'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('AutoCapture')">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('AutoCapture')" width="8%">
                                 Auto Capture
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'AutoCapture', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'AutoCapture'}"></i>
