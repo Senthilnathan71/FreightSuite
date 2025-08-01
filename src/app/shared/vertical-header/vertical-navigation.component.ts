@@ -46,6 +46,7 @@ export class VerticalNavigationComponent implements OnInit, AfterViewInit {
   branchName: string = '';
   companyName: string = '';
   public showSearch = false;
+  filteredBranchList: any[] = [];
   companyList: any[] = [];
 branchList: any[] = [];
   selectedBranchCompany: any;
@@ -69,124 +70,163 @@ branchList: any[] = [];
     // translate.setDefaultLang('en');
 
   }
-
 ngOnInit(): void {
-    this.appSettingsService.getUser().subscribe(user => {
-      if (user) {
-        this.userData = user;
+  this.userData = this.appSettingsService.getDecryptedUserProfile();
+  console.log('Decrypted userData:', this.userData);
 
-        // Set default selected branch/company
-        this.selectedBranchCompany =
-          user.userBranchMaster?.find((b: any) => b.isDefault) ||
-          user.userBranchMaster?.[0];
+  if (this.userData?.userCompanyMaster?.length) {
+    this.companyList = this.userData.userCompanyMaster.map(ucm => ({
+      CompanyMasterSid: ucm.CompanyMasterSid,
+      companyName: ucm.companyMaster?.companyName || 'Unnamed Company',
+      companyMaster: ucm.companyMaster,
+      IsDefault: ucm.IsDefault
+    }));
 
-        if (this.selectedBranchCompany) {
-          this.branchName =
-            this.selectedBranchCompany.branchMaster?.branchName || '';
-          this.companyName =
-            this.selectedBranchCompany.companyMaster?.companyName || '';
+    // Pick default company by IsDefault or first
+    const defaultCompany = this.companyList.find(c => c.IsDefault === 'Y') || this.companyList[0];
+    this.selectedCompanyId = defaultCompany.CompanyMasterSid;
 
-          this.selectedCompanyId =
-            this.selectedBranchCompany.companyMaster?.CompanyMasterSid;
-          this.selectedBranchId =
-            this.selectedBranchCompany.UserBranchMasterSid;
-        }
+    // Populate branchList for selected company
+    this.branchList = (defaultCompany.companyMaster?.userBranchMaster || []).map(ubm => ({
+      UserBranchMasterSid: ubm.UserBranchMasterSid,
+      branchMaster: ubm.branchMaster,
+      companyMaster: defaultCompany.companyMaster
+    }));
 
-        this.extractCompanies();
-      }
-    });
-  }
+    // Pick default branch — either first branch marked as default or first branch itself
+    const defaultBranch = this.branchList.find(b => b.IsDefault === 'Y') || this.branchList[0];
 
-  extractCompanies(): void {
-    const allCompanies = this.userData?.userBranchMaster?.map(
-      (b: any) => b.companyMaster
-    );
+    if (defaultBranch) {
+      this.selectedBranchId = defaultBranch.UserBranchMasterSid;
 
-    this.companyList = allCompanies
-      ? allCompanies.filter(
-          (company, index, self) =>
-            index ===
-            self.findIndex(
-              (c: any) => c.CompanyMasterSid === company.CompanyMasterSid
-            )
-        )
-      : [];
-  }
-
-  onCompanyChange(companyId: number): void {
-    this.branchList = this.userData?.userBranchMaster?.filter(
-      (b: any) => b.companyMaster?.CompanyMasterSid === +companyId
-    ) || [];
-
-    // Reset selectedBranchId if it's not in new list
-    const exists = this.branchList.find(
-      (b: any) => b.UserBranchMasterSid === this.selectedBranchId
-    );
-    if (!exists && this.branchList.length > 0) {
-      this.selectedBranchId = this.branchList[0].UserBranchMasterSid;
+      this.selectedBranchCompany = {
+        companyMaster: defaultCompany.companyMaster,
+        branchMaster: defaultBranch.branchMaster
+      };
     }
-  }
-
-  openBranchSwitchModal(content: TemplateRef<any>): void {
-    if (this.selectedBranchCompany) {
-      this.selectedCompanyId =
-        this.selectedBranchCompany.companyMaster?.CompanyMasterSid;
-      this.onCompanyChange(this.selectedCompanyId);
-      this.selectedBranchId = this.selectedBranchCompany.UserBranchMasterSid;
-    }
-
-    this.modalRef = this.modalService.open(content, {
-      centered: true,
-      size: 'md',
-      backdrop: 'static',
-    });
-  }
-
-  onBranchChangeFromModal(selectedId: number | string, modalRef: NgbModalRef): void {
-    const selectedBranch = this.userData?.userBranchMaster?.find(
-      (b: any) => b.UserBranchMasterSid === +selectedId
-    );
-
-    if (selectedBranch) {
-      this.selectedBranchId = selectedBranch.UserBranchMasterSid;
-      this.selectedCompanyId =
-        selectedBranch.companyMaster?.CompanyMasterSid;
-
-      this.onCompanyChange(this.selectedCompanyId);
-
-      this.selectedBranchCompany = selectedBranch;
-
-      this.userData.branchMaster = selectedBranch.branchMaster;
-      this.userData.companyMaster = selectedBranch.companyMaster;
-
-      this.branchName = selectedBranch.branchMaster?.branchName || '';
-      this.companyName = selectedBranch.companyMaster?.companyName || '';
-
-      modalRef.close();
-    } else {
-      console.warn('Branch not found for selected ID:', selectedId);
-    }
-  }
-
-
-
-
-
-
-onBranchChange(event: Event): void {
-  const selectedId = (event.target as HTMLSelectElement).value;
-  const selectedBranch = this.userData.userBranchMaster.find(
-    (b: any) => b.UserBranchMasterSid == selectedId
-  );
-
-  if (selectedBranch) {
-    this.selectedCompanyId = selectedBranch;
-
-    console.log('Switched to Branch:', selectedBranch.branchMaster.branchName);
-    console.log('Switched to Company:', selectedBranch.companyMaster.companyName);
+  } else {
+    console.warn('No user company data found in local storage');
   }
 }
 
+
+
+
+  extractCompanies(): void {
+    const companyMasterList = this.userData?.userCompanyMaster || [];
+
+    this.companyList = companyMasterList.map((ucm: any) => ucm.companyMaster);
+    console.log('Extracted companies:', this.companyList);
+  }
+
+  onCompanyChange(companyId: number) {
+  const selectedCompany = this.companyList.find(c => c.CompanyMasterSid === companyId);
+
+  // Extract branch list from companyMaster.userBranchMaster
+  this.branchList = selectedCompany?.companyMaster?.userBranchMaster || [];
+  this.selectedBranchId = null;
+
+  console.log('Selected Company:', selectedCompany);
+  console.log('Branch List:', this.branchList);
+}
+
+
+ openBranchSwitchModal(content: TemplateRef<any>): void {
+  if (this.selectedBranchCompany) {
+    // Get company and branch SIDs from selectedBranchCompany
+    const company = this.companyList.find(
+      c => c.companyMaster.CompanyMasterSid === this.selectedBranchCompany.companyMaster.CompanyMasterSid
+    );
+
+    if (company) {
+      this.selectedCompanyId = company.CompanyMasterSid;
+      this.onCompanyChange(this.selectedCompanyId); // Load branch list
+    }
+
+    const branch = (company?.companyMaster?.userBranchMaster || []).find(
+      b => b.branchMaster.BranchMasterSid === this.selectedBranchCompany.branchMaster.BranchMasterSid
+    );
+
+    if (branch) {
+      this.selectedBranchId = branch.UserBranchMasterSid;
+    }
+  }
+
+  this.modalRef = this.modalService.open(content, {
+    centered: true,
+    size: 'md',
+    backdrop: 'static',
+  });
+
+  this.cdr.detectChanges(); // Ensure Angular detects updates before rendering modal
+}
+
+
+  onBranchChangeFromModal(branchId: number, modalRef: NgbModalRef): void {
+  const selectedCompany = this.companyList.find(c => c.CompanyMasterSid === this.selectedCompanyId);
+  const selectedBranch = this.branchList.find(b => b.UserBranchMasterSid === branchId);
+
+  if (!selectedCompany || !selectedBranch) {
+    this.appSettingsService.showError('Invalid company or branch selected');
+    return;
+  }
+
+  const updatedBranchCompany = {
+    companyMaster: selectedCompany.companyMaster,
+    branchMaster: selectedBranch.branchMaster
+  };
+
+  // ✅ Step 1: Update full user object
+  const updatedUserData = {
+    ...this.userData,
+    selectedBranchCompany: updatedBranchCompany
+  };
+
+  // ✅ Step 2: Store to localStorage (encrypted)
+  this.appSettingsService.storeUserProfile(updatedUserData);
+
+  // ✅ Step 3: Update observable in service for other subscribers
+  this.appSettingsService.setUserSettings(updatedUserData);
+
+  // ✅ Step 4: Update component state
+  this.selectedBranchCompany = updatedBranchCompany;
+  this.branchName = updatedBranchCompany.branchMaster.branchName;
+  this.companyName = updatedBranchCompany.companyMaster.companyName;
+  this.userData = updatedUserData;
+
+  this.appSettingsService.showSuccess('Switched to new branch and company');
+
+  modalRef.close();
+}
+
+
+
+  onBranchChange(event: Event): void {
+    const selectedId = +(event.target as HTMLSelectElement).value;
+
+    const selectedBranch = this.userData.userCompanyMaster
+      .flatMap((ucm: any) => ucm.userBranchMaster || [])
+      .find((b: any) => b.UserBranchMasterSid === selectedId);
+
+    if (selectedBranch) {
+      this.selectedBranchId = selectedBranch.UserBranchMasterSid;
+      this.selectedCompanyId = selectedBranch.CompanyMasterSid;
+
+      this.onCompanyChange(this.selectedCompanyId);
+      this.selectedBranchCompany = selectedBranch;
+
+      this.userData.branchMaster = selectedBranch.branchMaster;
+      this.userData.companyMaster = this.companyList.find(
+        (c: any) => c.CompanyMasterSid === selectedBranch.CompanyMasterSid
+      );
+
+      this.branchName = selectedBranch.branchMaster?.branchName || '';
+      this.companyName = this.userData.companyMaster?.companyName || '';
+
+      console.log('Switched to Branch:', this.branchName);
+      console.log('Switched to Company:', this.companyName);
+    }
+  }
 
 
 

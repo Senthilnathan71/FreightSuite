@@ -612,13 +612,14 @@
     <!-- Branch Dropdown -->
     <label class="form-label fw-bold text-black">Select Branch</label>
     <select class="form-select mb-3"
-        [(ngModel)]="selectedBranchId">
-  <option [ngValue]="null">-- Select Branch --</option>
-  <option *ngFor="let branch of branchList"
-          [ngValue]="branch.UserBranchMasterSid">
-    {{ branch.branchMaster.branchName }} ({{ branch.companyMaster.companyName }})
-  </option>
-</select>
+            [(ngModel)]="selectedBranchId">
+      <option [ngValue]="null">-- Select Branch --</option>
+      <option *ngFor="let branch of branchList"
+              [ngValue]="branch.UserBranchMasterSid">
+        {{ branch.branchMaster?.branchName }} 
+        <span *ngIf="branch.companyMaster?.companyName">({{ branch.companyMaster.companyName }})</span>
+      </option>
+    </select>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
