@@ -60,7 +60,7 @@
             </aside>
 
             <!-- COMPANY NAME -->
-            <aside class="col-md-6">
+            <aside class="col-md-6" *ngIf="companyForm.get('companyName')?.enabled">  
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                   formControlName="companyName" [onlyText]="100">
@@ -83,7 +83,7 @@
 
             <!-- COMPANY CODE -->
 
-            <aside class="col-md-6">
+            <aside class="col-md-6" *ngIf="companyForm.get('companyCode')?.enabled">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                   formControlName="companyCode" [textWithNumbers]="10">
@@ -128,7 +128,7 @@
                 }
               </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-6" *ngIf="companyForm.get('companyCode')?.enabled">
               <div class="custom-form-group custom-form-group-select">
                 <ng-select id="text-input" class="ng-select" placeholder="Select Currency"
                   formControlName="CurrencyMasterSid">
@@ -158,7 +158,7 @@
 
             <!-- ADDRESS LINE 1 -->
 
-            <aside class="col-md-6">
+            <aside class="col-md-6" *ngIf="companyForm.get('addressLine1')?.enabled">
               <div class="custom-form-group">
                 <textarea type="text" id="text-input" placeholder="" class="custom-input-field sm"
                   formControlName="addressLine1" [textWithNumbers]="500" rowspan="2" rows="1"></textarea>
@@ -177,7 +177,7 @@
                 }
               </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-6"*ngIf="companyForm.get('webSite')?.enabled">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                   formControlName="webSite" [textWithNumbers]="100">
@@ -204,7 +204,7 @@
             <h5 class="card-title m-1 text-center text-info">Contact</h5>
           </aside>
           <div class="row" [formGroup]="companyForm">
-            <aside class="col-md-6">
+            <aside class="col-md-6"*ngIf="companyForm.get('email')?.enabled">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="email">
                 <label for="text-input" class="input-label">Email </label>
@@ -344,7 +344,7 @@
 
             <!-- PHONE NUMBER -->
 
-            <aside class="col-md-6">
+            <aside class="col-md-6" *ngIf="companyForm.get('phoneNumber')?.enabled">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                   formControlName="phoneNumber" [onlyNumbers]="20">
@@ -366,7 +366,7 @@
                   
                   <!-- PAN -->
                   
-                  <aside class="col-md-6">
+                  <aside class="col-md-6" *ngIf="companyForm.get('Pan')?.enabled">
                     <div class="custom-form-group">
                       <input type="text" id="panInput" class="custom-input-field sm" formControlName="Pan" placeholder="" maxlength="20" />
                       <label for="panInput" class="input-label">
@@ -404,7 +404,7 @@
 
             <!-- REMARKS -->
 
-            <aside class="col-md-6">
+            <aside class="col-md-6" *ngIf="companyForm.get('remarks')?.enabled">
               <div class="custom-form-group">
                 <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="remarks"
                   [textWithNumbers]="500" rows="1"></textarea>
@@ -452,6 +452,10 @@
         <li [ngbNavItem]="1">
           <a ngbNavLink>Branch</a>
         </li>
+         <button type="button" class="btn btn-outline-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+        (click)="openConfigModal(configModal, true)">
+  <i class="fas fa-cog me-1"></i> Configure
+</button>
         <button 
            (click)="openBranchEntryModal(branchEntryContent)" 
            class="btn m-1 ms-auto btn-sm btn-info gap-2">
@@ -554,7 +558,7 @@
                           Branch
                         </h5>
                       </aside>
-                      <aside class="col-md-12">
+                      <aside class="col-md-12" *ngIf="branchForm.get('branchName')?.enabled">
                         <div class="custom-form-group">
                           <input type="text" id="branchName" placeholder="" class="custom-input-field sm"
                             formControlName="branchName" [onlyText]="100">
@@ -573,7 +577,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-12">
+                      <aside class="col-md-12"*ngIf="branchForm.get('branchCode')?.enabled">
                         <div class="custom-form-group">
                           <input type="text" id="branchCode" placeholder="" class="custom-input-field sm"
                             formControlName="branchCode" [textWithNumbers]="10">
@@ -592,7 +596,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-12">
+                      <aside class="col-md-12"*ngIf="branchForm.get('branchTaxRegistrationNo')?.enabled">
                         <div class="custom-form-group">
                           <input type="text" id="branchTaxRegistrationNo" placeholder="" class="custom-input-field sm"
                             formControlName="branchTaxRegistrationNo" [textWithNumbers]="50">
@@ -623,7 +627,7 @@
                           Address
                         </h5>
                       </aside>
-                      <aside class="col-md-6">
+                      <aside class="col-md-6" *ngIf="branchForm.get('branchAddressLine1')?.enabled">
                         <div class="custom-form-group">
                           <input type="text" id="branchAddressLine1" placeholder="" class="custom-input-field sm"
                             formControlName="branchAddressLine1" [textWithNumbers]="500">
@@ -643,7 +647,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-6">
+                      <aside class="col-md-6" *ngIf="branchForm.get('branchAddressLine2')?.enabled">
                         <div class="custom-form-group">
                           <input type="text" id="branchAddressLine2" placeholder="" class="custom-input-field sm"
                             formControlName="branchAddressLine2" [textWithNumbers]="500">
@@ -658,7 +662,7 @@
                           }
                         </div>
                       </aside>
-                      <aside class="col-md-6">
+                      <aside class="col-md-6" *ngIf="branchForm.get('branchPostalCode')?.enabled">
                         <div class="custom-form-group">
                           <input type="text" id="branchPostalCode" placeholder="" class="custom-input-field sm"
                             formControlName="branchPostalCode" [onlyNumbers]="10">
@@ -759,7 +763,7 @@
                           Contact & Other
                         </h5>
                       </aside>
-                      <aside class="col-md-6">
+                      <aside class="col-md-6" *ngIf="branchForm.get('branchWebSite')?.enabled">
                         <div class="custom-form-group">
                           <input type="text" id="branchWebSite" placeholder="" class="custom-input-field sm"
                             formControlName="branchWebSite" [textWithNumbers]="100">
@@ -774,7 +778,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-6">
+                      <aside class="col-md-6" *ngIf="branchForm.get('branchPhoneNumber')?.enabled">
                         <div class="custom-form-group">
                           <input type="text" id="branchPhoneNumber" placeholder="" class="custom-input-field sm"
                             formControlName="branchPhoneNumber" [onlyNumbers]="20">
@@ -793,7 +797,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-6">
+                      <aside class="col-md-6" *ngIf="branchForm.get('branchEmail')?.enabled">
                         <div class="custom-form-group">
                           <input type="text" id="branchEmail" placeholder="" class="custom-input-field sm"
                             formControlName="branchEmail">
@@ -820,7 +824,7 @@
                           }
                         </div>
                       </aside>
-                      <aside class="col-md-6">
+                      <aside class="col-md-6" *ngIf="branchForm.get('branchTimeZone')?.enabled">
                         <div class="custom-form-group">
                           <input type="text" id="branchTimeZone" placeholder="" class="custom-input-field sm"
                             formControlName="branchTimeZone" (keydown)="validateTimezoneKey($event)"
@@ -840,7 +844,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-6">
+                      <aside class="col-md-6" *ngIf="branchForm.get('branchRemarks')?.enabled">
                         <div class="custom-form-group">
                           <input type="text" id="branchRemarks" placeholder="" class="custom-input-field sm"
                             formControlName="branchRemarks" [textWithNumbers]="500">
@@ -1012,6 +1016,11 @@
             Bank
           </button>
         </li>
+        <button type="button" class="btn btn-outline-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+        (click)="openConfigModal(configModal, false, currentBranchIndex)">
+  <i class="fas fa-cog me-1"></i> Configure
+</button>
+
         <button 
            (click)="openBranchBankModal(bankEntryContent, currentBranchIndex)" 
            class="btn m-1 ms-auto btn-sm btn-info gap-2">
@@ -1275,5 +1284,38 @@
             </button>
           </div>
        
+  </div>
+</ng-template>
+<!-- Add this at the bottom of the file -->
+<ng-template #configModal let-modal>
+  <div class="modal-header p-2 bg-info text-white">
+    <h4 class="modal-title">{{configModalData.title}}</h4>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="row">
+              @for (field of configModalData.fields; track $index) {
+              <div class="col-md-6 mb-2">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" [(ngModel)]="field.selected" [id]="'field-' + $index">
+                  <label class="form-check-label" [for]="'field-' + $index">
+                    {{field.label}}
+                  </label>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-light-secondary" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-info" (click)="saveConfig(configModalData.title.includes('Company'))">Save</button>
   </div>
 </ng-template>
