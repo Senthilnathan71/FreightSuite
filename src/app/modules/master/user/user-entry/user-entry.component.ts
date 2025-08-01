@@ -61,10 +61,7 @@ export class UserEntryComponent implements OnInit {
 	currentMenuPermissions: any = {};
 	userInfos: any[] = [];  // for displaying branches 
 	selectedCompanies: any[];
-	selectedBranches: { [key: number]: number[] } = {};
-	selectedRoles: any[] = [];
-	defaultCompanies: { [key: number]: boolean } = {};
-    defaultBranches: { [key: number]: number } = {};
+	defaultItems : { [companyId:number] : number } = {};
 
 	modeOfStatus = [
 		{ name: 'Active' },
@@ -146,10 +143,144 @@ export class UserEntryComponent implements OnInit {
 			userPassword: [, [PasswordValidators.validate()]],
 			CountryMasterSid: [, [Validators.required]],
 			companies : [null,[Validators.required]],
-			roles: [null,[Validators.required]]
+			userCompanies : this.fb.array([],[this.atLeastOneDefaultValidator(this.defaultItems)]),
+			roles :  [null,[Validators.required]]
 		});
 		this.userForm.get('DefaultDept').disable()
 	}
+
+	get userCompanies() : FormArray {
+		return this.userForm.get('userCompanies') as FormArray;
+	}
+
+	userBranches(companyIndex:number) : FormArray {
+		return this.userCompanies.at(companyIndex).get('userBranches') as FormArray
+	}
+
+	createNewUserCompany(data?:any) {
+		const companyName = data?.companyName || 'Unnamed Company';
+		return this.fb.group({
+			UserCompanyMasterSid : [data.UserCompanyMasterSid || null],
+			CompanyMasterSid : [data.CompanyMasterSid || null],
+			companyName : [companyName || ''],
+			GiveAccess : [true],
+			IsDefault : [data.IsDefault === 'Y' || false],
+			userBranches : this.fb.array([],this.atLeastOneBranchAccessValidator(companyName))
+		})
+	}
+
+	createNewUserBranches(data?:any) {
+		return this.fb.group({
+			UserBranchMasterSid : [data.UserBranchMasterSid || null],
+			CompanyMasterSid : [data.CompanyMasterSid || null],
+			BranchMasterSid : [data.BranchMasterSid || null],
+			branchName : [data.branchName || ''],
+			GiveAccess : [data.GiveAccess === 'Y' || false],
+			IsDefault : [data.IsDefault === 'Y' || false],
+		})
+	}
+
+	addToSelectedCompany(companies: number[]) {
+		const oldCompaniesArr: number[] = this.selectedCompanies || [];
+		const newCompaniesArr: number[] = companies || [];
+
+		const companyToRemove = oldCompaniesArr.filter((oldCompSid) => !newCompaniesArr.includes(oldCompSid));
+		const companyToAdd = newCompaniesArr.filter((newCompSid) => !oldCompaniesArr.includes(newCompSid));
+
+		if (companyToRemove.length > 0) {
+			const indicesToRemove: number[] = [];
+			this.userCompanies.controls.forEach((formGroup, index) => {
+				const companySid = formGroup.get('CompanyMasterSid')?.value;
+				if (companyToRemove.includes(companySid)) {
+					indicesToRemove.push(index);
+				}
+			});
+
+			indicesToRemove.sort((a, b) => b - a).forEach((index) => {
+				this.userCompanies.removeAt(index);
+			});
+		}
+
+		if (companyToAdd.length > 0) {
+			for (const companySid of companyToAdd) {
+				const company = this.companyList.find((company) => company.CompanyMasterSid === companySid);
+				if (company) {
+					this.handleCompanySelection(company);
+				}
+			}
+		}
+
+		this.selectedCompanies = [...newCompaniesArr];
+		console.log('USER FORM AFTER COMPANY SELECTION', this.userForm.value);
+	}
+
+	handleCompanySelection(company) {
+		if(!company || company === undefined || company === null) {
+			return;
+		}
+		const branches : any[] = company.branchMaster || [];
+		this.userCompanies.push(this.createNewUserCompany(company))
+		const lastCompanyIndex = this.userCompanies.length - 1;
+		console.log(branches);
+		console.log(lastCompanyIndex);
+		if(branches.length > 0){
+			branches.map(branch => this.userBranches(lastCompanyIndex).push(this.createNewUserBranches(branch)));
+		}
+	}
+
+	toggleDefaultItems(companyIndex, branchIndex, CompanyMasterSid, BranchMasterSid, event) {
+		const element = event.target as HTMLInputElement;
+		const control = this.userBranches(companyIndex).at(branchIndex).get('GiveAccess');
+		this.defaultItems = {};
+		if (event instanceof KeyboardEvent) {
+			element.checked = !element.checked;
+		}
+		if (element.checked) {
+			control.setValue(element.checked);
+			this.defaultItems[`${CompanyMasterSid}`] = BranchMasterSid;
+		} 
+		
+		const userCompanies = this.userForm.get('userCompanies') as FormArray;
+		userCompanies.setValidators([this.atLeastOneDefaultValidator(this.defaultItems)]);
+		userCompanies.updateValueAndValidity();
+		console.log(this.userForm.controls);
+	}
+
+
+	isDefaultCompany(CompanyMasterSid){
+		let keys : any[] = Object.keys(this.defaultItems);
+		keys = keys.map(k => Number(k));
+		return keys.includes(CompanyMasterSid);
+	}
+
+	isDefaultBranch(BranchMasterSid){
+		const keys = Object.values(this.defaultItems);
+		return keys.includes(BranchMasterSid);
+	}
+
+	toggleBranchAccessCheckBox(companyIndex,branchIndex,BranchMasterSid,event){
+		console.log(event);
+		const element = event.target as HTMLInputElement;
+		const control = this.userBranches(companyIndex).at(branchIndex).get('GiveAccess')
+		console.log(control);
+		if(event instanceof KeyboardEvent){
+			element.checked = !element.checked;
+		}
+		if (element.checked) {
+			control.setValue(true);
+		} else {
+			control.setValue(false);
+			if (this.isDefaultBranch(BranchMasterSid)) {
+				this.defaultItems = {};
+			}
+		}
+		control.updateValueAndValidity();
+		const userCompanies = this.userForm.get('userCompanies') as FormArray;
+		userCompanies.setValidators([this.atLeastOneDefaultValidator(this.defaultItems)]);
+		userCompanies.updateValueAndValidity();
+		console.log(this.userCompanies.controls);
+	}
+
 
 	// loads all lookups
 	loadAllFields() {
@@ -167,7 +298,6 @@ export class UserEntryComponent implements OnInit {
 			this.roleList = roles.data;
 			this.countryList = countries.data;
 			this.menuList = menus;
-			this.handleCompanySelect(this.selectedCompanies);
 		})
 	}
 
@@ -179,7 +309,6 @@ export class UserEntryComponent implements OnInit {
 					this.userData = resp.data;
 					const user = resp.data;
 					this.patchCompanies(user.userCompanyMaster);
-					this.patchBranches(user.userBranchMaster);
 					const rolePatchValue = user.userRoleMaster.map(userRole => userRole.RoleMasterSid);
 					this.userForm.patchValue({
 						userName: user.userName,
@@ -217,27 +346,28 @@ export class UserEntryComponent implements OnInit {
 
 		const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
 		const formValue = this.userForm.getRawValue();
-		const companyPayload = formValue.companies.map(companyId => ({
-    CompanyMasterSid: companyId,
-    IsDefault: this.isDefaultCompany(companyId) ? 'Y' : 'N',
-    GiveAccess: 'Y', // Assuming all selected companies get access
-    status: 'A'
-  }));
-
-  const branchPayload = [];
-  for (const companyId of Object.keys(this.selectedBranches)) {
-    const companyIdNum = Number(companyId);
-    const branches = this.selectedBranches[companyIdNum];
-    
-    branches.forEach(branchId => {
-      branchPayload.push({
-        BranchMasterSid: branchId,
-        IsDefault: this.isDefaultBranch(companyIdNum, branchId) ? 'Y' : 'N',
-        GiveAccess: 'Y', // Assuming all selected branches get access
-        status: 'A'
-      });
-    });
-  }
+		const companyPayload = this.userCompanies.controls.map((companyFormGroup,companyIndex) => {
+			const companyFormValue = companyFormGroup.value;
+			const branchArrValues = this.userBranches(companyIndex).value;
+			let branchPayload;
+			branchPayload = branchArrValues.map(branch => {
+				return {
+					UserBranchMasterSid: branch.UserBranchMasterSid,
+					CompanyMasterSid: branch.CompanyMasterSid,
+					BranchMasterSid: branch.BranchMasterSid,
+					GiveAccess: branch.GiveAccess ? 'Y' : 'N',
+					IsDefault: this.isDefaultBranch(branch.BranchMasterSid) ? 'Y' : 'N' ,
+				}
+			})
+			return {
+				UserCompanyMasterSid: companyFormValue.UserCompanyMasterSid,
+				CompanyMasterSid: companyFormValue.CompanyMasterSid,
+				GiveAccess: 'Y',
+				IsDefault: this.isDefaultCompany(companyFormValue.CompanyMasterSid) ? 'Y' : 'N',
+				userBranches : branchPayload
+			}
+		})
+		
 		const payload = {
 			userName: formValue.userName,
 			userEmail: formValue.userEmail,
@@ -248,10 +378,9 @@ export class UserEntryComponent implements OnInit {
 			contactNumber: formValue.contactNumber,
 			CountryMasterSid: formValue.CountryMasterSid,
 			status: formValue.status === 'Active' ? 'A' : 'S',
-			companies: formValue.companies,
-			branches: this.selectedBranches,
 			roles : formValue.roles,
 			userCode: this.getUserCode(formValue.userName),
+			companies : companyPayload,
 			...(this.isEditMode ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail,userPassword: formValue.userPassword, }),
 		}
 
@@ -303,137 +432,65 @@ export class UserEntryComponent implements OnInit {
 	// ====== Company Related Functions ========= \\
 
 	//  Handles Selected Company during patching
-	patchCompanies(companyList: any[]) {
-		if (!companyList) {
-			return;
-		}
-		const companies = companyList.map(userCompany => userCompany.CompanyMasterSid);
-		this.userForm.get('companies').setValue(companies);
-		this.addToSelectedCompanies(companies)
-
-	}
-
-	// handles selected Company during user event
-	addToSelectedCompanies(value: any[]) {
-		this.selectedCompanies = value;
-		this.userForm.get('companies').setValue(value);
-		this.lookAfterBranch();
-		if (this.companyList !== undefined) {
-			this.handleCompanySelect(value);
-		}
-	}
-	// Once a company is removed it filter out the related branch
-	lookAfterBranch() {
-		if (!this.selectedBranches || !this.selectedCompanies) {
-			return;
-		}
-		const updatedBranches: any = {};
-		for (const companyId of Object.keys(this.selectedBranches)) {
-			if (this.selectedCompanies.includes(Number(companyId))) {
-				updatedBranches[companyId] = this.selectedBranches[companyId];
+	patchCompanies(userCompanyList: any[]) {
+		const allCompanyIds = userCompanyList.map(comp => comp.CompanyMasterSid);
+		this.userForm.get('companies').setValue([...allCompanyIds]);
+		this.selectedCompanies = [...allCompanyIds];
+		userCompanyList.map(userCompanyMaster => {
+			const companyData = {
+				UserCompanyMasterSid: userCompanyMaster?.UserCompanyMasterSid,
+				CompanyMasterSid: userCompanyMaster?.CompanyMasterSid,
+				companyName: userCompanyMaster?.companyMaster?.companyName,
+				GiveAccess: userCompanyMaster?.GiveAccess,
 			}
-		}
-		this.selectedBranches = updatedBranches;
-	}
+			this.userCompanies.push(this.createNewUserCompany(companyData));
+			const lastCompanyIndex = this.userCompanies.length - 1;
 
-	//  On selecting a company it takes Company and branchMaster to UI through userInfo variable
-	handleCompanySelect(company: any[]) {
-		if (!company) {
-			return;
-		}
-		const newArr = company.map(companyId => {
-			const ourCompany = this.companyList.find(company => company.CompanyMasterSid === companyId);
-			let companyName = ourCompany.companyName;
-			let branchMaster = ourCompany.branchMaster;
-			return {
-				CompanyMasterSid: companyId,
-				companyName: companyName,
-				branches: branchMaster
-			};
+			const userBranchList : any[] = userCompanyMaster?.companyMaster?.userBranchMaster;
+			userBranchList.map(userBranchMaster => {
+				if(userBranchMaster.IsDefault === 'Y'){
+					this.defaultItems = {};
+					this.defaultItems[`${userBranchMaster?.CompanyMasterSid}`] = userBranchMaster?.BranchMasterSid;
+					this.userForm.get('userCompanies').setValidators([this.atLeastOneDefaultValidator(this.defaultItems)]);
+					this.userForm.get('userCompanies').updateValueAndValidity();
+				}
+				const branchData = {
+					UserBranchMasterSid: userBranchMaster?.UserBranchMasterSid,
+					CompanyMasterSid: userBranchMaster?.CompanyMasterSid,
+					BranchMasterSid: userBranchMaster?.BranchMasterSid,
+					branchName: userBranchMaster?.branchMaster?.branchName,
+					GiveAccess: userBranchMaster?.GiveAccess,
+				}
+				this.userBranches(lastCompanyIndex).push(this.createNewUserBranches(branchData));
+			})
 		})
-		this.userInfos = newArr;
 	}
 
+	atLeastOneBranchAccessValidator(companyName: string): ValidatorFn {
+		return (formArray: AbstractControl): ValidationErrors | null => {
+			const hasAccess = (formArray as FormArray).controls.some(
+				control => control.get('GiveAccess')?.value === true
+			);
 
-	// ====== Branch Related Functions ========= \\\
+			if (!hasAccess) {
+				return {
+					noAccess: `At least one branch must have 'Access' selected for company: "${companyName}".`
+				};
+			}
 
-	//  Check if a branch is selected
-	isCheckedBranch(BranchMasterSid){
-		if(!BranchMasterSid || !this.selectedBranches){
-			return false;
-		}
-		const branches = Object.values(this.selectedBranches).flat();
-		return branches.includes(BranchMasterSid);
+			return null;
+		};
 	}
 
-	patchBranches(branchList: any[]) {
-		if (!branchList) {
-			return;
-		}
-		branchList.map(branch => this.handleBranchToggle(true, branch))
+	atLeastOneDefaultValidator(defaultItems: { [key: string]: any }): ValidatorFn {
+		return (control: AbstractControl): ValidationErrors | null => {
+			if (!defaultItems || Object.keys(defaultItems).length === 0) {
+				return { noDefault: true };
+			}
+			return null;
+		};
 	}
 
-
-	toggleBranchCheckBox(event:Event,branch){
-		event.preventDefault();
-		const element = event.target as HTMLInputElement;
-		if(event instanceof KeyboardEvent){
-			element.checked = !element.checked;
-		}
-		this.handleBranchToggle(element.checked,branch);
-	}
-
-	handleBranchToggle(event: boolean, branch: any) {
-  const companyId = branch.CompanyMasterSid;
-  const branchId = branch.BranchMasterSid;
-  
-  if (event) {
-   
-    const existArr = this.selectedBranches[companyId] || [];
-    if (!existArr.includes(branchId)) {
-      this.selectedBranches[companyId] = [...existArr, branchId];
-    }
-  } else {
-    
-    const existArr = this.selectedBranches[companyId] || [];
-    const newArr = existArr.filter(id => id !== branchId);
-    
-   
-    if (this.defaultBranches[companyId] === branchId) {
-      delete this.defaultBranches[companyId];
-    }
-    
-    if (newArr.length === 0) {
-      delete this.selectedBranches[companyId];
-    } else {
-      this.selectedBranches[companyId] = newArr;
-    }
-  }
-}
-
-toggleDefaultCompany(companyId: number, isDefault: boolean) {
-  if (isDefault) {
-   
-    this.defaultCompanies = { [companyId]: true };
-  } else {
-    delete this.defaultCompanies[companyId];
-  }
-}
-
-
-toggleDefaultBranch(companyId: number, branchId: number) {
-  this.defaultBranches[companyId] = branchId;
-}
-
-
-isDefaultBranch(companyId: number, branchId: number): boolean {
-  return this.defaultBranches[companyId] === branchId;
-}
-
-
-isDefaultCompany(companyId: number): boolean {
-  return this.defaultCompanies[companyId] === true;
-}
 
 	getUserCode(userName: string) {
 		return userName.replace(/\s+/g, '_');
@@ -484,11 +541,10 @@ isDefaultCompany(companyId: number): boolean {
 			userPassword: null,
 			CountryMasterSid: null,
 			companies: [],
-			roles: [] 
+			roles: [],	 
 		});
-
+		this.userCompanies.clear();
 		this.selectedCompanies = [];
-		this.selectedBranches = {};
 		this.userInfos = [];
 		this.setDefaultDept();
 	}

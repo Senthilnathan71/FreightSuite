@@ -82,8 +82,8 @@ export class QuotationViewComponent {
           console.log(this.quoteItems);
           this.totalLengthOfCollection = resp.data?.totalCount || 0;
         } else {
-          this.appSettingService.showError('Error searching supplier TDS mapping.');
-          console.error('Error searching supplier TDS mapping', resp.message)
+          this.appSettingService.showError('Error searching Quotation.');
+          console.error('Error searching Quotation', resp.message)
           this.quoteItems = [];
           this.totalLengthOfCollection1 = 0;
         }

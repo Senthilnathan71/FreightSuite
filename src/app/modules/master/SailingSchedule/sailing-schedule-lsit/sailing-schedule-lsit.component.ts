@@ -38,7 +38,7 @@ export class SailingScheduleLsitComponent implements OnInit {
     searchType : string = 'VoyageNo';
     sortColumn: string = 'VoyageNo'; 
     sortDirection: string = 'asc';
-    portList : any[];
+    portList : any[] = [];
     filterValue :any;
     searched : boolean;
     scheduleList : any[];
@@ -354,7 +354,7 @@ getSortValue(item: any): any {
     }
 
     getFormattedPort(PortMasterSid) {
-        if (!PortMasterSid) {
+        if (!PortMasterSid || this.portList.length === 0) {
             return '';
         }
         const port = this.portList.find(p => p.PortMasterSid === PortMasterSid)

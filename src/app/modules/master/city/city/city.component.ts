@@ -156,12 +156,10 @@ export class CityComponent {
     next: (response: any) => {
       if (response) {
         this.cityList = response.items.map((city: any) => {
-          const country = this.countryList.find(c => c.CountryMasterSid === city.CountryMasterSid);
-          const state = this.stateList.find(s => s.StateMasterSid === city.StateMasterSid);
           return {
             ...city,
-            countryName: country ? country.countryName : 'N/A',
-            stateName: state ? state.stateName : 'N/A'
+            countryName: city?.countryMaster?.countryName || 'N/A',
+            stateName: city?.stateMaster?.stateName || 'N/A'
           };
         });
         this.totalLengthOfCollection = response.totalCount;

@@ -24,7 +24,7 @@
                         Reset
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
-                        [disabled]=" btnDisable"
+                        
                         *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Update' : 'Save'}}
@@ -300,7 +300,7 @@
                     <div class="custom-form-group custom-form-group-select">
                         <multi-select [control]="userForm.get('companies')" [items]="companyList" bindLabel="companyName"
                             bindValue="CompanyMasterSid" placeholder="Select Company"
-                            (valueChange)="addToSelectedCompanies($event)"></multi-select>
+                            (valueChange)="addToSelectedCompany($event)"></multi-select>
                         @if(userForm.get('companies')?.touched && userForm.get('companies')?.invalid){
                         <div class="error-message">
                             @if(userForm.get('companies')?.hasError('required')){
@@ -320,68 +320,80 @@
 
 
 
-@for(info of userInfos ; track info){
-<div class="mt-2">
-    <div class="card mb-0 border border-info position-relative">
+<ng-container [formGroup]="userForm">
+    <div formArrayName="userCompanies">
+        <ng-container *ngFor="let company of userCompanies.controls ; let companyIndex = index">
+            <div class="card mb-0 mt-2 border border-info position-relative" [formGroupName]="companyIndex">
 
-        <!-- Card Header -->
-        <div class="card-header rounded-top-1 d-flex align-items-center justify-content-between border-bottom">
-            <h6 class="font-bold mb-0 text-info">{{info.companyName}}</h6>
-        </div>
+                <!-- Card Header -->
+                <div class="card-header rounded-top-1 d-flex align-items-center justify-content-between border-bottom">
+                    <h6 class="font-bold mb-0 text-info text-start">{{company.value.companyName}}  <small class="text-warning">{{isDefaultCompany(company.value.CompanyMasterSid) ? '[DEFAULT]' : ''}}</small></h6>
+                    @if (userForm.get('userCompanies')?.hasError('noDefault') && (userForm.get('userCompanies')?.invalid)) {
+                    <small class="text-end text-danger">At least one branch must be marked as default.</small>
+                    }
+                    @else if((this.userBranches(companyIndex).dirty || this.userBranches(companyIndex).touched ) && this.userBranches(companyIndex).hasError('noAccess')){
+                        <small class="text-end text-danger">Atleast one branch must be marked with "Access".</small>
+                    } 
+                </div>
 
 
-        <div class="px-4">
-            <div class="row align-items-center">
-                <div class="table-responsive">
-                    <table class="table table-sm no-wrap align-middle mb-2">
-                        <thead>
-                            <tr>
-                                <th scope="col" style="border-style: none;" width="20%">Sno.</th>
-                                <th scope="col" style="border-style: none;" width="60%">Branch Name</th>
-                                <th scope="col" style="border-style: none;" width="60%">Access</th>
-                                <th scope="col" style="border-style: none;" width="60%">Default</th>
-                                 <!-- <th width="20%">Access</th>
+                <div class="px-4">
+                    <div class="row align-items-center">
+                        <div class="table-responsive">
+                            <table class="table table-sm no-wrap align-middle mb-2">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" style="border-style: none;" width="10%">Sno.</th>
+                                        <th scope="col" style="border-style: none;" width="60%">Branch Name</th>
+                                        <th scope="col" style="border-style: none;" width="15%">Access</th>
+                                        <th scope="col" style="border-style: none;" width="15%">Default</th>
+                                        <!-- <th width="20%">Access</th>
               <th width="20%">Default</th> -->
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for(branch of info.branches ; track branch ; let last = $last){
-                            <tr>
-                                <td style="border-style: none;">{{$index + 1}}</td>
-                                <td style="border-style: none;">{{branch.branchName}}</td>
-                                <td style="border-style: none;">
-                                    <aside class="d-flex align-items-center">
-                                        <div class="form-check">
-                                            <input type="checkbox" id="text-input" placeholder="" class="form-check-input focus-ring" [checked]="isCheckedBranch(branch.BranchMasterSid)" (keydown.enter)="toggleBranchCheckBox($event,branch)" (change)="toggleBranchCheckBox($event,branch)">
-                                        </div>
-                                    </aside>
-                                </td>
-                                <td>
-                <div class="form-check">
-                  <input type="checkbox"
-                  id="text-input" 
-                  placeholder="" class="form-check-input focus-ring"
-                         name="defaultBranch_{{info.CompanyMasterSid}}"
-                         [disabled]="!isCheckedBranch(branch.BranchMasterSid)"
-                         [checked]="isDefaultBranch(info.CompanyMasterSid, branch.BranchMasterSid)"
-                         (change)="toggleDefaultBranch(info.CompanyMasterSid, branch.BranchMasterSid)"
-                        >
+                                    </tr>
+                                </thead>
+                                <tbody formArrayName="userBranches">
+                                    <ng-container
+                                        *ngFor="let branch of userBranches(companyIndex).controls ; let branchIndex = index">
+                                        <tr [formGroupName]="branchIndex">
+                                            <td style="border-style: none;">{{branchIndex + 1}}</td>
+                                            <td style="border-style: none;">{{branch.value.branchName}}</td>
+                                            <td style="border-style: none;">
+                                                <aside class="d-flex align-items-center">
+                                                    <div class="form-check">
+                                                        <input type="checkbox" id="text-input" placeholder=""
+                                                            class="form-check-input focus-ring"
+                                                            (keydown.enter)="toggleBranchAccessCheckBox(companyIndex,branchIndex,branch.value.BranchMasterSid,$event)"
+                                                            (click)="toggleBranchAccessCheckBox(companyIndex,branchIndex,branch.value.BranchMasterSid,$event)"
+                                                            formControlName="GiveAccess">
+                                                    </div>
+                                                </aside>
+                                            </td>
+                                            <td style="border-style: none;">
+                                                <div class="form-check">
+                                                    <input type="checkbox" id="text-input" placeholder=""
+                                                        class="form-check-input focus-ring"
+                                                        name="defaultBranch_{{company.value.CompanyMasterSid}}"
+                                                        [checked]="isDefaultBranch(branch.value.BranchMasterSid)"
+                                                        (keydown.enter)="toggleDefaultItems(companyIndex,branchIndex,company.value.CompanyMasterSid,branch.value.BranchMasterSid,$event)"
+                                                        (click)="toggleDefaultItems(companyIndex,branchIndex,company.value.CompanyMasterSid,branch.value.BranchMasterSid,$event)"
+                                                        >
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
-              </td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+
             </div>
-
-        </div>
-
+        </ng-container>
     </div>
-</div>
-}
-<div class="my-2">
-    <div class="card mb-0 border border-info position-relative">
+</ng-container>
+<!-- <div class="my-2">
+    <div class="card mb-0 border border-info position-relative"> -->
 
         <!-- Card Header -->
         <!-- <div class="card-header bg-info rounded-top-1 d-flex align-items-center ">
