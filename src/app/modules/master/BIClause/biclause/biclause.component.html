@@ -104,12 +104,12 @@
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ClauseDescription', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ClauseDescription'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('Keyword')">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('Keyword')"  width="15%">
                                 Keyword
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Keyword', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Keyword'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('Sortorder')">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('Sortorder')"  width="15%">
                                 Sort Order
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'Sortorder', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'Sortorder'}"></i>

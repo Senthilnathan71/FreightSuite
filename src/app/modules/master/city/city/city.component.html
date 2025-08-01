@@ -95,7 +95,7 @@
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'cityName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'cityName'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('cityCode')">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('cityCode')" width="10%">
                                 City Code
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'cityCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'cityCode'}"></i>

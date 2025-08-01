@@ -154,17 +154,17 @@
            'fa-sort-down': sortColumn === 'countryName' && sortDirection === 'desc'
          }"></i>
                                 </th>
-                                <th class="bg-transparent text-light" scope="col" (click)="sort('countryCode')">
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('countryCode')" width="10%">
                                     Country Code
                                     <i class="fas fa-sort ms-1"
                                         [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'countryCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'countryCode'}"></i>
                                 </th>
-                                <th class="bg-transparent text-light" scope="col" (click)="sort('zoneName')">
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('zoneName')" width="10%">
                                     Zone
                                     <i class="fas fa-sort ms-1"
                                         [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'zoneName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'zoneName'}"></i>
                                 </th>
-                                <th class="bg-transparent text-light" scope="col" (click)="sort('currencyName')">
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('currencyName')" width="10%">
                                     Currency
                                     <i class="fas fa-sort ms-1"
                                         [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'currencyName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'currencyName'}"></i>

@@ -93,7 +93,7 @@
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('chargeCode')">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('chargeCode')" width="10%">
                                 Charge Code
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'chargeCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'chargeCode'}"></i>
@@ -103,12 +103,12 @@
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'chargeName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'chargeName'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('UOM')">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('UOM')" width="10%">
                                 UOM
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'UOM', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'UOM'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('SAC')">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('SAC')" width="10%">
                                 HSN/SAC
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'SAC', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'SAC'}"></i>

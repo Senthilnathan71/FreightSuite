@@ -99,7 +99,7 @@
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ImcoClass', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ImcoClass'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('ImcoUn')">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('ImcoUn')" width="8%">
                                 UN No
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ImcoUn', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ImcoUn'}"></i>
@@ -126,12 +126,12 @@
                                         <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </a>
                                 }
-                                <!-- @if(hasPermission('delete')) {
+                                @if(hasPermission('Delete')) {
                                     <a class="text-danger mx-2 ps-3 border-start"
                                         (click)="deleteIMCOById(item.ImcoMasterSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
-                                } -->
+                                }
                                 </div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
