@@ -192,52 +192,19 @@ export class CompanyEntryComponent implements OnInit {
 	hasPermission(permission: string): boolean {
 		return this.permissions.includes(permission);
 	}
-	openConfigModal(content: TemplateRef<any>, isCompany: boolean, branchIndex?: number) {
-		this.configModalData = {
-			title: isCompany ? 'Select Company Fields' : 'Select Branch Fields',
-			fields: isCompany ? [...this.companyFields] : [...this.branchFields]
-		};
-		if (isCompany) {
-			const currentConfig = this.companyForm.get('config')?.value;
-			if (currentConfig) {
-				this.configModalData.fields.forEach(field => {
-					field.selected = currentConfig[field.name] === true;
-				});
-			}
-		} else if (branchIndex !== undefined) {
-			const branchConfig = this.branches.at(branchIndex).get('config')?.value;
-			if (branchConfig) {
-				this.configModalData.fields.forEach(field => {
-					field.selected = branchConfig[field.name] === true;
-				});
-			}
-		}
 
-		this.configModalRef = this.modalService.open(content, {
-			size: 'lg',
-			centered: true,
-			backdrop: 'static'
-		});
-	}
 
-	saveConfig(isCompany: boolean, branchIndex?: number) {
-		const configJson: any = {};
-		this.configModalData.fields.forEach(field => {
-			configJson[field.name] = field.selected;
-		});
+	openConfigModal(isCompany: boolean) {
+  if (isCompany) {
+    this.route.navigate(['master/company', this.CompanyMasterSid, 'config'], {
+      state: {
+        companyName: this.companyForm.get('companyName')?.value
+      }
+    });
+  } 
+}
 
-		if (isCompany) {
-			this.companyForm.get('config').setValue(configJson);
-			this.filterFieldsByConfig(this.companyForm, configJson, this.companyFields);
-		} else if (branchIndex !== undefined) {
-			const branchGroup = this.branches.at(branchIndex) as FormGroup;
-			branchGroup.get('config').setValue(configJson);
-			this.filterFieldsByConfig(branchGroup, configJson, this.branchFields);
-		}
-
-		this.configModalRef.close();
-		this.appSettingService.showSuccess('Configuration saved successfully');
-	}
+	
 	filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]) {
 		if (!config || !formGroup) {
 			return;
@@ -997,6 +964,7 @@ export class CompanyEntryComponent implements OnInit {
 	navigateBack() {
 		history.back();
 	}
+	
 
 	resetCompanyForm() {
 		this.companyForm.reset();

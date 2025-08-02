@@ -74,13 +74,7 @@ export const MasterRoutes: Routes = [
   {
     path: '',
     children: [
-      {
-        path: 'company/config',
-        component: ConfigComponent,
-        data: {
-          title: 'Configuration',
-        },
-      },
+      
       {
         path: '',
         component: OrganizationListComponent,
@@ -395,6 +389,18 @@ export const MasterRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Company' }],
         },
       },
+      {
+  path: 'company/:id/config',
+  component: ConfigComponent,
+  data: {
+    title: 'Configuration',
+    urls: [
+      { title: 'Master', url: '/master' },
+      { title: 'Company', url: '/master/company/list' },
+      { title: 'Configuration' }
+    ],
+  },
+},
       {
         path: 'airline/list',
         component: AirlineListComponent,

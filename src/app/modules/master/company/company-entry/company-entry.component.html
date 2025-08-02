@@ -456,10 +456,12 @@
         <li [ngbNavItem]="1">
           <a ngbNavLink>Branch</a>
         </li>
-        <button type="button" class="btn btn-outline-info btn-sm dofi-min-w-80 dofi-max-w-80"
-          (click)="openConfigModal(configModal, true)">
-          <i class="fas fa-cog me-1"></i> Configure
-        </button>
+       
+       <button type="button" class="btn btn-outline-info btn-sm dofi-min-w-80 dofi-max-w-80"
+        (click)="openConfigModal(true)" [disabled]="!isEditMode">
+  <i class="fas fa-cog me-1"></i> Configure
+</button>
+        
         <button (click)="openBranchEntryModal(branchEntryContent)" class="btn m-1 ms-auto btn-sm btn-info gap-2">
           <i-feather name="plus-circle" class="feather-sm"></i-feather>
           Add Branch
@@ -1019,10 +1021,10 @@
             Bank
           </button>
         </li>
-        <button type="button" class="btn btn-outline-info btn-sm dofi-min-w-80 dofi-max-w-80"
+        <!-- <button type="button" class="btn btn-outline-info btn-sm dofi-min-w-80 dofi-max-w-80"
           (click)="openConfigModal(configModal, false, currentBranchIndex)">
           <i class="fas fa-cog me-1"></i> Configure
-        </button>
+        </button> -->
 
         <button (click)="openBranchBankModal(bankEntryContent, currentBranchIndex)"
           class="btn m-1 ms-auto btn-sm btn-info gap-2">
@@ -1316,11 +1318,11 @@
       </div>
 
       <!-- Optional: Footer -->
-      <div class="modal-footer">
+      <!-- <div class="modal-footer">
         <button type="button" class="btn btn-light-secondary" (click)="modal.dismiss()">Cancel</button>
         <button type="button" class="btn btn-info"
           (click)="saveConfig(configModalData.title.includes('Company'))">Save</button>
-      </div>
+      </div> -->
 
     </div>
   </div>
