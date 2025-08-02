@@ -4,6 +4,7 @@ import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { MasterService } from '../../master.service';
 
 @Component({
   selector: 'app-config',
@@ -32,7 +33,10 @@ export class ConfigComponent implements OnInit {
     }
   };
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(private router: Router, 
+              private route: ActivatedRoute,
+              private masterService: MasterService,
+            ) {}
   
   hovered: string = '';
   activeSection: string = 'master';
@@ -122,15 +126,25 @@ export class ConfigComponent implements OnInit {
   }
 
   saveConfig() {
-    // In a real implementation, you would:
-    // 1. Call a service to save the config to the backend
-    // 2. Handle the response
-    // 3. Navigate back or show success message
-    
-    // For now, we'll just log the config and navigate back
-    console.log('Saving configuration:', JSON.stringify(this.config, null, 2));
-    this.goBackToCompany();
+  if (!this.companyId) {
+    console.error('No company ID available');
+    return;
   }
+
+  this.masterService.saveCompanyConfig(this.companyId, this.config)
+    .subscribe({
+      next: (response) => {
+        console.log('Config saved successfully', response);
+        this.goBackToCompany();
+      },
+      error: (error) => {
+        console.error('Error saving config:', error);
+        
+      }
+    });
+}
+
+
 
   toggleField(section: string, subsection: string, fieldName: string) {
     if (this.config[section]?.[subsection]) {

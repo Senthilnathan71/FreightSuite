@@ -1020,6 +1020,7 @@ export class MasterService {
       })
     );
   }
+ 
 
   deleteBranchById(BranchMasterSid: number) {
     return this.http.delete<{ data: Branch }>(`branch/delete/${BranchMasterSid}`).pipe(
@@ -1118,6 +1119,13 @@ export class MasterService {
       })
     );
   }
+saveCompanyConfig(companyId: number, configData: any) {
+  return this.http.post<{ data: any }>(`company/${companyId}/config`, configData).pipe(
+    map((resp) => {
+      return resp.data;
+    })
+  );
+}
 
   // Currency Master
   getAllCurrencies() {

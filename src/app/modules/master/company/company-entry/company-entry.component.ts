@@ -106,31 +106,7 @@ export class CompanyEntryComponent implements OnInit {
 	paginatedBanks: any[] = [];
 	configModalData: ConfigModalData;
 	configModalRef: NgbModalRef;
-	companyFields: FieldSelection[] = [
-		{ name: 'companyName', label: 'Company Name', selected: false },
-		{ name: 'companyCode', label: 'Company Code', selected: false },
-		{ name: 'addressLine1', label: 'Address Line 1', selected: false },
-		//   { name: 'addressLine2', label: 'Address Line 2', selected: false },
-		{ name: 'webSite', label: 'Website', selected: false },
-		{ name: 'phoneNumber', label: 'Phone Number', selected: false },
-		{ name: 'email', label: 'Email', selected: false },
-		{ name: 'Pan', label: 'PAN', selected: false },
-		{ name: 'remarks', label: 'Remarks', selected: false }
-	];
-
-	branchFields: FieldSelection[] = [
-		{ name: 'branchName', label: 'Branch Name', selected: false },
-		{ name: 'branchCode', label: 'Branch Code', selected: false },
-		{ name: 'addressLine1', label: 'Address Line 1', selected: false },
-		{ name: 'addressLine2', label: 'Address Line 2', selected: false },
-		{ name: 'postalCode', label: 'Postal Code', selected: false },
-		{ name: 'webSite', label: 'Website', selected: false },
-		{ name: 'phoneNumber', label: 'Phone Number', selected: false },
-		{ name: 'email', label: 'Email', selected: false },
-		{ name: 'timeZone', label: 'Time Zone', selected: false },
-		{ name: 'taxRegistrationNo', label: 'Tax Registration No', selected: false },
-		{ name: 'remarks', label: 'Remarks', selected: false }
-	];
+	
 
 	// CONSTRUCTOR
 
@@ -170,6 +146,7 @@ export class CompanyEntryComponent implements OnInit {
 				}
 			}
 		)
+		
 
 	}
 	checkPermissions() {
@@ -196,42 +173,21 @@ export class CompanyEntryComponent implements OnInit {
 
 	openConfigModal(isCompany: boolean) {
   if (isCompany) {
+    const currentConfig = this.companyForm.get('config').value || {};
     this.route.navigate(['master/company', this.CompanyMasterSid, 'config'], {
       state: {
-        companyName: this.companyForm.get('companyName')?.value
+        companyName: this.companyForm.get('companyName')?.value,
+        config: currentConfig
       }
+    }).then(() => {
+      // This will be called when returning from config page
+      this.loadCompanyData();
     });
-  } 
+  }
 }
 
-	
-	filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]) {
-		if (!config || !formGroup) {
-			return;
-		}
 
-		fields.forEach(field => {
-			const control = formGroup.get(field.name);
-			if (control) {
-
-				const fieldConfig = this.branchFields.find(f => f.name === field.name);
-				if (fieldConfig) {
-					fieldConfig.selected = config[field.name] === true;
-				}
-
-				if (config[field.name] === false) {
-					control.disable();
-				} else {
-					control.enable();
-				}
-			}
-		});
-
-
-		this.cdRef.detectChanges();
-	}
-
-	// FORM INITIALIZATION
+// FORM INITIALIZATION
 
 	initCompanyForm() {
 		this.companyForm = this.fb.group({
@@ -323,9 +279,7 @@ export class CompanyEntryComponent implements OnInit {
 			config: [branchData?.branchconfig || {}],
 			branchBanks: this.fb.array([])
 		});
-		if (branchData?.config) {
-			this.filterFieldsByConfig(group, branchData.config, this.branchFields);
-		}
+		
 		return group;
 	}
 
@@ -354,9 +308,10 @@ export class CompanyEntryComponent implements OnInit {
 
 	loadCompanyData() {
 		this.masterService.getCompanyById(this.CompanyMasterSid).subscribe(
-			(resp) => {
-				if (resp) {
-					this.companyData = resp;
+    (resp) => {
+      if (resp) {
+        this.companyData = resp;
+        const config = resp.config || {};
 
 					// Patch main company form values
 					this.companyForm.patchValue({
@@ -365,12 +320,8 @@ export class CompanyEntryComponent implements OnInit {
 						status: resp.status === 'A' ? 'Active' : 'Suspended',
 						config: resp.config || {}
 					});
-					this.filterFieldsByConfig(this.companyForm, resp.config, this.companyFields);
-					if (resp.config) {
-						this.companyFields.forEach(field => {
-							field.selected = resp.config[field.name] === true;
-						});
-					}
+					
+					
 					this.handlePanControl({ CountryMasterSid: this.companyData?.CountryMasterSid });
 
 					// Clear existing branches
@@ -499,9 +450,7 @@ export class CompanyEntryComponent implements OnInit {
 				branchconfig: this.branchData?.config
 
 			});
-			if (this.branchData.config) {
-				this.filterFieldsByConfig(this.branchForm, this.branchData.config, this.branchFields);
-			}
+			
 			if (this.isModalEditMode) {
 				this.getStatesByCountry(this.branchData?.CountryMasterSid, true);
 				this.getCitiesByState(this.branchData?.StateMasterSid, true);
@@ -537,9 +486,7 @@ export class CompanyEntryComponent implements OnInit {
 	submitBranchForm() {
 		console.log('Submitting branch:', this.branchForm.value);
 		const fullConfig: any = {};
-		this.branchFields.forEach(field => {
-			fullConfig[field.name] = field.selected;
-		});
+		
 		this.branchForm.get('config')?.setValue(fullConfig);
 
 		// 1. Validate branch form
@@ -962,8 +909,9 @@ export class CompanyEntryComponent implements OnInit {
 	}
 
 	navigateBack() {
-		history.back();
-	}
+  this.route.navigate(['/master/company/list']);
+}
+
 	
 
 	resetCompanyForm() {
@@ -1258,25 +1206,32 @@ export class CompanyEntryComponent implements OnInit {
 	}
 
 	handlePanControl(country: any): void {
-		if (!country || !this.countryResults) return;
+  if (!country || !this.countryResults) return;
 
-		const panControl = this.companyForm.get('Pan');
-		if (!panControl) return;
+  const panControl = this.companyForm.get('Pan');
+  if (!panControl) return;
 
-		const countryName = country.countryName ||
-			this.countryResults.find(c => c.CountryMasterSid === country.CountryMasterSid)?.countryName;
+  const countryName = country.countryName ||
+    this.countryResults.find(c => c.CountryMasterSid === country.CountryMasterSid)?.countryName;
 
-		const isIndia = countryName?.toLowerCase() === 'india';
-		this.isPanRequiredFlag = isIndia;
+  const isIndia = countryName?.toLowerCase() === 'india';
+  this.isPanRequiredFlag = isIndia;
 
-		if (isIndia) {
-			panControl.setValidators([Validators.required, Validators.maxLength(20), this.panValidator]);
-			// this.appSettingService.showInfo('PAN is required for Indian companies');
-		} else {
-			panControl.setValidators([Validators.maxLength(20), this.panValidator]);
-		}
-		panControl.updateValueAndValidity();
-	}
+  // Check if PAN should be visible based on config
+  const panVisible = this.companyForm.get('config')?.value?.Pan === true || 
+                    this.companyForm.get('config')?.value?.masters?.basic?.pan === true;
+
+  if (isIndia && panVisible) {
+    panControl.setValidators([Validators.required, Validators.maxLength(20), this.panValidator]);
+  } else if (panVisible) {
+    panControl.setValidators([Validators.maxLength(20), this.panValidator]);
+  } else {
+    panControl.clearValidators();
+    panControl.disable();
+    panControl.setValue('');
+  }
+  panControl.updateValueAndValidity();
+}
 
 	gstValidator(control: AbstractControl): ValidationErrors | null {
 		const gstin = control.value;
