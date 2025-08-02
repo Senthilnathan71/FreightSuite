@@ -73,6 +73,17 @@ branchList: any[] = [];
 ngOnInit(): void {
   this.userData = this.appSettingsService.getDecryptedUserProfile();
   console.log('Decrypted userData:', this.userData);
+  let storedCompany = null;
+  let storedBranch = null;
+
+  try {
+    const encryptedCompany = localStorage.getItem('selected-company');
+  const encryptedBranch = localStorage.getItem('selected-branch');
+    storedCompany = encryptedCompany ? this.appSettingsService.decrypt(encryptedCompany) : null;
+    storedBranch = encryptedBranch ? this.appSettingsService.decrypt(encryptedBranch) : null;
+  } catch (err) {
+    console.warn('Decryption failed for selected company/branch:', err);
+  }
 
   if (this.userData?.userCompanyMaster?.length) {
     this.companyList = this.userData.userCompanyMaster.map(ucm => ({
@@ -82,32 +93,39 @@ ngOnInit(): void {
       IsDefault: ucm.IsDefault
     }));
 
-    // Pick default company by IsDefault or first
     const defaultCompany = this.companyList.find(c => c.IsDefault === 'Y') || this.companyList[0];
-    this.selectedCompanyId = defaultCompany.CompanyMasterSid;
+     const companyToUse = storedCompany?.CompanyMasterSid
+      ? this.companyList.find(c => c.CompanyMasterSid === storedCompany.CompanyMasterSid) || defaultCompany
+      : defaultCompany;
+    this.selectedCompanyId = companyToUse.CompanyMasterSid;
 
-    // Populate branchList for selected company
-    this.branchList = (defaultCompany.companyMaster?.userBranchMaster || []).map(ubm => ({
+    this.branchList = (companyToUse.companyMaster?.userBranchMaster || []).map(ubm => ({
       UserBranchMasterSid: ubm.UserBranchMasterSid,
       branchMaster: ubm.branchMaster,
-      companyMaster: defaultCompany.companyMaster
+      companyMaster: companyToUse.companyMaster,
+      IsDefault: ubm.IsDefault
     }));
 
-    // Pick default branch — either first branch marked as default or first branch itself
     const defaultBranch = this.branchList.find(b => b.IsDefault === 'Y') || this.branchList[0];
+    const branchToUse = storedBranch?.UserBranchMasterSid
+      ? this.branchList.find(b => b.UserBranchMasterSid === storedBranch.UserBranchMasterSid) || defaultBranch
+      : defaultBranch;
 
-    if (defaultBranch) {
-      this.selectedBranchId = defaultBranch.UserBranchMasterSid;
-
+    if (branchToUse) {
+      this.selectedBranchId = branchToUse.UserBranchMasterSid;
       this.selectedBranchCompany = {
-        companyMaster: defaultCompany.companyMaster,
-        branchMaster: defaultBranch.branchMaster
+        companyMaster: companyToUse.companyMaster,
+        branchMaster: branchToUse.branchMaster
       };
+
+      this.branchName = branchToUse.branchMaster.branchName;
+      this.companyName = companyToUse.companyMaster.companyName;
     }
   } else {
     console.warn('No user company data found in local storage');
   }
 }
+
 
 
 
@@ -184,6 +202,15 @@ ngOnInit(): void {
 
   // ✅ Step 2: Store to localStorage (encrypted)
   this.appSettingsService.storeUserProfile(updatedUserData);
+  try {
+    const encryptedCompany = this.appSettingsService.encrypt(updatedBranchCompany.companyMaster);
+    const encryptedBranch = this.appSettingsService.encrypt(updatedBranchCompany.branchMaster);
+    localStorage.setItem('selected-company', encryptedCompany);
+    localStorage.setItem('selected-branch', encryptedBranch);
+    this.selectedBranchCompany = updatedBranchCompany;
+  } catch (e) {
+    console.error('Error encrypting selected company/branch:', e);
+  }
 
   // ✅ Step 3: Update observable in service for other subscribers
   this.appSettingsService.setUserSettings(updatedUserData);
