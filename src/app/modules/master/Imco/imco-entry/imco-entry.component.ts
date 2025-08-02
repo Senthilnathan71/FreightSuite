@@ -134,7 +134,7 @@ export class ImcoEntryComponent implements OnInit {
                     (resp: any) => {
                         if (resp.status) {
                             this.appSettingService.showSuccess('Imco Updated Successfully');
-                            this.route.navigate(['master/Imco/list']);
+                            this.route.navigate(['/master/imco/list']);
                         } else {
                             this.appSettingService.showWarning('Problem Updating Imco');
                         }
@@ -148,7 +148,7 @@ export class ImcoEntryComponent implements OnInit {
                     (resp: any) => {
                         if (resp.status) {
                             this.appSettingService.showSuccess('New Imco Created');
-                            this.route.navigate(['master/Imco/list']);
+                            this.route.navigate(['/master/imco/list']);
                         } else {
                             this.appSettingService.showWarning('Problem Creating Imco');
                         }

@@ -23,11 +23,22 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="btnDisable"
-                    *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
+                    
+        
+                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="btnDisable"
+                    >
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Update':'Save'}}
-                    </button>
+                    </button> -->
+                
+                @if(hasPermission(isEditMode ? 'Edit' : 'Add')) {
+        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+            (click)="onSubmit()" 
+            [disabled]="btnDisable">
+            <i class="fas fa-save me-1"></i>
+            {{isEditMode ? 'Update' : 'Save'}}
+        </button>
+        }
                 </div>
             </div>
         </div>
