@@ -1,1 +1,559 @@
-<p>config works!</p>
+
+<nav class="navbar navbar-light bg-light border-bottom px-2">
+    <div class="container-fluid d-flex justify-content-between">
+        <div class="d-flex align-items-center flex-wrap gap-5">
+            <h5 class="mb-0 pe-5 border-end text-info">Configurations</h5>
+
+            <div class="pe-5 d-flex gap-2">
+                <strong>Company :</strong> <span class="badge text-bg-secondary "> BlinkQC</span>
+            </div>
+
+        </div>
+
+        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+            <i class="fas fa-chevron-left me-1"></i>
+            Back
+        </button>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 bg-light border-end" style="height: 83vh">
+            <ul class="nav flex-column pt-3">
+                <li class="nav-item" *ngFor="let section of ['master', 'crm', 'settings', 'account']">
+                    <a href="#"
+                        class="nav-link d-flex justify-content-between align-items-center px-3 py-1 my-2 rounded"
+                        [ngStyle]="{
+          backgroundColor:
+            activeSection === section
+              ? '#05608d'
+              : hovered === section
+              ? '#6c757d'
+              : 'transparent',
+          color:
+            activeSection === section || hovered === section
+              ? 'white'
+              : '#212529'
+        }" (mouseover)="hovered = section" (mouseout)="hovered = ''"
+                        (click)="setSection(section); $event.preventDefault()">
+                        {{ section | titlecase }}
+                        <i class="fas fa-angle-right" [ngStyle]="{
+            color:
+              activeSection === section || hovered === section
+                ? 'white'
+                : '#6c757d'
+          }"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+
+
+        <!-- Main Content -->
+        <div class="col-md-10 p-2">
+            <h5 class="mb-3 border-bottom p-2 text-capitalize">{{ activeSection }}</h5>
+
+            <ng-container [ngSwitch]="activeSection">
+                <!-- master -->
+                <div *ngSwitchCase="'master'">
+                    <div ngbAccordion [closeOthers]="true" activeIds="basic">
+                        <div ngbAccordionItem id="basic">
+                            <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton>
+                                    <strong>Basic</strong>
+                                </button>
+                            </h2>
+                            <div ngbAccordionCollapse>
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="s3Storage"
+                                                        checked />
+                                                    <label class="form-check-label" for="s3Storage">S3 Storage</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="manageRules"
+                                                        checked />
+                                                    <label class="form-check-label" for="manageRules">Manage
+                                                        Rules</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="unifiedChat" />
+                                                    <label class="form-check-label" for="unifiedChat">Unified
+                                                        Chat</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="checkbox" id="addException" />
+                                                    <label class="form-check-label" for="addException">Add
+                                                        Exception</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+                        <div ngbAccordionItem id="package">
+                            <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton>
+                                    <strong>Package Completed Status</strong>
+                                </button>
+                            </h2>
+                            <div ngbAccordionCollapse>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group custom-form-group-select">
+                                                <ng-select formControlName="" [items]="modeOfStatus" bindLabel="name"
+                                                    bindValue="name">
+
+                                                </ng-select>
+                                                <label for="" class="input-label">Status <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div ngbAccordionItem id="process">
+                            <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton>
+                                    <strong>Process</strong>
+                                </button>
+                            </h2>
+                            <div ngbAccordionCollapse>
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <aside class="col-md-4">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Address1 <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Address1 <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Address1 <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- CRM -->
+                <div *ngSwitchCase="'crm'">
+                    <div ngbAccordion [closeOthers]="true" activeIds="basic">
+                        <div ngbAccordionItem id="basic">
+                            <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton>
+                                    <strong>Basic</strong>
+                                </button>
+                            </h2>
+                            <div ngbAccordionCollapse>
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="s3Storage"
+                                                        checked />
+                                                    <label class="form-check-label" for="s3Storage">S3 Storage</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="manageRules"
+                                                        checked />
+                                                    <label class="form-check-label" for="manageRules">Manage
+                                                        Rules</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="unifiedChat" />
+                                                    <label class="form-check-label" for="unifiedChat">Unified
+                                                        Chat</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="checkbox" id="addException" />
+                                                    <label class="form-check-label" for="addException">Add
+                                                        Exception</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+                        <div ngbAccordionItem id="package">
+                            <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton>
+                                    <strong>Package Completed Status</strong>
+                                </button>
+                            </h2>
+                            <div ngbAccordionCollapse>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group custom-form-group-select">
+                                                <ng-select formControlName="" [items]="modeOfStatus" bindLabel="name"
+                                                    bindValue="name">
+
+                                                </ng-select>
+                                                <label for="" class="input-label">Status <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div ngbAccordionItem id="process">
+                            <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton>
+                                    <strong>Process</strong>
+                                </button>
+                            </h2>
+                            <div ngbAccordionCollapse>
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <aside class="col-md-4">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Address1 <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Address1 <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Address1 <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div *ngSwitchCase="'settings'">
+                    <div ngbAccordion [closeOthers]="true" activeIds="basic">
+                        <div ngbAccordionItem id="basic">
+                            <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton>
+                                    <strong>Basic</strong>
+                                </button>
+                            </h2>
+                            <div ngbAccordionCollapse>
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="s3Storage"
+                                                        checked />
+                                                    <label class="form-check-label" for="s3Storage">S3 Storage</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="manageRules"
+                                                        checked />
+                                                    <label class="form-check-label" for="manageRules">Manage
+                                                        Rules</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="unifiedChat" />
+                                                    <label class="form-check-label" for="unifiedChat">Unified
+                                                        Chat</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="checkbox" id="addException" />
+                                                    <label class="form-check-label" for="addException">Add
+                                                        Exception</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+                        <div ngbAccordionItem id="package">
+                            <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton>
+                                    <strong>Package Completed Status</strong>
+                                </button>
+                            </h2>
+                            <div ngbAccordionCollapse>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group custom-form-group-select">
+                                                <ng-select formControlName="" [items]="modeOfStatus" bindLabel="name"
+                                                    bindValue="name">
+
+                                                </ng-select>
+                                                <label for="" class="input-label">Status <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div ngbAccordionItem id="process">
+                            <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton>
+                                    <strong>Process</strong>
+                                </button>
+                            </h2>
+                            <div ngbAccordionCollapse>
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <aside class="col-md-4">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Address1 <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Address1 <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Address1 <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Account -->
+                <div *ngSwitchCase="'account'">
+                    <div ngbAccordion [closeOthers]="true" activeIds="basic">
+
+
+                        <div ngbAccordionItem id="basic">
+                            <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton>
+                                    <strong>Basic</strong>
+                                </button>
+                            </h2>
+                            <div ngbAccordionCollapse>
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="s3Storage"
+                                                        checked />
+                                                    <label class="form-check-label" for="s3Storage">S3 Storage</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="manageRules"
+                                                        checked />
+                                                    <label class="form-check-label" for="manageRules">Manage
+                                                        Rules</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="unifiedChat" />
+                                                    <label class="form-check-label" for="unifiedChat">Unified
+                                                        Chat</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="checkbox" id="addException" />
+                                                    <label class="form-check-label" for="addException">Add
+                                                        Exception</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+
+                        <div ngbAccordionItem id="package">
+                            <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton>
+                                    <strong>Package Completed Status</strong>
+                                </button>
+                            </h2>
+                            <div ngbAccordionCollapse>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group custom-form-group-select">
+                                                <ng-select formControlName="" [items]="modeOfStatus" bindLabel="name"
+                                                    bindValue="name">
+
+                                                </ng-select>
+                                                <label for="" class="input-label">Status <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Process Accordion -->
+                        <div ngbAccordionItem id="process">
+                            <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton>
+                                    <strong>Process</strong>
+                                </button>
+                            </h2>
+                            <div ngbAccordionCollapse>
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <aside class="col-md-4">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Address1 <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Address1 <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Address1 <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </ng-container>
+
+            <!-- footer -->
+            <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-5">
+                <div class="d-flex align-items-center gap-2 pt-2">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-100 dofi-max-w-80"> <i
+                            class="fas fa-chevron-left me-1"></i> Previous</button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"> Next <i
+                            class="fas fa-chevron-right ms-1"></i></button>
+                </div>
+                <div class="text-end pt-2">
+                    <button type="button" class="btn btn-info btn-sm">
+                        <i class="fas fa-save me-1"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
