@@ -68,11 +68,19 @@ import { ProfitCenterComponent } from './profit-center/profit-center/profit-cent
 import { HawbStockListComponent } from './Hawb-Stock/hawb-stock-list/hawb-stock-list.component';
 import { HawbStockEntryComponent } from './Hawb-Stock/hawb-stock-entry/hawb-stock-entry.component';
 import { AuthorizationListComponent } from './authorization/authorization-list/authorization-list.component';
+import { ConfigComponent } from './company/config/config.component';
 
 export const MasterRoutes: Routes = [
   {
     path: '',
     children: [
+      {
+        path: 'company/config',
+        component: ConfigComponent,
+        data: {
+          title: 'Configuration',
+        },
+      },
       {
         path: '',
         component: OrganizationListComponent,
@@ -346,7 +354,7 @@ export const MasterRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'sector' }],
         },
       },
-      
+
       {
         path: 'report/list',
         component: ReportListComponent,
@@ -425,7 +433,7 @@ export const MasterRoutes: Routes = [
         data: {
           title: "Edit Conatiner Type",
           urls: [
-            { title: "Master", url: "/master" },{ title: "Conatiner Type" },
+            { title: "Master", url: "/master" }, { title: "Conatiner Type" },
           ],
         },
       },
@@ -478,7 +486,7 @@ export const MasterRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Organization' }],
         },
       },
-      
+
       {
         path: 'package-type/list',
         component: PackageTypeListComponent,
@@ -716,7 +724,7 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
-        {
+      {
         path: 'imco/list',
         component: ImcoListComponent,
         data: {
@@ -749,7 +757,7 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
-       {
+      {
         path: 'blclause',
         component: BIclauseComponent,
         data: {
@@ -793,7 +801,7 @@ export const MasterRoutes: Routes = [
           ],
         },
       },
-       {
+      {
         path: 'sailing-schedule/list',
         component: SailingScheduleLsitComponent,
         data: {
@@ -816,7 +824,7 @@ export const MasterRoutes: Routes = [
         },
       },
       {
-      path: 'sailing-schedule/entry/:id',
+        path: 'sailing-schedule/entry/:id',
         component: SailingScheduleEntryComponent,
         data: {
           title: 'Sailing Schedule',
@@ -862,202 +870,202 @@ export const MasterRoutes: Routes = [
     ],
   },
   {
-        path: 'charge-tax',
-        component: ChargeTaxComponent,
-        data: {
-          title: 'charge-tax',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'charge-tax' },
-          ],
-        },
-      },
-      {
-        path: 'authority/list',
-        component: AuthorityListComponent,
-        data: {
-          title: 'Authority',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Authority' },
-          ],
-        },
-      },
-      {
-        path: 'authority/entry',
-        component: AuthorityEntryComponent,
-        data: {
-          title: 'Authority',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Authority' },
-          ],
-        },
-      },
-      {
-        path: 'authority/entry/:id',
-        component: AuthorityEntryComponent,
-        data: {
-          title: 'Authority',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Authority' },
-          ]
-        }
-      },
-        {
-        path: 'year/list',
-        component: YearListComponent,
-        data: {
-          title: 'Year',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Year' },
-          ],
-        },
-      },
-      {
-        path: 'year/entry',
-        component: YearEntryComponent,
-        data: {
-          title: 'Year',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Year' },
-          ]
-        }
-      },
-      {
-        path: 'year/entry/:YearMasterSid',
-        component: YearEntryComponent,
-        data: {
-          title: 'Year',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Year' },
-          ]
-        }
-      },
-        {
-        path: 'doctype/entry',
-        component: DoctypeComponent,
-        data: {
-          title: 'Document Type',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Docunment Type' },
-          ]
-        }
-      },
-        {
-        path: 'doctype/entry/:id',
-        component: DoctypeComponent,
-        data: {
-          title: 'Document Type',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Docunment Type' },
-          ]
-        }
-      },
-       {
-        path: 'doctype/list',
-        component: DoctypeListComponent,
-        data: {
-          title: 'Document Type',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Document Type' },
-          ]
-        }
-      },
-        {
-        path: 'hawbstock/list',
-        component: HawbStockListComponent,
-        data: {
-          title: 'Hawbs tock',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Hawb stock' },
-          ],
-        },
-      },
-      {
-        path: 'hawbstock/entry',
-        component: HawbStockEntryComponent,
-        data: {
-          title: 'Hawb stock',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Hawb stock' },
-          ]
-        }
-      },
-      {
-        path: 'hawbstock/entry/:id',
-        component: HawbStockEntryComponent,
-        data: {
-          title: 'Hawb stock',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Hawb stock ' },
-          ] 
-        }
-      },
-      {
-        path: 'cost-center',
-        component: CostCenterComponent,
-        data: {
-          title: 'Cost Center',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Cost Center' },
-          ]
-        }
-      },
-      {
-        path: "cost-center/:id",
-        component: CostCenterComponent,
-        data: {
-          title: "Cost Center",
-          urls: [
-            { title: "Master", url: "/master" },
-            { title: "Cost Center" },
-          ],
-        },
-      },
-         {
-        path: 'profit-center',
-        component: ProfitCenterComponent,
-        data: {
-          title: 'Profit Center',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'Profit Center' },
-          ]
-        }
-      },
-      {
-        path: "profit-center/:id",
-        component: ProfitCenterComponent,
-        data: {
-          title: "Profit Center",
-          urls: [
-            { title: "Master", url: "/master" },
-            { title: "Profit Center" },
-          ],
-        },
-      },
-       {
-        path: 'authorization/list',
-        component: AuthorizationListComponent,
-        data: {
-          title: 'Authorization',
-          urls: [
-            { title: 'Master', url: '/master' },
-            { title: 'authorization' },
-          ]
-        }
-      },
+    path: 'charge-tax',
+    component: ChargeTaxComponent,
+    data: {
+      title: 'charge-tax',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'charge-tax' },
+      ],
+    },
+  },
+  {
+    path: 'authority/list',
+    component: AuthorityListComponent,
+    data: {
+      title: 'Authority',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Authority' },
+      ],
+    },
+  },
+  {
+    path: 'authority/entry',
+    component: AuthorityEntryComponent,
+    data: {
+      title: 'Authority',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Authority' },
+      ],
+    },
+  },
+  {
+    path: 'authority/entry/:id',
+    component: AuthorityEntryComponent,
+    data: {
+      title: 'Authority',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Authority' },
+      ]
+    }
+  },
+  {
+    path: 'year/list',
+    component: YearListComponent,
+    data: {
+      title: 'Year',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Year' },
+      ],
+    },
+  },
+  {
+    path: 'year/entry',
+    component: YearEntryComponent,
+    data: {
+      title: 'Year',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Year' },
+      ]
+    }
+  },
+  {
+    path: 'year/entry/:YearMasterSid',
+    component: YearEntryComponent,
+    data: {
+      title: 'Year',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Year' },
+      ]
+    }
+  },
+  {
+    path: 'doctype/entry',
+    component: DoctypeComponent,
+    data: {
+      title: 'Document Type',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Docunment Type' },
+      ]
+    }
+  },
+  {
+    path: 'doctype/entry/:id',
+    component: DoctypeComponent,
+    data: {
+      title: 'Document Type',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Docunment Type' },
+      ]
+    }
+  },
+  {
+    path: 'doctype/list',
+    component: DoctypeListComponent,
+    data: {
+      title: 'Document Type',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Document Type' },
+      ]
+    }
+  },
+  {
+    path: 'hawbstock/list',
+    component: HawbStockListComponent,
+    data: {
+      title: 'Hawbs tock',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Hawb stock' },
+      ],
+    },
+  },
+  {
+    path: 'hawbstock/entry',
+    component: HawbStockEntryComponent,
+    data: {
+      title: 'Hawb stock',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Hawb stock' },
+      ]
+    }
+  },
+  {
+    path: 'hawbstock/entry/:id',
+    component: HawbStockEntryComponent,
+    data: {
+      title: 'Hawb stock',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Hawb stock ' },
+      ]
+    }
+  },
+  {
+    path: 'cost-center',
+    component: CostCenterComponent,
+    data: {
+      title: 'Cost Center',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Cost Center' },
+      ]
+    }
+  },
+  {
+    path: "cost-center/:id",
+    component: CostCenterComponent,
+    data: {
+      title: "Cost Center",
+      urls: [
+        { title: "Master", url: "/master" },
+        { title: "Cost Center" },
+      ],
+    },
+  },
+  {
+    path: 'profit-center',
+    component: ProfitCenterComponent,
+    data: {
+      title: 'Profit Center',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Profit Center' },
+      ]
+    }
+  },
+  {
+    path: "profit-center/:id",
+    component: ProfitCenterComponent,
+    data: {
+      title: "Profit Center",
+      urls: [
+        { title: "Master", url: "/master" },
+        { title: "Profit Center" },
+      ],
+    },
+  },
+  {
+    path: 'authorization/list',
+    component: AuthorizationListComponent,
+    data: {
+      title: 'Authorization',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'authorization' },
+      ]
+    }
+  },
 
 ];

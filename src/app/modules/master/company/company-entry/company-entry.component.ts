@@ -24,6 +24,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
+import { ConfigComponent } from '../config/config.component';
 @Component({
 	selector: 'app-company-entry',
 	standalone: true,
@@ -41,7 +42,8 @@ import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 		ReactiveFormsModule,
 		DatePipe,
 		PreventMultiClickDirective,
-		NgbPaginationModule
+		NgbPaginationModule,
+		ConfigComponent
 	],
 	templateUrl: './company-entry.component.html',
 	styleUrl: './company-entry.component.scss'
@@ -68,8 +70,8 @@ export class CompanyEntryComponent implements OnInit {
 	branchBankLength: number;
 	modalRef: NgbModalRef;
 	permissions: string[] = [];
-  currentMenuPermissions: any = {};
-  userData: any;
+	currentMenuPermissions: any = {};
+	userData: any;
 
 	companyForm!: FormGroup;
 	branchForm!: FormGroup;
@@ -93,7 +95,7 @@ export class CompanyEntryComponent implements OnInit {
 	private branchModalRef: NgbModalRef;
 	private bankModalRef: NgbModalRef;
 	modalDismissSubscription: Subscription;
-	isPanRequiredFlag = false; 
+	isPanRequiredFlag = false;
 	branchPage = 1;
 	branchPageSize = 5;
 	totalBranches = 0;
@@ -103,32 +105,32 @@ export class CompanyEntryComponent implements OnInit {
 	paginatedBranches: any[] = [];
 	paginatedBanks: any[] = [];
 	configModalData: ConfigModalData;
-configModalRef: NgbModalRef;
-companyFields: FieldSelection[] = [
-  { name: 'companyName', label: 'Company Name', selected: false },
-  { name: 'companyCode', label: 'Company Code', selected: false },
-  { name: 'addressLine1', label: 'Address Line 1', selected: false },
-//   { name: 'addressLine2', label: 'Address Line 2', selected: false },
-  { name: 'webSite', label: 'Website', selected: false },
-  { name: 'phoneNumber', label: 'Phone Number', selected: false },
-  { name: 'email', label: 'Email', selected: false },
-  { name: 'Pan', label: 'PAN', selected: false },
-  { name: 'remarks', label: 'Remarks', selected: false }
-];
+	configModalRef: NgbModalRef;
+	companyFields: FieldSelection[] = [
+		{ name: 'companyName', label: 'Company Name', selected: false },
+		{ name: 'companyCode', label: 'Company Code', selected: false },
+		{ name: 'addressLine1', label: 'Address Line 1', selected: false },
+		//   { name: 'addressLine2', label: 'Address Line 2', selected: false },
+		{ name: 'webSite', label: 'Website', selected: false },
+		{ name: 'phoneNumber', label: 'Phone Number', selected: false },
+		{ name: 'email', label: 'Email', selected: false },
+		{ name: 'Pan', label: 'PAN', selected: false },
+		{ name: 'remarks', label: 'Remarks', selected: false }
+	];
 
-branchFields: FieldSelection[] = [
-  { name: 'branchName', label: 'Branch Name', selected: false },
-  { name: 'branchCode', label: 'Branch Code', selected: false },
-  { name: 'addressLine1', label: 'Address Line 1', selected: false },
-  { name: 'addressLine2', label: 'Address Line 2', selected: false },
-  { name: 'postalCode', label: 'Postal Code', selected: false },
-  { name: 'webSite', label: 'Website', selected: false },
-  { name: 'phoneNumber', label: 'Phone Number', selected: false },
-  { name: 'email', label: 'Email', selected: false },
-  { name: 'timeZone', label: 'Time Zone', selected: false },
-  { name: 'taxRegistrationNo', label: 'Tax Registration No', selected: false },
-  { name: 'remarks', label: 'Remarks', selected: false }
-];
+	branchFields: FieldSelection[] = [
+		{ name: 'branchName', label: 'Branch Name', selected: false },
+		{ name: 'branchCode', label: 'Branch Code', selected: false },
+		{ name: 'addressLine1', label: 'Address Line 1', selected: false },
+		{ name: 'addressLine2', label: 'Address Line 2', selected: false },
+		{ name: 'postalCode', label: 'Postal Code', selected: false },
+		{ name: 'webSite', label: 'Website', selected: false },
+		{ name: 'phoneNumber', label: 'Phone Number', selected: false },
+		{ name: 'email', label: 'Email', selected: false },
+		{ name: 'timeZone', label: 'Time Zone', selected: false },
+		{ name: 'taxRegistrationNo', label: 'Tax Registration No', selected: false },
+		{ name: 'remarks', label: 'Remarks', selected: false }
+	];
 
 	// CONSTRUCTOR
 
@@ -160,107 +162,107 @@ branchFields: FieldSelection[] = [
 			}
 		)
 		this.appSettingService.getUser().subscribe(
-      user => {
-        if (user) {
-          this.userData = user;
-          this.checkPermissions();
-          
-        }
-      }
-    )
+			user => {
+				if (user) {
+					this.userData = user;
+					this.checkPermissions();
+
+				}
+			}
+		)
 
 	}
 	checkPermissions() {
-    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
-    console.log(currentMenuId)
-    console.log(userRole)
-    if (currentMenuId && userRole) {
-     this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
-  next: (response) => {
-    this.currentMenuPermissions = response.data.MenuPermissions || {};
-    this.permissions = Object.keys(this.currentMenuPermissions)
-      .filter(key => this.currentMenuPermissions[key] === 'isTrue');
-      console.log(this.permissions)
-  }
-});
-    }
-  }
- 
-  hasPermission(permission: string): boolean {
-  return this.permissions.includes(permission);
-}
-openConfigModal(content: TemplateRef<any>, isCompany: boolean, branchIndex?: number) {
-  this.configModalData = {
-    title: isCompany ? 'Select Company Fields' : 'Select Branch Fields',
-    fields: isCompany ? [...this.companyFields] : [...this.branchFields]
-  };
-  if (isCompany) {
-    const currentConfig = this.companyForm.get('config')?.value;
-    if (currentConfig) {
-      this.configModalData.fields.forEach(field => {
-        field.selected = currentConfig[field.name] === true;
-      });
-    }
-  } else if (branchIndex !== undefined) {
-    const branchConfig = this.branches.at(branchIndex).get('config')?.value;
-    if (branchConfig) {
-      this.configModalData.fields.forEach(field => {
-        field.selected = branchConfig[field.name] === true;
-      });
-    }
-  }
+		const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+		const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+		console.log(currentMenuId)
+		console.log(userRole)
+		if (currentMenuId && userRole) {
+			this.masterService.getRoleMenuPermissions(currentMenuId, userRole).subscribe({
+				next: (response) => {
+					this.currentMenuPermissions = response.data.MenuPermissions || {};
+					this.permissions = Object.keys(this.currentMenuPermissions)
+						.filter(key => this.currentMenuPermissions[key] === 'isTrue');
+					console.log(this.permissions)
+				}
+			});
+		}
+	}
 
-  this.configModalRef = this.modalService.open(content, {
-    size: 'lg',
-    centered: true,
-    backdrop: 'static'
-  });
-}
+	hasPermission(permission: string): boolean {
+		return this.permissions.includes(permission);
+	}
+	openConfigModal(content: TemplateRef<any>, isCompany: boolean, branchIndex?: number) {
+		this.configModalData = {
+			title: isCompany ? 'Select Company Fields' : 'Select Branch Fields',
+			fields: isCompany ? [...this.companyFields] : [...this.branchFields]
+		};
+		if (isCompany) {
+			const currentConfig = this.companyForm.get('config')?.value;
+			if (currentConfig) {
+				this.configModalData.fields.forEach(field => {
+					field.selected = currentConfig[field.name] === true;
+				});
+			}
+		} else if (branchIndex !== undefined) {
+			const branchConfig = this.branches.at(branchIndex).get('config')?.value;
+			if (branchConfig) {
+				this.configModalData.fields.forEach(field => {
+					field.selected = branchConfig[field.name] === true;
+				});
+			}
+		}
 
-saveConfig(isCompany: boolean, branchIndex?: number) {
-  const configJson: any = {};
-  this.configModalData.fields.forEach(field => {
-    configJson[field.name] = field.selected;
-  });
+		this.configModalRef = this.modalService.open(content, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+	}
 
-  if (isCompany) {
-    this.companyForm.get('config').setValue(configJson);
-    this.filterFieldsByConfig(this.companyForm, configJson, this.companyFields);
-  } else if (branchIndex !== undefined) {
-    const branchGroup = this.branches.at(branchIndex) as FormGroup;
-    branchGroup.get('config').setValue(configJson);
-    this.filterFieldsByConfig(branchGroup, configJson, this.branchFields);
-  }
+	saveConfig(isCompany: boolean, branchIndex?: number) {
+		const configJson: any = {};
+		this.configModalData.fields.forEach(field => {
+			configJson[field.name] = field.selected;
+		});
 
-  this.configModalRef.close();
-  this.appSettingService.showSuccess('Configuration saved successfully');
-}
-filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]) {
-  if (!config || !formGroup) {
-    return;
-  }
+		if (isCompany) {
+			this.companyForm.get('config').setValue(configJson);
+			this.filterFieldsByConfig(this.companyForm, configJson, this.companyFields);
+		} else if (branchIndex !== undefined) {
+			const branchGroup = this.branches.at(branchIndex) as FormGroup;
+			branchGroup.get('config').setValue(configJson);
+			this.filterFieldsByConfig(branchGroup, configJson, this.branchFields);
+		}
 
-  fields.forEach(field => {
-    const control = formGroup.get(field.name);
-    if (control) {
-      
-      const fieldConfig = this.branchFields.find(f => f.name === field.name);
-      if (fieldConfig) {
-        fieldConfig.selected = config[field.name] === true;
-      }
-      
-      if (config[field.name] === false) {
-        control.disable();
-      } else {
-        control.enable();
-      }
-    }
-  });
-  
-  
-  this.cdRef.detectChanges();
-} 
+		this.configModalRef.close();
+		this.appSettingService.showSuccess('Configuration saved successfully');
+	}
+	filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]) {
+		if (!config || !formGroup) {
+			return;
+		}
+
+		fields.forEach(field => {
+			const control = formGroup.get(field.name);
+			if (control) {
+
+				const fieldConfig = this.branchFields.find(f => f.name === field.name);
+				if (fieldConfig) {
+					fieldConfig.selected = config[field.name] === true;
+				}
+
+				if (config[field.name] === false) {
+					control.disable();
+				} else {
+					control.enable();
+				}
+			}
+		});
+
+
+		this.cdRef.detectChanges();
+	}
 
 	// FORM INITIALIZATION
 
@@ -271,10 +273,10 @@ filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]
 			CountryMasterSid: [null, [Validators.required]],
 			CurrencyMasterSid: [null, [Validators.required]],
 			addressLine1: ['', [Validators.required]],
-			webSite: ['',[this.customWebsiteValidator(),Validators.maxLength(100)]],
-			email: ['', [EmailValidators.multipleEmails(),Validators.maxLength(100)]],
+			webSite: ['', [this.customWebsiteValidator(), Validators.maxLength(100)]],
+			email: ['', [EmailValidators.multipleEmails(), Validators.maxLength(100)]],
 			phoneNumber: [],
-			Pan: ['',this.panValidator],
+			Pan: ['', this.panValidator],
 			isHo: [false],
 			status: ['Active'],
 			remarks: [''],
@@ -299,16 +301,16 @@ filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]
 			branchCityMasterSid: [null, [Validators.required]],
 			branchStateMasterSid: [null, [Validators.required]],
 			branchCountryMasterSid: [null, [Validators.required]],
-			branchWebSite: ['', [Validators.maxLength(100),this.customWebsiteValidator()]],
+			branchWebSite: ['', [Validators.maxLength(100), this.customWebsiteValidator()]],
 			branchPhoneNumber: ['', [Validators.maxLength(20)]],
 			branchEmail: ['', [Validators.maxLength(100), EmailValidators.multipleEmails()]],
 			branchTimeZone: ['', [Validators.maxLength(6)]],
 			branchRemarks: ['', [Validators.maxLength(500)]],
 			branchStatus: ['Active'],
-			branchTaxRegistrationNo: ['', [Validators.maxLength(50),this.gstValidator]],
+			branchTaxRegistrationNo: ['', [Validators.maxLength(50), this.gstValidator]],
 			branchCompanyLogo: [],
 			branchReportLogo: [],
-            config: [{}],
+			config: [{}],
 			company: [{}],
 			cityMaster: [{}],
 		})
@@ -342,7 +344,7 @@ filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]
 			CityMasterSid: [branchData?.branchCityMasterSid || null, [Validators.required]],
 			StateMasterSid: [branchData?.branchStateMasterSid || null, [Validators.required]],
 			CountryMasterSid: [branchData?.branchCountryMasterSid || null, [Validators.required]],
-			webSite: [branchData?.branchWebSite || '', [Validators.maxLength(100),this.customWebsiteValidator()]],
+			webSite: [branchData?.branchWebSite || '', [Validators.maxLength(100), this.customWebsiteValidator()]],
 			phoneNumber: [branchData?.branchPhoneNumber || '', [Validators.maxLength(20)]],
 			email: [branchData?.branchEmail || '', [Validators.maxLength(100), this.customEmailValidator()]],
 			timeZone: [branchData?.branchTimeZone || '', [Validators.maxLength(6)]],
@@ -355,8 +357,8 @@ filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]
 			branchBanks: this.fb.array([])
 		});
 		if (branchData?.config) {
-    this.filterFieldsByConfig(group, branchData.config, this.branchFields);
-  }
+			this.filterFieldsByConfig(group, branchData.config, this.branchFields);
+		}
 		return group;
 	}
 
@@ -394,15 +396,15 @@ filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]
 						...resp,
 						isHo: resp.isHo === 'Y' ? true : false,
 						status: resp.status === 'A' ? 'Active' : 'Suspended',
-						config: resp.config || {} 
+						config: resp.config || {}
 					});
 					this.filterFieldsByConfig(this.companyForm, resp.config, this.companyFields);
 					if (resp.config) {
-          this.companyFields.forEach(field => {
-            field.selected = resp.config[field.name] === true;
-          });
-        }
-					this.handlePanControl({CountryMasterSid :this.companyData?.CountryMasterSid});
+						this.companyFields.forEach(field => {
+							field.selected = resp.config[field.name] === true;
+						});
+					}
+					this.handlePanControl({ CountryMasterSid: this.companyData?.CountryMasterSid });
 
 					// Clear existing branches
 					while (this.branches.length !== 0) {
@@ -527,12 +529,12 @@ filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]
 				branchTaxRegistrationNo: this.branchData?.taxRegistrationNo,
 				branchCompanyLogo: this.branchData?.companyLogo || null,
 				branchReportLogo: this.branchData?.reportLogo || null,
-				branchconfig:this.branchData?.config
-				
+				branchconfig: this.branchData?.config
+
 			});
 			if (this.branchData.config) {
-      this.filterFieldsByConfig(this.branchForm, this.branchData.config, this.branchFields);
-    }
+				this.filterFieldsByConfig(this.branchForm, this.branchData.config, this.branchFields);
+			}
 			if (this.isModalEditMode) {
 				this.getStatesByCountry(this.branchData?.CountryMasterSid, true);
 				this.getCitiesByState(this.branchData?.StateMasterSid, true);
@@ -569,9 +571,9 @@ filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]
 		console.log('Submitting branch:', this.branchForm.value);
 		const fullConfig: any = {};
 		this.branchFields.forEach(field => {
-		fullConfig[field.name] = field.selected; 
+			fullConfig[field.name] = field.selected;
 		});
-		 this.branchForm.get('config')?.setValue(fullConfig);
+		this.branchForm.get('config')?.setValue(fullConfig);
 
 		// 1. Validate branch form
 		if (this.branchForm.invalid) {
@@ -588,7 +590,7 @@ filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]
 				return;
 			}
 		}
-		
+
 
 		// 3. Prepare payload
 		const formValue = this.branchForm.value;
@@ -735,7 +737,7 @@ filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]
 			this.appSettingService.showWarning('Please fill all required fields correctly');
 			return;
 		}
-		
+
 
 		if (this.branches.length === 0) {
 			this.appSettingService.showWarning('Company must have atleast one branch.');
@@ -1063,29 +1065,29 @@ filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]
 		});
 	}
 
-openAuthority() {
-  if (!this.companyData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.companyData;
-  modalRef.componentInstance.idLabel = 'Company Id';
-  modalRef.componentInstance.idValue = this.companyData?.CompanyMasterSid;
-}
+	openAuthority() {
+		if (!this.companyData) return;
+		const modalRef = this.modalService.open(AuthorityEntryComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+		modalRef.componentInstance.item = this.companyData;
+		modalRef.componentInstance.idLabel = 'Company Id';
+		modalRef.componentInstance.idValue = this.companyData?.CompanyMasterSid;
+	}
 
-openEDoc() {
-  if (!this.companyData) return;
-  const modalRef = this.modalService.open(EdocComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.companyData;
-  modalRef.componentInstance.idLabel = 'Company Id';
-  modalRef.componentInstance.idValue = this.companyData?.CompanyMasterSid;
-}
+	openEDoc() {
+		if (!this.companyData) return;
+		const modalRef = this.modalService.open(EdocComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+		modalRef.componentInstance.item = this.companyData;
+		modalRef.componentInstance.idLabel = 'Company Id';
+		modalRef.componentInstance.idValue = this.companyData?.CompanyMasterSid;
+	}
 
 
 	customEmailValidator(): ValidatorFn {
@@ -1103,7 +1105,7 @@ openEDoc() {
 		return (control: AbstractControl): ValidationErrors | null => {
 			const website = control.value?.trim();
 
-			if (!website) return null; 
+			if (!website) return null;
 
 			const websitePattern = /^(https?:\/\/)?[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+([/][a-zA-Z0-9-./]*)?$/;
 
@@ -1300,10 +1302,10 @@ openEDoc() {
 		this.isPanRequiredFlag = isIndia;
 
 		if (isIndia) {
-			panControl.setValidators([Validators.required, Validators.maxLength(20),this.panValidator]);
+			panControl.setValidators([Validators.required, Validators.maxLength(20), this.panValidator]);
 			// this.appSettingService.showInfo('PAN is required for Indian companies');
 		} else {
-			panControl.setValidators([Validators.maxLength(20),this.panValidator]);
+			panControl.setValidators([Validators.maxLength(20), this.panValidator]);
 		}
 		panControl.updateValueAndValidity();
 	}
@@ -1322,16 +1324,16 @@ openEDoc() {
 		if (!pan) return null;
 		return PAN_REGEX.test(pan) ? null : { invalidPAN: true };
 	}
-	
+
 
 }
 interface FieldSelection {
-  name: string;
-  label: string;
-  selected: boolean;
+	name: string;
+	label: string;
+	selected: boolean;
 }
 
 interface ConfigModalData {
-  title: string;
-  fields: FieldSelection[];
+	title: string;
+	fields: FieldSelection[];
 }

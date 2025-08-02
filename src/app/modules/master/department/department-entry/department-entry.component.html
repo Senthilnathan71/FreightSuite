@@ -4,30 +4,32 @@
             <div class="col-md-4 d-flex pb-2">
                 <h4 class="page-title mb-0">{{isEditMode ? 'Edit Department' : 'Department'}}</h4>
                 @if(isEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
-                         <i class="fas fs-6 fa-info-circle"></i>
-                    </a>
+                <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                    <i class="fas fs-6 fa-info-circle"></i>
+                </a>
                 }
             </div>
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     @if(isEditMode){
-                        <button appPreventMultiClick  type="button" class="btn btn-outline-info btn-sm dofi-min-w-160 dofi-max-w-160" (click)="openTandC()">
-                            <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                        </button>
+                    <button appPreventMultiClick type="button"
+                        class="btn btn-outline-info btn-sm dofi-min-w-160 dofi-max-w-160" (click)="openTandC()">
+                        <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                    </button>
                     }
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                       <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
-                       [disabled]="departmentForm.invalid">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+                        *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
+                        [disabled]="departmentForm.invalid">
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Update' : "Save"}}
                     </button>
@@ -94,25 +96,25 @@
                         </aside>
 
                         <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select">
-    <ng-select class="ng-select" formControlName="departmentType">
-      <ng-option value="">Select Department Type</ng-option>
-      @for(type of departmentTypeOptions; track type) {
-        <ng-option [value]="type">{{type}}</ng-option>
-      }
-    </ng-select>
-    <label for="text-input" class="input-label">Dept Type <span
-            class="text-danger fw-bold">*</span></label>
-    <div class="error-message">
-      @if(departmentForm.get('departmentType')?.touched &&
-      departmentForm.get('departmentType')?.invalid){
-        @if(departmentForm.get('departmentType')?.hasError('required')){
-          <span>Department Type is required</span>
-        }
-      }
-    </div>
-  </div>
-</aside>
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" formControlName="departmentType">
+                                    <ng-option value="">Select Department Type</ng-option>
+                                    @for(type of departmentTypeOptions; track type) {
+                                    <ng-option [value]="type">{{type}}</ng-option>
+                                    }
+                                </ng-select>
+                                <label for="text-input" class="input-label">Dept Type <span
+                                        class="text-danger fw-bold">*</span></label>
+                                <div class="error-message">
+                                    @if(departmentForm.get('departmentType')?.touched &&
+                                    departmentForm.get('departmentType')?.invalid){
+                                    @if(departmentForm.get('departmentType')?.hasError('required')){
+                                    <span>Department Type is required</span>
+                                    }
+                                    }
+                                </div>
+                            </div>
+                        </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select class="ng-select" formControlName="ExportImport">
@@ -158,7 +160,7 @@
                                 <ng-select class="ng-select" formControlName="Division" [onlyText]="20">
                                     <ng-option value="">Select Division</ng-option>
                                     @for(division of divisionList;track division){
-                                        <ng-option [value]="division.DivisionName">{{division.DivisionName}}</ng-option>
+                                    <ng-option [value]="division.DivisionName">{{division.DivisionName}}</ng-option>
                                     }
                                 </ng-select>
                                 <label for="text-input" class="input-label">Division </label>
@@ -173,26 +175,22 @@
                                 </div>
                             </div>
                         </aside>
-                       <aside class="col-md-4">
-  <div class="custom-form-group">
-    <textarea 
-      id="text-input" 
-      class="custom-input-field sm" 
-      formControlName="Remarks" 
-      [textWithNumbers]="20" 
-      rows="1"
-      placeholder="">
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <textarea id="text-input" class="custom-input-field sm" formControlName="Remarks"
+                                    [textWithNumbers]="20" rows="1" placeholder="">
     </textarea>
-    <label for="text-input" class="input-label">Remarks</label>
-    <div class="error-message">
-      @if(departmentForm.get('Remarks')?.touched && departmentForm.get('Remarks')?.invalid){
-        @if(departmentForm.get('Remarks')?.hasError('maxlength')){
-          <span>Max 20 Characters</span>
-        }
-      }
-    </div>
-  </div>
-</aside>
+                                <label for="text-input" class="input-label">Remarks</label>
+                                <div class="error-message">
+                                    @if(departmentForm.get('Remarks')?.touched &&
+                                    departmentForm.get('Remarks')?.invalid){
+                                    @if(departmentForm.get('Remarks')?.hasError('maxlength')){
+                                    <span>Max 20 Characters</span>
+                                    }
+                                    }
+                                </div>
+                            </div>
+                        </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -214,33 +212,37 @@
                 </div>
             </div>
         </div>
-         @if(isEditMode){
-    <div class="col-12 mt-3">
-    <div class="card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-                    <!-- eDoc Button -->
-                     
-                    <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
-        <i class="fas fa-file-alt me-1"></i> e-Doc
-      </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
-                    <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
-        <i  class="fas fa-shield-alt me-1"></i> Authorize
-      </button>
-                
-      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
-        <i class="fas fa-envelope me-1"></i> Email
-      </button>
-                
+        @if(isEditMode){
+        <div class="col-12 mt-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
+                            <!-- eDoc Button -->
+
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info "
+                                (click)="openEDoc()">
+                                <i class="fas fa-file-alt me-1"></i> e-Doc
+                            </button>
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info "
+                                (click)="openTandC()">
+                                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                            </button>
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info"
+                                (click)="openAuthority()">
+                                <i class="fas fa-shield-alt me-1"></i> Authorize
+                            </button>
+
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "
+                                (click)="openEmail()">
+                                <i class="fas fa-envelope me-1"></i> Email
+                            </button>
+
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-     }          
+        }
     </form>
 </div>
