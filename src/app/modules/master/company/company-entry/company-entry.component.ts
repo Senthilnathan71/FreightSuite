@@ -146,7 +146,6 @@ export class CompanyEntryComponent implements OnInit {
 				}
 			}
 		)
-		
 
 	}
 	checkPermissions() {
@@ -179,15 +178,41 @@ export class CompanyEntryComponent implements OnInit {
         companyName: this.companyForm.get('companyName')?.value,
         config: currentConfig
       }
-    }).then(() => {
-      // This will be called when returning from config page
-      this.loadCompanyData();
     });
-  }
+  } 
 }
+	
+	filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]) {
+  if (!config || !formGroup) {
+    return;
+  }
 
+  fields.forEach(field => {
+    const control = formGroup.get(field.name);
+    if (control) {
+      const fieldConfig = fields.find(f => f.name === field.name);
+      if (fieldConfig) {
+        fieldConfig.selected = config[field.name] === true;
+      }
 
-// FORM INITIALIZATION
+      if (config[field.name] === false) {
+        control.disable();
+        // Reset the value when hiding the field
+        control.setValue('');
+        control.clearValidators();
+      } else {
+        control.enable();
+        // Restore validators if needed
+        if (field.name === 'companyName') {
+          control.setValidators([Validators.required]);
+        }
+      }
+      control.updateValueAndValidity();
+    }
+  });
+  this.cdRef.detectChanges();
+}
+	// FORM INITIALIZATION
 
 	initCompanyForm() {
 		this.companyForm = this.fb.group({
@@ -1206,32 +1231,25 @@ export class CompanyEntryComponent implements OnInit {
 	}
 
 	handlePanControl(country: any): void {
-  if (!country || !this.countryResults) return;
+		if (!country || !this.countryResults) return;
 
-  const panControl = this.companyForm.get('Pan');
-  if (!panControl) return;
+		const panControl = this.companyForm.get('Pan');
+		if (!panControl) return;
 
-  const countryName = country.countryName ||
-    this.countryResults.find(c => c.CountryMasterSid === country.CountryMasterSid)?.countryName;
+		const countryName = country.countryName ||
+			this.countryResults.find(c => c.CountryMasterSid === country.CountryMasterSid)?.countryName;
 
-  const isIndia = countryName?.toLowerCase() === 'india';
-  this.isPanRequiredFlag = isIndia;
+		const isIndia = countryName?.toLowerCase() === 'india';
+		this.isPanRequiredFlag = isIndia;
 
-  // Check if PAN should be visible based on config
-  const panVisible = this.companyForm.get('config')?.value?.Pan === true || 
-                    this.companyForm.get('config')?.value?.masters?.basic?.pan === true;
-
-  if (isIndia && panVisible) {
-    panControl.setValidators([Validators.required, Validators.maxLength(20), this.panValidator]);
-  } else if (panVisible) {
-    panControl.setValidators([Validators.maxLength(20), this.panValidator]);
-  } else {
-    panControl.clearValidators();
-    panControl.disable();
-    panControl.setValue('');
-  }
-  panControl.updateValueAndValidity();
-}
+		if (isIndia) {
+			panControl.setValidators([Validators.required, Validators.maxLength(20), this.panValidator]);
+			// this.appSettingService.showInfo('PAN is required for Indian companies');
+		} else {
+			panControl.setValidators([Validators.maxLength(20), this.panValidator]);
+		}
+		panControl.updateValueAndValidity();
+	}
 
 	gstValidator(control: AbstractControl): ValidationErrors | null {
 		const gstin = control.value;

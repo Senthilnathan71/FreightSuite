@@ -160,23 +160,26 @@
 
             <!-- ADDRESS LINE 1 -->
 
-            <aside class="col-md-6" *ngIf="shouldShowField('addressLine1')">
-  <div class="custom-form-group">
-    <textarea type="text" id="text-input" placeholder="" class="custom-input-field sm"
-      formControlName="addressLine1" [textWithNumbers]="500" rowspan="2" rows="1"></textarea>
-    <label for="text-input" class="input-label">Address <span class="text-danger">*</span></label>
+            <aside class="col-md-6" *ngIf="companyForm.get('addressLine1')?.enabled">
+              <div class="custom-form-group">
+                <textarea type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                  formControlName="addressLine1" [textWithNumbers]="500" rowspan="2" rows="1"></textarea>
+                <label for="text-input" class="input-label">Address <span class="text-danger">*</span></label>
 
-    @if(companyForm.get('addressLine1')?.touched && companyForm.get('addressLine1')?.invalid){
-    <div class="error-message">
-      @if(companyForm.get('addressLine1')?.hasError('required')){
-      <span>Address is required</span>
-      } @else if(companyForm.get('addressLine1')?.hasError('maxlength')){
-      <span>Max 500 Characters</span>
-      }
-    </div>
-    }
-  </div>
-</aside>           <aside class="col-md-6" *ngIf="companyForm.get('webSite')?.enabled">
+                <!--  Validation -->
+                @if(companyForm.get('addressLine1')?.touched &&
+                companyForm.get('addressLine1')?.invalid){
+                <div class="error-message">
+                  @if(companyForm.get('addressLine1')?.hasError('required')){
+                  <span>Address is required</span>
+                  } @else if(companyForm.get('addressLine1')?.hasError('maxlength')){
+                  <span>Max 500 Characters</span>
+                  }
+                </div>
+                }
+              </div>
+            </aside>
+            <aside class="col-md-6" *ngIf="companyForm.get('webSite')?.enabled">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                   formControlName="webSite" [textWithNumbers]="100">
