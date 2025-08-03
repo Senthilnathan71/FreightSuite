@@ -182,36 +182,7 @@ export class CompanyEntryComponent implements OnInit {
   } 
 }
 	
-	filterFieldsByConfig(formGroup: FormGroup, config: any, fields: FieldSelection[]) {
-  if (!config || !formGroup) {
-    return;
-  }
-
-  fields.forEach(field => {
-    const control = formGroup.get(field.name);
-    if (control) {
-      const fieldConfig = fields.find(f => f.name === field.name);
-      if (fieldConfig) {
-        fieldConfig.selected = config[field.name] === true;
-      }
-
-      if (config[field.name] === false) {
-        control.disable();
-        // Reset the value when hiding the field
-        control.setValue('');
-        control.clearValidators();
-      } else {
-        control.enable();
-        // Restore validators if needed
-        if (field.name === 'companyName') {
-          control.setValidators([Validators.required]);
-        }
-      }
-      control.updateValueAndValidity();
-    }
-  });
-  this.cdRef.detectChanges();
-}
+	
 	// FORM INITIALIZATION
 
 	initCompanyForm() {

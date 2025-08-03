@@ -16,78 +16,130 @@ import { MasterService } from '../../master.service';
 export class ConfigComponent implements OnInit {
   @Input() companyName: string = '';
   companyId: number | null = null;
-  
-  // Default configuration structure
+
   config: any = {
     masters: {
-      basic: {companyName: true,companyCode: true,addressLine1: true, pan: true}
+      department: {
+        fields: {
+          departmentName: { visible: true, label: 'Department Name' },
+          departmentCode: { visible: true, label: 'Department Code' },
+          departmentType: { visible: true, label: 'Department Type' }
+        }
+      }
     },
     crm: {
-      basic: {s3Storage: true,manageRules: true,unifiedChat: false,addException: false}
+      basic: {
+        s3Storage: true,
+        manageRules: true,
+        unifiedChat: false,
+        addException: false
+      }
     },
     account: {
-      basic: {s3Storage: true}
+      basic: {
+        s3Storage: true
+      }
     },
     settings: {
-      basic: {s3Storage: true}
+      basic: {
+        s3Storage: true
+      }
     }
   };
 
-  constructor(private router: Router, 
-              private route: ActivatedRoute,
-              private masterService: MasterService,
-            ) {}
-  
   hovered: string = '';
   activeSection: string = 'master';
   sectionHistory: string[] = ['master'];
 
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private masterService: MasterService
+  ) {}
+
   ngOnInit() {
     this.companyId = +this.route.snapshot.params['id'];
     this.companyName = history.state.companyName || '';
-    
-    // Load existing config if available
+
     const existingConfig = history.state.config;
     if (existingConfig) {
       this.mergeConfigurations(existingConfig);
     }
   }
 
-  private mergeConfigurations(existingConfig: any) {
-    // Deep merge the existing config with our default structure
-    this.config = {
-      ...this.config,
-      ...existingConfig,
+  private normalizeConfig(config: any): any {
+    const departmentFields = config?.masters?.department?.fields || {};
+    return {
+      ...config,
       masters: {
-        basic: {
-          ...this.config.masters?.basic,
-          ...existingConfig.masters?.basic
-        }
-      },
-      crm: {
-        basic: {
-          ...this.config.crm?.basic,
-          ...existingConfig.crm?.basic
-        }
-      },
-      account: {
-        basic: {
-          ...this.config.account?.basic,
-          ...existingConfig.account?.basic
-        }
-      },
-      settings: {
-        basic: {
-          ...this.config.settings?.basic,
-          ...existingConfig.settings?.basic
+        department: {
+          fields: {
+            departmentName: {
+              visible: departmentFields?.departmentName?.visible ?? true,
+              label: departmentFields?.departmentName?.label || 'Department Name'
+            },
+            departmentCode: {
+              visible: departmentFields?.departmentCode?.visible ?? true,
+              label: departmentFields?.departmentCode?.label || 'Department Code'
+            },
+            departmentType: {
+              visible: departmentFields?.departmentType?.visible ?? true,
+              label: departmentFields?.departmentType?.label || 'Department Type'
+            }
+          }
         }
       }
     };
   }
 
-  setSection(section: string): void {
-    this.sectionHistory.push(section);
-    this.activeSection = section;
+  private mergeConfigurations(existingConfig: any) {
+    const normalized = this.normalizeConfig(existingConfig);
+
+    this.config = {
+      ...this.config,
+      ...normalized,
+      masters: {
+        department: {
+          fields: {
+            ...this.config.masters.department.fields,
+            ...normalized.masters.department.fields
+          }
+        }
+      },
+      crm: {
+        basic: {
+          ...this.config.crm.basic,
+          ...normalized.crm?.basic
+        }
+      },
+      account: {
+        basic: {
+          ...this.config.account.basic,
+          ...normalized.account?.basic
+        }
+      },
+      settings: {
+        basic: {
+          ...this.config.settings.basic,
+          ...normalized.settings?.basic
+        }
+      }
+    };
+  }
+
+  toggleField(section: string, subsection: string, fieldKey: string) {
+    const field = this.config[section]?.[subsection]?.fields?.[fieldKey];
+    if (field) {
+      field.visible = !field.visible;
+    }
+  }
+
+  getConfigValue(section: string, subsection: string, fieldKey: string): boolean {
+    return this.config[section]?.[subsection]?.fields?.[fieldKey]?.visible ?? false;
+  }
+
+  getLabel(section: string, subsection: string, fieldKey: string): string {
+    return this.config[section]?.[subsection]?.fields?.[fieldKey]?.label || fieldKey;
   }
 
   goToPreviousSection(): void {
@@ -96,6 +148,11 @@ export class ConfigComponent implements OnInit {
       const previousSection = this.sectionHistory[this.sectionHistory.length - 1];
       this.activeSection = previousSection;
     }
+  }
+
+  setSection(section: string): void {
+    this.sectionHistory.push(section);
+    this.activeSection = section;
   }
 
   goToNextSection(): void {
@@ -126,33 +183,27 @@ export class ConfigComponent implements OnInit {
   }
 
   saveConfig() {
-  if (!this.companyId) {
-    console.error('No company ID available');
-    return;
-  }
-
-  this.masterService.saveCompanyConfig(this.companyId, this.config)
-    .subscribe({
-      next: (response) => {
-        console.log('Config saved successfully', response);
-        this.goBackToCompany();
-      },
-      error: (error) => {
-        console.error('Error saving config:', error);
-        
-      }
-    });
-}
-
-
-
-  toggleField(section: string, subsection: string, fieldName: string) {
-    if (this.config[section]?.[subsection]) {
-      this.config[section][subsection][fieldName] = !this.config[section][subsection][fieldName];
+    if (!this.companyId) {
+      console.error('No company ID available');
+      return;
     }
-  }
 
-  getConfigValue(section: string, subsection: string, fieldName: string): boolean {
-    return this.config[section]?.[subsection]?.[fieldName] ?? false;
+    const configToSave = {
+      masters: this.config.masters,
+      crm: this.config.crm,
+      account: this.config.account,
+      settings: this.config.settings
+    };
+
+    this.masterService.saveCompanyConfig(this.companyId, configToSave)
+      .subscribe({
+        next: (response) => {
+          console.log('Config saved successfully', response);
+          this.goBackToCompany();
+        },
+        error: (error) => {
+          console.error('Error saving config:', error);
+        }
+      });
   }
 }

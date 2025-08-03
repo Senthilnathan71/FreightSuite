@@ -60,7 +60,7 @@
             </aside>
 
             <!-- COMPANY NAME -->
-            <aside class="col-md-6" *ngIf="companyForm.get('companyName')?.enabled">
+            <aside class="col-md-6" >
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                   formControlName="companyName" [onlyText]="100">
@@ -83,7 +83,7 @@
 
             <!-- COMPANY CODE -->
 
-            <aside class="col-md-6" *ngIf="companyForm.get('companyCode')?.enabled">
+            <aside class="col-md-6" >
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                   formControlName="companyCode" [textWithNumbers]="10">
@@ -160,7 +160,7 @@
 
             <!-- ADDRESS LINE 1 -->
 
-            <aside class="col-md-6" *ngIf="companyForm.get('addressLine1')?.enabled">
+            <aside class="col-md-6" >
               <div class="custom-form-group">
                 <textarea type="text" id="text-input" placeholder="" class="custom-input-field sm"
                   formControlName="addressLine1" [textWithNumbers]="500" rowspan="2" rows="1"></textarea>
@@ -179,7 +179,7 @@
                 }
               </div>
             </aside>
-            <aside class="col-md-6" *ngIf="companyForm.get('webSite')?.enabled">
+            <aside class="col-md-6" >
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                   formControlName="webSite" [textWithNumbers]="100">
@@ -206,7 +206,7 @@
             <h5 class="card-title m-1 text-center text-info">Contact</h5>
           </aside>
           <div class="row" [formGroup]="companyForm">
-            <aside class="col-md-6" *ngIf="companyForm.get('email')?.enabled">
+            <aside class="col-md-6" >
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="email">
                 <label for="text-input" class="input-label">Email </label>
@@ -347,7 +347,7 @@
 
             <!-- PHONE NUMBER -->
 
-            <aside class="col-md-6" *ngIf="companyForm.get('phoneNumber')?.enabled">
+            <aside class="col-md-6">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                   formControlName="phoneNumber" [onlyNumbers]="20">
@@ -369,7 +369,7 @@
 
             <!-- PAN -->
 
-            <aside class="col-md-6" *ngIf="companyForm.get('Pan')?.enabled">
+            <aside class="col-md-6" >
               <div class="custom-form-group">
                 <input type="text" id="panInput" class="custom-input-field sm" formControlName="Pan" placeholder=""
                   maxlength="20" />
@@ -408,7 +408,7 @@
 
             <!-- REMARKS -->
 
-            <aside class="col-md-6" *ngIf="companyForm.get('remarks')?.enabled">
+            <aside class="col-md-6">
               <div class="custom-form-group">
                 <textarea id="" placeholder="" rows="2" class="custom-input-field sm" formControlName="remarks"
                   [textWithNumbers]="500" rows="1"></textarea>
@@ -562,7 +562,7 @@
                           Branch
                         </h5>
                       </aside>
-                      <aside class="col-md-12" *ngIf="branchForm.get('branchName')?.enabled">
+                      <aside class="col-md-12" >
                         <div class="custom-form-group">
                           <input type="text" id="branchName" placeholder="" class="custom-input-field sm"
                             formControlName="branchName" [onlyText]="100">
@@ -581,7 +581,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-12" *ngIf="branchForm.get('branchCode')?.enabled">
+                      <aside class="col-md-12" >
                         <div class="custom-form-group">
                           <input type="text" id="branchCode" placeholder="" class="custom-input-field sm"
                             formControlName="branchCode" [textWithNumbers]="10">
@@ -600,7 +600,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-12" *ngIf="branchForm.get('branchTaxRegistrationNo')?.enabled">
+                      <aside class="col-md-12">
                         <div class="custom-form-group">
                           <input type="text" id="branchTaxRegistrationNo" placeholder="" class="custom-input-field sm"
                             formControlName="branchTaxRegistrationNo" [textWithNumbers]="50">
@@ -631,7 +631,7 @@
                           Address
                         </h5>
                       </aside>
-                      <aside class="col-md-6" *ngIf="branchForm.get('branchAddressLine1')?.enabled">
+                      <aside class="col-md-6" >
                         <div class="custom-form-group">
                           <input type="text" id="branchAddressLine1" placeholder="" class="custom-input-field sm"
                             formControlName="branchAddressLine1" [textWithNumbers]="500">
@@ -651,7 +651,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-6" *ngIf="branchForm.get('branchAddressLine2')?.enabled">
+                      <aside class="col-md-6" >
                         <div class="custom-form-group">
                           <input type="text" id="branchAddressLine2" placeholder="" class="custom-input-field sm"
                             formControlName="branchAddressLine2" [textWithNumbers]="500">
@@ -666,7 +666,7 @@
                           }
                         </div>
                       </aside>
-                      <aside class="col-md-6" *ngIf="branchForm.get('branchPostalCode')?.enabled">
+                      <aside class="col-md-6" >
                         <div class="custom-form-group">
                           <input type="text" id="branchPostalCode" placeholder="" class="custom-input-field sm"
                             formControlName="branchPostalCode" [onlyNumbers]="10">
@@ -767,7 +767,7 @@
                           Contact & Other
                         </h5>
                       </aside>
-                      <aside class="col-md-6" *ngIf="branchForm.get('branchWebSite')?.enabled">
+                      <aside class="col-md-6" >
                         <div class="custom-form-group">
                           <input type="text" id="branchWebSite" placeholder="" class="custom-input-field sm"
                             formControlName="branchWebSite" [textWithNumbers]="100">
@@ -782,7 +782,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-6" *ngIf="branchForm.get('branchPhoneNumber')?.enabled">
+                      <aside class="col-md-6" >
                         <div class="custom-form-group">
                           <input type="text" id="branchPhoneNumber" placeholder="" class="custom-input-field sm"
                             formControlName="branchPhoneNumber" [onlyNumbers]="20">
@@ -801,7 +801,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-6" *ngIf="branchForm.get('branchEmail')?.enabled">
+                      <aside class="col-md-6" >
                         <div class="custom-form-group">
                           <input type="text" id="branchEmail" placeholder="" class="custom-input-field sm"
                             formControlName="branchEmail">
@@ -828,7 +828,7 @@
                           }
                         </div>
                       </aside>
-                      <aside class="col-md-6" *ngIf="branchForm.get('branchTimeZone')?.enabled">
+                      <aside class="col-md-6" >
                         <div class="custom-form-group">
                           <input type="text" id="branchTimeZone" placeholder="" class="custom-input-field sm"
                             formControlName="branchTimeZone" (keydown)="validateTimezoneKey($event)"
@@ -848,7 +848,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-6" *ngIf="branchForm.get('branchRemarks')?.enabled">
+                      <aside class="col-md-6" >
                         <div class="custom-form-group">
                           <input type="text" id="branchRemarks" placeholder="" class="custom-input-field sm"
                             formControlName="branchRemarks" [textWithNumbers]="500">

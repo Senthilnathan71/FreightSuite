@@ -58,59 +58,38 @@
             <ng-container [ngSwitch]="activeSection">
                 <!-- Master Section -->
                 <div *ngSwitchCase="'master'">
-                    <div ngbAccordion [closeOthers]="true" activeIds="basic">
-                        <div ngbAccordionItem id="basic">
-                            <h2 ngbAccordionHeader>
-                                <button ngbAccordionButton>
-                                    <strong>Basic</strong>
-                                </button>
-                            </h2>
-                            <div ngbAccordionCollapse>
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="companyName" 
-                                                        [checked]="getConfigValue('masters', 'basic', 'companyName')"
-                                                        (change)="toggleField('masters', 'basic', 'companyName')">
-                                                    <label class="form-check-label" for="companyName">Company Name</label>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="col-md-6 mb-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="companyCode" 
-                                                        [checked]="getConfigValue('masters', 'basic', 'companyCode')"
-                                                        (change)="toggleField('masters', 'basic', 'companyCode')">
-                                                    <label class="form-check-label" for="companyCode">Company Code</label>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="col-md-6 mb-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="addressLine1" 
-                                                        [checked]="getConfigValue('masters', 'basic', 'addressLine1')"
-                                                        (change)="toggleField('masters', 'basic', 'addressLine1')">
-                                                    <label class="form-check-label" for="addressLine1">Address Line 1</label>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="col-md-6 mb-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="pan" 
-                                                        [checked]="getConfigValue('masters', 'basic', 'pan')"
-                                                        (change)="toggleField('masters', 'basic', 'pan')">
-                                                    <label class="form-check-label" for="pan">PAN</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+  <div ngbAccordion [closeOthers]="true" activeIds="department">
+    <div ngbAccordionItem id="department">
+      <h2 ngbAccordionHeader>
+        <button ngbAccordionButton>
+          <strong>Department</strong>
+        </button>
+      </h2>
+      <div ngbAccordionCollapse>
+        <div class="card">
+          <div class="card-body">
+            <div class="row" *ngFor="let key of ['departmentName', 'departmentCode', 'departmentType']">
+              <div class="col-md-6 mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" [id]="key"
+                         [checked]="getConfigValue('masters', 'department', key)"
+                         (change)="toggleField('masters', 'department', key)">
+                  <label class="form-check-label" [for]="key">
+                    {{ getLabel('masters', 'department', key) }}
+                  </label>
                 </div>
+                <input class="form-control form-control-sm mt-1"
+                       [(ngModel)]="config.masters.department.fields[key].label"
+                       [placeholder]="'Label for ' + key">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
                 <!-- CRM Section -->
                 <div *ngSwitchCase="'crm'">
