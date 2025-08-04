@@ -1,0 +1,12 @@
+
+.app-status-pending {
+    border-left:6px solid var(--bs-warning);
+}
+ 
+.app-status-reject {
+    border-left:6px solid var(--bs-danger);
+}
+ 
+.app-status-success {
+    border-left:6px solid var(--bs-success);
+}

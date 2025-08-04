@@ -11,6 +11,7 @@ import { ChartAccountEntryComponent } from './chart-account/chart-account-entry/
 import { VendorTdsListComponent } from './vendor-tds/vendor-tds-list/vendor-tds-list.component';
 import { VendorTdsEntryComponent } from './vendor-tds/vendor-tds-entry/vendor-tds-entry.component';
 import { LedgerMappingComponent } from './ledger-mapping/ledger-mapping/ledger-mapping.component';
+import { Dashboard1Component } from './dashboard1/dashboard1/dashboard1.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -172,6 +173,17 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Ledger Mapping" },
+          ],
+        },
+      },
+       {
+        path: "dashboard1",
+        component: Dashboard1Component,
+        data: {
+          title: "Dashboard1",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Dashboard1" },
           ],
         },
       },
