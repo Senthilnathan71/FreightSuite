@@ -35,7 +35,7 @@ export class QuotationViewComponent {
   errorMessage: string = '';  // To store any error messages
   // pagination
   page = 1;
-  pageSize = 10;
+  pageSize = 15;
   totalLengthOfCollection: number;
   page1 = 1;
   pageSize1 = 5;
@@ -390,6 +390,9 @@ export class QuotationViewComponent {
     }
   }
 
+  goForBookingCreation(QuoteHeaderSid){
+    this.route.navigate(['crm/booking/entry'])
+  }
 
 
 

@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
@@ -18,6 +18,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from '../../settings/email/email-entry/email-entry.component';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 
 @Component({
@@ -31,7 +32,8 @@ import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
     FeatherModule,
     NgbPaginationModule,
     NgbDatepickerModule,
-    NgSelectModule
+    NgSelectModule,
+    FormsModule
   ],
   templateUrl: './quotation.component.html',
   styleUrl: './quotation.component.scss',
@@ -83,7 +85,7 @@ export class QuotationComponent implements OnInit {
   rateEnquirySid : number;
   rateEnquiryNumber = "";
 	today = this.calendar.getToday();
-	todayDate = new Date(this.today.year,this.today.month,this.today.day);
+	todayDate = new Date(this.today.year,this.today.month -1,this.today.day);
   minQuoteDate :any;
   minEffDate : any;
   quotationData : any;
@@ -95,6 +97,10 @@ export class QuotationComponent implements OnInit {
   cusBranchList : any[] = [];
   currentMenuPermissions = {}
   cusBranchEmail :any;
+  isAuthorizedUser : boolean;
+  authStateCache : string;
+  currentCompany : any;
+  currentBranch : any;
   constructor(
     private appService: AppService,
     private appSettingsService: AppSettingsService,
@@ -125,12 +131,17 @@ export class QuotationComponent implements OnInit {
     this.setMinDate();
     this.initializeForm();
     this.isMobile = this.appService.getDevice();
-    this.appSettingsService.getUser().subscribe(
-      (resp) => {
-        this.userData = resp;
-        this.checkPermissions();
-      }
-    );
+    const userProfile = this.appSettingsService.getDecryptedUserProfile();
+    if(userProfile){
+      this.userData = userProfile;
+      this.checkPermissions();
+    }
+     const storedCompany = localStorage.getItem('selected-company');
+    this.currentCompany = storedCompany ? this.appSettingsService.decrypt(storedCompany) : null;
+     const storedBranch = localStorage.getItem('selected-branch');
+    this.currentBranch = storedBranch ? this.appSettingsService.decrypt(storedBranch) : null;
+    console.info(this.currentBranch)
+
     forkJoin({
       cargoTypes: this.leadService.getAllCargoTypes().pipe(catchError(err => of([]))),
       carriers: this.leadService.getAllCarrier().pipe(catchError(err => of([]))),
@@ -158,6 +169,7 @@ export class QuotationComponent implements OnInit {
           this.isEditMode = true;
           this.minQuoteDate = undefined;
           this.loadEnquiry(this.QuoteHeaderSid);
+          this.checkAuthorisedPerson(this.userData?.UserMasterSid,this.QuoteHeaderSid);
         } else{
           this.minQuoteDate = this.today;
         }
@@ -194,6 +206,18 @@ export class QuotationComponent implements OnInit {
 
   hasPermission(permission: string): boolean {
     return this.permissions.includes(permission);
+  }
+
+  checkAuthorisedPerson(UserMasterSid,QuoteHeaderSid){
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    if(!UserMasterSid || !currentMenuId){
+      return;
+    }
+    this.leadService.isUserAuthorizer(UserMasterSid,currentMenuId,QuoteHeaderSid).subscribe(
+      (resp:any)=>{
+          this.isAuthorizedUser = resp.data?.canAuthorize
+      }
+    )
   }
 
 
@@ -280,6 +304,8 @@ export class QuotationComponent implements OnInit {
       SalesmanSid : [null],
       ClearanceBy : [null],
       TransportBy : [null],
+      authorizerStatus : ['Pending',(this.isEditMode && this.isAuthorizedUser) ?[this.statusRequiredValidator] : []],
+      AuthorizerRemarks : [''],
       // Routes (Multiple)
       routes: this.fb.array([]),
     });
@@ -458,8 +484,11 @@ export class QuotationComponent implements OnInit {
       quoteNo: response.QuoteNumber,
       quoteDate: new Date(response.QuoteDate),
       Segment: response.DepartmentMasterSid,
-      status: response.status === "A" ? "Active" : "Suspended"
+      status: response.status === "A" ? "Active" : "Suspended",
+      authorizerStatus : response.authorizerStatus || 'Pending',
+      AuthorizerRemarks : response.AuthorizerRemarks
     });
+    this.authStateCache = response.authorizerStatus || 'Pending';
     this.getCustomerBranches(selectCustomer.CustomerMasterSid);
     this.quotationForm.get('Segment')?.disable();
     // Get the FormArray for routes and clear existing data
@@ -667,14 +696,25 @@ export class QuotationComponent implements OnInit {
 
   onSubmit() {
     this.btnDisable = true;
+    let currentCompanyMasterSid = this.currentCompany.CompanyMasterSid
+    let currentBranchMasterSid = this.currentBranch.BranchMasterSid
+    let userEmail = this.userData.userEmail;
+
+    console.log(currentCompanyMasterSid)
+    console.log(currentBranchMasterSid)
     // return false;
     if (this.QuoteHeaderSid) {
       const updatePayload = {
         ...this.quotationForm.value,
+        CompanyMasterSid : currentCompanyMasterSid,
+        BranchMasterSid : currentBranchMasterSid,
+        updatedBy : userEmail,
+        UserMasterSid : this.userData?.UserMasterSid,
         CustomerMasterSid: this.quotationForm.get('CustomerMasterSid')?.value,
         CustomerName: this.selectedCustomerName,
         Segment: this.selectedDepartment,
         QuoteHeaderSid: this.QuoteHeaderSid,
+        approvalStatusChange : this.authStateCache !== this.quotationForm.value?.authorizerStatus,
         status: this.quotationForm.get('status')?.value,
         routes: this.quotationForm.value.routes.map(route => ({
           ...route,
@@ -703,6 +743,9 @@ export class QuotationComponent implements OnInit {
     } else {
       const createPayload = {
         ...this.quotationForm.value,
+        CompanyMasterSid : currentCompanyMasterSid,
+        BranchMasterSid : currentBranchMasterSid,
+        createdBy : userEmail,
         DepartmentMasterSid: this.quotationForm.get('DepartmentMasterSid')?.value,
         CustomerMasterSid: this.quotationForm.get('CustomerMasterSid')?.value,
         CustomerName: this.selectedCustomerName, // Store customer name
@@ -732,7 +775,15 @@ export class QuotationComponent implements OnInit {
   }
 
   goBack() {
-    history.back()
+    this.router.navigate(['crm/quotation/list'])
+  }
+
+  statusRequiredValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value || value === 'Pending') {
+      return { required: true };
+    }
+    return null;
   }
 
 
@@ -875,12 +926,15 @@ export class QuotationComponent implements OnInit {
 	}
 
 	openAuthority() {
-		// if (!this.tariffData) return;
-		// const modalRef = this.modalService.open(AuthorityEntryComponent, {
-		// 	size: 'lg',
-		// 	centered: true,
-		// 	backdrop: 'static'
-		// });
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+		if (!MenuMasterSid) return;
+		const modalRef = this.ngbModal.open(AuthorityLogComponent, {
+			size: 'lg',
+			centered: true,
+			backdrop: 'static'
+		});
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.QuoteHeaderSid;
 	}
 
 	openEDoc() {

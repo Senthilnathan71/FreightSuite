@@ -191,7 +191,7 @@
                                     </div>
                                 </div> -->
                         @if(QuoteHeaderSid){
-                        <div class="col-12 col-md-4">
+                        <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="status" class="ng-select">
                                     <ng-option *ngFor="let option of statusList" [value]="option">{{ option }}
@@ -202,9 +202,61 @@
                                     Status is required.
                                 </small>
                             </div>
-                        </div>
+                        </aside>
                         }
+                        @if(isEditMode && isAuthorizedUser){
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <textarea id="" placeholder="" rows="1" class="input-field sm" formControlName="AuthorizerRemarks"></textarea>
+                                <label for="text-input" class="input-label">Authorizer Remarks </label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="authorizerStatus" class="ng-select">
+                                    <ng-option value="Pending" disabled>Waiting For Approval</ng-option>
+                                    <ng-option value="Approved">Approved</ng-option>
+                                    <ng-option value="Rejected">Rejected</ng-option>
+                                </ng-select>
+                                <label for="authorizerStatus" class="input-label">Authorize Status</label>
+                                @if(quotationForm.get('authorizerStatus').invalid && quotationForm.get('authorizerStatus').touched){
+                                    <div class="error-message">
+                                        @if(quotationForm.get('authorizerStatus').hasError('required')){
+                                            <span>Authorizer Status is required</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </aside>
+                        }
+                        <!-- @if(isEditMode && isAuthorizedUser && authStateCache !=='Pending'){
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <textarea id="" placeholder="" rows="1" class="form-control input-field sm" [value]="f['AuthorizerRemarks'].value" disabled></textarea>
+                                <label for="text-input" class="input-label">Authorizer Remarks </label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [(ngModel)]="authStateCache" class="ng-select" disabled>
+                                    <ng-option value="Pending" disabled>Waiting For Approval</ng-option>
+                                    <ng-option value="Approved">Approved</ng-option>
+                                    <ng-option value="Rejected">Rejected</ng-option>
+                                </ng-select>
+                                <label for="authorizerStatus" class="input-label">Authorize Status</label>
+                                @if(quotationForm.get('authorizerStatus').invalid && quotationForm.get('authorizerStatus').touched){
+                                    <div class="error-message">
+                                        @if(quotationForm.get('authorizerStatus').hasError('required')){
+                                            <span>Authorizer Status is required</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </aside>
+                        } -->
                     </div>
+                    
+                    
 
 
 

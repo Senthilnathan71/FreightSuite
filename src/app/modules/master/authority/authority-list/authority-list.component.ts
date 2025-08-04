@@ -11,6 +11,7 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
+import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 
 @Component({
   selector: 'app-authority-list',
@@ -21,33 +22,35 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
     FormsModule,
     NgbPaginationModule,
     RouterModule,
-    ListpageComponent
+    ListpageComponent,
+    FavoriteStarComponent
   ],
   templateUrl: './authority-list.component.html',
   styleUrl: './authority-list.component.scss'
 })
 export class AuthorityListComponent {
-  searchType = 'status';
+  // Variable Declaring Section
+
   filterValue = '';
   authorityList: any[] = [];
-  allAuthorities: any[] = [];
-  searchPerformed = false;
-  loading: boolean = false;
-  departmentOptions: any[] = [];
+  searchPerformed: boolean;
   userData: any;
 
-  // pagination
+  // Lookup Related Variable Declaration
+  departmentOptions: any[] = [];
+
+  permissions: string[] = [];
+  currentMenuPermissions: any = {};
+
+  // Pagination related Declaring
   page = 1;
   pageSize = 10;
-  totalLengthOfCollection: number = 0;
-  isFavorite: boolean = false;
-  sortColumn: string = 'departmentName'; 
-  sortDirection: string = 'asc'; 
-  
+  totalLengthOfCollection: number;
 
-  toggleFavorite() {
-    this.isFavorite = !this.isFavorite;
-  }
+  // Sorting related declaration
+  sortColumn: string = 'DepartmentMaster';
+  sortDirection: string = 'desc';
+
   constructor(
     private masterService: MasterService,
     private router: Router,
@@ -57,75 +60,74 @@ export class AuthorityListComponent {
   ) { }
 
   ngOnInit() {
-    this.appSettingService.getUser().subscribe(user => {
-      if (user) {
-        this.userData = user;
-      }
-    });
-    this.loadDepartments();
+    const userInfo = this.appSettingService.getDecryptedUserProfile();
+    if (userInfo) {
+      this.userData = userInfo;
+      this.checkPermissions();
+    }
+    this.searchAuthority();
   }
 
-  loadDepartments() {
-    this.loading = true;
-    this.masterService.getAllDepartments().subscribe({
-      next: (res: any) => {
-        this.departmentOptions = res.data || res;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading departments:', err);
-        this.loading = false;
-      }
-    });
-  }
-
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
-
-  search() {
-    this.loading = true;
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.filterValue
-    };
-
-    this.masterService.searchAuthority(payload).subscribe({
-      next: (res: any) => {
-        this.allAuthorities = (res.data || res).map(authority => {
-          const departmentNames = authority.DepartmentMaster?.map(code => {
-            const dept = this.departmentOptions.find(d => d.departmentCode === code);
-            return dept?.departmentName ?? code;
-          }) || [];
-
-          return {
-            ...authority,
-            departmentName: departmentNames.join(', '),
-            branchName: authority.branchMaster?.branchName || 'N/A',
-            MenuName: authority.menuMaster?.screenMenuName || 'N/A',
-            statusText: authority.status === 'A' ? 'Active' : 'Suspended'
-          };
+  checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId);
+    console.log(userRole);
+    if (currentMenuId && userRole) {
+      this.masterService
+        .getRoleMenuPermissions(currentMenuId, userRole)
+        .subscribe({
+          next: (response) => {
+            this.currentMenuPermissions = response.data.MenuPermissions || {};
+            this.permissions = Object.keys(this.currentMenuPermissions).filter(
+              (key) => this.currentMenuPermissions[key] === 'isTrue'
+            );
+            console.log(this.permissions);
+          },
         });
+    }
+  }
 
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
+  }
 
-        
-        this.applySorting();
-        
-        this.authorityList = [...this.allAuthorities];
-        this.totalLengthOfCollection = this.authorityList.length;
-        this.searchPerformed = true;
-        this.page = 1;
-        this.updatePaginatedData();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Search error:', err);
-        this.loading = false;
+  searchAuthority() {
+    const params = {
+      search: this.filterValue.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+    }
+    this.masterService.searchAuthority(params).subscribe({
+      next: (resp: any) => {
+        if (resp.status) {
+          this.authorityList = resp.data?.items.map(data => {
+            return {
+              AuthorityMasterSid : data.AuthorityMasterSid,
+              DepartmentMaster: this.formatDepartment(data.DepartmentMaster),
+              menuName: data?.menuMaster?.MenuName || '',
+              branchName: data?.branchMaster?.branchName,
+              status: data.status === 'A' ? 'Active' : 'Suspended'
+            }
+          });
+          console.log(this.authorityList);
+          this.totalLengthOfCollection = resp.data?.totalCount || 0;
+          this.applySorting();
+          this.searchPerformed = true;
+        } else {
+          this.appSettingService.showError('Error searching Authorization.');
+          console.error('Error searching authorization', resp.message)
+          this.authorityList = [];
+          this.totalLengthOfCollection = 0;
+        }
+      }, error: (error: any) => {
+        console.error(error);
       }
-    });
+    })
+  }
+
+  formatDepartment(depart: any[]) {
+    return depart.join(" , ")
   }
 
   sort(column: string) {
@@ -137,25 +139,25 @@ export class AuthorityListComponent {
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
-    
+
     this.applySorting();
-    this.updatePaginatedData();
+    this.updatePaginationData();
   }
 
   applySorting() {
-    this.allAuthorities.sort((a, b) => {
+    this.authorityList.sort((a, b) => {
       let valueA = a[this.sortColumn];
       let valueB = b[this.sortColumn];
-      
+
       // Handle null/undefined values
       if (valueA == null) valueA = '';
       if (valueB == null) valueB = '';
-      
+
       // Convert to string for case-insensitive comparison
       valueA = valueA.toString().toLowerCase();
       valueB = valueB.toString().toLowerCase();
-    
-      
+
+
       if (valueA < valueB) {
         return this.sortDirection === 'asc' ? -1 : 1;
       }
@@ -167,10 +169,13 @@ export class AuthorityListComponent {
   }
 
 
-  updatePaginatedData(): void {
-    const startIndex = (this.page - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.authorityList = this.allAuthorities.slice(startIndex, endIndex);
+  updatePaginationData(): void {
+    this.searchAuthority();
+  }
+
+  clearFilterValue() {
+    this.filterValue = '';
+    this.searchAuthority();
   }
 
   trackByAuthorityId(index: number, item: any): number {
@@ -181,15 +186,13 @@ export class AuthorityListComponent {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
-        this.loading = true;
         this.masterService.deleteAuthorityById(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("Authority deleted successfully!");
-            this.search(); // Refresh search results
+            this.searchAuthority();
           },
           error: (err) => {
             console.error('Delete error:', err);
-            this.loading = false;
           }
         });
       }
@@ -197,38 +200,33 @@ export class AuthorityListComponent {
   }
 
   navigateToCreateAuthority() {
-    this.router.navigate(['master/authority/entry']);
+    this.router.navigate(['master/authorization/entry']);
   }
 
   resetPage() {
     this.filterValue = '';
-    this.searchType = 'departmentName';
     this.page = 1;
     this.searchPerformed = false;
     this.authorityList = [];
     this.totalLengthOfCollection = 0;
-    this.sortColumn = 'departmentName';
+    this.sortColumn = 'DepartmentMaster';
     this.sortDirection = 'asc';
-
   }
 
   report(): void {
-    const formattedData = this.authorityList.map(item => ({
-      ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended'
-    }));
+    const formattedData = this.authorityList;
 
-    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+    const companyName = this.userData?.userCompanyMaster?.[0]?.companyMaster?.companyName ?? 'Company';
 
     this.excelReportService.exportAsExcel({
       data: formattedData,
       headers: [
-        { key: 'departmentName', label: 'Department' },
-        { key: 'ScreenMenuName', label: 'Screen/Menu Name' },
-        { key: 'BranchName', label: 'Branch' },
+        { key: 'DepartmentMaster', label: 'Department' },
+        { key: 'menuName', label: 'Screen/Menu Name' },
+        { key: 'branchName', label: 'Branch' },
         { key: 'status', label: 'Status' }
       ],
-      fileName: 'Authority-Report',
+      fileName: 'Authorization-Report',
       title: companyName
     });
   }

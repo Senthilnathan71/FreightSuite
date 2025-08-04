@@ -157,6 +157,7 @@ export class VendorTdsListComponent implements OnInit {
             this.sortColumn = column;
             this.sortDirection = 'asc';
         }
+        this.applySorting();
     }
 
     applySorting() {

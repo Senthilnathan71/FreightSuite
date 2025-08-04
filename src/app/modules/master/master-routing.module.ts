@@ -69,6 +69,7 @@ import { HawbStockListComponent } from './Hawb-Stock/hawb-stock-list/hawb-stock-
 import { HawbStockEntryComponent } from './Hawb-Stock/hawb-stock-entry/hawb-stock-entry.component';
 import { AuthorizationListComponent } from './authorization/authorization-list/authorization-list.component';
 import { ConfigComponent } from './company/config/config.component';
+import { DocumentAuthorizationComponent } from './document-authorization/document-authorization.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -887,35 +888,35 @@ export const MasterRoutes: Routes = [
     },
   },
   {
-    path: 'authority/list',
+    path: 'authorization/list',
     component: AuthorityListComponent,
     data: {
-      title: 'Authority',
+      title: 'Authorization',
       urls: [
         { title: 'Master', url: '/master' },
-        { title: 'Authority' },
+        { title: 'Authorization' },
       ],
     },
   },
   {
-    path: 'authority/entry',
+    path: 'authorization/entry',
     component: AuthorityEntryComponent,
     data: {
-      title: 'Authority',
+      title: 'Authorization',
       urls: [
         { title: 'Master', url: '/master' },
-        { title: 'Authority' },
+        { title: 'Authorization' },
       ],
     },
   },
   {
-    path: 'authority/entry/:id',
+    path: 'authorization/entry/:id',
     component: AuthorityEntryComponent,
     data: {
-      title: 'Authority',
+      title: 'Authorization',
       urls: [
         { title: 'Master', url: '/master' },
-        { title: 'Authority' },
+        { title: 'Authorization' },
       ]
     }
   },
@@ -1063,7 +1064,7 @@ export const MasterRoutes: Routes = [
     },
   },
   {
-    path: 'authorization/list',
+    path: 'authority/list',
     component: AuthorizationListComponent,
     data: {
       title: 'Authorization',
@@ -1072,6 +1073,16 @@ export const MasterRoutes: Routes = [
         { title: 'authorization' },
       ]
     }
-  },
+  }, {
+    path: 'document-authorization',
+    component: DocumentAuthorizationComponent,
+    data: {
+      title: 'Document Authorization',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Document Authorization' },
+      ],
+    },
+  }
 
 ];
