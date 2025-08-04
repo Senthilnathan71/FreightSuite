@@ -2304,7 +2304,7 @@ saveCompanyConfig(companyId: number, configData: any) {
   getAuthorityById(AuthorityMasterSid: number) {
     return this.http.get<{ data: any }>(`authority/fetch/${AuthorityMasterSid}`).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -2340,7 +2340,7 @@ saveCompanyConfig(companyId: number, configData: any) {
   searchAuthority(payload: any) {
     return this.http.post<{ data: any[] }>('authority/search-list', payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -3190,6 +3190,16 @@ searchChargeTds(payload: any) {
     })
   );
 }
+
+  searchPendingApproval(param, UserMasterSid) {
+    return this.http.post<{ data: any }>(`authority/document/search-list/${UserMasterSid}`, param).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
 
 
 }

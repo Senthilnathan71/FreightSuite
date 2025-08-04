@@ -159,13 +159,15 @@
                                     <th class="bg-transparent text-light" scope="col">Customer Name</th>
                                     <th class="bg-transparent text-light" scope="col">Customer Address</th>
                                     <th class="bg-transparent text-light" scope="col">Quote Date</th>
+                                    <!-- <th class="bg-transparent text-light" scope="col">Approval Status</th>
+                                    <th class="bg-transparent text-light" scope="col">Create</th> -->
                                     <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
 
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let enq of quoteItems">
-                                    <td data-label="Action">
+                                    <td data-label="Action" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <section class="ms-auto d-flex align-items-center gap-1 justify-content-center" >
                                             <a class="text-info" (click)="editEnquiry(enq.QuoteHeaderSid)" style="cursor: pointer;">
                                                 <i-feather name="eye" class="feather-sm"></i-feather>
@@ -173,9 +175,16 @@
                                             <a class="mx-2 border-start ps-3 " (click)="reportAndEmailModel(enq,reportModel)" style="cursor: pointer;">
                                                 <i-feather name="file-text" class="feather-sm"></i-feather>
                                             </a>
+                                            @if(enq.authorizerStatus === 'Approved'){
+                                            <a class="mx-2 border-start ps-3" (click)="goForBookingCreation(enq.QuoteHeaderSid)" style="cursor: pointer;"
+                                                title="Create booking">
+                                                <i class="fas fa-book"></i>
+                                            </a>
+                                            }
+
                                         </section>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.QuoteNumber }}
                                         </div>
@@ -183,34 +192,58 @@
                                     <!-- <td>
                                         {{findEnquiryName(enq.EnquirySid)}}
                                     </td> -->
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.CustomerName }}
                                         </div>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.CustomerAddress }}
                                         </div>
                                     </td>
-                                    <td data-label="Phone">
+                                    <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.QuoteDate | formatDate }}
                                         </div>
                                     </td>
-                                    <td data-label="Company">
+                                    <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        @if(enq.authorizerStatus === "Approved"){
+                                        <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                            Approved
+                                        </div>
+                                        }@else if(enq.authorizerStatus === "Rejected"){
+                                        <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                            Rejected
+                                        </div>
+                                        }@else if(enq.authorizerStatus === "Pending"){
+                                        <div class="bg-light-info px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-info d-inline-block rounded"></span>
+                                            Waiting for approval
+                                        </div>
+                                        }
+                                    </td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
-  <span
-    class="badge"
-    [ngClass]="{
-      'bg-success': enq.status === 'A',
-      'bg-danger': enq.status !== 'A'
-    }"
-  >
-    {{ enq.status === 'A' ? 'Active' : 'Suspend' }}
-  </span>
-</div>
-
+                                            @if(enq.authorizerStatus === 'Approved'){
+                                                <button class="btn btn-sm btn-info" (click)="goForBookingCreation(enq.QuoteHeaderSid)">Create Booking</button>
+                                            }
+                                        </div>
+                                    </td> -->
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        @if(enq.status === "A"){
+                                        <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                            Active
+                                        </div>
+                                        }@else{
+                                        <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                            Suspended
+                                        </div>
+                                        }
                                     </td>
 
                                 </tr>

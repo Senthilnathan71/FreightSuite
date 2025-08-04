@@ -172,6 +172,16 @@ export class LeadService {
       })
     )
   }
+
+  getAllWeightUnits(){
+    return this.http.get('unit/weight').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
   getAllPorts() {
     return this.http.get('port').pipe(
       map((resp: any) => {
@@ -284,6 +294,32 @@ export class LeadService {
     return this.http.delete<{ data: any }>(`enquiry/header/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  searchEnquiry(param) {
+    return this.http.post<{data:any}>("enquiry/search-list", param).pipe(
+      map((resp: any) => {
+        let response = resp;
+        return resp;
+      })
+    )
+  }
+
+  getAllShippers(){
+    return this.http.get('customer/shipper').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+  getAllConsignees(){
+    return this.http.get('customer/consignee').pipe(
+      map((resp: any) => {
+        let response = resp;
         return response;
       })
     )
@@ -538,6 +574,23 @@ export class LeadService {
       map((resp) => {
         let response = resp;
         return response;
+      })
+    );
+  }
+
+  isUserAuthorizer(UserMasterSid:number,MenuMasterSid:number,DocumentSid:number){
+    return this.http.get<{ data: any }>(`authority/check-authorizer/${MenuMasterSid}/${DocumentSid}/${UserMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  getApprovalStatusByMenuAndDocument(menuMasterSid: number, documentSid: number) {
+    return this.http.get<{ data: any }>(`authority/approval-status/${menuMasterSid}/${documentSid}`).pipe(
+      map((resp) => {
+        return resp;
       })
     );
   }
