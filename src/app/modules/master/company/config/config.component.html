@@ -2,12 +2,10 @@
     <div class="container-fluid d-flex justify-content-between">
         <div class="d-flex align-items-center flex-wrap gap-5">
             <h5 class="mb-0 pe-5 border-end text-info">Configurations</h5>
-
             <div class="pe-5 d-flex gap-2">
                 <strong>Company :</strong> <span class="badge text-bg-secondary">{{ companyName || 'N/A' }}</span>
             </div>
         </div>
-
         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" 
                 (click)="goBackToCompany()">
             <i class="fas fa-chevron-left me-1"></i>
@@ -21,7 +19,7 @@
         <!-- Sidebar -->
         <div class="col-md-2 bg-light border-end" style="height: 83vh">
             <ul class="nav flex-column pt-3">
-                <li class="nav-item" *ngFor="let section of ['master', 'crm', 'settings', 'account']">
+                <li class="nav-item" *ngFor="let section of sections">
                     <a href="#"
                         class="nav-link d-flex justify-content-between align-items-center px-3 py-1 my-2 rounded"
                         [ngStyle]="{
@@ -55,153 +53,41 @@
         <div class="col-md-10 p-2">
             <h5 class="mb-3 border-bottom p-2 text-capitalize">{{ activeSection }}</h5>
 
-            <ng-container [ngSwitch]="activeSection">
-                <!-- Master Section -->
-                <div *ngSwitchCase="'master'">
-  <div ngbAccordion [closeOthers]="true" activeIds="department">
-    <div ngbAccordionItem id="department">
-      <h2 ngbAccordionHeader>
-        <button ngbAccordionButton>
-          <strong>Department</strong>
-        </button>
-      </h2>
-      <div ngbAccordionCollapse>
-        <div class="card">
-          <div class="card-body">
-            <div class="row" *ngFor="let key of ['departmentName', 'departmentCode', 'departmentType']">
-              <div class="col-md-6 mb-3">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" [id]="key"
-                         [checked]="getConfigValue('masters', 'department', key)"
-                         (change)="toggleField('masters', 'department', key)">
-                  <label class="form-check-label" [for]="key">
-                    {{ getLabel('masters', 'department', key) }}
-                  </label>
+           
+
+            <div *ngIf="!isLoading">
+                <div ngbAccordion [closeOthers]="true">
+                    <div ngbAccordionItem *ngFor="let subsection of getSubsections(activeSection)" [id]="subsection">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton>
+                                <strong>{{ subsection | titlecase }}</strong>
+                            </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row" *ngFor="let key of getFieldKeys(activeSection, subsection)">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" [id]="key"
+                                                    [checked]="getConfigValue(activeSection, subsection, key)"
+                                                    (change)="toggleField(activeSection, subsection, key)">
+                                                <label class="form-check-label" [for]="key">
+                                                    {{ getLabel(activeSection, subsection, key) }}
+                                                </label>
+                                            </div>
+                                            <input *ngIf="config[activeSection]?.[subsection]?.fields?.[key]?.label !== undefined"
+                                                class="form-control form-control-sm mt-1"
+                                                [(ngModel)]="config[activeSection][subsection].fields[key].label"
+                                                [placeholder]="'Label for ' + key">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <input class="form-control form-control-sm mt-1"
-                       [(ngModel)]="config.masters.department.fields[key].label"
-                       [placeholder]="'Label for ' + key">
-              </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-                <!-- CRM Section -->
-                <div *ngSwitchCase="'crm'">
-                    <div ngbAccordion [closeOthers]="true" activeIds="basic">
-                        <div ngbAccordionItem id="basic">
-                            <h2 ngbAccordionHeader>
-                                <button ngbAccordionButton>
-                                    <strong>Basic</strong>
-                                </button>
-                            </h2>
-                            <div ngbAccordionCollapse>
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-4 mb-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="s3Storage"
-                                                        [checked]="getConfigValue('crm', 'basic', 's3Storage')"
-                                                        (change)="toggleField('crm', 'basic', 's3Storage')">
-                                                    <label class="form-check-label" for="s3Storage">S3 Storage</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4 mb-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="manageRules"
-                                                        [checked]="getConfigValue('crm', 'basic', 'manageRules')"
-                                                        (change)="toggleField('crm', 'basic', 'manageRules')">
-                                                    <label class="form-check-label" for="manageRules">Manage Rules</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4 mb-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="unifiedChat"
-                                                        [checked]="getConfigValue('crm', 'basic', 'unifiedChat')"
-                                                        (change)="toggleField('crm', 'basic', 'unifiedChat')">
-                                                    <label class="form-check-label" for="unifiedChat">Unified Chat</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4 mb-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="addException"
-                                                        [checked]="getConfigValue('crm', 'basic', 'addException')"
-                                                        (change)="toggleField('crm', 'basic', 'addException')">
-                                                    <label class="form-check-label" for="addException">Add Exception</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Settings Section -->
-                <div *ngSwitchCase="'settings'">
-                    <div ngbAccordion [closeOthers]="true" activeIds="basic">
-                        <div ngbAccordionItem id="basic">
-                            <h2 ngbAccordionHeader>
-                                <button ngbAccordionButton>
-                                    <strong>Basic</strong>
-                                </button>
-                            </h2>
-                            <div ngbAccordionCollapse>
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="settingsS3Storage"
-                                                        [checked]="getConfigValue('settings', 'basic', 's3Storage')"
-                                                        (change)="toggleField('settings', 'basic', 's3Storage')">
-                                                    <label class="form-check-label" for="settingsS3Storage">S3 Storage</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Account Section -->
-                <div *ngSwitchCase="'account'">
-                    <div ngbAccordion [closeOthers]="true" activeIds="basic">
-                        <div ngbAccordionItem id="basic">
-                            <h2 ngbAccordionHeader>
-                                <button ngbAccordionButton>
-                                    <strong>Basic</strong>
-                                </button>
-                            </h2>
-                            <div ngbAccordionCollapse>
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="accountS3Storage"
-                                                        [checked]="getConfigValue('account', 'basic', 's3Storage')"
-                                                        (change)="toggleField('account', 'basic', 's3Storage')">
-                                                    <label class="form-check-label" for="accountS3Storage">S3 Storage</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </ng-container>
 
             <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-5">
                 <div class="d-flex align-items-center gap-2 pt-2">
