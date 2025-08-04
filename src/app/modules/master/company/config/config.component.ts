@@ -16,40 +16,20 @@ import { MasterService } from '../../master.service';
 export class ConfigComponent implements OnInit {
   @Input() companyName: string = '';
   companyId: number | null = null;
+  configSid: number | null = null;
+  isLoading: boolean = false;
 
   config: any = {
-    masters: {
-      department: {
-        fields: {
-          departmentName: { visible: true, label: 'Department Name' },
-          departmentCode: { visible: true, label: 'Department Code' },
-          departmentType: { visible: true, label: 'Department Type' }
-        }
-      }
-    },
-    crm: {
-      basic: {
-        s3Storage: true,
-        manageRules: true,
-        unifiedChat: false,
-        addException: false
-      }
-    },
-    account: {
-      basic: {
-        s3Storage: true
-      }
-    },
-    settings: {
-      basic: {
-        s3Storage: true
-      }
-    }
+    masters: {},
+    crm: {},
+    account: {},
+    settings: {}
   };
 
   hovered: string = '';
-  activeSection: string = 'master';
-  sectionHistory: string[] = ['master'];
+  activeSection: string = 'masters';
+  sectionHistory: string[] = ['masters'];
+  sections: string[] = ['masters', 'crm', 'settings', 'account'];
 
   constructor(
     private router: Router,
@@ -60,78 +40,102 @@ export class ConfigComponent implements OnInit {
   ngOnInit() {
     this.companyId = +this.route.snapshot.params['id'];
     this.companyName = history.state.companyName || '';
+    this.configSid = history.state.configSid || null;
 
-    const existingConfig = history.state.config;
-    if (existingConfig) {
-      this.mergeConfigurations(existingConfig);
-    }
+    this.loadFieldConfiguration();
   }
 
-  private normalizeConfig(config: any): any {
-    const departmentFields = config?.masters?.department?.fields || {};
-    return {
-      ...config,
-      masters: {
-        department: {
-          fields: {
-            departmentName: {
-              visible: departmentFields?.departmentName?.visible ?? true,
-              label: departmentFields?.departmentName?.label || 'Department Name'
-            },
-            departmentCode: {
-              visible: departmentFields?.departmentCode?.visible ?? true,
-              label: departmentFields?.departmentCode?.label || 'Department Code'
-            },
-            departmentType: {
-              visible: departmentFields?.departmentType?.visible ?? true,
-              label: departmentFields?.departmentType?.label || 'Department Type'
+  loadFieldConfiguration() {
+    this.isLoading = true;
+    this.masterService.getFieldConfiguration().subscribe({
+      next: (response: any) => {
+        if (response?.fieldConfig) {
+          const rawConfig = response.fieldConfig;
+
+          // Normalize fields for all sections
+          ['masters', 'crm', 'account', 'settings'].forEach(section => {
+            if (rawConfig[section]) {
+              Object.keys(rawConfig[section]).forEach(subsection => {
+                const subsectionData = rawConfig[section][subsection];
+                if (!subsectionData.fields) {
+                  // Convert flat object to fields format
+                  rawConfig[section][subsection] = {
+                    fields: Object.fromEntries(
+                      Object.keys(subsectionData).map(key => [
+                        key,
+                        {
+                          visible: subsectionData[key] === true,
+                          label: this.formatLabel(key)
+                        }
+                      ])
+                    )
+                  };
+                }
+              });
             }
-          }
+          });
+
+          // Deep merge normalized config into default config
+          const merged = { ...this.config };
+          ['masters', 'crm', 'account', 'settings'].forEach(section => {
+            merged[section] = this.deepMerge(this.config[section] || {}, rawConfig[section] || {});
+          });
+
+          this.config = merged;
+          console.log('Normalized and merged config:', this.config);
         }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading field configuration:', error);
+        this.isLoading = false;
       }
-    };
+    });
   }
 
-  private mergeConfigurations(existingConfig: any) {
-    const normalized = this.normalizeConfig(existingConfig);
-
-    this.config = {
-      ...this.config,
-      ...normalized,
-      masters: {
-        department: {
-          fields: {
-            ...this.config.masters.department.fields,
-            ...normalized.masters.department.fields
+  private deepMerge(target: any, source: any) {
+    const output = { ...target };
+    if (this.isObject(target) && this.isObject(source)) {
+      Object.keys(source).forEach(key => {
+        if (this.isObject(source[key])) {
+          if (!(key in target)) {
+            output[key] = { ...source[key] };
+          } else {
+            output[key] = this.deepMerge(target[key], source[key]);
           }
+        } else {
+          output[key] = source[key];
         }
-      },
-      crm: {
-        basic: {
-          ...this.config.crm.basic,
-          ...normalized.crm?.basic
-        }
-      },
-      account: {
-        basic: {
-          ...this.config.account.basic,
-          ...normalized.account?.basic
-        }
-      },
-      settings: {
-        basic: {
-          ...this.config.settings.basic,
-          ...normalized.settings?.basic
-        }
-      }
-    };
+      });
+    }
+    return output;
+  }
+
+  private isObject(item: any): boolean {
+    return item && typeof item === 'object' && !Array.isArray(item);
   }
 
   toggleField(section: string, subsection: string, fieldKey: string) {
-    const field = this.config[section]?.[subsection]?.fields?.[fieldKey];
-    if (field) {
-      field.visible = !field.visible;
+    if (!this.config[section]) this.config[section] = {};
+    if (!this.config[section][subsection]) {
+      this.config[section][subsection] = { fields: {} };
+    } else if (!this.config[section][subsection].fields) {
+      this.config[section][subsection].fields = {};
     }
+
+    if (!this.config[section][subsection].fields[fieldKey]) {
+      this.config[section][subsection].fields[fieldKey] = {
+        visible: true,
+        label: this.formatLabel(fieldKey)
+      };
+    } else {
+      this.config[section][subsection].fields[fieldKey].visible =
+        !this.config[section][subsection].fields[fieldKey].visible;
+    }
+  }
+
+  private formatLabel(key: string): string {
+    return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
   }
 
   getConfigValue(section: string, subsection: string, fieldKey: string): boolean {
@@ -139,14 +143,24 @@ export class ConfigComponent implements OnInit {
   }
 
   getLabel(section: string, subsection: string, fieldKey: string): string {
-    return this.config[section]?.[subsection]?.fields?.[fieldKey]?.label || fieldKey;
+    return this.config[section]?.[subsection]?.fields?.[fieldKey]?.label || this.formatLabel(fieldKey);
+  }
+
+  getFieldKeys(section: string, subsection: string): string[] {
+    return this.config[section]?.[subsection]?.fields ? Object.keys(this.config[section][subsection].fields) : [];
+  }
+
+  getSubsections(section: string): string[] {
+    if (!this.config[section]) return [];
+    return Object.keys(this.config[section]).filter(
+      key => typeof this.config[section][key] === 'object' && !Array.isArray(this.config[section][key])
+    );
   }
 
   goToPreviousSection(): void {
     if (this.sectionHistory.length > 1) {
       this.sectionHistory.pop();
-      const previousSection = this.sectionHistory[this.sectionHistory.length - 1];
-      this.activeSection = previousSection;
+      this.activeSection = this.sectionHistory[this.sectionHistory.length - 1];
     }
   }
 
@@ -156,11 +170,9 @@ export class ConfigComponent implements OnInit {
   }
 
   goToNextSection(): void {
-    const sections = ['master', 'crm', 'settings', 'account'];
-    const currentIndex = sections.indexOf(this.activeSection);
-    if (currentIndex < sections.length - 1) {
-      const nextSection = sections[currentIndex + 1];
-      this.setSection(nextSection);
+    const currentIndex = this.sections.indexOf(this.activeSection);
+    if (currentIndex < this.sections.length - 1) {
+      this.setSection(this.sections[currentIndex + 1]);
     }
   }
 
@@ -175,7 +187,7 @@ export class ConfigComponent implements OnInit {
   }
 
   isPreviousDisabled(): boolean {
-    return this.sectionHistory.length <= 1 || this.activeSection === 'master';
+    return this.sectionHistory.length <= 1 || this.activeSection === 'masters';
   }
 
   isNextDisabled(): boolean {
@@ -188,14 +200,7 @@ export class ConfigComponent implements OnInit {
       return;
     }
 
-    const configToSave = {
-      masters: this.config.masters,
-      crm: this.config.crm,
-      account: this.config.account,
-      settings: this.config.settings
-    };
-
-    this.masterService.saveCompanyConfig(this.companyId, configToSave)
+    this.masterService.saveCompanyConfig(this.companyId, this.config)
       .subscribe({
         next: (response) => {
           console.log('Config saved successfully', response);

@@ -1127,6 +1127,14 @@ saveCompanyConfig(companyId: number, configData: any) {
   );
 }
 
+getFieldConfiguration() {
+  return this.http.get<{ data: any }>('company/field-configuration').pipe(
+    map((resp) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
   // Currency Master
   getAllCurrencies() {
     return this.http.get<{ data: any }>('currency').pipe(
