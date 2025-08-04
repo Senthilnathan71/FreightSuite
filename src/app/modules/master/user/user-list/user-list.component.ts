@@ -71,13 +71,18 @@ export class UserListComponent {
   ) { }
 
   ngOnInit(): void {
-    this.appSettingServ.getUser().subscribe(
-      user => {
-        if (user) {
-          this.userData = user;
-          this.checkPermissions();
-        }
-      });
+    // this.appSettingServ.getUser().subscribe(
+    //   user => {
+    //     if (user) {
+    //       this.userData = user;
+    //       this.checkPermissions();
+    //     }
+    //   });
+     const userProfile = this.appSettingServ.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+      this.checkPermissions();
+		}
       this.loadUsers();
   }
    checkPermissions() {

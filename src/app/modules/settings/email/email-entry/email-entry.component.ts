@@ -39,11 +39,15 @@ export class EmailEntryComponent implements OnInit {
 
   ngOnInit(): void {
     this.initMailForm();
-    this.appSettingService.getUser().subscribe(
-      (resp: any) => {
-        this.userData = resp;
-      }
-    )
+    // this.appSettingService.getUser().subscribe(
+    //   (resp: any) => {
+    //     this.userData = resp;
+    //   }
+    // )
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+		}
   }
 
   initMailForm() {
