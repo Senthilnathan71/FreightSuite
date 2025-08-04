@@ -75,12 +75,11 @@ export class YearEntryComponent {
     private calendar : NgbCalendar
   ) {  }
   ngOnInit(): void {
-       this.appSettingService.getUser().subscribe(user => {
-    if(user) {
-      this.userData = user;
+      const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
       this.checkPermissions();
     }
-  });
     this.getAllCompanies();
     this.loadYear();
     this.initForm();

@@ -98,11 +98,15 @@ export class RolemenuComponent implements OnInit {
 		this.initSearchForm();
 		this.setupValueChanges();
 		this.onRoleMenuSearch();
-		this.appSettingService.getUser().subscribe(
-			(user)=>{
-				this.userData = user;
-			}
-		)
+		// this.appSettingService.getUser().subscribe(
+		// 	(user)=>{
+		// 		this.userData = user;
+		// 	}
+		// )
+		const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+		}
 	}
 
 	sort(column: string) {

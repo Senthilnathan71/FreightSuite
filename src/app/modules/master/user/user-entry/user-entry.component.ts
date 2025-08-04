@@ -95,12 +95,17 @@ export class UserEntryComponent implements OnInit {
 				this.loadUserData(this.UserMasterSid);
 			}
 		});
-		this.appSettingService.getUser().subscribe((user) => {
-			if (user) {
-				this.userData = user;
-				this.checkPermissions();
-			}
-		});
+		// this.appSettingService.getUser().subscribe((user) => {
+		// 	if (user) {
+		// 		this.userData = user;
+		// 		this.checkPermissions();
+		// 	}
+		// });
+		 const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+      this.checkPermissions();
+		}
 		if(!this.isEditMode){
 			this.userForm.get('userPassword')?.setValidators([Validators.required,PasswordValidators.validate()])
 		}
