@@ -1,78 +1,269 @@
 <div>
 
+    <div class="d-flex justify-content-between align-items-center mb-3">
 
-    <div class="d-flex justify-content-between align-items-center mb-5">
-        <div class="d-flex gap-3">
-            <button class="btn btn-light-secondary btn-sm" (click)="activeTab = 'pts'">PTS Dashboard</button>
-            <button class="btn btn-light-secondary btn-sm" (click)="activeTab = 'pending'">Pending Approval</button>
+        <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-sm" [ngClass]="{
+      'btn-dark text-white border-dark': activeTab === 'pts',
+      'btn-light-secondary ': activeTab !== 'pts'
+    }" (click)="activeTab = 'pts'">Dashboard</button>
+
+            <button class="btn btn-sm" [ngClass]="{
+      'btn-dark text-white border-dark': activeTab === 'pending',
+      'btn-light-secondary ': activeTab !== 'pending'
+    }" (click)="activeTab = 'pending'">Pending Approval</button>
+
+            <button class="btn btn-sm" [ngClass]="{
+      'btn-dark text-white border-dark': activeTab === 'today',
+      'btn-light-secondary ': activeTab !== 'today'
+    }" (click)="activeTab = 'today'">Today</button>
+
+            <button class="btn btn-sm" [ngClass]="{
+      'btn-dark text-white border-dark': activeTab === 'over',
+      'btn-light-secondary ': activeTab !== 'over'
+    }" (click)="activeTab = 'over'">Over Due / Today Action</button>
+
+            <button class="btn btn-sm" [ngClass]="{
+      'btn-dark text-white border-dark': activeTab === 'future',
+      'btn-light-secondary ': activeTab !== 'future'
+    }" (click)="activeTab = 'future'">Future Action</button>
         </div>
-        <div>
-            <button class="btn btn-info btn-sm">Today</button>
-        </div>
-        <div class="d-flex gap-3">
-            <button class="btn btn-info btn-sm">Over Due / Today Action</button>
-            <button class="btn btn-light-secondary btn-sm">Future Action</button>
-        </div>
+
+
     </div>
 
     <!-- PTS Dashboard Card -->
-    <div *ngIf="activeTab === 'pts'" class="card-shape">
-        <div class="card-con">
-            <div class="card-container fw-bold">
-                <div class="card-content">
-                    <div class="d-flex align-items-center justify-content-between border-bottom">
-                        <div class="card-title">Info</div>
-                        <div class="card-subtitle">Menu : Shipment Status</div>
+    <div *ngIf="activeTab === 'pts'">
+
+
+        <!-- Status Section -->
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-9">
+                        <h5>Status</h5>
+                        <p class="text-muted">For this year</p>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <span class="bg-success d-inline-block p-2 rounded-circle"></span>
+                                <div class="fw-bold fs-4">5489</div>
+                                <div class="text-muted">Meetings to Update</div>
+                            </div>
+                            <div class="col-md-3 border-start border-light">
+                                <span class="bg-warning d-inline-block p-2 rounded-circle"></span>
+                                <div class="fw-bold fs-4 ">954</div>
+                                <div class="text-muted">Opportunities</div>
+                            </div>
+                            <div class="col-md-3 border-start border-light">
+                                <span class="bg-danger d-inline-block p-2 rounded-circle"></span>
+                                <div class="fw-bold fs-4">736</div>
+                                <div class="text-muted">Over Due</div>
+                            </div>
+                            <div class="col-md-3 border-start border-light">
+                                <span class="bg-info d-inline-block p-2 rounded-circle"></span>
+                                <div class="fw-bold fs-4">22</div>
+                                <div class="text-muted">Today</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="pt-2 pb-3">Shipment successfully delivered</div>
+
+                    <!-- Right Circle Chart -->
+                    <div class="col-md-3 d-flex align-items-center justify-content-center">
+                        <div class="border rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 80px; height: 80px;">
+                            <span class="text-primary fw-bold">75%</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="curve-strip"></div>
+
             </div>
-            <div class="d-flex justify-content-between align-items-center pt-1">
-                <i class="fas fa-check-circle text-success ms-2"></i>
-                <div>Reference : <span class="text-info">PTS123456</span></div>
-            </div>
+
         </div>
+
+        <!-- Process Buttons -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-3">
+                    <button class="btn btn-outline-secondary btn-sm">Lead to Order</button>
+                    <button class="btn btn-outline-secondary btn-sm">Order to Fulfilment (CS)</button>
+                    <button class="btn btn-outline-secondary btn-sm">Order to Fulfilment (OPS)</button>
+                    <button class="btn btn-outline-secondary btn-sm">Order to Fulfilment (DOC)</button>
+                    <button class="btn btn-outline-secondary btn-sm">Fulfilment to Invoice</button>
+                    <button class="btn btn-outline-secondary btn-sm">Invoice to Collection</button>
+                    <button class="btn btn-outline-secondary btn-sm">Approvals</button>
+                    <button class="btn btn-outline-secondary btn-sm">eHeads Up</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Projects of the Month -->
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="">Projects of the Month</h5>
+                        <p class="text-muted mb-0">Overview of Latest Month</p>
+                    </div>
+                    <div>
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                Monthly
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Monthly</a></li>
+                                <li><a class="dropdown-item" href="#">Weekly</a></li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div style="max-height: 200px; overflow-y: auto;">
+                    <table class="table table-hover" style="border-collapse: collapse;">
+                        <thead style="border-bottom: 1px solid #ecf2f8;">
+                            <tr class="text-muted">
+                                <th scope="col">S No</th>
+                                <th scope="col">Lead to Order</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of projects; index as i" style="border-bottom: 1px solid #ecf2f8;">
+                                <td>{{ i + 1 }}</td>
+                                <td>
+                                    Opportunities
+                                    <span class="badge bg-info">66</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <a class="me-2" title="Edit">
+                                            <i-feather name="eye"
+                                                class="feather-sm cursor-pointer text-info"></i-feather>
+                                        </a>
+                                        <a class="text-danger mx-2 ps-3 border-start" title="Delete">
+                                            <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+
 
     </div>
 
     <!-- Pending Approval Card -->
-    <div *ngIf="activeTab === 'pending'" class="card-shape">
-        <div class="card-shape card-con">
-            <div class="card-container fw-bold">
-                <div class="card-content">
-                    <div class="d-flex align-items-center justify-content-between border-bottom">
-                        <div class="card-title">Alert</div>
-                        <div class="card-subtitle">Menu : Shipment Planning</div>
+    <div *ngIf="activeTab === 'pending'">
+        <aside class="col-12">
+            <div class="p-3 border-bottom cursor-pointer app-status-pending bg-white">
+                <div class="d-flex align-items-center">
+                    <div class="">
+                        <div class="d-flex align-items-center">
+                            <h5 class="mb-0">CSX Approval</h5>
+                        </div>
+
+                        <p class="mb-0">Reference : GBOMGE250301</p>
+                        <p class="mb-0">Final approval for invoicing </p>
                     </div>
-                    <div class="pt-2 pb-3">Final approval for invoicing</div>
-                </div>
-                <div class="curve-strip"></div>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center  pt-1">
-                <i class="fas fa-comments text-info ms-2"></i>
-                <div>Reference : <span class="text-info">GBOMGE250301</span></div>
-            </div>
-        </div>
-
-        <div class="card-con">
-            <div class="card-container fw-bold">
-                <div class="card-content">
-                    <div class="d-flex align-items-center justify-content-between border-bottom">
-                        <div class="card-title">Alert</div>
-                        <div class="card-subtitle">Menu : Shipment Planning</div>
+                    <div class="ms-auto">
+                        <div class="d-flex gap-3"><button class="btn btn-light-danger btn-sm">Deny</button><button
+                                class="btn btn-dark btn-sm">Approve</button></div>
                     </div>
-                    <div class="pt-2 pb-3">Final approval for invoicing</div>
                 </div>
-                <div class="curve-strip"></div>
             </div>
-
-            <div class="d-flex justify-content-between align-items-center  pt-1">
-                <i class="fas fa-comments text-info ms-2"></i>
-                <div>Reference : <span class="text-info">GBOMGE250301</span></div>
+            <div class="p-3 border-bottom cursor-pointer app-status-reject bg-white">
+                <div class="d-flex align-items-center">
+                    <div class="">
+                        <div class="d-flex align-items-center">
+                            <h5 class="mb-0">CSX Approval</h5>
+                        </div>
+                        <p class="mb-0">Reference : GBOMGE250301</p>
+                        <p class="mb-0">Final approval for invoicing </p>
+                    </div>
+                    <div class="ms-auto">
+                        <div class="d-flex gap-3"><button class="btn btn-light-danger btn-sm">Deny</button><button
+                                class="btn btn-dark btn-sm">Approve</button></div>
+                    </div>
+                </div>
             </div>
-        </div>
+            <div class="p-3 border-bottom cursor-pointer app-status-success bg-white">
+                <div class="d-flex align-items-center">
+                    <div class="">
+                        <div class="d-flex align-items-center">
+                            <h5 class="mb-0">CSX Approval</h5>
+                        </div>
+                        <p class="mb-0">Reference : GBOMGE250301</p>
+                        <p class="mb-0">Final approval for invoicing </p>
+                    </div>
+                    <div class="ms-auto">
+                        <div class="d-flex gap-3"><button class="btn btn-light-danger btn-sm">Deny</button><button
+                                class="btn btn-dark btn-sm">Approve</button></div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-3 border-bottom cursor-pointer app-status-pending bg-white">
+                <div class="d-flex align-items-center">
+                    <div class="">
+                        <div class="d-flex align-items-center">
+                            <h5 class="mb-0">CSX Approval</h5>
+                        </div>
+                        <p class="mb-0">Reference : GBOMGE250301</p>
+                        <p class="mb-0">Final approval for invoicing </p>
+                    </div>
+                    <div class="ms-auto">
+                        <div class="d-flex gap-3"><button class="btn btn-light-danger btn-sm">Deny</button><button
+                                class="btn btn-dark btn-sm">Approve</button></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
 
     </div>
+
+
+    <!-- Today -->
+    <div *ngIf="activeTab === 'today'">
+        <section class="taskboard-cards p-2">
+            <aside class="bg-white taskboard-task p-2 mb-2 cursor-pointer">
+                <div class="taskboard-task-title mb-2 font-medium"> QA Testing </div>
+                <small class="card-text text-muted">Etiam porta sem malesuada magna mollis euismod.</small>
+                <div class="mt-2 gap-2 d-flex justify-content-start align-items-center">
+                    <button class="btn btn-sm btn-light-danger">Deny</button>
+                    <button class="btn btn-sm btn-dark">Accept</button>
+                </div>
+            </aside>
+
+            <aside class="bg-white taskboard-task p-2 mb-2 cursor-pointer">
+                <div class="taskboard-task-title mb-2 font-medium"> QA Testing </div>
+                <small class="card-text text-muted">Etiam porta sem malesuada magna mollis euismod.</small>
+                <div class="mt-2 gap-2 d-flex justify-content-start align-items-center">
+                    <button class="btn btn-sm btn-light-danger">Deny</button>
+                    <button class="btn btn-sm btn-dark">Accept</button>
+                </div>
+            </aside>
+        </section>
+    </div>
+
+    <!-- Over due -->
+    <div *ngIf="activeTab === 'over'">
+
+        <h5>Over</h5>
+    </div>
+
+    <!-- future -->
+    <div *ngIf="activeTab === 'future'">
+
+        <h5>Future</h5>
+    </div>
+
 </div>

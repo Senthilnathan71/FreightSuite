@@ -1,25 +1,12 @@
-.card-container {
-  display: flex;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  width: 420px;
-}
-.card-con {
-  width: 420px;
-}
-.card-shape {
-  margin-bottom: 20px;
-}
 
-.card-content {
-  flex: 1;
-  padding: 16px;
+.app-status-pending {
+    border-left:6px solid var(--bs-warning);
 }
-
-.curve-strip {
-  width: 7px;
-  background: orange;
+ 
+.app-status-reject {
+    border-left:6px solid var(--bs-danger);
 }
-
+ 
+.app-status-success {
+    border-left:6px solid var(--bs-success);
+}
