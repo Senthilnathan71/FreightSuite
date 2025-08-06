@@ -58,11 +58,15 @@ export class ChargeListComponent {
   ) {}
 
   ngOnInit() {
-    this.appSettingService.getUser().subscribe(user => {
-      if (user) {
-        this.userData = user;
-      }
-    });
+    // this.appSettingService.getUser().subscribe(user => {
+    //   if (user) {
+    //     this.userData = user;
+    //   }
+    // });
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+		}
 
     this.masterService.getAllUom().subscribe(res => this.uoms = res.data);
     this.masterService.getAllHssac().subscribe(res => this.hssacList = res);

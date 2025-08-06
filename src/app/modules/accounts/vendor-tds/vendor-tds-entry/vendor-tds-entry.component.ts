@@ -86,12 +86,17 @@ export class VendorTdsEntryComponent {
         }
       }
     );
-    this.appSettingService.getUser().subscribe(
-      (resp) => {
-        this.userData = resp;
-        this.checkPermissions();
-      }
-    );
+    // this.appSettingService.getUser().subscribe(
+    //   (resp) => {
+    //     this.userData = resp;
+    //     this.checkPermissions();
+    //   }
+    // );
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+      this.checkPermissions();
+		}
     if (!this.isEditMode) {
       this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
     }

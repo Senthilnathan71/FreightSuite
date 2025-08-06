@@ -84,12 +84,17 @@ export class UnitEntryComponent {
 
   ngOnInit() {
 
-         this.appSettingService.getUser().subscribe(user => {
-    if(user) {
-      this.userData = user;
+  //        this.appSettingService.getUser().subscribe(user => {
+  //   if(user) {
+  //     this.userData = user;
+  //     this.checkPermissions();
+  //   }
+  // });
+  const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
       this.checkPermissions();
-    }
-  });
+		}
     this.loadContainerTypes();
     
      this.unitForm.statusChanges.subscribe(status => {

@@ -55,12 +55,17 @@ export class TdsSetListComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        this.appSettingService.getUser().subscribe(
-            (res) => {
-                this.userData = res;
-                this.checkPermissions();
-            }
-        )
+        // this.appSettingService.getUser().subscribe(
+        //     (res) => {
+        //         this.userData = res;
+        //         this.checkPermissions();
+        //     }
+        // )
+        const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+      this.checkPermissions();
+		}
         this.loadTds();
     }
 

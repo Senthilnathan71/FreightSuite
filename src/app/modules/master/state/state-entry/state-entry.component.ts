@@ -77,12 +77,17 @@ export class StateEntryComponent implements OnInit {
         this.stateForm.get('status')?.enable();
       }
     });
-     this.appSettingService.getUser().subscribe((user) => {
-      if (user) {
-        this.userData = user;
-        this.checkPermissions();
-      }
-    });
+    //  this.appSettingService.getUser().subscribe((user) => {
+    //   if (user) {
+    //     this.userData = user;
+    //     this.checkPermissions();
+    //   }
+    // });
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+      this.checkPermissions();
+		}
   }
 
     checkPermissions() {

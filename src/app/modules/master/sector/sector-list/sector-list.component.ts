@@ -90,13 +90,18 @@ export class SectorComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.loadZones();
-    this.appSettingService.getUser().subscribe(
-      user => {
-        if (user) {
-          this.userData = user;
-          this.checkPermissions();
-        }
-      });
+    // this.appSettingService.getUser().subscribe(
+    //   user => {
+    //     if (user) {
+    //       this.userData = user;
+    //       this.checkPermissions();
+    //     }
+    //   });
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+      this.checkPermissions();
+		}
       this.loadSectors();
     this.route.paramMap.subscribe(params => {
       this.SectorMasterSid = +params.get('id');
