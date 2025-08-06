@@ -17,10 +17,10 @@
                     <div class="d-flex gap-2 col-12  px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
                             <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                [(ngModel)]="searchText" aria-label="Search input" (input)="searchEnquiry()">
-                            <button *ngIf="searchText"
+                                [(ngModel)]="filterValue" aria-label="Search input">
+                            <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                               (input)="searchEnquiry()" tabindex="0" aria-label="Clear search"
+                                tabindex="0" aria-label="Clear search" (click)="clearFilterValue()"
                                 data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
                                 onfocus="this.classList.replace('text-secondary','text-danger')"
                                 onblur="this.classList.replace('text-danger','text-secondary')">
@@ -28,7 +28,7 @@
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
-                            <button type="submit" 
+                            <button type="submit" (click)="searchEnquiry()"
                                 class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
@@ -48,12 +48,12 @@
                     }
                 </button>
                   <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                          [disabled]="!isDataLoaded">
+                          [disabled]="!searchPerformed" (click)="report()">
                         <i class="fas fa-file-alt me-1"></i> Report
                     </button>
 
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                        [disabled]="!isDataLoaded"
+                        [disabled]="!searchPerformed"
                        (click)="resetFilters()">
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </button>
@@ -107,7 +107,7 @@
                     <div class="d-flex align-items-center">
                         <i-feather class="feather-sm me-1" name="calendar"></i-feather>
                         <!-- <div class="ms-2">{{ enq.ShipmentExpectedDate | date: 'dd-MMM-yyyy' }}</div> -->
-                        <div class="ms-2">{{ enq.ShipmentExpectedDate | dateFormat }}</div>
+                        <div class="ms-2">{{ enq.ShipmentExpectedDate | formatDate }}</div>
 
                     </div>
                 </div>
@@ -140,25 +140,42 @@
                             <thead>
                                 <tr class="bg-info">
                                     <th class="bg-transparent text-light" scope="col">Action</th>
-                                    <th class="bg-transparent text-light" scope="col">Quatation No</th>
-                                    <th class="bg-transparent text-light" scope="col">Enquiry Number</th>
-                                    <th class="bg-transparent text-light" scope="col">Customer Name</th>
-                                    <th class="bg-transparent text-light" scope="col">Department</th>
-                                    <th class="bg-transparent text-light" scope="col">Expected Shipment Date</th>
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('EnquiryNumber')">Enquiry Number  <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'EnquiryNumber', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'EnquiryNumber'}"></i></th>
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('QuoteNo')">Quotation No <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'QuoteNo', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'QuoteNo'}"></i></th>
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('CustomerName')">Customer Name <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CustomerName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CustomerName'}"></i></th>
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('ShipmentType')">Department <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ShipmentType', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ShipmentType'}"></i></th>
+                                    <th class="bg-transparent text-light" scope="col" (click)="sort('ShipmentExpectedDate')">Expected Shipment Date <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ShipmentExpectedDate', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ShipmentExpectedDate'}"></i></th>
+                                    
+                                    <!-- <th class="bg-transparent text-light" scope="col">Approval Status</th> -->
+                                    <!-- <th class="bg-transparent text-light" scope="col">Create </th> -->
                                     <th class="bg-transparent text-light" scope="col">Status</th>
                                     
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let enq of enquiryItems">
-                                    <td data-label="Action">
+                                    <td data-label="Action" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <section class="action-items text-center">
                                             <a class="text-info mx-2" (click)="editEnquiry(enq.EnquiryHeaderSid)">
                                                 <i-feather name="eye" class="feather-sm"></i-feather>
                                             </a>
+                                            @if(enq.authorizerStatus === 'Approved'){
+                                            @if(!enq.quoteNo){
+                                            <button class="mx-2 btn btn-sm text-info btn-link border-start ps-3 " style="cursor: pointer;" (click)="goForQuotationCreation(enq.EnquiryHeaderSid)" appPreventMultiClick [isLoading]="loadingEnquiry"
+                                            title="Create Quotation"
+                                            >
+                                                <i-feather name="file-plus" class="feather-sm"></i-feather>
+                                            </button>
+                                            }
+                                            }
                                         </section>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             NA
                                             <!-- {{ enq.EnquiryNumber }} -->
@@ -169,26 +186,68 @@
                                             {{ enq.EnquiryNumber }}
                                         </div>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="text-truncate">
+                                           {{enq.quoteNo ? enq.quoteNo : 'N/A'}}
+                                        </div>
+                                    </td>
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.CustomerName }}
                                         </div>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.ShipmentType }}
                                         </div>
                                     </td>
-                                    <td data-label="Phone">
+                                    <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ enq.ShipmentExpectedDate | dateFormat 
+                                            {{ enq.ShipmentExpectedDate | formatDate 
                                             }}
                                         </div>
                                     </td>
-                                    <td data-label="Company">
-                                        <div class="text-truncate">
-                                            {{ enq.status ==="A"? "Active":"Suspend" }}
+                                    <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        @if(enq.authorizerStatus === "Approved"){
+                                        <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                            Approved
                                         </div>
+                                        }@else if(enq.authorizerStatus === "Rejected"){
+                                        <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                            Rejected
+                                        </div>
+                                        }@else if(enq.authorizerStatus === "Pending"){
+                                        <div class="bg-light-info px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-info d-inline-block rounded"></span>
+                                            Waiting for approval
+                                        </div>
+                                        }
+                                    </td> -->
+                                    <!-- <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="text-truncate">
+                                            @if(enq.authorizerStatus === 'Approved'){
+                                                @if(!enq.quoteNo){
+                                                <button class="btn btn-sm btn-info" (click)="goForQuotationCreation(enq.EnquiryHeaderSid)" appPreventMultiClick [isLoading]="loadingEnquiry">Create Quotation</button>
+                                                } @else {
+                                                    <span>Quotation Created</span>
+                                                }
+                                            } 
+                                        </div>
+                                    </td> -->
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        @if(enq.status === "A"){
+                                        <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                            Active
+                                        </div>
+                                        } @else {
+                                        <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                            Inactive
+                                        </div>
+                                        }
                                     </td>
                                     
                                 </tr>

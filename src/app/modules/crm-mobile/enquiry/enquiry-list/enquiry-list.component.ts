@@ -9,6 +9,10 @@ import { AppService } from 'src/app/service/app.service';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { DateFormatPipe } from 'src/app/core/pipes/date-format.pipe';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 
 @Component({
   selector: 'app-enquiry-list',
@@ -19,87 +23,151 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     FormsModule,
     NgbPaginationModule,
     DateFormatPipe,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    CustomDatePipe,
+    PreventMultiClickDirective
   ],
+  providers : [CustomDatePipe],
   templateUrl: './enquiry-list.component.html',
   styleUrl: './enquiry-list.component.scss'
 })
 export class EnquiryListComponent {
 
+  filterValue = ''
+  errorMessage: string = '';
+  searchPerformed : boolean;
 
-  errorMessage: string = '';  // To store any error messages
+  sortColumn = "EnquiryNumber"
+  sortDirection = "asc"
+
   // pagination
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   totalLengthOfCollection: number;
-  searchText: string = '';
   enquiryItems: any[] = [];
   isMobile: boolean = false;
   isDataLoaded: boolean = false;
   enquiryData: any
-  constructor(private leadService: LeadService, private route: Router, private appService: AppService) { }
+  userData : any;
+  loadingEnquiry :boolean
+
+  constructor(
+    private leadService: LeadService, 
+    private route: Router, 
+    private appService: AppService,
+    private appSettingService:AppSettingsService,
+    private excelReportService : ExcelExportService,
+    private datePipe : CustomDatePipe
+  ) { }
 
   ngOnInit(): void {
-    this.loadEnquiries();
+    this.searchEnquiry();
     this.isMobile = this.appService.getDevice()
-  }
-
-  // Method to load the leads
-  loadEnquiries(): void {
-    this.leadService.getAllEnquiries().subscribe(
-      (resp: any[]) => {
-        console.log(resp)
-        this.enquiryData = resp['data'];  // On success, store the leads data in the component
-
-        this.enquiryItems = [...this.enquiryData]
-        this.totalLengthOfCollection = this.enquiryData.length || 0;
-        this.updatePaginatedData();  // Update paginated data
-        this.isDataLoaded = true; // Enable buttons after load
-      },
-      (error) => {
-        this.errorMessage = error.message;  // On error, store the error message
-         this.isDataLoaded = false; // Keep buttons disabled on error
-        console.error('Error loading enquiry:', error);  // Optionally log the error
+    this.appSettingService.userSettingSource.subscribe(
+      (res)=> {
+        this.userData = res;
       }
-    );
+    )
   }
 
-
-  getEnquiryCargo(enquiry: any): any[] {
-    return enquiry.enquiryRoute?.flatMap(route => route.enquiryCargo) || [];
-  }
-  searchEnquiry(): void {
-    const searchQuery = this.searchText?.toLowerCase().trim(); // Trim spaces and handle null/undefined
-
-    if (!searchQuery) {
-      this.enquiryItems = [...this.enquiryData]; // Reset to original leads when search is empty
-    } else {
-      this.enquiryItems = this.enquiryData.filter((enq) => {
-        // Convert date to a standardized format (YYYY-MM-DD)
-        const formattedDate = enq.ShipmentExpectedDate
-          ? new Date(enq.ShipmentExpectedDate).toISOString().split('T')[0]
-          : '';
-
-        return (
-          enq.CustomerName?.toLowerCase().includes(searchQuery) ||
-          formattedDate.includes(searchQuery) ||  // Date search
-          enq.ShipmentType?.toLowerCase().includes(searchQuery) ||
-          enq.EnquiryNumber?.toLowerCase().includes(searchQuery) ||
-          (enq.status === "A" ? "active" : "inactive").toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      });
+  // Search
+  searchEnquiry() {
+    const params = {
+      search: this.filterValue.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
     }
+    this.leadService.searchEnquiry(params).subscribe({
+      next: (resp: any) => {
+        if (resp.status) {
+          this.enquiryItems = resp.data?.items;
+          this.totalLengthOfCollection = resp.data?.totalCount || 0;
+          this.applySorting();
+          this.searchPerformed = true;
+        } else {
+          this.appSettingService.showError('Error searching Enquiry.');
+          console.error('Error searching Enquiry', resp.message)
+          this.enquiryItems = [];
+          this.totalLengthOfCollection = 0;
+        }
+      }, error: (error: any) => {
+        console.error(error);
+      }
+    })
+  }
 
+  clearFilterValue(){
+    this.filterValue = "";
+    this.page = 1;
+    this.searchEnquiry();
+  }
 
-    this.totalLengthOfCollection = this.enquiryItems.length;
+  sort(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.applySorting();
+  }
+
+  applySorting() {
+    this.enquiryItems.sort((a, b) => {
+      let valueA = a[this.sortColumn];
+      let valueB = b[this.sortColumn];
+      
+      if (valueA == null) valueA = '';
+      if (valueB == null) valueB = '';
+
+      if (this.sortColumn === 'ShipmentExpectedDate') {
+        valueA = new Date(valueA).getTime();
+        valueB = new Date(valueB).getTime();
+      }
+      
+      if (typeof valueA !== 'number' && !(valueA instanceof Date)) {
+        valueA = valueA.toString().toLowerCase();
+        valueB = valueB.toString().toLowerCase();
+      }
+      
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
   }
 
 
   updatePaginatedData(): void {
-    const startIndex = (this.page - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.enquiryItems = this.enquiryData.slice(startIndex, endIndex);
+    this.searchEnquiry()
   }
+
+  report(): void {
+  const formattedData = this.enquiryItems.map(item => ({
+    ...item,
+    ShipmentExpectedDate : this.datePipe.transform(item.ShipmentExpectedDate),
+    status: item.status === 'A' ? 'Active' : 'Inactive'
+  }));
+
+  const companyName = this.userData?.userCompanyMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: [
+      { key: 'EnquiryNumber', label: 'Enquiry Number' },
+      { key: 'CustomerName', label: 'Customer Name' },
+      { key: 'ShipmentType', label: 'Department' },
+      { key: 'ShipmentExpectedDate', label: 'Expected Shipment Date' },
+      { key: 'TDSset', label: 'Quotation No' },
+      { key: 'status', label: 'Status' }
+    ],
+    fileName: 'Enquiry-Report',
+    title: companyName
+  });
+}
 
 
 
@@ -111,11 +179,45 @@ export class EnquiryListComponent {
     this.route.navigate(['crm/enquiry', id])
   }
 
+  goForQuotationCreation(EnquiryHeaderSid){
+    this.loadingEnquiry = true;
+    this.leadService.getEnquiryById(EnquiryHeaderSid).subscribe(
+      (resp:any)=>{
+        if (resp) {
+          const enquiryData = resp;
+          const polList = enquiryData?.enquiryRoute.map((route) => route.POLSid);
+          const podList = enquiryData?.enquiryRoute.map((route) => route.PODSid);
+
+          const cargoTypeList = enquiryData?.enquiryRoute.flatMap((route) =>
+            route.enquiryCargo.map((cargoItem) => cargoItem.cargoType)
+          );
+          this.leadService.clearQuotationData();
+
+          this.leadService.setQuotationData({
+            customerId: enquiryData?.CustomerMasterSid,
+            departmentId: enquiryData?.DepartmentMasterSid,
+            EnquirySid: enquiryData?.EnquiryHeaderSid,
+            EnquiryNumber: enquiryData?.EnquiryNumber,
+            polList: polList, 
+            podList: podList,
+            cargoTypeList: cargoTypeList,
+            rateRequest: true,
+            active: 2,
+          });
+          this.loadingEnquiry= false;
+          this.route.navigate(['crm/quotation/view']);
+        }
+      }
+    )
+  }
+
     resetFilters(): void {
-    this.searchText = '';
-    this.enquiryItems = [...this.enquiryData];
+    this.filterValue = '';
+    this.sortColumn = "EnquiryNumber"
+    this.sortDirection = "asc"
+    this.enquiryItems = [];
     this.totalLengthOfCollection = this.enquiryItems.length;
     this.page = 1;
-    this.updatePaginatedData();
+    this.searchPerformed = false;
   }
 }
