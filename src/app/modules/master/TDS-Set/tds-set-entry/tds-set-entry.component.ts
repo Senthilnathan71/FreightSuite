@@ -121,12 +121,17 @@ export class TdsSetEntryComponent implements OnInit {
 
     ngOnInit(): void {
         this.initTdsForm();
-        this.appSettingService.getUser().subscribe(
-            (res) => {
-                this.userData = res;
-                this.checkPermissions();
-            }
-        )
+        // this.appSettingService.getUser().subscribe(
+        //     (res) => {
+        //         this.userData = res;
+        //         this.checkPermissions();
+        //     }
+        // )
+        const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+      this.checkPermissions();
+		}
         this.currentRoute.paramMap.subscribe(
             (param) => {
                 this.TDSSetHeaderSid = +param.get('id');

@@ -52,11 +52,15 @@ export class ChartAccountListComponent {
   ) {}
 
   ngOnInit() {
-    this.appSettingService.getUser().subscribe(user => {
-      if (user) {
-        this.userData = user;
-      }
-    });
+    // this.appSettingService.getUser().subscribe(user => {
+    //   if (user) {
+    //     this.userData = user;
+    //   }
+    // });
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+		}
     this.loadChartAccounts();
   }
 

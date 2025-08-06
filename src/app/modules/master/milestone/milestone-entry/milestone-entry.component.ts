@@ -64,10 +64,15 @@ export class MilestoneEntryComponent implements OnInit {
 
   ngOnInit(): void {
     this.getAllDepartments();
-    this.appSettingService.getUser().subscribe(user => {
-      this.userData = user;
+    // this.appSettingService.getUser().subscribe(user => {
+    //   this.userData = user;
+    //   this.checkPermissions();
+    // });
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
       this.checkPermissions();
-    });
+		}
 
     this.route.params.subscribe(params => {
       if (params['id']) {

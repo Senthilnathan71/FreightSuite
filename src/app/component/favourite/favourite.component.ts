@@ -40,10 +40,13 @@ export class FavoriteStarComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.appSettingService.getUser().subscribe(user => {
-      this.userData = user;
-    });
-    
+    // this.appSettingService.getUser().subscribe(user => {
+    //   this.userData = user;
+    // });
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+		}
     this.currentPath = this.customPath || this.router.url;
     this.checkForFavoriteScreen(this.currentPath);
   }

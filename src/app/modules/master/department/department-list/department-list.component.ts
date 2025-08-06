@@ -42,13 +42,18 @@ userData:any
     private appSettingService: AppSettingsService, private dialog: MatDialog
   ) { }
   ngOnInit() {
-this.appSettingService.getUser().subscribe(user => {
-      if (user) {
-        this.userData = user;
-        console.log(this.userData,'userData');
-        this.checkPermissions();
-      }
-    });  
+// this.appSettingService.getUser().subscribe(user => {
+//       if (user) {
+//         this.userData = user;
+//         console.log(this.userData,'userData');
+//         this.checkPermissions();
+//       }
+//     }); 
+const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+      this.checkPermissions();
+		} 
     this.loadDepartments();
   }
 

@@ -79,12 +79,17 @@ export class ProductEntryComponent implements OnInit{
                 }
             }
         )
-         this.appSettingService.getUser().subscribe(user => {
-    if (user) {
-      this.userData = user;
+//          this.appSettingService.getUser().subscribe(user => {
+//     if (user) {
+//       this.userData = user;
+//       this.checkPermissions();
+//     }
+//   });
+const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
       this.checkPermissions();
-    }
-  });
+		}
     }
 
         checkPermissions() {

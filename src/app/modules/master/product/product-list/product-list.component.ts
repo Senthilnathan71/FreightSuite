@@ -69,15 +69,20 @@ export class ProductListComponent {
     ) { }
 
     ngOnInit(): void {
-        this.appSettingService.getUser().subscribe(
-            user=>{
-                if(user){
-                    this.userData = user;
-                    console.log(this.userData,'UserData')
-                    this.checkPermissions();
-                }
-            }
-        );
+        // this.appSettingService.getUser().subscribe(
+        //     user=>{
+        //         if(user){
+        //             this.userData = user;
+        //             console.log(this.userData,'UserData')
+        //             this.checkPermissions();
+        //         }
+        //     }
+        // );
+        const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+      this.checkPermissions();
+		}
         this.loadProducts();
     }
 

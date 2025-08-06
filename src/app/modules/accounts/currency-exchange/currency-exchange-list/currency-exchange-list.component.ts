@@ -58,11 +58,15 @@ export class CurrencyExchangeListComponent {
     private excelReportService: ExcelExportService
   ) { }
   ngOnInit(): void {
-     this.appSettingService.getUser().subscribe(user => {
-    if (user) {
-      this.userData = user;
-    }
-  });
+  //    this.appSettingService.getUser().subscribe(user => {
+  //   if (user) {
+  //     this.userData = user;
+  //   }
+  // });
+  const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+		}
   this.loadCurrencyExchanges();
 }
 
