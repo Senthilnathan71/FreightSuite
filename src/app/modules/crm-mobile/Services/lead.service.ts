@@ -172,6 +172,14 @@ export class LeadService {
       })
     )
   }
+  getAllPackageTypes() {
+    return this.http.get('package-type').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
 
   getAllWeightUnits(){
     return this.http.get('unit/weight').pipe(

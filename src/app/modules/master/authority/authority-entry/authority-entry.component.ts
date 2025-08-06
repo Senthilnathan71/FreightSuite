@@ -279,7 +279,7 @@ export class AuthorityEntryComponent implements OnInit {
             this.appSettingService.showSuccess("Authorization updated successfully");
             this.route.navigate(['master/authorization/list'])
           } else {
-            this.appSettingService.showError('Error updating Authorization');
+            this.appSettingService.showError(resp.message);
             console.error(resp.message);
           }
         },
@@ -294,7 +294,7 @@ export class AuthorityEntryComponent implements OnInit {
             this.appSettingService.showSuccess("New authorization create successfully");
             this.route.navigate(['master/authorization/list'])
           } else {
-            this.appSettingService.showError('Error creating Authorization');
+            this.appSettingService.showError(resp.message);
             console.error(resp.message);
           }
         },
