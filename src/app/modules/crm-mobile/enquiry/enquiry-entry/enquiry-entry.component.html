@@ -42,12 +42,8 @@
                             Enquiry
                         </button>
                         <ng-template ngbNavContent>
-                            <div class="tab-content">
-                                <div class="card-body pt-3 pb-1">
-                                    <div class="row">
-                                        <ng-container *ngTemplateOutlet="basicDetailTemplate"></ng-container>
-                                    </div>
-                                </div>
+                            <div class="card-body">
+                                <ng-container *ngTemplateOutlet="basicDetailTemplate"></ng-container>
                             </div>
                         </ng-template>
                     </li>
@@ -56,12 +52,8 @@
                             Other
                         </button>
                         <ng-template ngbNavContent>
-                            <div class="tab-content">
-                                <div class="card-body pt-3 pb-1">
-                                    <div class="row">
-                                        <ng-container *ngTemplateOutlet="additionalInfoTemplate"></ng-container>
-                                    </div>
-                                </div>
+                            <div class="card-body">
+                                <ng-container *ngTemplateOutlet="additionalInfoTemplate"></ng-container>
                             </div>
                         </ng-template>
                     </li>
@@ -287,7 +279,10 @@
                     <div class="custom-form-group">
                         <textarea id="" placeholder="" rows="1" class="form-control input-field sm"
                             formControlName="AuthorizerRemarks"></textarea>
-                        <label for="text-input" class="input-label">Authorizer Remarks </label>
+                        <label for="text-input" [ngClass]="{
+                                'input-label': true,
+                                'bg-transparent': !rateRequestForm.get('AuthorizerRemarks')?.value
+                              }">Authorizer Remarks </label>
                     </div>
                 </aside>
                 <aside class="col-md-4">
@@ -297,7 +292,7 @@
                             <ng-option value="Approved">Approved</ng-option>
                             <ng-option value="Rejected">Rejected</ng-option>
                         </ng-select>
-                        <label for="authorizerStatus" class="input-label">Authorize Status</label>
+                        <label for="authorizerStatus" class="input-label">Authorize Status <span class="text-danger">*</span></label>
                         @if(f['authorizerStatus']?.invalid && f['authorizerStatus']?.touched){
                         <div class="error-message">
                             @if(f['authorizerStatus']?.hasError('required')){
@@ -364,9 +359,12 @@
                     </div>
                 </aside>
                 <aside class="col-md-4">
-                    <div class="custom-form-group">
-                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                            formControlName="FreightTerms">
+                    <div class="custom-form-group custom-form-group-select">
+                        <ng-select formControlName="FreightTerms" class="ng-select" placeholder="Select Terms" appendTo="body">
+                            <ng-option *ngFor="let item of terms" [value]="item.name">
+                                {{ item.name }}
+                            </ng-option>
+                        </ng-select>
                         <label for="text-input" class="input-label">Shipment Terms <span
                                 class="text-danger"></span></label>
                     </div>
@@ -523,7 +521,7 @@
                                                                 class="text-danger">*</span></label>
                                                     </td>
                                                     <td class="bg-transparent text-light text-center dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                        [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
                                                         <label for="" class="form-label mb-0">Qty <span
                                                                 class="text-danger">*</span></label>
                                                     </td>
@@ -533,12 +531,12 @@
                                                                 class="text-danger">*</span></label>
                                                     </td>
                                                     <td class="bg-transparent text-light text-center dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                        [ngClass]="{ 'dofi-min-w-120': isMobile, '': !isMobile }">
                                                         <label for="" class="form-label mb-0">Gross Weight <span
                                                                 class="text-danger">*</span></label>
                                                     </td>
                                                     <td class="bg-transparent text-light text-center dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                        [ngClass]="{ 'dofi-min-w-120': isMobile, '': !isMobile }">
                                                         <label for="" class="form-label mb-0">Net Weight <span
                                                                 class="text-danger">*</span></label>
                                                     </td>
@@ -548,13 +546,13 @@
                                                                 class="text-danger">*</span></label>
                                                     </td>
                                                     <td class="bg-transparent text-light text-center dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                        [ngClass]="{ 'dofi-min-w-120': isMobile, '': !isMobile }">
                                                         <label for="" class="form-label mb-0">CBM <span
                                                                 class="text-danger">*</span></label>
                                                     </td>
                                                     @if( routeCargo(routeIndex).controls.length > 1){
                                                     <td class="bg-transparent text-light dofi-max-w-140"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                        [ngClass]="{ 'dofi-min-w-120': isMobile, '': !isMobile }">
                                                         <label for="" class="form-label mb-0">Action</label>
                                                     </td>
                                                     }
@@ -563,7 +561,7 @@
                                             <tbody>
                                                 <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
                                                     [formGroupName]="cargoIndex">
-                                                    <td class="dofi-max-w-150">
+                                                    <td>
                                                         <ng-select formControlName="CargoType" class="ng-select"
                                                             appendTo="body" placeholder="Select Cargo Type">
                                                             <ng-option *ngFor="let item of cargoTypes"
@@ -572,7 +570,7 @@
                                                             </ng-option>
                                                         </ng-select>
                                                     </td>
-                                                    <td class="dofi-max-w-150">
+                                                    <td>
                                                         <ng-select name="product" formControlName="ProductName" id=""
                                                             class="ng-select" placeholder="Select Product"
                                                             appendTo="body">
@@ -580,11 +578,11 @@
                                                                 [value]="product.ProductName">{{product.ProductName}}</ng-option>
                                                         </ng-select>
                                                     </td>
-                                                    <td class="dofi-max-w-150">
+                                                    <td>
                                                         <input type="text" formControlName="CargoDescription"
                                                             class="form-control" appendTo="body">
                                                     </td>
-                                                    <td class="dofi-max-w-150">
+                                                    <td>
                                                         <ng-select formControlName="PackageType" class="ng-select"
                                                             appendTo="body" placeholder="Select Package Type">
                                                             <ng-option *ngFor="let item of packageTypes"
@@ -593,11 +591,11 @@
                                                             </ng-option>
                                                         </ng-select>
                                                     </td>
-                                                    <td class="dofi-max-w-150">
+                                                    <td>
                                                         <input type="text" formControlName="PackageQty"
                                                             class="form-control text-end" [onlyNumbers] appendTo="body">
                                                     </td>
-                                                    <td class="dofi-max-w-150">
+                                                    <td>
                                                         <ng-select name="weightunit" formControlName="WeightUnitSid"
                                                             class="ng-select" placeholder="Select Weight Unit"
                                                             appendTo="body">
@@ -605,17 +603,17 @@
                                                                 [value]="unit.UnitMasterSid">{{unit.unitCode}}</ng-option>
                                                         </ng-select>
                                                     </td>
-                                                    <td class="dofi-max-w-150">
+                                                    <td>
                                                         <input type="text" formControlName="GrossWeight"
                                                             class="form-control text-end" DecimalPrecision
                                                             [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" appendTo="body">
                                                     </td>
-                                                    <td class="dofi-max-w-150">
+                                                    <td>
                                                         <input type="text" formControlName="NetWeight"
                                                             class="form-control text-end" DecimalPrecision
                                                             [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"appendTo="body">
                                                     </td>
-                                                    <td class="dofi-max-w-150">
+                                                    <td>
                                                         <ng-select formControlName="ShipmentTerms" class="ng-select"
                                                             placeholder="Select Terms" appendTo="body">
                                                             <ng-option *ngFor="let item of terms" [value]="item.name">
@@ -623,7 +621,7 @@
                                                             </ng-option>
                                                         </ng-select>
                                                     </td>
-                                                    <td class="dofi-max-w-150">
+                                                    <td>
                                                         <input type="text" formControlName="cbm"
                                                             class="form-control text-end" DecimalPrecision
                                                             [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" appendTo="body">
@@ -666,8 +664,7 @@
                                                         <label class="form-label mb-0">Container Type <span
                                                                 class="text-danger">*</span></label>
                                                     </td>
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, 'dofi-min-w-80': !isMobile }">
+                                                    <td class="bg-transparent text-light text-center dofi-min-w-80 dofi-max-w-80">
                                                         <label class="form-label mb-0">No. of Containers <span
                                                                 class="text-danger">*</span></label>
                                                     </td>
@@ -708,7 +705,7 @@
                                                     </td>
                                                     @if( routeCargo(routeIndex).controls.length > 1){
                                                     <td class="bg-transparent text-light dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                        [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
                                                         <label for="" class="form-label mb-0">Action</label>
                                                     </td>
                                                     }

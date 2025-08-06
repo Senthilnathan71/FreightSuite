@@ -28,7 +28,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { LeadService } from '../../Services/lead.service';
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
-import { forkJoin } from 'rxjs';
+import { forkJoin, tap } from 'rxjs';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
@@ -164,10 +164,8 @@ export class EnquiryEntryComponent implements OnInit {
 
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice();
-    this.loadAllLookups();
     this.initializeForm();
     this.initOthersForm();
-    this.loadOtherFormLookups();
 
 
     this.userData = this.appSettingsService.getDecryptedUserProfile();
@@ -176,16 +174,19 @@ export class EnquiryEntryComponent implements OnInit {
     const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingsService.decrypt(storedBranch) : null;
 
-    this.activatedRoute.paramMap.subscribe((params) => {
-      this.EnquiryHeaderSid = +params.get('id');
-      if (this.EnquiryHeaderSid) {
-        this.isEditMode = true;
-        this.loadEnquiry(this.EnquiryHeaderSid);
-        this.checkAuthorisedPerson(this.userData?.UserMasterSid,this.EnquiryHeaderSid);
-      }
+    this.loadAllLookups().subscribe(() => {
+      this.loadOtherFormLookups();
+      this.activatedRoute.paramMap.subscribe((params) => {
+        this.EnquiryHeaderSid = +params.get('id');
+        if (this.EnquiryHeaderSid) {
+          this.isEditMode = true;
+          this.loadEnquiry(this.EnquiryHeaderSid);
+          this.checkAuthorisedPerson(this.userData?.UserMasterSid, this.EnquiryHeaderSid);
+        }
+      });
+      this.minExpDate = this.isEditMode ? undefined : this.today;
+      this.checkPermissions();
     });
-    this.minExpDate = this.isEditMode ? undefined : this.today
-    this.checkPermissions();
   }
 
   checkPermissions() {
@@ -218,12 +219,19 @@ export class EnquiryEntryComponent implements OnInit {
       (resp: any) => {
         this.isAuthorizedUser = resp.data?.canAuthorize
         this.isApproved = resp.data?.alreadyApproved
+        const authorizerStatusControl = this.rateRequestForm.get('authorizerStatus');
+        if (this.isAuthorizedUser && !this.isApproved) {
+          authorizerStatusControl?.setValidators([this.statusRequiredValidator]);
+        } else {
+          authorizerStatusControl?.clearValidators();
+        }
+        authorizerStatusControl?.updateValueAndValidity();
       }
     )
   }
 
   loadAllLookups(){
-    forkJoin({
+    return forkJoin({
       departments : this.leadService.getAllDepartments(),
       ports : this.leadService.getAllPorts(),
       customers : this.leadService.getAllCustomers(),
@@ -232,7 +240,7 @@ export class EnquiryEntryComponent implements OnInit {
       packageTypes : this.leadService.getAllPackageTypes(),
       containerTypes : this.leadService.getAllContainerTypes(),
       products : this.leadService.getAllProducts()
-    }).subscribe(({departments, ports , customers,incos,weightUnits,packageTypes,containerTypes,products})=>{
+    }).pipe(tap(({departments, ports , customers,incos,weightUnits,packageTypes,containerTypes,products})=>{
       this.departments = departments;
       this.ports = ports;
       this.filteredPorts = [...this.ports];
@@ -243,6 +251,7 @@ export class EnquiryEntryComponent implements OnInit {
       this.containerTypes = containerTypes;
       this.productList = products.data;
     })
+    );
   }
 
   initializeForm() {
@@ -283,7 +292,7 @@ export class EnquiryEntryComponent implements OnInit {
       ShipperAddress : [''],
       ConsigneeName : [null],
       ConsigneeAddress : [''],
-      FreightTerms : [''],
+      FreightTerms : [null],
       AdditionalService : [null],
       PickupAddress : ['']
     })
@@ -458,7 +467,6 @@ export class EnquiryEntryComponent implements OnInit {
   }
 
   onCustomerChange(event: any): void {
-    console.log(event);
     if (!event || event === null || event === undefined) {
       this.selectedCustomerName = '';
       this.cusBranchList = [];
@@ -492,12 +500,8 @@ export class EnquiryEntryComponent implements OnInit {
     )
   }
 
-  logControls(){
-    console.log(this.routes.controls)
-  }
 
   onCustomerAddressChange(event){
-    console.log(event);
     if(event === null || event === undefined || !event){
       this.rateRequestForm.get('CustomerBranchSid').setValue(null);
       this.rateRequestForm.get('Email').setValue('');
@@ -608,7 +612,6 @@ export class EnquiryEntryComponent implements OnInit {
       this.updateCargoValidators(routeFormGroup,this.selectedFCLLCL);
       routesArray.push(routeFormGroup);
       routeFormGroup.updateValueAndValidity();
-      this.getFilteredPortsBySegment();
       this.onRouteChange(index);
     });
   }
@@ -663,7 +666,6 @@ export class EnquiryEntryComponent implements OnInit {
           })),
         })),
       };
-      console.log(updatePayload);
       this.leadService
         .updateEnquiryById(this.EnquiryHeaderSid, updatePayload)
         .subscribe((resp) => {
@@ -689,7 +691,6 @@ export class EnquiryEntryComponent implements OnInit {
         CustomerName: this.selectedCustomerName,
         Segment: this.selectedDepartment,
       };
-      console.log(createPayload);
       this.leadService.createEnquiry(createPayload).subscribe((resp) => {
         if (resp.status) {
           this.modalService.openSuccessModal('Enquiry Created Successfully');
@@ -759,7 +760,6 @@ onRouteChange(routeIndex: number): void {
 }
 
 getFilteredPortsBySegment(): any[] {
-  if (!this.ports) return [];
   if (this.selectedFCLLCL === 'AIR') {
     return this.ports.filter(port => port.PortType === 'Air');
   } else if (this.selectedFCLLCL === 'FCL' || this.selectedFCLLCL === 'LCL') {
@@ -767,6 +767,14 @@ getFilteredPortsBySegment(): any[] {
   }
   return this.ports;
 }
+
+  statusRequiredValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value || value === 'Pending') {
+      return { required: true };
+    }
+    return null;
+  }
 
 
   weightValidator(): ValidatorFn {

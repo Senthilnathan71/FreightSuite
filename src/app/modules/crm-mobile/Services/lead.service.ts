@@ -136,7 +136,7 @@ export class LeadService {
 
 
   getAllDepartments() {
-    return this.http.get('enquiry/department').pipe(
+    return this.http.get('ff-enquiry/department').pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -155,7 +155,7 @@ export class LeadService {
   }
 
   getAllCargoTypes() {
-    return this.http.get('enquiry/package-type').pipe(
+    return this.http.get('ff-enquiry/package-type').pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -165,7 +165,7 @@ export class LeadService {
 
 
   getAllContainerTypes() {
-    return this.http.get('enquiry/container-type').pipe(
+    return this.http.get('ff-enquiry/container-type').pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -201,7 +201,7 @@ export class LeadService {
 
 
   createEnquiry(payload: any) {
-    return this.http.post("enquiry", payload).pipe(
+    return this.http.post("ff-enquiry", payload).pipe(
       map((res: any) => {
         return res;
       })
@@ -272,7 +272,7 @@ export class LeadService {
 
 
   getAllEnquiries() {
-    return this.http.get<any>('enquiry').pipe(
+    return this.http.get<any>('ff-enquiry').pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -281,7 +281,7 @@ export class LeadService {
   }
 
   getEnquiryById(id: number) {
-    return this.http.get<{ data: any }>(`enquiry/header/${id}`).pipe(
+    return this.http.get<{ data: any }>(`ff-enquiry/header/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -290,7 +290,7 @@ export class LeadService {
   }
 
   updateEnquiryById(id: number, payload: any) {
-    return this.http.patch<{ data: any }>(`enquiry/header/${id}`, payload).pipe(
+    return this.http.patch<{ data: any }>(`ff-enquiry/header/${id}`, payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -299,7 +299,7 @@ export class LeadService {
   }
 
   deleteEnquiryById(id: number) {
-    return this.http.delete<{ data: any }>(`enquiry/header/${id}`).pipe(
+    return this.http.delete<{ data: any }>(`ff-enquiry/header/${id}`).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -308,7 +308,7 @@ export class LeadService {
   }
 
   searchEnquiry(param) {
-    return this.http.post<{data:any}>("enquiry/search-list", param).pipe(
+    return this.http.post<{data:any}>("ff-enquiry/search-list", param).pipe(
       map((resp: any) => {
         let response = resp;
         return resp;
