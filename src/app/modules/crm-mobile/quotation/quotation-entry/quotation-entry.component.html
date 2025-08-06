@@ -1,0 +1,952 @@
+<div class="col-12">
+    <div class="row  bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+        <div class="col-md-4 d-flex pb-2">
+            <h4 class="page-title mb-0">Quotation</h4>
+            <!-- @if(isEditMode){
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                         <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
+                } -->
+        </div>
+        <div class="col-md-8 pb-2">
+            <div
+                class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <i class="fas fa-chevron-left me-1"></i>
+                    Back
+                </button>
+                <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <i class="fas fa-sync-alt me-1"></i>
+                    Reset
+                </button>
+                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit">
+                    <i class="fas fa-save me-1"></i> Save
+                </button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="tab-wrapper">
+    <div class="tab" *ngFor="let tab of tabs" [class.active]="selectedTab === tab" (click)="selectTab(tab)">
+        {{ tab }}
+    </div>
+</div>
+
+<div class="tab-content">
+    <div *ngIf="selectedTab === 'Quotation'">
+        <div class="row">
+            <div class="col-12">
+                <div class="row">
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="QuoteNo">
+                            <label for="text-input" class="input-label">Quote No <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <div class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d2="ngbDatepicker" (click)="d2.toggle()" formControlName="QuoteDate"
+                                    (keydown.arrowDown)="d2.open()" />
+                                <button class="btn btn-info text-white" (click)="d2.toggle()" type="button"> <i-feather
+                                        name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="effectiveDate" class="input-label">Quote Date</label>
+                            <!-- <div *ngIf="routes.controls.at(routeIndex).get('effDate').touched && routes.controls.at(routeIndex).get('effDate').invalid"
+                                                        class="error-message">
+                                                        Effective Date is required.
+                                                    </div> -->
+                        </div>
+                    </div>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="EnquiryNo">
+                            <label for="text-input" class="input-label">Enquiry No<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="CustomerRef">
+                            <label for="text-input" class="input-label">Customer Ref<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="" [items]="modeOfCustomer" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Customer <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="Email">
+                            <label for="text-input" class="input-label">Email <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="" [items]="modeOfSalesman" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Sales man <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
+                                bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="selectedTab === 'Charge Details'">
+        <div class="row">
+            <div class="col-12 mb-2">
+
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        Open All
+                    </button>
+                    <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        Close All
+                    </button>
+                    <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" type="submit">
+                        Get Tariff
+                    </button>
+                    <button class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" type="button"
+                        (click)="addRoute()">
+                        <i class="fas fa-plus me-1"></i> Add Route
+                    </button>
+
+                </div>
+
+            </div>
+            <div class="col-12">
+
+                <div ngbAccordion #acc="ngbAccordion" [closeOthers]="true" class="custom-accordion">
+                    <div ngbAccordionItem *ngFor="let section of routeSections" ngbAccordionItem [id]="section.id">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton
+                                class="d-flex justify-content-between align-items-center w-100 position-relative">
+                                <strong>Rates For Routes : 1</strong>
+                                <span class="ribbon-e text-white">
+
+                                    {{ selectedDept || 'LCL' }}
+                                </span>
+
+
+                            </button>
+                        </h2>
+
+                        <div ngbAccordionCollapse>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="col-12">
+
+                                        <div class="row">
+                                            <aside class="col-md-3">
+                                                <div class="custom-form-group custom-form-group-select">
+                                                    <ng-select formControlName="" [items]="modeOfDept" bindLabel="name"
+                                                        bindValue="name" (change)="onDeptChange($event)">
+
+                                                    </ng-select>
+                                                    <label for="" class="input-label">Dept <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-3">
+                                                <div class="custom-form-group custom-form-group-select">
+                                                    <ng-select formControlName="" [items]="modeOfStatus"
+                                                        bindLabel="name" bindValue="name">
+
+                                                    </ng-select>
+                                                    <label for="" class="input-label">Carrier<span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-3">
+                                                <div class="custom-form-group custom-form-group-select">
+                                                    <ng-select formControlName="" [items]="modeOfCargoType"
+                                                        bindLabel="name" bindValue="name">
+
+                                                    </ng-select>
+                                                    <label for="" class="input-label">Cargo Type <span
+                                                            class="text-danger">*</span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-3">
+                                                <div class="custom-form-group custom-form-group-select">
+                                                    <ng-select formControlName="" [items]="modeOfStatus"
+                                                        bindLabel="name" bindValue="name">
+
+                                                    </ng-select>
+                                                    <label for="" class="input-label">POR<span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-3">
+                                                <div class="custom-form-group custom-form-group-select">
+                                                    <ng-select formControlName="" [items]="modeOfStatus"
+                                                        bindLabel="name" bindValue="name">
+
+                                                    </ng-select>
+                                                    <label for="" class="input-label">POL <span
+                                                            class="text-danger">*</span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-3">
+                                                <div class="custom-form-group custom-form-group-select">
+                                                    <ng-select formControlName="" [items]="modeOfStatus"
+                                                        bindLabel="name" bindValue="name">
+
+                                                    </ng-select>
+                                                    <label for="" class="input-label">POD <span
+                                                            class="text-danger">*</span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-3">
+                                                <div class="custom-form-group custom-form-group-select">
+                                                    <ng-select formControlName="" [items]="modeOfStatus"
+                                                        bindLabel="name" bindValue="name">
+
+                                                    </ng-select>
+                                                    <label for="" class="input-label">FPOD <span
+                                                            class="text-danger">*</span></label>
+                                                </div>
+                                            </aside>
+                                            <div class="col-md-3">
+                                                <div class="custom-form-group custom-form-group-select">
+
+                                                    <div class="input-group">
+                                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp"
+                                                            ngbDatepicker #d2="ngbDatepicker" (click)="d2.toggle()"
+                                                            formControlName="effDate" (keydown.arrowDown)="d2.open()" />
+                                                        <button class="btn btn-info text-white" (click)="d2.toggle()"
+                                                            type="button"> <i-feather name="calendar"
+                                                                class="feather-sm"></i-feather></button>
+                                                    </div>
+                                                    <label for="effectiveDate" class="input-label">Eff Date <span
+                                                            class="text-danger">*</span></label>
+                                                    <!-- <div *ngIf="routes.controls.at(routeIndex).get('effDate').touched && routes.controls.at(routeIndex).get('effDate').invalid"
+                                                        class="error-message">
+                                                        Effective Date is required.
+                                                    </div> -->
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="custom-form-group custom-form-group-select">
+
+                                                    <div class="input-group">
+                                                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp"
+                                                            ngbDatepicker #d2="ngbDatepicker" (click)="d2.toggle()"
+                                                            formControlName="effDate" (keydown.arrowDown)="d2.open()" />
+                                                        <button class="btn btn-info text-white" (click)="d2.toggle()"
+                                                            type="button"> <i-feather name="calendar"
+                                                                class="feather-sm"></i-feather></button>
+                                                    </div>
+                                                    <label for="effectiveDate" class="input-label">Exp Date <span
+                                                            class="text-danger">*</span></label>
+                                                    <!-- <div *ngIf="routes.controls.at(routeIndex).get('effDate').touched && routes.controls.at(routeIndex).get('effDate').invalid"
+                                                        class="error-message">
+                                                        Effective Date is required.
+                                                    </div> -->
+                                                </div>
+                                            </div>
+                                            <aside class="col-md-3" *ngIf="selectedDept === 'LCL'">
+                                                <div class="custom-form-group">
+                                                    <input type="number" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="CMB">
+                                                    <label for="text-input" class="input-label">CMB <span
+                                                            class="text-danger">*</span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-3" *ngIf="selectedDept === 'FCL'">
+                                                <div class="custom-form-group">
+                                                    <ng-select [items]="containerTypes" bindLabel="name"
+                                                        bindValue="value" formControlName="containerType">
+                                                    </ng-select>
+                                                    <label class="input-label">Container Type <span
+                                                            class="text-danger">*</span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-3" *ngIf="selectedDept === 'FCL'">
+                                                <div class="custom-form-group">
+                                                    <input type="number" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">No of Container <span
+                                                            class="text-danger">*</span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-3" *ngIf="selectedDept === 'FCL'">
+                                                <div class="custom-form-group">
+                                                    <input type="number" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Transit <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-3">
+                                                <div class="custom-form-group">
+                                                    <input type="text" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Ship Terr <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-3">
+                                                <div class="custom-form-group">
+                                                    <input type="number" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Orgn Free <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-3">
+                                                <div class="custom-form-group">
+                                                    <input type="number" id="text-input" placeholder=""
+                                                        class="custom-input-field sm" formControlName="">
+                                                    <label for="text-input" class="input-label">Dest Free <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-3">
+                                                <div class="custom-form-group custom-form-group-select">
+                                                    <ng-select formControlName="" [items]="modeOfStatus"
+                                                        bindLabel="name" bindValue="name">
+
+                                                    </ng-select>
+                                                    <label for="" class="input-label">Authorization Status <span
+                                                            class="text-danger"></span></label>
+                                                </div>
+                                            </aside>
+
+
+
+                                            <div class="col-12 mt-2">
+                                                <div class="table-responsive">
+                                                    <div>
+                                                        <table
+                                                            class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                                                            <thead>
+                                                                <tr class="bg-info">
+                                                                    <td class="bg-transparent text-light text-center dofi-min-w-150"
+                                                                        rowspan="2">
+                                                                        <label class="form-label mb-0 pb-3">Charge <span
+                                                                                class="text-danger">*</span></label>
+                                                                    </td>
+                                                                    <td class="bg-transparent text-light text-center dofi-min-w-150"
+                                                                        rowspan="2">
+                                                                        <label class="form-label mb-0 pb-3">Charge Name
+                                                                            <span class="text-danger">*</span></label>
+                                                                    </td>
+                                                                    <td class="bg-transparent text-light text-center "
+                                                                        rowspan="2">
+                                                                        <label class="form-label mb-0 pb-3">Qty <span
+                                                                                class="text-danger">*</span></label>
+                                                                    </td>
+                                                                    <td class="bg-transparent text-light text-center"
+                                                                        colspan="3">
+                                                                        <label class="form-label mb-0">Sales</label>
+                                                                    </td>
+                                                                    <td class="bg-transparent text-light text-center"
+                                                                        colspan="3">
+                                                                        <label class="form-label mb-0">Cost</label>
+                                                                    </td>
+                                                                    <td class="bg-transparent text-light text-center"
+                                                                        rowspan="2">
+                                                                        <label
+                                                                            class="form-label mb-0 pb-3">Action</label>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr class="bg-info">
+                                                                    <td
+                                                                        class="bg-transparent text-light text-center dofi-min-w-150">
+                                                                        <label class="form-label mb-0">Unit <span
+                                                                                class="text-danger">*</span></label>
+                                                                    </td>
+                                                                    <td
+                                                                        class="bg-transparent text-light text-center dofi-min-w-150">
+                                                                        <label class="form-label mb-0">Currency <span
+                                                                                class="text-danger">*</span></label>
+                                                                    </td>
+                                                                    <td class="bg-transparent text-light text-center">
+                                                                        <label class="form-label mb-0">Per Unit <span
+                                                                                class="text-danger">*</span></label>
+                                                                    </td>
+                                                                    <td
+                                                                        class="bg-transparent text-light text-center dofi-min-w-150">
+                                                                        <label class="form-label mb-0">Cost Unit <span
+                                                                                class="text-danger">*</span></label>
+                                                                    </td>
+                                                                    <td
+                                                                        class="bg-transparent text-light text-center dofi-min-w-150">
+                                                                        <label class="form-label mb-0">Cost Curr <span
+                                                                                class="text-danger">*</span></label>
+                                                                    </td>
+                                                                    <td class="bg-transparent text-light text-center">
+                                                                        <label class="form-label mb-0">Cost Per Unit
+                                                                            <span class="text-danger">*</span></label>
+                                                                    </td>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>
+
+                                                                        <div
+                                                                            class="custom-form-group custom-form-group-select">
+                                                                            <ng-select formControlName=""
+                                                                                [items]="modeOfStatus" bindLabel="name"
+                                                                                bindValue="name" appendTo="body">
+
+                                                                            </ng-select>
+                                                                            <label for="" class="input-label">Charge
+                                                                                <span
+                                                                                    class="text-danger"></span></label>
+                                                                        </div>
+
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="custom-form-group">
+                                                                            <input type="text" id="text-input"
+                                                                                placeholder=""
+                                                                                class="custom-input-field sm"
+                                                                                formControlName="">
+                                                                            <label for="text-input"
+                                                                                class="input-label">Charge Name <span
+                                                                                    class="text-danger"></span></label>
+                                                                        </div>
+
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="custom-form-group">
+                                                                            <input type="text" id="text-input"
+                                                                                placeholder=""
+                                                                                class="custom-input-field sm"
+                                                                                formControlName="">
+                                                                            <label for="text-input"
+                                                                                class="input-label">Qty <span
+                                                                                    class="text-danger"></span></label>
+                                                                        </div>
+
+                                                                    </td>
+                                                                    <td>
+                                                                        <div
+                                                                            class="custom-form-group custom-form-group-select">
+                                                                            <ng-select formControlName=""
+                                                                                [items]="modeOfStatus" bindLabel="name"
+                                                                                bindValue="name" appendTo="body">
+
+                                                                            </ng-select>
+                                                                            <label for="" class="input-label">Unit
+                                                                                <span
+                                                                                    class="text-danger"></span></label>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div
+                                                                            class="custom-form-group custom-form-group-select">
+                                                                            <ng-select formControlName=""
+                                                                                [items]="modeOfStatus" bindLabel="name"
+                                                                                bindValue="name" appendTo="body">
+
+                                                                            </ng-select>
+                                                                            <label for="" class="input-label">Currency
+                                                                                <span
+                                                                                    class="text-danger"></span></label>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="custom-form-group">
+                                                                            <input type="text" id="text-input"
+                                                                                placeholder=""
+                                                                                class="custom-input-field sm"
+                                                                                formControlName="">
+                                                                            <label for="text-input"
+                                                                                class="input-label">Per Unit <span
+                                                                                    class="text-danger"></span></label>
+                                                                        </div>
+
+                                                                    </td>
+                                                                    <td>
+                                                                        <div
+                                                                            class="custom-form-group custom-form-group-select">
+                                                                            <ng-select formControlName=""
+                                                                                [items]="modeOfStatus" bindLabel="name"
+                                                                                bindValue="name" appendTo="body">
+
+                                                                            </ng-select>
+                                                                            <label for="" class="input-label">Cost Unit
+                                                                                <span
+                                                                                    class="text-danger"></span></label>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div
+                                                                            class="custom-form-group custom-form-group-select">
+                                                                            <ng-select formControlName=""
+                                                                                [items]="modeOfStatus" bindLabel="name"
+                                                                                bindValue="name" appendTo="body">
+
+                                                                            </ng-select>
+                                                                            <label for="" class="input-label">Cost Curr
+                                                                                <span
+                                                                                    class="text-danger"></span></label>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="custom-form-group">
+                                                                            <input type="text" id="text-input"
+                                                                                placeholder=""
+                                                                                class="custom-input-field sm"
+                                                                                formControlName="">
+                                                                            <label for="text-input"
+                                                                                class="input-label">Cost Per Unit <span
+                                                                                    class="text-danger"></span></label>
+                                                                        </div>
+
+                                                                    </td>
+                                                                    <td>
+                                                                        <a href="#" class="text-danger mx-3">
+                                                                            <i class="fas fa-trash text-center"></i>
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <div class="d-flex align-items-center justify-content-start gap-2 mt-2">
+                                                    <button class="btn btn-outline-info btn-sm" type="button">
+                                                        <i class="fas fa-plus me-1"></i> Add Charge
+                                                    </button>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+            <!-- 
+            <div class="mb-3">
+                <button (click)="toggleAll(true)" class="btn btn-primary me-2">Open All</button>
+                <button (click)="toggleAll(false)" class="btn btn-danger">Close All</button>
+            </div>
+
+            <div *ngFor="let panel of panels; let i = index" class="mb-2">
+                <div (click)="togglePanel(i)"
+                    class="p-2 bg-info text-white cursor-pointer d-flex justify-content-between align-items-center"
+                    style="cursor:pointer;">
+                    {{ panel.title }}
+                    <span>{{ panel.open ? '▲' : '▼' }}</span>
+                </div>
+                <div *ngIf="panel.open" class="p-3 bg-light">
+                    {{ panel.content }}
+                </div>
+            </div> -->
+
+        </div>
+    </div>
+    <div *ngIf="selectedTab === 'Others'">
+        <div class="col-12">
+            <div class="row">
+                <aside class="col-md-4">
+                    <div class="custom-form-group custom-form-group-select">
+                        <ng-select formControlName="" [items]="modeOfCustomer" bindLabel="name" bindValue="name">
+
+                        </ng-select>
+                        <label for="" class="input-label">Shipper Name <span class="text-danger">*</span></label>
+                    </div>
+                </aside>
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            formControlName="">
+                        <label for="text-input" class="input-label">Shipper Address <span
+                                class="text-danger"></span></label>
+                    </div>
+                </aside>
+                <aside class="col-md-4">
+                    <div class="custom-form-group custom-form-group-select">
+                        <ng-select formControlName="" [items]="modeOfCustomer" bindLabel="name" bindValue="name">
+
+                        </ng-select>
+                        <label for="" class="input-label">Consignee Name <span class="text-danger">*</span></label>
+                    </div>
+                </aside>
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            formControlName="">
+                        <label for="text-input" class="input-label">Consignee Address <span
+                                class="text-danger"></span></label>
+                    </div>
+                </aside>
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            formControlName="">
+                        <label for="text-input" class="input-label">Shipment Terms <span
+                                class="text-danger"></span></label>
+                    </div>
+                </aside>
+
+                <aside class="col-md-4">
+                    <div class="custom-form-group custom-form-group-select">
+                        <ng-select formControlName="" [items]="modeOfCustomer" bindLabel="name" bindValue="name">
+
+                        </ng-select>
+                        <label for="" class="input-label">Additional Service <span class="text-danger"></span></label>
+                    </div>
+                </aside>
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            formControlName="">
+                        <label for="text-input" class="input-label">Pickup Address <span
+                                class="text-danger"></span></label>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- <div class="tab-body">
+    <div *ngIf="activeTab === 'quotation'">
+        <div class="row">
+
+
+            <div class="col-12">
+                <div class="row">
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="QuoteNo">
+                            <label for="text-input" class="input-label">Quote No <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="QuoteDpt">
+                            <label for="text-input" class="input-label">Quote Dpt <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="EnquiryNo">
+                            <label for="text-input" class="input-label">Enquiry No<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="CustomerRef">
+                            <label for="text-input" class="input-label">Customer Ref<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="Customer">
+                            <label for="text-input" class="input-label">Customer <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="Email">
+                            <label for="text-input" class="input-label">Email <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="Salesman">
+                            <label for="text-input" class="input-label">Sales Man <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
+                                bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="activeTab === 'ChargeDetails'">
+        <div class="row">
+            <div class="col-12">
+                <div class="row  mb-2 align-items-center  mx-0">
+                    <div class="col-md-4 d-flex pb-2">
+                        <h4 class="page-title mb-0">Rates For Route : 1</h4>
+                       
+                    </div>
+                    <div class="col-md-8 pb-2">
+                        <div
+                            class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                            
+                            <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit">
+                                Get Tariff
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-12">
+                <div ngbAccordion [closeOthers]="true" class="custom-accordion">
+                    <div ngbAccordionItem id="sectionOne">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton>
+                                <strong>Section One</strong>
+                            </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="Charge">
+                                                <label for="text-input" class="input-label">Charge <span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="ChargeName">
+                                                <label for="text-input" class="input-label">Charge Name<span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="SellUnit">
+                                                <label for="text-input" class="input-label">Sell Unit<span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="SellCurr">
+                                                <label for="text-input" class="input-label">Sell Curr<span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="SellPerUnit">
+                                                <label for="text-input" class="input-label">Sell Per Unit<span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="SellAmt">
+                                                <label for="text-input" class="input-label">Sell Amt<span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="CostUnit">
+                                                <label for="text-input" class="input-label">Cost Unit<span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="CostCurr">
+                                                <label for="text-input" class="input-label">Cost Curr<span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" placeholder=""
+                                                    class="custom-input-field sm" formControlName="CostPerUnit">
+                                                <label for="text-input" class="input-label">Cost Per Unit<span
+                                                        class="text-danger"></span></label>
+                                            </div>
+                                        </aside>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row bg-white py-2 rounded shadow-sm mx-3">
+                                <div class="col-12 p-0">
+                                    <div class="table-responsive">
+                                        <table
+                                            class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                                            <thead>
+                                                <tr class="bg-info">
+                                                    <th class="bg-transparent text-light" scope="col" width="10%">Action
+                                                    </th>
+                                                    <th class="bg-transparent text-light" scope="col">POR</th>
+                                                    <th class="bg-transparent text-light" scope="col">POL</th>
+                                                    <th class="bg-transparent text-light" scope="col">FPOD</th>
+                                                    <th class="bg-transparent text-light" scope="col">Carrier</th>
+                                                    <th class="bg-transparent text-light" scope="col">Cargo Type</th>
+                                                    <th class="bg-transparent text-light" scope="col">CBM</th>
+                                                    <th class="bg-transparent text-light" scope="col">Eff Date</th>
+                                                    <th class="bg-transparent text-light" scope="col">Exp Date</th>
+                                                    <th class="bg-transparent text-light" scope="col">Ship Terr</th>
+                                                    <th class="bg-transparent text-light" scope="col">Orgn Free</th>
+                                                    <th class="bg-transparent text-light" scope="col">Dest Free</th>
+                                                    <th class="bg-transparent text-light" scope="col" width="15%">
+                                                        Authorization Status
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @for (item of [0,1,2,3]; track $index) {
+                                                <tr>
+                                                    <td
+                                                        style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                        <div class="d-flex align-items-center justify-content-center">
+                                                            <a class="text-info mx-2" class="link mx-2 ps-3 ">
+                                                                <i-feather class="feather-sm text-info"
+                                                                    name="eye"></i-feather>
+                                                            </a>
+                                                            <a class="text-danger mx-2 ps-3 border-start">
+                                                                <i-feather name="trash-2"
+                                                                    class="feather-sm"></i-feather>
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                    <td
+                                                        style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                        <div class="text-truncate">OMR</div>
+                                                    </td>
+                                                    <td
+                                                        style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                        <div class="text-truncate">OMR</div>
+                                                    </td>
+                                                    <td
+                                                        style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                        <div class="text-truncate">OMR</div>
+                                                    </td>
+                                                    <td
+                                                        style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                        <div class="text-truncate">OMR</div>
+                                                    </td>
+                                                    <td
+                                                        style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                        <div class="text-truncate">OMR</div>
+                                                    </td>
+                                                    <td
+                                                        style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                        <div class="text-truncate">OMR</div>
+                                                    </td>
+                                                    <td
+                                                        style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                        <div class="text-truncate">OMR</div>
+                                                    </td>
+                                                    <td
+                                                        style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                        <div class="text-truncate">OMR</div>
+                                                    </td>
+                                                    <td
+                                                        style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                        <div class="text-truncate">OMR</div>
+                                                    </td>
+                                                    <td
+                                                        style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                        <div class="text-truncate">RO</div>
+                                                    </td>
+                                                    <td
+                                                        style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                        <div class="text-truncate">Rial</div>
+                                                    </td>
+                                                    <td
+                                                        style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                        <span
+                                                            class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                                            <span
+                                                                class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                                            Active</span>
+                                                    </td>
+                                                </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <div *ngIf="activeTab === 'Others'">This is the Third Tab Content</div>
+</div> -->

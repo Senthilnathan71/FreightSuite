@@ -1,0 +1,111 @@
+// .tabs-wrapper {
+//   display: flex;
+//   justify-content: flex-end; // Align tabs to the right
+//   gap: 10px;
+// }
+
+// .tab {
+//   padding: 5px 18px;
+//   background-color: #f2f2f2;
+//   font-weight: 600;
+//   font-size: 14px;
+//   cursor: pointer;
+//   position: relative;
+//   top: 4px;
+//   border-radius: 15px 15px 0 0;
+//   clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+//   transition: all 0.3s ease;
+//   white-space: nowrap;
+// }
+
+// .tab.active {
+//   background-color: #05608d;
+//   color: #fff;
+//   top: 0;
+//   z-index: 1;
+// }
+
+// .tab-body {
+//   background-color: #fff;
+//   padding: 20px;
+//   border-radius: 0 0 10px 10px;
+//   font-size: 16px;
+//   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+// }
+
+// .custom-accordion .accordion-button {
+//   background-color: #05608d;
+//   color: #fff;
+//   padding: 10px;
+// }
+// .custom-accordion .accordion-button::after {
+//   filter: brightness(0) invert(1); /* Makes arrow white */
+// }
+.tab-wrapper {
+  display: flex;
+  flex-wrap: wrap; 
+  background-color: #eaf6fa;
+  overflow-x: auto; 
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab {
+  padding: 8px 60px;
+  cursor: pointer;
+  background-color: #f1f6f8;
+  color: #444;
+  border: 1px solid #cbd6dc;
+  border-bottom: none;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  margin-right: 10px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 -2px 0 #cbd6dc;
+  white-space: nowrap; 
+}
+
+.tab:hover {
+  background-color: #dceef4;
+  color: #333;
+}
+
+.tab.active {
+  background-color: #05608d;
+  color: #ffffff;
+  font-weight: 600;
+  z-index: 1;
+}
+
+.tab-content {
+  background-color: #ffffff;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-top: none;
+}
+
+
+@media screen and (max-width: 768px) {
+  .tab-wrapper {
+    flex-direction: column; 
+  }
+
+  .tab {
+    width: 100%; 
+    margin-right: 0;
+    margin-bottom: 5px;
+    border-radius: 6px;
+    border-bottom: 1px solid #cbd6dc;
+  }
+}
+
+.custom-accordion .accordion-button {
+  background-color: #05608d;
+  color: #fff;
+  padding: 8px;
+}
+.custom-accordion .accordion-button::after {
+  position: relative;
+  right: 45px;
+  filter: brightness(0) invert(1);
+}
