@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -14,10 +14,10 @@ import { MasterService } from '../../master.service';
   styleUrl: './config.component.scss'
 })
 export class ConfigComponent implements OnInit {
-  @Input() companyName: string = '';
+  companyName: string = '';
   companyId: number | null = null;
-  configSid: number | null = null;
   isLoading: boolean = false;
+  isNewConfig: boolean = false;
 
   config: any = {
     masters: {},
@@ -39,50 +39,75 @@ export class ConfigComponent implements OnInit {
 
   ngOnInit() {
     this.companyId = +this.route.snapshot.params['id'];
-    this.companyName = history.state.companyName || '';
-    this.configSid = history.state.configSid || null;
-
-    this.loadFieldConfiguration();
+    const state = history.state;
+    this.companyName = state.companyName || '';
+    
+    // Check if we have config data passed from the company entry
+    if (state.config && Object.keys(state.config).length > 0) {
+      this.config = state.config;
+      this.loadFieldConfiguration(false); 
+    } else {
+      this.loadFieldConfiguration(true); 
+    }
   }
 
-  loadFieldConfiguration() {
+  loadFieldConfiguration(overwrite: boolean) {
     this.isLoading = true;
     this.masterService.getFieldConfiguration().subscribe({
       next: (response: any) => {
         if (response?.fieldConfig) {
           const rawConfig = response.fieldConfig;
 
-          // Normalize fields for all sections
+          if (overwrite) {
+            // If we're overwriting, start with default config
+            this.config = {
+              masters: {},
+              crm: {},
+              account: {},
+              settings: {}
+            };
+          }
+
+          // Normalize and merge config
           ['masters', 'crm', 'account', 'settings'].forEach(section => {
             if (rawConfig[section]) {
               Object.keys(rawConfig[section]).forEach(subsection => {
                 const subsectionData = rawConfig[section][subsection];
+                
+                // Initialize section if not exists
+                if (!this.config[section]) {
+                  this.config[section] = {};
+                }
+                
+                // Initialize subsection if not exists
+                if (!this.config[section][subsection]) {
+                  this.config[section][subsection] = { fields: {} };
+                }
+
+                // Convert flat object to fields format if needed
                 if (!subsectionData.fields) {
-                  // Convert flat object to fields format
-                  rawConfig[section][subsection] = {
-                    fields: Object.fromEntries(
-                      Object.keys(subsectionData).map(key => [
-                        key,
-                        {
-                          visible: subsectionData[key] === true,
-                          label: this.formatLabel(key)
-                        }
-                      ])
-                    )
-                  };
+                  Object.keys(subsectionData).forEach(key => {
+                    if (!this.config[section][subsection].fields[key]) {
+                      this.config[section][subsection].fields[key] = {
+                        visible: subsectionData[key] === true,
+                        label: this.formatLabel(key)
+                      };
+                    }
+                  });
+                } else {
+                  // Merge fields if they exist in both
+                  Object.keys(subsectionData.fields).forEach(key => {
+                    if (!this.config[section][subsection].fields[key]) {
+                      this.config[section][subsection].fields[key] = {
+                        visible: subsectionData.fields[key].visible,
+                        label: subsectionData.fields[key].label || this.formatLabel(key)
+                      };
+                    }
+                  });
                 }
               });
             }
           });
-
-          // Deep merge normalized config into default config
-          const merged = { ...this.config };
-          ['masters', 'crm', 'account', 'settings'].forEach(section => {
-            merged[section] = this.deepMerge(this.config[section] || {}, rawConfig[section] || {});
-          });
-
-          this.config = merged;
-          console.log('Normalized and merged config:', this.config);
         }
         this.isLoading = false;
       },
@@ -93,26 +118,8 @@ export class ConfigComponent implements OnInit {
     });
   }
 
-  private deepMerge(target: any, source: any) {
-    const output = { ...target };
-    if (this.isObject(target) && this.isObject(source)) {
-      Object.keys(source).forEach(key => {
-        if (this.isObject(source[key])) {
-          if (!(key in target)) {
-            output[key] = { ...source[key] };
-          } else {
-            output[key] = this.deepMerge(target[key], source[key]);
-          }
-        } else {
-          output[key] = source[key];
-        }
-      });
-    }
-    return output;
-  }
-
-  private isObject(item: any): boolean {
-    return item && typeof item === 'object' && !Array.isArray(item);
+  private formatLabel(key: string): string {
+    return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
   }
 
   toggleField(section: string, subsection: string, fieldKey: string) {
@@ -132,10 +139,6 @@ export class ConfigComponent implements OnInit {
       this.config[section][subsection].fields[fieldKey].visible =
         !this.config[section][subsection].fields[fieldKey].visible;
     }
-  }
-
-  private formatLabel(key: string): string {
-    return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
   }
 
   getConfigValue(section: string, subsection: string, fieldKey: string): boolean {
@@ -200,14 +203,17 @@ export class ConfigComponent implements OnInit {
       return;
     }
 
+    this.isLoading = true;
     this.masterService.saveCompanyConfig(this.companyId, this.config)
       .subscribe({
         next: (response) => {
           console.log('Config saved successfully', response);
+          this.isLoading = false;
           this.goBackToCompany();
         },
         error: (error) => {
           console.error('Error saving config:', error);
+          this.isLoading = false;
         }
       });
   }

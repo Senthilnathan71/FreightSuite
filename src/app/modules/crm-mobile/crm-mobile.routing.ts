@@ -12,6 +12,7 @@ import { BookingListComponent } from './booking/booking-list/booking-list.compon
 import { BookingEntryComponent } from './booking/booking-entry/booking-entry.component';
 import { EnquiryEntryComponent } from './enquiry/enquiry-entry/enquiry-entry.component';
 import { EnquiryListComponent } from './enquiry/enquiry-list/enquiry-list.component';
+import { QuotationEntryComponent } from './quotation/quotation-entry/quotation-entry.component';
 
 
 export const CrmMobileRoutes: Routes = [
@@ -124,6 +125,20 @@ export const CrmMobileRoutes: Routes = [
             {
                 path: 'quotation',
                 component: QuotationComponent,
+                data: {
+                    title: 'Quotation',
+                    backOption: [
+                        { title: 'Back', url: '/crm/quotation/list' },
+                    ],
+                    // urls: [
+                    //     { title: 'CRM', url: '/crm' },
+                    //     { title: 'Quotation' },
+                    // ],
+                },
+            },
+             {
+                path: 'quotation/entry',
+                component: QuotationEntryComponent,
                 data: {
                     title: 'Quotation',
                     backOption: [
