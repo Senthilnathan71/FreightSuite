@@ -179,7 +179,7 @@ export class CompanyEntryComponent implements OnInit {
         config: currentConfig
       }
     });
-  } 
+  }
 }
 	
 	
