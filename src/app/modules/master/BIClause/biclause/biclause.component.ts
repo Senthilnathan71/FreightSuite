@@ -292,6 +292,7 @@ updatePaginatedData(): void {
         
         this.appSettingService.showSuccess(message);
         this.modalService.dismissAll();
+        this.loadAllClauses();
       
       },
       error: (err) => {

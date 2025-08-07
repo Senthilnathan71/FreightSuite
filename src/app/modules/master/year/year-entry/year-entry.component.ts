@@ -138,8 +138,8 @@ export class YearEntryComponent {
       YearCode: ['', Validators.required],
       StartDate: [this.todayDate, Validators.required],
       EndDate: [this.todayDate, Validators.required],
-      CurrentYear: ['', Validators.required],
-      YearEndCompleted: ['', Validators.required],
+      CurrentYear: ['', [Validators.required, Validators.maxLength(1)]],
+    YearEndCompleted: ['', [Validators.required, Validators.maxLength(1)]],
       Remarks: [''],
       status: [{value: 'Active', disabled: false}, Validators.required],
     });
@@ -234,7 +234,7 @@ export class YearEntryComponent {
           StartDate:startDate,
           EndDate: endDate,
           CompanyMasterSid: data.CompanyMasterSid,
-          status: data.status
+          status: this.statusMap[data.status] || 'Active' 
         },
       );
       this.yearData = data;

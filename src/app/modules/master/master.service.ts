@@ -2465,6 +2465,15 @@ getFieldConfiguration() {
     );
   }
 
+ getSubledgersByCOA(COAMasterSid: number) {
+    return this.http.get<{ data: any[] }>(`document-type/subledgers/${COAMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+}
+
   //Hawb
   getAllHawbStocks() {
     return this.http.get<{ data: any[] }>('hawb-stock').pipe(
