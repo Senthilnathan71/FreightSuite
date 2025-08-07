@@ -313,11 +313,122 @@
       <form [formGroup]="meetingForm">
         <div class="modal-body">
           <section class="">
+
+
             <div class="row">
+  <aside class="col-12">
+    <div class="custom-form-group">
+      <select id="customerName" formControlName="customerName" (change)="onCustomerChange($event)" class="custom-input-field sm">
+        <option value="">Select</option>
+        <option *ngFor="let item of customers" [value]="item.CustomerName">{{ item.CustomerName }}</option>
+      </select>
+      <label for="customerName" class="input-label">Customer Name <span class="text-danger">*</span></label>
+      <small *ngIf="f['customerName'].touched && f['customerName'].invalid" class="error-message">
+        Customer name is required.
+      </small>
+    </div>
+  </aside>
+
+  <aside class="col-12 col-md-4">
+    <div class="custom-form-group">
+      <select id="meetingType" formControlName="meetingType" class="custom-input-field sm">
+        <option value="">Select</option>
+        <option value="Call">Call</option>
+        <option value="Visit">Visit</option>
+        <option value="Phone">Phone</option>
+        <option value="eMeeting">eMeeting</option>
+      </select>
+      <label for="meetingType" class="input-label">Meeting Type <span class="text-danger">*</span></label>
+      <small *ngIf="f['meetingType'].touched && f['meetingType'].invalid" class="error-message">
+        Meeting type is required.
+      </small>
+    </div>
+  </aside>
+
+  <aside class="col-12 col-md-4">
+    <div class="custom-form-group">
+      <input type="datetime-local" id="meetingDate" formControlName="meetingDate" class="custom-input-field sm" [min]="minDate" />
+      <label for="meetingDate" class="input-label">Meeting Date <span class="text-danger">*</span></label>
+      <small *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="error-message">
+        Meeting date is required.
+      </small>
+    </div>
+  </aside>
+
+  <aside class="col-12 col-md-4">
+    <div class="custom-form-group">
+      <select id="leadAssignTo" formControlName="leadAssignTo" class="custom-input-field sm">
+        <option value="">Select</option>
+        <option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">{{ person.userName }}</option>
+      </select>
+      <label for="leadAssignTo" class="input-label">Salesperson <span class="text-danger">*</span></label>
+      <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="error-message">
+        Salesperson is required.
+      </small>
+    </div>
+  </aside>
+
+  <aside class="col-12">
+    <div class="custom-form-group">
+      <textarea id="meetingNote" formControlName="meetingNote" class="custom-input-field sm" rows="1"></textarea>
+      <label for="meetingNote" class="input-label">Meeting Note <span class="text-danger">*</span></label>
+      <small *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="error-message">
+        Meeting Note is required.
+      </small>
+    </div>
+  </aside>
+
+  <aside class="col-12 col-md-6">
+    <div class="custom-form-group">
+      <select id="meetingStatus" formControlName="meetingStatus" class="custom-input-field sm">
+        <option value="">Select</option>
+        <option value="scheduled">Scheduled</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="pending">In Progress</option>
+        <option value="on hold">On Hold</option>
+        <option value="completed">Completed</option>
+      </select>
+      <label for="meetingStatus" class="input-label">Meeting Status <span class="text-danger">*</span></label>
+      <small *ngIf="f['meetingStatus'].touched && f['meetingStatus'].invalid" class="error-message">
+        Meeting status is required.
+      </small>
+    </div>
+  </aside>
+
+  <aside class="col-12 col-md-6  mt-md-2">
+    <div class="custom-form-group dofi-mt-6">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="followUp" formControlName="followUp"
+          [checked]="meetingForm.get('followUp')?.value" (change)="toggleFollowUp($event)" />
+        <label class="form-check-label" for="followUp">Follow up required?</label>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Follow Up Section (Conditional) -->
+  <div class="row" *ngIf="meetingForm.get('followUp')?.value">
+    <aside class="col-12 col-md-6">
+      <div class="custom-form-group">
+        <input type="datetime-local" id="followUpDate" formControlName="followUpDate" class="custom-input-field sm" [min]="minDate" />
+        <label for="followUpDate" class="input-label">Follow Up Date</label>
+      </div>
+    </aside>
+
+    <aside class="col-12 col-md-6">
+      <div class="custom-form-group">
+        <textarea id="followUpNote" formControlName="followUpNote" class="custom-input-field sm" rows="1"></textarea>
+        <label for="followUpNote" class="input-label">Follow Up Note</label>
+      </div>
+    </aside>
+  </div>
+</div>
+
+
+
+            <!-- <div class="row">
               <div class="col-12 col-md-12">
                 <div class="mb-2">
                   <label class="control-label col-form-label">Customer Name <span class="text-danger">*</span></label>
-                  <!-- <input type="text" formControlName="customerName" class="form-control" /> -->
                   <select formControlName="customerName" (change)="onCustomerChange($event)" class="form-select">
                     <option value="">Select</option>
                     <option *ngFor="let item of customers" [value]="item.CustomerName">
@@ -402,7 +513,7 @@
                   </div>
                 </div>
               </div>
-              <!-- Conditionally Display Follow Up Fields in One Row -->
+              
               <div class="row" *ngIf="meetingForm.get('followUp')?.value">
                 <div class="col-12 col-md-6">
                   <div class="mb-2">
@@ -419,7 +530,10 @@
                 </div>
               </div>
 
-            </div>
+            </div> -->
+
+
+            
           </section>
           <!-- <h5>Event Title</h5> -->
           <!-- <input type="text" class="form-control" (keyup)="refresh.next()" required name="title" ngModel /> -->

@@ -70,6 +70,8 @@ import { HawbStockEntryComponent } from './Hawb-Stock/hawb-stock-entry/hawb-stoc
 import { AuthorizationListComponent } from './authorization/authorization-list/authorization-list.component';
 import { ConfigComponent } from './company/config/config.component';
 import { DocumentAuthorizationComponent } from './document-authorization/document-authorization.component';
+import { DocumnetGenerationListComponent } from './document-number-generation/documnet-generation-list/documnet-generation-list.component';
+import { DocumnetGenerationEntryComponent } from './document-number-generation/documnet-generation-entry/documnet-generation-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -1081,6 +1083,26 @@ export const MasterRoutes: Routes = [
       urls: [
         { title: 'Master', url: '/master' },
         { title: 'Document Authorization' },
+      ],
+    },
+  },{
+    path: 'document-number-generation/list',
+    component: DocumnetGenerationListComponent,
+    data: {
+      title: 'Document Number Generation',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Document Number Generation' },
+      ],
+    },
+  },{
+    path: 'document-number-generation/entry',
+    component: DocumnetGenerationEntryComponent,
+    data: {
+      title: 'Document Number Generation',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Document Number Generation' },
       ],
     },
   }

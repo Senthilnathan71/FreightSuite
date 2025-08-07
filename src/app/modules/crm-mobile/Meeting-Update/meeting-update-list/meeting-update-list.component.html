@@ -79,7 +79,7 @@
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
                                 <tr class="bg-info">
-                                    <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                                    <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
                                     <th class="bg-transparent text-light" scope="col">Customer Name</th>
                                     <th class="bg-transparent text-light" scope="col">Meeting Type</th>
                                     <th class="bg-transparent text-light" scope="col">Meeting Date</th>
@@ -90,35 +90,35 @@
                             </thead>
                             <tbody>
                                 <tr *ngFor="let meeting of filteredMeetings">
-                                     <td data-label="Action">
+                                     <td data-label="Action" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <section class="action-items text-center">
                                             <a class="text-info mx-2" (click)="openModal(modalContentAdd, meeting)" style="cursor: pointer;">
                                                 <i-feather name="eye" class="feather-sm"></i-feather>
                                             </a>
                                         </section>
                                     </td>
-                                    <td data-label="Customer Name">
+                                    <td data-label="Customer Name" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ meeting.preCustomerMaster?.preCustomerName || 'N/A' }}
                                         </div>
                                     </td>
-                                    <td data-label="meetingType">
+                                    <td data-label="meetingType" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ (meeting.meetingType | titlecase) || 'N/A' }}
                                         </div>
                                     </td>
-                                    <td data-label="Meeting Date">
+                                    <td data-label="Meeting Date" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             <i-feather name="calendar" class="feather-sm"></i-feather>
                                             {{ meeting.meetingDate | date:'medium' }}
                                         </div>
                                     </td>
-                                    <td data-label="leadAssignTo">
+                                    <td data-label="leadAssignTo" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;"> 
                                         <div class="text-truncate">
                                             {{ getSalesmanById(meeting.leadAssignTo) || 'N/A' }}
                                         </div>
                                     </td>
-                                    <td data-label="Status">
+                                    <td data-label="Status" style="padding-top: 3px; padding-bottom: 3px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             <span class="badge" [ngClass]="{
                                                 'bg-success': meeting.meetingStatus === 'scheduled',
@@ -168,7 +168,116 @@
     <form [formGroup]="meetingForm">
         <div class="modal-body">
             <section class="">
+
                 <div class="row">
+  <!-- Customer Name -->
+  <aside class="col-md-12">
+    <div class="custom-form-group">
+      <input type="text" class="custom-input-field sm" formControlName="customerName" readonly />
+      <label class="input-label">Customer Name</label>
+    </div>
+  </aside>
+
+  <!-- Meeting Type -->
+  <aside class="col-md-4">
+    <div class="custom-form-group">
+      <select class="custom-input-field sm" formControlName="meetingType">
+        <option value="">Select</option>
+        <option value="Call">Call</option>
+        <option value="Visit">Visit</option>
+        <option value="Phone">Phone</option>
+        <option value="eMeeting">eMeeting</option>
+      </select>
+      <label class="input-label">Meeting Type</label>
+    </div>
+  </aside>
+
+  <!-- Meeting Date -->
+  <aside class="col-md-4">
+    <div class="custom-form-group">
+      <input type="datetime-local" class="custom-input-field sm" formControlName="meetingDate" readonly />
+      <label class="input-label">Meeting Date</label>
+    </div>
+  </aside>
+
+  <!-- Salesperson -->
+  <aside class="col-md-4">
+    <div class="custom-form-group">
+      <select class="custom-input-field sm" formControlName="leadAssignTo">
+        <option value="">Select</option>
+        <option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
+          {{ person.userName }}
+        </option>
+      </select>
+      <label class="input-label">Salesperson</label>
+    </div>
+  </aside>
+
+  <!-- Meeting Note -->
+  <aside class="col-md-12">
+    <div class="custom-form-group">
+      <textarea class="custom-input-field sm" formControlName="meetingNote"></textarea>
+      <label class="input-label">
+        Meeting Note
+        <span *ngIf="meetingForm.get('meetingStatus')?.value === 'on hold'" class="text-danger">*</span>
+      </label>
+      <small *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="text-danger">
+        <span *ngIf="f['meetingNote'].errors?.['required']">
+          Meeting Note is required when status is "On Hold"
+        </span>
+      </small>
+    </div>
+  </aside>
+
+  <!-- Meeting Status -->
+  <aside class="col-md-6">
+    <div class="custom-form-group">
+      <select class="custom-input-field sm" formControlName="meetingStatus">
+        <option value="">Select</option>
+        <option value="scheduled">Scheduled</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="pending">In Progress</option>
+        <option value="on hold">On Hold</option>
+        <option value="completed">Completed</option>
+      </select>
+      <label class="input-label">Meeting Status</label>
+    </div>
+  </aside>
+
+  <!-- Follow Up Toggle -->
+ <div class="col-12 col-md-6">
+                        <div class="mb-2 ">
+                            <label class="control-label col-form-label">&nbsp;</label>
+                            <div class="form-check form-switch dofi-mt-6">
+                                <input class="form-check-input" type="checkbox" role="switch" formControlName="followUp"
+                                    [checked]="meetingForm.get('followUp')?.value" (change)="toggleFollowUp($event)" />
+                                <label class="form-check-label">Follow up required?</label>
+                            </div>
+                        </div>
+                    </div>
+                   
+
+  <!-- Conditionally Show Follow Up Fields -->
+  <ng-container *ngIf="meetingForm.get('followUp')?.value">
+    <!-- Follow Up Date -->
+    <aside class="col-md-6">
+      <div class="custom-form-group">
+        <input type="datetime-local" class="custom-input-field sm" formControlName="followUpDate" />
+        <label class="input-label">Follow Up Date</label>
+      </div>
+    </aside>
+
+    <!-- Follow Up Note -->
+    <aside class="col-md-6">
+      <div class="custom-form-group">
+        <textarea class="custom-input-field sm" formControlName="followUpNote" rows="1"></textarea>
+        <label class="input-label">Follow Up Note</label>
+      </div>
+    </aside>
+  </ng-container>
+</div>
+
+                <!-- <div class="row">
                     <div class="col-12 col-md-12">
                         <div class="mb-2">
                             <label class="control-label col-form-label">Customer Name</label>
@@ -243,7 +352,7 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Conditionally Display Follow Up Fields in One Row -->
+                   
                     <div class="row" *ngIf="meetingForm.get('followUp')?.value">
                         <div class="col-12 col-md-6">
                             <div class="mb-2">
@@ -258,7 +367,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </section>
         </div>
         <div class="modal-footer">

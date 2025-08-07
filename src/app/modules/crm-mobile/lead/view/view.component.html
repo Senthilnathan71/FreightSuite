@@ -95,20 +95,20 @@
 <!-- DESKTOP CODE -->
 <ng-template #desktopTemplate>
     <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
-        <div class="row">
+        <div class="row bg-white py-2 rounded shadow-sm mx-auto">
 
             <div class="col-12">
                 <!-- #region filter and add new -->
 
                 <!-- #endregion -->
 
-                <div class="card">
+             
                     <!-- #region lead view -->
                     <div class="table-responsive">
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
                                 <tr class="bg-info">
-                                    <th class="bg-transparent text-light" scope="col">Action</th>
+                                    <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
                                     <th class="bg-transparent text-light" scope="col">Lead Name</th>
                                     <th class="bg-transparent text-light" scope="col">Phone</th>
                                     <th class="bg-transparent text-light" scope="col">Type</th>
@@ -121,30 +121,30 @@
                             </thead>
                             <tbody>
                                 <tr *ngFor="let lead of filteredLeads">
-                                     <td data-label="Action">
-                                        <section class="action-items">
+                                     <td data-label="Action" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <section class="action-items text-center">
                                             <a class="text-info mx-2" (click)="viewLead(lead.PreCustomerMasterSid)">
                                                 <!-- <i-feather name="edit" class="feather-sm"></i-feather> -->
                                                 <i-feather name="eye" class="feather-sm"></i-feather>
                                             </a>
                                         </section>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ lead.preCustomerName }}
                                         </div>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                              <i-feather name="phone" class="feather-sm"></i-feather> {{ lead.phone }}
                                         </div>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ lead.preCustomerType }}
                                         </div>
                                     </td>
-                                    <td data-label="Phone">
+                                    <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             <button class="btn btn-sm btn-light-success" (click)="createMeeting(lead.PreCustomerMasterSid)">
                                                 <i-feather name="calendar" class="feather-sm"></i-feather>Schedule Meeting
@@ -160,7 +160,7 @@
                                             <i-feather name="calendar" class="feather-sm"></i-feather> --
                                         </div>
                                     </td> -->
-                                    <td data-label="status">
+                                    <td data-label="status" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ lead.status === 'A' ? 'Active' : 'Suspended' }}
                                               <!-- {{findStatus(lead.status)}} -->
@@ -180,7 +180,7 @@
                         </ngb-pagination>
                         <!-- #endregion -->
                     </div>
-                </div>
+             
 
             </div>
         </div>
