@@ -126,13 +126,13 @@
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center justify-content-center">
                                     @if(hasPermission('View')) {
-                                    <a class="text-info mx-2"
+                                    <a class="text-info mx-2 cursor-pointer"
                                         [routerLink]="['/master/charge/entry/', item.ChargeMasterSid]">
                                         <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </a>
                                 }
                                 @if(hasPermission('Delete')) {
-                                    <a class="text-danger mx-2 ps-3 border-start"
+                                    <a class="text-danger mx-2 ps-3 border-start cursor-pointer"
                                         (click)="deleteCharge(item.ChargeMasterSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
@@ -144,7 +144,7 @@
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{getUomCode(item.UOM)}}</td>
                             <!-- <td>{{item.HSNSAC}}</td> -->
                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.HSNSAC}}</td>
-<td>{{item.TDSSet}}</td>
+                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{item.TDSSet}}</td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 @if(item.Status === "A"){
                                 <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">

@@ -117,12 +117,12 @@
                                     </a>
                                 }
 
-                                    <a class="link mx-2 ps-3 border-start text-primary"
+                                    <a class="link mx-2 ps-3 border-start text-primary cursor-pointer"
                                         (click)="openChangePassword(resetTemplate,user.UserMasterSid)">
                                         <i class="fas fa-lock" style="color: #FFD43B;"></i>
                                     </a>
                                     @if(hasPermission('Delete')) {
-                                    <a class="link mx-2 ps-3 border-start text-danger"
+                                    <a class="link mx-2 ps-3 border-start text-danger cursor-pointer"
                                         (click)="deleteUser(user.UserMasterSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>

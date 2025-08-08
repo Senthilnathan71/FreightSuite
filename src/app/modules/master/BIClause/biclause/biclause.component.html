@@ -124,12 +124,12 @@
                                 <div class="d-flex align-items-center justify-content-center">
                                      @if(hasPermission('View')) {
                   <a class="text-info mx-2" (click)="openModal(content, item)" >
-                    <i-feather class="feather-sm" name="eye"></i-feather>
+                    <i-feather class="feather-sm cursor-pointer" name="eye"></i-feather>
                   </a>
                 }
                  @if(hasPermission('Delete')) {
                   <a class="text-danger mx-2 ps-3 border-start"  (click)="deleteClause(item.BLClauseMasterSid)">
-                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                    <i-feather name="trash-2" class="feather-sm  cursor-pointer"></i-feather>
                   </a>
                 }
                                 </div>
