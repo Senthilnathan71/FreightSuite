@@ -108,9 +108,10 @@
                                 <label for="text-input" class="input-label">Current Year <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div class="error-message"
-                                *ngIf="yearForm.get('CurrentYear')?.touched && yearForm.get('CurrentYear')?.hasError('required')">
-                                    Current Year is required
-                                </div>
+     *ngIf="yearForm.get('CurrentYear')?.touched && yearForm.get('CurrentYear')?.invalid">
+  <span *ngIf="yearForm.get('CurrentYear')?.hasError('required')">Current Year is required</span>
+  <span *ngIf="yearForm.get('CurrentYear')?.hasError('maxlength')">Only 1 character allowed</span>
+</div>
                             </div>
                         </aside>
 
@@ -122,9 +123,10 @@
                                 <label for="text-input" class="input-label">Year-End Completed <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div class="error-message"
-                                *ngIf="yearForm.get('YearEndCompleted')?.touched && yearForm.get('YearEndCompleted')?.hasError('required')">
-                                    Year-End Completed is required
-                                </div>
+     *ngIf="yearForm.get('YearEndCompleted')?.touched && yearForm.get('YearEndCompleted')?.invalid">
+  <span *ngIf="yearForm.get('YearEndCompleted')?.hasError('required')">Year-End  is required</span>
+  <span *ngIf="yearForm.get('YearEndCompleted')?.hasError('maxlength')">Only 1 character allowed</span>
+</div>
                             </div>
                         </aside>
 

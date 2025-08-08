@@ -43,7 +43,9 @@
   
   <ng-template #desktopTemplate>
     <div class="desktop-view">
-      <div class="table-responsive">
+        <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+            <div class="col-12">
+                <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered mobile-table">
                 <thead>
                     <tr class="bg-info">
@@ -56,27 +58,27 @@
                 </thead>
                 <tbody>
                     <tr *ngFor="let schedule of pendingSchedule">
-                        <td data-label="Name">
+                        <td data-label="Name" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="text-truncate">
                                 {{ schedule.preCustomerName }}
                             </div>
                         </td>
-                        <td data-label="City">
+                        <td data-label="City" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="text-truncate">
                                 {{ schedule.cityMaster.cityName }}
                             </div>
                         </td>
-                        <td data-label="Contact">
+                        <td data-label="Contact" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="text-truncate">
                                 {{ schedule.contactPerson }}
                             </div>
                         </td>
-                        <td data-label="Phone">
+                        <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="text-truncate">
                                 <i-feather name="phone" class="feather-sm"></i-feather> {{ schedule.phone }}
                             </div>
                         </td>
-                        <td data-label="Schedule">
+                        <td data-label="Schedule" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <button class="btn btn-sm btn-light-success" (click)="createMeeting(schedule.PreCustomerMasterSid)">
                                 <i-feather name="calendar" class="feather-sm"></i-feather>Schedule Meeting
                             </button>
@@ -97,5 +99,8 @@
                 </tbody>
             </table>
         </div>
+            </div>
+        </div>
+      
     </div>
   </ng-template>

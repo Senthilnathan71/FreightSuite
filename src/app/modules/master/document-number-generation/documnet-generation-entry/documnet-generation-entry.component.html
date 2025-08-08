@@ -1,0 +1,202 @@
+<div class="row" [formGroup]="DocumentGenerationForm">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">Document Number Generation</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="navigateToBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="resetForm()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+                        [disabled]="DocumentGenerationForm.invalid">
+                        <i class="fas fa-save me-1"></i>
+                        {{ isEditMode ? 'Update' : 'Save' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="card h-100 mb-0">
+            <div class="card-body">
+                <div class="row">
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="Company">
+                            <label for="text-input" class="input-label">Company <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="Branch">
+                            <label for="text-input" class="input-label">Branch <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="StartingNo">
+                            <label for="text-input" class="input-label">Starting No <span
+                                    class="text-danger">*</span></label>
+                            <div *ngIf="DocumentGenerationForm.get('StartingNo')?.touched && DocumentGenerationForm.get('StartingNo')?.invalid"
+                                class="error-message">
+                                <span *ngIf="DocumentGenerationForm.get('StartingNo')?.hasError('required')">
+                                    StartingNo is required
+                                </span>
+                            </div>
+
+
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="Seperator">
+                            <label for="text-input" class="input-label">Seperator <span
+                                    class="text-danger"></span></label>
+                            <div *ngIf="DocumentGenerationForm.get('Seperator')?.touched && DocumentGenerationForm.get('Seperator')?.invalid"
+                                class="error-message">
+                                <span *ngIf="DocumentGenerationForm.get('Seperator')?.hasError('required')">
+                                    Seperator is required
+                                </span>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" formControlName="CompanyFlagReq" id="CompanyFlagReq"
+                                    class="form-check-input sm">
+                                <label for="CompanyFlagReq" class="form-check-label sm">Company Flag Required <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" formControlName="CompanyFlagReq" id="CompanyFlagReq"
+                                    class="form-check-input sm">
+                                <label for="CompanyFlagReq" class="form-check-label sm">Branch Flag Required <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" formControlName="CompanyFlagReq" id="CompanyFlagReq"
+                                    class="form-check-input sm">
+                                <label for="CompanyFlagReq" class="form-check-label sm">Year Flag Required <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" formControlName="CompanyFlagReq" id="CompanyFlagReq"
+                                    class="form-check-input sm">
+                                <label for="CompanyFlagReq" class="form-check-label sm">Month Flag Required <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="SerialNoLength">
+                            <label for="text-input" class="input-label">Serial No Length <span
+                                    class="text-danger"></span></label>
+                            <div *ngIf="DocumentGenerationForm.get('SerialNoLength')?.touched && DocumentGenerationForm.get('SerialNoLength')?.invalid"
+                                class="error-message">
+                                <span *ngIf="DocumentGenerationForm.get('SerialNoLength')?.hasError('required')">
+                                    Serial No Length is required
+                                </span>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="Type" [items]="modeOfTypes" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Type <span class="text-danger"></span></label>
+                            <div *ngIf="DocumentGenerationForm.get('Type')?.touched && DocumentGenerationForm.get('Type')?.invalid"
+                                class="error-message">
+                                <span *ngIf="DocumentGenerationForm.get('Type')?.hasError('required')">
+                                    Type is required
+                                </span>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="ResetValue" [items]="modeOfResetValues" bindLabel="name"
+                                bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Reset Value <span class="text-danger"></span></label>
+                            <div *ngIf="DocumentGenerationForm.get('ResetValue')?.touched && DocumentGenerationForm.get('ResetValue')?.invalid"
+                                class="error-message">
+                                <span *ngIf="DocumentGenerationForm.get('ResetValue')?.hasError('required')">
+                                    Reset Value is required
+                                </span>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="Prefix">
+                            <label for="text-input" class="input-label">Prefix <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="SampleNumber">
+                            <label for="text-input" class="input-label">Sample Number <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="Suffix" [items]="modeOfSuffix" bindLabel="name"
+                                bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Suffix <span class="text-danger"></span></label>
+
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name"
+                                bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>

@@ -12,8 +12,8 @@
     </a>
   </li>
     <!-- Branch and Company info - aligned horizontally -->
- <li class="nav-item d-flex flex-wrap align-items-center gap-3">
-  <span *ngIf="selectedBranchCompany" class="fw-bold text-info">
+ <li class="nav-item d-flex flex-wrap align-items-center">
+  <span *ngIf="selectedBranchCompany" class="fw-bold text-info me-lg-3">
     <strong class="text-dark">Branch :</strong>
     {{ selectedBranchCompany.branchMaster.branchName }}
   </span>
@@ -585,10 +585,10 @@
 
   </nav>
   <ng-template #branchSwitchModal let-modal>
-  <div class="modal-header bg-primary text-white">
+  <div class="modal-header text-white p-2 bg-info">
     <div class="w-100 d-flex justify-content-between align-items-start flex-column">
       <div class="w-100 d-flex justify-content-between align-items-start">
-        <h5 class="modal-title mb-0">Branches</h5>
+        <h5 class="modal-title mb-0 ">Branches</h5>
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
       </div>
       <small>Switch Branch & Company</small>
@@ -622,9 +622,9 @@
     </select>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-sm btn-secondary" (click)="modal.dismiss()">Cancel</button>
     <button type="button"
-            class="btn btn-primary"
+            class="btn btn-sm btn-info"
             [disabled]="!selectedBranchId"
             (click)="onBranchChangeFromModal(selectedBranchId, modal)">
       Switch

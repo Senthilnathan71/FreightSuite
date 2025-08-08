@@ -287,6 +287,7 @@ checkPermissions() {
               if (resp.Status) {
                 this.appSettingService.showSuccess(resp.message);
                 this.closeModal();
+                this.loadCostCenters();
                 this.router.navigate(['master/cost-center']);
               } else {
                 this.appSettingService.showError(resp.message);
@@ -304,6 +305,7 @@ checkPermissions() {
               if (resp.Status) {
                 this.appSettingService.showSuccess(resp.message);
                 this.closeModal();
+                this.loadCostCenters();  
                 this.router.navigate(['master/cost-center']);
               } else {
                 this.appSettingService.showSuccess(resp.message);
@@ -394,6 +396,7 @@ checkPermissions() {
         if (result === true) {
           this.masterService.softDeleteCostCenter(id).subscribe((resp: any) => {
             this.appSettingService.showSuccess('Deleted!');
+            this.loadCostCenters(); 
             this.router.navigate(['master/cost-center']);
             
           });
@@ -411,6 +414,7 @@ checkPermissions() {
       this.costCenters = [];
       this.sortColumn = 'CostCenterName';
       this.sortDirection = 'asc';
+      this.loadCostCenters();
     }
   
     report(): void {

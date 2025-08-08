@@ -246,10 +246,11 @@ export class ChargeTaxComponent implements OnInit {
   }
 
   onSubmit() {
-  if (this.chargeTaxForm.get('status')?.disabled) {
-    this.chargeTaxForm.get('status')?.enable();
+  const statusControl = this.chargeTaxForm.get('status');
+  if (statusControl?.disabled) {
+    statusControl.enable();
   }
-  
+
   if (this.chargeTaxForm.invalid) {
     this.chargeTaxForm.markAllAsTouched();
     this.chargeTaxForm.updateValueAndValidity();
@@ -260,7 +261,7 @@ export class ChargeTaxComponent implements OnInit {
   const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
   const formValue = this.chargeTaxForm.value;
 
-  // Prepare the payload
+  // Prepare the payload with both CreatedBy and UpdatedBy
   const payload: any = {
     HSNCode: formValue.HSNCode,
     description: formValue.description,
@@ -269,9 +270,9 @@ export class ChargeTaxComponent implements OnInit {
     Remarks: formValue.Remarks || '',
     Status: formValue.status === "Active" ? "A" : "S",
     CompanyMasterSid: formValue.CompanyMasterSid,
-    ...(this.isEditMode ? {UpdatedBy : currentUserEmail} : {CreatedBy : currentUserEmail})
+    CreatedBy: currentUserEmail,
+    UpdatedBy: currentUserEmail  // ✅ Always include both
   };
-
 
   if (this.isEditMode) {
     this.masterService.updateChargeTaxById(this.ChargeTaxMasterSid, payload).subscribe(
@@ -279,7 +280,6 @@ export class ChargeTaxComponent implements OnInit {
         if (resp.status) {
           this.appSettingService.showSuccess(resp.message);
           this.closeModal();
-          
         } else {
           this.appSettingService.showError(resp.message);
         }
@@ -296,7 +296,6 @@ export class ChargeTaxComponent implements OnInit {
         if (resp.status) {
           this.appSettingService.showSuccess(resp.message);
           this.closeModal();
-          
         } else {
           this.appSettingService.showError(resp.message);
         }
@@ -357,7 +356,10 @@ applySorting() {
     const endIndex = startIndex + this.pageSize;
     this.chargeTaxList = this.results.slice(startIndex, endIndex);
   }
-
+onPageChange(newPage: number) {
+  this.page = newPage;
+  this.loadChargeTaxes(); 
+}
   trackByIndex(index: number, item: any): number {
     return index;
   }
