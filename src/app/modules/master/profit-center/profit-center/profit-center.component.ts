@@ -269,6 +269,7 @@ export class ProfitCenterComponent {
                  if (resp.Status) {
                    this.appSettingService.showSuccess(resp.message);
                    this.closeModal();
+                   this.loadProfitCenters()
                    this.router.navigate(['master/profit-center']);
                  } else {
                    this.appSettingService.showError(resp.message);
@@ -286,6 +287,7 @@ export class ProfitCenterComponent {
                  if (resp.Status) {
                    this.appSettingService.showSuccess(resp.message);
                    this.closeModal();
+                   this.loadProfitCenters()
                    this.router.navigate(['master/profit-center']);
                  } else {
                    this.appSettingService.showSuccess(resp.message);

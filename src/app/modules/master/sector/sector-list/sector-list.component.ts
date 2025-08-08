@@ -137,30 +137,32 @@ export class SectorComponent implements OnInit {
   }
 
   loadSectors(): void {
-    const params = {
-      search: this.filterValue ? this.filterValue.trim() : '',
-      page: this.page,
-      pageSize: this.pageSize,
-    };
+  this.isLoading = true;
+  const params = {
+    search: this.filterValue ? this.filterValue.trim() : '',
+    page: this.page,
+    pageSize: this.pageSize,
+    sortColumn: this.sortColumn,
+    sortDirection: this.sortDirection
+  };
 
-    this.masterService.searchSectorList(params).subscribe({
-      next: (response) => {
-        if(response.data) {
-          this.sectorList = response.data.items;
-          this.results = [...this.sectorList];
-          this.totalLengthOfCollection = response.data.totalCount;
-          this.applySorting();
-          this.searched = true;
-        }
-      },
-      error: (err) => {
-        console.error('Error fetching sectors:', err);
-        this.sectorList = [];
-        this.results = [];
-        this.totalLengthOfCollection = 0;
-      },
-    });
-  }
+  this.masterService.searchSectorList(params).subscribe({
+    next: (response) => {
+      if(response.data) {
+        this.sectorList = response.data.items;
+        this.totalLengthOfCollection = response.data.totalCount;
+        this.searched = true;
+      }
+      this.isLoading = false;
+    },
+    error: (err) => {
+      console.error('Error fetching sectors:', err);
+      this.sectorList = [];
+      this.totalLengthOfCollection = 0;
+      this.isLoading = false;
+    },
+  });
+}
 
   initForm() {
     this.sectorForm = this.fb.group({
@@ -308,7 +310,8 @@ export class SectorComponent implements OnInit {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              this.search();
+              this.loadSectors();
+              
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -325,7 +328,8 @@ export class SectorComponent implements OnInit {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
-              this.search();
+              this.loadSectors();
+              
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -339,12 +343,7 @@ export class SectorComponent implements OnInit {
     }
   }
 
-  onSearch(event: { type: string, value: string }) {
-  this.searchType = event.type;
-  this.filterValue = event.value;
-  console.log('Searching with:', this.searchType, this.filterValue);
-  this.search();
-}
+
 sort(column: string) {
   if (this.sortColumn === column) {
     // Reverse the sort direction if clicking the same column
@@ -383,23 +382,7 @@ applySorting() {
   this.sectorList = [...this.results];
 }
 
-  search() {
-    const payload = {
-      searchType: this.searchType,
-      filterValue: this.searchType === 'status' 
-        ? this.filterValue === 'Active' ? 'A' : 'S'
-        : this.filterValue
-    };
-
-    this.masterService.searchSectorList(payload).subscribe((res: any) => {
-      this.results = res.data || res;
-      this.applySorting();
-      console.log(this.results)
-      this.searched = true;
-      this.updatePaginationData();
-      this.totalLengthOfCollection = this.results.length || 0;
-    });
-  }
+  
 
   updatePaginationData(): void {
     const startIndex = (this.page - 1) * this.pageSize;

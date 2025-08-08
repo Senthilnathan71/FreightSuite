@@ -140,38 +140,47 @@
                                 }
                             </div>
                         </aside>
-                        <aside class="col-md-12">
-                            <div class="custom-form-group d-flex">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="COALedger" [onlyNumbers]>
-                                <label for="text-input" class="input-label">COA Name <span
-                                        class="text-danger"></span></label>
-                                <button class="btn btn-info"><i class="fas fa-search"></i></button>
-                                @if(documentForm.get('COALedger').touched && documentForm.get('COALedger').invalid){
-                                <div class="error-message">
-                                    @if(documentForm.get('COALedger').hasError('required')){
-                                    <span>COA Ledger is required</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
-                        <aside class="col-md-12">
-                            <div class="custom-form-group d-flex">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="Subledger" [onlyNumbers]>
-                                <label for="text-input" class="input-label">Subledger <span
-                                        class="text-danger"></span></label>
-                                <button class="btn btn-info"><i class="fas fa-search"></i></button>
-                                @if(documentForm.get('Subledger').touched && documentForm.get('Subledger').invalid){
-                                <div class="error-message">
-                                    @if(documentForm.get('Subledger').hasError('required')){
-                                    <span>Subledger is required</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
+                        <!-- COA Ledger Dropdown -->
+<aside class="col-md-12">
+    <div class="custom-form-group custom-form-group-select">
+        <ng-select formControlName="COALedger" 
+                  [items]="coaList" 
+                  bindLabel="LedgerName"
+                  bindValue="COAMasterSid" 
+                  placeholder="Select COA Ledger"
+                  (change)="onCOASelected($event)">
+        </ng-select>
+        <label for="text-input" class="input-label">COA Ledger <span class="text-danger">*</span></label>
+        @if(documentForm.get('COALedger').touched && documentForm.get('COALedger').invalid){
+            <div class="error-message">
+                @if(documentForm.get('COALedger').hasError('required')){
+                    <span>COA Ledger is required</span>
+                }
+            </div>
+        }
+    </div>
+</aside>
+
+<!-- Subledger Dropdown -->
+<aside class="col-md-12">
+    <div class="custom-form-group custom-form-group-select">
+        <ng-select formControlName="Subledger" 
+                  [items]="subledgerList" 
+                  bindLabel="SubledgerName"
+                  bindValue="SubledgerMasterSid" 
+                  placeholder="Select Subledger"
+                  [disabled]="!documentForm.get('COALedger').value">
+        </ng-select>
+        <label for="text-input" class="input-label">Subledger <span class="text-danger">*</span></label>
+        @if(documentForm.get('Subledger').touched && documentForm.get('Subledger').invalid){
+            <div class="error-message">
+                @if(documentForm.get('Subledger').hasError('required')){
+                    <span>Subledger is required</span>
+                }
+            </div>
+        }
+    </div>
+</aside>
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ReportTitle"

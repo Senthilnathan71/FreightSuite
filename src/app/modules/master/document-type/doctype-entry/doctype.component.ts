@@ -44,6 +44,10 @@ export class DoctypeComponent implements OnInit {
 	permissions: string[] = [];
     currentMenuPermissions: any = {};
 	userData:any;
+	coaList: any[] = [];
+subledgerList: any[] = [];
+currentCompany: any;
+currentBranch: any;
 	documentSeparators = [
 		{ separator: 'Slash ( / )', value : '/' },
 		{ separator: 'Hyphen ( - )', value : '-' },
@@ -97,7 +101,13 @@ export class DoctypeComponent implements OnInit {
 			this.userData = userProfile;
       this.checkPermissions();
 		}
+		const storedCompany = localStorage.getItem('selected-company');
+    this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
+    const storedBranch = localStorage.getItem('selected-branch');
+    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
 	}
+
+    
 
 	 checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -153,14 +163,42 @@ export class DoctypeComponent implements OnInit {
 	}
 
 	loadAllFields() {
-		forkJoin({
-			companies : this.masterService.getAllCompanies(),
-			currencies : this.masterService.getAllCurrencies(),
-		}).subscribe(({ companies, currencies }) => {
-			this.companyList = companies,
-			this.currencyList = currencies
-		})
-	}
+    forkJoin({
+        companies: this.masterService.getAllCompanies(),
+        currencies: this.masterService.getAllCurrencies(),
+        coa: this.masterService.getAllCoa() // Add this line to fetch COA data
+    }).subscribe(({ companies, currencies, coa }) => {
+        this.companyList = companies;
+        this.currencyList = currencies;
+        this.coaList = coa.map(item => ({
+            COAMasterSid: item.COAMasterSid,
+            LedgerName: item.LedgerName
+        }));
+    });
+}
+
+onCOASelected(COA: any) {
+const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
+    if (COAMasterSid) {
+        this.masterService.getSubledgersByCOA(COAMasterSid).subscribe(
+            (resp: any) => {
+                if (resp.status) {
+                    this.subledgerList = resp.data.data
+                } else {
+                    this.subledgerList = [];
+                    this.appSettingService.showError('Error loading subledgers');
+                }
+            },
+            (error) => {
+                this.subledgerList = [];
+                this.appSettingService.showError('Error loading subledgers');
+            }
+        );
+    } else {
+        this.subledgerList = [];
+        this.documentForm.get('Subledger').setValue('');
+    }
+}
 
 	loadDocumentType(DocumentTypeMasterSid) {
 		this.masterService.getDocTypeById(DocumentTypeMasterSid).subscribe(
@@ -177,6 +215,17 @@ export class DoctypeComponent implements OnInit {
 						YearFlag: data.YearFlag === 'Y',
 						status: data.status === 'A' ? 'Active' : 'Suspended',
 					})
+					 if (data) {
+                    // Trigger the COA selection change to load subledgers
+                    this.onCOASelected(data);
+                    
+                    // After a small delay (to allow subledgers to load), set the subledger value
+                    setTimeout(() => {
+                        this.documentForm.patchValue({
+                            Subledger: data.Subledger
+                        });
+                    }, 300);
+                }
 					this.getBranchesByCompanyId({CompanyMasterSid : data.CompanyMasterSid})
 					// if(data.CompanyFlag === 'Y'){
 					// 	this.documentForm.get('CompanyValue').enable();
@@ -207,8 +256,8 @@ export class DoctypeComponent implements OnInit {
 			return;
 		}
 
-		const BranchMasterSid = this.appSettingService.userSettingSource.value['userBranchMaster'][0].branchMaster.BranchMasterSid;
-		const CompanyMasterSid = this.appSettingService.userSettingSource.value['userBranchMaster'][0].companyMaster.CompanyMasterSid;
+		 const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+         const BranchMasterSid = this.currentBranch?.BranchMasterSid;
 		const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
 		const formValue = this.documentForm.getRawValue();
 

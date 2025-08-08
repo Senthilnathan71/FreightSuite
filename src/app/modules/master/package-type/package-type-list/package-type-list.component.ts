@@ -68,6 +68,8 @@ export class PackageTypeListComponent {
   sortDirection: string = 'asc';
   permissions: string[] = [];
   currentMenuPermissions: any = {};
+  currentCompany:any;
+  currentBranch: any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   } 
@@ -86,21 +88,23 @@ export class PackageTypeListComponent {
   ) { }
 
   ngOnInit(): void {
-    this.initForm();
-    // this.appSettingService.getUser().subscribe(
-    //   user => {
-    //     if (user) {
-    //       this.userData = user;
-    //       this.checkPermissions();
-    //     }
-    //   });
-    const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
+    
+        this.userData = this.appSettingService.getDecryptedUserProfile();
+    const storedCompany = localStorage.getItem('selected-company');
+    this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
+    const storedBranch = localStorage.getItem('selected-branch');
+    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
+ this.initForm();
+   
+ 
+		if(this.userData){
+			
       this.checkPermissions();
 		}
       this.loadPackageTypes();
+      
   }
+
 
    checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -150,19 +154,24 @@ export class PackageTypeListComponent {
   }
 
   initForm() {
-    this.packageTypeForm = this.fb.group({
-      PackageName: ['', [Validators.required, Validators.maxLength(100)]],
-      PackageCode: ['', [Validators.required, Validators.maxLength(3)]],
-      status: [{value: 'Active', disabled: false}, Validators.required],
-      CompanyMasterSid: [2]
-    });
-  }
+  
+  
+  this.packageTypeForm = this.fb.group({
+    PackageName: ['', [Validators.required, Validators.maxLength(100)]],
+    PackageCode: ['', [Validators.required, Validators.maxLength(3)]],
+    status: [{value: 'Active', disabled: false}, Validators.required],
+    CompanyMasterSid: [this.currentCompany?.CompanyMasterSid]  
+  });
+  
+}
 
   resetForm(): void {
+
     
     this.packageTypeForm.get('status')?.disable();
     this.packageTypeForm.reset({
-      status: 'Active'
+      status: 'Active',
+       
     });
   }
 
@@ -214,11 +223,15 @@ export class PackageTypeListComponent {
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.packageTypeForm.value;
 
-      const payload = {
-        ...formValue,
-        ...(this.isEditMode ? updatedBy : createdBy),
-        status: formValue.status === "Active" ? "A" : "S"
-      };
+        const payload = {
+  PackageName: formValue.PackageName,
+  PackageCode: formValue.PackageCode,
+  status: formValue.status === "Active" ? "A" : "S",
+  createdBy: this.appSettingService.userSettingSource.value['userEmail'],
+  updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
+  CompanyMasterSid:this.currentCompany?.CompanyMasterSid
+};
+
 
       if (this.isEditMode) {
         this.masterService.updatePackageTypeById(this.PackageTypeMasterSid, payload).subscribe(

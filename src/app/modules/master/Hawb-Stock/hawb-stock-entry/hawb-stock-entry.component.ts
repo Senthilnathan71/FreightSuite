@@ -240,23 +240,44 @@ generateAWB(): void {
   }
 
   loadHawbData(id: number): void {
-    this.masterService.fetchHawbStockById(id).subscribe(
-      (data: any) => {
-        const receivedDate = data.data.ReceivedDate ? new Date(data.data.ReceivedDate) : this.todayDate;
-        this.hawbForm.patchValue({
-          ...data.data,
-          ReceivedDate: receivedDate,
-          status: data.data.status === 'A' ? 'Active' : 'Suspended'
-        });
-        if (data.data.CompanyMasterSid) {
-          this.onCompanySelect(data.data.CompanyMasterSid);
-        }
-      },
-      error => {
-        this.appSettingsService.showError('Error loading HAWB data.');
+  this.masterService.fetchHawbStockById(id).subscribe(
+    (data: any) => {
+      const hawbData = data.data;
+      const receivedDate = hawbData.ReceivedDate ? new Date(hawbData.ReceivedDate) : this.todayDate;
+
+      // First patch common fields except branch
+      this.hawbForm.patchValue({
+        AirwayBillType: hawbData.AirwayBillType,
+        AirwayBillNumber: hawbData.AirwayBillNumber,
+        Agent: hawbData.Agent,
+        HAWBSerial: hawbData.HAWBSerial,
+        NumberofHAWB: hawbData.NumberofHAWB,
+        ReceivedDate: receivedDate,
+        StockStatus: hawbData.StockStatus,
+        status: hawbData.status === 'A' ? 'Active' : 'Suspended',
+        CompanyMasterSid: hawbData.CompanyMasterSid
+      });
+
+      // Ensure branches are loaded first, then patch BranchMasterSid
+      if (hawbData.CompanyMasterSid) {
+        this.onCompanySelect(hawbData.CompanyMasterSid);
+
+        // Wait a moment (microtask) to ensure branchList is updated
+        setTimeout(() => {
+          this.hawbForm.patchValue({
+            BranchMasterSid: hawbData.BranchMasterSid
+          });
+        }, 0);
       }
-    );
-  }
+
+      this.hawstockData = hawbData;
+    },
+    error => {
+      this.appSettingsService.showError('Error loading HAWB data.');
+    }
+  );
+}
+
 
   preparePayload(): any {
     const formValue = this.hawbForm.value;
