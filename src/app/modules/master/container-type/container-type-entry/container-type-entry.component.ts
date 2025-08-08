@@ -132,7 +132,7 @@ export class ContainerTypeEntryComponent {
 
   initForm() {
     this.containertypeForm = this.fb.group({
-      CompanyMasterSid: ['', [Validators.required]],
+      // CompanyMasterSid: ['', [Validators.required]],
       ContainerCode: ['', [
         Validators.required,
         Validators.maxLength(4),
@@ -223,12 +223,12 @@ resetForm(): void {
 
       const payload = (this.isEditMode) ? {
         ...formValue,
-        CompanyMasterSid: Number(formValue.CompanyMasterSid),
+        // CompanyMasterSid: Number(formValue.CompanyMasterSid),
         ...updatedBy,
         status: formValue.status 
       } : {
         ...formValue,
-        CompanyMasterSid: Number(formValue.CompanyMasterSid),
+        // CompanyMasterSid: Number(formValue.CompanyMasterSid),
         ...createdBy,
         status: formValue.status 
       };
@@ -283,7 +283,7 @@ resetForm(): void {
         this.containerData = data;
         this.containertypeForm.patchValue({
           ...data,
-          CompanyMasterSid: data.CompanyMasterSid,
+          // CompanyMasterSid: data.CompanyMasterSid,
           status: data.status
         },
       );
