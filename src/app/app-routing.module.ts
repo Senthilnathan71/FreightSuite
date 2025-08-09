@@ -42,6 +42,10 @@ export const Approutes: Routes = [
         loadChildren: () => import('./modules/settings/settings.module').then(m => m.SettingsModule)
       },
       {
+      path: 'operation',
+      loadChildren: () => import('./modules/operation/operation.module').then(m => m.OperationModule)
+     },
+      {
         path: 'shortcut',
         component: ShortcutComponent
       },
