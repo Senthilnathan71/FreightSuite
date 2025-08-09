@@ -515,8 +515,8 @@ export class EnquiryEntryComponent implements OnInit {
 
   loadEnquiry(id): void {
     this.leadService.getEnquiryById(id).subscribe((resp: any) => {
-      if (resp) {
-        this.patchValues(resp);
+      if (resp.status) {
+        this.patchValues(resp.data);
         this.rateRequestData = resp;
       }
     });

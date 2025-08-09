@@ -283,7 +283,7 @@ export class LeadService {
   getEnquiryById(id: number) {
     return this.http.get<{ data: any }>(`ff-enquiry/header/${id}`).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     )

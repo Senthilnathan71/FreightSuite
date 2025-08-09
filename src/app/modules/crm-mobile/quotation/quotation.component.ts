@@ -448,7 +448,7 @@ export class QuotationComponent implements OnInit {
     this.leadService.getQuoteById(id).subscribe(
       (resp: any) => {
         if (resp) {
-          this.patchValues(resp)
+          this.patchValues(resp.status)
           this.quotationData = resp;
         }
       });
@@ -461,7 +461,8 @@ export class QuotationComponent implements OnInit {
   patchValues(response: any) {
     // Find the department based on DepartmentMasterSid
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
-    const selectCustomer = this.customers.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid)
+    const selectCustomer = this.customers.find(cus => cus.CustomerMasterSid === response?.CustomerMasterSid)
+    console.log(selectCustomer);
     this.selectedCustomerName = selectCustomer.CustomerName;
     if (selectedDept) {
       this.selectedDepartment = selectedDept;
