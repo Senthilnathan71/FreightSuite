@@ -78,7 +78,7 @@ ngOnInit(): void {
 
   try {
     const encryptedCompany = localStorage.getItem('selected-company');
-  const encryptedBranch = localStorage.getItem('selected-branch');
+    const encryptedBranch = localStorage.getItem('selected-branch');
     storedCompany = encryptedCompany ? this.appSettingsService.decrypt(encryptedCompany) : null;
     storedBranch = encryptedBranch ? this.appSettingsService.decrypt(encryptedBranch) : null;
   } catch (err) {
@@ -94,7 +94,7 @@ ngOnInit(): void {
     }));
 
     const defaultCompany = this.companyList.find(c => c.IsDefault === 'Y') || this.companyList[0];
-     const companyToUse = storedCompany?.CompanyMasterSid
+    const companyToUse = storedCompany?.CompanyMasterSid
       ? this.companyList.find(c => c.CompanyMasterSid === storedCompany.CompanyMasterSid) || defaultCompany
       : defaultCompany;
     this.selectedCompanyId = companyToUse.CompanyMasterSid;
@@ -120,6 +120,17 @@ ngOnInit(): void {
 
       this.branchName = branchToUse.branchMaster.branchName;
       this.companyName = companyToUse.companyMaster.companyName;
+
+      if (!storedCompany || !storedBranch) {
+        try {
+          const encryptedCompany = this.appSettingsService.encrypt(companyToUse.companyMaster);
+          const encryptedBranch = this.appSettingsService.encrypt(branchToUse.branchMaster);
+          localStorage.setItem('selected-company', encryptedCompany);
+          localStorage.setItem('selected-branch', encryptedBranch);
+        } catch (e) {
+          console.error('Error encrypting default company/branch:', e);
+        }
+      }
     }
   } else {
     console.warn('No user company data found in local storage');

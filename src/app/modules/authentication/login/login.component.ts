@@ -119,7 +119,8 @@ export class LoginComponent implements OnInit {
 
       if (this.loginform.get('rememberMe')?.value) {
         localStorage.setItem('rememberedEmail', param.email);
-        localStorage.setItem('rememberedPassword', param.password);
+        const encryptedPass = this.appSettingService.encrypt(param.password);
+        localStorage.setItem('rememberedPassword', encryptedPass);
       } else {
         localStorage.removeItem('rememberedEmail');
         localStorage.removeItem('rememberedPassword');
