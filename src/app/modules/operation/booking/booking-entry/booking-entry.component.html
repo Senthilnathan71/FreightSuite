@@ -41,11 +41,12 @@
                         <div class=" custom-form-group custom-form-group-select">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d1="ngbDatepicker" formControlName="" />
+                                    #d1="ngbDatepicker" formControlName="" ngbDatepicker 
+                                        (click)="d1.toggle()"/>
                                 <button class="btn btn-info bi bi-calendar3 text-white" type="button"> <i-feather
                                         name="calendar" class="feather-sm"></i-feather></button>
                             </div>
-                            <label for="shipmentDateExpected" class="input-label"> Date <span
+                            <label for="shipmentDateExpected" class="input-label">Booking Date <span
                                     class="text-danger">*</span>
                             </label>
 
@@ -53,8 +54,7 @@
                     </div>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="modeOfDept" bindLabel="name" bindValue="name" [(ngModel)]="selectedDept"
-                                (change)="onDeptChange($event)">
+                            <ng-select [items]="modeOfDept" bindLabel="name" bindValue="name">
                             </ng-select>
                             <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
                         </div>
@@ -67,13 +67,180 @@
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
-
-
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="">
-                            <label for="text-input" class="input-label">POR <span class="text-danger"></span></label>
+                            <label for="text-input" class="input-label">Customer Address <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Sales Person<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Shipper <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Shipper Address <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Consignee <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Consignee Address <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Notify<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Notify Address<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Agent <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Agent Address<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Carrier Name<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Quotation No<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">HBL No<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">MBL No<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <div class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d1="ngbDatepicker" formControlName="" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" type="button"> <i-feather
+                                        name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="shipmentDateExpected" class="input-label">MBL Date <span
+                                    class="text-danger">*</span>
+                            </label>
+
+                        </div>
+                    </div>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
+                                bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-md-12 mt-2">
+        <div class="card h-100 mb-0">
+            <div class="card-body">
+                <div class="row">
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">ETA <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">ETD <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">POO<span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
@@ -98,254 +265,636 @@
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Vsl/Voy <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">ETA <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">ETD <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Cargo Status <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Shipper <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Consignee <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Agent <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">BL Type <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="PortType" [items]="modeOfTransport" bindLabel="name"
+                                bindValue="name">
 
-                    <div class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select">
-                            <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d1="ngbDatepicker" formControlName="" />
-                                <button class="btn btn-info bi bi-calendar3 text-white" type="button"> <i-feather
-                                        name="calendar" class="feather-sm"></i-feather></button>
+                            </ng-select>
+                            <label for="" class="input-label">Mode of Transport <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Do Validity <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" formControlName="" id="" class="form-check-input sm">
+                                <label for="" class="form-check-label sm">Co Lead <span
+                                        class="text-danger"></span></label>
                             </div>
-                            <label for="shipmentDateExpected" class="input-label"> Shippment Expected Date <span
-                                    class="text-danger"></span>
-                            </label>
-
-                        </div>
-                    </div>
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfShippmentTerms" bindLabel="name"
-                                bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Shippment Terms <span class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="">
-                            <label for="text-input" class="input-label">Inco <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Freight Term <span
+                            <label for="text-input" class="input-label">Nominated <span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
-                                bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger">*</span></label>
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">TOS <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <!-- <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <textarea id="" placeholder="" rows="1" class="input-field sm"
-                                formControlName="Remarks"></textarea>
-                            <label for="text-input" class="input-label">Remarks </label>
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Internal Note <span
+                                    class="text-danger"></span></label>
                         </div>
-                    </aside> -->
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">General Note <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Nominated By <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
                 </div>
+
             </div>
         </div>
     </div>
-
     <div>
-        <div class="col-12 my-2">
-            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-                <div class="col-md-4 pb-2">
-                    <h4 class="page-title mb-0">Cargo</h4>
-                </div>
-                <div class="col-md-8 pb-2">
-                    <div
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"><i
-                                class="fas fa-plus me-1"></i> Add</button>
-                    </div>
 
-                </div>
+
+        <div class="tab-wrapper mt-2">
+            <div class="tab" *ngFor="let tab of tabs" [class.active]="selectedTab === tab" (click)="selectTab(tab)">
+                {{ tab }}
             </div>
         </div>
 
-        <div class="tab-wrapper">
-            <div class="tab active">
-                {{ selectedDept }}
-            </div>
-        </div>
         <div class="tab-content">
-            <!-- LCL Table -->
-            <div *ngIf="selectedDept === 'LCL'">
-                <div class="row bg-white">
-                    <div class="col-12 p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                                <thead>
-                                    <tr class="bg-info">
-                                        <th class="bg-transparent text-light">Goods Dept</th>
-                                        <th class="bg-transparent text-light">Pkg Type</th>
-                                        <th class="bg-transparent text-light">No of Pack</th>
-                                        <th class="bg-transparent text-light">Gross Weight</th>
-                                        <th class="bg-transparent text-light">CBM</th>
-                                        <th class="bg-transparent text-light">Net Weight</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+
+            <div class="row bg-white" *ngIf="selectedTab === 'Cargo'">
+                <div class="col-12 p-0">
+                    <div class="row">
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Cargo Type<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Container Type<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+
+
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">No of Container<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Gr Weight<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Net Weight<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Volume(CBM)<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Chargeable Weight<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">No of Pkg<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="PortType" [items]="modeOfShipmentTerms" bindLabel="name"
+                                    bindValue="name">
+
+                                </ng-select>
+                                <label for="" class="input-label">Shipment Terms <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="PortType" [items]="modeOfMovementType" bindLabel="name"
+                                    bindValue="name">
+
+                                </ng-select>
+                                <label for="" class="input-label">Movement Type <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Freight Terms<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Shuffing at<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="row bg-white" *ngIf="selectedTab === 'Product'">
+                <div class="text-end mb-1">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="openProductModal()">Add</button>
+                </div>
+
+                <div class="col-12 p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="bg-transparent text-light">Commodity</th>
+                                    <th class="bg-transparent text-light">Shipping Bill No</th>
+                                    <th class="bg-transparent text-light">Date</th>
+                                    <th class="bg-transparent text-light">Gross Weight</th>
+                                    <th class="bg-transparent text-light">External Pkg</th>
+                                    <th class="bg-transparent text-light">No. of Pkg</th>
+                                    <th class="bg-transparent text-light">Net Wt</th>
+                                    <th class="bg-transparent text-light">CBM</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- FCL Table -->
-            <div *ngIf="selectedDept === 'FCL'">
-                <div class="row bg-white">
-                    <div class="col-12 p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                                <thead>
-                                    <tr class="bg-info">
-                                        <th class="bg-transparent text-light">Goods Dept</th>
-                                        <th class="bg-transparent text-light">Pkg Type</th>
-                                        <th class="bg-transparent text-light">No of Pack</th>
-                                        <th class="bg-transparent text-light">Gross Weight</th>
-                                        <th class="bg-transparent text-light">CBM</th>
-                                        <th class="bg-transparent text-light">Net Weight</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+
+
+            <div class="row bg-white mt-3" *ngIf="selectedTab === 'Others'">
+                <div class="col-12 p-0">
+                    <div class="row">
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Customer Ref No<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Yard/CFS<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+
+
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Release Type<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">HBL No<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Forwarder<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Forwarder Address<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Notify Party<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Notify Address<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Pick Up Place<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Delivery Address<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Cargo Curr<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Cargo Value<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Switch BL<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Back to Back<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Depo<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Ro Validity<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
                     </div>
                 </div>
             </div>
 
-            <!-- AIR Table -->
-            <div *ngIf="selectedDept === 'AIR'">
-                <div class="row bg-white">
-                    <div class="col-12 p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                                <thead>
-                                    <tr class="bg-info">
-                                        <th class="bg-transparent text-light">Goods Dept</th>
-                                        <th class="bg-transparent text-light">Pkg Type</th>
-                                        <th class="bg-transparent text-light">No of Pack</th>
-                                        <th class="bg-transparent text-light">Unit</th>
-                                        <th class="bg-transparent text-light">Length</th>
-                                        <th class="bg-transparent text-light">Width</th>
-                                        <th class="bg-transparent text-light">Height</th>
-                                        <th class="bg-transparent text-light">Gross Weight</th>
-                                        <th class="bg-transparent text-light">CBM</th>
-                                        <th class="bg-transparent text-light">Net Weight</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                        <td>OMR</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+            <div class="row bg-white" *ngIf="selectedTab === 'Connection'">
+                <div class="text-end mb-1">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="openConnectionModal()">Add</button>
+                </div>
+
+                <div class="col-12 p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="bg-transparent text-light">Commodity</th>
+                                    <th class="bg-transparent text-light">Shipping Bill No</th>
+                                    <th class="bg-transparent text-light">Date</th>
+                                    <th class="bg-transparent text-light">Gross Weight</th>
+                                    <th class="bg-transparent text-light">External Pkg</th>
+                                    <th class="bg-transparent text-light">No. of Pkg</th>
+                                    <th class="bg-transparent text-light">Net Wt</th>
+                                    <th class="bg-transparent text-light">CBM</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="row bg-white" *ngIf="selectedTab === 'Rate'">
+                <div class="text-end mb-1">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="openRateModal()">Add</button>
+                </div>
+
+                <div class="col-12 p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="bg-transparent text-light">SNO</th>
+                                    <th class="bg-transparent text-light">Charge</th>
+                                    <th class="bg-transparent text-light">Charge Desc</th>
+                                    <th class="bg-transparent text-light">PP/CC</th>
+                                    <th class="bg-transparent text-light">Unit</th>
+                                    <th class="bg-transparent text-light">No of Unit</th>
+                                    <th class="bg-transparent text-light">Dr/Cr</th>
+                                    <th class="bg-transparent text-light">Curr</th>
+                                    <th class="bg-transparent text-light">Ex Rate</th>
+                                    <th class="bg-transparent text-light">Rate</th>
+                                    <th class="bg-transparent text-light">Amt</th>
+                                    <th class="bg-transparent text-light">Local Amt</th>
+                                    <th class="bg-transparent text-light">Billing Party</th>
+                                    <th class="bg-transparent text-light">Voucher No</th>
+                                    <th class="bg-transparent text-light">Type</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                     <td>OMR</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="row bg-white" *ngIf="selectedTab === 'Milestone'">
+                <div class="col-12 p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="bg-transparent text-light">SNO</th>
+                                    <th class="bg-transparent text-light">Milestone</th>
+                                    <th class="bg-transparent text-light">Date & Time</th>
+                                    <th class="bg-transparent text-light">Auto Captured</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="row bg-white" *ngIf="selectedTab === 'AR/AP'">
+                <div class="col-12 p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="bg-transparent text-light">Voucher Type</th>
+                                    <th class="bg-transparent text-light">Date</th>
+                                    <th class="bg-transparent text-light">Ledger Name</th>
+                                    <th class="bg-transparent text-light">Curr</th>
+                                    <th class="bg-transparent text-light">Ex Rate</th>
+                                    <th class="bg-transparent text-light">Amt</th>
+                                    <th class="bg-transparent text-light">Local Amt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                    <td>OMR</td>
+                                     <td>OMR</td>
+                                    <td>OMR</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 
 </div>
+
+<ng-template #productModal let-modal>
+    <div class="modal-header p-2 bg-info">
+        <h5 class="modal-title text-white"> Product</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light">If Haz</th>
+                        <th class="bg-transparent text-light">Imco Class</th>
+                        <th class="bg-transparent text-light">Un No</th>
+                        <th class="bg-transparent text-light">Pkg Group</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <div class="form-check form-check-inline p-0 ps-2 pt-1">
+                            <div class="form-check d-flex align-items-center justify-content-center">
+                                <input type="checkbox" formControlName="" id="" class="form-check-input sm">
+                            </div>
+                        </div>
+                        <td>OMR</td>
+                        <td>OMR</td>
+                        <td>OMR</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-responsive mt-2">
+            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light">Length</th>
+                        <th class="bg-transparent text-light">Width</th>
+                        <th class="bg-transparent text-light">Height</th>
+                        <th class="bg-transparent text-light">Uom</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <div class="form-check form-check-inline p-0 ps-2 pt-1">
+                            <div class="form-check d-flex align-items-center justify-content-center">
+                                <input type="checkbox" formControlName="" id="" class="form-check-input sm">
+                            </div>
+                        </div>
+                        <td>OMR</td>
+                        <td>OMR</td>
+                        <td>OMR</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+        <button type="button" class="btn btn-info btn-sm" (click)="saveProduct(modal)">Save</button>
+    </div>
+</ng-template>
+
+<ng-template #connectionModal let-modal>
+    <div class="modal-header p-2 bg-info">
+        <h5 class="modal-title text-white"> Connection</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+        <button type="button" class="btn btn-info btn-sm" (click)="saveProduct(modal)">Save</button>
+    </div>
+</ng-template>
+
+<ng-template #rateModal let-modal>
+    <div class="modal-header p-2 bg-info">
+        <h5 class="modal-title text-white"> Rate</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light">Charge</th>
+                        <th class="bg-transparent text-light">Sale Amt</th>
+                        <th class="bg-transparent text-light">Cost Amt</th>
+                        <th class="bg-transparent text-light">Profit</th>
+                        <th class="bg-transparent text-light">Profit %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>OMR</td>
+                        <td>OMR</td>
+                        <td>OMR</td>
+                        <td>OMR</td>
+                        <td>OMR</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+        <button type="button" class="btn btn-info btn-sm" (click)="saveProduct(modal)">Save</button>
+    </div>
+</ng-template>
+
