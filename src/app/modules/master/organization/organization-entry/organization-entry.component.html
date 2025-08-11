@@ -1029,6 +1029,20 @@
                             Close
                         </button>
                     </ng-template>
+                     <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder=""
+                            class="custom-input-field sm" formControlName="">
+                                <label for="text-input" class="input-label">CS Person <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                     <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder=""
+                            class="custom-input-field sm" formControlName="">
+                                <label for="text-input" class="input-label">DOC Person <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select">
                             @if(isSalespersonEdit){
@@ -2420,7 +2434,8 @@
                         <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                         <th class="bg-transparent text-light" scope="col">Department</th>
                         <th class="bg-transparent text-light" scope="col">Salesperson</th>
-                        <!--<th class="bg-transparent text-light" scope="col"> Doc Person</th> -->
+                          <th class="bg-transparent text-light" scope="col">CS Person</th>
+                        <th class="bg-transparent text-light" scope="col"> Doc Person</th>
                         <th class="bg-transparent text-light" scope="col"> Branch</th>
                         <th class="bg-transparent text-light" scope="col">Effective From</th>
                         <th class="bg-transparent text-light" scope="col">Status</th>
