@@ -152,10 +152,10 @@
                                 <div class="text-truncate">{{item.CustomerAliasName}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.Website}}</div>
+                                <div class="text-truncate">{{item.PanType}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.LocalLanguage}}</div>
+                               <div class="text-truncate">{{ getCountryName(item.CountryMasterSid) }}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 @if(item.status === "A"){

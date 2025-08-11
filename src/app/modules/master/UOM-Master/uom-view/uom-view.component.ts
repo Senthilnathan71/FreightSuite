@@ -53,6 +53,10 @@ export class UOMViewComponent {
   A: 'Active',
   S: 'Suspended'
 };
+uomTypes = [
+  { id: 'pack', name: 'Pack' },
+  { id: 'charge', name: 'Charge' }
+];
 
 statusOptions = [
   { id: 'A', name: 'Active' },
@@ -73,6 +77,7 @@ statusOptions = [
     this.uomForm = new FormGroup({
       UOMName: new FormControl('', [Validators.required, Validators.maxLength(20)]),
       UOMCode: new FormControl('', [Validators.required, Validators.maxLength(3)]),
+      UOMType: new FormControl('', []),
       DimensionReq: new FormControl('', []),
       WeightReq: new FormControl(null, []),
       VolumeReq: new FormControl('', []),
@@ -151,7 +156,8 @@ statusOptions = [
         WeightReq: (resp.WeightReq == 'Y' ? true : false),
         DimensionReq: (resp.DimensionReq == 'Y' ? true : false),
         VolumeReq: (resp.VolumeReq == 'Y' ? true : false),
-        status: resp.status || 'A'
+        status: resp.status || 'A',
+        UOMType: resp.UOMType
       });
       // Enable status control when in edit mode
       this.uomForm.get('status')?.enable();

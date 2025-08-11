@@ -46,6 +46,7 @@ export class OrganizationListComponent implements OnInit {
   sortDirection: string = 'asc';
   permissions: string[] = [];
   currentMenuPermissions: any = {};
+  countryList: any[] = [];
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -70,6 +71,7 @@ export class OrganizationListComponent implements OnInit {
 			this.userData = userProfile;
       this.checkPermissions();
 		}
+    this.loadCountryList();
     this.loadOrganizations();
   }
   checkPermissions() {
@@ -92,7 +94,16 @@ export class OrganizationListComponent implements OnInit {
   hasPermission(permission: string): boolean {
   return this.permissions.includes(permission);
 }
-   
+   loadCountryList() {
+  this.masterService.getAllCountry().subscribe({
+    next: (response) => {
+      this.countryList = response.data || [];
+    },
+    error: (err) => {
+      console.error('Error loading country list:', err);
+    }
+  });
+}
   loadOrganizations(): void {
     this.loading = true;
     
@@ -171,6 +182,9 @@ export class OrganizationListComponent implements OnInit {
   trackByIndex(index: number, item: any): number {
     return index;
   }
+getCountryName(countrySid: number): string {
+  return this.countryList.find(c => c.CountryMasterSid === countrySid)?.countryName || '';
+}
 
   deleteOrganization(id) {
     const dialogRef = this.dialog.open(DeleteWarningComponent);
@@ -201,11 +215,14 @@ export class OrganizationListComponent implements OnInit {
   }
 
   report(): void {
-    const formattedData = this.organizationList.map(item => ({
+  const formattedData = this.organizationList.map(item => {
+    const country = this.getCountryName(item.CountryMasterSid);
+    return {
       ...item,
-      status: item.status === 'A' ? 'Active' : 'Suspended'
-    }));
-
+      status: item.status === 'A' ? 'Active' : 'Suspended',
+      Country: country
+    };
+  });
         const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
 
         this.excelReportService.exportAsExcel({
@@ -214,8 +231,8 @@ export class OrganizationListComponent implements OnInit {
                 { key: 'CustomerName', label: 'Customer Name' },
                 { key: 'CustomerShortCode', label: 'Type' },
                 { key: 'CustomerAliasName', label: 'Short Name' },
-                { key: 'Website', label: 'PAN/Vat' },
-                { key: 'LocalLanguage', label: 'Country' },
+                { key: 'PanType', label: 'PAN/Vat' },
+                { key: 'Country', label: 'Country' },
                 { key: 'status', label: 'Status' },
             ],
             fileName: 'Organization-Report', 

@@ -31,7 +31,7 @@
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="btnCustomerSaveDisabled">
                         <i class="fas fa-save me-1"></i>
-                        Save
+                         {{ isEditMode ? 'Update' : 'Save' }}
                     </button>
                 </div>
             </div>
@@ -108,20 +108,35 @@
                                     }
                                 </div>
                             </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <select formControlName="CountryMasterSid" class="form-select">
+                                        <option value="" disabled selected>Select UNO</option>
+                                        <option *ngFor="let option of countryList" [value]="option.CountryMasterSid">
+                                            {{option.countryName}} - {{option.countryCode}}</option>
+                                    </select>
+                                    <label for="text-input" class="input-label">UNO Location <span
+                                            class="text-danger">*</span></label>
+                                    @if(customerForm.get('CountryMasterSid')?.touched &&
+                                    customerForm.get('CountryMasterSid')?.invalid ){
+                                    <div class="error-message">
+                                        @if(customerForm.get('CountryMasterSid')?.hasError('required')){
+                                        <span>Country is required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
 
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="GroupName" [textWithNumbers]="20">
-                                    <label for="text-input" class="input-label">Group Name <span
-                                            class="text-danger">*</span> </label>
+                                    <label for="text-input" class="input-label">Group Name  </label>
                                     @if(customerForm.get('GroupName')?.touched &&
                                     customerForm.get('GroupName')?.invalid ){
                                     <div class="error-message">
-                                        @if(customerForm.get('GroupName')?.hasError('required')){
-                                        <span>Group Name is required</span>
-                                        }
-                                        @else if(customerForm.get('GroupName')?.hasError('maxlength')){
+                                        @if(customerForm.get('GroupName')?.hasError('maxlength')){
                                         <span>Max 20 characters</span>
                                         }
                                     </div>
@@ -206,37 +221,16 @@
 
 
 
-                            <aside class="col-md-4">
-                                <div class="custom-form-group">
-                                    <select formControlName="CountryMasterSid" class="form-select">
-                                        <option value="" disabled selected>Select UNO</option>
-                                        <option *ngFor="let option of countryList" [value]="option.CountryMasterSid">
-                                            {{option.countryName}} - {{option.countryCode}}</option>
-                                    </select>
-                                    <label for="text-input" class="input-label">UNO Location <span
-                                            class="text-danger">*</span></label>
-                                    @if(customerForm.get('CountryMasterSid')?.touched &&
-                                    customerForm.get('CountryMasterSid')?.invalid ){
-                                    <div class="error-message">
-                                        @if(customerForm.get('CountryMasterSid')?.hasError('required')){
-                                        <span>Country is required</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
+                            
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="Website" [textWithNumbers]="50">
-                                    <label for="text-input" class="input-label">Website <span
-                                            class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">Website </label>
                                     @if(customerForm.get('Website')?.touched &&
                                     customerForm.get('Website')?.invalid ){
                                     <div class="error-message">
-                                        @if(customerForm.get('Website')?.hasError('required')){
-                                        <span>Website is required</span>
-                                        }@else if(customerForm.get('Website')?.hasError('maxlength')){
+                                       @if(customerForm.get('Website')?.hasError('maxlength')){
                                         <span>Max 50 Characters</span>
                                         }
                                     </div>
@@ -306,7 +300,6 @@
                                         <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                             formControlName="Network">
                                         <label for="text-input" class="input-label">Network <span
-                                            class="text-danger">*</span><span
                                                 class="text-danger"></span></label>
                                     </div>
                                 </aside>
@@ -317,14 +310,11 @@
                                 <div class="custom-form-group">
                                     <textarea id="" placeholder="" rows="1" class="input-field sm"
                                         formControlName="Remarks" [textWithNumbers]="100"></textarea>
-                                    <label for="text-input" class="input-label">Remarks <span
-                                            class="text-danger">*</span></label>
+                                    <label for="text-input" class="input-label">Remarks</label>
                                     @if(customerForm.get('Remarks')?.touched &&
                                     customerForm.get('Remarks')?.invalid ){
                                     <div class="error-message">
-                                        @if(customerForm.get('Remarks')?.hasError('required')){
-                                        <span>Remarks is required</span>
-                                        }@else if(customerForm.get('Remarks')?.hasError('maxlength')){
+                                       @if(customerForm.get('Remarks')?.hasError('maxlength')){
                                         <span>Max 100 Characters</span>
                                         }
                                     </div>
@@ -336,8 +326,7 @@
                                     <div class="form-check d-flex align-items-center">
                                         <input type="checkbox" formControlName="IsMSME" id="IsMSME"
                                             class="form-check-input sm">
-                                        <label for="IsMSME" class="form-check-label sm">Is MSME <span
-                                            class="text-danger">*</span></label>
+                                        <label for="IsMSME" class="form-check-label sm">Is MSME </label>
                                     </div>
                                 </div>
                             </aside>
@@ -352,7 +341,7 @@
                                 </div>
                             </aside>
 
-                            <h5 class="text-info mt-2 border-top pt-2">KYC SECTION</h5>
+                            <h5 class="text-info mt-2 border-top pt-2">KYC Specified </h5>
                             <aside class="col-md-4 d-flex align-items-center">
                                 <div class="form-check form-check-inline ">
                                     <div class="form-check d-flex align-items-center">
@@ -2088,8 +2077,8 @@
                          <th class="bg-transparent text-light" scope="col">Action</th>
                         <th class="bg-transparent text-light" scope="col">Branch Name</th>
                         <th class="bg-transparent text-light" scope="col">Address</th>
-                        <th class="bg-transparent text-light" scope="col">City</th>
                         <th class="bg-transparent text-light" scope="col">State</th>
+                        <th class="bg-transparent text-light" scope="col">City</th>
                         <th class="bg-transparent text-light" scope="col">Phone</th>
                         <th class="bg-transparent text-light" scope="col">Email</th>
                         <th class="bg-transparent text-light" scope="col">GST Type</th>
@@ -2117,13 +2106,14 @@
                         <td>
                             <div class="text-truncate">{{item.Address}}</div>
                         </td>
-                        <td>
-                            <div class="text-truncate">{{ getCityName(item.CityMasterSid) }}</div>
-                        </td>
-                        <td>
-                            <div class="text-truncate">{{ getStateName(item.StateMasterSid) }}</div>
-                        </td>
-                        <td>
+                       <td>
+  <div class="text-truncate">{{ getStateName(item.StateMasterSid) }}</div>
+</td>
+<td>
+  <div class="text-truncate">{{ getCityName(item.CityMasterSid) }}</div>
+</td>
+
+                             <td>
                             <div class="text-truncate">{{item.ContactNo}}</div>
                         </td>
                         <td>

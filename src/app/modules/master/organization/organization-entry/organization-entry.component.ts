@@ -362,7 +362,7 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
       // Patch form #1
       this.customerBranchForm.patchValue({
         CustBranchName: data.BranchName || '',
-        CustBranchType: data.BranchType||'',
+       CustBranchType: data.Branch_Type || '',
         CustBranchAddress: data.Address || '',
         CustBranchCity: data.CityMasterSid || '',
         CustBranchState: data.StateMasterSid || '',
@@ -640,17 +640,17 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
       PanAvailable: [false],
       PanType: [{ value: '', disabled: true }, [Validators.required,this.panValidator]],
       PanName: [{ value: '', disabled: true }, [Validators.required]],
-      GroupName: ['', [Validators.required]],
-      Website: ['', [Validators.required]],
+      GroupName: [''],
+      Website: [''],
       paymentType: [''], // or 'Cash' as default if you want
-      IsMSME: ['', [Validators.required]],
+      IsMSME: [''],
       KYCSpecified: [false],
       RegistrationNo: [{ value: '', disabled: true }],
       
-      Remarks: ['', [Validators.required]],
+      Remarks: [''],
       status: [{value: 'Active', disabled: !this.isEditMode}, Validators.required],
       CustomerType: [{}],
-      Network:['', [Validators.required]]
+      Network:['']
     });
     
     this.customerForm.get('CustomerName')?.valueChanges.subscribe(() => {
@@ -963,7 +963,7 @@ loadMenus() {
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate([`master/organization/list`]);
+              this.router.navigate([`master/organization/entry/${resp.data.CustomerMasterSid}`]);
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -978,7 +978,7 @@ loadMenus() {
         (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
-            this.router.navigate([`master/organization/list`]);
+            this.router.navigate([`master/organization/entry/${resp.data.CustomerMasterSid}`]);
           } else {
             this.appSettingService.showError(resp.message);
           }
@@ -1080,18 +1080,26 @@ loadMenus() {
   // }
 
   loadCustomerBranch(): void {
-    this.masterService.getAllCustomerBranches().subscribe((resp: any[]) => {
-      // Filter only items with matching CustomerMasterSid
-      this.customerBranchResults = resp.filter(
-        (item) => item.CustomerMasterSid === this.CustomerMasterSid
-      );
-      this.updatePaginatedData(); // Update paginated data
-      this.totalLengthOfBranch = this.customerBranchResults.length || 0;
-      this.cdRef.detectChanges(); // trigger change detection
-    });
-  }
+  forkJoin([
+    this.masterService.getAllCustomerBranches(),
+    this.masterService.getAllState(),
+    this.masterService.getAllCity()
+  ]).subscribe(([branches, states, cities]) => {
+    this.stateList = states.data;
+    this.cityList = cities;
+    
+    // Filter only items with matching CustomerMasterSid
+    this.customerBranchResults = branches.filter(
+      (item) => item.CustomerMasterSid === this.CustomerMasterSid
+    );
+    this.updatePaginatedData();
+    this.totalLengthOfBranch = this.customerBranchResults.length || 0;
+    this.cdRef.detectChanges();
+  });
+}
 
   loadCustomerBranchContact(): void {
+
     this.masterService
       .getAllCustomerBranchContacts()
       .subscribe((resp: any[]) => {
@@ -1106,19 +1114,20 @@ loadMenus() {
       });
   }
 
-  getStateName(stateSid: number): string {
-    if (!this.stateList) return '';
-    return (
-      this.stateList.find((s) => s.StateMasterSid === stateSid)?.stateName || ''
-    );
-  }
 
-  getCityName(citySid: number): string {
-    if (!this.cityList) return '';
-    return (
-      this.cityList.find((c) => c.CityMasterSid === citySid)?.cityName || ''
-    );
-  }
+ getStateName(stateSid: number): string {
+  if (!this.stateList) return '';
+  const state = this.stateList.find((s) => s.StateMasterSid === stateSid);
+  return state ? state.stateName : '';
+}
+
+getCityName(citySid: number): string {
+  if (!this.cityList) return '';
+  const city = this.cityList.find((c) => c.CityMasterSid === citySid);
+  return city ? city.cityName : '';
+}
+
+
 
   getBranchName(CustomerBranchSid: number): string {
     if (!this.customerBranchData) return '';
@@ -1145,86 +1154,112 @@ loadMenus() {
 
   customerBranchSubmit() {
     let createdBy = {
-      createdBy: this.appSettingService.userSettingSource.value['userEmail'],
+        createdBy: this.appSettingService.userSettingSource.value['userEmail'],
     };
     let updatedBy = {
-      updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
     };
     const formValue = this.customerBranchForm.value;
 
-    const payload =
-      this.isModalEditMode && this.customerBranchId
+    const payload = this.isModalEditMode && this.customerBranchId
         ? {
-          CustomerMasterSid: this.CustomerMasterSid,
-          CityMasterSid: Number(formValue.CustBranchCity),
-          StateMasterSid: Number(formValue.CustBranchState),
-          Branch_Code: formValue.CustBranchCode,
-          BranchName: formValue.CustBranchBranchName,
-          Branch_Type: formValue.CustBranchType,
-          Zip_PostBox: String(formValue.CustBranchZipPostCode),
-          ContactNo: String(formValue.CustBranchPhone),
-          Email: formValue.CustBranchEmail,
-          Address: formValue.CustBranchAddress,
-          Registered: formValue.CustBranchRegistered,
-          CustomerGstType: formValue.CustBranchGSTtype,
-          GSTNo: formValue.CustBranchGSTIN,
-          ...updatedBy,
-          status: formValue.status==="Active" ? "A" : "S",
+            CustomerMasterSid: this.CustomerMasterSid,
+            CityMasterSid: Number(formValue.CustBranchCity),
+            StateMasterSid: Number(formValue.CustBranchState),
+            Branch_Code: formValue.CustBranchCode,
+            BranchName: formValue.CustBranchName,
+            Branch_Type: formValue.CustBranchType,
+            Zip_PostBox: String(formValue.CustBranchZipPostCode),
+            ContactNo: String(formValue.CustBranchPhone),
+            Email: formValue.CustBranchEmail,
+            Address: formValue.CustBranchAddress,
+            Registered: formValue.CustBranchRegistered,
+            CustomerGstType: formValue.CustBranchGSTtype,
+            GSTNo: formValue.CustBranchGSTIN,
+            ...updatedBy,
+            status: formValue.status === "Active" ? "A" : "S",
         }
         : {
-          CustomerMasterSid: this.CustomerMasterSid,
-          CityMasterSid: Number(formValue.CustBranchCity),
-          StateMasterSid: Number(formValue.CustBranchState),
-          BranchName: formValue.CustBranchName,
-          Branch_Type: formValue.CustBranchType,
-          Zip_PostBox: String(formValue.CustBranchZipPostCode),
-          ContactNo: String(formValue.CustBranchPhone),
-          Email: formValue.CustBranchEmail,
-          Address: formValue.CustBranchAddress,
-          Registered: formValue.CustBranchRegistered,
-          CustomerGstType: formValue.CustBranchGSTtype,
-          GSTNo: formValue.CustBranchGSTIN,
-          ...createdBy,
-          status: formValue.status==="Active" ? "A" : "S",
+            CustomerMasterSid: this.CustomerMasterSid,
+            CityMasterSid: Number(formValue.CustBranchCity),
+            StateMasterSid: Number(formValue.CustBranchState),
+            BranchName: formValue.CustBranchName,
+            Branch_Type: formValue.CustBranchType,
+            Zip_PostBox: String(formValue.CustBranchZipPostCode),
+            ContactNo: String(formValue.CustBranchPhone),
+            Email: formValue.CustBranchEmail,
+            Address: formValue.CustBranchAddress,
+            Registered: formValue.CustBranchRegistered,
+            CustomerGstType: formValue.CustBranchGSTtype,
+            GSTNo: formValue.CustBranchGSTIN,
+            ...createdBy,
+            status: formValue.status === "Active" ? "A" : "S",
         };
-    if (this.isModalEditMode && this.customerBranchId) {
-      this.masterService
-        .updateCustomerBranchById(this.customerBranchId, payload)
-        .subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
-              this.customerBranchForm.reset();
-              this.modalRef.close();
-              this.loadCustomerBranch();
-            } else {
-              this.appSettingService.showError(resp.message);
-            }
-          },
-          (error) => {
-            this.errorMessage = error.message;
-            console.error('Error loading country:', error);
-          }
-        );
-    } else {
-      this.masterService.createCustomerBranch(payload).subscribe(
-        (resp: any) => {
-          if (resp.status) {
+
+    const handleSuccess = (resp: any) => {
+        if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
+            
+            // Update local data without refreshing
+            if (this.isModalEditMode && this.customerBranchId) {
+                // Update existing branch
+                const index = this.customerBranchResults.findIndex(
+                    branch => branch.CustomerBranchSid === this.customerBranchId
+                );
+                if (index !== -1) {
+                    this.customerBranchResults[index] = {
+                        ...this.customerBranchResults[index],
+                        ...payload,
+                        CustomerBranchSid: this.customerBranchId,
+                        status: payload.status
+                    };
+                }
+            } else {
+                // Add new branch (assuming the API returns the created branch data)
+                if (resp.data) {
+                    this.customerBranchResults.unshift(resp.data);
+                } else {
+                    // If API doesn't return data, create a minimal object
+                    const newBranch = {
+                        ...payload,
+                        CustomerBranchSid: resp.id || Date.now(), // temporary ID if API doesn't return one
+                        status: payload.status
+                    };
+                    this.customerBranchResults.unshift(newBranch);
+                }
+            }
+
+            // Update the total count and paginated data
+            this.totalLengthOfBranch = this.customerBranchResults.length;
+            this.updatePaginatedData();
+            
             this.customerBranchForm.reset();
-            this.modalRef.close();
-            this.loadCustomerBranch();
-          } else {
+            this.modalRef1.close();
+        } else {
             this.appSettingService.showError(resp.message);
-          }
-        },
-        (error) => {
-          this.errorMessage = error.message;
-          console.error('Error loading country:', error);
         }
-      );
+    };
+
+    if (this.isModalEditMode && this.customerBranchId) {
+        this.masterService
+            .updateCustomerBranchById(this.customerBranchId, payload)
+            .subscribe(
+                handleSuccess,
+                (error) => {
+                    this.errorMessage = error.message;
+                    console.error('Error loading country:', error);
+                }
+            );
+    } else {
+        this.masterService.createCustomerBranch(payload).subscribe(
+            handleSuccess,
+            (error) => {
+                this.errorMessage = error.message;
+                console.error('Error loading country:', error);
+            }
+        );
     }
-  }
+}
 
   updatePaginatedData(): void {
     const startIndex = (this.page - 1) * this.pageSize;

@@ -204,7 +204,7 @@ export class CompanyEntryComponent implements OnInit {
 			isHo: [false],
 			status: ['Active'],
 			remarks: [''],
-			StateMasterSid: [2],
+			// StateMasterSid: [2],
 			config: [{}],
 			branches: this.fb.array([])
 		});
