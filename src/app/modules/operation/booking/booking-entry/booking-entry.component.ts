@@ -19,71 +19,9 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     ReactiveFormsModule,
   ],
   templateUrl: './booking-entry.component.html',
-  styleUrls: ['./booking-entry.component.scss'] 
+  styleUrls: ['./booking-entry.component.scss'],
 })
 export class BookingEntryComponent {
-  @ViewChild('productModal') productModal!: TemplateRef<any>;
-  @ViewChild('connectionModal') connectionModal!: TemplateRef<any>;
-  @ViewChild('rateModal') rateModal!: TemplateRef<any>;
-  
-  constructor(
-    private router: Router,
-    private modalService: NgbModal
-  ) {}
-
-  navigateBack() {
-    this.router.navigate(['operation/booking/list']);
-  }
-
-  openProductModal() {
-    this.modalService.open(this.productModal, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true
-    });
-  }
-
-  saveProduct(modal: any) {
-    console.log('Product saved');
-    modal.close();
-  }
-
-  openConnectionModal() {
-    this.modalService.open(this.connectionModal, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true
-    });
-  }
-
-  saveConnection(modal: any) {
-    console.log('Connection saved');
-    modal.close();
-  }
-
-  openRateModal() {
-    this.modalService.open(this.rateModal, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true
-    });
-  }
-
-  saveRate(modal: any) {
-    console.log('Rate saved');
-    modal.close();
-  }
-
-
-  tabs: string[] = ['Cargo', 'Product', 'Others', 'Connection', 'Rate','Milestone','AR/AP'];
-  selectedTab = 'Cargo';
-
-  selectTab(tab: string) {
-    this.selectedTab = tab;
-  }
-
-  selectedDept = 'LCL'; // Default
-
   modeOfStatus = [
     { id: 1, name: 'Active' },
     { id: 2, name: 'Suspended' },
@@ -127,4 +65,75 @@ export class BookingEntryComponent {
     { id: 7, name: 'CY-Door' },
     { id: 8, name: 'CY-FO' },
   ];
+
+  modeOfReleaseType = [
+    { id: 1, name: 'Original' },
+    { id: 2, name: 'Sea Way BL' },
+    { id: 3, name: 'Express' },
+    { id: 4, name: 'Drat' },
+  ];
+
+  tabs = [
+    { name: 'Cargo', icon: 'fas fa-boxes' },
+    { name: 'Product', icon: 'fas fa-tags' },
+    { name: 'Others', icon: 'fas fa-ellipsis-h' },
+    { name: 'Connection', icon: 'fas fa-link' },
+    { name: 'Rate', icon: 'fas fa-dollar-sign' },
+    { name: 'Milestone', icon: 'fas fa-flag-checkered' },
+    { name: 'AR/AP', icon: 'fas fa-file-alt' },
+  ];
+
+  @ViewChild('productModal') productModal!: TemplateRef<any>;
+  @ViewChild('connectionModal') connectionModal!: TemplateRef<any>;
+  @ViewChild('rateModal') rateModal!: TemplateRef<any>;
+  constructor(private router: Router, private modalService: NgbModal) {}
+
+  navigateBack() {
+    this.router.navigate(['operation/booking/list']);
+  }
+
+  selectedTab = 'Cargo';
+
+  selectTab(tab: string) {
+    this.selectedTab = tab;
+  }
+
+  openProductModal() {
+    this.modalService.open(this.productModal, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
+  }
+
+  saveProduct(modal: any) {
+    console.log('Product saved');
+    modal.close();
+  }
+
+  openConnectionModal() {
+    this.modalService.open(this.connectionModal, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
+  }
+
+  saveConnection(modal: any) {
+    console.log('Connection saved');
+    modal.close();
+  }
+
+  openRateModal() {
+    this.modalService.open(this.rateModal, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
+  }
+
+  saveRate(modal: any) {
+    console.log('Rate saved');
+    modal.close();
+  }
 }

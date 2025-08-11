@@ -47,6 +47,10 @@ export class UOMViewComponent {
     { id: 'All', name: 'All' },
   ];
 
+  modeofUOMtype=[
+    {id:1,name:"P"},
+    {id:2,name:"C"}
+  ]
   errorMessage: any;
   idParam: number;
   statusMap: { [key: string]: string } = {
@@ -81,6 +85,7 @@ statusOptions = [
       DimensionReq: new FormControl('', []),
       WeightReq: new FormControl(null, []),
       VolumeReq: new FormControl('', []),
+      UOMType: new FormControl(null, [Validators.required]),
       ShipmentType: new FormControl(null, [Validators.required]),
       status: new FormControl({value: 'A', disabled: !this.isEditMode}, [Validators.required]),
       Remarks: new FormControl('', [Validators.maxLength(300)])

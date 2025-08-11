@@ -39,12 +39,11 @@
                     </aside>
                     <div class="col-md-3">
                         <div class=" custom-form-group custom-form-group-select">
-                            <div class="input-group">
+                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d1="ngbDatepicker" formControlName="" ngbDatepicker 
-                                        (click)="d1.toggle()"/>
-                                <button class="btn btn-info bi bi-calendar3 text-white" type="button"> <i-feather
-                                        name="calendar" class="feather-sm"></i-feather></button>
+                                    #d1="ngbDatepicker" (click)="d1.toggle()" formControlName="" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label for="shipmentDateExpected" class="input-label">Booking Date <span
                                     class="text-danger">*</span>
@@ -54,7 +53,7 @@
                     </div>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="modeOfDept" bindLabel="name" bindValue="name">
+                            <ng-select [items]="modeOfDept" bindLabel="name" bindValue="name" class="ng-select">
                             </ng-select>
                             <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
                         </div>
@@ -177,14 +176,14 @@
                     </aside>
                     <div class="col-md-3">
                         <div class=" custom-form-group custom-form-group-select">
-                            <div class="input-group">
+                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d1="ngbDatepicker" formControlName="" />
-                                <button class="btn btn-info bi bi-calendar3 text-white" type="button"> <i-feather
-                                        name="calendar" class="feather-sm"></i-feather></button>
+                                    #d2="ngbDatepicker" (click)="d2.toggle()" formControlName="quoteDate" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label for="shipmentDateExpected" class="input-label">MBL Date <span
-                                    class="text-danger">*</span>
+                                    class="text-danger"></span>
                             </label>
 
                         </div>
@@ -192,7 +191,7 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
-                                bindValue="name">
+                                bindValue="name" class="ng-select">
 
                             </ng-select>
                             <label for="" class="input-label">Status <span class="text-danger"></span></label>
@@ -267,7 +266,7 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select formControlName="PortType" [items]="modeOfTransport" bindLabel="name"
-                                bindValue="name">
+                                bindValue="name" class="ng-select">
 
                             </ng-select>
                             <label for="" class="input-label">Mode of Transport <span
@@ -339,10 +338,14 @@
 
 
         <div class="tab-wrapper mt-2">
-            <div class="tab" *ngFor="let tab of tabs" [class.active]="selectedTab === tab" (click)="selectTab(tab)">
-                {{ tab }}
+            <div class="tab" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+                (click)="selectTab(tab.name)">
+                <i [class]="tab.icon"></i>
+                {{ tab.name }}
+
             </div>
         </div>
+
 
         <div class="tab-content">
 
@@ -420,7 +423,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="PortType" [items]="modeOfShipmentTerms" bindLabel="name"
-                                    bindValue="name">
+                                    bindValue="name" class="ng-select">
 
                                 </ng-select>
                                 <label for="" class="input-label">Shipment Terms <span
@@ -430,7 +433,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="PortType" [items]="modeOfMovementType" bindLabel="name"
-                                    bindValue="name">
+                                    bindValue="name" class="ng-select">
 
                                 </ng-select>
                                 <label for="" class="input-label">Movement Type <span
@@ -461,7 +464,7 @@
             <div class="row bg-white" *ngIf="selectedTab === 'Product'">
                 <div class="text-end mb-1">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="openProductModal()">Add</button>
+                        (click)="openProductModal()"><i class="fas fa-plus me-1"></i> Add</button>
                 </div>
 
                 <div class="col-12 p-0">
@@ -481,22 +484,20 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-
-
 
             <div class="row bg-white mt-3" *ngIf="selectedTab === 'Others'">
                 <div class="col-12 p-0">
@@ -518,15 +519,16 @@
                             </div>
                         </aside>
 
-
                         <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Release Type<span
-                                        class="text-danger"></span></label>
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="PortType" [items]="modeOfReleaseType" bindLabel="name"
+                                    bindValue="name" class="ng-select">
+
+                                </ng-select>
+                                <label for="" class="input-label">Release Type <span class="text-danger"></span></label>
                             </div>
                         </aside>
+
 
                         <aside class="col-md-3">
                             <div class="custom-form-group">
@@ -582,6 +584,44 @@
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                     formControlName="">
+                                <label for="text-input" class="input-label">Delivery Place<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <div class="col-md-3">
+                            <div class=" custom-form-group custom-form-group-select">
+                                 <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d3="ngbDatepicker" (click)="d3.toggle()" formControlName="" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d3.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                                <label for="shipmentDateExpected" class="input-label">Delivery Date <span
+                                        class="text-danger"></span>
+                                </label>
+
+                            </div>
+                        </div>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">CHA Name<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Pick Up Address<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
                                 <label for="text-input" class="input-label">Delivery Address<span
                                         class="text-danger"></span></label>
                             </div>
@@ -602,22 +642,28 @@
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
-                        <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Switch BL<span
-                                        class="text-danger"></span></label>
+                        <aside class="col-md-3 d-flex align-items-center">
+                            <div class="form-check form-check-inline p-0">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" formControlName="switchBl" id="switchBl"
+                                        class="form-check-input sm">
+                                    <label for="switchBl" class="form-check-label sm">Switch BL <span
+                                            class="text-danger"></span></label>
+                                </div>
                             </div>
                         </aside>
-                        <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Back to Back<span
-                                        class="text-danger"></span></label>
+
+                        <aside class="col-md-3 d-flex align-items-center">
+                            <div class="form-check form-check-inline p-0">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" formControlName="BacktoBack" id="BacktoBack"
+                                        class="form-check-input sm">
+                                    <label for="BacktoBack" class="form-check-label sm">Back to Back <span
+                                            class="text-danger"></span></label>
+                                </div>
                             </div>
                         </aside>
+
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -641,7 +687,7 @@
             <div class="row bg-white" *ngIf="selectedTab === 'Connection'">
                 <div class="text-end mb-1">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="openConnectionModal()">Add</button>
+                        (click)="openConnectionModal()"> <i class="fas fa-plus me-1"></i> Add</button>
                 </div>
 
                 <div class="col-12 p-0">
@@ -649,36 +695,37 @@
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
                                 <tr class="bg-info">
-                                    <th class="bg-transparent text-light">Commodity</th>
-                                    <th class="bg-transparent text-light">Shipping Bill No</th>
-                                    <th class="bg-transparent text-light">Date</th>
-                                    <th class="bg-transparent text-light">Gross Weight</th>
-                                    <th class="bg-transparent text-light">External Pkg</th>
-                                    <th class="bg-transparent text-light">No. of Pkg</th>
-                                    <th class="bg-transparent text-light">Net Wt</th>
-                                    <th class="bg-transparent text-light">CBM</th>
+                                    <th class="bg-transparent text-light">Mode</th>
+                                    <th class="bg-transparent text-light">Vsl</th>
+                                    <th class="bg-transparent text-light">Voy</th>
+                                    <th class="bg-transparent text-light">POL</th>
+                                    <th class="bg-transparent text-light">POD</th>
+                                    <th class="bg-transparent text-light">ETA</th>
+                                    <th class="bg-transparent text-light">ETD</th>
+                                    <th class="bg-transparent text-light">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+
             <div class="row bg-white" *ngIf="selectedTab === 'Rate'">
                 <div class="text-end mb-1">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="openRateModal()">Add</button>
+                        (click)="openRateModal()"><i class="fas fa-plus me-1"></i> Add</button>
                 </div>
 
                 <div class="col-12 p-0">
@@ -686,7 +733,7 @@
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
                                 <tr class="bg-info">
-                                    <th class="bg-transparent text-light">SNO</th>
+                                    <th class="bg-transparent text-light">Sno</th>
                                     <th class="bg-transparent text-light">Charge</th>
                                     <th class="bg-transparent text-light">Charge Desc</th>
                                     <th class="bg-transparent text-light">PP/CC</th>
@@ -706,27 +753,28 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                     <td>OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+
             <div class="row bg-white" *ngIf="selectedTab === 'Milestone'">
                 <div class="col-12 p-0">
                     <div class="table-responsive">
@@ -741,25 +789,36 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="form-check form-check-inline p-0 ps-2">
+                                            <div class="form-check d-flex align-items-center justify-content-center">
+                                                <input type="checkbox" formControlName="" id=""
+                                                    class="form-check-input sm">
+                                            </div>
+                                        </div>
+
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+
             <div class="row bg-white" *ngIf="selectedTab === 'AR/AP'">
                 <div class="col-12 p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
                                 <tr class="bg-info">
+                                    <th class="bg-transparent text-light">Voucher No</th>
                                     <th class="bg-transparent text-light">Voucher Type</th>
                                     <th class="bg-transparent text-light">Date</th>
                                     <th class="bg-transparent text-light">Ledger Name</th>
+                                    <th class="bg-transparent text-light">Dr/Cr</th>
                                     <th class="bg-transparent text-light">Curr</th>
                                     <th class="bg-transparent text-light">Ex Rate</th>
                                     <th class="bg-transparent text-light">Amt</th>
@@ -768,12 +827,15 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                    <td>OMR</td>
-                                     <td>OMR</td>
-                                    <td>OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">1</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -796,7 +858,7 @@
             <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light">If Haz</th>
+                        <th class="bg-transparent text-light" width="5%">If Haz</th>
                         <th class="bg-transparent text-light">Imco Class</th>
                         <th class="bg-transparent text-light">Un No</th>
                         <th class="bg-transparent text-light">Pkg Group</th>
@@ -805,14 +867,17 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <div class="form-check form-check-inline p-0 ps-2 pt-1">
-                            <div class="form-check d-flex align-items-center justify-content-center">
-                                <input type="checkbox" formControlName="" id="" class="form-check-input sm">
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                            <div class="form-check form-check-inline p-0 ps-2">
+                                <div class="form-check d-flex align-items-center justify-content-center">
+                                    <input type="checkbox" formControlName="" id="" class="form-check-input sm">
+                                </div>
                             </div>
-                        </div>
-                        <td>OMR</td>
-                        <td>OMR</td>
-                        <td>OMR</td>
+
+                        </td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
                     </tr>
                 </tbody>
             </table>
@@ -830,14 +895,10 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <div class="form-check form-check-inline p-0 ps-2 pt-1">
-                            <div class="form-check d-flex align-items-center justify-content-center">
-                                <input type="checkbox" formControlName="" id="" class="form-check-input sm">
-                            </div>
-                        </div>
-                        <td>OMR</td>
-                        <td>OMR</td>
-                        <td>OMR</td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">1</td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
                     </tr>
                 </tbody>
             </table>
@@ -882,11 +943,11 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>OMR</td>
-                        <td>OMR</td>
-                        <td>OMR</td>
-                        <td>OMR</td>
-                        <td>OMR</td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
                     </tr>
                 </tbody>
             </table>
@@ -897,4 +958,3 @@
         <button type="button" class="btn btn-info btn-sm" (click)="saveProduct(modal)">Save</button>
     </div>
 </ng-template>
-
