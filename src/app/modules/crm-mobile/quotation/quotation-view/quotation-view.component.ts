@@ -261,7 +261,7 @@ export class QuotationViewComponent {
       active: 2
     });
 
-    this.route.navigate(['crm/quotation/view']);
+    this.route.navigate(['crm/quotation/entry']);
   }
 
   getFormattedPort(PortMasterSid){
