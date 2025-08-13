@@ -13,6 +13,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-enquiry-list',
@@ -36,6 +37,8 @@ export class EnquiryListComponent {
   filterValue = ''
   errorMessage: string = '';
   searchPerformed : boolean;
+  departmentList : any[] = [];
+  containerTypeList : any[] = [];
 
   sortColumn = "EnquiryNumber"
   sortDirection = "asc"
@@ -179,36 +182,73 @@ export class EnquiryListComponent {
     this.route.navigate(['crm/enquiry', id])
   }
 
-  goForQuotationCreation(EnquiryHeaderSid){
+  goForQuotationCreation(EnquiryHeaderSid) {
     this.loadingEnquiry = true;
-    this.leadService.getEnquiryById(EnquiryHeaderSid).subscribe(
-      (resp:any)=>{
-        if (resp) {
-          const enquiryData = resp;
-          const polList = enquiryData?.enquiryRoute.map((route) => route.POLSid);
-          const podList = enquiryData?.enquiryRoute.map((route) => route.PODSid);
+    forkJoin({
+      containerTypes: this.leadService.getAllContainerTypes(),
+      departments: this.leadService.getAllDepartments()
+    }).subscribe(({ containerTypes, departments }) => {
+      this.containerTypeList = containerTypes;
+      this.departmentList = departments;
 
-          const cargoTypeList = enquiryData?.enquiryRoute.flatMap((route) =>
-            route.enquiryCargo.map((cargoItem) => cargoItem.cargoType)
-          );
-          this.leadService.clearQuotationData();
-
-          this.leadService.setQuotationData({
-            customerId: enquiryData?.CustomerMasterSid,
-            departmentId: enquiryData?.DepartmentMasterSid,
-            EnquirySid: enquiryData?.EnquiryHeaderSid,
-            EnquiryNumber: enquiryData?.EnquiryNumber,
-            polList: polList, 
-            podList: podList,
-            cargoTypeList: cargoTypeList,
-            rateRequest: true,
-            active: 2,
-          });
-          this.loadingEnquiry= false;
-          this.route.navigate(['crm/quotation/view']);
+      this.leadService.getEnquiryById(EnquiryHeaderSid).subscribe(
+        (resp: any) => {
+          if (resp) {
+            const enquiryData = resp.data;
+            this.navigateQuotation(enquiryData);
+            this.loadingEnquiry = false;
+          }
         }
-      }
-    )
+      )
+    })
+  }
+
+
+  navigateQuotation(response: any) {
+    console.log(response);
+    const dept = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+    console.log(dept);
+    let selectedFCLLCL;
+    if (dept?.departmentType === "Sea") {
+      selectedFCLLCL = dept?.FCLLCL;
+    } else {
+      selectedFCLLCL = dept?.departmentType?.toUpperCase();
+    }
+
+    let routeDetails = response.enquiryRoute.flatMap(route => {
+      return route.enquiryCargo.map(cargo => {
+        const containerTypeId = this.containerTypeList.find(
+          con => con.ContainerName === cargo.ContainerType
+        )?.ContainerTypeMasterSid || null;
+        return {
+          PORSid: route.PORSid,
+          POLSid: route.POLSid,
+          PODSid: route.PODSid,
+          FPODSid: route.FDPSid,
+          CargoType: cargo.CargoType,
+          CBM: cargo.Volume,
+          ContainerType: containerTypeId,
+          ChargeableWeight : cargo.ChargeableWeight,
+          ContainerQty: cargo.Qty
+        };
+      });
+    });
+
+    const enqData = {
+      EnquirySid: response?.EnquiryHeaderSid,
+      EnquiryNumber: response?.EnquiryNumber,
+      CustomerMasterSid: response?.CustomerMasterSid,
+      CustomerName: response?.CustomerName,
+      CustomerAddress: response?.CustomerAddress,
+      Email: response?.Email,
+      DepartmentMasterSid: response.DepartmentMasterSid,
+      segment: selectedFCLLCL,
+      rateReq: true,
+      enqRoutes: routeDetails
+    };
+    this.leadService.clearQuotationData();
+    this.leadService.setQuotationData(enqData);
+    this.route.navigate(['crm/quotation/entry']);
   }
 
     resetFilters(): void {

@@ -38,7 +38,7 @@ export class QuotationViewComponent {
   pageSize = 15;
   totalLengthOfCollection: number;
   page1 = 1;
-  pageSize1 = 5;
+  pageSize1 = 15;
   totalLengthOfCollection1: number;
   searchText: string = '';
   quoteItems: any[] = [];
@@ -52,6 +52,8 @@ export class QuotationViewComponent {
   currentDate = new Date().toLocaleDateString(); // or any formatted string
   filterValue : any = ''
   userData : any
+  currentCompany: any;
+  currentBranch: any;
 
   constructor(private toastr: ToastrService, private modalService: NgbModal, private leadService: LeadService, private route: Router, private appService: AppService,private appSettingService : AppSettingsService) { }
 
@@ -67,6 +69,10 @@ export class QuotationViewComponent {
         this.userData = res;
       }
     )
+    const storedCompany = localStorage.getItem('selected-company');
+    this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
+    const storedBranch = localStorage.getItem('selected-branch');
+    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
   }
 
   searchQuotation() {
@@ -213,11 +219,11 @@ export class QuotationViewComponent {
   }
 
   createNew() {
-    this.route.navigate(['crm/quotation'])
+    this.route.navigate(['crm/quotation/entry'])
   }
 
   editEnquiry(id) {
-    this.route.navigate(['crm/quotation', id])
+    this.route.navigate(['crm/quotation/entry', id])
   }
 
   createQuotation(enq: any) {

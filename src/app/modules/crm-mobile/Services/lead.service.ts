@@ -125,7 +125,7 @@ export class LeadService {
   }
 
   getAllCarrier() {
-    return this.http.get('quotation/carrier').pipe(
+    return this.http.get('ff-quotation/carrier').pipe(
       map((resp: any) => {
         console.log(resp)
         let response = resp.data;
@@ -146,7 +146,7 @@ export class LeadService {
 
 
   getAllMasters() {
-    return this.http.get('quotation/unit-currency-charge').pipe(
+    return this.http.get('ff-quotation/unit-currency-charge').pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -210,7 +210,7 @@ export class LeadService {
 
 
   createQuotation(payload: any) {
-    return this.http.post("quotation", payload).pipe(
+    return this.http.post("ff-quotation", payload).pipe(
       map((res: any) => {
         return res;
       })
@@ -219,7 +219,7 @@ export class LeadService {
 
 
   deleteRoute(id: number) {
-    return this.http.delete(`quotation/route/${id}`).pipe(
+    return this.http.delete(`ff-quotation/route/${id}`).pipe(
       map((res: any) => {
         return res;
       })
@@ -228,14 +228,14 @@ export class LeadService {
 
 
   deleteCharge(id: number) {
-    return this.http.delete(`quotation/charge/${id}`).pipe(
+    return this.http.delete(`ff-quotation/charge/${id}`).pipe(
       map((res: any) => {
         return res;
       })
     )
   }
   updateQuoteById(id: number, payload: any) {
-    return this.http.patch<{ data: any }>(`quotation/header/${id}`, payload).pipe(
+    return this.http.patch<{ data: any }>(`ff-quotation/header/${id}`, payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -244,7 +244,7 @@ export class LeadService {
   }
 
   getAllQuotes() {
-    return this.http.get<any>('quotation').pipe(
+    return this.http.get<any>('ff-quotation').pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -254,18 +254,27 @@ export class LeadService {
 
 
   getQuoteById(id: number) {
-    return this.http.get<{ data: any }>(`quotation/header/${id}`).pipe(
+    return this.http.get<{ data: any }>(`ff-quotation/header/${id}`).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     )
   }
 
   searchQuotation(param) {
-    return this.http.post<{data:any}>("quotation/search-list", param).pipe(
+    return this.http.post<{data:any}>("ff-quotation/search-list", param).pipe(
       map((res: any) => {
         return res;
+      })
+    )
+  }
+
+  getAllUOMs(){
+    return this.http.get<any>('uom').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
       })
     )
   }
@@ -524,7 +533,16 @@ export class LeadService {
   }
 
   quotationReport(payload: any) {
-    return this.http.post<{ data: any[] }>('quotation/send/email', payload).pipe(
+    return this.http.post<{ data: any[] }>('ff-quotation/send/email', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getTariffDetailsByQuote(payload:any){
+    return this.http.post<{ data: any[] }>('ff-quotation/tariffDetails', payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -533,7 +551,7 @@ export class LeadService {
   }
 
   getAllSalesman() {
-    return this.http.get<{ data: any[] }>('quotation/salesman').pipe(
+    return this.http.get<{ data: any[] }>('ff-quotation/salesman').pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -578,7 +596,7 @@ export class LeadService {
   }
 
   getCustomerBranchEmail(CustomerBranchSid) {
-    return this.http.get<{ data: any }>(`quotation/customer-branch-email/${CustomerBranchSid}`).pipe(
+    return this.http.get<{ data: any }>(`ff-quotation/customer-branch-email/${CustomerBranchSid}`).pipe(
       map((resp) => {
         let response = resp;
         return response;

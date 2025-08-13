@@ -130,7 +130,8 @@
         <div class="card-body">
             <!-- #region Pagination -->
             <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+                [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true"
+                    [ellipses]="false" [maxSize]="10">
             </ngb-pagination>
             <!-- #endregion -->
         </div>
@@ -155,12 +156,13 @@
                                 <tr class="bg-info">
                                     <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                                     <th class="bg-transparent text-light" scope="col">Quote Number</th>
-                                    <!-- <th class="bg-transparent text-light" scope="col">Enquiry No</th> -->
-                                    <th class="bg-transparent text-light" scope="col">Customer Name</th>
-                                    <th class="bg-transparent text-light" scope="col">Customer Address</th>
                                     <th class="bg-transparent text-light" scope="col">Quote Date</th>
-                                    <!-- <th class="bg-transparent text-light" scope="col">Approval Status</th>
-                                    <th class="bg-transparent text-light" scope="col">Create</th> -->
+                                    <th class="bg-transparent text-light" scope="col">Customer Name</th>
+                                    <th class="bg-transparent text-light" scope="col">Department</th>
+                                    <th class="bg-transparent text-light" scope="col">POL</th>
+                                    <th class="bg-transparent text-light" scope="col">POD</th>
+                                    <th class="bg-transparent text-light" scope="col">Quote Status</th>
+                                    <th class="bg-transparent text-light" scope="col">Booking No.</th>
                                     <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
 
                                 </tr>
@@ -189,6 +191,11 @@
                                             {{ enq.QuoteNumber }}
                                         </div>
                                     </td>
+                                    <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="text-truncate">
+                                            {{ enq.QuoteDate | formatDate }}
+                                        </div>
+                                    </td>
                                     <!-- <td>
                                         {{findEnquiryName(enq.EnquirySid)}}
                                     </td> -->
@@ -199,15 +206,39 @@
                                     </td>
                                     <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ enq.CustomerAddress }}
+                                            {{ enq.quoteRoute[0]?.departmentMaster?.departmentName }}
                                         </div>
                                     </td>
-                                    <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
-                                            {{ enq.QuoteDate | formatDate }}
+                                            {{ enq.quoteRoute[0]?.PortPOL?.PortName }}
                                         </div>
                                     </td>
-                                    <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="text-truncate">
+                                            {{ enq.quoteRoute[0]?.PortPOD?.PortName }}
+                                        </div>
+                                    </td>
+                                    
+                                     
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="text-truncate">
+                                            N/A
+                                        </div>
+                                    </td>
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="text-truncate">
+                                            N/A
+                                        </div>
+                                    </td>
+                                    <!--<td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="text-truncate">
+                                            @if(enq.authorizerStatus === 'Approved'){
+                                                <button class="btn btn-sm btn-info" (click)="goForBookingCreation(enq.QuoteHeaderSid)">Create Booking</button>
+                                            }
+                                        </div>
+                                    </td> -->
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         @if(enq.authorizerStatus === "Approved"){
                                         <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                             <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
@@ -225,26 +256,6 @@
                                         </div>
                                         }
                                     </td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            @if(enq.authorizerStatus === 'Approved'){
-                                                <button class="btn btn-sm btn-info" (click)="goForBookingCreation(enq.QuoteHeaderSid)">Create Booking</button>
-                                            }
-                                        </div>
-                                    </td> -->
-                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        @if(enq.status === "A"){
-                                        <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                            <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                            Active
-                                        </div>
-                                        }@else{
-                                        <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                                            <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                                            Suspended
-                                        </div>
-                                        }
-                                    </td>
 
                                 </tr>
                             </tbody>
@@ -255,7 +266,8 @@
                     <div class="card-body">
                         <!-- #region Pagination -->
                         <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                            [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+                            [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true"
+                    [ellipses]="false" [maxSize]="10">
                         </ngb-pagination>
                         <!-- #endregion -->
                     </div>
@@ -319,7 +331,8 @@
             <!-- #region Pagination -->
 
             <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection1"
-                [pageSize]="pageSize1" [(page)]="page1" (pageChange)="updateEnquiryPaginatedData()">
+                [pageSize]="pageSize1" [(page)]="page1" (pageChange)="updateEnquiryPaginatedData()" [rotate]="true"
+                    [ellipses]="false" [maxSize]="10">
             </ngb-pagination>
             <!-- #endregion -->
         </div>
@@ -354,7 +367,7 @@
                             </thead>
                             <tbody>
                                 <tr *ngFor="let enq of enquiryItems">
-                                    <td data-label="Action"  class="text-center">
+                                    <td data-label="Action"  class="text-center"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
 
                                         <section class="action-items">
                                             <a class="mx-2" (click)="createQuotation(enq)">
@@ -362,27 +375,27 @@
                                             </a>
                                         </section>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.EnquiryNumber }}
                                         </div>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.CustomerName }}
                                         </div>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.ShipmentType }}
                                         </div>
                                     </td>
-                                    <td data-label="Phone">
+                                    <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.POLCode || '' }}
                                         </div>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company"  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.PODCode || '' }}
                                         </div>
@@ -398,7 +411,8 @@
                         <!-- #region Pagination -->
 
                         <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection1"
-                            [pageSize]="pageSize1" [(page)]="page1" (pageChange)="updateEnquiryPaginatedData()">
+                            [pageSize]="pageSize1" [(page)]="page1" (pageChange)="updateEnquiryPaginatedData()" [rotate]="true"
+                    [ellipses]="false" [maxSize]="10">
                         </ngb-pagination>
                         <!-- #endregion -->
                     </div>
@@ -436,13 +450,11 @@
                 <div class="d-flex px-3 px-md-5 align-items-center">
                     <div class="col-md-6 d-flex align-items-center gap-4 mb-3 mb-md-0">
                             <img src="assets/logo/dofi-logo.svg" width="100" height="100" class="img-fluid" alt="">
-                            <h4> DOFI <br>Infosys LLC </h4>
+                            <h4> {{currentCompany.companyName}} </h4>
                     </div>
                     <div class="col-md-6 text-md-end text-center">
-                         <p class="h5 fw-bold mb-0">Total Transport Systems Limited</p>
-                        <p class="text-muted mb-0">7th floor. T Square, opp. Chandivali Petrol Pump</p>
-                        <p class="text-muted mb-0">Sakinaka, Andheri (E), Mumbai - 400 072</p>
-                        <p class="text-muted mb-0">Maharashtra, India. TEL: 02266441500</p>
+                         <p class="h5 fw-bold mb-0">{{currentBranch.branchName}}</p>
+                        <p class="text-muted mb-0">{{currentBranch.addressLine1}}</p>
                     </div>
                 </div>
 
@@ -488,7 +500,7 @@
                                         <p class="mb-0  fw-bold">{{route.departmentMaster?.departmentName}} </p>
                                     </div>
                                     <div>
-                                        <p class="mb-0 fw-normal col">{{getFormattedPort(route.POLSid)}} - {{getFormattedPort(route.PODSid)}}.</p>
+                                        <p class="mb-0 fw-normal col">{{getFormattedPort(route.POLSid)}} - {{getFormattedPort(route.PODSid)}} {{route.PODSid !== route.FDPSid ? '- ' + getFormattedPort(route.FDPSid) : ''}}.</p>
                                     </div>
                                 </aside>
                             </td>
@@ -500,7 +512,7 @@
                                         <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Carrier :</span> {{route.CarrierName}}
                                         </p>
                                         <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Cargo Type :</span>
-                                            {{route.cargoType}}</p>
+                                            {{route.CargoType}}</p>
                                         <p class="mb-0 col-3 border-end p-2"><span class="fw-bold">Valid From : </span>
                                             {{route.effDate | formatDate }}</p>
                                         <p class="mb-0 col-3 p-2"><span class="fw-bold">Valid To : </span> {{route.expdate | formatDate }}
@@ -520,9 +532,9 @@
                             @for(charge of route.quoteCharge;track charge){
                             <tr style="border:2px solid black">
                                 <td class="border border-dark">{{charge.ChargeDisplayName}}</td>
-                                <td class="border border-dark">{{charge.unitMaster?.unitCode}}</td>
+                                <td class="border border-dark">{{charge.uomMaster?.UOMName}}</td>
                                 <td class="border border-dark">{{charge.Qty}}</td>
-                                <td class="border border-dark">{{charge.currencyMaster?.currencyCode}}</td>
+                                <td class="border border-dark">{{charge.currencyMaster?.currencyName}}</td>
                                 <td class="border border-dark">{{charge.perUnit}}</td>
                                 <td class="border border-dark">{{charge.Qty * charge.perUnit}}</td>
                             </tr>
@@ -537,7 +549,7 @@
 
             <div class="d-flex align-items-center justify-content-between mt-5 pt-3">
                 <div class=""><span class="fw-bold">Printed By :</span> {{userData.userName}} </div>
-                <div><span class="fw-bold">Printed On :</span> {{ currentDate }}</div>
+                <div><span class="fw-bold">Printed On :</span> {{ currentDate | formatDate }}</div>
             </div>
         </section>
     </div>

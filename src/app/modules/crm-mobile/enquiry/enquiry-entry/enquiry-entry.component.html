@@ -20,11 +20,11 @@
                         Back
                     </button>
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="resetForm()">
+                        (click)="resetForm()" [disabled]="disableAddButtons">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()">
+                    <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()" [disabled]="disableAddButtons">
                         <i class="fas fa-save me-1"></i> {{isEditMode ? 'Update' : "Save"}}
                     </button>
 
@@ -274,7 +274,7 @@
                     </div>
                 </div>
                 }
-                @if(isEditMode && isAuthorizedUser){
+                @if(isEditMode && isAuthorizedUser && !isApproved){
                 <aside class="col-md-4">
                     <div class="custom-form-group">
                         <textarea id="" placeholder="" rows="1" class="form-control input-field sm"
@@ -394,18 +394,18 @@
                     <i class="fas fs-6 fa-info-circle"></i> 
                     Details
                 </button> -->
-            <button class="btn btn-info btn-sm" (click)="addRoute()" type="button" [disabled]="!(selectedDepartment)">
+            <button class="btn btn-info btn-sm" (click)="addRoute()" type="button" [disabled]="!(selectedDepartment) || disableAddButtons">
                 <i class="fas fa-plus me-1"></i> New
                 Route</button>
-            <button *ngIf="EnquiryHeaderSid && f['authorizerStatus']?.value === 'Approved'" class="btn btn-info btn-sm"
+            <button *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" class="btn btn-info btn-sm"
                 (click)="navigateQuotation()" type="button"> <i class="fas fa-plus me-1"></i> Create
                 Quotation</button>
             }
             @if (!isMobile) {
-            <button class="btn btn-info btn-sm" type="button" (click)="addRoute()" [disabled]="!(selectedDepartment)">
+            <button class="btn btn-info btn-sm" type="button" (click)="addRoute()" [disabled]="!(selectedDepartment) || disableAddButtons">
                 <i class="fas fa-plus me-1"></i>Add
                 Route</button>
-            <button *ngIf="EnquiryHeaderSid && f['authorizerStatus']?.value === 'Approved'" class="btn btn-info btn-sm"
+            <button *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" class="btn btn-info btn-sm"
                 (click)="navigateQuotation()" type="button"> <i class="fas fa-plus me-1"></i> Create
                 Quotation</button>
             <!-- (click)="addNewRoute()" -->
@@ -420,7 +420,7 @@
                         <h6 class="font-bold mb-0 text-light">Route Details</h6>
                         @if(routes.controls.length > 1){
                         <button class="btn btn-sm waves-effect waves-light text-light"
-                            (click)="removeRoute(routeIndex)">
+                            (click)="removeRoute(routeIndex)" [disabled]="disableAddButtons">
                             <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
                         </button>
                         }
@@ -506,14 +506,15 @@
                                                     </td>
                                                     <td class="bg-transparent text-light text-center dofi-max-w-150"
                                                         [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Product <span
-                                                                class="text-danger">*</span></label>
-                                                    </td>
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
                                                         <label for="" class="form-label mb-0">Cargo Description <span
                                                                 class="text-danger"></span></label>
                                                     </td>
+                                                    <td class="bg-transparent text-light text-center dofi-max-w-150"
+                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                        <label for="" class="form-label mb-0">Product <span
+                                                                class="text-danger">*</span></label>
+                                                    </td>
+                                                    
 
                                                     <td class="bg-transparent text-light text-center dofi-max-w-150"
                                                         [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
@@ -571,6 +572,10 @@
                                                         </ng-select>
                                                     </td>
                                                     <td>
+                                                        <input type="text" formControlName="CargoDescription"
+                                                            class="form-control" appendTo="body">
+                                                    </td>
+                                                    <td>
                                                         <ng-select name="product" formControlName="ProductName" id=""
                                                             class="ng-select" placeholder="Select Product"
                                                             appendTo="body">
@@ -578,10 +583,7 @@
                                                                 [value]="product.ProductName">{{product.ProductName}}</ng-option>
                                                         </ng-select>
                                                     </td>
-                                                    <td>
-                                                        <input type="text" formControlName="CargoDescription"
-                                                            class="form-control" appendTo="body">
-                                                    </td>
+                                                    
                                                     <td>
                                                         <ng-select formControlName="PackageType" class="ng-select"
                                                             appendTo="body" placeholder="Select Package Type">
@@ -629,11 +631,11 @@
                                                     @if( routeCargo(routeIndex).controls.length > 1){
                                                     <td data-label="Action" class="dofi-max-w-150">
                                                         <section class="action-items">
-                                                            <a class="text-danger mx-2"
-                                                                (click)="deleteCargo(routeIndex ,cargoIndex)">
+                                                            <button class="btn btn-sm btn-link text-danger mx-2"
+                                                                (click)="deleteCargo(routeIndex ,cargoIndex)" [disabled]="disableAddButtons">
                                                                 <i-feather name="trash-2"
                                                                     class="feather-sm"></i-feather>
-                                                            </a>
+                                                        </button>
                                                         </section>
                                                     </td>
                                                     }
@@ -658,6 +660,11 @@
                                                         <label class="form-label mb-0">Cargo Type <span
                                                                 class="text-danger">*</span></label>
                                                     </td>
+                                                    <td class="bg-transparent text-light text-center dofi-max-w-150"
+                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
+                                                        <label for="" class="form-label mb-0">Cargo Description <span
+                                                                class="text-danger"></span></label>
+                                                    </td>
 
                                                     <td class="bg-transparent text-light text-center dofi-max-w-150"
                                                         [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
@@ -673,11 +680,7 @@
                                                         <label class="form-label mb-0">Product <span
                                                                 class="text-danger">*</span></label>
                                                     </td>
-                                                    <td class="bg-transparent text-light text-center dofi-max-w-150"
-                                                        [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Cargo Description <span
-                                                                class="text-danger"></span></label>
-                                                    </td>
+                                                    
                                                     <td class="bg-transparent text-light text-center dofi-max-w-150"
                                                         [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
                                                         <label for="" class="form-label mb-0">Package Type <span
@@ -724,6 +727,10 @@
                                                             </ng-option>
                                                         </ng-select>
                                                     </td>
+                                                    <td>
+                                                        <input type="text" formControlName="CargoDescription"
+                                                            class="form-control" appendTo="body">
+                                                    </td>
 
                                                     <td>
                                                         <ng-select formControlName="ContainerType" class="ng-select"
@@ -747,10 +754,7 @@
                                                                 [value]="product.ProductName">{{product.ProductName}}</ng-option>
                                                         </ng-select>
                                                     </td>
-                                                    <td>
-                                                        <input type="text" formControlName="CargoDescription"
-                                                            class="form-control" appendTo="body">
-                                                    </td>
+                                                    
                                                     <td>
                                                         <ng-select formControlName="PackageType" class="ng-select"
                                                             appendTo="body" placeholder="Select Package Type">
@@ -788,11 +792,10 @@
                                                     @if( routeCargo(routeIndex).controls.length > 1){
                                                     <td data-label="Action">
                                                         <section class="action-items">
-                                                            <a class="text-danger mx-2"
-                                                                (click)="deleteCargo(routeIndex,cargoIndex)">
-                                                                <i-feather name="trash-2"
-                                                                    class="feather-sm"></i-feather>
-                                                            </a>
+                                                            <button class="btn btn-sm btn-link text-danger mx-2" (click)="deleteCargo(routeIndex ,cargoIndex)"
+                                                                [disabled]="disableAddButtons">
+                                                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                                            </button>
                                                         </section>
                                                     </td>
                                                     }
@@ -817,23 +820,22 @@
                                                         <label class="form-label mb-0">Cargo Type <span
                                                                 class="text-danger">*</span></label>
                                                     </td>
-
                                                     <td class="bg-transparent text-light text-center dofi-max-w-200"
                                                         [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                        <label class="form-label mb-0">Container Type <span
-                                                                class="text-danger">*</span></label>
+                                                        <label for="" class="form-label mb-0">Cargo Description <span
+                                                                class="text-danger"></span></label>
                                                     </td>
                                                     <td class="bg-transparent text-light text-center dofi-max-w-200"
                                                         [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
                                                         <label class="form-label mb-0">Product <span
                                                                 class="text-danger">*</span></label>
                                                     </td>
+                                                    
                                                     <td class="bg-transparent text-light text-center dofi-max-w-200"
                                                         [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                        <label for="" class="form-label mb-0">Cargo Description <span
-                                                                class="text-danger"></span></label>
+                                                        <label class="form-label mb-0">Chargable Weight <span
+                                                                class="text-danger">*</span></label>
                                                     </td>
-
                                                     <td class="bg-transparent text-light text-center dofi-max-w-200"
                                                         [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
                                                         <label class="form-label mb-0">Length <span
@@ -871,16 +873,11 @@
                                                             </ng-option>
                                                         </ng-select>
                                                     </td>
-
                                                     <td>
-                                                        <ng-select formControlName="ContainerType" class="ng-select"
-                                                            placeholder="Select Container Type" appendTo="body">
-                                                            <ng-option *ngFor="let item of containerTypes"
-                                                                [value]="item.ContainerName">
-                                                                {{ item.ContainerName }}
-                                                            </ng-option>
-                                                        </ng-select>
+                                                        <input type="text" formControlName="CargoDescription"
+                                                            class="form-control">
                                                     </td>
+                                                    
                                                     <td>
                                                         <ng-select name="product" formControlName="ProductName" id=""
                                                             class="ng-select" placeholder="Select Product"
@@ -889,11 +886,12 @@
                                                                 [value]="product.ProductName">{{product.ProductName}}</ng-option>
                                                         </ng-select>
                                                     </td>
-                                                    <td>
-                                                        <input type="text" formControlName="CargoDescription"
-                                                            class="form-control">
-                                                    </td>
+                                                    
 
+                                                    <td>
+                                                        <input type="text" formControlName="ChargeableWeight"
+                                                            class="form-control text-end" [onlyNumbers]>
+                                                    </td>
                                                     <td>
                                                         <input type="text" formControlName="length"
                                                             class="form-control text-end" [onlyNumbers]>
@@ -910,11 +908,11 @@
                                                     @if( routeCargo(routeIndex).controls.length > 1){
                                                     <td data-label="Action">
                                                         <section class="action-items">
-                                                            <a class="text-danger mx-2"
-                                                                (click)="deleteCargo(routeIndex,cargoIndex)">
+                                                            <button class="btn btn-sm btn-link text-danger mx-2"
+                                                                (click)="deleteCargo(routeIndex ,cargoIndex)" [disabled]="disableAddButtons">
                                                                 <i-feather name="trash-2"
                                                                     class="feather-sm"></i-feather>
-                                                            </a>
+                                                        </button>
                                                         </section>
                                                     </td>
                                                     }
@@ -930,7 +928,7 @@
                                 <div class="row mt-2">
                                     <div class="col-6 mb-2">
                                         <button class="btn btn-outline-info btn-sm w-100" type="button"
-                                            (click)="addCargo(routeIndex)">
+                                            (click)="addCargo(routeIndex)" [disabled]="disableAddButtons">
                                             <i-feather class="feather-sm ms-2" name="plus"></i-feather> Add Cargo
                                         </button>
                                     </div>
@@ -960,7 +958,7 @@
                                 @if (!isMobile) {
                                 <div class="d-flex align-items-center justify-content-start gap-2">
                                     <button class="btn btn-outline-info btn-sm" type="button"
-                                        (click)="addCargo(routeIndex)">
+                                        (click)="addCargo(routeIndex)" [disabled]="disableAddButtons">
                                         <!-- (click)="addNewRow(routeIndex)" -->
                                         <i-feather class="feather-sm ms-2" name="plus"></i-feather> Add
                                         Cargo</button>

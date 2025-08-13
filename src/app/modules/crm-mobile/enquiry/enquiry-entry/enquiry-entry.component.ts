@@ -84,7 +84,8 @@ export class EnquiryEntryComponent implements OnInit {
   selectedPort: any;
   quotationEnquiryNumber: any;
 	today = this.calendar.getToday();
-	todayDate = new Date(this.today.year,this.today.month,this.today.day);
+	todayDate = new Date(this.today.year,this.today.month - 1,this.today.day);
+  disableAddButtons : boolean;
   rateRequestData : any;
   currentMenuId: number;
   TandCList: any;
@@ -365,6 +366,7 @@ export class EnquiryEntryComponent implements OnInit {
       ShipmentTerms: [null],
       cbm: ['1'],
       ContainerType: [null],
+      ChargeableWeight : [''],
       length: [''],
       width: [''],
       height: ['']
@@ -395,7 +397,11 @@ export class EnquiryEntryComponent implements OnInit {
     );
 
     this.selectedDepartment = selectedDept?.departmentName;
-    this.selectedFCLLCL = selectedDept?.FCLLCL ?? 'LCL';
+    if (selectedDept?.departmentType === "Sea") {
+      this.selectedFCLLCL = selectedDept?.FCLLCL;
+    } else {
+      this.selectedFCLLCL = selectedDept?.departmentType?.toUpperCase();
+    }
 
     this.routes.controls.forEach((routeGroup: FormGroup) => {
       ['POO', 'POL', 'POD', 'FDC'].forEach(field => {
@@ -442,9 +448,9 @@ export class EnquiryEntryComponent implements OnInit {
 
     const FCLFields = ['ContainerType', 'PackageType', 'Qty', 'ShipmentTerms'];
     const LCLFields = ['PackageType', 'PackageQty', 'WeightUnitSid', 'GrossWeight', 'NetWeight', 'ShipmentTerms', 'cbm'];
-    const AIRFields = ['ContainerType', 'length', 'width', 'height'];
+    const AIRFields = ['ChargeableWeight', 'length', 'width', 'height'];
 
-    resetFields(['PackageType', 'Qty', 'WeightUnitSid', 'PackageQty', 'GrossWeight', 'NetWeight', 'ShipmentTerms', 'cbm', 'ContainerType', 'length', 'width', 'height']);
+    resetFields(['PackageType', 'Qty', 'WeightUnitSid', 'PackageQty', 'GrossWeight', 'NetWeight', 'ShipmentTerms', 'cbm', 'ContainerType','ChargeableWeight', 'length', 'width', 'height']);
 
     if (type === 'FCL') {
       setRequired(FCLFields);
@@ -517,7 +523,7 @@ export class EnquiryEntryComponent implements OnInit {
     this.leadService.getEnquiryById(id).subscribe((resp: any) => {
       if (resp.status) {
         this.patchValues(resp.data);
-        this.rateRequestData = resp;
+        this.rateRequestData = resp.data;
       }
     });
   }
@@ -526,7 +532,12 @@ export class EnquiryEntryComponent implements OnInit {
 
   patchValues(response: any) {
     this.selectedDepartment = response.ShipmentType;
-    this.selectedFCLLCL = (this.departments.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid)?.FCLLCL) || 'LCL';
+    const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
+    if (selectedDept?.departmentType === "Sea") {
+      this.selectedFCLLCL = selectedDept?.FCLLCL;
+    } else {
+      this.selectedFCLLCL = selectedDept?.departmentType?.toUpperCase();
+    }
     // Patch header fields
     this.quotationEnquiryNumber = response.EnquiryNumber;
     this.quotationCustomerId = response.CustomerMasterSid;
@@ -601,6 +612,7 @@ export class EnquiryEntryComponent implements OnInit {
             ShipmentTerms : [cargo.ShipmentTerms || null],
             cbm: [cargo.Volume || '1'],
             ContainerType : [cargo.ContainerType || null],
+            ChargeableWeight : [cargo.ChargeableWeight || null],
             length : [cargo.length || ''],
             width : [cargo.width || ''],
             height : [cargo.height || '']
@@ -614,6 +626,11 @@ export class EnquiryEntryComponent implements OnInit {
       routeFormGroup.updateValueAndValidity();
       this.onRouteChange(index);
     });
+    if (this.authStateCache !== "Pending") {
+      this.disableAddButtons = true;
+      this.rateRequestForm.disable();
+      this.enquiryOtherForm.disable();
+    }
   }
 
   restrictDecimal(event: KeyboardEvent) {
@@ -712,42 +729,41 @@ export class EnquiryEntryComponent implements OnInit {
     history.back();
   }
 
-  navigateQuotation() {
-    const pooList = this.rateRequestForm.value.routes.map((route) => route.POO);
-    const polList = this.rateRequestForm.value.routes.map((route) => route.POL);
-    const podList = this.rateRequestForm.value.routes.map((route) => route.POD);
-    const fpodList = this.rateRequestForm.value.routes.map((route) => route.FDC);
-    // Extract all cargoType values from each route
-    const cargoTypeList = this.rateRequestForm.value.routes.flatMap((route) =>
-      route.cargo.map((cargoItem) => cargoItem.cargoType)
-    );
+navigateQuotation() {
+  const response = this.rateRequestData;
 
-    this.leadService.clearQuotationData();
+  let routeDetails = response.enquiryRoute.flatMap(route => {
+    return route.enquiryCargo.map(cargo => ({
+      PORSid: route.PORSid,
+      POLSid: route.POLSid,
+      PODSid: route.PODSid,
+      FPODSid: route.FDPSid,
+      CargoType: cargo.CargoType,
+      CBM: cargo.Volume,
+      ContainerType: (this.containerTypes.find(con => con.ContainerName === cargo.ContainerType)?.ContainerTypeMasterSid),
+      ChargeableWeight : cargo.ChargeableWeight,
+      ContainerQty: cargo.Qty
+    }));
+  });
 
-    this.leadService.setQuotationData({
-      EnquirySid : this.EnquiryHeaderSid,
-      EnquiryNumber : this.rateRequestData?.EnquiryNumber,
-      customerId: this.quotationCustomerId,
-      departmentId: this.quotationDepartmentId,
-      CustomerAddress : this.rateRequestData?.CustomerAddress,
-      Email : this.rateRequestData?.Email,
-      CustomerBranchSid : this.rateRequestData?.CustomerBranchSid,
-      IncoTerms : this.rateRequestData?.IncoTerms,
-      ClearanceBy : this.rateRequestData?.ClearanceBy,
-      TransportBy : this.rateRequestData?.TransportBy,
-      EnquiryRemarks : this.rateRequestData?.Remarks,
-      ShipmentType : this.rateRequestData?.ShipmentType,
-      pooList : pooList,
-      polList: polList, // Sending as an array
-      podList: podList, // Sending as an array
-      fpodList : fpodList,
-      cargoTypeList: cargoTypeList,
-      rateRequest: true,
-      active: 2,
-    });
+  const enqData = {
+    EnquirySid: response?.EnquiryHeaderSid,
+    EnquiryNumber: response?.EnquiryNumber,
+    CustomerMasterSid: response?.CustomerMasterSid,
+    CustomerName: response?.CustomerName,
+    CustomerAddress: response?.CustomerAddress,
+    Email: response?.Email,
+    DepartmentMasterSid: response.DepartmentMasterSid,
+    segment: this.selectedFCLLCL,
+    rateReq: true,
+    enqRoutes: routeDetails
+  };
 
-    this.router.navigate(['crm/quotation/view']);
-  }
+  this.leadService.clearQuotationData();
+  this.leadService.setQuotationData(enqData);
+  this.router.navigate(['crm/quotation/entry']);
+}
+
 
 onRouteChange(routeIndex: number): void {
   const pod = this.routes.at(routeIndex).get('POD')?.value;

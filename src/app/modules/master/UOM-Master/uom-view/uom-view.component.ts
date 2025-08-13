@@ -85,7 +85,6 @@ statusOptions = [
       DimensionReq: new FormControl('', []),
       WeightReq: new FormControl(null, []),
       VolumeReq: new FormControl('', []),
-      UOMType: new FormControl(null, [Validators.required]),
       ShipmentType: new FormControl(null, [Validators.required]),
       status: new FormControl({value: 'A', disabled: !this.isEditMode}, [Validators.required]),
       Remarks: new FormControl('', [Validators.maxLength(300)])

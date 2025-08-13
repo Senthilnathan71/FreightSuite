@@ -150,6 +150,20 @@ export const CrmMobileRoutes: Routes = [
                     // ],
                 },
             },
+             {
+                path: 'quotation/entry/:id',
+                component: QuotationEntryComponent,
+                data: {
+                    title: 'Quotation',
+                    backOption: [
+                        { title: 'Back', url: '/crm/quotation/list' },
+                    ],
+                    // urls: [
+                    //     { title: 'CRM', url: '/crm' },
+                    //     { title: 'Quotation' },
+                    // ],
+                },
+            },
             {
                 path: 'quotation/:id',
                 component: QuotationComponent,

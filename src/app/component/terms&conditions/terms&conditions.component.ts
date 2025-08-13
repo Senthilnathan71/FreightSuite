@@ -24,6 +24,9 @@ export class TermsAndConditionsComponent implements OnInit {
   showAddRow: boolean = false;
   addForm: FormGroup;
   showEmptyTemplate : boolean;
+  userData : any;
+  currentCompany : any;
+  currentBranch: any;
 
   constructor(
     private activeModal: NgbActiveModal,
@@ -38,6 +41,14 @@ export class TermsAndConditionsComponent implements OnInit {
   }
 
   ngOnInit() {
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+    if (userProfile) {
+      this.userData = userProfile;
+    }
+    const storedCompany = localStorage.getItem('selected-company');
+    this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
+    const storedBranch = localStorage.getItem('selected-branch');
+    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     this.showEmptyTemplate = this.terms.length === 0 && !this.showAddRow;
   }
 
@@ -59,13 +70,13 @@ export class TermsAndConditionsComponent implements OnInit {
       return;
     }
     const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
-    const BranchMasterSid = this.appSettingService.userSettingSource.value['userBranchMaster'][0].branchMaster.BranchMasterSid;
-    const CompanyMasterSid = this.appSettingService.userSettingSource.value['userBranchMaster'][0].companyMaster.CompanyMasterSid;
+    let currentCompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    let currentBranchMasterSid = this.currentBranch?.BranchMasterSid;
     const formValue = this.addForm.value;
     console.log(formValue);
     const payload = {
-      CompanyMasterSid,
-      BranchMasterSid,
+      CompanyMasterSid : currentCompanyMasterSid,
+      BranchMasterSid : currentBranchMasterSid,
       MenuMasterSid: this.MenuMasterSid,
       createdBy: currentUserEmail,
       TandC: formValue.newTerm,

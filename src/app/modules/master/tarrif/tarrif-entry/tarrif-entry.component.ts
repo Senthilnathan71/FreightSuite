@@ -540,7 +540,7 @@ export class TarrifEntryComponent implements OnInit {
 
 	setChargeCode(chargeCode){
 		const requiredCharge = this.chargeList.find(charge => charge.chargeCode === chargeCode);
-		this.setChargeDescription(requiredCharge);
+		// this.setChargeDescription(requiredCharge);
 	}
 
 	loadTariffDetails(){
@@ -656,13 +656,15 @@ export class TarrifEntryComponent implements OnInit {
 		});
 	}
 
-	setChargeDescription(charge ?: Charge){
+	setChargeDetails(charge ?: Charge){
 		if(!charge || this.chargeTaxes.length === 0)
 		{
 			this.tariffDetailsForm.get('detailDescription').setValue('');
+			this.tariffDetailsForm.get('detailUOMSid')?.setValue(null)
 			return;
 		}
-		let ChargeMasterSid = charge.ChargeMasterSid;
+		let ChargeMasterSid = charge?.ChargeMasterSid;
+		this.tariffDetailsForm.get('detailUOMSid')?.setValue(charge?.UOM)
 		const reqTaxes = this.chargeTaxes.filter(t => t.chargeTaxMasterSid === ChargeMasterSid);
 		if(reqTaxes.length > 0){
 			this.tariffDetailsForm.get('detailDescription').setValue(reqTaxes[0].description);
