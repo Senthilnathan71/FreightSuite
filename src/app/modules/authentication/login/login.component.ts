@@ -52,11 +52,12 @@ export class LoginComponent implements OnInit {
     // Auto-fill credentials if saved in localStorage
     const savedEmail = localStorage.getItem('rememberedEmail');
     const savedPassword = localStorage.getItem('rememberedPassword');
+    const decryptedPass = this.appSettingService.decrypt(savedPassword);
 
-    if (savedEmail && savedPassword) {
+    if (savedEmail && decryptedPass) {
       this.loginform.patchValue({
         email: savedEmail,
-        password: savedPassword,
+        password: decryptedPass,
         rememberMe: true
       });
     }
