@@ -162,7 +162,7 @@
                                 @if(zoneForm.get('ZoneName')?.touched && zoneForm.get('ZoneName')?.invalid){
                                 <div class="error-message">
                                     @if(zoneForm.get('ZoneName')?.hasError('required')){
-                                    <span>ZoneName Name is required</span>
+                                    <span>Zone Name is required</span>
                                     } @else if(zoneForm.get('ZoneName')?.hasError('maxlength')){
                                     <span>Max 100 Characters</span>
                                     } @else if(zoneForm.get('ZoneName')?.hasError('numberNotAllowed')){
