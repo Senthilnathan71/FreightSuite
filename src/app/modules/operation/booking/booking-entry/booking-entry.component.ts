@@ -98,6 +98,8 @@ export class BookingEntryComponent {
     this.selectedTab = tab;
   }
 
+  
+
   openProductModal() {
     this.modalService.open(this.productModal, {
       size: 'lg',

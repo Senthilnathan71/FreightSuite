@@ -212,9 +212,9 @@
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select formControlName="RegionName" [items]="filteredZones" bindLabel="ZoneName"
                                     bindValue="ZoneName" placeholder="">
-                                    <ng-template ng-label-tmp let-item="item">
+                                    <!-- <ng-template ng-label-tmp let-item="item">
                                         {{item.ZoneName}} ({{item.ZoneCode}})
-                                    </ng-template>
+                                    </ng-template> -->
                                     <ng-template ng-option-tmp let-item="item">
                                         {{item.ZoneName}} ({{item.ZoneCode}})
                                     </ng-template>

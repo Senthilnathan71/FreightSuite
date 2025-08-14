@@ -11,13 +11,13 @@
             </div>
             <div class="col-md-8 pb-2">
                 <div class="d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-light-secondary btn-sm" (click)="goBack()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
                         <i class="fas fa-chevron-left me-1"></i> Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm" (click)="resetForm()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"  (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
     [disabled]="btnDisable || chargeForm.invalid || !canSaveCharge()"
     [title]="!canSaveCharge() ? 'Please add at least one GST and one TDS record' : ''"
     *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
