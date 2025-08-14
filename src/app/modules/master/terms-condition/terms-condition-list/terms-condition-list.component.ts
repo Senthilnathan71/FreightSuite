@@ -40,8 +40,11 @@ export class TermsConditionListComponent implements OnInit {
     totalAmountOfCollections : number;
     isFavorite: boolean = false;
     sortColumn: string = 'status'; 
-sortDirection: string = 'asc';
+    sortDirection: string = 'asc';
 
+      // Company
+    currentCompany : any;
+    currentBranch : any;
     toggleFavorite() {
         this.isFavorite = !this.isFavorite;
     } 
@@ -63,6 +66,8 @@ sortDirection: string = 'asc';
         //         }
         //     }
         // )
+        this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -184,8 +189,8 @@ applySorting() {
             branch : item.branch?.branchName
         }));
 
-        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+        // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+        const companyName = this.currentCompany?.companyName ?? 'Company';
         this.excelReportService.exportAsExcel({
             data: formattedData,
             headers: [

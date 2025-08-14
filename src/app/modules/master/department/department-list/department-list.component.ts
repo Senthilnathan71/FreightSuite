@@ -37,7 +37,10 @@ export class DepartmentListComponent {
   page = 1;
   pageSize = 15;
   totalLengthOfCollection: number;
-userData:any
+  userData:any
+  // Company
+  currentCompany : any;
+  currentBranch : any;
   constructor(private userService: authService,private masterService: MasterService, private excelReportService:ExcelExportService, private router: Router,
     private appSettingService: AppSettingsService, private dialog: MatDialog
   ) { }
@@ -49,6 +52,8 @@ userData:any
 //         this.checkPermissions();
 //       }
 //     }); 
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -193,8 +198,9 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
     Status: item.Status === 'A' ? 'Active' : 'Suspended'
   }));
 
-  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+  // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+ 
   this.excelReportService.exportAsExcel({
     data: formattedData,
     headers: [

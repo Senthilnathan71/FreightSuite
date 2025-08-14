@@ -59,10 +59,14 @@ export class UserListComponent {
     this.isFavorite = !this.isFavorite;
   } 
 
+  // Company
+  currentCompany : any;
+  currentBranch : any;
   constructor(
     private masterServ: MasterService,
     private dialog: MatDialog,
     private appSettingServ: AppSettingsService,
+    private appSettingService: AppSettingsService,
     private router: Router,
     private userService: authService,
     private excelReportService: ExcelExportService,
@@ -78,6 +82,8 @@ export class UserListComponent {
     //       this.checkPermissions();
     //     }
     //   });
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
      const userProfile = this.appSettingServ.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -231,8 +237,8 @@ export class UserListComponent {
       status : item.status === 'A' ? 'Active' : 'Suspended'
     }));
 
-    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+    // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+    const companyName = this.currentCompany?.companyName ?? 'Company';
     this.excelReportService.exportAsExcel({
       data: formattedData,
       headers: [

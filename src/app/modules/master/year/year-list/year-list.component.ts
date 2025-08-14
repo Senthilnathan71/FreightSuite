@@ -53,6 +53,9 @@ export class YearListComponent {
   sortColumn: string = 'YearName';
   sortDirection: string = 'asc';
 
+  // Company
+  currentCompany : any;
+  currentBranch : any;
   constructor( 
     private masterService: MasterService, 
     private router: Router,
@@ -69,6 +72,8 @@ export class YearListComponent {
   //       this.checkPermissions()
   //     }
   //   });
+  this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
   const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -224,8 +229,8 @@ export class YearListComponent {
       EndDate: new CustomDatePipe().transform(item.EndDate)// Format date
     }));
 
-    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+    // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+    const companyName = this.currentCompany?.companyName ?? 'Company';
     this.excelReportService.exportAsExcel({
       data: formattedData,
       headers: [

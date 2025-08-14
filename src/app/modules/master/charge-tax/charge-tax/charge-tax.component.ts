@@ -71,6 +71,9 @@ export class ChargeTaxComponent implements OnInit {
    permissions: string[] = [];
   currentMenuPermissions: any = {};
 
+  // Company
+  currentCompany : any;
+  currentBranch : any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
@@ -93,6 +96,8 @@ export class ChargeTaxComponent implements OnInit {
     //     this.userData = user;
     //   }
     // });
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -392,8 +397,8 @@ onPageChange(newPage: number) {
     Status: item.Status === 'A' ? 'Active' : 'Suspended'
   }));
 
-  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+  // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+  const companyName = this.currentCompany?.companyName ?? 'Company';
   this.excelReportService.exportAsExcel({
     data: formattedData,
     headers: [
@@ -401,8 +406,8 @@ onPageChange(newPage: number) {
         { key: 'description', label: 'Description' },
         { key: 'TaxGroup', label: 'Tax Group' },
         { key: 'TaxRate', label: 'Tax Rate (%)' },
-        { key: 'Status', label: 'Status' },
-        { key: 'Remarks', label: 'Remarks' }
+        { key: 'Remarks', label: 'Remarks' },
+        { key: 'Status', label: 'Status' }
     ],
   fileName: 'Charge-tax-Report', 
     title: companyName

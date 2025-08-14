@@ -97,6 +97,10 @@ export class LedgerMappingComponent {
   subledgerMappingList: any[] = [];
   customerList: any[] = [];
   chargeList: any[] = [];
+
+  // Company
+  currentCompany : any;
+  currentBranch : any;
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -109,6 +113,8 @@ export class LedgerMappingComponent {
   ) {}
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.appSettingService.getUser().subscribe((user) => {
       if (user) this.userData = user;
     });
@@ -455,28 +461,31 @@ export class LedgerMappingComponent {
     this.loadLedgerMappings();
   }
 
-  report(): void {
-    const formattedData = this.ledgerMappingList.map((item) => ({
-      ...item,
-      Status: item.Status === 'A' ? 'Active' : 'Suspended',
-    }));
-    const companyName =
-      this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ??
-      'Company';
+report(): void {
+  const formattedData = this.ledgerMappingList.map((item) => ({
+    LedgerCode: item.CoaMaster?.LedgerCode || '',
+    LedgerName: item.CoaMaster?.LedgerName || '',
+    branchName: item.CoaMaster?.CompanyMaster?.branchMaster?.[0]?.branchName || '',
+    currencyName: item.CoaMaster?.CurrencyMaster?.currencyName || '',
+    Status: item.Status === 'A' ? 'Active' : 'Suspended'
+  }));
 
-    this.excelReportService.exportAsExcel({
-      data: formattedData,
-      headers: [
-        { key: 'LedgerCode', label: 'COA code' },
-        { key: 'LedgerName', label: 'COA Name' },
-        { key: 'branchName', label: 'Branch Name' },
-        { key: 'currencyName', label: 'Currenecy' },
-        { key: 'Status', label: 'Status' },
-      ],
-      fileName: 'Ledger-Mapping-Report',
-      title: companyName,
-    });
-  }
+  const companyName = this.currentCompany?.companyName ?? 'Company';
+
+  this.excelReportService.exportAsExcel({
+    data: formattedData,
+    headers: [
+      { key: 'LedgerName', label: 'COA Name' },
+      { key: 'LedgerCode', label: 'COA code' },
+      { key: 'branchName', label: 'Branch Name' },
+      { key: 'currencyName', label: 'Currency' },
+      { key: 'Status', label: 'Status' }
+    ],
+    fileName: 'Ledger-Mapping-Report',
+    title: companyName
+  });
+}
+
 
   showInfo(): void {
     if (!this.ledgerMappingData) return;

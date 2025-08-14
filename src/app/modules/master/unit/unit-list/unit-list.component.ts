@@ -52,7 +52,9 @@ export class UnitListComponent {
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   } 
-  
+  // Company
+  currentCompany : any;
+  currentBranch : any;
   constructor(
     private masterService: MasterService,
     private router: Router,
@@ -68,6 +70,8 @@ export class UnitListComponent {
   //     this.checkPermissions();
   //   }
   // });
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
   const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -266,7 +270,8 @@ export class UnitListComponent {
   }));
 
   
-  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+  // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+  const companyName = this.currentCompany?.companyName ?? 'Company';
   this.excelReportService.exportAsExcel({
     data: formattedData,
     headers: [

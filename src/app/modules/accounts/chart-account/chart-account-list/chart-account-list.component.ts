@@ -41,7 +41,9 @@ export class ChartAccountListComponent {
   sortColumn: string = 'Name';
   sortDirection: string = 'asc';
   
-
+  // Company
+  currentCompany : any;
+  currentBranch : any;
   
   constructor(
     private masterService: MasterService,
@@ -57,6 +59,8 @@ export class ChartAccountListComponent {
     //     this.userData = user;
     //   }
     // });
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -175,15 +179,15 @@ softDeleteTaxGroup(id: number): void {
       status: item.status === 'A' ? 'Active' : 'Suspended'
     }));
 
-    const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+    // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+    const companyName = this.currentCompany?.companyName ?? 'Company';
     this.excelReportService.exportAsExcel({
       data: formattedData,
       headers: [
         { key: 'LedgerName', label: 'Name' },
-        { key: 'SubGroupName', label: 'Sub Group' },
-        { key: 'LedgerCode', label: 'Currency Code' },
+        { key: 'LedgerCode', label: 'Ledger Code' },
         { key: 'GroupName', label: 'Group' },
+        { key: 'SubGroupName', label: 'Sub Group' },
         { key: 'status', label: 'Status' }
       ],
       fileName: 'Chart-of-Accounts-Report',

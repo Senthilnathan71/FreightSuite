@@ -49,6 +49,9 @@ export class ChargeListComponent {
   sortColumn: string = 'chargeName';
   sortDirection: string = 'asc';
 
+  // Company
+  currentCompany : any;
+  currentBranch : any;
   constructor(
     private masterService: MasterService,
     private router: Router,
@@ -63,6 +66,8 @@ export class ChargeListComponent {
     //     this.userData = user;
     //   }
     // });
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -220,8 +225,8 @@ export class ChargeListComponent {
     TDSset: item.TDSSet || '' 
   }));
 
-  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+  // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+  const companyName = this.currentCompany?.companyName ?? 'Company';
   this.excelReportService.exportAsExcel({
     data: formattedData,
     headers: [

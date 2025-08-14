@@ -94,6 +94,10 @@ export class TaxGroupListComponent {
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
   searched = false;
   loading = true;
+  
+  // Company
+  currentCompany : any;
+  currentBranch : any;
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -112,6 +116,8 @@ export class TaxGroupListComponent {
   ];
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.initForm();
     this.taxGroupForm.valueChanges.subscribe(() => { });
     this.loadTaxGroups();
@@ -383,10 +389,10 @@ export class TaxGroupListComponent {
       Status: item.Status === 'A' ? 'Active' : 'Suspended',
       EffectiveFrom: this.formatDateForExport(item.EffectiveFrom),
     }));
-    const companyName =
-      this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ??
-      'Company';
-
+    // const companyName =
+    //   this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ??
+    //   'Company';
+    const companyName = this.currentCompany?.companyName ?? 'Company';
     this.excelReportService.exportAsExcel({
       data: formattedData,
       headers: [

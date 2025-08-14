@@ -49,7 +49,9 @@ export class TarrifListComponent implements OnInit {
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   isFavorite: boolean = false;
-
+  // Company
+  currentCompany : any;
+  currentBranch : any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   } 
@@ -58,6 +60,7 @@ export class TarrifListComponent implements OnInit {
     private masterServ: MasterService,
     private dialog: MatDialog,
     private appSettingServ: AppSettingsService,
+    private appSettingService: AppSettingsService,
     private router: Router,
     private userService: authService,
     private excelReportService: ExcelExportService
@@ -71,6 +74,8 @@ export class TarrifListComponent implements OnInit {
     //       this.checkPermissions();
     //     }
     //   });
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingServ.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -226,8 +231,8 @@ applySorting() {
       status: item.status === 'A' ? 'Active' : 'Suspended'
     }));
 
-        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+        // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+        const companyName = this.currentCompany?.companyName ?? 'Company';
         this.excelReportService.exportAsExcel({
             data: formattedData,
             headers: [

@@ -57,7 +57,9 @@ export class SailingScheduleLsitComponent implements OnInit {
     toggleFavorite() {
         this.isFavorite = !this.isFavorite;
     } 
-    
+    // Company
+    currentCompany : any;
+    currentBranch : any;
     constructor(
         private router: Router,
         private masterService:MasterService,
@@ -77,6 +79,8 @@ export class SailingScheduleLsitComponent implements OnInit {
         //         }
         //     }
         // );
+        this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -306,41 +310,36 @@ getSortValue(item: any): any {
         )
     }
 
-    report(): void {
-        const formattedData = this.scheduleList.flatMap(item => {
-            if (!item.voyageMasterDetail || item.voyageMasterDetail.length === 0) {
-                return [{
-                    vessel: item.vesselMaster?.VesselName,
-                    POL: '',
-                    POD: '',
-                    ETA: '',
-                    ETD: ''
-                }];
-            }
-            return item.voyageMasterDetail.map(detail => ({
-                vessel: item.vesselMaster?.VesselName,
-                POL: detail?.portMasterPOL?.PortCode || '',
-                POD: detail?.portMasterPOD?.PortCode  || '',
-                ETA: detail?.ETA || '',
-                ETD: detail?.ETD || ''
-            }));
-        });
+   report(): void {
+    const formattedData = this.scheduleList.map(item => {
+        const firstDetail = item.voyageMasterDetail?.[0];
+        const lastDetail = item.voyageMasterDetail?.[item.voyageMasterDetail.length - 1];
 
-        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+        return {
+            vessel: item.vesselMaster?.VesselName || '',
+            POL: firstDetail ? this.getFormattedPort(firstDetail.POLSid) : '',
+            POD: item.voyageMasterDetail.length < 2 ? '' : this.getFormattedPort(lastDetail?.POLSid),
+            ETA: firstDetail?.ETA || '',
+            ETD: lastDetail?.ETD || ''
+        };
+    });
 
-        this.excelReportService.exportAsExcel({
-            data: formattedData,
-            headers: [
-                { key: 'vessel', label: 'Vsl/Voy' },
-                { key: 'POL', label: 'POL' },
-                { key: 'POD', label: 'POD' },
-                { key: 'ETA', label: 'ETA' },
-                { key: 'ETD', label: 'ETD' },
-            ],
-            fileName: 'Sailing-Schedule-Report', 
-            title: companyName
-        });
-    }
+    // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+    this.excelReportService.exportAsExcel({
+        data: formattedData,
+        headers: [
+            { key: 'vessel', label: 'Vsl/Voy' },
+            { key: 'POL', label: 'POL' },
+            { key: 'POD', label: 'POD' },
+            { key: 'ETA', label: 'ETA' },
+            { key: 'ETD', label: 'ETD' },
+        ],
+        fileName: 'Sailing-Schedule-Report', 
+        title: companyName
+    });
+}
+
 
     reset(){
         this.searched = false;

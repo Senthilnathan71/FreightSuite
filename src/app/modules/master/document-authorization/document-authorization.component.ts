@@ -45,7 +45,9 @@ export class DocumentAuthorizationComponent {
     // Sorting related declaration
     sortColumn: string = 'DocumentName';
     sortDirection: string = 'desc';
-
+      // Company
+  currentCompany : any;
+  currentBranch : any;
     constructor(
         private masterService: MasterService,
         private router: Router,
@@ -55,6 +57,8 @@ export class DocumentAuthorizationComponent {
     ) { }
 
     ngOnInit():void {
+     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         const userProfile = this.appSettingService.getDecryptedUserProfile();
         if(userProfile){
             this.userData = userProfile;
@@ -151,7 +155,8 @@ export class DocumentAuthorizationComponent {
             ...data,
             CreatedOn : this.datePipe.transform(data.CreatedOn)
         }));
-        const companyName = this.userData?.userCompanyMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+        // const companyName = this.userData?.userCompanyMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+        const companyName = this.currentCompany?.companyName ?? 'Company';
         this.excelReportService.exportAsExcel({
             data : formattedData,
             headers : [

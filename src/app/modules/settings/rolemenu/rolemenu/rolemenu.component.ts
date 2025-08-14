@@ -79,7 +79,9 @@ export class RolemenuComponent implements OnInit {
 	TandCList: any;
     isFavorite: boolean = false;
 	menuPermissionsFetched : boolean;
-
+	// Company
+    currentCompany : any;
+    currentBranch : any;
 	toggleFavorite() {
 		this.isFavorite = !this.isFavorite;
 	}
@@ -103,6 +105,8 @@ export class RolemenuComponent implements OnInit {
 		// 		this.userData = user;
 		// 	}
 		// )
+		this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 		const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -271,8 +275,8 @@ clearFilterValue(){
 			menuName : item.menuMaster?.MenuName
 		}));
 
-		const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+		// const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+		const companyName = this.currentCompany?.companyName ?? 'Company';
 		this.excelReportService.exportAsExcel({
 			data: formattedData,
 			headers: [

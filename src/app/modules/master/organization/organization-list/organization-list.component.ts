@@ -47,7 +47,9 @@ export class OrganizationListComponent implements OnInit {
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   countryList: any[] = [];
-
+   // Company
+  currentCompany : any;
+  currentBranch : any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   } 
@@ -66,6 +68,8 @@ export class OrganizationListComponent implements OnInit {
     //     }
     //   }
     // );
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -223,8 +227,8 @@ getCountryName(countrySid: number): string {
       Country: country
     };
   });
-        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+        // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+        const companyName = this.currentCompany?.companyName ?? 'Company';
         this.excelReportService.exportAsExcel({
             data: formattedData,
             headers: [

@@ -53,7 +53,9 @@ export class EnquiryListComponent {
   enquiryData: any
   userData : any;
   loadingEnquiry :boolean
-
+  // Company
+  currentCompany : any;
+  currentBranch : any;
   constructor(
     private leadService: LeadService, 
     private route: Router, 
@@ -64,6 +66,8 @@ export class EnquiryListComponent {
   ) { }
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.searchEnquiry();
     this.isMobile = this.appService.getDevice()
     this.appSettingService.userSettingSource.subscribe(
@@ -151,20 +155,21 @@ export class EnquiryListComponent {
   report(): void {
   const formattedData = this.enquiryItems.map(item => ({
     ...item,
+    QuotationNO: item.quoteNo ? item.quoteNo : 'N/A',
     ShipmentExpectedDate : this.datePipe.transform(item.ShipmentExpectedDate),
     status: item.status === 'A' ? 'Active' : 'Inactive'
   }));
 
-  const companyName = this.userData?.userCompanyMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+  // const companyName = this.userData?.userCompanyMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+  const companyName = this.currentCompany?.companyName ?? 'Company';
   this.excelReportService.exportAsExcel({
     data: formattedData,
     headers: [
       { key: 'EnquiryNumber', label: 'Enquiry Number' },
+      { key: 'QuotationNO', label: 'Quotation No' },
       { key: 'CustomerName', label: 'Customer Name' },
       { key: 'ShipmentType', label: 'Department' },
       { key: 'ShipmentExpectedDate', label: 'Expected Shipment Date' },
-      { key: 'TDSset', label: 'Quotation No' },
       { key: 'status', label: 'Status' }
     ],
     fileName: 'Enquiry-Report',

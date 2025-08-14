@@ -45,7 +45,9 @@ export class CurrencyExchangeListComponent {
   sortColumn: string = 'EffectiveFrom'; // default sort column
   sortDirection: string = 'desc'; // default sort direction (newest first)
   isFavorite: boolean = false;
-
+  // Company
+  currentCompany : any;
+  currentBranch : any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
@@ -63,6 +65,8 @@ export class CurrencyExchangeListComponent {
   //     this.userData = user;
   //   }
   // });
+  this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
   const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -217,8 +221,8 @@ loadCurrencyExchanges(): void {
     BuyRate: this.formatNumberForExport(item.BuyRate)
   }));
 
-  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+  // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+  const companyName = this.currentCompany?.companyName ?? 'Company';
   this.excelReportService.exportAsExcel({
     data: formattedData,
     headers: [

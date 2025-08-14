@@ -71,6 +71,9 @@ export class CostCenterComponent {
    loading = false;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
+    // Company
+  currentCompany : any;
+  currentBranch : any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   } 
@@ -100,6 +103,8 @@ export class CostCenterComponent {
       //     }
       //   }
       // )
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
       const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -422,8 +427,8 @@ checkPermissions() {
         ...item,
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
-       const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-  
+      //  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+        const companyName = this.currentCompany?.companyName ?? 'Company';
        this.excelReportService.exportAsExcel({
         data: formattedData,
         headers: [

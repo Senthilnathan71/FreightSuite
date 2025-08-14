@@ -50,7 +50,9 @@ export class AuthorityListComponent {
   // Sorting related declaration
   sortColumn: string = 'DepartmentMaster';
   sortDirection: string = 'desc';
-
+  // Company
+  currentCompany : any;
+  currentBranch : any;
   constructor(
     private masterService: MasterService,
     private router: Router,
@@ -60,6 +62,8 @@ export class AuthorityListComponent {
   ) { }
 
   ngOnInit() {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userInfo = this.appSettingService.getDecryptedUserProfile();
     if (userInfo) {
       this.userData = userInfo;
@@ -216,8 +220,8 @@ export class AuthorityListComponent {
   report(): void {
     const formattedData = this.authorityList;
 
-    const companyName = this.userData?.userCompanyMaster?.[0]?.companyMaster?.companyName ?? 'Company';
-
+    // const companyName = this.userData?.userCompanyMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+    const companyName = this.currentCompany?.companyName ?? 'Company';
     this.excelReportService.exportAsExcel({
       data: formattedData,
       headers: [

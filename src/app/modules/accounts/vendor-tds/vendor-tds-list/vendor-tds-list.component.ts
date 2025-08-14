@@ -46,7 +46,9 @@ export class VendorTdsListComponent implements OnInit {
     sortColumn: string = 'CustomerName';
     sortDirection: string = 'desc';
 
-
+      // Company
+    currentCompany : any;
+    currentBranch : any;
     constructor(
         private accountService: AccountsService,
         private router: Router,
@@ -56,6 +58,8 @@ export class VendorTdsListComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         this.appSettingService.getUser().subscribe(user => {
             if (user) {
                 this.userData = user;
@@ -214,7 +218,8 @@ export class VendorTdsListComponent implements OnInit {
     report():void {
         const formattedData = this.allSupplierTDS;
         // SupplierName , PanNo,CompanyType , CountryName , status
-        const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+        // const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+        const companyName = this.currentCompany?.companyName ?? 'Company';
         this.excelReportService.exportAsExcel({
             data : formattedData,
             headers : [
