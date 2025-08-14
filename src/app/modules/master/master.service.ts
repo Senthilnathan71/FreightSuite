@@ -1126,6 +1126,15 @@ export class MasterService {
       })
     );
   }
+
+  getAuditLogsCompany(tableName: string, recordId?: string) {
+    let url = `company/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
 saveCompanyConfig(companyId: number, configData: any) {
   return this.http.post<{ data: any }>(`company/${companyId}/config`, configData).pipe(
     map((resp) => {
