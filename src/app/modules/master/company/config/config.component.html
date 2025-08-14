@@ -19,7 +19,7 @@
         <!-- Sidebar -->
         <div class="col-md-2 bg-light border-end" style="height: 83vh">
             <ul class="nav flex-column pt-3">
-                <li class="nav-item" *ngFor="let section of ['master', 'crm', 'settings', 'accounts']">
+                <li class="nav-item" *ngFor="let section of sections">
                     <a href="#"
                         class="nav-link d-flex justify-content-between align-items-center px-3 py-1 my-2 rounded"
                         [ngStyle]="{
@@ -48,38 +48,43 @@
                 </li>
             </ul>
         </div>
- 
-        <!-- Main Content --> 
+
+        <!-- Main Content -->
         <div class="col-md-10 p-2">
             <h5 class="mb-3 border-bottom p-2 text-capitalize">{{ activeSection }}</h5>
 
-            <ng-container [ngSwitch]="activeSection">
-                <!-- Master Section -->
-                <div *ngSwitchCase="'master'">
-                    <div ngbAccordion [closeOthers]="true">
-                        <div ngbAccordionItem *ngFor="let master of getMasterKeys()" [id]="master">
-                            <h2 ngbAccordionHeader>
-                                <button ngbAccordionButton>
-                                    <strong>{{ master | titlecase }}</strong>
-                                </button>
-                            </h2>
-                            <div ngbAccordionCollapse>
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3" *ngFor="let field of getMasterFieldKeys(master)">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" [id]="master + '_' + field"
-                                                           [checked]="getConfigValue('masters', master, field)"
-                                                           (change)="toggleField('masters', master, field)">
-                                                    <label class="form-check-label" [for]="master + '_' + field">
-                                                        {{ getLabel('masters', master, field) }}
-                                                    </label>
-                                                </div>
-                                                <input *ngIf="master !== 'basic'" class="form-control form-control-sm mt-1"
-                                                       [(ngModel)]="config.masters[master].fields[field].label"
-                                                       [placeholder]="'Label for ' + field">
+            <!-- <div *ngIf="isLoading" class="text-center py-5">
+                <div class="spinner-border text-info" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading configuration...</p>
+            </div> -->
+
+            <div *ngIf="!isLoading">
+                <div ngbAccordion [closeOthers]="true">
+                    <div ngbAccordionItem *ngFor="let subsection of getSubsections(activeSection)" [id]="subsection">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton>
+                                <strong>{{ subsection | titlecase }}</strong>
+                            </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3" *ngFor="let key of getFieldKeys(activeSection, subsection)">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" [id]="key"
+                                                    [checked]="getConfigValue(activeSection, subsection, key)"
+                                                    (change)="toggleField(activeSection, subsection, key)">
+                                                <label class="form-check-label" [for]="key">
+                                                    {{ getLabel(activeSection, subsection, key) }}
+                                                </label>
                                             </div>
+                                            <input *ngIf="config[activeSection]?.[subsection]?.fields?.[key]?.label !== undefined"
+                                                class="form-control form-control-sm mt-1"
+                                                [(ngModel)]="config[activeSection][subsection].fields[key].label"
+                                                [placeholder]="'Label for ' + key">
                                         </div>
                                     </div>
                                 </div>
@@ -87,112 +92,7 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- CRM Section -->
-                <div *ngSwitchCase="'crm'">
-                    <div ngbAccordion [closeOthers]="true">
-                        <div ngbAccordionItem *ngFor="let subsection of getCrmSubsections()" [id]="subsection">
-                            <h2 ngbAccordionHeader>
-                                <button ngbAccordionButton>
-                                    <strong>{{ subsection | titlecase }}</strong>
-                                </button>
-                            </h2>
-                            <div ngbAccordionCollapse>
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3" *ngFor="let field of getCrmFieldKeys(subsection)">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" 
-                                                           [id]="'crm_' + subsection + '_' + field"
-                                                           [checked]="getConfigValue('crm', subsection, field)"
-                                                           (change)="toggleField('crm', subsection, field)">
-                                                    <label class="form-check-label" [for]="'crm_' + subsection + '_' + field">
-                                                        {{ getLabel('crm', subsection, field) }}
-                                                    </label>
-                                                </div>
-                                                <input *ngIf="subsection !== 'basic'" class="form-control form-control-sm mt-1"
-                                                       [(ngModel)]="config.crm[subsection].fields[field].label"
-                                                       [placeholder]="'Label for ' + field">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Settings Section -->
-<div *ngSwitchCase="'settings'">
-  <div ngbAccordion [closeOthers]="true">
-    <div ngbAccordionItem *ngFor="let subsection of getSettingsSubsections()" [id]="subsection">
-      <h2 ngbAccordionHeader>
-        <button ngbAccordionButton>
-          <strong>{{ subsection | titlecase }}</strong>
-        </button>
-      </h2>
-      <div ngbAccordionCollapse>
-        <div class="card">
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-6 mb-3" *ngFor="let field of getSettingsFieldKeys(subsection)">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" 
-                         [id]="'settings_' + subsection + '_' + field"
-                         [checked]="getConfigValue('settings', subsection, field)"
-                         (change)="toggleField('settings', subsection, field)">
-                  <label class="form-check-label" [for]="'settings_' + subsection + '_' + field">
-                    {{ field | titlecase }}
-                  </label>
-                </div>
-                <input *ngIf="subsection !== 'basic'" class="form-control form-control-sm mt-1"
-                       [(ngModel)]="config.settings[subsection].fields[field].label"
-                       [placeholder]="'Label for ' + field">
-              </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-                <!-- Accounts Section -->
-                <div *ngSwitchCase="'accounts'">
-                    <div ngbAccordion [closeOthers]="true">
-                        <div ngbAccordionItem *ngFor="let subsection of getAccountsSubsections()" [id]="subsection">
-                            <h2 ngbAccordionHeader>
-                                <button ngbAccordionButton>
-                                    <strong>{{ subsection | titlecase }}</strong>
-                                </button>
-                            </h2>
-                            <div ngbAccordionCollapse>
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3" *ngFor="let field of getAccountsFieldKeys(subsection)">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" 
-                                                           [id]="'accounts_' + subsection + '_' + field"
-                                                           [checked]="getConfigValue('accounts', subsection, field)"
-                                                           (change)="toggleField('accounts', subsection, field)">
-                                                    <label class="form-check-label" [for]="'accounts_' + subsection + '_' + field">
-                                                        {{ getLabel('accounts', subsection, field) }}
-                                                    </label>
-                                                </div>
-                                                <input *ngIf="subsection !== 'basic'" class="form-control form-control-sm mt-1"
-                                                       [(ngModel)]="config.accounts[subsection].fields[field].label"
-                                                       [placeholder]="'Label for ' + field">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </ng-container>
 
             <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-5">
                 <div class="d-flex align-items-center gap-2 pt-2">
@@ -210,7 +110,7 @@
                     </button>
                 </div>
                 <div class="text-end pt-2">
-                    <button type="button" class="btn btn-info btn-sm" (click)="saveConfig()">
+                    <button type="button" class="btn btn-info btn-sm" (click)="saveConfig()" [disabled]="isLoading">
                         <i class="fas fa-save me-1"></i> Save
                     </button>
                 </div>
