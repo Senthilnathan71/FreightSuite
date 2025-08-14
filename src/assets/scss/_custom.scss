@@ -278,3 +278,22 @@
 .pagination {
     margin-bottom: 0;
 }
+
+// moadl Logs
+.audit-log-modal .modal-dialog {
+  max-width: 80% !important; /* Makes modal almost full width */
+  width: auto;               /* Let it adjust dynamically */
+  height: auto;               /* Let height adjust to content */
+  margin: 1rem auto;          /* Center with some margin */
+}
+
+.audit-log-modal .modal-content {
+  max-height: 90vh;           /* Limit total height to viewport */
+  display: flex;
+  flex-direction: column;
+}
+
+.audit-log-modal .modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;           /* Scroll only when content exceeds height */
+}

@@ -223,7 +223,7 @@ export class DepartmentEntryComponent {
     );
   }
 
-  openAuditLogs(modal: TemplateRef<any>) {
+ openAuditLogs(modal: TemplateRef<any>) {
   if (!this.DepartmentMasterSid) return;
 
   this.masterService.getAuditLogs('DepartmentMaster', this.DepartmentMasterSid.toString()).subscribe({
@@ -245,7 +245,7 @@ export class DepartmentEntryComponent {
         newValDisplay: formatFields(log.newVal)
       }));
 
-      this.auditLogModalRef = this.modalService.open(modal, { size: 'lg', centered: true, scrollable: true });
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
     },
     error: err => console.error('Error fetching audit logs:', err)
   });

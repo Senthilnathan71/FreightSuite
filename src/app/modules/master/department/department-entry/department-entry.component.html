@@ -251,19 +251,20 @@
     </form>
 </div>
 <ng-template #auditLogModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">Audit Logs</h5>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  <div class="modal-header bg-info text-white p-2">
+    <h5 class="modal-title mb-0">Audit Logs</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
   </div>
-  <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
-    <table class="table table-bordered table-striped">
+  <div class="modal-body p-3">
+  <div class="table-responsive">
+    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
       <thead>
         <tr>
           <th>Changed At</th>
           <th>Changed By</th>
           <th>Operation</th>
-          <th>Old Value</th>
-          <th>New Value</th>
+          <th class="text-center">Old Value</th>
+          <th class="text-center">New Value</th>
         </tr>
       </thead>
       <tbody>
@@ -271,23 +272,24 @@
           <td>{{ log.changedAt | date:'medium' }}</td>
           <td>{{ log.changedBy || '-' }}</td>
           <td>{{ log.operation }}</td>
-          <td>
+          <td class="bg-light-danger">
         <ul>
           <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
         </ul>
       </td>
-      <td>
+      <td class="bg-light-success">
         <ul>
           <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
         </ul>
       </td>
         </tr>
         <tr *ngIf="auditLogs.length === 0">
-          <td colspan="5" class="text-center">No audit logs found.</td>
+          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
         </tr>
       </tbody>
     </table>
   </div>
+</div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
   </div>
