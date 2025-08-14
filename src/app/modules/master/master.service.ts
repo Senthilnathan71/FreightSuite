@@ -407,7 +407,14 @@ export class MasterService {
     );
   }
 
+  getAuditLogs(tableName: string, recordId?: string) {
+    let url = `department/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
 
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
 
   //uom-master
   getAllUom() {
@@ -1117,6 +1124,15 @@ export class MasterService {
         let response = resp.data;
         return response;
       })
+    );
+  }
+
+  getAuditLogsCompany(tableName: string, recordId?: string) {
+    let url = `company/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
     );
   }
 saveCompanyConfig(companyId: number, configData: any) {
