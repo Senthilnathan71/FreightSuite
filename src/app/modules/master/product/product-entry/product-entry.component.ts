@@ -8,8 +8,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import { DatePipe } from '@angular/common';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { CommonModule, DatePipe } from '@angular/common';
+import { NgbModal ,NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -19,7 +19,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 @Component({
     selector: 'app-product-entry',
     standalone: true,
-    imports: [FeatherModule, NgSelectModule,ReactiveFormsModule,OnlyTextDirective,OnlyNumbersDirective,TextWithNumbersDirective,DatePipe],
+    imports: [FeatherModule, NgSelectModule,ReactiveFormsModule,OnlyTextDirective,OnlyNumbersDirective,TextWithNumbersDirective,DatePipe,CommonModule],
     templateUrl: './product-entry.component.html',
     styleUrl: './product-entry.component.scss',
 })
@@ -31,7 +31,8 @@ export class ProductEntryComponent implements OnInit{
     UOMList : any[];
     hsnList: any[];
     productData: any;
-
+    auditLogs: any[] = []; // Stores audit logs
+    auditLogModalRef!: NgbModalRef;
     // modeOfUOM = [
     //     { id: '1', name: 'Days' },
     //     { id: '2', name: 'Shipment' },
@@ -308,5 +309,31 @@ openEDoc() {
   modalRef.componentInstance.idValue = this.productData?.ProductMasterSId;
 }
 
+ openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.ProductMasterSId) return;
 
+  this.masterService.getAuditLogs('ProductMaster', this.ProductMasterSId.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 }

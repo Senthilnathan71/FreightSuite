@@ -45,6 +45,7 @@
                 <form
                     class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <app-favorite-star screenName="Zone" class="mt-1 me-1"></app-favorite-star>
+                    
                     @if(hasPermission('Add')) {
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="openModal(content)">
@@ -231,8 +232,13 @@
         <i class="fas fa-envelope me-1"></i> Email
       </button>
     }
+     <button type="button" class="btn btn-info btn-sm" 
+                            (click)="openAuditLogs(auditLogModal)">
+                        <i class="fas fa-history me-1"></i>Logs
+                    </button>
 
             }
+            
             <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
                 [disabled]="btnDisable || zoneForm.invalid"
@@ -242,3 +248,48 @@
         </div>
     </ng-template>
 </div>
+
+<ng-template #auditLogModal let-modal>
+  <div class="modal-header bg-info text-white p-2">
+    <h5 class="modal-title mb-0">Audit Logs</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body p-3">
+  <div class="table-responsive">
+    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+      <thead>
+        <tr>
+          <th>Changed At</th>
+          <th>Changed By</th>
+          <th>Operation</th>
+          <th class="text-center">Old Value</th>
+          <th class="text-center">New Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of auditLogs">
+          <td>{{ log.changedAt | date:'medium' }}</td>
+          <td>{{ log.changedBy || '-' }}</td>
+          <td>{{ log.operation }}</td>
+          <td class="bg-light-danger">
+        <ul>
+          <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+        </ul>
+      </td>
+      <td class="bg-light-success">
+        <ul>
+          <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+        </ul>
+      </td>
+        </tr>
+        <tr *ngIf="auditLogs.length === 0">
+          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary btn-sm" (click)="modal.close()">Close</button>
+  </div>
+</ng-template>

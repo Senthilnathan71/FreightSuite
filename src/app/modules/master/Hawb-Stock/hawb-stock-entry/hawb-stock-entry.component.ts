@@ -1,8 +1,8 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbModal, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule ,NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
@@ -54,8 +54,10 @@ export class HawbStockEntryComponent implements OnInit {
   TandCList: any[]=[];
   hawstockData: any;
   btnDisable: boolean = false;
-   permissions: string[] = [];
+  permissions: string[] = [];
   currentMenuPermissions: any = {};
+  auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -425,5 +427,33 @@ openEDoc() {
   modalRef.componentInstance.item = this.hawstockData;
   modalRef.componentInstance.idLabel = 'HAWB Stock Id';
   modalRef.componentInstance.idValue = this.hawstockData?.HawbStockSid;
+}
+
+ openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.HawbStockSid) return;
+
+  this.masterService.getAuditLogs('HawbStockMaster', this.HawbStockSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
 }
 }

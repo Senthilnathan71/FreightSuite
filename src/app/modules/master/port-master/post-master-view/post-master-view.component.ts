@@ -14,7 +14,7 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { forkJoin } from 'rxjs';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal ,NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
@@ -70,7 +70,8 @@ export class PostMasterViewComponent {
   currentMenuId: number;
   TandCList: any;
   portCodeLimit : number;
-
+  auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
   constructor(private config: NgSelectConfig, private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router, private appSettingService: AppSettingsService, private masterService: MasterService, private modalService : NgbModal) {
@@ -405,5 +406,31 @@ openEDoc() {
   modalRef.componentInstance.idValue = this.portData?.PortMasterSid;
 }
 
+ openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.idParam) return;
 
+  this.masterService.getAuditLogs('DepartmentMaster', this.idParam.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 }

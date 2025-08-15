@@ -98,7 +98,8 @@ export class HSSACComponent {
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   } 
-  
+  auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -554,4 +555,31 @@ openEDoc() {
 }
 
 
+ openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.HSSACMasterSid) return;
+
+  this.masterService.getAuditLogs('HssacMaster', this.HSSACMasterSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 }

@@ -7,7 +7,7 @@ import { RouterModule } from '@angular/router';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal,NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
@@ -40,6 +40,8 @@ export class UOMViewComponent {
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   userData:any;
+  auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
   shipmenttypes = [
     { id: 'FCL', name: 'FCL' },
     { id: 'LCL', name: 'LCL' },
@@ -313,5 +315,31 @@ openEDoc() {
   modalRef.componentInstance.idValue = this.uomData?.UOMMasterSid;
 }
 
+ openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.idParam) return;
 
+  this.masterService.getAuditLogs('UOMMaster', this.idParam.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 }
