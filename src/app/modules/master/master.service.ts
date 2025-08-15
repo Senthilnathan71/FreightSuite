@@ -90,6 +90,14 @@ export class MasterService {
     )
   }
 
+  getAuditLogsCustomer(tableName: string, recordId?: string) {
+    let url = `customer/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
 
   getAllCustomers() {
     return this.http.get('customer').pipe(
@@ -583,6 +591,15 @@ export class MasterService {
     )
   }
 
+  getAuditLogsState(tableName: string, recordId?: string) {
+    let url = `state/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   //port-master
   getAllPorts() {
     return this.http.get('port').pipe(
@@ -709,6 +726,15 @@ export class MasterService {
     );
   }
 
+  getAuditLogsCountry(tableName: string, recordId?: string) {
+    let url = `country/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   //city-master
 
   getAllCity() {
@@ -771,6 +797,14 @@ export class MasterService {
         return response;
       })
     )
+  }
+  getAuditLogsCity(tableName: string, recordId?: string) {
+    let url = `city/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
   }
 
   // Zone - Master
@@ -905,6 +939,15 @@ export class MasterService {
         return response;
       })
     )
+  }
+
+  getAuditLogsTariff(tableName: string, recordId?: string) {
+    let url = `tariff/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
   }
 
   getTariffById(TariffHeaderSid: number) {
@@ -1204,6 +1247,15 @@ getFieldConfiguration() {
       })
     )
   }
+
+  getAuditLogsCurrency(tableName: string, recordId?: string) {
+    let url = `currency/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
   //container-type-master
   getAllContainerTypes() {
     return this.http.get<ContainerType>('container-type').pipe(
@@ -1255,6 +1307,14 @@ getFieldConfiguration() {
         return response;
       })
     )
+  }
+  getAuditLogsContainerType(tableName: string, recordId?: string) {
+    let url = `container-type/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
   }
 
  
@@ -1314,6 +1374,14 @@ getFieldConfiguration() {
     )
   }
 
+  getAuditLogsDivision(tableName: string, recordId?: string) {
+    let url = `division/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
 
 
   //sector-master//
@@ -1481,6 +1549,14 @@ getFieldConfiguration() {
       })
     );
   }
+   getAuditLogsCharge(tableName: string, recordId?: string) {
+    let url = `charge/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
 
 
 
@@ -1593,6 +1669,15 @@ getFieldConfiguration() {
         return resp;
       })
     )
+  }
+
+  getAuditLogsBlclause(tableName: string, recordId?: string) {
+    let url = `blclause/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
   }
 
   // HSSAC-master
@@ -1762,6 +1847,15 @@ getFieldConfiguration() {
         let response = resp;
         return response;
       })
+    );
+  }
+
+  getAuditLogsChargeGroups(tableName: string, recordId?: string) {
+    let url = `charge-group/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
     );
   }
 
@@ -1943,6 +2037,15 @@ getFieldConfiguration() {
     )
   }
 
+  getAuditLogsSailingSchedule(tableName: string, recordId?: string) {
+    let url = `voyage/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   // searchSailingSchedule(payload) {
   //   return this.http.post<{ data: any[] }>('voyage/search-list', payload).pipe(
   //     map((resp) => {
@@ -2078,6 +2181,15 @@ getFieldConfiguration() {
         let response = resp;
         return response;
       })
+    );
+  }
+
+  getAuditLogsChargeTax(tableName: string, recordId?: string) {
+    let url = `charge-tax/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
     );
   }
   // User Master
@@ -2490,6 +2602,15 @@ getFieldConfiguration() {
     );
 }
 
+ getAuditLogsDocTypes(tableName: string, recordId?: string) {
+    let url = `document-type/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   //Hawb
   getAllHawbStocks() {
     return this.http.get<{ data: any[] }>('hawb-stock').pipe(
@@ -2599,6 +2720,15 @@ getFieldConfiguration() {
         return response;
       })
     )
+  }
+
+  getAuditLogsYear(tableName: string, recordId?: string) {
+    let url = `year/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
   }
 
   createFavouriteScreen(payload) {
@@ -2741,6 +2871,15 @@ getFieldConfiguration() {
     );
   }
 
+  getAuditLogsCostCenter(tableName: string, recordId?: string) {
+    let url = `cost-center/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   //profit-center-master
 
   getAllProfitCenter() {
@@ -2796,6 +2935,15 @@ getFieldConfiguration() {
         return resp;
       })
     )
+  }
+
+  getAuditLogsProfitCenter(tableName: string, recordId?: string) {
+    let url = `profit-center/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
   }
 
   //Tax
@@ -2978,6 +3126,15 @@ getFieldConfiguration() {
         let response = res;
         return response
       })
+    );
+  }
+
+  getAuditLogsTds(tableName: string, recordId?: string) {
+    let url = `tds/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
     );
   }
   // Tds Set Detail

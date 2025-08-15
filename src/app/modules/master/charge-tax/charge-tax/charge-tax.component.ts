@@ -71,6 +71,8 @@ export class ChargeTaxComponent implements OnInit {
    permissions: string[] = [];
   currentMenuPermissions: any = {};
 
+  auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
   // Company
   currentCompany : any;
   currentBranch : any;
@@ -249,6 +251,34 @@ export class ChargeTaxComponent implements OnInit {
       }
     );
   }
+
+  openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.ChargeTaxMasterSid) return;
+
+  this.masterService.getAuditLogsChargeTax('ChargeTaxMaster', this.ChargeTaxMasterSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 
   onSubmit() {
   const statusControl = this.chargeTaxForm.get('status');
