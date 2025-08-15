@@ -80,6 +80,9 @@ export class CostCenterComponent {
 
   statusList = ["Active", "Suspended"];
 
+  auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
+
   constructor(
     private modalService: NgbModal,
     private router: Router,
@@ -234,6 +237,33 @@ checkPermissions() {
       });
      }
   
+     openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.CostCenterMasterSid) return;
+
+  this.masterService.getAuditLogsCostCenter('CostCenterMaster', this.CostCenterMasterSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
      closeModal(): void {
       if (this.modalRef && typeof this.modalRef.close === 'function') {
         this.modalRef.close();

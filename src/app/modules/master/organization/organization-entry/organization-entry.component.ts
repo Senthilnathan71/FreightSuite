@@ -187,6 +187,10 @@ export class OrganizationEntryComponent {
   TandCList: any;
   menuList: any[] = [];
 
+  auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
+
+
 //   updateDisplayedCustomerTypes(): void {
 //   // Get the first 3 selected items
 //   this.displayedCustomerTypes = this.modeOfCustomerType
@@ -478,6 +482,34 @@ validateMultipleEmails(control: AbstractControl): ValidationErrors | null {
   } else {
     this.appSettingService.showWarning('No email available');
   }
+}
+
+openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.CustomerMasterSid) return;
+
+  this.masterService.getAuditLogsCustomer('CustomerMaster', this.CustomerMasterSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
 }
 
   openBranchLoginModal(content: TemplateRef<any>, data?: any) {

@@ -91,6 +91,12 @@ export class TarrifEntryComponent implements OnInit {
 	permissions: string[] = [];
     currentMenuPermissions: any = {};
 
+	
+auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
+
+
+
 	cargoTypes = ['General', 'Haz', 'Reefer', 'Flexi', 'ODC', 'Empty', 'RORO', 'OOG', 'Tanker'];
 	serviceLevel = ['BreakBulk', 'OOG', 'Tanker']
 
@@ -338,6 +344,34 @@ export class TarrifEntryComponent implements OnInit {
 		})
 	}
 
+	
+openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.TariffHeaderSid) return;
+
+  this.masterServ.getAuditLogs('TariffHeader', this.TariffHeaderSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 	loadModalFields() {
 		forkJoin({
 			charges: this.masterServ.getAllCharges(),

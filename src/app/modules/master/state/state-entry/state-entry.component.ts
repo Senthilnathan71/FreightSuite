@@ -9,7 +9,7 @@ import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
@@ -53,6 +53,11 @@ export class StateEntryComponent implements OnInit {
   ];
   currentMenuId: number;
   TandCList: any;
+  auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
+
+
+
 
   constructor(
     private fb: FormBuilder,
@@ -234,6 +239,35 @@ export class StateEntryComponent implements OnInit {
       }
     });
   }
+
+  
+openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.stateData?.StateMasterSid) return;
+
+  this.masterService.getAuditLogsState('StateMaster', this.stateData?.StateMasterSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 
   onSubmit() {
     if (this.stateForm.invalid) {
