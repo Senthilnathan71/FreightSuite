@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { FfUser, UserRole } from 'src/app/modules/crm-mobile/Interfaces/ffuser.interface';
@@ -70,6 +70,8 @@ export class UserEntryComponent implements OnInit {
 	currentMenuId: number;
 	TandCList: any;
 
+	auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
 
 
 	constructor(
@@ -153,6 +155,34 @@ export class UserEntryComponent implements OnInit {
 		});
 		this.userForm.get('DefaultDept').disable()
 	}
+
+	openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.UserMasterSid) return;
+
+  this.masterService.getAuditLogsFfUser('UserMaster', this.UserMasterSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 
 	get userCompanies() : FormArray {
 		return this.userForm.get('userCompanies') as FormArray;
