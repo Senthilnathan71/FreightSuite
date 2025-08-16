@@ -69,7 +69,9 @@
                                         class="text-danger fw-bold">*</span></label>
                                         @if(containertypeForm.get('ContainerCode')?.touched && containertypeForm.get('ContainerCode')?.invalid){
                                             <div class="error-message">
-                                                @if(containertypeForm.get('ContainerCode')?.hasError('maxlength')){
+                                                @if(containertypeForm.get('ContainerCode')?.hasError('required')){
+                                                    <span>Container Code is required</span>
+                                                } @else if(containertypeForm.get('ContainerCode')?.hasError('maxlength')){
                                                     <span>Max 4 Characters</span>
                                                 }
                                             </div>
@@ -139,6 +141,13 @@
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label">Container Category <span
                                         class="text-danger fw-bold">*</span></label>
+                                           @if(containertypeForm.get('ContainerCategory')?.touched && containertypeForm.get('ContainerCategory')?.invalid){
+                                            <div class="error-message">
+                                                @if(containertypeForm.get('ContainerCategory')?.hasError('required')){
+                                                    <span>Container Category is required</span>
+                                                } 
+                                            </div>
+                                        }
                             </div>
                         </aside>
 
@@ -148,6 +157,13 @@
                                     class="custom-input-field sm">
                                 <label for="" class="input-label">Gross Weight <span
                                         class="text-danger fw-bold">*</span></label>
+                                         @if(containertypeForm.get('GrossWeight')?.touched && containertypeForm.get('GrossWeight')?.invalid){
+                                            <div class="error-message">
+                                                @if(containertypeForm.get('GrossWeight')?.hasError('required')){
+                                                    <span>Gross Weight is required</span>
+                                                } 
+                                            </div>
+                                        }
                             </div>
                         </aside>
 
@@ -157,6 +173,13 @@
                                     class="custom-input-field sm">
                                 <label for="" class="input-label">Tare Weight <span
                                         class="text-danger fw-bold">*</span></label>
+                                          @if(containertypeForm.get('TareWeight')?.touched && containertypeForm.get('TareWeight')?.invalid){
+                                            <div class="error-message">
+                                                @if(containertypeForm.get('TareWeight')?.hasError('required')){
+                                                    <span>Tare Weight is required</span>
+                                                } 
+                                            </div>
+                                        }
                             </div>
                         </aside>
 
@@ -166,6 +189,13 @@
                                     class="custom-input-field sm">
                                 <label for="" class="input-label"> Max Volume <span
                                         class="text-danger fw-bold">*</span></label>
+                                         @if(containertypeForm.get('MaxVolume')?.touched && containertypeForm.get('MaxVolume')?.invalid){
+                                            <div class="error-message">
+                                                @if(containertypeForm.get('MaxVolume')?.hasError('required')){
+                                                    <span>Max Volume is required</span>
+                                                } 
+                                            </div>
+                                        }
                             </div>
                         </aside>
 
@@ -194,6 +224,13 @@
                                     class="custom-input-field sm">
                                 <label for="" class="input-label"> Width <span
                                         class="text-danger fw-bold">*</span></label>
+                                         @if(containertypeForm.get('Width')?.touched && containertypeForm.get('Width')?.invalid){
+                                            <div class="error-message">
+                                                @if(containertypeForm.get('Width')?.hasError('required')){
+                                                    <span>Width is required</span>
+                                                } 
+                                            </div>
+                                        }
                             </div>
                         </aside>
                         <aside class="col-md-4">
@@ -202,6 +239,13 @@
                                     class="custom-input-field sm">
                                 <label for="" class="input-label"> Height <span
                                         class="text-danger fw-bold">*</span></label>
+                                        @if(containertypeForm.get('Height')?.touched && containertypeForm.get('Height')?.invalid){
+                                            <div class="error-message">
+                                                @if(containertypeForm.get('Height')?.hasError('required')){
+                                                    <span>Height is required</span>
+                                                } 
+                                            </div>
+                                        }
                             </div>
                         </aside>
 
@@ -211,6 +255,13 @@
                                     class="custom-input-field sm">
                                 <label for="" class="input-label"> No of TEU <span
                                         class="text-danger fw-bold">*</span></label>
+                                         @if(containertypeForm.get('NoOfTeu')?.touched && containertypeForm.get('NoOfTeu')?.invalid){
+                                            <div class="error-message">
+                                                @if(containertypeForm.get('NoOfTeu')?.hasError('required')){
+                                                    <span>No Of Teu is required</span>
+                                                } 
+                                            </div>
+                                        }
                             </div>
                         </aside>
 
@@ -219,6 +270,13 @@
                                 <input type="textarea" formControlName="Remarks" id="text-input" placeholder=""
                                 class="custom-input-field sm">
                                 <label for="text-input" class="input-label">Remarks <span class="text-danger fw-bold">*</span></label>
+                                  @if(containertypeForm.get('Remarks')?.touched && containertypeForm.get('Remarks')?.invalid){
+                                            <div class="error-message">
+                                                @if(containertypeForm.get('Remarks')?.hasError('required')){
+                                                    <span>Remarks is required</span>
+                                                } 
+                                            </div>
+                                        }
                             </div>
                         </aside>
 

@@ -432,7 +432,7 @@ openEDoc() {
  openAuditLogs(modal: TemplateRef<any>) {
   if (!this.HawbStockSid) return;
 
-  this.masterService.getAuditLogs('HawbStockMaster', this.HawbStockSid.toString()).subscribe({
+  this.masterService.getAuditLogs('HawbStock', this.HawbStockSid.toString()).subscribe({
     next: (logs: any[]) => {
       const formatFields = (val: any) => {
         if (!val) return ['NA'];

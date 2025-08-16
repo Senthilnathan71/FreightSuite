@@ -155,7 +155,7 @@
                             </div>
                         </aside>
 
-                         <aside class="col-md-4">
+                         <!-- <aside class="col-md-4">
                             <div class="d-flex">
                                 <div class="custom-form-group custom-form-group-select w-100 mb-0">
                                     <input 
@@ -179,7 +179,39 @@
                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>
                             </div>
+                        </aside> -->
+                        <aside class="col-md-4">
+                          <div class="custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                              <input 
+                                class="form-control mb-0" 
+                                        placeholder="dd-mm-yyyy" 
+                                        name="dp" ngbDatepicker #d2="ngbDatepicker"
+                                        (click)="d2.toggle()" 
+                                        readonly 
+                                        formControlName="ReceivedDate" 
+                                        [footerTemplate]="footerTemplate2"  
+                              />
+                              <button 
+                                class="btn btn-info bi bi-calendar3 text-white" 
+                                (click)="d2.toggle()" 
+                                type="button">
+                                <i-feather name="calendar" class="feather-sm"></i-feather>
+                              </button>
+                            </div>
+
+                            <label class="input-label" for="dp">
+                              Received Date <span class="text-danger">*</span>
+                            </label>
+
+                             <div *ngIf="hawbForm.get('ReceivedDate')?.touched && hawbForm.get('ReceivedDate')?.invalid">
+                                        <p *ngIf="hawbForm.get('ReceivedDate')?.errors?.['required']" class="error-message">
+                                            Received Date is required.
+                                        </p>
+                                    </div>
+                          </div>
                         </aside>
+
                         <ng-template #footerTemplate2>
                             <hr class="my-0" />
                             <button class="btn btn-info btn-sm m-2 float-start"

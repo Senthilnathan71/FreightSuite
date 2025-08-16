@@ -558,7 +558,7 @@ openEDoc() {
  openAuditLogs(modal: TemplateRef<any>) {
   if (!this.HSSACMasterSid) return;
 
-  this.masterService.getAuditLogs('HssacMaster', this.HSSACMasterSid.toString()).subscribe({
+  this.masterService.getAuditLogs('HSSACMaster', this.HSSACMasterSid.toString()).subscribe({
     next: (logs: any[]) => {
       const formatFields = (val: any) => {
         if (!val) return ['NA'];

@@ -215,7 +215,7 @@
           </aside>
 
           <!-- Effective From -->
-          <aside class="col-md-6">
+          <!-- <aside class="col-md-6">
             <div class="d-flex mb-2 my-lg-0">
               <div class="custom-form-group custom-form-group-select w-100 mb-0">
                 <input class="custom-input-field sm mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
@@ -232,7 +232,36 @@
                 <i-feather class="feather-sm" name="calendar"></i-feather>
               </button>
             </div>
-          </aside>
+          </aside> -->
+
+          <aside class="col-md-6">
+          <div class="custom-form-group custom-form-group-select">
+            <div class="input-group">
+              <input 
+                class="form-control mb-0" 
+               placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                  #effectiveDate="ngbDatepicker" (click)="effectiveDate.toggle()" formControlName="EffectiveFrom"
+                  readonly 
+              />
+
+              <button 
+                class="btn btn-info bi bi-calendar3 text-white" 
+                (click)="effectiveDate.toggle()" 
+                type="button">
+                <i-feather name="calendar" class="feather-sm"></i-feather>
+              </button>
+            </div>
+
+             <label class="input-label">Effective From <span class="text-danger fw-bold">*</span></label>
+                <div class="error-message"
+                  *ngIf="taxGroupForm.get('EffectiveFrom')?.touched && taxGroupForm.get('EffectiveFrom')?.invalid">
+                  <span>Effective From is required</span>
+                </div>
+           
+          </div>
+        </aside>
+
+
 
 
           <!-- Tax Rate -->

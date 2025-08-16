@@ -229,6 +229,14 @@
                                     formControlName="Remarks" placeholder="">
                                 <label for="text-input" class="input-label">Remarks <span
                                         class="text-danger">*</span></label>
+                                           @if(costCenterForm.get('Remarks')?.touched &&
+                                costCenterForm.get('Remarks')?.invalid){
+                                <div class="error-message">
+                                    @if(costCenterForm.get('Remarks')?.hasError('required')){
+                                    <span>Remarks is required</span>
+                                    } 
+                                </div>
+                                }
                             </div>
                         </aside>
 

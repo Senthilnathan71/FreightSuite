@@ -297,7 +297,7 @@
                                 }
                             </div>
                         </aside>
-                        <aside class="col-md-6">
+                        <!-- <aside class="col-md-6">
                             <div class="d-flex">
                                 <div class="custom-form-group custom-form-group-select w-100 mb-0">
                                     <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
@@ -316,7 +316,32 @@
                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>
                             </div>
-                        </aside>
+                        </aside> -->
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <div class="input-group">
+                               <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                        #d2="ngbDatepicker" (click)="d2.toggle()" formControlName="EffectiveFrom"
+                                        [footerTemplate]="footerTemplate2" readonly />
+
+                                <button 
+                                    class="btn btn-info bi bi-calendar3 text-white" 
+                                      (click)="d2.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                                </div>
+
+                               <label class="input-label" for="dp">Effective From <span
+                                            class="text-danger">*</span></label>
+
+                                 <div
+                                        *ngIf="hssacForm.get('EffectiveFrom')?.touched && hssacForm.get('EffectiveFrom')?.invalid">
+                                        <p *ngIf="hssacForm.get('EffectiveFrom')?.errors?.['required']"
+                                            class="error-message">Effective From date is required.</p>
+                                    </div>
+                            </div>
+                            </aside>
+
                         <ng-template #footerTemplate2>
                             <hr class="my-0" />
                             <button class="btn btn-info btn-sm m-2 float-start"
