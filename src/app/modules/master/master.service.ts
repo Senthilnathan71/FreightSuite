@@ -756,7 +756,7 @@ export class MasterService {
   }
 
   getAuditLogsCountry(tableName: string, recordId?: string) {
-    let url = `country/audit-logs?tableName=${tableName}`;
+    let url = `country/fetch/audit-logs?tableName=${tableName}`;
     if (recordId) url += `&recordId=${recordId}`;
 
     return this.http.get<{ data: any }>(url).pipe(
@@ -2566,6 +2566,15 @@ getFieldConfiguration() {
         let response = resp;
         return response;
       })
+    );
+  }
+
+   getAuditLogsAuthority(tableName: string, recordId?: string) {
+    let url = `authority/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
     );
   }
   // Authority Detail Master
