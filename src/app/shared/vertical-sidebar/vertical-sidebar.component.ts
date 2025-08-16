@@ -86,6 +86,7 @@ export class VerticalSidebarComponent implements OnInit {
     });
     
     const newlyVisited = {
+      MenuMasterSid : element.id,
       path: element.path,
       screenName: element.title,
       createdOn: new Date()

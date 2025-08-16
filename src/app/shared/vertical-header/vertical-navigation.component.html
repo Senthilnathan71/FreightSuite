@@ -297,7 +297,7 @@
             <ng-scrollbar class="message-center notifications" style="max-height: 230px;">
               @for(item of recentList; track item) {
               <a href="javascript:void(0)" class="message-item border-bottom d-block text-decoration-none"
-                [routerLink]="item.path" (click)="myDrop.close()">
+                 (click)="handleRecentClick(item) ;myDrop.close()">
                 <span class="mail-contnet d-inline-block w-75 ps-3 align-middle">
                   <h5 class="message-title">{{ item.screenName }}</h5>
                   <span class="time fs-2 d-block text-muted text-truncate">{{ item.createdOn | timeAgo }}</span>

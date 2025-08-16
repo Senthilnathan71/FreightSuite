@@ -399,6 +399,7 @@ ngOnInit(): void {
   //  Add selected Menu to Recent List
   addToRecent(menu){
     const newlyVisited = {
+      MenuMasterSid : menu.MenuMasterSid,
       path: menu.path,
       screenName: menu.MenuName,
       createdOn: new Date()
@@ -418,6 +419,12 @@ ngOnInit(): void {
     }
 
     localStorage.setItem('recentlyVisited', JSON.stringify(recentlyVisited));
+    localStorage.setItem('currentMenuId',menu.MenuMasterSid);
+  }
+
+  handleRecentClick(item){
+    localStorage.setItem('currentMenuId',item.MenuMasterSid);
+    this.router.navigate([`${item.path}`])
   }
 
   // ------------ END OF MENU SEARCH RELATED FUNCTION ----------------- \\
