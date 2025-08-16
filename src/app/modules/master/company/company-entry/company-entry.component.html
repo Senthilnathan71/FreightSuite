@@ -924,11 +924,18 @@
                           Number Format
                         </h5>
                       </aside>
-                     <aside class="col-md-6">
+                      <aside class="col-md-6">
                     <div class="custom-form-group">
                         <input type="text" id="consolePrefix" placeholder="" 
                             class="custom-input-field sm" formControlName="consolePrefix" maxlength="20">
                         <label for="consolePrefix" class="input-label">Console Prefix</label>
+                        @if(branchForm.get('consolePrefix')?.touched && branchForm.get('consolePrefix')?.invalid){
+                        <div class="error-message">
+                            @if(branchForm.get('consolePrefix')?.hasError('maxlength')){
+                            <span>Maximum 20 characters allowed</span>
+                            }
+                        </div>
+                        }
                     </div>
                 </aside>
                 <aside class="col-md-6">
@@ -936,6 +943,13 @@
                         <input type="number" id="consoleNoLen" placeholder="" 
                             class="custom-input-field sm" formControlName="consoleNoLen" min="1" max="20">
                         <label for="consoleNoLen" class="input-label">Console No Length</label>
+                        @if(branchForm.get('consoleNoLen')?.touched && branchForm.get('consoleNoLen')?.invalid){
+                        <div class="error-message">
+                            @if(branchForm.get('consoleNoLen')?.hasError('min') || branchForm.get('consoleNoLen')?.hasError('max')){
+                            <span>Must be between 1 and 20</span>
+                            }
+                        </div>
+                        }
                     </div>
                 </aside>
                 
@@ -945,6 +959,13 @@
                         <input type="text" id="shipmentPrefix" placeholder="" 
                             class="custom-input-field sm" formControlName="shipmentPrefix" maxlength="20">
                         <label for="shipmentPrefix" class="input-label">Shipment Prefix</label>
+                        @if(branchForm.get('shipmentPrefix')?.touched && branchForm.get('shipmentPrefix')?.invalid){
+                        <div class="error-message">
+                            @if(branchForm.get('shipmentPrefix')?.hasError('maxlength')){
+                            <span>Maximum 20 characters allowed</span>
+                            }
+                        </div>
+                        }
                     </div>
                 </aside>
                 <aside class="col-md-6">
@@ -952,6 +973,13 @@
                         <input type="number" id="shipmentNoLen" placeholder="" 
                             class="custom-input-field sm" formControlName="shipmentNoLen" min="1" max="20">
                         <label for="shipmentNoLen" class="input-label">Shipment No Length</label>
+                        @if(branchForm.get('shipmentNoLen')?.touched && branchForm.get('shipmentNoLen')?.invalid){
+                        <div class="error-message">
+                            @if(branchForm.get('shipmentNoLen')?.hasError('min') || branchForm.get('shipmentNoLen')?.hasError('max')){
+                            <span>Must be between 1 and 20</span>
+                            }
+                        </div>
+                        }
                     </div>
                 </aside>
                 
@@ -961,6 +989,13 @@
                         <input type="text" id="enquiryPrefix" placeholder="" 
                             class="custom-input-field sm" formControlName="enquiryPrefix" maxlength="20">
                         <label for="enquiryPrefix" class="input-label">Enquiry Prefix</label>
+                        @if(branchForm.get('enquiryPrefix')?.touched && branchForm.get('enquiryPrefix')?.invalid){
+                        <div class="error-message">
+                            @if(branchForm.get('enquiryPrefix')?.hasError('maxlength')){
+                            <span>Maximum 20 characters allowed</span>
+                            }
+                        </div>
+                        }
                     </div>
                 </aside>
                 <aside class="col-md-6">
@@ -968,6 +1003,13 @@
                         <input type="number" id="enquiryNoLen" placeholder="" 
                             class="custom-input-field sm" formControlName="enquiryNoLen" min="1" max="20">
                         <label for="enquiryNoLen" class="input-label">Enquiry No Length</label>
+                        @if(branchForm.get('enquiryNoLen')?.touched && branchForm.get('enquiryNoLen')?.invalid){
+                        <div class="error-message">
+                            @if(branchForm.get('enquiryNoLen')?.hasError('min') || branchForm.get('enquiryNoLen')?.hasError('max')){
+                            <span>Must be between 1 and 20</span>
+                            }
+                        </div>
+                        }
                     </div>
                 </aside>
                 
@@ -977,6 +1019,13 @@
                         <input type="text" id="quotationPrefix" placeholder="" 
                             class="custom-input-field sm" formControlName="quotationPrefix" maxlength="20">
                         <label for="quotationPrefix" class="input-label">Quotation Prefix</label>
+                        @if(branchForm.get('quotationPrefix')?.touched && branchForm.get('quotationPrefix')?.invalid){
+                        <div class="error-message">
+                            @if(branchForm.get('quotationPrefix')?.hasError('maxlength')){
+                            <span>Maximum 20 characters allowed</span>
+                            }
+                        </div>
+                        }
                     </div>
                 </aside>
                 <aside class="col-md-6">
@@ -984,6 +1033,13 @@
                         <input type="number" id="quotationNoLen" placeholder="" 
                             class="custom-input-field sm" formControlName="quotationNoLen" min="1" max="20">
                         <label for="quotationNoLen" class="input-label">Quotation No Length</label>
+                        @if(branchForm.get('quotationNoLen')?.touched && branchForm.get('quotationNoLen')?.invalid){
+                        <div class="error-message">
+                            @if(branchForm.get('quotationNoLen')?.hasError('min') || branchForm.get('quotationNoLen')?.hasError('max')){
+                            <span>Must be between 1 and 20</span>
+                            }
+                        </div>
+                        }
                     </div>
                 </aside>
                     </div>
