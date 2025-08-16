@@ -192,7 +192,16 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
     }
 
     resetForm() {
-        this.ImcoForm.reset();
+    this.ImcoForm.reset({
+    ImcoClass: '',
+    ImcoName: '',
+    Description: '',
+    ImcoUn: null,
+    ImcoPageNo: null,
+    PackingGroup: '',
+    status: 'Active',  
+    Remarks: ''
+  });
     }
 
     showInfo() {
@@ -263,7 +272,7 @@ openEDoc() {
  openAuditLogs(modal: TemplateRef<any>) {
   if (!this.ImcoMasterSid) return;
 
-  this.masterService.getAuditLogs('IMCOMaster', this.ImcoMasterSid.toString()).subscribe({
+  this.masterService.getAuditLogs('ImcoMaster', this.ImcoMasterSid.toString()).subscribe({
     next: (logs: any[]) => {
       const formatFields = (val: any) => {
         if (!val) return ['NA'];

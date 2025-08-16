@@ -211,6 +211,14 @@
                                     formControlName="Remarks" placeholder="">
                                 <label for="text-input" class="input-label">Remarks <span
                                         class="text-danger">*</span></label>
+                                               @if(profitCenterForm.get('Remarks')?.touched &&
+                                profitCenterForm.get('Remarks')?.invalid){
+                                <div class="error-message">
+                                    @if(profitCenterForm.get('Remarks')?.hasError('required')){
+                                    <span>Remarks is required</span>
+                                    } 
+                                </div>
+                                }
                             </div>
                         </aside>
 

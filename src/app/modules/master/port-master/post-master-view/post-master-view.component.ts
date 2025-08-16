@@ -409,7 +409,7 @@ openEDoc() {
  openAuditLogs(modal: TemplateRef<any>) {
   if (!this.idParam) return;
 
-  this.masterService.getAuditLogs('DepartmentMaster', this.idParam.toString()).subscribe({
+  this.masterService.getAuditLogs('PortMaster', this.idParam.toString()).subscribe({
     next: (logs: any[]) => {
       const formatFields = (val: any) => {
         if (!val) return ['NA'];

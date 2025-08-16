@@ -126,7 +126,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                    <!-- <aside class="col-md-3">
                         <div class="d-flex mb-2 my-lg-0">
                             <div class="custom-form-group custom-form-group-select w-100 mb-0">
                                 <input 
@@ -156,7 +156,43 @@
                                 <i-feather class="feather-sm" name="calendar"></i-feather>
                             </button>
                         </div>
-                    </aside>
+                    </aside> -->
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                            <input 
+                                    class="form-control mb-0" 
+                                    placeholder="dd-mm-yyyy" 
+                                    name="dp" ngbDatepicker 
+                                    #d="ngbDatepicker" 
+                                    [footerTemplate]="footerTemplateSCMETA" 
+                                    (click)="d.toggle()" 
+                                    formControlName="SCMETA" 
+                                    [maxDate]="toNgbDateStruct(scheduleForm.get('SCMETD').value)"
+                                    readonly
+                                />
+                            <button 
+                                class="btn btn-info bi bi-calendar3 text-white" 
+                               (click)="d.toggle()" type="button"
+                                >
+                                <i-feather name="calendar" class="feather-sm"></i-feather>
+                            </button>
+                            </div>
+
+                             <label for="text-input" class="input-label">SCM ETA <span
+                                    class="text-danger"></span></label>
+                                @if(scheduleForm.get('SCMETA').touched && scheduleForm.get('SCMETA').invalid){
+                                <div class="error-message">
+                                    @if(scheduleForm.get('SCMETA').hasError('required')){
+                                    <span>SCM ETA is required</span>
+                                    } @else if(scheduleForm.get('SCMETA').hasError('ngbDate')){
+                                    <span>SCMETA must be a date before SCMETD</span>
+                                    }
+                                </div>
+                                }
+                        </div>
+                        </aside>
+
                     <ng-template #footerTemplateSCMETA>
                         <hr class="my-0" />
                         <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleForm.get('SCMETA').setValue(todayDate); d.close()">
@@ -166,7 +202,7 @@
                             Close
                         </button>
                     </ng-template>
-                    <aside class="col-md-3">
+                    <!-- <aside class="col-md-3">
                         <div class="d-flex mb-2 my-lg-0">
                             <div class="custom-form-group custom-form-group-select w-100 mb-0">
                                 <input 
@@ -192,7 +228,36 @@
                                 <i-feather class="feather-sm" name="calendar"></i-feather>
                             </button>
                         </div>
+                    </aside> -->
+                    <aside class="col-md-3">
+                    <div class="custom-form-group custom-form-group-select">
+                        <div class="input-group">
+                         <input 
+                                    class="form-control mb-0" placeholder="dd-mm-yyyy" 
+                                    name="dp" ngbDatepicker #d1="ngbDatepicker" 
+                                    [footerTemplate]="footerTemplateSCMETD" (click)="d1.toggle()" formControlName="SCMETD" 
+                                    [minDate]="toNgbDateStruct(scheduleForm.get('SCMETA').value)"
+                                    readonly
+                                />
+
+                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                        </button>
+                        </div>
+                             <label for="text-input" class="input-label">SCM ETD <span
+                                    class="text-danger"></span></label>
+                                @if(scheduleForm.get('SCMETD').touched && scheduleForm.get('SCMETD').invalid){
+                                <div class="error-message">
+                                    @if(scheduleForm.get('SCMETD').hasError('required')){
+                                    <span>SCM ETD is required</span>
+                                    } @else if(scheduleForm.get('SCMETD').hasError('ngbDate')){
+                                    <span>SCMETD must be a date after SCMETA</span>
+                                    }
+                                </div>
+                                }
+                    </div>
                     </aside>
+
                     <ng-template #footerTemplateSCMETD>
                         <hr class="my-0" />
                         <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleForm.get('SCMETD').setValue(todayDate); d1.close()">
