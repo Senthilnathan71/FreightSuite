@@ -169,7 +169,7 @@ export class CompanyEntryComponent implements OnInit {
 					console.log(this.permissions)
 				}
 			});
-		}
+		}	
 	}
 
 	hasPermission(permission: string): boolean {
@@ -236,6 +236,14 @@ export class CompanyEntryComponent implements OnInit {
 			branchTaxRegistrationNo: ['', [Validators.maxLength(50), this.gstValidator]],
 			branchCompanyLogo: [],
 			branchReportLogo: [],
+			consolePrefix: ['', [Validators.maxLength(20)]],
+            consoleNoLen: [null, [Validators.min(1), Validators.max(20)]],
+            shipmentPrefix: ['', [Validators.maxLength(20)]],
+            shipmentNoLen: [null, [Validators.min(1), Validators.max(20)]],
+            enquiryPrefix: ['', [Validators.maxLength(20)]],
+            enquiryNoLen: [null, [Validators.min(1), Validators.max(20)]],
+            quotationPrefix: ['', [Validators.maxLength(20)]],
+            quotationNoLen: [null, [Validators.min(1), Validators.max(20)]],
 			config: [{}],
 			company: [{}],
 			cityMaster: [{}],
@@ -279,6 +287,14 @@ export class CompanyEntryComponent implements OnInit {
 			taxRegistrationNo: [branchData?.branchTaxRegistrationNo || '', [Validators.maxLength(50)]],
 			companyLogo: [branchData?.branchCompanyLogo || null],
 			reportLogo: [branchData?.branchReportLogo || null],
+			consolePrefix: [branchData?.consolePrefix || '', [Validators.maxLength(20)]],
+            consoleNoLen: [branchData?.consoleNoLen || null],
+            shipmentPrefix: [branchData?.shipmentPrefix || '', [Validators.maxLength(20)]],
+            shipmentNoLen: [branchData?.shipmentNoLen || null],
+            enquiryPrefix: [branchData?.enquiryPrefix || '', [Validators.maxLength(20)]],
+            enquiryNoLen: [branchData?.enquiryNoLen || null],
+            quotationPrefix: [branchData?.quotationPrefix || '', [Validators.maxLength(20)]],
+            quotationNoLen: [branchData?.quotationNoLen || null],
 			config: [branchData?.branchconfig || {}],
 			branchBanks: this.fb.array([])
 		});
@@ -356,6 +372,16 @@ export class CompanyEntryComponent implements OnInit {
 							companyLogo: branch?.companyLogo || null,
 							reportLogo: branch?.reportLogo || null,
 							cityName: branch.cityMaster?.cityName,
+							consolePrefix: branch?.consolePrefix || '',
+                consoleNoLen: branch?.consoleNoLen || null,
+                shipmentPrefix: branch?.shipmentPrefix || '',
+                shipmentNoLen: branch?.shipmentNoLen || null,
+                enquiryPrefix: branch?.enquiryPrefix || '',
+                enquiryNoLen: branch?.enquiryNoLen || null,
+                quotationPrefix: branch?.quotationPrefix || '',
+                quotationNoLen: branch?.quotationNoLen || null,
+
+
 							config: branch?.config,
 							branchBanks: this.fb.array([])
 						});
@@ -450,7 +476,15 @@ export class CompanyEntryComponent implements OnInit {
 				branchTaxRegistrationNo: this.branchData?.taxRegistrationNo,
 				branchCompanyLogo: this.branchData?.companyLogo || null,
 				branchReportLogo: this.branchData?.reportLogo || null,
-				branchconfig: this.branchData?.config
+				branchconfig: this.branchData?.config,
+				consolePrefix: this.branchData?.consolePrefix || '',
+                consoleNoLen: this.branchData?.consoleNoLen || null,
+                shipmentPrefix: this.branchData?.shipmentPrefix || '',
+                shipmentNoLen: this.branchData?.shipmentNoLen || null,
+                enquiryPrefix: this.branchData?.enquiryPrefix || '',
+                enquiryNoLen: this.branchData?.enquiryNoLen || null,
+                quotationPrefix: this.branchData?.quotationPrefix || '',
+                quotationNoLen: this.branchData?.quotationNoLen || null
 
 			});
 			
@@ -525,6 +559,14 @@ export class CompanyEntryComponent implements OnInit {
 			taxRegistrationNo: formValue.branchTaxRegistrationNo,
 			status: formValue.branchStatus,
 			config: formValue.config,
+			consolePrefix: formValue.consolePrefix,
+            consoleNoLen: formValue.consoleNoLen,
+            shipmentPrefix: formValue.shipmentPrefix,
+            shipmentNoLen: formValue.shipmentNoLen,
+            enquiryPrefix: formValue.enquiryPrefix,
+            enquiryNoLen: formValue.enquiryNoLen,
+            quotationPrefix: formValue.quotationPrefix,
+            quotationNoLen: formValue.quotationNoLen,
 			CityMasterSid: parseInt(formValue.branchCityMasterSid),
 			StateMasterSid: parseInt(formValue.branchStateMasterSid),
 			CountryMasterSid: parseInt(formValue.branchCountryMasterSid),
@@ -690,6 +732,14 @@ export class CompanyEntryComponent implements OnInit {
 				remarks: branchValue.remarks,
 				taxRegistrationNo: branchValue.taxRegistrationNo,
 				status: branchValue.status === 'Active' ? 'A' : 'S',
+				consolePrefix: branchValue.consolePrefix,
+            consoleNoLen: branchValue.consoleNoLen,
+            shipmentPrefix: branchValue.shipmentPrefix,
+            shipmentNoLen: branchValue.shipmentNoLen,
+            enquiryPrefix: branchValue.enquiryPrefix,
+            enquiryNoLen: branchValue.enquiryNoLen,
+            quotationPrefix: branchValue.quotationPrefix,			
+            quotationNoLen: branchValue.quotationNoLen,
 				config: branchValue.config || {},
 				CityMasterSid: parseInt(branchValue.CityMasterSid),
 				StateMasterSid: parseInt(branchValue.StateMasterSid),

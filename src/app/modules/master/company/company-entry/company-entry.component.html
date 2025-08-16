@@ -925,61 +925,67 @@
                         </h5>
                       </aside>
                      <aside class="col-md-6">
-                      <div class="custom-form-group">
-                          <input type="text" id="text-input" placeholder=""
-                            class="custom-input-field sm" formControlName="">
-                                <label for="text-input" class="input-label">Console Prefix <span class="text-danger"></span></label>
-                      </div>
-                    </aside>
-                    <aside class="col-md-6">
-                      <div class="custom-form-group">
-                          <input type="number" id="text-input" placeholder=""
-                            class="custom-input-field sm" formControlName="">
-                                <label for="text-input" class="input-label">Console No Length <span class="text-danger"></span></label>
-                      </div>
-                    </aside>
-                    <aside class="col-md-6">
-                      <div class="custom-form-group">
-                          <input type="text" id="text-input" placeholder=""
-                            class="custom-input-field sm" formControlName="">
-                                <label for="text-input" class="input-label">Shipment Prefix <span class="text-danger"></span></label>
-                      </div>
-                    </aside>
-                     <aside class="col-md-6">
-                      <div class="custom-form-group">
-                          <input type="number" id="text-input" placeholder=""
-                            class="custom-input-field sm" formControlName="">
-                                <label for="text-input" class="input-label">Shipment No Length <span class="text-danger"></span></label>
-                      </div>
-                    </aside>
-                     <aside class="col-md-6">
-                      <div class="custom-form-group">
-                          <input type="text" id="text-input" placeholder=""
-                            class="custom-input-field sm" formControlName="">
-                                <label for="text-input" class="input-label">Enquiry Prefix <span class="text-danger"></span></label>
-                      </div>
-                    </aside>
-                     <aside class="col-md-6">
-                      <div class="custom-form-group">
-                          <input type="number" id="text-input" placeholder=""
-                            class="custom-input-field sm" formControlName="">
-                                <label for="text-input" class="input-label">Enquiry No Length <span class="text-danger"></span></label>
-                      </div>
-                    </aside>
-                     <aside class="col-md-6">
-                      <div class="custom-form-group">
-                          <input type="text" id="text-input" placeholder=""
-                            class="custom-input-field sm" formControlName="">
-                                <label for="text-input" class="input-label">Quotation Prefix <span class="text-danger"></span></label>
-                      </div>
-                    </aside>
-                     <aside class="col-md-6">
-                      <div class="custom-form-group">
-                          <input type="number" id="text-input" placeholder=""
-                            class="custom-input-field sm" formControlName="">
-                                <label for="text-input" class="input-label">Quotation No Length <span class="text-danger"></span></label>
-                      </div>
-                    </aside>
+                    <div class="custom-form-group">
+                        <input type="text" id="consolePrefix" placeholder="" 
+                            class="custom-input-field sm" formControlName="consolePrefix" maxlength="20">
+                        <label for="consolePrefix" class="input-label">Console Prefix</label>
+                    </div>
+                </aside>
+                <aside class="col-md-6">
+                    <div class="custom-form-group">
+                        <input type="number" id="consoleNoLen" placeholder="" 
+                            class="custom-input-field sm" formControlName="consoleNoLen" min="1" max="20">
+                        <label for="consoleNoLen" class="input-label">Console No Length</label>
+                    </div>
+                </aside>
+                
+                <!-- Shipment Settings -->
+                <aside class="col-md-6">
+                    <div class="custom-form-group">
+                        <input type="text" id="shipmentPrefix" placeholder="" 
+                            class="custom-input-field sm" formControlName="shipmentPrefix" maxlength="20">
+                        <label for="shipmentPrefix" class="input-label">Shipment Prefix</label>
+                    </div>
+                </aside>
+                <aside class="col-md-6">
+                    <div class="custom-form-group">
+                        <input type="number" id="shipmentNoLen" placeholder="" 
+                            class="custom-input-field sm" formControlName="shipmentNoLen" min="1" max="20">
+                        <label for="shipmentNoLen" class="input-label">Shipment No Length</label>
+                    </div>
+                </aside>
+                
+                <!-- Enquiry Settings -->
+                <aside class="col-md-6">
+                    <div class="custom-form-group">
+                        <input type="text" id="enquiryPrefix" placeholder="" 
+                            class="custom-input-field sm" formControlName="enquiryPrefix" maxlength="20">
+                        <label for="enquiryPrefix" class="input-label">Enquiry Prefix</label>
+                    </div>
+                </aside>
+                <aside class="col-md-6">
+                    <div class="custom-form-group">
+                        <input type="number" id="enquiryNoLen" placeholder="" 
+                            class="custom-input-field sm" formControlName="enquiryNoLen" min="1" max="20">
+                        <label for="enquiryNoLen" class="input-label">Enquiry No Length</label>
+                    </div>
+                </aside>
+                
+                <!-- Quotation Settings -->
+                <aside class="col-md-6">
+                    <div class="custom-form-group">
+                        <input type="text" id="quotationPrefix" placeholder="" 
+                            class="custom-input-field sm" formControlName="quotationPrefix" maxlength="20">
+                        <label for="quotationPrefix" class="input-label">Quotation Prefix</label>
+                    </div>
+                </aside>
+                <aside class="col-md-6">
+                    <div class="custom-form-group">
+                        <input type="number" id="quotationNoLen" placeholder="" 
+                            class="custom-input-field sm" formControlName="quotationNoLen" min="1" max="20">
+                        <label for="quotationNoLen" class="input-label">Quotation No Length</label>
+                    </div>
+                </aside>
                     </div>
                   </div>
                 </div>
