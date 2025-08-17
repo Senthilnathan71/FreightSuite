@@ -3164,6 +3164,15 @@ getFieldConfiguration() {
     );
   }
 
+  getAuditLogsCOA(tableName: string, recordId?: string) {
+    let url = `coa/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
 
   getRoleMenuPermissions(menuId: number, roleId: number) {
     return this.http.get<{ data: any }>(`role-menu/permissions/${menuId}/${roleId}`).pipe(
@@ -3426,6 +3435,15 @@ getFieldConfiguration() {
         let response = res;
         return response
       })
+    );
+  }
+
+  getAuditLogsSubledgerMaster(tableName: string, recordId?: string) {
+    let url = `subledgermaster/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
     );
   }
   // Charge TDS Master Methods

@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { NgbAccordionModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Component, OnInit, TemplateRef } from '@angular/core';
+import { NgbAccordionModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { LeadService } from '../Services/lead.service';
 import { City } from '../Interfaces/city.interface';
@@ -57,7 +57,9 @@ export class LeadComponent implements OnInit {
   stateList : any[];
   cityList : any[];
   leadData : any;
-
+  currentCompany : any;
+  currentBranch : any;
+  userData : any;
   customerByOptions = ['Email', 'Advertisement', 'Website', 'Others'];
   leadSourceList = ['Email', 'Advertisement','Website', 'Inquiries', 'Referrals',"Trade shows", "Cold calls", "Social media", 'Others']
   statusList = ["Active", "Suspended"];
@@ -88,6 +90,11 @@ export class LeadComponent implements OnInit {
     {id:"3",name:"Text"}
   ]
 
+  
+auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
+
+
   leads = [{ id: 1, name: 'Lead 001' }]; // Initial lead
 
   constructor(
@@ -103,6 +110,15 @@ export class LeadComponent implements OnInit {
 
     this.loadAllFields()
     this.initForm();
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+    if(userProfile){
+      this.userData = userProfile;
+    }
+     const storedCompany = localStorage.getItem('selected-company');
+    this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
+     const storedBranch = localStorage.getItem('selected-branch');
+    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
+    console.info(this.currentBranch)
 
     // Subscribe to route params and load lead if ID exists
     this.route.paramMap.subscribe(params => {
@@ -172,17 +188,18 @@ export class LeadComponent implements OnInit {
     }
 
     this.btnDisable = true;
-    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
-    const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
-    const companyId = this.appSettingService.userSettingSource.value['userBranchMaster'][0]?.CompanyMasterSid;
+    const userEmail = this.userData['userEmail'];
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid
     const formData = this.leadForm.value;
     const payload = {
       ...formData,
       CompanySize : parseInt(formData.CompanySize),
       AnnualRevenue : parseInt(formData.AnnualRevenue),
-      ...(this.isEditMode ? {updatedBy : updatedBy}:{createdBy : createdBy}),
+      ...(this.isEditMode ? {updatedBy : userEmail}:{createdBy : userEmail}),
       status : formData.status.charAt(0),
-      CompanyMasterSid : companyId
+      CompanyMasterSid : CompanyMasterSid,
+      BranchMasterSid: BranchMasterSid,
     }
 
     if(this.isEditMode){
@@ -216,6 +233,35 @@ export class LeadComponent implements OnInit {
     }
   }
 
+  
+
+openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.PreCustomerMasterSid) return;
+
+  this.leadService.getAuditLogsLead('PreCustomerMaster', this.PreCustomerMasterSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
   // Mapping for API status values
   statusMap: { [key: string]: string } = {
     A: 'Active',

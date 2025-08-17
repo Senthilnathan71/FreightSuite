@@ -1,6 +1,6 @@
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, TemplateRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { AppService } from 'src/app/service/app.service';
 
@@ -20,7 +20,7 @@ import { DatePipe } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbModalRef, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { DetailsComponent } from 'src/app/component/details/details.component';
@@ -150,6 +150,11 @@ export class EnquiryEntryComponent implements OnInit {
     { id: 5, name: "Palletization" }
   ]
 
+
+  
+
+auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
 
   constructor(
     private appService: AppService,
@@ -421,6 +426,34 @@ export class EnquiryEntryComponent implements OnInit {
     });
   }
 
+  
+openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.EnquiryHeaderSid) return;
+
+  this.leadService.getAuditLogsEnquiry('EnquiryHeader', this.EnquiryHeaderSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.ngbModal.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
   updateCargoValidators(cargoForm: FormGroup, type: string) {
     const resetFields = (fields: string[]) => {
       fields.forEach(f => {

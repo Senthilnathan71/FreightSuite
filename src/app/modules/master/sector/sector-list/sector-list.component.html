@@ -277,11 +277,12 @@
     }
 
             }
+            
+            <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
                             (click)="openAuditLogs(auditLogModal)">
                         <i class="fas fa-history me-1"></i>Logs
                     </button>
-            <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
                 [disabled]="btnDisable || sectorForm.invalid"
                 *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">

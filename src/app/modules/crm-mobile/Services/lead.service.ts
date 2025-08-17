@@ -208,6 +208,15 @@ export class LeadService {
     )
   }
 
+  getAuditLogsEnquiry(tableName: string, recordId?: string) {
+    let url = `ff-enquiry/fetch/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
 
   createQuotation(payload: any) {
     return this.http.post("ff-quotation", payload).pipe(
@@ -418,6 +427,15 @@ export class LeadService {
     )
   }
 
+  getAuditLogsLead(tableName: string, recordId?: string) {
+    let url = `lead/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   getAllCompanies() {
     return this.http.get<{ data: any[] }>('company').pipe(
       map((resp) => {
@@ -601,6 +619,15 @@ export class LeadService {
         let response = resp;
         return response;
       })
+    );
+  }
+
+  getAuditLogsQuotation(tableName: string, recordId?: string) {
+    let url = `ff-quotation/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
     );
   }
 

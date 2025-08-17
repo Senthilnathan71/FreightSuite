@@ -87,6 +87,16 @@ export class AccountsService {
       })
     );
   }
+
+  getAuditLogsSupplierTDSMapping(tableName: string, recordId?: string) {
+    let url = `supplier-tds-mapping/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   getSupplierTDSById(id: number) {
     return this.http.get<{ data: any }>(`supplier-tds-mapping/fetch/${id}`).pipe(
       map((resp) => {
