@@ -58,6 +58,7 @@ export class ProductEntryComponent implements OnInit{
     permissions: string[] = [];
     currentMenuPermissions: any = {};
     userData:any;
+    currentCompany:any;
     constructor(
         private masterService:MasterService,
         private appSettingService:AppSettingsService,
@@ -68,6 +69,8 @@ export class ProductEntryComponent implements OnInit{
     ){}
 
     ngOnInit(): void {
+         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    // this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         this.initProductForm();
         this.getAllUom();
         this.getAllHSN();
@@ -187,7 +190,8 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
                 ...formValue,
                 UNNo : parseInt(formValue.UNNo),
                 status : formValue.status === 'Active' ? 'A' : 'S',
-                createdBy:createdBy
+                createdBy:createdBy,
+                CompanyMasterSid:this.currentCompany?.CompanyMasterSid
             }
             if(this.isEditMode){
                 this.masterService.updateProductById(this.ProductMasterSId,payload).subscribe(

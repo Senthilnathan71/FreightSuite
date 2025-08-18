@@ -140,10 +140,12 @@ export class ChargeTaxComponent implements OnInit {
 }
   loadChargeTaxes(): void {
     this.isLoading = true;
+    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const params = {
       search: this.filterValue?.trim() || '',
       page: this.page,
-      pageSize: this.pageSize
+      pageSize: this.pageSize,
+      activeCompanyId : CompanyMasterSid,
     };
 
     this.masterService.searchChargeTax(params).subscribe({
@@ -189,7 +191,7 @@ export class ChargeTaxComponent implements OnInit {
       TaxRate: ['', [Validators.required, Validators.min(0), Validators.max(100)]],
       Remarks: ['', [Validators.maxLength(100)]],
       status: [{value: 'Active', disabled: false}, Validators.required],
-      CompanyMasterSid: ['', Validators.required]
+      // CompanyMasterSid: ['', Validators.required]
     });
   }
 
@@ -304,7 +306,7 @@ export class ChargeTaxComponent implements OnInit {
     TaxRate: parseFloat(formValue.TaxRate),
     Remarks: formValue.Remarks || '',
     Status: formValue.status === "Active" ? "A" : "S",
-    CompanyMasterSid: formValue.CompanyMasterSid,
+    CompanyMasterSid:this.currentCompany?.CompanyMasterSid,
     CreatedBy: currentUserEmail,
     UpdatedBy: currentUserEmail  // ✅ Always include both
   };
@@ -315,6 +317,7 @@ export class ChargeTaxComponent implements OnInit {
         if (resp.status) {
           this.appSettingService.showSuccess(resp.message);
           this.closeModal();
+          this.loadChargeTaxes();
         } else {
           this.appSettingService.showError(resp.message);
         }
@@ -331,6 +334,7 @@ export class ChargeTaxComponent implements OnInit {
         if (resp.status) {
           this.appSettingService.showSuccess(resp.message);
           this.closeModal();
+          this.loadChargeTaxes();
         } else {
           this.appSettingService.showError(resp.message);
         }
@@ -405,7 +409,7 @@ onPageChange(newPage: number) {
       if (result === true) {
         this.masterService.deleteChargeTaxById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
-            
+          this.loadChargeTaxes();
         });
       }
     });

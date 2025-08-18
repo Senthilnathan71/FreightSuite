@@ -32,7 +32,7 @@ export class ChartAccountEntryComponent {
   chartMasterSid: number;
   isEditMode: boolean = false;
   currencyList: any[] = [];
-
+  currentCompany:any;
 
   modeOfCategory = [
     { id: 1, name: 'Category 1' },
@@ -63,8 +63,9 @@ auditLogs: any[] = []; // Stores audit logs
   ) {}
 
    ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.initForm();
-     this.getCurrencies();
+    this.getCurrencies();
     this.activatedRoute.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
@@ -157,12 +158,14 @@ auditLogs: any[] = []; // Stores audit logs
     ...this.chartForm.value,
       Status: mappedStatus,
       UpdatedBy:currentuseremail,
+  
   //   CreatedBy: this.appSettingService.userSettingSource.value['userEmail'],
   //  UpdatedBy: this.isEditMode ? this.appSettingService.userSettingSource.value['userEmail']
   }:{
      ...this.chartForm.value,
       Status: mappedStatus,
       CreatedBy:currentuseremail,
+      CompanyMasterSid :this.currentCompany?.CompanyMasterSid,
   };
 
   if (this.isEditMode) {

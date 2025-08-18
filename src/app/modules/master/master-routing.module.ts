@@ -72,6 +72,8 @@ import { ConfigComponent } from './company/config/config.component';
 import { DocumentAuthorizationComponent } from './document-authorization/document-authorization.component';
 import { DocumnetGenerationListComponent } from './document-number-generation/documnet-generation-list/documnet-generation-list.component';
 import { DocumnetGenerationEntryComponent } from './document-number-generation/documnet-generation-entry/documnet-generation-entry.component';
+import { ContainerActivityListComponent } from './container-activity/container-activity-list/container-activity-list.component';
+import { ContainerActivityEntryComponent } from './container-activity/container-activity-entry/container-activity-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -1105,6 +1107,22 @@ export const MasterRoutes: Routes = [
         { title: 'Document Number Generation' },
       ],
     },
-  }
+  },
+       {
+          path: 'container-activity/list',
+          component: ContainerActivityListComponent,
+          data: {
+            title: 'Container Activity',
+            urls: [{ title: 'Master', url: '/master' }, { title: 'Container Activity' }],
+          },
+        },
+        {
+          path: 'container-activity/entry',
+          component: ContainerActivityEntryComponent,
+          data: {
+            title: 'Container Activity',
+            urls: [{ title: 'Master', url: '/master' }, { title: 'Container Activity' }],
+          },
+        },
 
 ];

@@ -155,7 +155,7 @@
                                 <div class="text-truncate">{{item.ShipmentType}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.departmentMaster.departmentName || '-'}}</div>
+                                <div class="text-truncate">{{item.departmentMaster?.departmentName || '-'}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.SortBy || '-'}}</div>
@@ -186,8 +186,9 @@
                 </ngb-pagination>
             </div>
         </div>
-    </div>
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
+        <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed">
         <div>No records found</div>
     </div>
+    </div>
+
 </div>

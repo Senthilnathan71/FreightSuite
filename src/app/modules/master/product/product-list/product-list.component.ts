@@ -113,11 +113,12 @@ export class ProductListComponent {
 
 
     loadProducts(): void {
-        
+          let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
         const params = {
             search: this.filterValue?.trim() || '',
             page: this.page,
             pageSize: this.pageSize,
+            activeCompanyId : CompanyMasterSid,
         };
 
         this.masterService.searchProductList(params).subscribe({

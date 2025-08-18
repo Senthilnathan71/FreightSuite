@@ -76,13 +76,16 @@ export class CurrencyExchangeListComponent {
 
 loadCurrencyExchanges(): void {
   this.loading = true;
-  
+  let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  let BranchMasterSid=this.currentBranch?.BranchMasterSid;
   const params = {
     search: this.filterValue?.trim() || '',
     page: this.page,
     pageSize: this.pageSize,
     sortColumn: this.sortColumn,
-    sortDirection: this.sortDirection
+    sortDirection: this.sortDirection,
+    activeCompanyId : CompanyMasterSid,
+    activeBrachId: BranchMasterSid,
   };
 
   this.accountService.searchCurrencyExchangeList(params).subscribe({

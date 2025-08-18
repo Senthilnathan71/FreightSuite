@@ -48,7 +48,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
   TandCList: any[]=[];
   currentClauseId: any;
   currencies: any[] = []; 
-
+  currentCompany : any;
+  currentBranch : any;
   constructor(
     private fb: FormBuilder,
     private accountService: AccountsService,
@@ -61,6 +62,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+  this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.initForm();
     this.loadCompaniesAndBranches();
     this.checkEditMode();
@@ -85,8 +88,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
 
       Remarks: [''],
       status: [{ value: 'Active', disabled: true }, [Validators.required]],
-      CompanyMasterSid: ['', [Validators.required]],
-      BranchMasterSid: ['', [Validators.required]]
+      // CompanyMasterSid: ['', [Validators.required]],
+      // BranchMasterSid: ['', [Validators.required]]
     });
 
     // Automatically convert currency inputs to uppercase
@@ -171,6 +174,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
         this.currencyExchangeData = data;
         this.currencyExchangeForm.patchValue({
           ...data,
+            CompanyMasterSid :this.currentCompany?.CompanyMasterSid,
+            BranchMasterSid :this.currentBranch?.BranchMasterSid,
           EffectiveFrom: new Date(data.EffectiveFrom),
           status: data.status === 'A' ? 'Active' : 'Suspended',
           RateFrom: data.RateFrom || ''
@@ -197,6 +202,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
 
     const payload = {
       ...formValue,
+      CompanyMasterSid :this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid :this.currentBranch?.BranchMasterSid,
       EffectiveFrom: formValue.EffectiveFrom,
       RateFrom: formValue.RateFrom,
       SellRate: parseFloat(formValue.SellRate),

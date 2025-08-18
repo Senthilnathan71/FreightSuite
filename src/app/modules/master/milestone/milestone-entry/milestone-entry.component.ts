@@ -52,6 +52,7 @@ export class MilestoneEntryComponent implements OnInit {
   TandCList: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  currentCompany:any;
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -69,6 +70,8 @@ export class MilestoneEntryComponent implements OnInit {
     //   this.userData = user;
     //   this.checkPermissions();
     // });
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    // this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -117,8 +120,8 @@ export class MilestoneEntryComponent implements OnInit {
       AutomailRequire: ['N'],
       status: [{value: 'A', disabled: true}, Validators.required],
       Remarks: ['', Validators.maxLength(500)],
-      CompanyMasterSid: [null],
-    BranchMasterSid: [null]
+    //   CompanyMasterSid: [null],
+    // BranchMasterSid: [null]
     });
   }
 
@@ -170,6 +173,7 @@ export class MilestoneEntryComponent implements OnInit {
     const updatedBy = { updatedBy: this.userData?.userEmail || 'system' };
     
     const payload = {
+      CompanyMasterSid :this.currentCompany?.CompanyMasterSid,
       ...formValue,
       DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
       status: this.isEditMode ? formValue.status : 'A',

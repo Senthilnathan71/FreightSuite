@@ -108,13 +108,14 @@ export class MilestoneListComponent {
 
   loadMilestones(): void {
   this.loading = true;
-  
+  let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
   const params = {
     search: this.filterValue?.trim() || '',
     page: this.page,
     pageSize: this.pageSize,
     sortColumn: this.sortColumn,
-    sortDirection: this.sortDirection
+    sortDirection: this.sortDirection,
+    activeCompanyId : CompanyMasterSid,
   };
 
   this.masterService.searchMilestoneList(params).subscribe({
@@ -224,7 +225,7 @@ applySorting() {
         this.masterService.deleteMilestoneById(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("Milestone deleted successfully!");
-            
+            this.loadMilestones();
           },
           error: (err) => {
             console.error('Delete error:', err);
