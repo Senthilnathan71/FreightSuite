@@ -157,10 +157,15 @@ export class DivisionComponent {
   }
 
   loadDivisions(): void {
+    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    
     const params = {
       search: this.filterValue ? this.filterValue.trim() : '',
       page: this.page,
       pageSize: this.pageSize,
+      sortDirection: this.sortDirection,
+      activeCompanyId : CompanyMasterSid
+      
     };
 
     this.masterService.searchDivisionList(params).subscribe({
@@ -187,7 +192,7 @@ export class DivisionComponent {
       DivisionName: ['', [Validators.required]],
       DivisionCode: ['', [Validators.required]],
       // address: ['', [Validators.required]],
-      CompanyMasterSid: ['', [Validators.required]],
+      // CompanyMasterSid: ['', [Validators.required]],
       Remarks: [''],
       status: [{ value: 'Active', disabled: false }, Validators.required],
     });
@@ -236,7 +241,6 @@ export class DivisionComponent {
           this.divisionForm.patchValue({
             DivisionName: division.DivisionName,
             DivisionCode: division.DivisionCode,
-            CompanyMasterSid: Number(division.CompanyMasterSid),
             Remarks: division.Remarks,
             status: division.status === 'A' ? 'Active' : 'Suspended',
           });
@@ -297,7 +301,7 @@ export class DivisionComponent {
           this.divisionForm.patchValue({
             DivisionName: division.DivisionName,
             DivisionCode: division.DivisionCode,
-            CompanyMasterSid: Number(division.CompanyMasterSid),
+            
             Remarks: division.Remarks,
             status: division.status === 'A' ? 'Active' : 'Suspended',
           });
@@ -333,13 +337,13 @@ export class DivisionComponent {
       const payload = this.isEditMode
         ? {
             ...formValue,
-            CompanyMasterSid: Number(formValue.CompanyMasterSid),
+             CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
             ...updatedBy,
             status: formValue.status === 'Active' ? 'A' : 'I',
           }
         : {
             ...formValue,
-            CompanyMasterSid: Number(formValue.CompanyMasterSid),
+             CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
             ...createdBy,
             status: formValue.status === 'Active' ? 'A' : 'I',
           };

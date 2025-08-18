@@ -548,6 +548,8 @@ openAuditLogs(modal: TemplateRef<any>) {
   customerBranchContactForm!: FormGroup;
   customerBranchEmailForm!: FormGroup;
   customerBranchLoginForm!: FormGroup;
+  currentCompany :any;
+  currentBranch : any;
 
   isEditMode = false; // Flag for edit mode
   isModalEditMode = false;
@@ -583,6 +585,8 @@ openAuditLogs(modal: TemplateRef<any>) {
   //     this.checkPermissions();
   //   }
   // });
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
   const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -936,6 +940,7 @@ loadMenus() {
     let updatedBy = {
       updatedBy: this.appSettingService.userSettingSource.value['userEmail'],
     };
+    let activeCompanyId  = this.currentCompany.CompanyMasterSid;
     const formValue = this.customerForm.value;
     const statusValue = formValue.status === 'Active' ? 'A' : 
                      formValue.status === 'Suspended' ? 'S' : 
@@ -944,6 +949,7 @@ loadMenus() {
     console.log(formValue, 'formValue');
     const payload = this.isEditMode
       ? {
+        CompanyMasterSid : activeCompanyId,
         CustomerName: formValue.CustomerName,
         CustomerShortCode: formValue.CustomerShortCode,
         CustomerAliasName: formValue.CustomerAliasName,
@@ -966,6 +972,7 @@ loadMenus() {
         status: statusValue,
       }
       : {
+        CompanyMasterSid : activeCompanyId,
         CustomerName: formValue.CustomerName,
         CustomerShortCode: formValue.CustomerShortCode,
         CustomerAliasName: formValue.CustomerAliasName,

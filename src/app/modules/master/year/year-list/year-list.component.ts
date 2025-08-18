@@ -102,10 +102,12 @@ export class YearListComponent {
   return this.permissions.includes(permission);
 }
   loadYears(): void {
+    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const params = {
       search: this.filterValue?.trim() || '',
       page: this.page,
       pageSize: this.pageSize,
+      activeCompanyId : CompanyMasterSid,
     };
 
     this.masterService.searchYearList(params).subscribe({

@@ -58,6 +58,8 @@ export class HawbStockEntryComponent implements OnInit {
   currentMenuPermissions: any = {};
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  currentCompany: any;
+  currentBranch:any;
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -71,7 +73,8 @@ export class HawbStockEntryComponent implements OnInit {
 
   ngOnInit(): void {
     
-    
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
        this.appSettingService.getUser().subscribe(user => {
     if(user) {
       this.userData = user;
@@ -81,7 +84,7 @@ export class HawbStockEntryComponent implements OnInit {
     this.initForm();
     this.loadUserData();
     this.loadCustomers();
-    this.loadCompanies();
+    
     
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -114,42 +117,7 @@ export class HawbStockEntryComponent implements OnInit {
   return this.permissions.includes(permission);
 }
 
-  loadCompanies(): void {
-  this.masterService.getAllCompanies().subscribe(
-    (companies: any) => {
-      this.companyList = companies;
-      // Initialize branches for each company
-      companies.forEach(company => {
-        this.branchesByCompany[company.CompanyMasterSid] = [];
-      });
-    },
-    (error) => {
-      console.error('Error loading companies:', error);
-    }
-  );
-}
-
-  onCompanySelect(companyId: number): void {
-  this.selectedCompanyId = companyId;
-  this.hawbForm.get('BranchMasterSid').reset();
-  
-  if (companyId && !this.branchesByCompany[companyId]?.length) {
-    this.masterService.getBranchesByCompanyId(companyId).subscribe(
-      (branches: any) => {
-        this.branchesByCompany[companyId] = branches;
-        this.branchList = branches;
-      },
-      (error) => {
-        console.error('Error loading branches:', error);
-      }
-    );
-  } else if (companyId) {
-    this.branchList = this.branchesByCompany[companyId];
-  } else {
-    this.branchList = [];
-  }
-}
-
+ 
   loadCustomers(): void {
     this.masterService.getAllCustomers().subscribe(
       (resp: any) => {
@@ -171,8 +139,7 @@ export class HawbStockEntryComponent implements OnInit {
       ReceivedDate: [this.todayDate, Validators.required],
       StockStatus: ['Free', Validators.required],
       status: ['Active'],
-      CompanyMasterSid: [null, Validators.required],
-      BranchMasterSid: [null, Validators.required]
+      
     });
     this.btnDisable = true;
      this.hawbForm.get('AirwayBillType').valueChanges.subscribe(value => {
@@ -209,33 +176,16 @@ generateAWB(): void {
   }
 }
   
-  filterBranchByCompany(company: any) {
-  if (company) {
-    this.selectedCompanyId = company.CompanyMasterSid;
-    this.masterService.getBranchesByCompanyId(company.CompanyMasterSid).subscribe(
-      (resp) => {
-        this.branchList = resp;
-      },
-      (error) => {
-        console.error('Error loading branches:', error);
-      }
-    );
-  } else {
-    this.selectedCompanyId = null;
-    this.branchList = [];
-    this.hawbForm.get('BranchMasterSid').reset();
-  }
-}
-
+  
   loadUserData(): void {
     this.appSettingsService.getUser().subscribe(user => {
       if (user) {
         this.userData = user;
         if (user.companyMaster) {
           this.hawbForm.patchValue({
-            CompanyMasterSid: user.companyMaster.CompanyMasterSid
+          
           });
-          this.onCompanySelect(user.companyMaster.CompanyMasterSid);
+         
         }
       }
     });
@@ -257,20 +207,12 @@ generateAWB(): void {
         ReceivedDate: receivedDate,
         StockStatus: hawbData.StockStatus,
         status: hawbData.status === 'A' ? 'Active' : 'Suspended',
-        CompanyMasterSid: hawbData.CompanyMasterSid
+        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+			  BranchMasterSid : this.currentBranch?. BranchMasterSid,
       });
 
       // Ensure branches are loaded first, then patch BranchMasterSid
-      if (hawbData.CompanyMasterSid) {
-        this.onCompanySelect(hawbData.CompanyMasterSid);
-
-        // Wait a moment (microtask) to ensure branchList is updated
-        setTimeout(() => {
-          this.hawbForm.patchValue({
-            BranchMasterSid: hawbData.BranchMasterSid
-          });
-        }, 0);
-      }
+      
 
       this.hawstockData = hawbData;
     },
@@ -286,6 +228,8 @@ generateAWB(): void {
     return {
       ...formValue,
       status: formValue.status === "Active" ? "A" : "S",
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+			BranchMasterSid : this.currentBranch?. BranchMasterSid,
       createdBy: this.isEditMode ? undefined : this.userData?.userEmail,
       updatedBy: this.isEditMode ? this.userData?.userEmail : undefined
     };
@@ -362,11 +306,9 @@ generateAWB(): void {
         StockStatus: 'Free',
         status: 'Active',
         ReceivedDate: this.todayDate,
-        CompanyMasterSid: this.userData?.companyMaster?.CompanyMasterSid || null
+       
       });
-      if (this.userData?.companyMaster?.CompanyMasterSid) {
-        this.onCompanySelect(this.userData.companyMaster.CompanyMasterSid);
-      }
+     
     }
   }
   

@@ -64,46 +64,7 @@
                             </div>
                         </aside>
 
-                        <!-- Updated Company and Branch Selection -->
-                        <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select">
-    <ng-select formControlName="CompanyMasterSid" 
-      [items]="companyList" 
-      bindLabel="companyName"
-      bindValue="CompanyMasterSid"
-      (change)="filterBranchByCompany($event)"
-      [readonly]="!!userData?.companyMaster">
-      <ng-option value="">Select Company</ng-option>
-    </ng-select>
-    <label class="input-label">Company <span class="text-danger fw-bold">*</span></label>
-    <div class="error-message">
-      @if(hawbForm.get('CompanyMasterSid')?.touched && 
-      hawbForm.get('CompanyMasterSid')?.invalid){
-      <span>Company is required</span>
-      }
-    </div>
-  </div>
-</aside>
-
-<!-- Updated Branch Selector -->
-<aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select">
-    <ng-select formControlName="BranchMasterSid" 
-      [items]="branchList" 
-      bindLabel="branchName"
-      bindValue="BranchMasterSid"
-      [disabled]="!selectedCompanyId">
-      <ng-option value="">Select Branch</ng-option>
-    </ng-select>
-    <label class="input-label">Branch <span class="text-danger fw-bold">*</span></label>
-    <div class="error-message">
-      @if(hawbForm.get('BranchMasterSid')?.touched && 
-      hawbForm.get('BranchMasterSid')?.invalid){
-      <span>Branch is required</span>
-      }
-    </div>
-  </div>
-</aside>
+                       
 
                         @if(hawbForm.get('AirwayBillType').value === 'Other') {
 <aside class="col-md-4">

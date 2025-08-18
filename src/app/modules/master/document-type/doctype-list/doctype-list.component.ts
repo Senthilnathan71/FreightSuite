@@ -89,13 +89,17 @@ export class DoctypeListComponent {
 }
    loadDocTypes(): void {
     this.loading = true;
+    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    let BranchMasterSid = this.currentBranch?.BranchMasterSid;
     
     const params = {
       search: this.filterValue?.trim() || '',
       page: this.page,
       pageSize: this.pageSize,
       sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection
+      sortDirection: this.sortDirection,
+      activeCompanyId : CompanyMasterSid,
+      activeBranchId : BranchMasterSid,
     };
 
     this.masterService.searchDocTypes(params).subscribe({

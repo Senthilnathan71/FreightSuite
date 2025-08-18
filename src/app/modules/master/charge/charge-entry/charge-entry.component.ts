@@ -71,6 +71,9 @@ export class ChargeEntryComponent implements OnInit {
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }
   ];
+  currentCompany: any;
+    currentBranch: any;
+
 
   // GST and TDS lists
   gstList: any[] = [];
@@ -94,6 +97,8 @@ export class ChargeEntryComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.chargeID = +params['id'];
@@ -400,6 +405,7 @@ export class ChargeEntryComponent implements OnInit {
     const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     
     const payload = {
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
         chargeCode: this.chargeForm.value.chargeCode,
         chargeName: this.chargeForm.value.chargeName,
         UOM: this.chargeForm.value.UOM,

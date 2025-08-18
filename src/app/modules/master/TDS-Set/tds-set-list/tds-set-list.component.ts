@@ -91,10 +91,12 @@ export class TdsSetListComponent implements OnInit {
     }
 
     loadTds() {
+        let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
         const payload = {
             search: this.filterValue,
             page: this.page,
-            pageSize: this.pageSize
+            pageSize: this.pageSize,
+            activeCompanyId : CompanyMasterSid
         }
         this.masterService.searchTds(payload).subscribe(
             (resp: any) => {

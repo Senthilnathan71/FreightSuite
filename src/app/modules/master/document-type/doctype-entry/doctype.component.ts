@@ -81,6 +81,8 @@ currentBranch: any;
 	) { }
 
 	ngOnInit() {
+	this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 		this.initDocumentForm();
 		this.loadAllFields();
 		this.currentRoute.paramMap.subscribe(
@@ -293,8 +295,8 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 
 		const payload = {
 			...formValue,
-			CompanyMasterSid : CompanyMasterSid,
-			BranchMasterSid : BranchMasterSid,
+			CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+			BranchMasterSid : this.currentBranch?. BranchMasterSid,
 			COALedger : Number(formValue.COALedger),
 			Subledger : Number(formValue.Subledger),
 			CompanyFlag: formValue.CompanyFlag ? 'Y' : 'N',

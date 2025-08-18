@@ -58,6 +58,10 @@ export class QuotationViewComponent {
   constructor(private toastr: ToastrService, private modalService: NgbModal, private leadService: LeadService, private route: Router, private appService: AppService,private appSettingService : AppSettingsService) { }
 
   ngOnInit(): void {
+    const storedCompany = localStorage.getItem('selected-company');
+    this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
+    const storedBranch = localStorage.getItem('selected-branch');
+    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     this.isMobile = this.appService.getDevice()
     this.loadPorts()
     this.loadEnquiries()
@@ -69,17 +73,18 @@ export class QuotationViewComponent {
         this.userData = res;
       }
     )
-    const storedCompany = localStorage.getItem('selected-company');
-    this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
-    const storedBranch = localStorage.getItem('selected-branch');
-    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
+
   }
 
   searchQuotation() {
+    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    let BranchMasterSid = this.currentBranch?.BranchMasterSid;
     const params = {
       search: this.filterValue.trim() || '',
       page: this.page,
       pageSize: this.pageSize,
+      activeCompanyId : CompanyMasterSid,
+      activeBranchId : BranchMasterSid,
     }
     this.leadService.searchQuotation(params).subscribe({
       next: (resp: any) => {

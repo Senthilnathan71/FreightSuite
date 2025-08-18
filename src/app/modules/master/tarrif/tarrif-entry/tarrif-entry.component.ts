@@ -90,6 +90,8 @@ export class TarrifEntryComponent implements OnInit {
 	userData:any;
 	permissions: string[] = [];
     currentMenuPermissions: any = {};
+	currentCompany: any;
+    currentBranch: any;
 
 	
 auditLogs: any[] = []; // Stores audit logs
@@ -116,6 +118,7 @@ auditLogs: any[] = []; // Stores audit logs
 		private masterServ: MasterService,
 		private appSettingServ: AppSettingsService,
 		private currRoute: ActivatedRoute,
+		private appSettingService: AppSettingsService,
 		private route: Router,
 		private fb: FormBuilder,
 		private modalService: NgbModal,
@@ -123,6 +126,8 @@ auditLogs: any[] = []; // Stores audit logs
 		private calendar: NgbCalendar
 	) { }
 	ngOnInit(): void {
+		this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 		this.initHeaderForm();
 		this.loadAllFields();
 		  this.tariffHeaderForm.statusChanges.subscribe(status => {
@@ -442,6 +447,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 			const updatedBy = this.appSettingServ.userSettingSource.value['userEmail'];
 			let formValue = this.tariffDetailsForm.getRawValue();
 			const payload = {
+				
 				TariffHeaderSid : this.TariffHeaderSid || parseInt(formValue.TariffHeaderSid),
 				IsSlabApplicable: formValue.detailisSlabApplicable ? 'Y':'N',
 				SlabFrom: parseInt(formValue.detailSlabFrom),
@@ -502,6 +508,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 		let updatedBy = this.appSettingServ.userSettingSource.value['userEmail'];
 		return (this.isEditMode) ? {
 			...formValue,
+			CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
 			POOSid: Number(formValue.POOSid),
 			POLSid: Number(formValue.POLSid),
 			PODSid: Number(formValue.PODSid),
@@ -513,6 +520,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 			status: formValue.status === "Active" ? "A" : "S"
 		} : {
 			...formValue,
+			CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
 			POOSid: Number(formValue.POOSid),
 			POLSid: Number(formValue.POLSid),
 			PODSid: Number(formValue.PODSid),
