@@ -102,11 +102,13 @@ export class ChargeListComponent {
 
   loadCharges(): void {
     this.loading = true;
-
+    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     this.masterService.searchChargeList({
       search: this.filterValue || '',
       page: this.page,
-      pageSize: this.pageSize
+      pageSize: this.pageSize,
+      activeCompanyId : CompanyMasterSid
+
     }).subscribe({
       next: (res) => {
         const items = res?.items || res || [];

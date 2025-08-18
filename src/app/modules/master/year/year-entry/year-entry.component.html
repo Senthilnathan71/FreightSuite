@@ -186,26 +186,7 @@
                             </div>
                         </aside>
 
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <select formControlName="CompanyMasterSid" class="form-select">
-                                    <option value="" disabled selected>Select Company</option>
-                                    <option *ngFor="let option of companyList" [value]="option.CompanyMasterSid">
-                                        {{option.companyName}}
-                                    </option>
-                                </select>
-                                <label for="text-input" class="input-label">Company <span
-                                        class="text-danger fw-bold">*</span></label>
-                                @if(yearForm.get('CompanyMasterSid')?.touched &&
-                                yearForm.get('CompanyMasterSid')?.invalid){
-                                <div class="error-message">
-                                    @if(yearForm.get('CompanyMasterSid')?.hasError('required')){
-                                    <span>Company is required</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
+                        
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <textarea formControlName="Remarks" class="custom-input-field sm" [textWithNumbers]="20"

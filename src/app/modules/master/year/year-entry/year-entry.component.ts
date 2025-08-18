@@ -64,6 +64,8 @@ export class YearEntryComponent {
   currentMenuPermissions: any = {};
   currentMenuId: any;
   TandCList: any[]=[];
+  currentCompany: any;
+  currentBranch: any;
 
   auditLogs: any[] = []; // Stores audit logs
     auditLogModalRef!: NgbModalRef;
@@ -78,6 +80,8 @@ export class YearEntryComponent {
     private calendar : NgbCalendar
   ) {  }
   ngOnInit(): void {
+     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
       const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -136,7 +140,7 @@ export class YearEntryComponent {
 
   initForm() {
     this.yearForm = this.fb.group({
-      CompanyMasterSid: ['',[Validators.required]],
+      
       YearName: ['', Validators.required],
       YearCode: ['', Validators.required],
       StartDate: [this.todayDate, Validators.required],
@@ -172,13 +176,13 @@ export class YearEntryComponent {
       const payload = (this.isEditMode) ? {
         ...formValue,
         YearCode: Number(formValue.YearCode),
-        CompanyMasterSid: Number(formValue.CompanyMasterSid),
+        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
         ...updatedBy,
         status: formValue.status === "Active" ? "A" : "C"
       } : {
         ...formValue,
         YearCode: Number(formValue.YearCode),
-        CompanyMasterSid: Number(formValue.CompanyMasterSid),
+        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
         ...createdBy,
         status: formValue.status === "Active" ? "A" : "C"
       };
@@ -264,7 +268,6 @@ export class YearEntryComponent {
           ...data,
           StartDate:startDate,
           EndDate: endDate,
-          CompanyMasterSid: data.CompanyMasterSid,
           status: this.statusMap[data.status] || 'Active' 
         },
       );
@@ -351,7 +354,6 @@ export class YearEntryComponent {
 
   reset() {
   this.yearForm.reset({
-    CompanyMasterSid: '',
     YearName: '',
     YearCode: '',
     StartDate: this.todayDate,

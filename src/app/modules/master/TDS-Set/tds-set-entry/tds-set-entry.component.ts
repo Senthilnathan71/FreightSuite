@@ -105,6 +105,10 @@ export class TdsSetEntryComponent implements OnInit {
     permissions: string[] = [];
     currentMenuPermissions: any = {};
     userData: any;
+    currentCompany: any;
+    currentBranch: any;
+
+
 
     auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
@@ -122,6 +126,8 @@ export class TdsSetEntryComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
+        this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         this.initTdsForm();
         // this.appSettingService.getUser().subscribe(
         //     (res) => {
@@ -209,6 +215,7 @@ export class TdsSetEntryComponent implements OnInit {
 
         const payload = {
             ...formValue,
+            CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
             status: formValue.status === 'Active' ? 'A' : 'S',
             ...(this.isEditMode ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
         }
