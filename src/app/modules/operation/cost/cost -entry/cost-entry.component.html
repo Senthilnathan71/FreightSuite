@@ -1,0 +1,369 @@
+<div class="tab-wrapper mt-2">
+    <div class="tab" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name" (click)="selectTab(tab.name)">
+        <i [class]="tab.icon"></i>
+        {{ tab.name }}
+
+    </div>
+</div>
+
+
+<div class="tab-content mb-2">
+
+    <div class="row bg-white" *ngIf="selectedTab === 'Cost'">
+        <!-- <ng-container *ngComponentOutlet="costcomponent"></ng-container> -->
+        <div class="text-end mb-1">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openCostModal()"><i
+                    class="fas fa-plus me-1"></i> Add</button>
+        </div>
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light">Sno</th>
+                            <th class="bg-transparent text-light">Charge</th>
+                            <th class="bg-transparent text-light">Charge Desc</th>
+                            <th class="bg-transparent text-light">PP/CC</th>
+                            <th class="bg-transparent text-light">Unit</th>
+                            <th class="bg-transparent text-light">No of Unit</th>
+                            <th class="bg-transparent text-light">Dr/Cr</th>
+                            <th class="bg-transparent text-light">Curr</th>
+                            <th class="bg-transparent text-light">Ex Rate</th>
+                            <th class="bg-transparent text-light">Rate</th>
+                            <th class="bg-transparent text-light">Amt</th>
+                            <th class="bg-transparent text-light">Local Amt</th>
+                            <th class="bg-transparent text-light">Billing Party</th>
+                            <th class="bg-transparent text-light">Voucher No</th>
+                            <th class="bg-transparent text-light">Type</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <ng-template #costModal let-modal>
+            <div class="modal-header p-2 bg-info">
+                <h5 class="modal-title text-white">Cost</h5>
+                <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                    (click)="modal.dismiss()"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Sno <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Charge <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label"> Charge Desc <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">PP/CC <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Unit<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">No of Unit <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Dr/Cr<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Curr<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Ex Rate<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Rate<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Amt <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Local Amt <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Billing Party<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Voucher No<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Type<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+                <button type="button" class="btn btn-info btn-sm">Save</button>
+            </div>
+        </ng-template>
+    </div>
+
+    <div class="row bg-white" *ngIf="selectedTab === 'Revenue'">
+        <!-- <ng-container *ngComponentOutlet="revenuecomponent"></ng-container> -->
+
+        <div class="text-end mb-1">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                (click)="openRevenueModal()"><i class="fas fa-plus me-1"></i> Add</button>
+        </div>
+
+
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light">Sno</th>
+                            <th class="bg-transparent text-light">Charge</th>
+                            <th class="bg-transparent text-light">Charge Desc</th>
+                            <th class="bg-transparent text-light">PP/CC</th>
+                            <th class="bg-transparent text-light">Unit</th>
+                            <th class="bg-transparent text-light">No of Unit</th>
+                            <th class="bg-transparent text-light">Dr/Cr</th>
+                            <th class="bg-transparent text-light">Curr</th>
+                            <th class="bg-transparent text-light">Ex Rate</th>
+                            <th class="bg-transparent text-light">Rate</th>
+                            <th class="bg-transparent text-light">Amt</th>
+                            <th class="bg-transparent text-light">Local Amt</th>
+                            <th class="bg-transparent text-light">Billing Party</th>
+                            <th class="bg-transparent text-light">Voucher No</th>
+                            <th class="bg-transparent text-light">Type</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <ng-template #revenueModal let-modal>
+            <div class="modal-header p-2 bg-info">
+                <h5 class="modal-title text-white">Revenue</h5>
+                <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                    (click)="modal.dismiss()"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Sno <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Charge <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label"> Charge Desc <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">PP/CC <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Unit<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">No of Unit <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Dr/Cr<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Curr<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Ex Rate<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Rate<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Amt <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Local Amt <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Billing Party<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Voucher No<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Type<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+                <button type="button" class="btn btn-info btn-sm">Save</button>
+            </div>
+        </ng-template>
+    </div>
+
+</div>

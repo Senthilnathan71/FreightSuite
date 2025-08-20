@@ -1,0 +1,766 @@
+<div class="row ">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 pb-2">
+                <h4 class="page-title mb-0">Master Job</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="card h-100 mb-0">
+            <div class="card-body">
+                <div class="row">
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Department <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Master Job No <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <div class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d1="ngbDatepicker" (click)="d1.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="shipmentDateExpected" class="input-label">Master Job Date <span
+                                    class="text-danger"></span>
+                            </label>
+
+                        </div>
+                    </div>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="modeOfFreightTerms" bindLabel="name" bindValue="name" class="ng-select">
+
+                            </ng-select>
+                            <label for="" class="input-label">Freight Terms <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Delivery Agent <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Address<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">MBL No <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <div class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d2="ngbDatepicker" (click)="d2.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="MBLDate" class="input-label">MBL Date <span class="text-danger">*</span>
+                            </label>
+
+                        </div>
+                    </div>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="modeOfBLReleaseType" bindLabel="name" bindValue="name"
+                                class="ng-select">
+
+                            </ng-select>
+                            <label for="" class="input-label">BL Release Type <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">No of Original <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <div class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d3="ngbDatepicker" (click)="d3.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d3.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="MBLDate" class="input-label">SOB Date <span class="text-danger"></span>
+                            </label>
+
+                        </div>
+                    </div>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <textarea id="Remarks" class="custom-input-field sm" placeholder="" rows="1"
+                                formControlName="Remarks" maxlength="500"></textarea>
+                            <label for="Remarks" class="input-label">Internal Remarks</label>
+                        </div>
+                    </aside>
+
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="col-md-12 mt-2">
+        <div class="card h-100 mb-0">
+            <div class="card-body">
+                <div class="row">
+
+
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Vessel <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Voyage <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Carrier <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <div class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d4="ngbDatepicker" (click)="d4.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d4.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="shipmentDateExpected" class="input-label">SOB Date <span
+                                    class="text-danger"></span>
+                            </label>
+
+                        </div>
+                    </div>
+
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">POO <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <div class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d5="ngbDatepicker" (click)="d5.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d5.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="MBLDate" class="input-label">ETA <span class="text-danger">*</span>
+                            </label>
+
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d6="ngbDatepicker" (click)="d6.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d6.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="MBLDate" class="input-label">ETD <span class="text-danger">*</span>
+                            </label>
+
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d7="ngbDatepicker" (click)="d7.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d7.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="MBLDate" class="input-label">Cut Off Date <span class="text-danger"></span>
+                            </label>
+
+                        </div>
+                    </div>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">SI Cut Off <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">ATA <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">ATD <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Dest ATD <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 mt-2">
+
+        <div class="card h-100 mb-0">
+            <div class="card-body">
+                <div class="row">
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Total Pkg <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="modeOfWeightIn" bindLabel="name" bindValue="name" class="ng-select">
+
+                            </ng-select>
+                            <label for="" class="input-label">Weight In <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Gross Weight <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Net Weight <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Chargeable Weight <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Volume(CBM) <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" id="" class="form-check-input sm">
+                                <label for="" class="form-check-label sm">Haz <span class="text-danger"></span></label>
+                            </div>
+                        </div>
+                    </aside>
+                    <div class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d8="ngbDatepicker" (click)="d8.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d8.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="shipmentDateExpected" class="input-label">DG Booking Date <span
+                                    class="text-danger"></span>
+                            </label>
+
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d9="ngbDatepicker" (click)="d9.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d9.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="shipmentDateExpected" class="input-label">DG Approval Date <span
+                                    class="text-danger"></span>
+                            </label>
+
+                        </div>
+                    </div>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <textarea id="CommodityDescription" class="custom-input-field sm" placeholder="" rows="1"
+                                formControlName="CommodityDescription" maxlength="500"></textarea>
+                            <label for="CommodityDescription" class="input-label">Commodity Description</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <textarea id="MarksandNumber" class="custom-input-field sm" placeholder="" rows="1"
+                                formControlName="MarksandNumber" maxlength="500"></textarea>
+                            <label for="MarksandNumber" class="input-label">Marks and Number</label>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div>
+
+
+    <div class="tab-wrapper mt-2">
+        <div class="tab" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+            (click)="selectTab(tab.name)">
+            <i [class]="tab.icon"></i>
+            {{ tab.name }}
+
+        </div>
+    </div>
+
+
+    <div class="tab-content mb-2">
+
+        <div class="row bg-white" *ngIf="selectedTab === 'Container'">
+            <div class="text-end mb-1">
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80 "
+                    (click)="openContainerModal()"><i class="fas fa-plus me-1"></i> Add</button>
+            </div>
+            <div class="col-12 p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="bg-transparent text-light">Sno</th>
+                                <th class="bg-transparent text-light">Continer Type</th>
+                                <th class="bg-transparent text-light">Continer No</th>
+                                <th class="bg-transparent text-light">Line Seal</th>
+                                <th class="bg-transparent text-light">Customs Seal</th>
+                                <th class="bg-transparent text-light">HS Code</th>
+                                <th class="bg-transparent text-light">Commodity Description</th>
+                                <th class="bg-transparent text-light">Pkg Type</th>
+                                <th class="bg-transparent text-light">No of Pkg </th>
+                                <th class="bg-transparent text-light">Gross Weight</th>
+                                <th class="bg-transparent text-light">Vol(CBM)</th>
+                                <th class="bg-transparent text-light">Net Weight</th>
+                                <th class="bg-transparent text-light">SOC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">1</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row bg-white" *ngIf="selectedTab === 'Connection'">
+            <ng-container *ngComponentOutlet="connectionComponent"></ng-container>
+        </div>
+
+        <div class="row bg-white" *ngIf="selectedTab === 'Rate'">
+            <ng-container *ngComponentOutlet="costcomponent"></ng-container>
+        </div>
+
+        <!-- <div class="row bg-white" *ngIf="selectedTab === 'Revenue'">
+            <ng-container *ngComponentOutlet="revenuecomponent"></ng-container>
+        </div> -->
+
+        <div class="row bg-white" *ngIf="selectedTab === 'Others'">
+            <div class="col-12 p-0">
+                <div class="row">
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Yard <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Yard Address<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Transporter <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Handling Information <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">CFS <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">CFS Address<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <div class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d12="ngbDatepicker" (click)="d12.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d12.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="shipmentDateExpected" class="input-label">Stuffing Start Date <span
+                                    class="text-danger"></span>
+                            </label>
+
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d13="ngbDatepicker" (click)="d13.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d13.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="shipmentDateExpected" class="input-label">Stuffing End Date <span
+                                    class="text-danger"></span>
+                            </label>
+
+                        </div>
+                    </div>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Curr<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Sell Ex Rate<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Agent Ex Rate<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Exp Do No<span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <div class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d14="ngbDatepicker" (click)="d14.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d14.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="shipmentDateExpected" class="input-label">Exp Do Date <span
+                                    class="text-danger"></span>
+                            </label>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row bg-white" *ngIf="selectedTab === 'AR/AP'">
+            <ng-container *ngComponentOutlet="ARAPcompoent"></ng-container>
+        </div>
+
+        <div class="row bg-white" *ngIf="selectedTab === 'Mail'">
+            <div class="col-12 p-0">
+
+            </div>
+        </div>
+
+        <div class="row bg-white" *ngIf="selectedTab === 'Follow Up'">
+            <div class="col-12 p-0">
+
+            </div>
+        </div>
+
+        <div class="row bg-white" *ngIf="selectedTab === 'Container Activity'">
+            <ng-container *ngComponentOutlet="containerComponent"></ng-container>
+        </div>
+
+        <div class="row bg-white" *ngIf="selectedTab === 'Edoc'">
+            <div class="col-12 p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="bg-transparent text-light">SNO</th>
+                                <th class="bg-transparent text-light">Milestone</th>
+                                <th class="bg-transparent text-light">Date & Time</th>
+                                <th class="bg-transparent text-light">Auto Captured</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="form-check form-check-inline p-0 ps-2">
+                                        <div class="form-check d-flex align-items-center justify-content-center">
+                                            <input type="checkbox" id="" class="form-check-input sm">
+                                        </div>
+                                    </div>
+
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row bg-white" *ngIf="selectedTab === 'History'">
+            <div class="col-12 p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="bg-transparent text-light">SNO</th>
+                                <th class="bg-transparent text-light">Milestone</th>
+                                <th class="bg-transparent text-light">Date & Time</th>
+                                <th class="bg-transparent text-light">Auto Captured</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="form-check form-check-inline p-0 ps-2">
+                                        <div class="form-check d-flex align-items-center justify-content-center">
+                                            <input type="checkbox" id="" class="form-check-input sm">
+                                        </div>
+                                    </div>
+
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+
+
+<ng-template #containerModal let-modal>
+    <div class="modal-header p-2 bg-info">
+        <h5 class="modal-title text-white">Container</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="row">
+
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Container Type<span class="text-danger"></span></label>
+                </div>
+            </aside>
+
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Container No<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Line Seal<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Customs Seal<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">HS Code<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Commodity Description<span
+                            class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Pkg Type<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">No of Pkg<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Gross Weight<span class="text-danger"></span></label>
+                </div>
+            </aside>
+
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Vol(CBM)<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Net Weight<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4 d-flex align-items-center">
+                <div class="form-check form-check-inline p-0">
+                    <div class="form-check d-flex align-items-center">
+                        <input type="checkbox" id="SOC" class="form-check-input sm">
+                        <label for="SOC" class="form-check-label sm">SOC <span class="text-danger"></span></label>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+        <button type="button" class="btn btn-info btn-sm">Save</button>
+    </div>
+</ng-template>

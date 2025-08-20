@@ -1,0 +1,256 @@
+<div class="row">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+            <div class="col pb-2">
+                <h4 class="page-title mb-0">Job Profit</h4>
+            </div>
+
+            <div class="col-md pb-2">
+                <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
+                    <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
+                        <div class="form-outline flex-grow-1 position-relative">
+                            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+                                aria-label="Search input">
+                            <button
+                                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip" data-bs-placement="top"
+                                data-bs-title="Clear search"
+                                onfocus="this.classList.replace('text-secondary','text-danger')"
+                                onblur="this.classList.replace('text-danger','text-secondary')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="mt-md-0 mt-1">
+                            <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                                <i class="fas fa-search me-1"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-md-auto pb-2">
+                <div class="" data-bs-theme="light">
+                    <form
+                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-plus me-1"></i> Create
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-file-alt me-1"></i>
+                            Report
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Reset
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Job No</th>
+                            <th class="bg-transparent text-light" scope="col">POL</th>
+                            <th class="bg-transparent text-light" scope="col">POD</th>
+                            <th class="bg-transparent text-light" scope="col">Prov Revenue</th>
+                            <th class="bg-transparent text-light" scope="col">Prov Cost</th>
+                            <th class="bg-transparent text-light" scope="col">Prov GP</th>
+                            <th class="bg-transparent text-light" scope="col">Actual Revenue</th>
+                            <th class="bg-transparent text-light" scope="col">Actual Cost</th>
+                            <th class="bg-transparent text-light" scope="col">Actual GP</th>
+                            <th class="bg-transparent text-light" scope="col">Profit %</th>
+                            <th class="bg-transparent text-light" scope="col">No of Shipment</th>
+                            <th class="bg-transparent text-light" scope="col">No of 20ft</th>
+                            <th class="bg-transparent text-light" scope="col">No of 40ft</th>
+                            <th class="bg-transparent text-light" scope="col">Container No</th>
+                            <th class="bg-transparent text-light" scope="col">Total Chargeable Wt</th>
+                            <th class="bg-transparent text-light" scope="col">Total CBM/Volume</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2]; track $index) {
+                        <tr>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <a class="text-info mx-2" class="link mx-2 ">
+                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
+                                    </a>
+                                    <a class="text-danger mx-2 ps-3 border-start">
+                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
+                                    </a>
+                                </div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <span
+                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active</span>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto mt-3">
+        <h4 class="page-title mb-2 p-0">Branch Profitability</h4>
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Location Name</th>
+                            <th class="bg-transparent text-light" scope="col">Prov Revenue</th>
+                            <th class="bg-transparent text-light" scope="col">Prov Cost</th>
+                            <th class="bg-transparent text-light" scope="col">Prov GP</th>
+                            <th class="bg-transparent text-light" scope="col">Actual Revenue</th>
+                            <th class="bg-transparent text-light" scope="col">Actual Cost</th>
+                            <th class="bg-transparent text-light" scope="col">Actual GP</th>
+                            <th class="bg-transparent text-light" scope="col">Profit %</th>
+                            <th class="bg-transparent text-light" scope="col">No of Shipment</th>
+                            <th class="bg-transparent text-light" scope="col">No of 20ft</th>
+                            <th class="bg-transparent text-light" scope="col">No of 40ft</th>
+                            <th class="bg-transparent text-light" scope="col">Container No</th>
+                            <th class="bg-transparent text-light" scope="col">Total Gross Wt</th>
+                            <th class="bg-transparent text-light" scope="col">Total Chargeable Wt</th>
+                            <th class="bg-transparent text-light" scope="col">Total CBM/Volume</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2]; track $index) {
+                        <tr>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <a class="text-info mx-2" class="link mx-2 ">
+                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
+                                    </a>
+                                    <a class="text-danger mx-2 ps-3 border-start">
+                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
+                                    </a>
+                                </div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <span
+                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                                    Active</span>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
