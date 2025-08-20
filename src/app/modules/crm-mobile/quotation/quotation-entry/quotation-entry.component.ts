@@ -8,6 +8,7 @@ import {
   NgbDatepickerModule,
   NgbDateStruct,
   NgbModal,
+  NgbModalRef,
 } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -95,6 +96,10 @@ export class QuotationEntryComponent implements OnInit {
   allowModifyButton : boolean;
   authStateCache : string = "Pending";
   disableAllModification : boolean;
+  
+auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
+
 
   modeOfCargoType = [
     { id: 1, name: 'General' },
@@ -317,6 +322,34 @@ export class QuotationEntryComponent implements OnInit {
     }
   }
 
+  
+openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.QuoteHeaderSid) return;
+
+  this.leadService.getAuditLogsQuotation('QuoteHeader', this.QuoteHeaderSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.ngbModal.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 
   removeQuoteRoute(routeIndex: number) {
     this.quoteRoutes.removeAt(routeIndex);

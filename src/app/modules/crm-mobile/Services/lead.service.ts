@@ -32,6 +32,15 @@ export class LeadService {
     )
   }
 
+  getAuditLogsPreCustomerMeeting(tableName: string, recordId?: string) {
+    let url = `precustomer-meeting/fetch/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   getAllCity() {
     return this.http.get<City>('region').pipe(
       map((resp: any) => {

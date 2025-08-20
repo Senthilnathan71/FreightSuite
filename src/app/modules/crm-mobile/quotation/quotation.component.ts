@@ -1,8 +1,8 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AppService } from 'src/app/service/app.service';
 import { LeadService } from '../Services/lead.service';
@@ -101,6 +101,10 @@ export class QuotationComponent implements OnInit {
   authStateCache : string;
   currentCompany : any;
   currentBranch : any;
+  
+auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
+
   constructor(
     private appService: AppService,
     private appSettingsService: AppSettingsService,
@@ -549,6 +553,34 @@ export class QuotationComponent implements OnInit {
   }
 
 
+  
+openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.QuoteHeaderSid) return;
+
+  this.leadService.getAuditLogsQuotation('QuoteHeader', this.QuoteHeaderSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.ngbModal.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 
   onSegmentChange(event: any, routeIndex: number) {
     if(!event || event === null || event === undefined || !this.departments || this.departments === undefined){
