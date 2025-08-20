@@ -106,8 +106,8 @@ export class MasterService {
     );
   }
 
-  getAllCustomers() {
-    return this.http.get('customer').pipe(
+  getAllCustomers(CompanyMasterSid:number) {
+    return this.http.post('customer',{CompanyMasterSid }).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -396,14 +396,14 @@ export class MasterService {
     );
   }
 
-  getAllDepartments() {
-    return this.http.get('department').pipe(
-      map((resp: any) => {
-        let response = resp.data;
-        return response;
-      })
-    );
-  }
+ getAllDepartments(CompanyMasterSid: number) {
+  return this.http.post('department', { CompanyMasterSid }).pipe(
+    map((resp: any) => {
+      let response = resp.data;
+      return response;
+    })
+  );
+}
 
   deleteDepartmentById(id: number) {
     return this.http.delete<{ data: any }>(`department/delete/${id}`).pipe(
@@ -901,8 +901,8 @@ export class MasterService {
 
   // Package Type Master
 
-  getAllPackageTypes() {
-    return this.http.get<{ data: any }>('package-type').pipe(
+  getAllPackageTypes(CompanyMasterSid: number) {
+    return this.http.post<{ data: any }>('package-type',{CompanyMasterSid}).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1022,8 +1022,8 @@ export class MasterService {
     )
   }
 
-  getAllTariff() {
-    return this.http.get<{ data: any[] }>('tariff').pipe(
+  getAllTariff(CompanyMasterSid:number) {
+    return this.http.post<{ data: any[] }>('tariff',{CompanyMasterSid}).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -1364,8 +1364,8 @@ getFieldConfiguration() {
 
  
   // Division-master
-  getAllDivisions() {
-    return this.http.get<{ data: Division[] }>('division').pipe(
+  getAllDivisions(CompanyMasterSid: number) {
+    return this.http.post<{ data: Division[] }>('division',{ CompanyMasterSid }).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -1576,8 +1576,8 @@ getFieldConfiguration() {
     );
   }
 
-  getAllCharges() {
-    return this.http.get('charge').pipe(
+  getAllCharges(CompanyMasterSid: number) {
+    return this.http.post('charge',{ CompanyMasterSid }).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -1803,8 +1803,8 @@ getFieldConfiguration() {
   }
   // Product Master
 
-  getAllProduct() {
-    return this.http.get<{ data: Product[] }>('product').pipe(
+  getAllProducts(CompanyMasterSid:number) {
+    return this.http.post<{ data: Product[] }>('product',{ CompanyMasterSid }).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2201,8 +2201,8 @@ getFieldConfiguration() {
 
 
   // Charge Tax Master
-  getAllChargeTax() {
-    return this.http.get<{ data: any[] }>('charge-tax').pipe(
+  getAllChargeTax(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('charge-tax',{ CompanyMasterSid }).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2454,8 +2454,8 @@ getFieldConfiguration() {
   }
   // milestone-master
 
-  getAllMilestones() {
-    return this.http.get<{ data: any[] }>('milestone').pipe(
+  getAllMilestones(CompanyMasterSid: number, BranchMasterSid: number) {
+    return this.http.post<{ data: any[] }>('milestone',{ CompanyMasterSid, BranchMasterSid }).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -2635,8 +2635,8 @@ getFieldConfiguration() {
 
   // Document Type Master
 
-  getAllDocType() {
-    return this.http.get<{ data: any[] }>('document-type').pipe(
+  getAllDocType(CompanyMasterSid: number, BranchMasterSid: number) {
+    return this.http.post<{ data: any[] }>('document-type',{CompanyMasterSid,BranchMasterSid}).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2708,8 +2708,8 @@ getFieldConfiguration() {
   }
 
   //Hawb
-  getAllHawbStocks() {
-    return this.http.get<{ data: any[] }>('hawb-stock').pipe(
+  getAllHawbStocks(CompanyMasterSid: number, BranchMasterSid: number) {
+    return this.http.post<{ data: any[] }>('hawb-stock',{CompanyMasterSid ,BranchMasterSid }).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2771,8 +2771,8 @@ getFieldConfiguration() {
   }
   //year
 
-  getAllYears() {
-    return this.http.get<Year>('year').pipe(
+  getAllYears(CompanyMasterSid:number) {
+    return this.http.post<Year>('year',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -3109,8 +3109,8 @@ getFieldConfiguration() {
   // Chart of accounts
 
 
-  getAllCoa() {
-    return this.http.get<{ data: any[] }>('coa').pipe(
+  getAllCoa(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('coa',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -3184,8 +3184,8 @@ getFieldConfiguration() {
   }
 
   // Tds Set Header
-  getAllTdsSet() {
-    return this.http.get<{ data: any[] }>('tds').pipe(
+  getAllTds(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('tds',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         let response = resp;
         return response;

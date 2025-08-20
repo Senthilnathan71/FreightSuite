@@ -189,13 +189,14 @@ export class ChargeEntryComponent implements OnInit {
   }
 
   loadLookupData() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     forkJoin([
       this.masterService.getAllChargeGroups(),
       this.masterService.getAllCurrencies(),
-      this.masterService.getAllDepartments(),
+      this.masterService.getAllDepartments(CompanyMasterSid),
       this.masterService.getAllUom(),
       this.masterService.getAllHssac(),
-      this.masterService.getAllTdsSet()
+      this.masterService.getAllTds(CompanyMasterSid)
     ]).subscribe({
       next: ([chargeGroups, currencies, departments, uoms, hsnsacs, tdsSets]) => {
         this.chargeGroupOptions = Array.isArray(chargeGroups) ? chargeGroups : chargeGroups.data;

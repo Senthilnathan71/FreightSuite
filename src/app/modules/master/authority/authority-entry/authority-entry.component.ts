@@ -87,11 +87,14 @@ auditLogs: any[] = []; // Stores audit logs
 
   ngOnInit(): void {
     this.initAuthorityForm();
-    this.loadAllFields();
+    
     this.userData = this.appSettingService.getDecryptedUserProfile();
 
     const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
+    console.log('Current Company:', this.currentCompany);
+  console.log('CompanyMasterSid:', this.currentCompany?.CompanyMasterSid);
+  this.loadAllFields();
     this.branchList = this.getBranchListByCompany(this.userData,this.currentCompany?.CompanyMasterSid)
     console.log(this.branchList);
 
@@ -127,15 +130,28 @@ auditLogs: any[] = []; // Stores audit logs
 
 
   loadAllFields() {
+     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+     if (!CompanyMasterSid) {
+    console.error('Company ID not found');
+    this.appSettingService.showError('Company information not available');
+    return;
+  }
     forkJoin({
       companies: this.masterService.getAllCompanies(),
-      departments: this.masterService.getAllDepartments(),
+      departments: this.masterService.getAllDepartments(CompanyMasterSid),
       menus: this.settingsService.getAllMenu(),
       users: this.masterService.getAllFfUser(),
       // branches: this.masterService.getAllBranches()
     }).subscribe(({ companies, departments, menus, users}) => {
       this.companyResults = companies;
+      if (Array.isArray(departments)) {
       this.departmentResults = departments;
+    } else if (departments && departments.data) {
+      this.departmentResults = departments.data;
+    } else {
+      console.warn('Unexpected departments response format:', departments);
+      this.departmentResults = [];
+    }
       this.menuResults = menus;
       this.userResults = users.data;
       this.updateFilteredAuthorisers();

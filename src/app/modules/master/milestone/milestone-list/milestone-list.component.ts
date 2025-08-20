@@ -141,8 +141,10 @@ export class MilestoneListComponent {
 
 
   loadDepartments() {
+     const companyMastersID = this.currentCompany?.CompanyMasterSid;
     this.loading = true;
-    this.masterService.getAllDepartments().subscribe({
+    console.log(companyMastersID)
+    this.masterService.getAllDepartments(companyMastersID).subscribe({
       next: (res: any) => {
         this.departmentOptions = res.data || res;
         this.loading = false;

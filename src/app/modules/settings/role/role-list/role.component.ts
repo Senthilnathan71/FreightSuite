@@ -112,13 +112,14 @@ export class RoleComponent implements OnInit {
   }
   loadRoles(): void {
   this.isLoading = true;
-  
+  let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
   const params = {
     search: this.filterValue?.trim() || '',
     page: this.page,
     pageSize: this.pageSize,
     sortColumn: this.sortColumn,
-    sortDirection: this.sortDirection
+    sortDirection: this.sortDirection,
+    activeCompanyId : CompanyMasterSid
   };
 
   this.settingsService.searchRole(params).subscribe({
@@ -273,7 +274,8 @@ onKeyPress(event: KeyboardEvent, field: string) {
       const payload = {
     ...formValue,
     ...(this.isEditMode ? updatedBy : createdBy),
-    status: formValue.status === "Active" ? "A" : "S"
+    status: formValue.status === "Active" ? "A" : "S",
+    CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
   };
 
       if (this.isEditMode) {

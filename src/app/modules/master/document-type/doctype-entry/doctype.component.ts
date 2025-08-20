@@ -167,10 +167,11 @@ currentBranch: any;
 	}
 
 	loadAllFields() {
+		const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     forkJoin({
         companies: this.masterService.getAllCompanies(),
         currencies: this.masterService.getAllCurrencies(),
-        coa: this.masterService.getAllCoa() // Add this line to fetch COA data
+        coa: this.masterService.getAllCoa(CompanyMasterSid) // Add this line to fetch COA data
     }).subscribe(({ companies, currencies, coa }) => {
         this.companyList = companies;
         this.currencyList = currencies;

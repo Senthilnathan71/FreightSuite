@@ -53,6 +53,8 @@ export class DepartmentEntryComponent {
   departmentTypeOptions = ['Sea', 'Air', 'Road', 'Transport'];
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  currentCompany: any;
+  currentBranch: any;
 
   constructor(
     private fb: FormBuilder,
@@ -64,6 +66,8 @@ export class DepartmentEntryComponent {
   ) { }
 
   ngOnInit(): void {
+     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.initForm();
     this.getAllDivisions();
     // Subscribe to route params and load lead if ID exists
@@ -139,11 +143,13 @@ export class DepartmentEntryComponent {
       const payload = (this.isEditMode) ? {
         ...formValue,
         ...updatedBy,
-        Status: formValue.Status === "Active" ? "A" : "S"
+        Status: formValue.Status === "Active" ? "A" : "S",
+        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
       } : {
         ...formValue,
         ...createdBy,
-        Status: formValue.Status === "Active" ? "A" : "S"
+        Status: formValue.Status === "Active" ? "A" : "S",
+        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
       };
 
 
@@ -199,7 +205,8 @@ export class DepartmentEntryComponent {
   };
 
   getAllDivisions(){
-    this.masterService.getAllDivisions().subscribe(
+     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    this.masterService.getAllDivisions(CompanyMasterSid).subscribe(
       (resp:any)=>{
         this.divisionList=resp;
       }

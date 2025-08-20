@@ -1575,7 +1575,8 @@ getCityName(citySid: number): string {
   }
 
   loadDepartments() {
-    this.masterService.getAllDepartments().subscribe((res) => {
+     const companyMastersID = this.currentCompany?.CompanyMasterSid;
+    this.masterService.getAllDepartments(companyMastersID).subscribe((res) => {
       this.departmentList = res;
     });
   }
@@ -1819,8 +1820,9 @@ getCityName(citySid: number): string {
   }
   
   loadAllSpfields(){
+     const companyMastersID = this.currentCompany?.CompanyMasterSid;
     forkJoin({
-      departments : this.masterService.getAllDepartments(),
+      departments : this.masterService.getAllDepartments(companyMastersID),
       salesman : this.masterService.getAllSalesperson(),
     }).subscribe(({departments,salesman})=>{
       this.spDepartmentList = departments;

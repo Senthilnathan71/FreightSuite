@@ -105,7 +105,8 @@ export class YearEntryComponent {
   }
 
   loadYear(): void{
-    this.masterService.getAllYears().subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    this.masterService.getAllYears(CompanyMasterSid).subscribe(
       (resp: Year[])=> {
         console.log(resp,'year');
         this.years = resp['data'];

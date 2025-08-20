@@ -162,8 +162,8 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
   }
   // ROLE MASTER
 
-  getAllRole() {
-    return this.http.get<{ data: any[] }>('role').pipe(
+  getAllRole(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('role',{CompanyMasterSid}).pipe(
       map((resp) => {
         let response = resp;
         return response;

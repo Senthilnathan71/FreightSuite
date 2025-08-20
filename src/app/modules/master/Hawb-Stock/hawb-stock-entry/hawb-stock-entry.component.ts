@@ -119,7 +119,8 @@ export class HawbStockEntryComponent implements OnInit {
 
  
   loadCustomers(): void {
-    this.masterService.getAllCustomers().subscribe(
+     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    this.masterService.getAllCustomers(CompanyMasterSid).subscribe(
       (resp: any) => {
         this.customerList = resp;
       },

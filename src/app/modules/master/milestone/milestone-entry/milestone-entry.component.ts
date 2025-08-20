@@ -65,13 +65,12 @@ export class MilestoneEntryComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.getAllDepartments();
-    // this.appSettingService.getUser().subscribe(user => {
-    //   this.userData = user;
-    //   this.checkPermissions();
-    // });
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     // this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    // Load departments after setting current company
+  console.log('Current Company:', this.currentCompany);
+  console.log('CompanyMasterSid:', this.currentCompany?.CompanyMasterSid);
+  this.getAllDepartments(); 
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -125,14 +124,35 @@ export class MilestoneEntryComponent implements OnInit {
     });
   }
 
-  getAllDepartments() {
-    this.masterService.getAllDepartments().subscribe(
-      (resp: any) => {
-        this.departmentList = resp;
-      }
-    );
+ getAllDepartments() {
+  
+  const companyMastersID = this.currentCompany?.CompanyMasterSid;
+  
+  if (!companyMastersID) {
+    console.error('Company ID not found');
+    this.appSettingService.showError('Company information not available');
+    return;
   }
 
+  this.masterService.getAllDepartments(companyMastersID).subscribe(
+    (resp: any) => {
+      
+      if (Array.isArray(resp)) {
+        this.departmentList = resp;
+      } else if (resp && resp.data) {
+        this.departmentList = resp.data;
+      } else {
+        console.warn('Unexpected departments response format:', resp);
+        this.departmentList = [];
+      }
+    },
+    (error) => {
+      console.error('Error loading departments:', error);
+      this.appSettingService.showError('Failed to load departments');
+      this.departmentList = [];
+    }
+  );
+}
 
   getMilestoneById(id: number) {
     this.milestoneForm.reset();

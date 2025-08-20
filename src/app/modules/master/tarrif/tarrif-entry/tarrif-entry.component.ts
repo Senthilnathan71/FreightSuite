@@ -325,15 +325,16 @@ auditLogs: any[] = []; // Stores audit logs
 	}
 
 	loadAllFields() {
+		 const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 		forkJoin({
 			ports: this.masterServ.getAllPorts(),
 			agents: this.masterServ.getAllAgents(),
 			carriers: this.masterServ.getAllCarriers(),
-			departments: this.masterServ.getAllDepartments(),
+			departments: this.masterServ.getAllDepartments(CompanyMasterSid),
 			companies: this.masterServ.getAllCompanies(),
 			currencies : this.masterServ.getAllCurrencies(),
 			incos : this.masterServ.getAllInco(),
-			chargeTax : this.masterServ.getAllChargeTax()
+			chargeTax : this.masterServ.getAllChargeTax(CompanyMasterSid)
 		}).subscribe(({ ports, agents , carriers, departments, companies,currencies,incos,chargeTax}) => {
 			this.portList = ports.data,
 			this.polList = ports.data,
@@ -378,10 +379,14 @@ openAuditLogs(modal: TemplateRef<any>) {
   });
 }
 	loadModalFields() {
+		 const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+		 console.log('Current Company ID for charges:', CompanyMasterSid);
+         console.log('Current Company object:', this.currentCompany);
 		forkJoin({
-			charges: this.masterServ.getAllCharges(),
+			charges: this.masterServ.getAllCharges(CompanyMasterSid),
 			UOMs: this.masterServ.getAllUom(),
 		}).subscribe(({ charges, UOMs }) => {
+			console.log('Charges response:', charges);
 			this.chargeList = charges,
 				this.UOMList = UOMs.data
 		})

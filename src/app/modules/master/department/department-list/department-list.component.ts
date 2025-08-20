@@ -145,13 +145,14 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
   }
   loadDepartments(): void {
     this.loading = true;
-    
+    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const params = {
       search: this.filterValue?.trim() || '',
       page: this.page,
       pageSize: this.pageSize,
       sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection
+      sortDirection: this.sortDirection,
+      activeCompanyId : CompanyMasterSid
     };
 
     this.masterService.searchDepartmentList(params).subscribe({

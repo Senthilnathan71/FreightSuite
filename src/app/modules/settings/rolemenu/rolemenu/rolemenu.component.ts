@@ -293,9 +293,10 @@ clearFilterValue(){
 	}
 
 	fetchAllData(){
+		 const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 		forkJoin({
 			modules : this.settingService.getAllModule(),
-			roles : this.settingService.getAllRole()
+			roles : this.settingService.getAllRole(CompanyMasterSid)
 		}).subscribe(({modules,roles})=>{
 			this.moduleList = modules.data;
 			this.roleList = roles.data;

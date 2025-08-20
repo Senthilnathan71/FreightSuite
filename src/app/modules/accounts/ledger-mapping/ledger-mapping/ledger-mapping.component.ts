@@ -208,7 +208,8 @@ auditLogs: any[] = []; // Stores audit logs
   }
 
   getLedgerList(): void {
-    this.masterService.getAllCoa().subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    this.masterService.getAllCoa(CompanyMasterSid).subscribe({
       next: (data) => {
         this.ledgerList = data;
       },
@@ -226,9 +227,10 @@ auditLogs: any[] = []; // Stores audit logs
 
   onSubledgerTypeChange(selectedType: string): void {
     this.ledgerForm.get('SubledgerMappingSid')?.reset();
+     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 
     if (selectedType === 'Customer') {
-      this.masterService.getAllCustomers().subscribe((res: any) => {
+      this.masterService.getAllCustomers(CompanyMasterSid).subscribe((res: any) => {
         console.log('API Response:', res);
 
         const data = res?.data ?? res;
@@ -244,7 +246,7 @@ auditLogs: any[] = []; // Stores audit logs
         }
       });
     } else if (selectedType === 'Charge') {
-      this.masterService.getAllCharges().subscribe((res: any) => {
+      this.masterService.getAllCharges(CompanyMasterSid).subscribe((res: any) => {
         console.log('API Response:', res);
 
         const data = res?.data ?? res;

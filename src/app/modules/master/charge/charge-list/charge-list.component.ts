@@ -69,13 +69,14 @@ export class ChargeListComponent {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 		if(userProfile){
 			this.userData = userProfile;
 		}
 
     this.masterService.getAllUom().subscribe(res => this.uoms = res.data);
     this.masterService.getAllHssac().subscribe(res => this.hssacList = res);
-    this.masterService.getAllTdsSet().subscribe(res => this.tdsSets = res.data);
+    this.masterService.getAllTds(CompanyMasterSid).subscribe(res => this.tdsSets = res.data);
 
     this.loadCharges();
     this.checkPermissions();

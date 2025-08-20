@@ -62,6 +62,8 @@ export class TermsConditionEntryComponent implements OnInit{
     tandCDetailData: any;
     currentMenuId: number;
     TandCList: any;
+    currentCompany: any;
+    currentBranch: any;
 
     constructor(
         private masterService : MasterService,
@@ -75,6 +77,8 @@ export class TermsConditionEntryComponent implements OnInit{
     ){}
 
     ngOnInit(){
+        this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         this.initTandCForm();
         this.loadAllFields();
         this.currentRoute.paramMap.subscribe(
@@ -119,12 +123,13 @@ export class TermsConditionEntryComponent implements OnInit{
     }
 
     loadAllFields(){
+         const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
         forkJoin({
             menus : this.settingsService.getAllMenu(),
             ports : this.masterService.getAllPorts(),
-            carriers : this.masterService.getAllCustomers(),
+            carriers : this.masterService.getAllCustomers(CompanyMasterSid),
             branches : this.masterService.getAllBranches(),
-            departments : this.masterService.getAllDepartments()
+            departments : this.masterService.getAllDepartments(CompanyMasterSid)
         }).subscribe(({menus,ports,carriers,branches,departments})=>{
             this.menuList = menus,
             this.portList = ports.data,

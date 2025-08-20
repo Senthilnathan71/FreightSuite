@@ -12,8 +12,8 @@ export class AccountsService {
   constructor(private http: HttpClient) { }
 
   //currency-exchange//
-  getAllCurrencyExchange() {
-    return this.http.get<CurrencyExchange[]>('currency-exchange').pipe(
+  getAllCurrencyExchange(CompanyMasterSid: number, BranchMasterSid: number) {
+    return this.http.post<CurrencyExchange[]>('currency-exchange',{CompanyMasterSid, BranchMasterSid}).pipe(
       map((resp: any) => {
          let response = resp;
         return response;

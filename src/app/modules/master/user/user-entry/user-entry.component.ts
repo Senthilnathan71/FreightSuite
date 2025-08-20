@@ -72,6 +72,7 @@ export class UserEntryComponent implements OnInit {
 
 	auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  currentCompany: any;
 
 
 	constructor(
@@ -85,6 +86,8 @@ export class UserEntryComponent implements OnInit {
 	) { }
 
 	ngOnInit(): void {
+	    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+
 		this.initUserForm();
 		this.loadAllFields();
 		this.userForm.statusChanges.subscribe(status => {
@@ -319,11 +322,12 @@ export class UserEntryComponent implements OnInit {
 
 	// loads all lookups
 	loadAllFields() {
+		 const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 		forkJoin({
-			departments: this.masterService.getAllDepartments(),
+			departments: this.masterService.getAllDepartments(CompanyMasterSid),
 			userType: this.masterService.getAllUserType(),
 			companies: this.masterService.getAllCompanies(),
-			roles: this.settingService.getAllRole(),
+			roles: this.settingService.getAllRole(CompanyMasterSid),
 			countries: this.masterService.getAllCountry(),
 			menus: this.settingService.getAllMenu()
 		}).subscribe(({ departments, userType, companies, roles, countries, menus }) => {
