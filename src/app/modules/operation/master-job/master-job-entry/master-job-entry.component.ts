@@ -10,6 +10,7 @@ import { RevenueEntryComponent } from '../../revenue/revenue-entry/revenue-entry
 import { ConnectionComponent } from '../../connection/connection/connection.component';
 import { ContainerActivityComponent } from '../../container-activity/container-activity/container-activity.component';
 import { ArApComponent } from '../../AR-AP/ar-ap/ar-ap.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 @Component({
   selector: 'app-master-job-entry',
@@ -26,7 +27,8 @@ import { ArApComponent } from '../../AR-AP/ar-ap/ar-ap.component';
     RevenueEntryComponent,
     ConnectionComponent,
     ContainerActivityComponent,
-    ArApComponent
+    ArApComponent,
+    EmailEntryComponent
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrl: './master-job-entry.component.scss',
@@ -36,7 +38,8 @@ export class MasterJobEntryComponent {
   public revenuecomponent = RevenueEntryComponent;
   public connectionComponent = ConnectionComponent;
   public containerComponent = ContainerActivityComponent;
-  public ARAPcompoent =ArApComponent;
+  public ARAPcompoent = ArApComponent;
+ 
   tabs = [
     { name: 'Container', icon: 'fas fa-boxes' },
     { name: 'Connection', icon: 'fas fa-plug' },
@@ -46,9 +49,22 @@ export class MasterJobEntryComponent {
     { name: 'AR/AP', icon: 'fas fa-balance-scale' },
     { name: 'Mail', icon: 'fas fa-envelope' },
     { name: 'Follow Up', icon: 'fas fa-tasks' },
-    { name: 'Container Activity', icon: 'fas fa-shipping-fast' },
+    { name: 'ContainerActivity', icon: 'fas fa-shipping-fast' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
     { name: 'History', icon: 'fas fa-history' },
+  ];
+
+  tabs1 = [
+    { name: 'Product', icon: 'fas fa-box' } ,
+    { name: 'Connection', icon: 'fas fa-plug' },
+    { name: 'AR/AP', icon: 'fas fa-balance-scale' },
+    { name: 'Mail', icon: 'fas fa-envelope' },
+    { name: 'Follow Up', icon: 'fas fa-tasks' },
+    { name: 'Milestone', icon: 'fas fa-flag-checkered' },
+    { name: 'Rate', icon: 'fas fa-rupee-sign' },
+    { name: 'Edoc', icon: 'fas fa-file-pdf' },
+    { name: 'History', icon: 'fas fa-history' },
+    { name: 'Others', icon: 'fas fa-ellipsis-h' },
   ];
 
   modeOfBLReleaseType = [
@@ -75,7 +91,7 @@ export class MasterJobEntryComponent {
   ];
 
   @ViewChild('containerModal') containerModal!: TemplateRef<any>;
-
+  @ViewChild('productModal') productModal!: TemplateRef<any>;
   constructor(private router: Router, private modalService: NgbModal) {}
   selectedTab = 'Container';
 
@@ -83,8 +99,21 @@ export class MasterJobEntryComponent {
     this.selectedTab = tab;
   }
 
+  selectedTab1 = 'Product';
+
+  selectTab1(tab1: string) {
+    this.selectedTab1 = tab1;
+  }
   openContainerModal() {
     this.modalService.open(this.containerModal, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
+  }
+
+  openProductModal() {
+    this.modalService.open(this.productModal, {
       size: 'lg',
       backdrop: 'static',
       centered: true,

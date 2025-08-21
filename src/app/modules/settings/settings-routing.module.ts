@@ -6,6 +6,7 @@ import { MenuListComponent } from "./menu/menu-list/menu-list.component";
 import { EdocComponent } from "./edoc/edoc/edoc.component";
 import { EmailEntryComponent } from "./email/email-entry/email-entry.component";
 import { MenuEntryComponent } from "./menu/menu-entry/menu-entry.component";
+import { FollowUpComponent } from "./follow-up/follow-up/follow-up.component";
 
 export const SettingsRoutes: Routes = [
     {
@@ -83,6 +84,14 @@ export const SettingsRoutes: Routes = [
                 data: {
                     title: 'Email',
                     urls: [{ title: 'Master', url: '/master' }, { title: 'Email' }],
+                },
+            },
+            {
+                path: 'follow-up',
+                component: FollowUpComponent,
+                data: {
+                    title: 'Follow-Up',
+                    urls: [{ title: 'Master', url: '/master' }, { title: 'Follow-up' }],
                 },
             },
         ]
