@@ -1,5 +1,5 @@
 import { Component, ViewChild, TemplateRef, OnInit } from '@angular/core';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -12,6 +12,12 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-booking-entry',
@@ -58,6 +64,7 @@ export class BookingEntryComponent implements OnInit {
 
   // Variable Declaration - Header Part
   BookingHeaderSid: number;
+  currentMenuId: any;
   selectedDepartment: any;
   selectedDepartmentType: string;
   selectedFCLLCL: string;
@@ -80,6 +87,11 @@ export class BookingEntryComponent implements OnInit {
   filteredPOL: any[] = [];
   filteredPOD: any[] = [];
   incoList: any[] = [];
+  TandCList: any[]=[];
+  
+auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
+
 
   bookingForm !: FormGroup;
   modeOfTransport = [
@@ -224,7 +236,8 @@ export class BookingEntryComponent implements OnInit {
     private fb: FormBuilder,
     private operationService: OperationService,
     private currentRoute: ActivatedRoute,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private masterService: MasterService,
   ) { }
 
   /**
@@ -1400,7 +1413,34 @@ export class BookingEntryComponent implements OnInit {
 
 
 
+  
+openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.BookingHeaderSid) return;
 
+  this.operationService.getAuditLogsBooking('BookingHeader', this.BookingHeaderSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 
 
   navigateBack() {
@@ -1426,4 +1466,72 @@ export class BookingEntryComponent implements OnInit {
     console.log('Rate saved');
     modal.close();
   }
+
+  
+    showInfo() {
+      if(!this.bookingData) return;
+      const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
+      modalRef.componentInstance.item = this.bookingData;
+      modalRef.componentInstance.idLabel = 'Booking Id';
+      modalRef.componentInstance.idValue = this.bookingData?.BookingHeaderSid;
+    }
+
+  openTandC() {
+        this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
+        const payload = { MenuMasterSid: this.currentMenuId };
+        this.masterService.getTandCByCondition(payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.TandCList = resp.data;
+              const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+                size: 'lg',
+                backdrop: 'static',
+                centered: true
+              });
+              modalRef.componentInstance.terms = this.TandCList;
+              modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+              modalRef.componentInstance.DocumentSid = this.BookingHeaderSid;
+    
+            } else {
+              this.appSettingService.showError('Error loading Terms and Conditions');
+            }
+          },
+          (error) => {
+            this.appSettingService.showError('Error loading Terms and Conditions',error);
+          }
+        );
+      }
+    openEmail() {
+      if (!this.bookingData) return;
+      const modalRef = this.modalService.open(EmailEntryComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
+      });
+    }
+  
+  openAuthority() {
+    if (!this.bookingData) return;
+    const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.bookingData;
+    modalRef.componentInstance.idLabel = 'Booking Id';
+    modalRef.componentInstance.idValue = this.bookingData?.BookingHeaderSid;
+  }
+  
+  openEDoc() {
+    if (!this.bookingData) return;
+    const modalRef = this.modalService.open(EdocComponent, { 
+      size: 'lg', 
+      centered: true, 
+      backdrop: 'static' 
+    });
+    modalRef.componentInstance.item = this.bookingData;
+    modalRef.componentInstance.idLabel = 'Booking Id';
+    modalRef.componentInstance.idValue = this.bookingData?.BookingHeaderSid;
+  }
+  
 }

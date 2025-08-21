@@ -11,6 +11,17 @@ export class OperationService {
   constructor(private http: HttpClient) { }
 
   // Booking Operations
+
+  
+  getAuditLogsBooking(tableName: string, recordId?: string) {
+    let url = `ff-booking/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   getAllBookings() {
     return this.http.get<{ data: any[] }>('ff-booking').pipe(
       map((resp) => {

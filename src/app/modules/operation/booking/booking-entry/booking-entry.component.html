@@ -1,12 +1,23 @@
 <div class="row ">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 pb-2">
-                <h4 class="page-title mb-0">Booking</h4>
+            <div class="col-md-4 d-flex pb-2">
+                <!-- <h4 class="page-title mb-0">Booking</h4> -->
+                 <h4 class="page-title mb-0">{{isEditMode ? 'Edit Booking' : 'Booking'}}</h4>
+                @if(isEditMode){
+                <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                    <i class="fas fs-6 fa-info-circle"></i>
+                </a>
+                }
             </div>
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    
+ <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                  (click)="openAuditLogs(auditLogModal)">
+            <i class="fas fa-history me-1"></i>Logs
+          </button>
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateBack()">
                         <i class="fas fa-chevron-left me-1"></i>
@@ -1015,6 +1026,38 @@
 
 
     </div>
+    @if(isEditMode){
+        <div class="col-12 mt-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
+                            <!-- eDoc Button -->
+
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info "
+                                (click)="openEDoc()">
+                                <i class="fas fa-file-alt me-1"></i> e-Doc
+                            </button>
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info "
+                                (click)="openTandC()">
+                                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                            </button>
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info"
+                                (click)="openAuthority()">
+                                <i class="fas fa-shield-alt me-1"></i> Authorize
+                            </button>
+
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "
+                                (click)="openEmail()">
+                                <i class="fas fa-envelope me-1"></i> Email
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
 
 </div>
 
@@ -1446,4 +1489,51 @@
         <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
         <button type="button" class="btn btn-info btn-sm">Save</button>
     </div>
+</ng-template>
+
+
+
+<ng-template #auditLogModal let-modal>
+  <div class="modal-header bg-info text-white p-2">
+    <h5 class="modal-title mb-0">Audit Logs</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body p-3">
+  <div class="table-responsive">
+    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+      <thead>
+        <tr>
+          <th>Changed At</th>
+          <th>Changed By</th>
+          <th>Operation</th>
+          <th class="text-center">Old Value</th>
+          <th class="text-center">New Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of auditLogs">
+          <td>{{ log.changedAt | date:'medium' }}</td>
+          <td>{{ log.changedBy || '-' }}</td>
+          <td>{{ log.operation }}</td>
+          <td class="bg-light-danger">
+        <ul>
+          <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+        </ul>
+      </td>
+      <td class="bg-light-success">
+        <ul>
+          <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+        </ul>
+      </td>
+        </tr>
+        <tr *ngIf="auditLogs.length === 0">
+          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+  </div>
 </ng-template>
