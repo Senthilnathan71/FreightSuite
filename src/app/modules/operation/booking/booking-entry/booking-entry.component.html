@@ -893,63 +893,7 @@
             </div>
 
             <div class="row bg-white" [hidden]="selectedTab !== 'Connection'">
-                <!-- <div class="text-end mb-1">
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="openConnectionModal(connectionModal)"> <i class="fas fa-plus me-1"></i> Add</button>
-                </div>
-                @if(connectionDataLength > 0){
-                <div class="col-12 p-0" *ngIf="connectionDataLength > 0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                            <thead>
-                                <tr class="bg-info">
-                                    <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                                    <th class="bg-transparent text-light">Mode</th>
-                                    <th class="bg-transparent text-light">Vsl</th>
-                                    <th class="bg-transparent text-light">Voy</th>
-                                    <th class="bg-transparent text-light">POL</th>
-                                    <th class="bg-transparent text-light">POD</th>
-                                    <th class="bg-transparent text-light">ETA</th>
-                                    <th class="bg-transparent text-light">ETD</th>
-                                    <th class="bg-transparent text-light">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for(connection of slicedConnectionArr ; track connection ; let connectionIndex = $index){
-                                <tr>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="d-flex align-items-center justify-content-center">
-                                            <a class="text-info mx-2" class="link mx-2 ps-3"
-                                                (click)="openConnectionModal(connectionModal,connectionIndex,connection.value)">
-                                                <i-feather class="feather-sm text-info" name="eye"></i-feather>
-                                            </a>
-
-                                            <a class="text-danger mx-2 ps-3 border-start"
-                                                (click)="deleteBookingConnection(connectionIndex,connection.value.BookingConnectionSid)">
-                                                <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                            </a>
-
-                                        </div>
-                                    </td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.Mode || ''}}</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.VesselName}}</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.VoyageNo}}</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.POL}}</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.POD}}</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.ETD | formatDate}}</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.ETA | formatDate}}</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.status}}</td>
-                                </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                }@else {
-                <div class="col-12">
-                    <div class="alert alert-info text-center">No Connection added yet.</div>
-                </div>
-                } -->
+                
                 <app-connection screenName="Booking" [dataItems]="bookingConnectionsArr" [portList]="portList" [vesselList]="vesselList" (dataEmitter)="handleConnectionChange($event)">
 
                 </app-connection>
@@ -1008,36 +952,8 @@
                 </div>
             </div>
 
-            <div class="row bg-white" *ngIf="selectedTab === 'Milestone'">
-                <div class="col-12 p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                            <thead>
-                                <tr class="bg-info">
-                                    <th class="bg-transparent text-light">SNO</th>
-                                    <th class="bg-transparent text-light">Milestone</th>
-                                    <th class="bg-transparent text-light">Date & Time</th>
-                                    <th class="bg-transparent text-light">Auto Captured</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="form-check form-check-inline p-0 ps-2">
-                                            <div class="form-check d-flex align-items-center justify-content-center">
-                                                <input type="checkbox" id="" class="form-check-input sm">
-                                            </div>
-                                        </div>
-
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="row bg-white" [hidden]="selectedTab !== 'Milestone'">
+                <app-milestone screenName="Booking" ></app-milestone>
             </div>
 
             <div class="row bg-white" *ngIf="selectedTab === 'AR/AP'">

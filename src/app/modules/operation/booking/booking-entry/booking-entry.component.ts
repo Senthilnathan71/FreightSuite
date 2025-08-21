@@ -23,6 +23,7 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { MilestoneComponent } from '../../milestone/milestone/milestone.component';
 
 @Component({
   selector: 'app-booking-entry',
@@ -40,7 +41,8 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
     DecimalPrecisionDirective,
     OnlyTextDirective,
     OnlyNumbersDirective,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    MilestoneComponent
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
