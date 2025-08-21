@@ -1,0 +1,90 @@
+<div class="text-end mb-1">
+    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openMilestoneModal()"><i
+            class="fas fa-plus me-1"></i> Add</button>
+</div>
+<div class="col-12 p-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+            <thead>
+                <tr class="bg-info">
+                    <th class="bg-transparent text-light">SNO</th>
+                    <th class="bg-transparent text-light">Milestone</th>
+                    <th class="bg-transparent text-light">Date & Time</th>
+                    <th class="bg-transparent text-light" width="10%">Auto Captured</th>
+                    <th class="bg-transparent text-light">Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                        <div class="form-check form-check-inline p-0 ps-2">
+                            <div class="form-check d-flex align-items-center justify-content-center">
+                                <input type="checkbox" id="" class="form-check-input sm">
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<ng-template #milestoneModal let-modal>
+    <div class="modal-header p-2 bg-info">
+        <h5 class="modal-title text-white">Milestone</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="row">
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Sno <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Milestone <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <div class="col-md-4">
+                <div class=" custom-form-group custom-form-group-select">
+                    <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
+                            (click)="d1.toggle()" />
+                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                    </div>
+                    <label for="shipmentDateExpected" class="input-label"> Date & Time<span class="text-danger"></span>
+                    </label>
+
+                </div>
+            </div>
+            <aside class="col-md-4 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" id="" class="form-check-input sm">
+                                <label for="AutoCaptured" class="form-check-label sm">Auto Captured  <span class="text-danger"></span></label>
+                            </div>
+                        </div>
+                    </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Remarks<span class="text-danger"></span></label>
+                </div>
+            </aside>
+
+
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+        <button type="button" class="btn btn-info btn-sm">Save</button>
+    </div>
+</ng-template>
