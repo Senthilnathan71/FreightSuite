@@ -16,7 +16,7 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()">
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
@@ -27,20 +27,24 @@
     <div class="col-md-12">
         <div class="card h-100 mb-0">
             <div class="card-body">
-                <div class="row">
+                <div class="row" [formGroup]="bookingForm">
 
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Booking No <span
-                                    class="text-danger"></span></label>
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                formControlName="BookingNo">
+                            <label for="text-input" [ngClass]="{
+                                'input-label': true,
+                                'bg-transparent': !b['BookingNo']?.getRawValue()
+                              }">Booking No <span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <div class="col-md-3">
                         <div class=" custom-form-group custom-form-group-select">
                             <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d1="ngbDatepicker" (click)="d1.toggle()" />
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp"
+                                    formControlName="BookingDateTime" ngbDatepicker #d1="ngbDatepicker"
+                                    (click)="d1.toggle()" />
                                 <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
@@ -52,117 +56,163 @@
                     </div>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="modeOfDept" bindLabel="name" bindValue="name" class="ng-select">
+                            <ng-select [items]="departmentList" bindLabel="departmentName"
+                                bindValue="DepartmentMasterSid" class="ng-select" formControlName="DepartmentMasterSid"
+                                placeholder="Select Dept" (change)="onDeptChange($event)">
                             </ng-select>
                             <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                                class="ng-select" formControlName="CustomerMasterSid" placeholder="Select Customer"
+                                (change)="onCustomerChange($event)">
+                            </ng-select>
                             <label for="text-input" class="input-label">Customer <span
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="customerBranchList" bindLabel="Address" bindValue="Address"
+                                class="ng-select" formControlName="CustomerAddress"
+                                placeholder="Select Customer Address" (change)="onCustomerBranchChange($event)">
+                            </ng-select>
                             <label for="text-input" class="input-label">Customer Address <span
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="salesmanList" bindLabel="userName" bindValue="UserMasterSid"
+                                class="ng-select" formControlName="SalesmanSid" placeholder="Select Salesman">
+                            </ng-select>
                             <label for="text-input" class="input-label">Sales Person<span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName"
+                                class="ng-select" formControlName="ShipperName" placeholder="Select Shipper"
+                                (change)="setAddress('ShipperAddress',$event)">
+                            </ng-select>
                             <label for="text-input" class="input-label">Shipper <span
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="ShipperAddress">
                             <label for="text-input" class="input-label">Shipper Address <span
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="consigneeList" bindLabel="CustomerName" bindValue="CustomerName"
+                                class="ng-select" formControlName="ConsigneeName" placeholder="Select Consignee"
+                                (change)="setAddress('ConsigneeAddress',$event)">
+                            </ng-select>
                             <label for="text-input" class="input-label">Consignee <span
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="ConsigneeAddress">
                             <label for="text-input" class="input-label">Consignee Address <span
                                     class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName"
+                                class="ng-select" formControlName="Notify" placeholder="Select Notify"
+                                (change)="setAddress('NotifyAddress',$event)">
+                            </ng-select>
                             <label for="text-input" class="input-label">Notify<span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="NotifyAddress">
                             <label for="text-input" class="input-label">Notify Address<span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Agent <span class="text-danger">*</span></label>
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+                                formControlName="AgentName" placeholder="Select Agent" (change)="setAddress('AgentAddress',$event)">
+                    
+                                <ng-template ng-option-tmp let-item="item">
+                                    <div>
+                                        <strong>{{ item.CustomerName }} - {{ item.agentCountry }}</strong><br>
+                                        <small>{{ item.CustomerAddress1 }}</small>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                    
+                            <label for="text-input" class="input-label">Destination Agent <span class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="AgentAddress">
                             <label for="text-input" class="input-label">Agent Address<span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
+                                class="ng-select" formControlName="CarrierName" placeholder="Select Carrier">
+                            </ng-select>
                             <label for="text-input" class="input-label">Carrier Name<span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Quotation No<span
-                                    class="text-danger"></span></label>
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                formControlName="QuotationHeaderSid">
+                            <label for="text-input" [ngClass]="{
+                                'input-label': true,
+                                'bg-transparent': !b['QuotationHeaderSid']?.getRawValue()
+                              }">Quotation No<span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">HBL No<span class="text-danger"></span></label>
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                formControlName="HBLNo">
+                            <label for="text-input" [ngClass]="{
+                                'input-label': true,
+                                'bg-transparent': !b['HBLNo']?.getRawValue()
+                              }">HBL No<span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">MBL No<span class="text-danger"></span></label>
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                formControlName="MBLNo">
+                            <label for="text-input" [ngClass]="{
+                                'input-label': true,
+                                'bg-transparent': !b['MBLNo']?.getRawValue()
+                              }">MBL No<span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <div class="col-md-3">
                         <div class=" custom-form-group custom-form-group-select">
                             <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d2="ngbDatepicker" (click)="d2.toggle()" />
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="MBLDate"
+                                    ngbDatepicker #d2="ngbDatepicker" (click)="d2.toggle()" />
                                 <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
@@ -174,10 +224,22 @@
                     </div>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="name" class="ng-select">
-
+                        
+                            @if(isEditMode){
+                            <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
+                                <ng-option value="Active">Active</ng-option>
+                                <ng-option value="Suspended">Suspended</ng-option>
                             </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger"></span></label>
+                            } @else {
+                            <input type="text" name="status" class="form-control custom-input-field sm" value="Active" id="text-input"
+                                disabled>
+                            }
+                            <label for="text-input" 
+                                [ngClass]="{
+                                        'input-label': true,
+                                        'bg-transparent': !b['status']?.value
+                                }">Status <span class="text-danger"></span></label>
+                        
                         </div>
                     </aside>
                 </div>
@@ -189,58 +251,100 @@
     <div class="col-md-12 mt-2">
         <div class="card h-100 mb-0">
             <div class="card-body">
-                <div class="row">
+                <div class="row" [formGroup]="bookingForm">
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">ETA <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">ETD <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortName"
+                                class="ng-select" formControlName="POO" placeholder="Select POO">
+                            </ng-select>
                             <label for="text-input" class="input-label">POO<span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortName" class="ng-select"
+                                formControlName="POL" placeholder="Select POL" (change)="handlePOLChange($event)">
+                            </ng-select>
                             <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortName" class="ng-select"
+                                formControlName="POD" (change)="handlePODChange($event)" placeholder="Select POD">
+                            </ng-select>
                             <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortName"
+                                class="ng-select" formControlName="FPD" placeholder="Select FPD">
+                            </ng-select>
                             <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                formControlName="POLTerminal">
+                            <label for="text-input" class="input-label">POL Terminal<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                formControlName="PODTerminal">
+                            <label for="text-input" class="input-label">POD Terminal<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="modeOfTransport" bindLabel="name" bindValue="name" class="ng-select">
+                            <ng-select [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName"
+                                class="ng-select" formControlName="VesselName" placeholder="Select Vessel"
+                                (change)="onVesselChange($event)">
+                            </ng-select>
+                            <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
+                                formControlName="VoyageNo" placeholder="Select Voyage No"
+                                (change)="onVoyageChange($event)">
+                            </ng-select>
+                            <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETA"
+                                    ngbDatepicker #d4="ngbDatepicker" (click)="d4.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d4.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="shipmentDateExpected" class="input-label">ETA <span class="text-danger"></span>
+                            </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETD"
+                                    ngbDatepicker #d5="ngbDatepicker" (click)="d5.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d5.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="shipmentDateExpected" class="input-label">ETD <span class="text-danger"></span>
+                            </label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="modeOfTransport" bindLabel="name" bindValue="name" class="ng-select"
+                                placeholder="Select Mode of Transport" formControlName="MovementType">
 
                             </ng-select>
                             <label for="" class="input-label">Mode of Transport <span
@@ -248,51 +352,65 @@
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Do Validity <span
-                                    class="text-danger"></span></label>
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="DoValid"
+                                    ngbDatepicker #d6="ngbDatepicker" (click)="d6.toggle()" />
+                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d6.toggle()"
+                                    type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label for="shipmentDateExpected" class="input-label">Do Validity <span
+                                    class="text-danger"></span>
+                            </label>
                         </div>
                     </aside>
                     <aside class="col-md-3 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0">
                             <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="" class="form-check-input sm">
+                                <input type="checkbox" id="" class="form-check-input sm" formControlName="Coload">
                                 <label for="" class="form-check-label sm">Co Load <span
                                         class="text-danger"></span></label>
                             </div>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Nominated <span
-                                    class="text-danger"></span></label>
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" id="" class="form-check-input sm" formControlName="Nominated">
+                                <label for="" class="form-check-label sm">Nominated <span
+                                        class="text-danger"></span></label>
+                            </div>
                         </div>
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="incoList" bindLabel="IncoName" bindValue="IncoName" class="ng-select"
+                                formControlName="IncoTerms" placeholder="Select IncoTerms">
+                            </ng-select>
                             <label for="text-input" class="input-label">TOS <span class="text-danger">*</span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="InternalNote">
                             <label for="text-input" class="input-label">Internal Note <span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="GeneralNote">
                             <label for="text-input" class="input-label">General Note <span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <aside class="col-md-3" *ngIf="b['Nominated']?.value">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="nominationList" bindLabel="name" bindValue="name" class="ng-select"
+                                formControlName="NominatedBy" placeholder="Select NominatedBy">
+                            </ng-select>
                             <label for="text-input" class="input-label">Nominated By <span
                                     class="text-danger"></span></label>
                         </div>
@@ -319,17 +437,23 @@
 
             <div class="row bg-white" *ngIf="selectedTab === 'Cargo'">
                 <div class="col-12 p-0">
-                    <div class="row">
+                    <div class="row" [formGroup]="cargoForm">
                         <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="modeOfCargoType" bindLabel="name" bindValue="name" class="ng-select"
+                                    formControlName="CargoType" placeholder="Select Cargo Type">
+                                </ng-select>
                                 <label for="text-input" class="input-label">Cargo Type<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
+                        @if(selectedFCLLCL === "FCL"){
                         <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="containerTypeList" bindLabel="ContainerName"
+                                    bindValue="ContainerName" class="ng-select" formControlName="ContainerType"
+                                    placeholder="Select ContainerType">
+                                </ng-select>
                                 <label for="text-input" class="input-label">Container Type<span
                                         class="text-danger"></span></label>
                             </div>
@@ -338,15 +462,17 @@
 
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="NoofContainers">
                                 <label for="text-input" class="input-label">No of Container<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
-
+                        }
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                    formControlName="GrossWeight">
                                 <label for="text-input" class="input-label">Gr Weight<span
                                         class="text-danger"></span></label>
                             </div>
@@ -354,28 +480,34 @@
 
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                    formControlName="NetWeight">
                                 <label for="text-input" class="input-label">Net Weight<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                    formControlName="Volume">
                                 <label for="text-input" class="input-label">Volume(CBM)<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
+                        @if(selectedFCLLCL === "AIR") {
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="ChargeableWeight">
                                 <label for="text-input" class="input-label">Chargeable Weight<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
+                        }
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm"
+                                    formControlName="NoOfPackage">
                                 <label for="text-input" class="input-label">No of Pkg<span
                                         class="text-danger"></span></label>
                             </div>
@@ -383,7 +515,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name"
-                                    class="ng-select">
+                                    class="ng-select" placeholder="Select Shipment Terms" formControlName="ShipmentTerms">
 
                                 </ng-select>
                                 <label for="" class="input-label">Shipment Terms <span
@@ -393,7 +525,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="name"
-                                    class="ng-select">
+                                    class="ng-select" placeholder="Select Movement Type" formControlName="MovementType">
 
                                 </ng-select>
                                 <label for="" class="input-label">Movement Type <span
@@ -401,15 +533,19 @@
                             </div>
                         </aside>
                         <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="freightTermsList" bindLabel="name" bindValue="name"
+                                    class="ng-select" placeholder="Select Freight Terms"  formControlName="FreightTerms">
+                                </ng-select>
                                 <label for="text-input" class="input-label">Freight Terms<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="stuffingAt" bindLabel="name" bindValue="name" class="ng-select" placeholder="Select StuffingAt"
+                                    formControlName="StuffingAt" (change)="handleCFSOrYard()">
+                                </ng-select>
                                 <label for="text-input" class="input-label">Stuffing at<span
                                         class="text-danger"></span></label>
                             </div>
@@ -422,55 +558,98 @@
             <div class="row bg-white" *ngIf="selectedTab === 'Product'">
                 <div class="text-end mb-1">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="openProductModal()"><i class="fas fa-plus me-1"></i> Add</button>
+                        (click)="openProductModal(productModal)"><i class="fas fa-plus me-1"></i> Add</button>
                 </div>
-
+                @if(productDataLength > 0) {
                 <div class="col-12 p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
                                 <tr class="bg-info">
+                                    <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                                     <th class="bg-transparent text-light">Commodity</th>
                                     <th class="bg-transparent text-light">Shipping Bill No</th>
                                     <th class="bg-transparent text-light">Date</th>
-                                    <th class="bg-transparent text-light">Gross Weight</th>
                                     <th class="bg-transparent text-light">External Pkg</th>
                                     <th class="bg-transparent text-light">No. of Pkg</th>
+                                    <th class="bg-transparent text-light">Gross Weight</th>
                                     <th class="bg-transparent text-light">Net Wt</th>
                                     <th class="bg-transparent text-light">CBM</th>
+                                    <th class="bg-transparent text-light">Cargo Received Date</th>
+
                                 </tr>
                             </thead>
                             <tbody>
+                                @for(product of slicedProductArr ; track product ; let productIndex = $index){
                                 <tr>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <a class="text-info mx-2" class="link mx-2 ps-3"
+                                                (click)="openProductModal(productModal,productIndex,product.value)">
+                                                <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                            </a>
+
+                                            <a class="text-danger mx-2 ps-3 border-start"
+                                                (click)="deleteBookingProduct(productIndex,product.value.BookingProductSid)">
+                                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                            </a>
+
+                                        </div>
+                                    </td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        {{product.value.ProductName}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        {{product.value.ShippingBillNo}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        {{product.value.ShippingBillDate | formatDate}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        {{product.value.ExternaPkg}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        {{product.value.ExternlQty}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        {{product.value.GrossWeight}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        {{product.value.NetWeight}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        {{product.value.Volume}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        {{product.value.CargoRecDate}}</td>
                                 </tr>
+                                } @empty {
+                                    
+                                }
                             </tbody>
                         </table>
                     </div>
+                    <div *ngIf="productDataLength > 0">
+                        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="productDataLength"
+                            [pageSize]="pageSize" [(page)]="page" (pageChange)="updateProductPagination()">
+                        </ngb-pagination>
+                    </div>
                 </div>
+                }@else {
+                <div class="col-12">
+                    <div class="alert alert-info text-center">No Product added yet.</div>
+                </div>
+                }
             </div>
 
             <div class="row bg-white" *ngIf="selectedTab === 'Others'">
                 <div class="col-12 p-0">
-                    <div class="row">
+                    <div class="row" [formGroup]="otherForm">
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="CustomerRefNo">
                                 <label for="text-input" class="input-label">Customer Ref No<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                                <label for="text-input" class="input-label">Yard/CFS<span
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="YardCFS">
+                                <label for="text-input" class="input-label">{{YardCFSLabel}}<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
@@ -478,8 +657,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select [items]="modeOfReleaseType" bindLabel="name" bindValue="name"
-                                    class="ng-select">
-
+                                    class="ng-select" placeholder="Select Release type" formControlName="ReleaseType">
                                 </ng-select>
                                 <label for="" class="input-label">Release Type <span class="text-danger"></span></label>
                             </div>
@@ -488,36 +666,45 @@
 
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="HBLNo">
                                 <label for="text-input" class="input-label">HBL No<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
 
                         <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName"
+                                    class="ng-select" placeholder="Select Forwarder"
+                                    (change)="setAddressOthers('ForwarderAddress',$event)" formControlName="Forwarder">
+                                </ng-select>
                                 <label for="text-input" class="input-label">Forwarder<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="ForwarderAddress">
                                 <label for="text-input" class="input-label">Forwarder Address<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName"
+                                class="ng-select" formControlName="NotifyParty" placeholder="Select Notify"
+                                (change)="setAddressOthers('NotifyPartyAddress',$event)">
+                            </ng-select>
                                 <label for="text-input" class="input-label">Notify Party<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="NotifyPartyAddress">
                                 <label for="text-input" class="input-label">Notify Address<span
                                         class="text-danger"></span></label>
                             </div>
@@ -525,14 +712,16 @@
 
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="PickupPlace">
                                 <label for="text-input" class="input-label">Pick Up Place<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="DeliveryPlace">
                                 <label for="text-input" class="input-label">Delivery Place<span
                                         class="text-danger"></span></label>
                             </div>
@@ -541,7 +730,7 @@
                             <div class=" custom-form-group custom-form-group-select">
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        #d3="ngbDatepicker" (click)="d3.toggle()" />
+                                        formControlName="DeliveryDate" #d3="ngbDatepicker" (click)="d3.toggle()" />
                                     <button class="btn btn-info bi bi-calendar3 text-white" (click)="d3.toggle()"
                                         type="button"> <i-feather name="calendar"
                                             class="feather-sm"></i-feather></button>
@@ -554,35 +743,42 @@
                         </div>
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="CHAName">
                                 <label for="text-input" class="input-label">CHA Name<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="PickupAddress">
                                 <label for="text-input" class="input-label">Pick Up Address<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="DeliveryAddress">
                                 <label for="text-input" class="input-label">Delivery Address<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="currencyCode"
+                                    class="ng-select" placeholder="Select Cargo Currency"
+                                    formControlName="CargoCurrency">
+                                </ng-select>
                                 <label for="text-input" class="input-label">Cargo Curr<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="CargoValue">
                                 <label for="text-input" class="input-label">Cargo Value<span
                                         class="text-danger"></span></label>
                             </div>
@@ -590,7 +786,8 @@
                         <aside class="col-md-3 d-flex align-items-center">
                             <div class="form-check form-check-inline p-0">
                                 <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" id="switchBl" class="form-check-input sm">
+                                    <input type="checkbox" id="switchBl" class="form-check-input sm"
+                                        formControlName="SwitchBL">
                                     <label for="switchBl" class="form-check-label sm">Switch BL <span
                                             class="text-danger"></span></label>
                                 </div>
@@ -600,7 +797,8 @@
                         <aside class="col-md-3 d-flex align-items-center">
                             <div class="form-check form-check-inline p-0">
                                 <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" id="BacktoBack" class="form-check-input sm">
+                                    <input type="checkbox" id="BacktoBack" class="form-check-input sm"
+                                        formControlName="BacktoBack">
                                     <label for="BacktoBack" class="form-check-label sm">Back to Back <span
                                             class="text-danger"></span></label>
                                 </div>
@@ -609,16 +807,25 @@
 
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="Depo">
                                 <label for="text-input" class="input-label">Depo<span
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                                <label for="text-input" class="input-label">Ro Validity<span
-                                        class="text-danger"></span></label>
+                            <div class=" custom-form-group custom-form-group-select">
+                                <div class="input-group">
+                                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                        formControlName="ROValidity" #d7="ngbDatepicker" (click)="d7.toggle()" />
+                                    <button class="btn btn-info bi bi-calendar3 text-white" (click)="d7.toggle()"
+                                        type="button"> <i-feather name="calendar"
+                                            class="feather-sm"></i-feather></button>
+                                </div>
+                                <label for="shipmentDateExpected" class="input-label">Ro Validity <span
+                                        class="text-danger"></span>
+                                </label>
+
                             </div>
                         </aside>
                     </div>
@@ -628,14 +835,15 @@
             <div class="row bg-white" *ngIf="selectedTab === 'Connection'">
                 <div class="text-end mb-1">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="openConnectionModal()"> <i class="fas fa-plus me-1"></i> Add</button>
+                        (click)="openConnectionModal(connectionModal)"> <i class="fas fa-plus me-1"></i> Add</button>
                 </div>
-
-                <div class="col-12 p-0">
+                @if(connectionDataLength > 0){
+                <div class="col-12 p-0" *ngIf="connectionDataLength > 0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
                                 <tr class="bg-info">
+                                    <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                                     <th class="bg-transparent text-light">Mode</th>
                                     <th class="bg-transparent text-light">Vsl</th>
                                     <th class="bg-transparent text-light">Voy</th>
@@ -647,20 +855,41 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @for(connection of slicedConnectionArr ; track connection ; let connectionIndex = $index){
                                 <tr>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <a class="text-info mx-2" class="link mx-2 ps-3"
+                                                (click)="openConnectionModal(connectionModal,connectionIndex,connection.value)">
+                                                <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                            </a>
+
+                                            <a class="text-danger mx-2 ps-3 border-start"
+                                                (click)="deleteBookingConnection(connectionIndex,connection.value.BookingConnectionSid)">
+                                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                            </a>
+
+                                        </div>
+                                    </td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.Mode || ''}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.VesselName}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.VoyageNo}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.POL}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.POD}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.ETD | formatDate}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.ETA | formatDate}}</td>
+                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.value.status}}</td>
                                 </tr>
+                                }
                             </tbody>
                         </table>
                     </div>
                 </div>
+                }@else {
+                <div class="col-12">
+                    <div class="alert alert-info text-center">No Connection added yet.</div>
+                </div>
+                }
             </div>
 
             <div class="row bg-white" *ngIf="selectedTab === 'Rate'">
@@ -795,59 +1024,155 @@
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" width="5%">If Haz</th>
-                        <th class="bg-transparent text-light">Imco Class</th>
-                        <th class="bg-transparent text-light">Un No</th>
-                        <th class="bg-transparent text-light">Pkg Group</th>
+        <div class="row" [formGroup]="productForm">
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="productList" bindLabel="ProductName" bindValue="ProductName"
+                        formControlName="ProductName" placeholder="Select Commodity" (change)="handleProductChange($event)">
+                    </ng-select>
+                    <label for="" class="input-label">Commodity <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="ShippingBillNo">
+                    <label for="text-input" class="input-label">Shipping Bill No <span
+                            class="text-danger"></span></label>
+                </div>
+            </aside>
+            <div class="col-md-6">
+                <div class=" custom-form-group custom-form-group-select">
+                    <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                            (click)="d2.toggle()" formControlName="ShippingBillDate" />
+                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                    </div>
+                    <label for="shipmentDateExpected" class="input-label"> Date <span class="text-danger"></span>
+                    </label>
 
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                            <div class="form-check form-check-inline p-0 ps-2">
-                                <div class="form-check d-flex align-items-center justify-content-center">
-                                    <input type="checkbox" id="" class="form-check-input sm">
-                                </div>
-                            </div>
+                </div>
+            </div>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="packageTypeList" placeholder="Select Package Type" bindLabel="PackageName"  bindValue="PackageName"
+                        formControlName="ExternaPkg"
+                    >
+                    </ng-select>
+                    <label for="text-input" class="input-label">External Pkg <span class="text-danger">*</span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="ExternlQty">
+                    <label for="text-input" class="input-label">No. of Pkg <span class="text-danger">*</span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="GrossWeight">
+                    <label for="text-input" class="input-label">Gross Weight <span class="text-danger">*</span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="NetWeight">
+                    <label for="text-input" class="input-label">Net Wt <span class="text-danger">*</span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="Volume">
+                    <label for="text-input" class="input-label">CBM <span class="text-danger">*</span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class=" custom-form-group custom-form-group-select">
+                    <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker formControlName="CargoRecDate"
+                            #d8="ngbDatepicker" (click)="d8.toggle()" />
+                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d8.toggle()" type="button"> <i-feather
+                                name="calendar" class="feather-sm"></i-feather></button>
+                    </div>
+                    <label for="shipmentDateExpected" class="input-label">Cargo Received Date <span class="text-danger"></span>
+                    </label>
+            
+                </div>
+            </aside>
+            <aside class="col-md-6 d-flex align-items-center">
+                <div class="form-check form-check-inline p-0">
+                    <div class="form-check d-flex align-items-center">
+                        <input type="checkbox" id="" class="form-check-input sm" formControlName="IsHaz">
+                        <label for="" class="form-check-label sm">If Haz <span class="text-danger"></span></label>
+                    </div>
+                </div>
+            </aside>
+            @if(productForm.get('IsHaz')?.value){
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
+                        placeholder="Select IMCO">
+                    </ng-select>
 
-                        </td>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="table-responsive mt-2">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light">Length</th>
-                        <th class="bg-transparent text-light">Width</th>
-                        <th class="bg-transparent text-light">Height</th>
-                        <th class="bg-transparent text-light">Uom</th>
-
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">1</td>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    </tr>
-                </tbody>
-            </table>
+                    <label for="text-input" class="input-label">Imco Class <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="UnNo">
+                    <label for="text-input" class="input-label">Un No <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="PkgGroup">
+                    <label for="text-input" class="input-label">Pkg Group <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            }
+            @if(selectedDepartmentType === "AIR"){
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="Length">
+                    <label for="text-input" class="input-label">Length <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="Width">
+                    <label for="text-input" class="input-label">Width <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="Height">
+                    <label for="text-input" class="input-label">Height <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="uomList" bindLabel="UOMName" bindValue="UOMMasterSid" formControlName="UomMasterSid"
+                        placeholder="Select UOM">
+                    </ng-select>
+                    <label for="text-input" class="input-label">Uom <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            }
         </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-        <button type="button" class="btn btn-info btn-sm" (click)="saveProduct(modal)">Save</button>
+        <button type="button" class="btn btn-info btn-sm" (click)="onProductSubmit()">Save</button>
     </div>
 </ng-template>
 
@@ -858,10 +1183,95 @@
     </div>
     <div class="modal-body">
 
+        <div class="row" [formGroup]="connectionForm">
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="Mode" [items]="typeofmodes" bindLabel="name" bindValue="name" placeholder="Select Mode"
+                    >
+                    </ng-select>
+                    <label for="" class="input-label"> Mode <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="POL" [items]="portList" bindLabel="PortName" bindValue="PortName" placeholder="Select POL">
+                    </ng-select>
+                    <label for="" class="input-label"> POL <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="POD" [items]="portList" bindLabel="PortName" bindValue="PortName" placeholder="Select POD">
+                    </ng-select>
+                    <label for="" class="input-label"> POD <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="vesselList" bindLabel="VesselName" bindValue="VesselName" class="ng-select"
+                        formControlName="VesselName" placeholder="Select Vessel" (change)="onConnectVesselChange($event)">
+                    </ng-select>
+                    <label for="text-input" class="input-label">Vsl <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="voyageListConnection" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
+                        formControlName="VoyageNo" placeholder="Select Voyage No">
+                    </ng-select>
+                    <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            
+            <div class="col-md-6">
+                <div class=" custom-form-group custom-form-group-select">
+                    <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker" formControlName="ETD"
+                            (click)="d2.toggle()" />
+                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                    </div>
+                    <label for="" class="input-label"> ETD <span class="text-danger"></span>
+                    </label>
+
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class=" custom-form-group custom-form-group-select">
+                    <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker" formControlName="ETA"
+                            (click)="d1.toggle()" />
+                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                    </div>
+                    <label for="" class="input-label"> ETA <span class="text-danger"></span>
+                    </label>
+
+                </div>
+            </div>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    @if(isEditMode){
+                    <ng-select name="status" class="ng-select" formControlName="Status" id="text-input">
+                        <ng-option value="Active">Active</ng-option>
+                        <ng-option value="Suspended">Suspended</ng-option>
+                    </ng-select>
+                    } @else {
+                    <input type="text" name="status" class="form-control custom-input-field sm" value="Active" id="text-input"
+                        disabled>
+                    }
+                    <label for="text-input" [ngClass]="{
+                        'input-label': true,
+                        'bg-transparent': !b['status']?.value
+                    }">Status <span class="text-danger"></span></label>
+            
+                </div>
+            </aside>
+        </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-        <button type="button" class="btn btn-info btn-sm" (click)="saveProduct(modal)">Save</button>
+        <button type="button" class="btn btn-info btn-sm" (click)="onConnectionSubmit()">Save</button>
     </div>
 </ng-template>
 
@@ -871,31 +1281,169 @@
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light">Charge</th>
-                        <th class="bg-transparent text-light">Sale Amt</th>
-                        <th class="bg-transparent text-light">Cost Amt</th>
-                        <th class="bg-transparent text-light">Profit</th>
-                        <th class="bg-transparent text-light">Profit %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="row">
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Sno <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Charge <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                    </ng-select>
+                    <label for="" class="input-label"> Charge Desc <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                    </ng-select>
+                    <label for="" class="input-label">PP/CC <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                    </ng-select>
+                    <label for="" class="input-label">Unit<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">No of Unit <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                    </ng-select>
+                    <label for="" class="input-label">Dr/Cr<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                    </ng-select>
+                    <label for="" class="input-label">Curr<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Ex Rate<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Rate<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Amt <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Local Amt <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                    </ng-select>
+                    <label for="" class="input-label">Billing Party<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                    </ng-select>
+                    <label for="" class="input-label">Voucher No<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                    </ng-select>
+                    <label for="" class="input-label">Type<span class="text-danger"></span></label>
+                </div>
+            </aside>
         </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-        <button type="button" class="btn btn-info btn-sm" (click)="saveProduct(modal)">Save</button>
+        <button type="button" class="btn btn-info btn-sm">Save</button>
+    </div>
+</ng-template>
+<ng-template #milestoneModal let-modal>
+    <div class="modal-header p-2 bg-info">
+        <h5 class="modal-title text-white"> Milestone</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="row">
+
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Sno <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                    </ng-select>
+                    <label for="" class="input-label">Milestone <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <div class="col-md-6">
+                <div class=" custom-form-group custom-form-group-select">
+                    <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                            (click)="d2.toggle()" />
+                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                    </div>
+                    <label for="" class="input-label"> Date & Time <span class="text-danger"></span>
+                    </label>
+
+                </div>
+            </div>
+            <aside class="col-md-6 d-flex align-items-center">
+                <div class="form-check form-check-inline p-0">
+                    <div class="form-check d-flex align-items-center">
+                        <input type="checkbox" id="" class="form-check-input sm">
+                        <label for="" class="form-check-label sm">Auto Captured <span
+                                class="text-danger"></span></label>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+        <button type="button" class="btn btn-info btn-sm">Save</button>
     </div>
 </ng-template>
