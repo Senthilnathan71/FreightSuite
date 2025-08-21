@@ -210,8 +210,17 @@ export class ConnectionComponent implements OnInit {
       this.appSettingService.showWarning("Please fill all the required fields correctly.")
       return;
     }
-    this.connectionFormArray.push(this.connectionForm);
+    const connectionFormValue = this.connectionForm.getRawValue();
+    if(this.currentConnectIndex !== -1){
+      const existingForm = this.connectionFormArray.at(this.currentConnectIndex) as FormGroup;
+      existingForm.patchValue({
+        ...connectionFormValue
+      })
+    } else {
+      this.connectionFormArray.push(this.connectionForm);
+    }
     this.connectionDataLength = this.connectionFormArray.length;
+    this.connectionFormArray.updateValueAndValidity();
     this.updateConnectionPagination();
     this.syncDataWithParentComponent();
     this.modalService.dismissAll();
@@ -231,6 +240,9 @@ export class ConnectionComponent implements OnInit {
   onModeChange(mode: any) {
     if (!mode) {
       this.selectedMode = '';
+      this.filteredPorts = [];
+      this.filteredPOL = [];
+      this.filteredPOD = [];
       this.connectionForm.reset({
         status: 'Active'
       })
@@ -373,9 +385,7 @@ export class ConnectionComponent implements OnInit {
 
 
   deleteBookingConnection(connectionIndex: number, BookingConnectionSid?: number) {
-    const connectionToDelete = this.slicedConnectionFormArr[connectionIndex];
-    const realIndex = this.connectionFormArray.controls.indexOf(connectionToDelete);
-
+    const realIndex = ((this.page1 - 1 ) * this.pageSize1) + connectionIndex;
     if (BookingConnectionSid) {
       this.operationService.deleteBookingConnection(BookingConnectionSid).subscribe(
         (resp: any) => {
@@ -383,21 +393,24 @@ export class ConnectionComponent implements OnInit {
             this.connectionFormArray.removeAt(realIndex);
             this.connectionDataLength = this.connectionFormArray.length;
             this.appSettingService.showSuccess('Connection Deleted Successfully');
+            this.connectionFormArray.updateValueAndValidity();
             this.adjustConnectionPageAfterDelete();
             this.updateConnectionPagination();
+            this.syncDataWithParentComponent();
           } else {
             this.appSettingService.showError("Error deleting Connection.");
           }
-        })
+        });
     } else {
       this.connectionFormArray.removeAt(realIndex);
+      this.connectionFormArray.updateValueAndValidity();
       this.connectionDataLength = this.connectionFormArray.length;
       this.adjustConnectionPageAfterDelete();
+      this.updateConnectionPagination();
+      this.syncDataWithParentComponent();
     }
-    this.connectionFormArray.updateValueAndValidity();
-    this.updateConnectionPagination();
-    this.syncDataWithParentComponent();
   }
+
 
   adjustConnectionPageAfterDelete() {
     const totalPages = Math.ceil(this.connectionDataLength / this.pageSize1);
