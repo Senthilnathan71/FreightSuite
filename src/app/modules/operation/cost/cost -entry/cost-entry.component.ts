@@ -13,14 +13,15 @@ import { CommonModule } from '@angular/common';
 export class CostEntryComponent {
   tabs = [
     { name: 'Cost', icon: 'fas fa-rupee-sign' },
-    { name: 'Revenue', icon: 'fas fa-chart-line' }
+    { name: 'Revenue', icon: 'fas fa-chart-line' },
+    { name: 'Profit', icon: 'fas fa-dollar-sign' },
   ];
 
   selectedTab = 'Cost';
 
   @ViewChild('costModal') costModal!: TemplateRef<any>;
   @ViewChild('revenueModal') revenueModal!: TemplateRef<any>;
-
+   @ViewChild('profitModal') profitModal!: TemplateRef<any>;
   constructor(private modalService: NgbModal) {}
 
   selectTab(tab: string) {
@@ -42,4 +43,24 @@ export class CostEntryComponent {
       centered: true,
     });
   }
+
+   openProfitModal() {
+    this.modalService.open(this.profitModal, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
+  }
+
+
+  openModalBasedOnTab() {
+  if (this.selectedTab === 'Cost') {
+    this.openCostModal();
+  } else if (this.selectedTab === 'Revenue') {
+    this.openRevenueModal();
+  } else if (this.selectedTab === 'Profit') {
+    this.openProfitModal();
+  }
+}
+
 }

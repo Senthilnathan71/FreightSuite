@@ -1,20 +1,30 @@
-<div class="tab-wrapper mt-2">
-    <div class="tab" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name" (click)="selectTab(tab.name)">
-        <i [class]="tab.icon"></i>
-        {{ tab.name }}
+<div class="d-flex justify-content-between align-items-center mt-2 mb-1">
+    <!-- Tabs -->
+    <div class="tab-wrapper">
+        <div class="tab" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+            (click)="selectTab(tab.name)">
+            <i [class]="tab.icon"></i>
+            {{ tab.name }}
+        </div>
+    </div>
 
+    <!-- Add Button -->
+    <div>
+
+        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openModalBasedOnTab()">
+            <i class="fas fa-plus me-1" style="font-size: 10px;"></i> Add
+        </button>
     </div>
 </div>
-
 
 <div class="tab-content mb-2">
 
     <div class="row bg-white" *ngIf="selectedTab === 'Cost'">
         <!-- <ng-container *ngComponentOutlet="costcomponent"></ng-container> -->
-        <div class="text-end mb-1">
+        <!-- <div class="text-end mb-1">
             <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openCostModal()"><i
                     class="fas fa-plus me-1"></i> Add</button>
-        </div>
+        </div> -->
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -188,10 +198,10 @@
     <div class="row bg-white" *ngIf="selectedTab === 'Revenue'">
         <!-- <ng-container *ngComponentOutlet="revenuecomponent"></ng-container> -->
 
-        <div class="text-end mb-1">
+        <!-- <div class="text-end mb-1">
             <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                 (click)="openRevenueModal()"><i class="fas fa-plus me-1"></i> Add</button>
-        </div>
+        </div> -->
 
 
         <div class="col-12 p-0">
@@ -366,4 +376,82 @@
         </ng-template>
     </div>
 
+    <div class="row g-white" *ngIf="selectedTab === 'Profit'">
+        <div class="col-12 p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info">
+
+                            <th class="bg-transparent text-light">Charge</th>
+                            <th class="bg-transparent text-light">Sales Amt</th>
+                            <th class="bg-transparent text-light">Cost Amt</th>
+                            <th class="bg-transparent text-light">Profit</th>
+                            <th class="bg-transparent text-light">Profit %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
 </div>
+
+
+<ng-template #profitModal let-modal>
+    <div class="modal-header p-2 bg-info">
+        <h5 class="modal-title text-white">Profit</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="row">
+            <aside class="col-md-4">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="" [items]="" bindLabel="name" bindValue="name">
+
+                    </ng-select>
+                    <label for="" class="input-label">Chareg <span class="text-danger"></span></label>
+                </div>
+            </aside>
+
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+                    <label for="text-input" class="input-label">Sale Amt <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+                    <label for="text-input" class="input-label">Cost Amt <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+                    <label for="text-input" class="input-label">Profit <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+                    <label for="text-input" class="input-label">Profit % <span class="text-danger"></span></label>
+                </div>
+            </aside>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+        <button type="button" class="btn btn-info btn-sm">Save</button>
+    </div>
+</ng-template>
