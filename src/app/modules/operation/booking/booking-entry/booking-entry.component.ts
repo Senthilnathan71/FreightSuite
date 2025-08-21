@@ -12,12 +12,17 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { ConnectionComponent } from '../../connection/connection/connection.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 @Component({
   selector: 'app-booking-entry',
@@ -30,7 +35,12 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     FormsModule,
     ReactiveFormsModule,
     CustomDatePipe,
-    NgbPaginationModule
+    NgbPaginationModule,
+    ConnectionComponent,
+    DecimalPrecisionDirective,
+    OnlyTextDirective,
+    OnlyNumbersDirective,
+    TextWithNumbersDirective
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
@@ -146,18 +156,8 @@ auditLogs: any[] = []; // Stores audit logs
   otherForm !: FormGroup;
 
   // Variable Declaration - Connection Part
-  page1 = 1;
-  pageSize1 = 5;
-  connectionDataLength: number;
-  currentConnectionIndex: number;
-  connectionLookupLoaded : boolean;
-  connectionForm !: FormGroup;
-  slicedConnectionArr: any[];
-  filteredPortConnection : any[] = [];
-  filteredPOLConnection : any[] = [];
-  filteredPODConnection : any[] = [];
-  vesselListConnection : any[] = [];
-  voyageListConnection : any[] = [];
+  bookingConnectionsArr : any[] = [];
+  connectionResult : any[] =[];
 
   typeofmodes = [
     { id: 1, name: "Sea" },
@@ -397,18 +397,7 @@ auditLogs: any[] = []; // Stores audit logs
     })
   }
 
-  initConnectionForm() {
-    this.connectionForm = this.fb.group({
-      BookingConnectionSid: [null],
-      VesselName: [null],
-      VoyageNo: [null],
-      POL: [null],
-      POD: [null],
-      ETD: [''],
-      ETA: [''],
-      status: ['Active']
-    })
-  }
+
 
   initRateForm() {
     this.rateForm = this.fb.group({
@@ -465,9 +454,7 @@ auditLogs: any[] = []; // Stores audit logs
   get o(): { [key: string]: AbstractControl<any, any> } {
     return this.otherForm.controls || {}
   }
-  get connection(): { [key: string]: AbstractControl<any, any> } {
-    return this.connectionForm.controls || {}
-  }
+
 
   get bookingProducts(): FormArray {
     return this.detailForm.get('bookingProducts') as FormArray;
@@ -694,14 +681,13 @@ auditLogs: any[] = []; // Stores audit logs
     this.updateProductPagination();
     this.handleProductRelatedCalculation();
 
-    this.bookingConnections.clear();
-    const connectionFromResponse = response.bookingConnection || [];
-    this.connectionDataLength = connectionFromResponse.length;
-    for (const connectionData of connectionFromResponse) {
-      const formWithData = this.createBookingConnectionGroup(connectionData);
-      this.bookingConnections.push(formWithData);
-    }
-    this.updateConnectionPagination();
+    this.bookingConnectionsArr = response.bookingConnection || []; // for child component
+    this.connectionResult = this.bookingConnectionsArr.map(connection => {
+      return {
+        ...connection,
+        status : connection.status === "A" ? "Active" : "Suspended"
+      }
+    })
   }
 
   openProductModal(content: TemplateRef<any>, productIndex?: number, data?: any) {
@@ -765,32 +751,15 @@ auditLogs: any[] = []; // Stores audit logs
     this.modalService.dismissAll();
   }
 
-
-  openConnectionModal(content: TemplateRef<any>, connectIndex?: number, data?: any) {
-    this.initConnectionForm();
-    if(data){
-      this.connectionForm.patchValue({
-        BookingConnectionSid: data?.BookingConnectionSid,
-        POL: data?.POL,
-        POD: data?.POD ,
-        VesselName: data?.VesselName,
-        VoyageNo:data?.VoyageNo,
-        ETD: new Date(data?.ETD),
-        ETA: new Date(data?.ETA),
-        status: data.status ? (data.status === "A" ? "Active" : "Suspended") : "Active"
-      })
-      this.getVesselBasedOnPorts()
+  handleConnectionChange(allConnections:any[]){
+    console.log(allConnections);
+    if(allConnections.length !== 0){
+      this.connectionResult = [...allConnections];
     }
-    this.modalService.open(content, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true,
-    });
   }
 
-  onConnectionSubmit() {
 
-  }
+
 
   onSubmit() {
     console.log('Submit triggered');
@@ -907,8 +876,9 @@ auditLogs: any[] = []; // Stores audit logs
         UomMasterSid: product.UomMasterSid,
         CargoRecDate : product.CargoRecDate
       })),
-      bookingConnections: detailFormValue.bookingConnections.map((connection: any) => ({
+      bookingConnections: this.connectionResult.map((connection: any) => ({
         BookingConnectionSid : connection.BookingConnectionSid || null,
+        Mode : connection.Mode || '',
         VesselName: connection.VesselName || null,
         VoyageNo: connection.VoyageNo || null,
         POL: connection.POL || null,
@@ -1324,124 +1294,10 @@ auditLogs: any[] = []; // Stores audit logs
 
   // ************ END OF CONNECTION RELATED FUNCTIONS *************
 
-  //  Connection Form Related Functions
-
-  onModeChange(item:any){
-    
-  }
-
-  getVesselBasedOnPortsConnection() {
-    const POL = this.connection['POL']?.value;
-    const POD = this.connection['POD']?.value;
-    const MovementType = this.connection['Mode']?.value;
-    const POLSid = (this.portList.find(port => port.PortName === POL)?.PortMasterSid);
-    const PODSid = (this.portList.find(port => port.PortName === POD)?.PortMasterSid);
-    if (!POLSid || !PODSid) return;
-    const payload = { POL: POLSid, POD: PODSid, MovementType: MovementType };
-    this.operationService.getVesselsBasedOnPorts(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.vesselListConnection = resp.data;
-          console.log(this.vesselListConnection);
-          if (this.vesselListConnection.length === 0) {
-            this.appSettingService.showWarning("No Vessel/Voyage has been scheduled for the requested connection.")
-          }
-        } else {
-          this.appSettingService.showError("Error loading Vessel")
-        }
-      }
-    )
-  }
-
-  onConnectVesselChange(vessel: any) {
-    if (!vessel) {
-      this.voyageListConnection = [];
-      this.connection['VoyageNo']?.setValue(null);
-      this.connection['ETA']?.setValue(null);
-      this.connection['ETD']?.setValue(null);
-      return;
-    }
-  }
-
-  deleteBookingConnection(connectionIndex: number, BookingConnectionSid?: number) {
-    const connectionToDelete = this.slicedConnectionArr[connectionIndex];
-    const realIndex = this.bookingConnections.controls.indexOf(connectionToDelete);
-
-    if (BookingConnectionSid) {
-      this.operationService.deleteBookingConnection(BookingConnectionSid).subscribe(
-        (resp: any) => {
-          if (resp.status) {
-            this.bookingConnections.removeAt(realIndex);
-            this.connectionDataLength = this.bookingConnections.length;
-            this.appSettingService.showSuccess('Connection Deleted Successfully');
             this.adjustConnectionPageAfterDelete();
             this.updateConnectionPagination();
-          } else {
             this.appSettingService.showError("Error deleting Connection.");
           }
-        })
-    } else {
-      this.bookingConnections.removeAt(realIndex);
-      this.productDataLength = this.bookingConnections.length;
-      this.adjustConnectionPageAfterDelete();
-    }
-    this.bookingConnections.updateValueAndValidity();
-    this.updateConnectionPagination();
-  }
-
-  adjustConnectionPageAfterDelete() {
-    const totalPages = Math.ceil(this.connectionDataLength / this.pageSize1);
-    if (this.page1 > totalPages && totalPages > 0) {
-      this.page1 = totalPages;
-    } else if (this.connectionDataLength === 0) {
-      this.page1 = 1;
-    }
-  }
-
-  updateConnectionPagination() {
-    const start = (this.page1 - 1) * this.pageSize1;
-    const end = start + this.pageSize1;
-    this.slicedConnectionArr = this.bookingConnections.controls.slice(start, end);
-  }
-
-
-
-
-
-
-
-
-
-
-  
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.BookingHeaderSid) return;
-
-  this.operationService.getAuditLogsBooking('BookingHeader', this.BookingHeaderSid.toString()).subscribe({
-    next: (logs: any[]) => {
-      const formatFields = (val: any) => {
-        if (!val) return ['NA'];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        delete obj.updatedOn; // Remove updatedOn field
-        // If no fields exist after deleting updatedOn
-        if (Object.keys(obj).length === 0) return ['NA'];
-        return Object.entries(obj).map(
-          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-        );
-      };
-
-      this.auditLogs = logs.map(log => ({
-        ...log,
-        oldValDisplay: formatFields(log.oldVal),
-        newValDisplay: formatFields(log.newVal)
-      }));
-
-      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
-
 
   navigateBack() {
     this.router.navigate(['operation/booking/list']);
@@ -1533,5 +1389,33 @@ openAuditLogs(modal: TemplateRef<any>) {
     modalRef.componentInstance.idLabel = 'Booking Id';
     modalRef.componentInstance.idValue = this.bookingData?.BookingHeaderSid;
   }
+
+  openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.BookingHeaderSid) return;
+
+  this.operationService.getAuditLogsBooking('BookingHeader', this.BookingHeaderSid.toString()).subscribe({
+    next: (logs: any[]) => {
+      const formatFields = (val: any) => {
+        if (!val) return ['NA'];
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        delete obj.updatedOn; // Remove updatedOn field
+        // If no fields exist after deleting updatedOn
+        if (Object.keys(obj).length === 0) return ['NA'];
+        return Object.entries(obj).map(
+          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+        );
+      };
+
+      this.auditLogs = logs.map(log => ({
+        ...log,
+        oldValDisplay: formatFields(log.oldVal),
+        newValDisplay: formatFields(log.newVal)
+      }));
+
+      this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
   
 }

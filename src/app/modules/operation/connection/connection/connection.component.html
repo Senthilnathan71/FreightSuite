@@ -1,13 +1,14 @@
 <div class="text-end mb-1">
-    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openConnectionModal()"> <i
-            class="fas fa-plus me-1"></i> Add</button>
+    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+        (click)="openConnectionModal(connectionModal)"> <i class="fas fa-plus me-1"></i> Add</button>
 </div>
-
+@if(connectionDataLength > 0){
 <div class="col-12 p-0">
     <div class="table-responsive">
         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
             <thead>
                 <tr class="bg-info">
+                    <th class="bg-transparent text-light">Action</th>
                     <th class="bg-transparent text-light">Mode</th>
                     <th class="bg-transparent text-light">Vsl</th>
                     <th class="bg-transparent text-light">Voy</th>
@@ -15,28 +16,57 @@
                     <th class="bg-transparent text-light">POD</th>
                     <th class="bg-transparent text-light">ETD</th>
                     <th class="bg-transparent text-light">ETA</th>
-                    <th class="bg-transparent text-light">ATD</th>
-                    <th class="bg-transparent text-light">ATA</th>
+                    <th class="bg-transparent text-light" *ngIf="screenName !== 'Booking'">ATD</th>
+                    <th class="bg-transparent text-light" *ngIf="screenName !== 'Booking'">ATA</th>
                     <th class="bg-transparent text-light">Status</th>
                 </tr>
             </thead>
             <tbody>
+                @for(connection of slicedConnectionFormArr ; track connection ; let connectionIndex = $index){
                 <tr>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <a class="text-info mx-2" class="link mx-2 ps-3"
+                                (click)="openConnectionModal(connectionModal,connection,connectionIndex)">
+                                <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                            </a>
+
+                            <a class="text-danger mx-2 ps-3 border-start"
+                                (click)="deleteBookingConnection(connectionIndex,connection.BookingConnectionSid)">
+                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                            </a>
+
+                        </div>
+                    </td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.Mode || ''}}
+                    </td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.VesselName}}
+                    </td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.VoyageNo}}
+                    </td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.POL}}</td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.POD}}</td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.ETD |
+                        formatDate}}</td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.ETA |
+                        formatDate}}</td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"
+                        *ngIf="screenName !== 'Booking'">OMR</td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"
+                        *ngIf="screenName !== 'Booking'">OMR</td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{connection.status}}
+                    </td>
                 </tr>
+                }
             </tbody>
         </table>
     </div>
 </div>
+} @else {
+<div class="col-12">
+    <div class="alert alert-info text-center">No Connection added yet.</div>
+</div>
+}
 
 
 <ng-template #connectionModal let-modal>
@@ -46,51 +76,65 @@
     </div>
     <div class="modal-body">
 
-        <div class="row">
-
-
-            <aside class="col-md-4">
+        <div class="row" [formGroup]="connectionForm">
+            <aside class="col-md-6">
                 <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="typeofmodes" bindLabel="name" bindValue="name">
-
+                    <ng-select formControlName="Mode" [items]="typeofmodes" bindLabel="name" bindValue="name"
+                        placeholder="Select Mode" (change)="onModeChange($event)">
                     </ng-select>
                     <label for="" class="input-label"> Mode <span class="text-danger"></span></label>
                 </div>
             </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">Vsl <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
+            <aside class="col-md-6">
                 <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="" bindLabel="name" bindValue="name" class="ng-select">
-
+                    <ng-select formControlName="POL" [items]="filteredPOL" bindLabel="PortName" bindValue="PortName"
+                        placeholder="Select POL" (change)="handlePOLChange($event)">
                     </ng-select>
                     <label for="" class="input-label"> POL <span class="text-danger"></span></label>
                 </div>
             </aside>
-            <aside class="col-md-4">
+            <aside class="col-md-6">
                 <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="" bindLabel="name" bindValue="name" class="ng-select">
-
+                    <ng-select formControlName="POD" [items]="filteredPOD" bindLabel="PortName" bindValue="PortName"
+                        placeholder="Select POD" (change)="handlePODChange($event)">
                     </ng-select>
                     <label for="" class="input-label"> POD <span class="text-danger"></span></label>
                 </div>
             </aside>
-            <div class="col-md-4">
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="filteredVesselList" bindLabel="VesselName" bindValue="VesselName" class="ng-select"
+                        formControlName="VesselName" placeholder="Select Vessel" (change)="onVesselChange($event)">
+                    </ng-select>
+                    <label for="text-input" class="input-label">Vsl <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
+                        formControlName="VoyageNo" placeholder="Select Voyage No" (change)="onVoyageChange($event)">
+                    </ng-select>
+                    <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <div class="col-md-6">
                 <div class=" custom-form-group custom-form-group-select">
                     <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                            #d10="ngbDatepicker" (click)="d10.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d10.toggle()" type="button">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
+                            formControlName="ETA" (click)="d1.toggle()" />
+                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                    </div>
+                    <label for="" class="input-label"> ETA <span class="text-danger"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class=" custom-form-group custom-form-group-select">
+                    <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                            formControlName="ETD" (click)="d2.toggle()" />
+                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>
                     <label for="" class="input-label"> ETD <span class="text-danger"></span>
@@ -98,44 +142,41 @@
 
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class=" custom-form-group custom-form-group-select">
-                    <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                            #d11="ngbDatepicker" (click)="d11.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d11.toggle()" type="button">
-                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                    </div>
-                    <label for="" class="input-label"> ETA <span class="text-danger"></span>
-                    </label>
 
-                </div>
-            </div>
-            <aside class="col-md-4">
+            <aside class="col-md-6" *ngIf="screenName !== 'Booking'">
                 <div class="custom-form-group">
                     <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">ATD <span class="text-danger"></span></label>
                 </div>
             </aside>
-            <aside class="col-md-4">
+            <aside class="col-md-6" *ngIf="screenName !== 'Booking'">
                 <div class="custom-form-group">
                     <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">ATA <span class="text-danger"></span></label>
                 </div>
             </aside>
-
-            <aside class="col-md-4">
+            <aside class="col-md-6">
                 <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="name" class="ng-select">
-
+                    @if(c['BookingConnectionSid']?.value){
+                    <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
+                        <ng-option value="Active">Active</ng-option>
+                        <ng-option value="Suspended">Suspended</ng-option>
                     </ng-select>
-                    <label for="" class="input-label">Status <span class="text-danger"></span></label>
+                    } @else {
+                    <input type="text" name="status" class="form-control custom-input-field sm" value="Active"
+                        id="text-input" disabled>
+                    }
+                    <label for="text-input" [ngClass]="{
+                        'input-label': true,
+                        'bg-transparent': !c['status']?.value
+                    }">Status <span class="text-danger"></span></label>
+
                 </div>
             </aside>
         </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-        <button type="button" class="btn btn-info btn-sm">Save</button>
+        <button type="button" class="btn btn-info btn-sm" (click)="onConnectionSubmit()">Save</button>
     </div>
 </ng-template>
