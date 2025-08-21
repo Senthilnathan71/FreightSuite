@@ -1294,10 +1294,6 @@ auditLogs: any[] = []; // Stores audit logs
 
   // ************ END OF CONNECTION RELATED FUNCTIONS *************
 
-            this.adjustConnectionPageAfterDelete();
-            this.updateConnectionPagination();
-            this.appSettingService.showError("Error deleting Connection.");
-          }
 
   navigateBack() {
     this.router.navigate(['operation/booking/list']);
