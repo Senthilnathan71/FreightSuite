@@ -42,7 +42,7 @@
 
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm" [textWithNumbers]="100"
                                 formControlName="BookingNo">
                             <label for="text-input" [ngClass]="{
                                 'input-label': true,
@@ -72,6 +72,13 @@
                                 placeholder="Select Dept" (change)="onDeptChange($event)">
                             </ng-select>
                             <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
+                            @if(bookingForm.get('DepartmentMasterSid')?.touched && bookingForm.get('DepartmentMasterSid')?.invalid){
+                        <div class="error-message">
+                            @if(bookingForm.get('DepartmentMasterSid')?.hasError('required')){
+                                <span>Department name is required</span>
+                            }
+                        </div>
+                    }
                         </div>
                     </aside>
                     <aside class="col-md-3">
@@ -82,6 +89,13 @@
                             </ng-select>
                             <label for="text-input" class="input-label">Customer <span
                                     class="text-danger">*</span></label>
+                                     @if(bookingForm.get('CustomerMasterSid')?.touched && bookingForm.get('CustomerMasterSid')?.invalid){
+                        <div class="error-message">
+                            @if(bookingForm.get('CustomerMasterSid')?.hasError('required')){
+                                <span>Customer name is required</span>
+                            }
+                        </div>
+                    }
                         </div>
                     </aside>
                     <aside class="col-md-3">
@@ -92,6 +106,13 @@
                             </ng-select>
                             <label for="text-input" class="input-label">Customer Address <span
                                     class="text-danger">*</span></label>
+                                    @if(bookingForm.get('CustomerAddress')?.touched && bookingForm.get('CustomerAddress')?.invalid){
+                        <div class="error-message">
+                            @if(bookingForm.get('CustomerAddress')?.hasError('required')){
+                                <span>Customer Address is required</span>
+                            }
+                        </div>
+                    }
                         </div>
                     </aside>
                     <aside class="col-md-3">
@@ -111,6 +132,13 @@
                             </ng-select>
                             <label for="text-input" class="input-label">Shipper <span
                                     class="text-danger">*</span></label>
+                                    @if(bookingForm.get('ShipperName')?.touched && bookingForm.get('ShipperName')?.invalid){
+                        <div class="error-message">
+                            @if(bookingForm.get('ShipperName')?.hasError('required')){
+                                <span>Shipper Name is required</span>
+                            }
+                        </div>
+                    }
                         </div>
                     </aside>
                     <aside class="col-md-3">
@@ -119,6 +147,13 @@
                                 formControlName="ShipperAddress">
                             <label for="text-input" class="input-label">Shipper Address <span
                                     class="text-danger">*</span></label>
+                                 @if(bookingForm.get('ShipperAddress')?.touched && bookingForm.get('ShipperAddress')?.invalid){
+                        <div class="error-message">
+                            @if(bookingForm.get('ShipperAddress')?.hasError('required')){
+                                <span>Shipper Address is required</span>
+                            }
+                        </div>
+                    }    
                         </div>
                     </aside>
                     <aside class="col-md-3">
@@ -129,6 +164,13 @@
                             </ng-select>
                             <label for="text-input" class="input-label">Consignee <span
                                     class="text-danger">*</span></label>
+                                     @if(bookingForm.get('ConsigneeName')?.touched && bookingForm.get('ConsigneeName')?.invalid){
+                        <div class="error-message">
+                            @if(bookingForm.get('ConsigneeName')?.hasError('required')){
+                                <span>Consignee Name is required</span>
+                            }
+                        </div>
+                    }    
                         </div>
                     </aside>
                     <aside class="col-md-3">
@@ -137,6 +179,13 @@
                                 formControlName="ConsigneeAddress">
                             <label for="text-input" class="input-label">Consignee Address <span
                                     class="text-danger">*</span></label>
+                                     @if(bookingForm.get('ConsigneeAddress')?.touched && bookingForm.get('ConsigneeAddress')?.invalid){
+                        <div class="error-message">
+                            @if(bookingForm.get('ConsigneeAddress')?.hasError('required')){
+                                <span>Consignee Address is required</span>
+                            }
+                        </div>
+                    }    
                         </div>
                     </aside>
                     <aside class="col-md-3">
