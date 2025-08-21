@@ -174,15 +174,15 @@ export class LeadService {
 
 
   getAllContainerTypes() {
-    return this.http.get('ff-enquiry/container-type').pipe(
+    return this.http.get('container-type').pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
       })
     )
   }
-  getAllPackageTypes() {
-    return this.http.get('package-type').pipe(
+  getAllPackageTypes(payload) {
+    return this.http.post('package-type', { payload }).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -190,7 +190,7 @@ export class LeadService {
     )
   }
 
-  getAllWeightUnits(){
+  getAllWeightUnits() {
     return this.http.get('unit/weight').pipe(
       map((resp: any) => {
         let response = resp.data;
@@ -281,14 +281,14 @@ export class LeadService {
   }
 
   searchQuotation(param) {
-    return this.http.post<{data:any}>("ff-quotation/search-list", param).pipe(
+    return this.http.post<{ data: any }>("ff-quotation/search-list", param).pipe(
       map((res: any) => {
         return res;
       })
     )
   }
 
-  getAllUOMs(){
+  getAllUOMs() {
     return this.http.get<any>('uom').pipe(
       map((resp: any) => {
         let response = resp;
@@ -335,7 +335,7 @@ export class LeadService {
   }
 
   searchEnquiry(param) {
-    return this.http.post<{data:any}>("ff-enquiry/search-list", param).pipe(
+    return this.http.post<{ data: any }>("ff-enquiry/search-list", param).pipe(
       map((resp: any) => {
         let response = resp;
         return resp;
@@ -343,7 +343,7 @@ export class LeadService {
     )
   }
 
-  getAllShippers(){
+  getAllShippers() {
     return this.http.get('customer/shipper').pipe(
       map((resp: any) => {
         let response = resp;
@@ -351,7 +351,7 @@ export class LeadService {
       })
     )
   }
-  getAllConsignees(){
+  getAllConsignees() {
     return this.http.get('customer/consignee').pipe(
       map((resp: any) => {
         let response = resp;
@@ -550,10 +550,10 @@ export class LeadService {
     )
   }
 
-  getAllProducts() {
-    return this.http.get<{ data: any[] }>('product').pipe(
+  getAllProducts(payload) {
+    return this.http.post<{ data: any[] }>('product', { payload }).pipe(
       map((resp) => {
-        let response = resp;
+        let response = resp.data;
         return response;
       })
     )
@@ -568,7 +568,7 @@ export class LeadService {
     )
   }
 
-  getTariffDetailsByQuote(payload:any){
+  getTariffDetailsByQuote(payload: any) {
     return this.http.post<{ data: any[] }>('ff-quotation/tariffDetails', payload).pipe(
       map((resp) => {
         let response = resp;
@@ -586,7 +586,7 @@ export class LeadService {
     )
   }
 
-  getAllIncos(){
+  getAllIncos() {
     return this.http.get<{ data: any[] }>('inco').pipe(
       map((resp) => {
         let response = resp.data;
@@ -595,9 +595,9 @@ export class LeadService {
     )
   }
 
-  getAllUnits(){
-    return this.http.get<{data:any[]}>('unit').pipe(
-      map((resp)=>{
+  getAllUnits() {
+    return this.http.get<{ data: any[] }>('unit').pipe(
+      map((resp) => {
         let response = resp;
         return response;
       })
@@ -613,7 +613,7 @@ export class LeadService {
     );
   }
 
-  getCustomerBranchByCustomerId(CustomerMasterSid:number){
+  getCustomerBranchByCustomerId(CustomerMasterSid: number) {
     return this.http.get<{ data: any }>(`customer-branch/fetch-by/${CustomerMasterSid}`).pipe(
       map((resp) => {
         let response = resp;
@@ -640,7 +640,7 @@ export class LeadService {
     );
   }
 
-  isUserAuthorizer(UserMasterSid:number,MenuMasterSid:number,DocumentSid:number){
+  isUserAuthorizer(UserMasterSid: number, MenuMasterSid: number, DocumentSid: number) {
     return this.http.get<{ data: any }>(`authority/check-authorizer/${MenuMasterSid}/${DocumentSid}/${UserMasterSid}`).pipe(
       map((resp) => {
         let response = resp;

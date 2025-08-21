@@ -28,7 +28,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { LeadService } from '../../Services/lead.service';
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
-import { forkJoin, tap } from 'rxjs';
+import { catchError, forkJoin, of, tap } from 'rxjs';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
@@ -51,10 +51,10 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
   ],
   templateUrl: './enquiry-entry.component.html',
   styleUrl: './enquiry-entry.component.scss',
-    providers: [
-      { provide: NgbDateAdapter, useClass: CustomDateAdapter },
-      { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
-    ],
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+  ],
 })
 export class EnquiryEntryComponent implements OnInit {
   selectedDepartment: any = '';
@@ -63,13 +63,13 @@ export class EnquiryEntryComponent implements OnInit {
   EnquiryHeaderSid: any;
   isEditMode = false; // Flag for edit mode
   customers: any[] = [];
-  incoList : any[] = [];
+  incoList: any[] = [];
   packageTypes: any;
   containerTypes: any;
   // ports: any
   departments: any[] = [];
   enquiryForm: FormGroup;
-  enquiryOtherForm : FormGroup;
+  enquiryOtherForm: FormGroup;
   errorMessage: string = ''; // To store any error messages
   btnDisable: boolean = false;
   enquiry: any;
@@ -83,34 +83,34 @@ export class EnquiryEntryComponent implements OnInit {
   searchText = '';
   selectedPort: any;
   quotationEnquiryNumber: any;
-	today = this.calendar.getToday();
-	todayDate = new Date(this.today.year,this.today.month - 1,this.today.day);
-  disableAddButtons : boolean;
-  rateRequestData : any;
+  today = this.calendar.getToday();
+  todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
+  disableAddButtons: boolean;
+  rateRequestData: any;
   currentMenuId: number;
   TandCList: any;
-  productList : any[];
-  cusBranchList : any[] = [];
-  weightUnitList : any[] = [];
-  consigneeList : any[] = [];
-  shipperList : any[] = [];
-  finalConsigneeList : any[] = [];
-  finalShipperList : any[] = [];
+  productList: any[];
+  cusBranchList: any[] = [];
+  weightUnitList: any[] = [];
+  consigneeList: any[] = [];
+  shipperList: any[] = [];
+  finalConsigneeList: any[] = [];
+  finalShipperList: any[] = [];
   filteredPOLPorts: any[][] = [];
   filteredPODPorts: any[][] = [];
-  userData : any;
+  userData: any;
   active = 1;
   quotationCustomerId: number;
   quotationDepartmentId: number;
   quotationPOL: number;
   quotationPOD: number;
-  currentCompany : any;
-  currentBranch : any;
-  isAuthorizedUser : boolean;
-  authStateCache : string;
-  isApproved : boolean;
-  minExpDate : any;
-  permissions : any[] = [];
+  currentCompany: any;
+  currentBranch: any;
+  isAuthorizedUser: boolean;
+  authStateCache: string;
+  isApproved: boolean;
+  minExpDate: any;
+  permissions: any[] = [];
   currentMenuPermissions = {}
 
   modeOfEnquiry = [
@@ -151,9 +151,9 @@ export class EnquiryEntryComponent implements OnInit {
   ]
 
 
-  
 
-auditLogs: any[] = []; // Stores audit logs
+
+  auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
 
   constructor(
@@ -165,8 +165,8 @@ auditLogs: any[] = []; // Stores audit logs
     private fb: FormBuilder,
     private modalService: ModalService,
     private calendar: NgbCalendar,
-    private ngbModal : NgbModal
-  ) {}
+    private ngbModal: NgbModal
+  ) { }
 
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice();
@@ -236,17 +236,17 @@ auditLogs: any[] = []; // Stores audit logs
     )
   }
 
-  loadAllLookups(){
+  loadAllLookups() {
     return forkJoin({
-      departments : this.leadService.getAllDepartments(),
-      ports : this.leadService.getAllPorts(),
-      customers : this.leadService.getAllCustomers(),
-      incos : this.leadService.getAllIncos(),
-      weightUnits : this.leadService.getAllWeightUnits(),
-      packageTypes : this.leadService.getAllPackageTypes(),
-      containerTypes : this.leadService.getAllContainerTypes(),
-      products : this.leadService.getAllProducts()
-    }).pipe(tap(({departments, ports , customers,incos,weightUnits,packageTypes,containerTypes,products})=>{
+      departments: this.leadService.getAllDepartments().pipe(catchError(() => of([]))),
+      ports: this.leadService.getAllPorts().pipe(catchError(() => of([]))),
+      customers: this.leadService.getAllCustomers().pipe(catchError(() => of([]))),
+      incos: this.leadService.getAllIncos().pipe(catchError(() => of([]))),
+      weightUnits: this.leadService.getAllWeightUnits().pipe(catchError(() => of([]))),
+      packageTypes: this.leadService.getAllPackageTypes(this.currentCompany?.CompanyMasterSid).pipe(catchError(() => of([]))),
+      containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(() => of([]))),
+      products: this.leadService.getAllProducts(this.currentCompany?.CompanyMasterSid).pipe(catchError(() => of([]))),
+    }).pipe(tap(({ departments, ports, customers, incos, weightUnits, packageTypes, containerTypes, products }) => {
       this.departments = departments;
       this.ports = ports;
       this.filteredPorts = [...this.ports];
@@ -255,7 +255,7 @@ auditLogs: any[] = []; // Stores audit logs
       this.weightUnitList = weightUnits;
       this.packageTypes = packageTypes;
       this.containerTypes = containerTypes;
-      this.productList = products.data;
+      this.productList = products;
     })
     );
   }
@@ -264,22 +264,22 @@ auditLogs: any[] = []; // Stores audit logs
     this.rateRequestForm = this.fb.group({
       CustomerMasterSid: [null],
       customerName: ['', Validators.required],
-      enquiryNo : [''],
-      EnquiryDate : [''],
+      enquiryNo: [''],
+      EnquiryDate: [''],
       shipmentDate: ['', Validators.required],
       DepartmentMasterSid: [''],
       Segment: [null, Validators.required],
-      CustomerAddress : [null],
-      CustomerBranchSid : [''],
-      Email : ['',[EmailValidators.singleEmail()]],
+      CustomerAddress: [null],
+      CustomerBranchSid: [''],
+      Email: ['', [EmailValidators.singleEmail()]],
       EnquiryType: [null],
-      IncoTerms : [null],
-      ClearanceBy : [null],
-      TransportBy : [null],          
-      Remarks:[''],
+      IncoTerms: [null],
+      ClearanceBy: [null],
+      TransportBy: [null],
+      Remarks: [''],
       status: [''],
-      AuthorizerRemarks : [''],
-      authorizerStatus : ['Pending'],
+      AuthorizerRemarks: [''],
+      authorizerStatus: ['Pending'],
 
       routes: this.fb.array([]),
     });
@@ -291,24 +291,24 @@ auditLogs: any[] = []; // Stores audit logs
     });
   }
 
-  initOthersForm(){
+  initOthersForm() {
     this.enquiryOtherForm = this.fb.group({
-      EnquiryOtherSid : [null],
-      ShipperName : [null],
-      ShipperAddress : [''],
-      ConsigneeName : [null],
-      ConsigneeAddress : [''],
-      FreightTerms : [null],
-      AdditionalService : [null],
-      PickupAddress : ['']
+      EnquiryOtherSid: [null],
+      ShipperName: [null],
+      ShipperAddress: [''],
+      ConsigneeName: [null],
+      ConsigneeAddress: [''],
+      FreightTerms: [null],
+      AdditionalService: [null],
+      PickupAddress: ['']
     })
   }
 
-  loadOtherFormLookups(){
+  loadOtherFormLookups() {
     forkJoin({
-      shippers : this.leadService.getAllShippers(),
-      consignees : this.leadService.getAllConsignees()
-    }).subscribe(({shippers,consignees})=>{
+      shippers: this.leadService.getAllShippers(),
+      consignees: this.leadService.getAllConsignees()
+    }).subscribe(({ shippers, consignees }) => {
       this.shipperList = shippers.data;
       this.finalShipperList = [...this.shipperList];
       this.consigneeList = consignees.data;
@@ -338,7 +338,7 @@ auditLogs: any[] = []; // Stores audit logs
     );
 
     this.routes.push(routeForm);
-    this.addCargo(this.routes.length - 1); 
+    this.addCargo(this.routes.length - 1);
   }
 
 
@@ -348,7 +348,7 @@ auditLogs: any[] = []; // Stores audit logs
   }
 
 
-  deleteCargo(routeIndex:number,cargoIndex: number) {
+  deleteCargo(routeIndex: number, cargoIndex: number) {
     (this.routeCargo(routeIndex) as FormArray).removeAt(cargoIndex);
   }
 
@@ -363,20 +363,20 @@ auditLogs: any[] = []; // Stores audit logs
       ProductName: [null, [Validators.required]],
       CargoDescription: [''],
       PackageType: [null],
-      PackageQty : [''],
+      PackageQty: [''],
       Qty: ['1'],
       WeightUnitSid: [null],
-      GrossWeight: ['',[this.weightValidator]],
+      GrossWeight: ['', [this.weightValidator]],
       NetWeight: [''],
       ShipmentTerms: [null],
       cbm: ['1'],
       ContainerType: [null],
-      ChargeableWeight : [''],
+      ChargeableWeight: [''],
       length: [''],
       width: [''],
       height: ['']
     });
-    this.updateCargoValidators(cargoForm,this.selectedFCLLCL);
+    this.updateCargoValidators(cargoForm, this.selectedFCLLCL);
     this.routeCargo(routeIndex).push(cargoForm);
     cargoForm.get('NetWeight')?.valueChanges.subscribe(() => {
       cargoForm.get('GrossWeight')?.updateValueAndValidity();
@@ -412,7 +412,7 @@ auditLogs: any[] = []; // Stores audit logs
       ['POO', 'POL', 'POD', 'FDC'].forEach(field => {
         routeGroup.get(field)?.setValue(null);
       });
-      
+
 
       const cargoArray = routeGroup.get('cargo') as FormArray;
       cargoArray.controls.forEach((cargoForm: FormGroup) => {
@@ -426,34 +426,34 @@ auditLogs: any[] = []; // Stores audit logs
     });
   }
 
-  
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.EnquiryHeaderSid) return;
 
-  this.leadService.getAuditLogsEnquiry('EnquiryHeader', this.EnquiryHeaderSid.toString()).subscribe({
-    next: (logs: any[]) => {
-      const formatFields = (val: any) => {
-        if (!val) return ['NA'];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        delete obj.updatedOn; // Remove updatedOn field
-        // If no fields exist after deleting updatedOn
-        if (Object.keys(obj).length === 0) return ['NA'];
-        return Object.entries(obj).map(
-          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-        );
-      };
+  openAuditLogs(modal: TemplateRef<any>) {
+    if (!this.EnquiryHeaderSid) return;
 
-      this.auditLogs = logs.map(log => ({
-        ...log,
-        oldValDisplay: formatFields(log.oldVal),
-        newValDisplay: formatFields(log.newVal)
-      }));
+    this.leadService.getAuditLogsEnquiry('EnquiryHeader', this.EnquiryHeaderSid.toString()).subscribe({
+      next: (logs: any[]) => {
+        const formatFields = (val: any) => {
+          if (!val) return ['NA'];
+          const obj = typeof val === 'string' ? JSON.parse(val) : val;
+          delete obj.updatedOn; // Remove updatedOn field
+          // If no fields exist after deleting updatedOn
+          if (Object.keys(obj).length === 0) return ['NA'];
+          return Object.entries(obj).map(
+            ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
+          );
+        };
 
-      this.auditLogModalRef = this.ngbModal.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+        this.auditLogs = logs.map(log => ({
+          ...log,
+          oldValDisplay: formatFields(log.oldVal),
+          newValDisplay: formatFields(log.newVal)
+        }));
+
+        this.auditLogModalRef = this.ngbModal.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
+  }
   updateCargoValidators(cargoForm: FormGroup, type: string) {
     const resetFields = (fields: string[]) => {
       fields.forEach(f => {
@@ -483,7 +483,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     const LCLFields = ['PackageType', 'PackageQty', 'WeightUnitSid', 'GrossWeight', 'NetWeight', 'ShipmentTerms', 'cbm'];
     const AIRFields = ['ChargeableWeight', 'length', 'width', 'height'];
 
-    resetFields(['PackageType', 'Qty', 'WeightUnitSid', 'PackageQty', 'GrossWeight', 'NetWeight', 'ShipmentTerms', 'cbm', 'ContainerType','ChargeableWeight', 'length', 'width', 'height']);
+    resetFields(['PackageType', 'Qty', 'WeightUnitSid', 'PackageQty', 'GrossWeight', 'NetWeight', 'ShipmentTerms', 'cbm', 'ContainerType', 'ChargeableWeight', 'length', 'width', 'height']);
 
     if (type === 'FCL') {
       setRequired(FCLFields);
@@ -523,13 +523,13 @@ openAuditLogs(modal: TemplateRef<any>) {
     const selectedCustomer = event;
     this.selectedCustomerName = selectedCustomer?.CustomerName;
     this.rateRequestForm.get('customerName').setValue(this.selectedCustomerName)
-    this.getCustomerBranches(selectedCustomerId);    
+    this.getCustomerBranches(selectedCustomerId);
   }
 
-  getCustomerBranches(CustomerMasterSid:number){
+  getCustomerBranches(CustomerMasterSid: number) {
     this.leadService.getCustomerBranchByCustomerId(CustomerMasterSid).subscribe(
-      (resp:any) => {
-        if(resp.status){
+      (resp: any) => {
+        if (resp.status) {
           this.cusBranchList = resp.data;
         } else {
           this.appSettingsService.showError('Error loading customer branches.')
@@ -540,8 +540,8 @@ openAuditLogs(modal: TemplateRef<any>) {
   }
 
 
-  onCustomerAddressChange(event){
-    if(event === null || event === undefined || !event){
+  onCustomerAddressChange(event) {
+    if (event === null || event === undefined || !event) {
       this.rateRequestForm.get('CustomerBranchSid').setValue(null);
       this.rateRequestForm.get('Email').setValue('');
       return;
@@ -577,30 +577,30 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.quotationDepartmentId = response.DepartmentMasterSid;
     this.getCustomerBranches(response.CustomerMasterSid);
     this.authStateCache = response.authorizerStatus,
-    this.rateRequestForm.patchValue({
-      CustomerMasterSid: response.CustomerMasterSid,
-      customerName : response.CustomerName,
-      enquiryNo : response.EnquiryNumber,
-      EnquiryDate : new Date(response.EnquiryDate),
-      shipmentDate:new Date(response.ShipmentExpectedDate),
-      Segment: response.DepartmentMasterSid,
-      CustomerAddress : response.CustomerAddress,
-      Email : response.Email,
-      EnquiryType : response.EnquiryType,
-      IncoTerms : response.IncoTerms,
-      ClearanceBy : response.ClearanceBy,
-      TransportBy : response.TransportBy,
-      Remarks : response.Remarks,
-      AuthorizerRemarks : response.AuthorizerRemarks,
-      authorizerStatus : response.authorizerStatus || 'Pending',
-      status: response.status === 'A' ? 'Active' : 'Suspended',
-    });
+      this.rateRequestForm.patchValue({
+        CustomerMasterSid: response.CustomerMasterSid,
+        customerName: response.CustomerName,
+        enquiryNo: response.EnquiryNumber,
+        EnquiryDate: new Date(response.EnquiryDate),
+        shipmentDate: new Date(response.ShipmentExpectedDate),
+        Segment: response.DepartmentMasterSid,
+        CustomerAddress: response.CustomerAddress,
+        Email: response.Email,
+        EnquiryType: response.EnquiryType,
+        IncoTerms: response.IncoTerms,
+        ClearanceBy: response.ClearanceBy,
+        TransportBy: response.TransportBy,
+        Remarks: response.Remarks,
+        AuthorizerRemarks: response.AuthorizerRemarks,
+        authorizerStatus: response.authorizerStatus || 'Pending',
+        status: response.status === 'A' ? 'Active' : 'Suspended',
+      });
     this.rateRequestForm.get('Segment')?.disable();
     this.rateRequestForm.get('enquiryNo')?.disable();
     this.rateRequestForm.get('EnquiryDate')?.disable();
     this.rateRequestForm.get('customerName')?.disable();
     this.rateRequestForm.get('CustomerMasterSid')?.disable();
-    if(response.authorizerStatus!== "Pending"){
+    if (response.authorizerStatus !== "Pending") {
       this.f['authorizerStatus']?.disable();
       this.f['AuthorizerRemarks']?.disable();
     }
@@ -613,7 +613,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.filterConsignee();
     this.filterShipper();
 
-    response.enquiryRoute.forEach((route,index) => {
+    response.enquiryRoute.forEach((route, index) => {
       this.quotationPOL = route.POLSid;
       this.quotationPOD = route.PODSid;
       const routeFormGroup = this.fb.group({
@@ -622,7 +622,7 @@ openAuditLogs(modal: TemplateRef<any>) {
         POL: [route.POLSid, Validators.required],
         POD: [route.PODSid, Validators.required],
         FDC: [route.FDPSid, Validators.required],
-        cargo: this.fb.array([]), 
+        cargo: this.fb.array([]),
       });
 
       // Get the cargo array inside the route
@@ -634,27 +634,27 @@ openAuditLogs(modal: TemplateRef<any>) {
           this.fb.group({
             EnquiryCargoSid: [cargo.EnquiryCargoSid || null],
             CargoType: [cargo.CargoType, Validators.required],
-            ProductName : [cargo.ProductName,Validators.required],
-            CargoDescription : [cargo.CargoDescription],
-            PackageType: [cargo.PackageType || ''], 
-            PackageQty : [cargo.PackageQty || ''],
+            ProductName: [cargo.ProductName, Validators.required],
+            CargoDescription: [cargo.CargoDescription],
+            PackageType: [cargo.PackageType || ''],
+            PackageQty: [cargo.PackageQty || ''],
             Qty: [cargo.Qty || '1'],
-            WeightUnitSid : [cargo.WeightUnitSid || null],
-            GrossWeight :[cargo.GrossWeight || ''],
-            NetWeight : [cargo.NetWeight || ''],
-            ShipmentTerms : [cargo.ShipmentTerms || null],
+            WeightUnitSid: [cargo.WeightUnitSid || null],
+            GrossWeight: [cargo.GrossWeight || ''],
+            NetWeight: [cargo.NetWeight || ''],
+            ShipmentTerms: [cargo.ShipmentTerms || null],
             cbm: [cargo.Volume || '1'],
-            ContainerType : [cargo.ContainerType || null],
-            ChargeableWeight : [cargo.ChargeableWeight || null],
-            length : [cargo.length || ''],
-            width : [cargo.width || ''],
-            height : [cargo.height || '']
+            ContainerType: [cargo.ContainerType || null],
+            ChargeableWeight: [cargo.ChargeableWeight || null],
+            length: [cargo.length || ''],
+            width: [cargo.width || ''],
+            height: [cargo.height || '']
           })
         );
       });
 
       // Push the route to the FormArray
-      this.updateCargoValidators(routeFormGroup,this.selectedFCLLCL);
+      this.updateCargoValidators(routeFormGroup, this.selectedFCLLCL);
       routesArray.push(routeFormGroup);
       routeFormGroup.updateValueAndValidity();
       this.onRouteChange(index);
@@ -673,13 +673,13 @@ openAuditLogs(modal: TemplateRef<any>) {
   }
 
   onSubmit() {
-    if(this.rateRequestForm.invalid){
+    if (this.rateRequestForm.invalid) {
       this.rateRequestForm.markAllAsTouched();
       this.rateRequestForm.updateValueAndValidity();
       this.appSettingsService.showWarning('Please fill all the required fields correctly');
       return;
     }
-    if(this.enquiryOtherForm.invalid){
+    if (this.enquiryOtherForm.invalid) {
       this.active = 2;
       this.enquiryOtherForm.markAllAsTouched();
       this.enquiryOtherForm.updateValueAndValidity();
@@ -690,18 +690,18 @@ openAuditLogs(modal: TemplateRef<any>) {
     const otherFormValue = this.enquiryOtherForm.value;
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
-  
+
     const userEmail = this.userData['userEmail'];
     if (this.EnquiryHeaderSid) {
       const updatePayload = {
         ...this.rateRequestForm.value,
-        CompanyMasterSid : CompanyMasterSid,
-        BranchMasterSid : BranchMasterSid,
-        enquiryOther : otherFormValue,
-        updatedBy : userEmail,
-        MenuMaster : this.currentMenuId,
-        UserMasterSid : this.userData?.UserMasterSid,
-        approvalStatusChange : this.authStateCache !== this.rateRequestForm.value?.authorizerStatus,
+        CompanyMasterSid: CompanyMasterSid,
+        BranchMasterSid: BranchMasterSid,
+        enquiryOther: otherFormValue,
+        updatedBy: userEmail,
+        MenuMaster: this.currentMenuId,
+        UserMasterSid: this.userData?.UserMasterSid,
+        approvalStatusChange: this.authStateCache !== this.rateRequestForm.value?.authorizerStatus,
         CustomerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value,
         Segment: this.selectedDepartment,
         EnquiryHeaderSid: this.EnquiryHeaderSid,
@@ -731,10 +731,10 @@ openAuditLogs(modal: TemplateRef<any>) {
     } else {
       const createPayload = {
         ...this.rateRequestForm.value,
-        enquiryOther : otherFormValue,
-        CompanyMasterSid : CompanyMasterSid,
-        BranchMasterSid : BranchMasterSid,
-        createdBy : userEmail,
+        enquiryOther: otherFormValue,
+        CompanyMasterSid: CompanyMasterSid,
+        BranchMasterSid: BranchMasterSid,
+        createdBy: userEmail,
         DepartmentMasterSid: this.rateRequestForm.get('DepartmentMasterSid')
           ?.value,
         CustomerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value,
@@ -762,60 +762,60 @@ openAuditLogs(modal: TemplateRef<any>) {
     history.back();
   }
 
-navigateQuotation() {
-  const response = this.rateRequestData;
+  navigateQuotation() {
+    const response = this.rateRequestData;
 
-  let routeDetails = response.enquiryRoute.flatMap(route => {
-    return route.enquiryCargo.map(cargo => ({
-      PORSid: route.PORSid,
-      POLSid: route.POLSid,
-      PODSid: route.PODSid,
-      FPODSid: route.FDPSid,
-      CargoType: cargo.CargoType,
-      CBM: cargo.Volume,
-      ContainerType: (this.containerTypes.find(con => con.ContainerName === cargo.ContainerType)?.ContainerTypeMasterSid),
-      ChargeableWeight : cargo.ChargeableWeight,
-      ContainerQty: cargo.Qty
-    }));
-  });
+    let routeDetails = response.enquiryRoute.flatMap(route => {
+      return route.enquiryCargo.map(cargo => ({
+        PORSid: route.PORSid,
+        POLSid: route.POLSid,
+        PODSid: route.PODSid,
+        FPODSid: route.FDPSid,
+        CargoType: cargo.CargoType,
+        CBM: cargo.Volume,
+        ContainerType: (this.containerTypes.find(con => con.ContainerName === cargo.ContainerType)?.ContainerTypeMasterSid),
+        ChargeableWeight: cargo.ChargeableWeight,
+        ContainerQty: cargo.Qty
+      }));
+    });
 
-  const enqData = {
-    EnquirySid: response?.EnquiryHeaderSid,
-    EnquiryNumber: response?.EnquiryNumber,
-    CustomerMasterSid: response?.CustomerMasterSid,
-    CustomerName: response?.CustomerName,
-    CustomerAddress: response?.CustomerAddress,
-    Email: response?.Email,
-    DepartmentMasterSid: response.DepartmentMasterSid,
-    segment: this.selectedFCLLCL,
-    rateReq: true,
-    enqRoutes: routeDetails
-  };
+    const enqData = {
+      EnquirySid: response?.EnquiryHeaderSid,
+      EnquiryNumber: response?.EnquiryNumber,
+      CustomerMasterSid: response?.CustomerMasterSid,
+      CustomerName: response?.CustomerName,
+      CustomerAddress: response?.CustomerAddress,
+      Email: response?.Email,
+      DepartmentMasterSid: response.DepartmentMasterSid,
+      segment: this.selectedFCLLCL,
+      rateReq: true,
+      enqRoutes: routeDetails
+    };
 
-  this.leadService.clearQuotationData();
-  this.leadService.setQuotationData(enqData);
-  this.router.navigate(['crm/quotation/entry']);
-}
-
-
-onRouteChange(routeIndex: number): void {
-  const pod = this.routes.at(routeIndex).get('POD')?.value;
-  const pol = this.routes.at(routeIndex).get('POL')?.value;
-
-  this.filteredPorts = this.getFilteredPortsBySegment(); // Just get by segment
-
-  this.filteredPOLPorts[routeIndex] = this.filteredPorts.filter(port => port.PortMasterSid !== pod);
-  this.filteredPODPorts[routeIndex] = this.filteredPorts.filter(port => port.PortMasterSid !== pol);
-}
-
-getFilteredPortsBySegment(): any[] {
-  if (this.selectedFCLLCL === 'AIR') {
-    return this.ports.filter(port => port.PortType === 'Air');
-  } else if (this.selectedFCLLCL === 'FCL' || this.selectedFCLLCL === 'LCL') {
-    return this.ports.filter(port => port.PortType === 'Sea');
+    this.leadService.clearQuotationData();
+    this.leadService.setQuotationData(enqData);
+    this.router.navigate(['crm/quotation/entry']);
   }
-  return this.ports;
-}
+
+
+  onRouteChange(routeIndex: number): void {
+    const pod = this.routes.at(routeIndex).get('POD')?.value;
+    const pol = this.routes.at(routeIndex).get('POL')?.value;
+
+    this.filteredPorts = this.getFilteredPortsBySegment(); // Just get by segment
+
+    this.filteredPOLPorts[routeIndex] = this.filteredPorts.filter(port => port.PortMasterSid !== pod);
+    this.filteredPODPorts[routeIndex] = this.filteredPorts.filter(port => port.PortMasterSid !== pol);
+  }
+
+  getFilteredPortsBySegment(): any[] {
+    if (this.selectedFCLLCL === 'AIR') {
+      return this.ports.filter(port => port.PortType === 'Air');
+    } else if (this.selectedFCLLCL === 'FCL' || this.selectedFCLLCL === 'LCL') {
+      return this.ports.filter(port => port.PortType === 'Sea');
+    }
+    return this.ports;
+  }
 
   statusRequiredValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
@@ -848,18 +848,18 @@ getFilteredPortsBySegment(): any[] {
     if (!this.consigneeList) {
       return;
     }
-    if(!shipperName){
+    if (!shipperName) {
       this.finalConsigneeList = [...this.consigneeList];
     } else {
       this.finalConsigneeList = this.consigneeList.filter(consignee => consignee.CustomerName !== shipperName)
     }
   }
-  filterShipper(){
+  filterShipper() {
     const consigneeName = this.enquiryOtherForm.get('ConsigneeName')?.value
-    if(!this.shipperList){
+    if (!this.shipperList) {
       return;
     }
-    if(!consigneeName){
+    if (!consigneeName) {
       this.finalShipperList = [...this.shipperList];
     } else {
       this.finalShipperList = this.shipperList.filter(consignee => consignee.CustomerName !== consigneeName)
@@ -868,14 +868,14 @@ getFilteredPortsBySegment(): any[] {
 
 
   showInfo() {
-    if(!this.rateRequestData) return;
+    if (!this.rateRequestData) return;
     const modalRef = this.ngbModal.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.rateRequestData;
     modalRef.componentInstance.idLabel = 'Rate Request Id';
     modalRef.componentInstance.idValue = this.rateRequestData?.EnquiryHeaderSid;
   }
 
-  
+
   openTandC() {
     this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const payload = { MenuMasterSid: this.currentMenuId };
@@ -890,7 +890,7 @@ getFilteredPortsBySegment(): any[] {
           });
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid =this.rateRequestData?.EnquiryHeaderSid;
+          modalRef.componentInstance.DocumentSid = this.rateRequestData?.EnquiryHeaderSid;
 
         } else {
           this.appSettingsService.showError('Error loading Terms and Conditions');
@@ -902,13 +902,13 @@ getFilteredPortsBySegment(): any[] {
     );
   }
   openEmail() {
-		if (!this.rateRequestData) return;
-		const modalRef = this.ngbModal.open(EmailEntryComponent, {
-			size: 'lg',
-			centered: true,
-			backdrop: 'static'
-		});
-	}
+    if (!this.rateRequestData) return;
+    const modalRef = this.ngbModal.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
 
   openAuthority() {
     const MenuMasterSid = localStorage.getItem('currentMenuId');
@@ -922,17 +922,17 @@ getFilteredPortsBySegment(): any[] {
     modalRef.componentInstance.documentSid = this.EnquiryHeaderSid;
   }
 
-	openEDoc() {
-		// if (!this.tariffData) return;
-		// const modalRef = this.modalService.open(EdocComponent, {
-		// 	size: 'lg',
-		// 	centered: true,
-		// 	backdrop: 'static'
-		// });
-	}
+  openEDoc() {
+    // if (!this.tariffData) return;
+    // const modalRef = this.modalService.open(EdocComponent, {
+    // 	size: 'lg',
+    // 	centered: true,
+    // 	backdrop: 'static'
+    // });
+  }
 
 
- 
+
 
 
 }
