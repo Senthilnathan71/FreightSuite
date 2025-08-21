@@ -65,6 +65,8 @@
 
                         </div>
                     </div>
+
+                    
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select [items]="departmentList" bindLabel="departmentName"
@@ -219,6 +221,13 @@
                             </ng-select>
                     
                             <label for="text-input" class="input-label">Destination Agent <span class="text-danger">*</span></label>
+                             @if(bookingForm.get('AgentName')?.touched && bookingForm.get('AgentName')?.invalid){
+                        <div class="error-message">
+                            @if(bookingForm.get('AgentName')?.hasError('required')){
+                                <span>Destination Agent is required</span>
+                            }
+                        </div>
+                    }
                         </div>
                     </aside>
                     <aside class="col-md-3">
@@ -326,6 +335,13 @@
                                 formControlName="POL" placeholder="Select POL" (change)="handlePOLChange($event)">
                             </ng-select>
                             <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
+                             @if(bookingForm.get('POL')?.touched && bookingForm.get('POL')?.invalid){
+                        <div class="error-message">
+                            @if(bookingForm.get('POL')?.hasError('required')){
+                                <span>POL is required</span>
+                            }
+                        </div>
+                    }
                         </div>
                     </aside>
                     <aside class="col-md-3">
@@ -334,6 +350,14 @@
                                 formControlName="POD" (change)="handlePODChange($event)" placeholder="Select POD">
                             </ng-select>
                             <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
+                             @if(bookingForm.get('POD')?.touched && bookingForm.get('POD')?.invalid){
+                        <div class="error-message">
+                            @if(bookingForm.get('POD')?.hasError('required')){
+                                <span>POD is required</span>
+                            }
+                        </div>
+                    }
+                            
                         </div>
                     </aside>
                     <aside class="col-md-3">
@@ -448,6 +472,13 @@
                                 formControlName="IncoTerms" placeholder="Select IncoTerms">
                             </ng-select>
                             <label for="text-input" class="input-label">TOS <span class="text-danger">*</span></label>
+                             @if(bookingForm.get('IncoTerms')?.touched && bookingForm.get('IncoTerms')?.invalid){
+                        <div class="error-message">
+                            @if(bookingForm.get('IncoTerms')?.hasError('required')){
+                                <span>TOS is required</span>
+                            }
+                        </div>
+                    }
                         </div>
                     </aside>
                     <aside class="col-md-3">
@@ -526,50 +557,111 @@
                                     formControlName="NoofContainers">
                                 <label for="text-input" class="input-label">No of Container<span
                                         class="text-danger"></span></label>
+
                             </div>
                         </aside>
                         }
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                                    formControlName="GrossWeight">
-                                <label for="text-input" class="input-label">Gr Weight<span
-                                        class="text-danger"></span></label>
+                                <input type="text" id="gross-weight" placeholder="" class="form-control custom-input-field sm"
+                                    formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
+                                    max="9999999.999">
+                                <label for="gross-weight" class="input-label">
+                                    Gr Weight
+                                </label>
+                        
+                                <!-- Validation Messages -->
+                                @if ((cargoForm.get('GrossWeight')?.touched || cargoForm.get('GrossWeight')?.dirty) &&
+                                cargoForm.get('GrossWeight')?.invalid) {
+                                <div class="error-message">
+                                    @if (cargoForm.get('GrossWeight')?.errors?.['max']) {
+                                    <span>Gross Weight cannot exceed 9,999,999.999</span>
+                                    } @else if (cargoForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
+                                    <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                                    }
+                                </div>
+                                }
                             </div>
                         </aside>
+
 
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                                    formControlName="NetWeight">
-                                <label for="text-input" class="input-label">Net Weight<span
-                                        class="text-danger"></span></label>
+                                    formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
+                                    max="9999999.999">
+                                <label for="text-input" class="input-label">Net Weight<span class="text-danger"></span></label>
+                                <!-- Validation Messages -->
+                                @if ((cargoForm.get('NetWeight')?.touched || cargoForm.get('NetWeight')?.dirty) &&
+                                cargoForm.get('NetWeight')?.invalid) {
+                                <div class="error-message">
+                                    @if (cargoForm.get('NetWeight')?.errors?.['max']) {
+                                    <span>Net Weight cannot exceed 9,999,999.999</span>
+                                    } @else if (cargoForm.get('NetWeight')?.errors?.['decimalPrecision']) {
+                                    <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                                    }
+                                </div>
+                                }
                             </div>
                         </aside>
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                                    formControlName="Volume">
+                                    formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
+                                    max="9999999.999">
                                 <label for="text-input" class="input-label">Volume(CBM)<span
                                         class="text-danger"></span></label>
+                           <!-- Validation Messages -->
+                                @if ((cargoForm.get('Volume')?.touched || cargoForm.get('Volume')?.dirty) &&
+                                cargoForm.get('Volume')?.invalid) {
+                                <div class="error-message">
+                                    @if (cargoForm.get('Volume')?.errors?.['max']) {
+                                    <span>Net Weight cannot exceed 9,999,999.999</span>
+                                    } @else if (cargoForm.get('Volume')?.errors?.['decimalPrecision']) {
+                                    <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                                    }
+                                </div>
+                                }
                             </div>
                         </aside>
                         @if(selectedFCLLCL === "AIR") {
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="ChargeableWeight">
+                                    formControlName="ChargeableWeight"  DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
+                                    max="9999999.999">
                                 <label for="text-input" class="input-label">Chargeable Weight<span
                                         class="text-danger"></span></label>
+                             <!-- Validation Messages -->
+                                @if ((cargoForm.get('ChargeableWeight')?.touched || cargoForm.get('ChargeableWeight')?.dirty) &&
+                                cargoForm.get('ChargeableWeight')?.invalid) {
+                                <div class="error-message">
+                                    @if (cargoForm.get('ChargeableWeight')?.errors?.['max']) {
+                                    <span>Net Weight cannot exceed 9,999,999.999</span>
+                                    } @else if (cargoForm.get('ChargeableWeight')?.errors?.['decimalPrecision']) {
+                                    <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                                    }
+                                </div>
+                                }
                             </div>
                         </aside>
                         }
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm"
-                                    formControlName="NoOfPackage">
+                                    formControlName="NoOfPackage" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="0"
+                                    max="9999999.999">
                                 <label for="text-input" class="input-label">No of Pkg<span
                                         class="text-danger"></span></label>
+                             <!-- Validation Messages -->
+                                @if ((cargoForm.get('NoOfPackage')?.touched || cargoForm.get('NoOfPackage')?.dirty) &&
+                                cargoForm.get('NoOfPackage')?.invalid) {
+                                <div class="error-message">
+                                   @if (cargoForm.get('NoOfPackage')?.errors?.['decimalPrecision']) {
+                                    <small>Allowed: 10 digits Number Only</small>
+                                    }
+                                </div>
+                                }
                             </div>
                         </aside>
                         <aside class="col-md-3">
@@ -700,17 +792,31 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="CustomerRefNo">
+                                    formControlName="CustomerRefNo"  [textWithNumbers]="20">
                                 <label for="text-input" class="input-label">Customer Ref No<span
                                         class="text-danger"></span></label>
+                                        @if((otherForm.get('CustomerRefNo')?.touched || otherForm.get('CustomerRefNo')?.dirty) && otherForm.get('CustomerRefNo')?.invalid){
+                  <div class="text-danger small">
+                   @if(otherForm.get('CustomerRefNo')?.hasError('maxlength')){
+                      <span>Max 20 Characters allowed</span>
+                    } 
+                  </div>
+                }
                             </div>
                         </aside>
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="YardCFS">
+                                    formControlName="YardCFS" [textWithNumbers]="20">
                                 <label for="text-input" class="input-label">{{YardCFSLabel}}<span
                                         class="text-danger"></span></label>
+                                        @if((otherForm.get('YardCFS')?.touched || otherForm.get('YardCFS')?.dirty) && otherForm.get('YardCFS')?.invalid){
+                  <div class="text-danger small">
+                   @if(otherForm.get('YardCFS')?.hasError('maxlength')){
+                      <span>Max 20 Characters allowed</span>
+                    } 
+                  </div>
+                }
                             </div>
                         </aside>
 
@@ -727,7 +833,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="HBLNo">
+                                    formControlName="HBLNo" [textWithNumbers]="20">
                                 <label for="text-input" class="input-label">HBL No<span
                                         class="text-danger"></span></label>
                             </div>
@@ -737,7 +843,7 @@
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName"
                                     class="ng-select" placeholder="Select Forwarder"
-                                    (change)="setAddressOthers('ForwarderAddress',$event)" formControlName="Forwarder">
+                                    (change)="setAddressOthers('ForwarderAddress',$event)" formControlName="Forwarder" [textWithNumbers]="20">
                                 </ng-select>
                                 <label for="text-input" class="input-label">Forwarder<span
                                         class="text-danger"></span></label>
@@ -746,7 +852,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="ForwarderAddress">
+                                    formControlName="ForwarderAddress" [textWithNumbers]="20">
                                 <label for="text-input" class="input-label">Forwarder Address<span
                                         class="text-danger"></span></label>
                             </div>
@@ -764,7 +870,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="NotifyPartyAddress">
+                                    formControlName="NotifyPartyAddress" [textWithNumbers]="20">
                                 <label for="text-input" class="input-label">Notify Address<span
                                         class="text-danger"></span></label>
                             </div>
@@ -773,7 +879,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="PickupPlace">
+                                    formControlName="PickupPlace" [textWithNumbers]="20">
                                 <label for="text-input" class="input-label">Pick Up Place<span
                                         class="text-danger"></span></label>
                             </div>
@@ -781,7 +887,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="DeliveryPlace">
+                                    formControlName="DeliveryPlace" [textWithNumbers]="20">
                                 <label for="text-input" class="input-label">Delivery Place<span
                                         class="text-danger"></span></label>
                             </div>
@@ -804,7 +910,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="CHAName">
+                                    formControlName="CHAName" [textWithNumbers]="20">
                                 <label for="text-input" class="input-label">CHA Name<span
                                         class="text-danger"></span></label>
                             </div>
@@ -812,7 +918,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="PickupAddress">
+                                    formControlName="PickupAddress" [textWithNumbers]="20">
                                 <label for="text-input" class="input-label">Pick Up Address<span
                                         class="text-danger"></span></label>
                             </div>
@@ -820,7 +926,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="DeliveryAddress">
+                                    formControlName="DeliveryAddress" [textWithNumbers]="20">
                                 <label for="text-input" class="input-label">Delivery Address<span
                                         class="text-danger"></span></label>
                             </div>
@@ -837,12 +943,20 @@
                         </aside>
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="CargoValue">
+                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="CargoValue"DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="2" max="9999999.999">
                                 <label for="text-input" class="input-label">Cargo Value<span
                                         class="text-danger"></span></label>
-                            </div>
-                        </aside>
+                           <!-- Validation Messages -->
+                    @if ((otherForm.get('CargoValue')?.touched || otherForm.get('CargoValue')?.dirty) && otherForm.get('CargoValue')?.invalid) {
+      <div class="error-message">
+        @if (otherForm.get('CargoValue')?.errors?.['decimalPrecision']) {
+          <small>Allowed: 10 Digits before and 2 digits after decimal point</small>
+        }
+      </div>
+    }
+  </div>
+</aside>
                         <aside class="col-md-3 d-flex align-items-center">
                             <div class="form-check form-check-inline p-0">
                                 <div class="form-check d-flex align-items-center">
@@ -868,7 +982,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="Depo">
+                                    formControlName="Depo"[textWithNumbers]="20">
                                 <label for="text-input" class="input-label">Depo<span
                                         class="text-danger"></span></label>
                             </div>
@@ -1047,7 +1161,7 @@
             <aside class="col-md-6">
                 <div class="custom-form-group">
                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="ShippingBillNo">
+                        formControlName="ShippingBillNo"  [textWithNumbers]="20">
                     <label for="text-input" class="input-label">Shipping Bill No <span
                             class="text-danger"></span></label>
                 </div>
@@ -1067,41 +1181,89 @@
             </div>
             <aside class="col-md-6">
                 <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="packageTypeList" placeholder="Select Package Type" bindLabel="PackageName"  bindValue="PackageName"
-                        formControlName="ExternaPkg"
-                    >
+                    <ng-select [items]="packageTypeList" placeholder="Select Package Type" bindLabel="PackageName"
+                        bindValue="PackageName" formControlName="ExternaPkg">
                     </ng-select>
                     <label for="text-input" class="input-label">External Pkg <span class="text-danger">*</span></label>
+                    @if(productForm.get('ExternaPkg')?.touched && productForm.get('ExternaPkg')?.invalid){
+                    <div class="error-message">
+                        @if(productForm.get('ExternaPkg')?.hasError('required')){
+                        <span>External Pkg is required</span>
+                        }
+                    </div>
+                    }
                 </div>
             </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="ExternlQty">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ExternlQty">
                     <label for="text-input" class="input-label">No. of Pkg <span class="text-danger">*</span></label>
+                    @if(productForm.get('ExternlQty')?.touched && productForm.get('ExternlQty')?.invalid){
+                    <div class="error-message">
+                        @if(productForm.get('ExternlQty')?.hasError('required')){
+                        <span>No. of Pkg is required</span>
+                        }
+                    </div>
+                    }
                 </div>
             </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="GrossWeight">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="GrossWeight"
+                        DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
                     <label for="text-input" class="input-label">Gross Weight <span class="text-danger">*</span></label>
-                </div>
-            </aside>
+                    <!-- Validation Messages -->
+                    @if ((productForm.get('GrossWeight')?.touched || productForm.get('GrossWeight')?.dirty) && productForm.get('GrossWeight')?.invalid) {
+      <div class="error-message">
+        @if (productForm.get('GrossWeight')?.errors?.['required']) {
+          <span>Gross Weight is required</span>
+        } @else if (productForm.get('GrossWeight')?.errors?.['max']) {
+          <span>Gross Weight cannot exceed 9,999,999.999</span>
+        } @else if (productForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
+          <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+        }
+      </div>
+    }
+  </div>
+</aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
                     <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="NetWeight">
+                        formControlName="NetWeight"  DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
                     <label for="text-input" class="input-label">Net Wt <span class="text-danger">*</span></label>
-                </div>
-            </aside>
+                <!-- Validation Messages -->
+                    @if ((productForm.get('NetWeight')?.touched || productForm.get('NetWeight')?.dirty) && productForm.get('NetWeight')?.invalid) {
+      <div class="error-message">
+        @if (productForm.get('NetWeight')?.errors?.['required']) {
+          <span>Net Wt is required</span>
+        } @else if (productForm.get('NetWeight')?.errors?.['max']) {
+          <span>Net Wt cannot exceed 9,999,999.999</span>
+        } @else if (productForm.get('NetWeight')?.errors?.['decimalPrecision']) {
+          <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+        }
+      </div>
+    }
+  </div>
+</aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
                     <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="Volume">
+                        formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
                     <label for="text-input" class="input-label">CBM <span class="text-danger">*</span></label>
-                </div>
-            </aside>
+                 <!-- Validation Messages -->
+                    @if ((productForm.get('Volume')?.touched || productForm.get('Volume')?.dirty) && productForm.get('Volume')?.invalid) {
+      <div class="error-message">
+        @if (productForm.get('Volume')?.errors?.['required']) {
+          <span>CBM is required</span>
+        } @else if (productForm.get('Volume')?.errors?.['max']) {
+          <span>CBM cannot exceed 9,999,999.999</span>
+        } @else if (productForm.get('Volume')?.errors?.['decimalPrecision']) {
+          <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+        }
+      </div>
+    }
+  </div>
+</aside>
             <aside class="col-md-6">
                 <div class=" custom-form-group custom-form-group-select">
                     <div class="input-group">
@@ -1135,8 +1297,8 @@
             </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="UnNo">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="UnNo"DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
                     <label for="text-input" class="input-label">Un No <span class="text-danger"></span></label>
                 </div>
             </aside>
@@ -1151,22 +1313,22 @@
             @if(selectedDepartmentType === "AIR"){
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="Length">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="Length" DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
                     <label for="text-input" class="input-label">Length <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="Width">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="Width" DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
                     <label for="text-input" class="input-label">Width <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="Height">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="Height" DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
                     <label for="text-input" class="input-label">Height <span class="text-danger"></span></label>
                 </div>
             </aside>
