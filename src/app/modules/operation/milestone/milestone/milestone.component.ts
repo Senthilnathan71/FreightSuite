@@ -182,7 +182,7 @@ export class MilestoneComponent implements OnInit {
       ShipmentNo: '',
       MilestoneMasterSid: null,
       MilestoneDate: null,
-      AutoCaptured: 'N',
+      AutoCaptured: false,
       Remarks: '',
       Status: 'Active'
     });

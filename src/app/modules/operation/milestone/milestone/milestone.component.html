@@ -2,7 +2,8 @@
     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openMilestoneModal(milestoneModal)"><i
             class="fas fa-plus me-1"></i> Add</button>
 </div>
-<div *ngIf="milestoneDataLength > 0"  class="col-12 p-0">
+@if(milestoneDataLength > 0){
+<div class="col-12 p-0">
     <div class="table-responsive">
         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
             <thead>
@@ -40,16 +41,18 @@
             </tbody>
         </table>
     </div>
+</div>
+} @else {
+    <div class="col-12">
+    <div class="alert alert-info text-center">No Milestone added yet.</div>
+</div>
+}
     <div class="d-flex justify-content-end">
                 <ngb-pagination [collectionSize]="milestoneDataLength" [(page)]="page1" [pageSize]="pageSize1"
                     (pageChange)="updateMilestonePagination()" [maxSize]="10" [rotate]="true" [ellipses]="false">
                 </ngb-pagination>
             </div>
-</div>
 
-<div *ngIf="milestoneDataLength === 0" class="col-12">
-  <div class="alert alert-info text-center">No Milestone added yet.</div>
-</div>
 
 <ng-template #milestoneModal let-modal>
     <div class="modal-header p-2 bg-info">
