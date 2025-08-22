@@ -100,6 +100,7 @@ export class BookingEntryComponent implements OnInit {
   filteredPOD: any[] = [];
   incoList: any[] = [];
   TandCList: any[]=[];
+  bookingHeader: any;
   
 auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
@@ -160,6 +161,7 @@ auditLogs: any[] = []; // Stores audit logs
   // Variable Declaration - Connection Part
   bookingConnectionsArr : any[] = [];
   connectionResult : any[] =[];
+  milestoneResult: any[] =[];
 
   typeofmodes = [
     { id: 1, name: "Sea" },
@@ -578,6 +580,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   patchValues(response: any) {
     console.log(response);
+    this.bookingHeader = response;
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
     this.onDeptChange(selectedDepartment);
@@ -760,6 +763,13 @@ auditLogs: any[] = []; // Stores audit logs
     }
   }
 
+  handleMilestoneChange(allmilestones:any[]){
+    console.log(allmilestones);
+    if(allmilestones.length !== 0){
+      this.milestoneResult = [...allmilestones];
+    }
+  }
+
 
 
 
@@ -908,7 +918,7 @@ auditLogs: any[] = []; // Stores audit logs
         VoucherHeaderSid: rate.VoucherHeaderSid || null,
         VoucherTypeSid: rate.VoucherTypeSid || null
       })),
-      milestones: detailFormValue.milestones.map((milestone: any) => ({
+      milestones: this.milestoneResult.map((milestone: any) => ({
         ShipmentMilestoneSid : milestone.ShipmentMilestoneSid || null,
         MilestoneMasterSid: milestone.MilestoneMasterSid || null,
         MilestoneName: milestone.MilestoneName || '',

@@ -1,5 +1,5 @@
 <div class="text-end mb-1">
-    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openMilestoneModal()"><i
+    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openMilestoneModal(milestoneModal)"><i
             class="fas fa-plus me-1"></i> Add</button>
 </div>
 <div class="col-12 p-0">
@@ -7,6 +7,7 @@
         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
             <thead>
                 <tr class="bg-info">
+                    <th class="bg-transparent text-light" width="10%">Action</th>
                     <th class="bg-transparent text-light">SNO</th>
                     <th class="bg-transparent text-light">Milestone</th>
                     <th class="bg-transparent text-light">Date & Time</th>
@@ -15,22 +16,35 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                <tr *ngFor="let milestone of slicedMilestoneFormArr; let i = index"
+            (click)="openMilestoneModal(milestoneModal, milestone, i)">
+            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <a class="text-info mx-2" class="link mx-2 ps-3"
+                                (click)="openMilestoneModal(milestoneModal,milestone,currentMilestoneIndex)">
+                                <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                            </a>
+                        </div>
+            </td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ (page1 - 1) * pageSize1 + i + 1 }}</td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ milestone.MilestoneName }}</td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ milestone.MilestoneDate | date:'dd-MM-yyyy' }}</td>
                     <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                         <div class="form-check form-check-inline p-0 ps-2">
                             <div class="form-check d-flex align-items-center justify-content-center">
-                                <input type="checkbox" id="" class="form-check-input sm">
+                                <input type="checkbox" id="" class="form-check-input sm" [checked]="milestone.AutoCaptured === 'Y'" disabled>
                             </div>
                         </div>
                     </td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ milestone.Remarks }}</td>
                 </tr>
             </tbody>
         </table>
     </div>
+</div>
+
+<div *ngIf="milestoneDataLength === 0" class="col-12">
+  <div class="alert alert-info text-center">No Milestone added yet.</div>
 </div>
 
 <ng-template #milestoneModal let-modal>
@@ -39,28 +53,32 @@
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
+        <form [formGroup]="milestoneForm">
         <div class="row">
             <aside class="col-md-4">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">Sno <span class="text-danger"></span></label>
+                    <input type="number" placeholder="" class="custom-input-field sm" formControlName="ShipmentMilestoneSid" readonly>
+                    <label class="input-label">SnNo<span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">Milestone <span class="text-danger"></span></label>
-                </div>
-            </aside>
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="allMilestones" bindLabel="MilestoneName" bindValue="MilestoneMasterSid"
+                                class="ng-select" formControlName="MilestoneMasterSid" placeholder="Select Milestone"
+                                (change)="onMilestoneChange($event)">
+                            </ng-select>
+                            <label for="text-input" class="input-label">Milestone <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
             <div class="col-md-4">
                 <div class=" custom-form-group custom-form-group-select">
                     <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
-                            (click)="d1.toggle()" />
+                           formControlName="MilestoneDate" (click)="d1.toggle()" />
                         <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>
-                    <label for="shipmentDateExpected" class="input-label"> Date & Time<span class="text-danger"></span>
+                    <label class="input-label"> Date & Time<span class="text-danger"></span>
                     </label>
 
                 </div>
@@ -68,23 +86,29 @@
             <aside class="col-md-4 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0">
                             <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="" class="form-check-input sm">
+                                <input type="checkbox" id="" class="form-check-input sm" formControlName="AutoCaptured">
                                 <label for="AutoCaptured" class="form-check-label sm">Auto Captured  <span class="text-danger"></span></label>
                             </div>
                         </div>
                     </aside>
             <aside class="col-md-4">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Remarks">
                     <label for="text-input" class="input-label">Remarks<span class="text-danger"></span></label>
                 </div>
             </aside>
-
-
+            <aside class="col-md-4">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="id" formControlName="Status"
+                        id="status"></ng-select>
+                      <label class="input-label">Status <span class="text-danger">*</span></label>
+                    </div>
+                  </aside>
         </div>
+        </form>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-        <button type="button" class="btn btn-info btn-sm">Save</button>
+        <button type="button" class="btn btn-info btn-sm" (click)="onMilestoneSubmit()">Save</button>
     </div>
 </ng-template>

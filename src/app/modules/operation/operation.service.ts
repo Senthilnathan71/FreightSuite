@@ -169,6 +169,24 @@ export class OperationService {
     );
   }
 
+  getAllMilestones(payload: any) {
+  return this.http.post<{ data: any }>(`ff-booking/milestone`, payload).pipe(
+    map((resp) => {
+      return resp.data;
+    })
+  );
+}
+
+getShipmentMilestones(payload: any) {
+  return this.http.post<{ data: any }>(`ff-booking/shipment-milestone`, payload).pipe(
+    map((resp) => {
+      return resp.data;
+    })
+  );
+}
+
+
+
 
 
 

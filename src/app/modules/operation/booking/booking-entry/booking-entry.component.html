@@ -1067,7 +1067,7 @@
             </div>
 
             <div class="row bg-white" [hidden]="selectedTab !== 'Milestone'">
-                <app-milestone screenName="Booking" ></app-milestone>
+                <app-milestone screenName="Booking" [shipmentNo]="bookingHeader?.ShipmentNo" (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
             </div>
 
             <div class="row bg-white" *ngIf="selectedTab === 'AR/AP'">
