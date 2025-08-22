@@ -2,7 +2,7 @@
     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openMilestoneModal(milestoneModal)"><i
             class="fas fa-plus me-1"></i> Add</button>
 </div>
-<div class="col-12 p-0">
+<div *ngIf="milestoneDataLength > 0"  class="col-12 p-0">
     <div class="table-responsive">
         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
             <thead>
@@ -20,7 +20,7 @@
             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                         <div class="d-flex align-items-center justify-content-center">
                             <a class="text-info mx-2" class="link mx-2 ps-3"
-                                (click)="openMilestoneModal(milestoneModal,milestone,currentMilestoneIndex)">
+                                (click)="openMilestoneModal(milestoneModal,milestone,i)">
                                 <i-feather class="feather-sm text-info" name="eye"></i-feather>
                             </a>
                         </div>
@@ -40,6 +40,11 @@
             </tbody>
         </table>
     </div>
+    <div class="d-flex justify-content-end">
+                <ngb-pagination [collectionSize]="milestoneDataLength" [(page)]="page1" [pageSize]="pageSize1"
+                    (pageChange)="updateMilestonePagination()" [maxSize]="10" [rotate]="true" [ellipses]="false">
+                </ngb-pagination>
+            </div>
 </div>
 
 <div *ngIf="milestoneDataLength === 0" class="col-12">

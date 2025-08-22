@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -13,7 +13,7 @@ import { OperationService } from '../../operation.service';
 @Component({
   selector: 'app-milestone',
   standalone: true,
-  imports: [NgSelectModule ,NgbDatepickerModule, FeatherModule, CustomDatePipe, CommonModule,ReactiveFormsModule],
+  imports: [NgSelectModule ,NgbDatepickerModule, FeatherModule, CustomDatePipe, CommonModule,ReactiveFormsModule,NgbPagination],
   templateUrl: './milestone.component.html',
   styleUrl: './milestone.component.scss',
   providers: [
@@ -24,6 +24,7 @@ import { OperationService } from '../../operation.service';
 export class MilestoneComponent implements OnInit {
   page1 = 1;
   pageSize1 = 5;
+  totalPages = 0;
   currentMilestoneIndex: number;
   milestoneDataLength: number;
   milestoneFormArray: FormArray;
@@ -36,9 +37,10 @@ export class MilestoneComponent implements OnInit {
   milestoneForm !: FormGroup;
   allMilestones: any[] = []; 
   modeOfStatus = [
-    { id: 1, name: 'Active' },
-    { id: 2, name: 'Suspended' },
-  ];
+  { id: 'Active', name: 'Active' },
+  { id: 'Suspended', name: 'Suspended' },
+];
+
 
   @Input() screenName: string;
    private _shipmentNo: string;
