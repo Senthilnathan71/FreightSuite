@@ -16,8 +16,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let milestone of slicedMilestoneFormArr; let i = index"
-            (click)="openMilestoneModal(milestoneModal, milestone, i)">
+                <tr *ngFor="let milestone of slicedMilestoneFormArr; let i = index">
             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                         <div class="d-flex align-items-center justify-content-center">
                             <a class="text-info mx-2" class="link mx-2 ps-3"
@@ -32,7 +31,7 @@
                     <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                         <div class="form-check form-check-inline p-0 ps-2">
                             <div class="form-check d-flex align-items-center justify-content-center">
-                                <input type="checkbox" id="" class="form-check-input sm" [checked]="milestone.AutoCaptured === 'Y'" disabled>
+                                <input type="checkbox" id="" class="form-check-input sm" [checked]="milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y'" disabled>
                             </div>
                         </div>
                     </td>
@@ -55,12 +54,6 @@
     <div class="modal-body">
         <form [formGroup]="milestoneForm">
         <div class="row">
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="number" placeholder="" class="custom-input-field sm" formControlName="ShipmentMilestoneSid" readonly>
-                    <label class="input-label">SnNo<span class="text-danger"></span></label>
-                </div>
-            </aside>
             <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select [items]="allMilestones" bindLabel="MilestoneName" bindValue="MilestoneMasterSid"

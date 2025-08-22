@@ -121,7 +121,7 @@ export class MilestoneComponent implements OnInit {
       MilestoneDate: [''],
       AutoCaptured: [false],
       Remarks: [''],
-      Status: ['Active']
+      Status: [{ value: 'Active', disabled: true }]
     })
   }
 
@@ -169,9 +169,24 @@ export class MilestoneComponent implements OnInit {
         AutoCaptured: data.AutoCaptured,
         Remarks: data.Remarks,
         Status: data.Status
-      })
+      });
+      this.milestoneForm.get('Status')?.enable();
     } else {
       this.currentMilestoneIndex = -1;
+      this.milestoneForm.patchValue({
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      ShipmentMilestoneSid: null,
+      ShipmentNo: '',
+      MilestoneMasterSid: null,
+      MilestoneDate: null,
+      AutoCaptured: 'N',
+      Remarks: '',
+      Status: 'Active'
+    });
+
+    // Disable status in add mode
+    this.milestoneForm.get('Status')?.disable();
     }
 
     this.modalService.open(content, {
