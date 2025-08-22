@@ -9,27 +9,28 @@
     </div>
 
     <!-- Add Button -->
-    <div>
+    <div *ngIf="selectedTab !== 'Profit'">
 
-        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openModalBasedOnTab()">
+        <button type="button" class="btn btn-info btn-sm me-2 dofi-min-w-80 dofi-max-w-80"
+            (click)="openModalBasedOnTab(rateModal)">
+            <i class="fas fa-plus me-1" style="font-size: 10px;"></i> Get Tariff
+        </button>
+        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="openModalBasedOnTab(rateModal)">
             <i class="fas fa-plus me-1" style="font-size: 10px;"></i> Add
         </button>
     </div>
 </div>
 
 <div class="tab-content mb-2">
-
-    <div class="row bg-white" *ngIf="selectedTab === 'Cost'">
-        <!-- <ng-container *ngComponentOutlet="costcomponent"></ng-container> -->
-        <!-- <div class="text-end mb-1">
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openCostModal()"><i
-                    class="fas fa-plus me-1"></i> Add</button>
-        </div> -->
+    @if(selectedTab === 'Cost' && costDataLength > 0){
+    <div class="row bg-white">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
+                            <th class="bg-transparent text-light" width="8%">Action</th>
                             <th class="bg-transparent text-light">Sno</th>
                             <th class="bg-transparent text-light">Charge</th>
                             <th class="bg-transparent text-light">Charge Desc</th>
@@ -49,166 +50,62 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @for(rate of slicedCostFormArray ; track rate ; let rateIndex = $index){
                         <tr>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <a class="text-info mx-2" class="link mx-2 ps-3"
+                                        (click)="openModalBasedOnTab(rateModal,rate,rateIndex)">
+                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                    </a>
+
+                                    <a class="text-danger mx-2 ps-3 border-start"
+                                        (click)="deleteRate(rateIndex,'Cost',rate.BookingRatesSid)">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </a>
+
+                                </div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rateIndex + 1}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                {{getChargeCode(rate.ChargeMasterSid)}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.ChargeDescription}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ rate.PrepaidCollect
+                                }}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                {{getUnitCode(rate.ChargeUomSid)}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.NumberOfUnit}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.DrCr === 'D' ? 'Debit' : 'Credit'}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{getCurrencyCode(rate.CurrencyMasterSid)}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.ExchangeRate}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.Rate}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.Amount}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.LocalAmount}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{getCustomerName(rate.CustomerMasterSid)}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.VoucherHeaderSid}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{getDocTypeName(rate.VoucherTypeSid)}}</td>
                         </tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
-        <ng-template #costModal let-modal>
-            <div class="modal-header p-2 bg-info">
-                <h5 class="modal-title text-white">Cost</h5>
-                <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                    (click)="modal.dismiss()"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Sno <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Charge <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label"> Charge Desc <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">PP/CC <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Unit<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">No of Unit <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Dr/Cr<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Curr<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Ex Rate<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Rate<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Amt <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Local Amt <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Billing Party<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Voucher No<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Type<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-                <button type="button" class="btn btn-info btn-sm">Save</button>
-            </div>
-        </ng-template>
     </div>
+    } @else if(selectedTab === 'Cost') {
+    <div class="col-12">
+        <div class="alert alert-info text-center">No Cost Rate added yet.</div>
+    </div>
+    }
 
-    <div class="row bg-white" *ngIf="selectedTab === 'Revenue'">
-        <!-- <ng-container *ngComponentOutlet="revenuecomponent"></ng-container> -->
-
-        <!-- <div class="text-end mb-1">
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                (click)="openRevenueModal()"><i class="fas fa-plus me-1"></i> Add</button>
-        </div> -->
-
+    @if(selectedTab === 'Revenue' && revenueDataLength > 0){
+    <div class="row bg-white">
 
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
+                            <th class="bg-transparent text-light" width="8%">Action</th>
                             <th class="bg-transparent text-light">Sno</th>
                             <th class="bg-transparent text-light">Charge</th>
                             <th class="bg-transparent text-light">Charge Desc</th>
@@ -228,153 +125,52 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @for(rate of slicedRevenueFormArray ; track rate ; let rateIndex = $index){
                         <tr>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <a class="text-info mx-2" class="link mx-2 ps-3"
+                                        (click)="openModalBasedOnTab(rateModal,rate,rateIndex)">
+                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                    </a>
+
+                                    <a class="text-danger mx-2 ps-3 border-start"
+                                        (click)="deleteRate(rateIndex,'Revenue',rate.BookingRatesSid)">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                    </a>
+
+                                </div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rateIndex + 1}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                {{getChargeCode(rate.ChargeMasterSid)}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.ChargeDescription}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ rate.PrepaidCollect
+                                }}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                {{getUnitCode(rate.ChargeUomSid)}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.NumberOfUnit}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.DrCr === 'D' ? 'Debit' : 'Credit'}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{getCurrencyCode(rate.CurrencyMasterSid)}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.ExchangeRate}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.Rate}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.Amount}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.LocalAmount}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{getCustomerName(rate.CustomerMasterSid)}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.VoucherHeaderSid}}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{getDocTypeName(rate.VoucherTypeSid)}}</td>
                         </tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
-
-
-        <ng-template #revenueModal let-modal>
-            <div class="modal-header p-2 bg-info">
-                <h5 class="modal-title text-white">Revenue</h5>
-                <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                    (click)="modal.dismiss()"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Sno <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Charge <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label"> Charge Desc <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">PP/CC <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Unit<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">No of Unit <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Dr/Cr<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Curr<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Ex Rate<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Rate<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Amt <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Local Amt <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Billing Party<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Voucher No<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Type<span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-                <button type="button" class="btn btn-info btn-sm">Save</button>
-            </div>
-        </ng-template>
     </div>
+    } @else if(selectedTab === 'Revenue') {
+    <div class="col-12">
+        <div class="alert alert-info text-center">No Revenue Rate added yet.</div>
+    </div>
+    }
 
     <div class="row g-white" *ngIf="selectedTab === 'Profit'">
         <div class="col-12 p-0">
@@ -391,12 +187,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
+                        <tr *ngFor="let row of profitSummary">
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ row.chargeName }}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ row.totalSales }}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ row.totalCost }}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ row.profit }}</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ row.profitPercent }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -408,50 +204,201 @@
 </div>
 
 
-<ng-template #profitModal let-modal>
+<ng-template #rateModal let-modal>
     <div class="modal-header p-2 bg-info">
-        <h5 class="modal-title text-white">Profit</h5>
+        <h5 class="modal-title text-white">{{selectedTab}}</h5>
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
-        <div class="row">
-            <aside class="col-md-4">
+        <div class="row" [formGroup]="rateForm">
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="form-control custom-input-field sm" formControlName="SerialNumber" DecimalPrecision
+                    [DecimalPrecisionBefore]="3"
+                    [DecimalPrecisionAfter]="0">
+                    <label for="text-input" [ngClass]="{
+                        'input-label': true,
+                        'bg-transparent': !r['SerialNumber']?.getRawValue()
+                    }">Sno <span class="text-danger"></span></label>
+                    @if ((r['SerialNumber']?.touched || r['SerialNumber']?.dirty) &&
+                    r['SerialNumber']?.invalid) {
+                    <div class="error-message">
+                        @if (r['SerialNumber']?.errors?.['decimalPrecision']) {
+                        <small>Allowed: 3 Digits only</small>
+                        }
+                    </div>
+                    }
+                </div>
+            </aside>
+            <aside class="col-md-6">
                 <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="" bindLabel="name" bindValue="name">
+                    <ng-select class="ng-select" [items]="chargeList" formControlName="ChargeMasterSid" bindValue="ChargeMasterSid" placeholder="Select Charge" bindLabel="chargeName"
+                    (change)="onChargeChange($event)"
+                    >
+                    </ng-select>
+                    <label for="text-input" class="input-label">Charge <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ChargeDescription" [textWithNumbers]="100">
+                    <label for="" class="input-label"> Charge Desc <span class="text-danger"></span></label>
+                    @if ((r['ChargeDescription']?.touched || r['ChargeDescription']?.dirty) &&
+                    r['ChargeDescription']?.invalid) {
+                    <div class="error-message">
+                        @if (r['ChargeDescription']?.errors?.['maxlength']) {
+                        <span>Max 100 Characters</span>
+                        }
+                    </div>
+                    }
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="ppcc" bindLabel="name" bindValue="name" formControlName="PrepaidCollect" placeholder="Select PP/CC">
+                    </ng-select>
+                    <label for="" class="input-label">PP/CC <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="uomList" bindLabel="UOMName" bindValue="UOMMasterSid" formControlName="ChargeUomSid" placeholder="Select Unit">
+                    </ng-select>
+                    <label for="" class="input-label">Unit<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="NumberOfUnit" (input)="calculateLocalAmount() ; calculateAmount()" DecimalPrecision
+                    [DecimalPrecisionBefore]="4"
+                    [DecimalPrecisionAfter]="3">
+                    <label for="text-input" class="input-label">No of Unit <span class="text-danger"></span></label>
+                    @if ((r['NumberOfUnit']?.touched || r['NumberOfUnit']?.dirty) &&
+                    r['NumberOfUnit']?.invalid) {
+                    <div class="error-message">
+                        @if (r['NumberOfUnit']?.errors?.['decimalPrecision']) {
+                        <span>Allowed: 4 Digits before and 3 digits after points</span>
+                        }
+                    </div>
+                    }
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="drcr" bindLabel="name" bindValue="value" formControlName="DrCr" class="ng-select" placeholder="Select Dr/Cr">
 
                     </ng-select>
-                    <label for="" class="input-label">Chareg <span class="text-danger"></span></label>
+                    <label for="" class="input-label">Dr/Cr<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid" formControlName="CurrencyMasterSid" placeholder="Select Currency" (change)="onCurrencyChange($event)">
+
+                    </ng-select>
+                    <label for="" class="input-label">Curr<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Rate" (input)="calculateLocalAmount() ; calculateAmount()" DecimalPrecision
+                    [DecimalPrecisionBefore]="12"
+                    [DecimalPrecisionAfter]="3">
+                    <label for="text-input" class="input-label">Rate<span class="text-danger"></span></label>
+                    @if ((r['Rate']?.touched || r['Rate']?.dirty) &&
+                    r['Rate']?.invalid) {
+                    <div class="error-message">
+                        @if (r['Rate']?.errors?.['decimalPrecision']) {
+                        <span>Allowed: 12 Digits before and 3 digits after points</span>
+                        }
+                    </div>
+                    }
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm" formControlName="ExchangeRate" DecimalPrecision
+                    [DecimalPrecisionBefore]="12"
+                    [DecimalPrecisionAfter]="3">
+                    <label for="text-input" class="input-label" [ngClass]="{
+                        'input-label': true,
+                        'bg-transparent': !r['ExchangeRate']?.getRawValue()
+                    }">Ex Rate<span class="text-danger"></span></label>
+                    @if ((r['ExchangeRate']?.touched || r['ExchangeRate']?.dirty) &&
+                    r['ExchangeRate']?.invalid) {
+                    <div class="error-message">
+                        @if (r['ExchangeRate']?.errors?.['decimalPrecision']) {
+                        <span>Allowed: 12 Digits before and 3 digits after points</span>
+                        }
+                    </div>
+                    }
                 </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
-                    <label for="text-input" class="input-label">Sale Amt <span class="text-danger"></span></label>
+                    <input type="number" id="text-input" placeholder="" class="form-control custom-input-field sm" formControlName="Amount" DecimalPrecision
+                    [DecimalPrecisionBefore]="12"
+                    [DecimalPrecisionAfter]="3">
+                    <label for="text-input" [ngClass]="{
+                        'input-label': true,
+                        'bg-transparent': !r['Amount']?.getRawValue()
+                    }">Amt <span class="text-danger"></span></label>
+                    @if ((r['Amount']?.touched || r['Amount']?.dirty) &&
+                    r['Amount']?.invalid) {
+                    <div class="error-message">
+                        @if (r['Amount']?.errors?.['decimalPrecision']) {
+                        <span>Allowed: 12 Digits before and 3 digits after points</span>
+                        }
+                    </div>
+                    }
                 </div>
             </aside>
-            <aside class="col-md-4">
+            <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
-                    <label for="text-input" class="input-label">Cost Amt <span class="text-danger"></span></label>
+                    <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm" formControlName="LocalAmount" DecimalPrecision
+                    [DecimalPrecisionBefore]="12"
+                    [DecimalPrecisionAfter]="3">
+                    <label for="text-input" [ngClass]="{
+                        'input-label': true,
+                        'bg-transparent': !r['LocalAmount']?.getRawValue()
+                    }">Local Amt <span class="text-danger"></span></label>
+                    @if ((r['LocalAmount']?.touched || r['LocalAmount']?.dirty) &&
+                    r['LocalAmount']?.invalid) {
+                        <div class="error-message">
+                            @if (r['LocalAmount']?.errors?.['decimalPrecision']) {
+                            <span>Allowed: 12 Digits before and 3 digits after points</span>
+                            }
+                        </div>
+                    }
                 </div>
             </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
-                    <label for="text-input" class="input-label">Profit <span class="text-danger"></span></label>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid" formControlName="CustomerMasterSid" placeholder="Select Billing Party">
+                        
+                    </ng-select>
+                    <label for="" class="input-label">Billing Party<span class="text-danger"></span></label>
                 </div>
             </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
-                    <label for="text-input" class="input-label">Profit % <span class="text-danger"></span></label>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="VoucherHeaderSid">
+                    <label for="" class="input-label">Voucher No<span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-6">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="docTypeList" bindLabel="DocumentTypeName" bindValue="DocumentTypeMasterSid" placeholder="Select Type" formControlName="VoucherTypeSid">
+
+                    </ng-select>
+                    <label for="" class="input-label">Type<span class="text-danger"></span></label>
                 </div>
             </aside>
         </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-        <button type="button" class="btn btn-info btn-sm">Save</button>
+        <button type="button" class="btn btn-info btn-sm" (click)="onRateSubmit()">Save</button>
     </div>
 </ng-template>

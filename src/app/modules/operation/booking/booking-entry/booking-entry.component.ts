@@ -24,6 +24,7 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { MilestoneComponent } from '../../milestone/milestone/milestone.component';
+import { CostEntryComponent } from '../../cost/cost -entry/cost-entry.component';
 
 @Component({
   selector: 'app-booking-entry',
@@ -42,7 +43,8 @@ import { MilestoneComponent } from '../../milestone/milestone/milestone.componen
     OnlyTextDirective,
     OnlyNumbersDirective,
     TextWithNumbersDirective,
-    MilestoneComponent
+    MilestoneComponent,
+    CostEntryComponent
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
@@ -174,6 +176,10 @@ auditLogs: any[] = []; // Stores audit logs
 
   // Variable Declaration - Milestone Part
   milestoneForm !: FormGroup;
+
+  // Variable Declaration - Rate Part
+  bookingRateArr : any[] = [];
+  rateResult : any[] = [];
 
   modeOfShippmentTerms = [
     { id: 1, name: 'LCL' },
@@ -693,6 +699,10 @@ auditLogs: any[] = []; // Stores audit logs
         status : connection.status === "A" ? "Active" : "Suspended"
       }
     })
+
+    this.bookingRateArr = response.bookingRates || [];
+    this.rateResult = [...this.bookingRateArr];
+
   }
 
   openProductModal(content: TemplateRef<any>, productIndex?: number, data?: any) {
@@ -758,8 +768,15 @@ auditLogs: any[] = []; // Stores audit logs
 
   handleConnectionChange(allConnections:any[]){
     console.log(allConnections);
-    if(allConnections.length !== 0){
+    if(allConnections.length > 0){
       this.connectionResult = [...allConnections];
+    }
+  }
+
+  handleRateChange(allRates:any[]){
+    console.log(allRates);
+    if(allRates.length > 0){
+      this.rateResult = [...allRates];
     }
   }
 
@@ -888,43 +905,9 @@ auditLogs: any[] = []; // Stores audit logs
         UomMasterSid: product.UomMasterSid,
         CargoRecDate : product.CargoRecDate
       })),
-      bookingConnections: this.connectionResult.map((connection: any) => ({
-        BookingConnectionSid : connection.BookingConnectionSid || null,
-        Mode : connection.Mode || '',
-        VesselName: connection.VesselName || null,
-        VoyageNo: connection.VoyageNo || null,
-        POL: connection.POL || null,
-        POD: connection.POD || null,
-        ETD: connection.ETD ? new Date(connection.ETD).toISOString() : null,
-        ETA: connection.ETA ? new Date(connection.ETA).toISOString() : null,
-        status: connection.status === 'Active' ? 'A' : 'S'
-      })),
-      bookingRates: detailFormValue.bookingRates.map((rate: any) => ({
-        BookingRatesSid : rate.BookingRatesSid || null,
-        SerialNumber: parseFloat(rate.SerialNumber) || 0,
-        ChargeMasterSid: rate.ChargeMasterSid || null,
-        ChargeDescription: rate.ChargeDescription || '',
-        PrepaidCollect: rate.PrepaidCollect || null,
-        ChargeUomSid: rate.ChargeUomSid || null,
-        NumberOfUnit: parseFloat(rate.NumberOfUnit) || 0,
-        DrCr: rate.DrCr || null,
-        CurrencyMasterSid: rate.CurrencyMasterSid || null,
-        ExchangeRate: parseFloat(rate.ExchangeRate) || 0,
-        Rate: parseFloat(rate.Rate) || 0,
-        Amount: parseFloat(rate.Amount) || 0,
-        LocalAmount: parseFloat(rate.LocalAmount) || 0,
-        CustomerMasterSid: rate.CustomerMasterSid || '',
-        CustomerBranchSid: rate.CustomerBranchSid || null,
-        VoucherHeaderSid: rate.VoucherHeaderSid || null,
-        VoucherTypeSid: rate.VoucherTypeSid || null
-      })),
-      milestones: this.milestoneResult.map((milestone: any) => ({
-        ShipmentMilestoneSid : milestone.ShipmentMilestoneSid || null,
-        MilestoneMasterSid: milestone.MilestoneMasterSid || null,
-        MilestoneName: milestone.MilestoneName || '',
-        MilestoneDate: milestone.MilestoneDate ? new Date(milestone.MilestoneDate).toISOString() : null,
-        AutoCaptured: milestone.AutoCaptured || false
-      })),
+      bookingConnections: this.connectionResult,
+      bookingRates: this.rateResult,
+      milestones: this.milestoneResult ,
       ...(this.isEditMode ? { updatedBy: currUserEmail } : { createdBy: currUserEmail })
     };
 
@@ -1008,8 +991,8 @@ auditLogs: any[] = []; // Stores audit logs
     const segment = this.selectedFCLLCL
 
     this.filteredPorts = this.getFilteredPortsBySegment(segment);
-    this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== podSid);
-    this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== polSid);
+    this.filteredPOL = this.filteredPorts.filter(port => port.PortCode !== podSid);
+    this.filteredPOD = this.filteredPorts.filter(port => port.PortCode !== polSid);
     if (polSid && podSid && polSid === podSid) {
       this.b['POD']?.setErrors({ samePort: true });
       this.b['POL']?.setErrors({ samePort: true });
@@ -1092,7 +1075,7 @@ auditLogs: any[] = []; // Stores audit logs
     }
     this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
     this.b['ETD']?.setValue(new Date(selectedPort.ETD));
-    this.b['FPD']?.setValue(selectedPort.PortName);
+    this.b['FPD']?.setValue(selectedPort.PortCode);
     this.getVesselBasedOnPorts();
   }
 
@@ -1115,8 +1098,8 @@ auditLogs: any[] = []; // Stores audit logs
     }
     const POL = this.b['POL'].value;
     const POD = this.b['POD'].value;
-    const POLSid = (this.portList.find(port => port.PortName === POL)?.PortMasterSid);
-    const PODSid = (this.portList.find(port => port.PortName === POD)?.PortMasterSid);
+    const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
+    const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
     const details = voyage.Ports || [];
 
     const polDetail = details.find(d => d.POLSid === POLSid);
@@ -1136,10 +1119,10 @@ auditLogs: any[] = []; // Stores audit logs
     const POD = this.b['POD']?.value;
     const FPOD = this.b['FPD']?.value;
     const MovementType = this.selectedDepartment?.departmentType;
-    const POOSid = (this.portList.find(port => port.PortName === POO)?.PortMasterSid);
-    const POLSid = (this.portList.find(port => port.PortName === POL)?.PortMasterSid);
-    const PODSid = (this.portList.find(port => port.PortName === POD)?.PortMasterSid);
-    const FPODSid = (this.portList.find(port => port.PortName === FPOD)?.PortMasterSid);
+    const POOSid = (this.portList.find(port => port.PortCode === POO)?.PortMasterSid);
+    const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
+    const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
+    const FPODSid = (this.portList.find(port => port.PortCode === FPOD)?.PortMasterSid);
     if (!POLSid || !PODSid) return;
     const payload = { POO: POOSid, POL: POLSid, POD: PODSid, FPOD: FPODSid, MovementType: MovementType };
     this.operationService.getVesselsBasedOnPorts(payload).subscribe(
@@ -1163,10 +1146,10 @@ auditLogs: any[] = []; // Stores audit logs
     const POD = this.b['POD']?.value;
     const FPOD = this.b['FPD']?.value;
     const MovementType = this.selectedDepartment?.departmentType;
-    const POOSid = (this.portList.find(port => port.PortName === POO)?.PortMasterSid);
-    const POLSid = (this.portList.find(port => port.PortName === POL)?.PortMasterSid);
-    const PODSid = (this.portList.find(port => port.PortName === POD)?.PortMasterSid);
-    const FPODSid = (this.portList.find(port => port.PortName === FPOD)?.PortMasterSid);
+    const POOSid = (this.portList.find(port => port.PortCode === POO)?.PortMasterSid);
+    const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
+    const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
+    const FPODSid = (this.portList.find(port => port.PortCode === FPOD)?.PortMasterSid);
     const vessel = this.b['VesselName']?.value;
     const vesselId = (this.vesselList.find(vsl => vsl.VesselName === vessel).VesselMasterSid);
     if (!POL || !POD || !vesselId) {

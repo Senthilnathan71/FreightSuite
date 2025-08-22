@@ -323,7 +323,7 @@
                 <div class="row" [formGroup]="bookingForm">
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortName"
+                            <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode"
                                 class="ng-select" formControlName="POO" placeholder="Select POO">
                             </ng-select>
                             <label for="text-input" class="input-label">POO<span class="text-danger"></span></label>
@@ -331,7 +331,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortName" class="ng-select"
+                            <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                                 formControlName="POL" placeholder="Select POL" (change)="handlePOLChange($event)">
                             </ng-select>
                             <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
@@ -346,7 +346,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortName" class="ng-select"
+                            <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                                 formControlName="POD" (change)="handlePODChange($event)" placeholder="Select POD">
                             </ng-select>
                             <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
@@ -362,7 +362,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortName"
+                            <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode"
                                 class="ng-select" formControlName="FPD" placeholder="Select FPD">
                             </ng-select>
                             <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
@@ -1013,64 +1013,15 @@
                 </app-connection>
             </div>
 
-            <div class="row bg-white" *ngIf="selectedTab === 'Rate'">
-                <div class="text-end mb-1">
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="openRateModal()"><i class="fas fa-plus me-1"></i> Add</button>
-                </div>
-
-                <div class="col-12 p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                            <thead>
-                                <tr class="bg-info">
-                                    <th class="bg-transparent text-light">Sno</th>
-                                    <th class="bg-transparent text-light">Charge</th>
-                                    <th class="bg-transparent text-light">Charge Desc</th>
-                                    <th class="bg-transparent text-light">PP/CC</th>
-                                    <th class="bg-transparent text-light">Unit</th>
-                                    <th class="bg-transparent text-light">No of Unit</th>
-                                    <th class="bg-transparent text-light">Dr/Cr</th>
-                                    <th class="bg-transparent text-light">Curr</th>
-                                    <th class="bg-transparent text-light">Ex Rate</th>
-                                    <th class="bg-transparent text-light">Rate</th>
-                                    <th class="bg-transparent text-light">Amt</th>
-                                    <th class="bg-transparent text-light">Local Amt</th>
-                                    <th class="bg-transparent text-light">Billing Party</th>
-                                    <th class="bg-transparent text-light">Voucher No</th>
-                                    <th class="bg-transparent text-light">Type</th>
-
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="row bg-white" [hidden]="selectedTab !== 'Rate'">
+                <app-cost-entry screenName="Booking" [currencyList]="currencyList" [customerList]="customerList" [dataItems]="bookingRateArr" (dataEmitter)="handleRateChange($event)"></app-cost-entry>
             </div>
 
             <div class="row bg-white" [hidden]="selectedTab !== 'Milestone'">
                 <app-milestone screenName="Booking" [shipmentNo]="bookingHeader?.ShipmentNo" (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
             </div>
 
-            <div class="row bg-white" *ngIf="selectedTab === 'AR/AP'">
+            <div class="row bg-white" [hidden]="selectedTab !== 'AR/AP'">
                 <div class="col-12 p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">

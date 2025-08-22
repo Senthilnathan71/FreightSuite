@@ -86,6 +86,14 @@ export class OperationService {
     );
   }
 
+  deleteBookingRate(BookingRatesSid: number) {
+    return this.http.delete<{ data: any }>(`ff-booking/rates/${BookingRatesSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   // Permissions
   getRoleMenuPermissions(menuId: number, roleId: number) {
     return this.http.get<{ data: any }>(`role-menu/permissions/${menuId}/${roleId}`).pipe(
@@ -187,8 +195,21 @@ getShipmentMilestones(payload: any) {
 
 
 
+  getAllBookingRateLookups(payload){
+    return this.http.post<{ data: any }>(`ff-booking/rate-lookup`,payload).pipe(
+      map((resp) => {
+        return resp.data;
+      })
+    );
+  }
 
-
+  getExchangeRate(payload){
+    return this.http.post<{data:any}>('currency-exchange/exchange-rate',payload).pipe(
+      map((resp)=>{
+        return resp;
+      })
+    )
+  }
 
 
 
