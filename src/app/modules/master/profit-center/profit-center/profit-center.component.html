@@ -8,7 +8,7 @@
     style="cursor: pointer;">
   </i>
 </div> -->
-<div class="row">
+<div class="row compact-form" >
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
@@ -162,7 +162,7 @@
             <form [formGroup]="profitCenterForm">
                 <div class="col-md-12">
 
-                    <div class="row">
+                    <div class="row compact-form">
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" formControlName="ProfitCenterName" placeholder=""
@@ -173,7 +173,7 @@
                                 profitCenterForm.get('ProfitCenterName')?.invalid){
                                 <div class="error-message">
                                     @if(profitCenterForm.get('ProfitCenterName')?.hasError('required')){
-                                    <span>Profit Center Name is required</span>
+                                    <span>Required</span>
                                     } @else if(profitCenterForm.get('ProfitCenterName')?.hasError('maxlength')){
                                     <span>Max 100 Characters</span>
                                     } @else if(profitCenterForm.get('ProfitCenterName')?.hasError('numberNotAllowed')){
@@ -193,7 +193,7 @@
                                 profitCenterForm.get('ProfitCenterCode')?.invalid){
                                 <div class="error-message">
                                     @if(profitCenterForm.get('ProfitCenterCode')?.hasError('required')){
-                                    <span>Profit Center Code is required</span>
+                                    <span>Required</span>
                                     } @else if(profitCenterForm.get('ProfitCenterCode')?.hasError('maxlength')){
                                     <span>Max 9 Characters</span>
                                     }
@@ -213,9 +213,9 @@
                                         class="text-danger">*</span></label>
                                                @if(profitCenterForm.get('Remarks')?.touched &&
                                 profitCenterForm.get('Remarks')?.invalid){
-                                <div class="error-message">
+                                <div class="error-message pb-2">
                                     @if(profitCenterForm.get('Remarks')?.hasError('required')){
-                                    <span>Remarks is required</span>
+                                    <span>Required</span>
                                     } 
                                 </div>
                                 }
@@ -233,7 +233,7 @@
                                 <label class="input-label">Status <span class="text-danger">*</span></label>
                                 @if(profitCenterForm.get('Status')?.touched && profitCenterForm.get('Status')?.invalid){
                                 <div class="error-message">
-                                    <span>Status is required</span>
+                                    <span>Required</span>
                                 </div>
                                 }
                             </div>

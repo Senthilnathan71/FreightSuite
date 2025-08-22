@@ -1,4 +1,4 @@
-<div class="row" [formGroup]="productForm">
+<div class="row compact-form" [formGroup]="productForm">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
@@ -53,11 +53,11 @@
                             @if(productForm.get('ProductName').touched && productForm.get('ProductName').invalid){
                                 <div class="error-message">
                                     @if(productForm.get('ProductName').hasError('required')){
-                                        <span>Product Name is required</span>
+                                        <span>Required</span>
                                     } @else if(productForm.get('ProductName').hasError('numberNotAllowed')){
-                                        <span>Only Alphabets are allowed</span>
+                                        <span>Only Alphabets</span>
                                     } @else if(productForm.get('ProductName').hasError('maxlength')){
-                                        <span>Max 100 Characters</span>
+                                        <span>Max 100 Chars</span>
                                     }
                                 </div>
                             }
@@ -72,9 +72,9 @@
                             @if(productForm.get('ProductCode').touched && productForm.get('ProductCode').invalid){
                                 <div class="error-message">
                                     @if(productForm.get('ProductCode').hasError('required')){
-                                        <span>Product Code is required</span>
+                                        <span>Required</span>
                                     } @else if(productForm.get('ProductCode').hasError('maxlength')){
-                                        <span>Max 20 Characters</span>
+                                        <span>Max 20 Chars</span>
                                     }
                                 </div>
                             }
@@ -89,7 +89,7 @@
                             @if(productForm.get('Product_LL').touched && productForm.get('Product_LL').invalid){
                                 <div class="error-message">
                                     @if(productForm.get('Product_LL').hasError('maxlength')){
-                                        <span>Max 100 Characters</span>
+                                        <span>Max 100 Chars</span>
                                     }
                                 </div>
                             }
@@ -115,7 +115,7 @@
                             @if(productForm.get('ProductId').touched && productForm.get('ProductId').invalid){
                                 <div class="error-message">
                                     @if(productForm.get('ProductId').hasError('maxlength')){
-                                        <span>Max 10 Characters</span>
+                                        <span>Max 10 Chars</span>
                                     }
                                 </div>
                             }
@@ -130,7 +130,7 @@
                             @if(productForm.get('PackingGroup').touched && productForm.get('PackingGroup').invalid){
                                 <div class="error-message">
                                     @if(productForm.get('PackingGroup').hasError('maxlength')){
-                                        <span>Max 10 Characters</span>
+                                        <span>Max 10 Chars</span>
                                     }
                                 </div>
                             }
@@ -145,7 +145,7 @@
                             @if(productForm.get('Description').touched && productForm.get('Description').invalid){
                                 <div class="error-message">
                                     @if(productForm.get('Description').hasError('maxlength')){
-                                        <span>Max 200 Characters</span>
+                                        <span>Max 200 Chars</span>
                                     }
                                 </div>
                             }
@@ -207,7 +207,7 @@
                             @if(productForm.get('UNNo').touched && productForm.get('UNNo').invalid){
                                 <div class="error-message">
                                     @if(productForm.get('UNNo').hasError('onlyNumbers')){
-                                        <span>Only Digits are allowed</span>
+                                        <span>Only Digits</span>
                                     }
                                 </div>
                             }
@@ -222,7 +222,7 @@
                             @if(productForm.get('UNPackingCode').touched && productForm.get('UNPackingCode').invalid){
                                 <div class="error-message">
                                     @if(productForm.get('UNPackingCode').hasError('maxlength')){
-                                        <span>Max 5 Characters</span>
+                                        <span>Max 5 Chars</span>
                                     }
                                 </div>
                             }
@@ -237,7 +237,7 @@
                             @if(productForm.get('IMOClass').touched && productForm.get('IMOClass').invalid){
                                 <div class="error-message">
                                     @if(productForm.get('IMOClass').hasError('maxlength')){
-                                        <span>Max 5 Characters</span>
+                                        <span>Max 5 Chars</span>
                                     }
                                 </div>
                             }
@@ -253,7 +253,7 @@
                             @if(productForm.get('IMOSubClass').touched && productForm.get('IMOSubClass').invalid){
                                 <div class="error-message">
                                     @if(productForm.get('IMOSubClass').hasError('maxlength')){
-                                        <span>Max 5 Characters</span>
+                                        <span>Max 5 Chars</span>
                                     }
                                 </div>
                             }
@@ -276,7 +276,7 @@
                             @if(productForm.get('FlashPoint').touched && productForm.get('FlashPoint').invalid){
                                 <div class="error-message">
                                     @if(productForm.get('FlashPoint').hasError('maxlength')){
-                                        <span>Max 10 Characters</span>
+                                        <span>Max 10 Chars</span>
                                     }
                                 </div>
                             }

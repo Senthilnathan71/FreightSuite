@@ -1,5 +1,5 @@
 <form [formGroup]="unitForm">
-    <div class="row">
+    <div class="row compact-form">
  
  
         <div class="col-12">
@@ -70,7 +70,7 @@
             <div class="col-md-6">
                 <div class="card h-100 mb-0">
                     <div class="card-body">
-                        <div class="row">
+                        <div class="row compact-form">
                             <aside class="col-md-12">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -80,9 +80,9 @@
                                     @if(unitForm.get('unitName')?.touched && unitForm.get('unitName')?.invalid){
                                     <div class="error-message">
                                         @if(unitForm.get('unitName')?.hasError('required')){
-                                        <span>Unit Name is required</span>
+                                        <span>Required</span>
                                         } @else if(unitForm.get('unitName')?.hasError('maxlength')){
-                                        <span>Max 100 Characters</span>
+                                        <span>Max 100 Chars</span>
                                         }
                                     </div>
                                     }
@@ -98,9 +98,9 @@
                                     @if(unitForm.get('unitCode')?.touched && unitForm.get('unitCode')?.invalid){
                                     <div class="error-message">
                                         @if(unitForm.get('unitCode')?.hasError('required')){
-                                        <span>Unit Code is required</span>
+                                        <span>Required</span>
                                         } @else if(unitForm.get('unitCode')?.hasError('maxlength')){
-                                        <span>Max 4 Characters</span>
+                                        <span>Max 4 Chars</span>
                                         }
                                     </div>
                                     }
@@ -122,7 +122,7 @@
     @if(unitForm.get('containerType')?.touched && unitForm.get('containerType')?.invalid){
     <div class="error-message">
       @if(unitForm.get('containerType')?.hasError('required')){
-      <span>Container Type is required</span>
+      <span>Required</span>
       }
     </div>
     }
@@ -144,9 +144,9 @@
                                     @if(unitForm.get('Remarks')?.touched && unitForm.get('Remarks')?.invalid){
                                     <div class="error-message">
                                         @if(unitForm.get('Remarks')?.hasError('required')){
-                                        <span>Remarks is required</span>
+                                        <span>Required</span>
                                         } @else if(unitForm.get('Remarks')?.hasError('maxlength')){
-                                        <span>Max 100 Characters</span>
+                                        <span>Max 100 Chars</span>
                                         }
                                     </div>
                                     }
@@ -171,9 +171,9 @@
                                 @if(unitForm.get('jobType')?.touched && unitForm.get('jobType')?.invalid){
                                 <div class="error-message">
                                     @if(unitForm.get('jobType')?.hasError('required')){
-                                    <span>Job Type is required</span>
+                                    <span>Required</span>
                                     } @else if(unitForm.get('jobType')?.hasError('maxlength')){
-                                    <span>Max 10 Characters</span>
+                                    <span>Max 10 Chars</span>
                                     }
                                 </div>
                                 }
@@ -193,9 +193,9 @@
                                 unitForm.get('measurementType')?.invalid){
                                 <div class="error-message">
                                     @if(unitForm.get('measurementType')?.hasError('required')){
-                                    <span>Measurement Type is required</span>
+                                    <span>Required</span>
                                     } @else if(unitForm.get('measurementType')?.hasError('maxlength')){
-                                    <span>Max 10 Characters</span>
+                                    <span>Max 10 Chars</span>
                                     }
                                 </div>
                                 }

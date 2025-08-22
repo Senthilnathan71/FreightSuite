@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
@@ -61,7 +61,7 @@
                                     departmentForm.get('departmentName')?.invalid){
 
                                     @if(departmentForm.get('departmentName')?.hasError('required')){
-                                    <span>Department Name is required</span>
+                                    <span>Required</span>
                                     }
 
                                     @else if(departmentForm.get('departmentName')?.hasError('numberNotAllowed')){
@@ -69,7 +69,7 @@
                                     }
 
                                     @else if(departmentForm.get('departmentName')?.hasError('maxlength')){
-                                    <span>Max 20 characters</span>
+                                    <span>Max 20 chars</span>
                                     }
                                     }
                                 </div>
@@ -88,11 +88,11 @@
                                     departmentForm.get('departmentCode')?.invalid){
 
                                     @if(departmentForm.get('departmentCode')?.hasError('required')){
-                                    <span>Department Code is required</span>
+                                    <span>Required</span>
                                     }
 
                                     @else if(departmentForm.get('departmentCode')?.hasError('maxlength')){
-                                    <span>Max 5 characters</span>
+                                    <span>Max 5 chars</span>
                                     }
                                     }
                                 </div>
@@ -113,7 +113,7 @@
                                     @if(departmentForm.get('departmentType')?.touched &&
                                     departmentForm.get('departmentType')?.invalid){
                                     @if(departmentForm.get('departmentType')?.hasError('required')){
-                                    <span>Department Type is required</span>
+                                    <span>Required</span>
                                     }
                                     }
                                 </div>
@@ -133,7 +133,7 @@
                                     departmentForm.get('ExportImport')?.invalid){
 
                                     @if(departmentForm.get('ExportImport')?.hasError('required')){
-                                    <span>Export/Import is required</span>
+                                    <span>Required</span>
                                     }
                                     }
                                 </div>
@@ -153,7 +153,7 @@
                                     departmentForm.get('FCLLCL')?.invalid){
 
                                     @if(departmentForm.get('FCLLCL')?.hasError('required')){
-                                    <span>FCL/LCL is required</span>
+                                    <span>Required</span>
                                     }
                                     }
                                 </div>
@@ -173,7 +173,7 @@
                                     departmentForm.get('Division')?.invalid){
 
                                     @if(departmentForm.get('Division')?.hasError('maxlength')){
-                                    <span>Max 20 Characters</span>
+                                    <span>Max 20 Chars</span>
                                     }
                                     }
                                 </div>
@@ -189,29 +189,48 @@
                                     @if(departmentForm.get('Remarks')?.touched &&
                                     departmentForm.get('Remarks')?.invalid){
                                     @if(departmentForm.get('Remarks')?.hasError('maxlength')){
-                                    <span>Max 20 Characters</span>
+                                    <span>Max 20 Chars</span>
                                     }
                                     }
                                 </div>
                             </div>
                         </aside>
+<aside class="col-md-4">
+  <div class="custom-form-group custom-form-group-select">
+    @if(isEditMode){
+      <ng-select 
+        [items]="['Active', 'Suspended']"
+        formControlName="Status"
+        bindLabel=""
+        bindValue=""
+       
+        [class.is-invalid]="departmentForm.get('Status')?.invalid && departmentForm.get('Status')?.touched">
+      </ng-select>
+    } @else {
+      <ng-select 
+        [items]="['Active', 'Suspended']"
+        formControlName="Status"
+        bindLabel=""
+        bindValue=""
+     
+        [searchable]="false"
+        [clearable]="false"
+        [disabled]="true">
+      </ng-select>
+    }
 
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                @if(isEditMode){
-                                <select name="status" class="form-select" formControlName="Status" id="text-input">
-                                    <option value="Active">Active</option>
-                                    <option value="Suspended">Suspended</option>
-                                </select>
-                                } @else {
-                                <input type="text" name="Status" class="custom-input-field sm" formControlName="Status"
-                                    id="text-input" readonly>
-                                }
-                                <label for="text-input" class="input-label">
-                                    Status <span class="text-danger fw-bold">*</span>
-                                </label>
-                            </div>
-                        </aside>
+    <label for="text-input" class="input-label">
+      Status <span class="text-danger fw-bold">*</span>
+    </label>
+
+    @if(departmentForm.get('Status')?.touched && departmentForm.get('Status')?.invalid){
+      <div class="error-message">
+        <span>Required</span>
+      </div>
+    }
+  </div>
+</aside>
+
                     </div>
                 </div>
             </div>

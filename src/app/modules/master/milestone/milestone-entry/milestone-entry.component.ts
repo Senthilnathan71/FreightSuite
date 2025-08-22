@@ -53,6 +53,7 @@ export class MilestoneEntryComponent implements OnInit {
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   currentCompany:any;
+  currentBranch:any;
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -66,6 +67,7 @@ export class MilestoneEntryComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     // this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     // Load departments after setting current company
   console.log('Current Company:', this.currentCompany);
@@ -194,6 +196,7 @@ export class MilestoneEntryComponent implements OnInit {
     
     const payload = {
       CompanyMasterSid :this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid:this.currentBranch?.BranchMasterSid,
       ...formValue,
       DepartmentMasterSid: Number(formValue.DepartmentMasterSid),
       status: this.isEditMode ? formValue.status : 'A',

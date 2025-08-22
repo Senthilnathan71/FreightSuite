@@ -1,5 +1,5 @@
 <form [formGroup]="portForm">
-    <div class="row">
+    <div class="row compact-form">
         <div class="col-12">
             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
                 <div class="col-md-4 d-flex pb-2">
@@ -51,9 +51,9 @@
                                 @if(portForm.get('PortName').touched && portForm.get('PortName').invalid){
                                 <div class="error-message">
                                     @if(portForm.get('PortName').hasError('required')){
-                                    <span>Port Name is required</span>
+                                    <span>Required</span>
                                     } @else if(portForm.get('PortName').hasError('maxlength')){
-                                    <span>Max 50 Characters</span>
+                                    <span>Max 50 Chars</span>
                                     }
                                 </div>
                                 }
@@ -68,9 +68,9 @@
                                 @if(portForm.get('PortCode').touched && portForm.get('PortCode').invalid){
                                 <div class="error-message">
                                     @if(portForm.get('PortCode').hasError('required')){
-                                    <span>Port Code is required</span>
+                                    <span>Required</span>
                                     } @else if(portForm.get('PortCode').hasError('maxlength')){
-                                    <span>Max 3 Characters</span>
+                                    <span>Max 3 Chars</span>
                                     }
                                 </div>
                                 }
@@ -87,8 +87,7 @@
                                     *ngIf="portForm.get('CountryMasterSid')?.touched && portForm.get('CountryMasterSid')?.invalid">
                                     <p *ngIf="portForm.get('CountryMasterSid')?.errors?.['required']"
                                         class="error-message">
-                                        Country
-                                        is required.
+                                        Required.
                                     </p>
                                 </div>
                             </div>
@@ -118,7 +117,7 @@
                                 <div
                                     *ngIf="portForm.get('ZoneMasterSid')?.touched && portForm.get('ZoneMasterSid')?.invalid">
                                     <p *ngIf="portForm.get('ZoneMasterSid')?.errors?.['required']"
-                                        class="error-message">Region is required.
+                                        class="error-message">Required
                                     </p>
                                 </div>
                             </div>
@@ -139,7 +138,7 @@
                                 <div
                                     *ngIf="portForm.get('TerminalCode')?.touched && portForm.get('TerminalCode')?.invalid">
                                     <p *ngIf="portForm.get('TerminalCode')?.errors?.['maxlength']"
-                                        class="error-message">Max 10 Characters
+                                        class="error-message">Max 10 Chars
                                     </p>
                                 </div>
                             </div>
@@ -152,7 +151,7 @@
                                 <div
                                     *ngIf="portForm.get('EdiPortCode')?.touched && portForm.get('EdiPortCode')?.invalid">
                                     <p *ngIf="portForm.get('EdiPortCode')?.errors?.['maxlength']" class="error-message">
-                                        Max 10 Characters
+                                        Max 10 Chars
                                     </p>
                                 </div>
                             </div>
@@ -165,7 +164,7 @@
                                 <div
                                     *ngIf="portForm.get('SCMTPortCode')?.touched && portForm.get('SCMTPortCode')?.invalid">
                                     <p *ngIf="portForm.get('SCMTPortCode')?.errors?.['maxlength']"
-                                        class="error-message">Max 10 Characters</p>
+                                        class="error-message">Max 10 Chars</p>
                                 </div>
                             </div>
                         </aside>
@@ -287,7 +286,7 @@
                                     *ngIf="portForm.get('ExportRestriction')?.touched && portForm.get('ExportRestriction')?.invalid">
                                     <p *ngIf="portForm.get('ExportRestriction')?.errors?.['maxlength']"
                                         class="error-message">
-                                        Max 100 Characters</p>
+                                        Max 100 Chars</p>
                                 </div>
                             </div>
                         </aside>
@@ -300,7 +299,7 @@
                                     *ngIf="portForm.get('ImportRestriction')?.touched && portForm.get('ImportRestriction')?.invalid">
                                     <p *ngIf="portForm.get('ImportRestriction')?.errors?.['maxlength']"
                                         class="error-message">
-                                        Max 100 Characters</p>
+                                        Max 100 Chars</p>
                                 </div>
                             </div>
                         </aside>
@@ -311,7 +310,7 @@
                                 <label for="text-input" class="input-label">Remarks</label>
                                 <div *ngIf="portForm.get('Remarks')?.touched && portForm.get('Remarks')?.invalid">
                                     <p *ngIf="portForm.get('Remarks')?.errors?.['maxlength']" class="error-message">
-                                        Max 100 Characters</p>
+                                        Max 100 Chars</p>
                                 </div>
                             </div>
                         </aside>

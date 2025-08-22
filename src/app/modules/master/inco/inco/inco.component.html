@@ -25,7 +25,7 @@
   (onResetClick)="resetPage()"
   (onSearchClick)="onSearch($event)">
     </app-listpage> -->
-<div class="row">
+<div class="row compact-form">
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
       <div class="col pb-2">
@@ -185,7 +185,7 @@
       <form [formGroup]="incoForm">
         <div class="col-md-12">
 
-          <div class="row">
+          <div class="row compact-form">
             <aside class="col-md-6">
               <div class="custom-form-group">
                 <input type="text" formControlName="IncoCode" id="text-input" placeholder=""
@@ -194,9 +194,9 @@
                 @if(incoForm.get('IncoCode')?.touched && incoForm.get('IncoCode')?.invalid){
                 <div class="error-message">
                   @if(incoForm.get('IncoCode')?.hasError('required')){
-                  <span>Inco Code is required</span>
+                  <span>Required</span>
                   } @else if(incoForm.get('IncoCode')?.hasError('maxlength')){
-                  <span>Max 9 Characters</span>
+                  <span>Max 9 Chars</span>
                   }
                 </div>
                 }
@@ -210,9 +210,9 @@
                 @if(incoForm.get('IncoName')?.touched && incoForm.get('IncoName')?.invalid){
                 <div class="error-message">
                   @if(incoForm.get('IncoName')?.hasError('required')){
-                  <span>Inco Name is required</span>
+                  <span>Required</span>
                   } @else if(incoForm.get('IncoName')?.hasError('maxlength')){
-                  <span>Max 100 Characters</span>
+                  <span>Max 100 Chars</span>
                   } @else if(incoForm.get('IncoName')?.hasError('numberNotAllowed')){
                   <span>Only Alphabets are allowed</span>
                   }
@@ -231,7 +231,7 @@
                 @if(incoForm.get('IncoType')?.touched && incoForm.get('IncoType')?.invalid){
                 <div class="error-message">
                   @if(incoForm.get('IncoType')?.hasError('required')){
-                  <span>Inco Type is required</span>
+                  <span>Required</span>
                   } @else if(incoForm.get('IncoType')?.hasError('min') || incoForm.get('IncoType')?.hasError('max')){
                   <span>Tax Rate must be between 0 and 100</span>
                   }
@@ -248,7 +248,7 @@
                 @if(incoForm.get('OceanFreight')?.touched && incoForm.get('OceanFreight')?.invalid){
                 <div class="error-message">
                   @if(incoForm.get('OceanFreight')?.hasError('required')){
-                  <span>Ocean Freight is required</span>
+                  <span>Required</span>
                   } @else if(incoForm.get('OceanFreight')?.hasError('min') ||
                   incoForm.get('OceanFreight')?.hasError('max')){
                   <span>Tax Rate must be between 0 and 100</span>
@@ -266,7 +266,7 @@
                 @if(incoForm.get('IncoDescription')?.touched && incoForm.get('IncoDescription')?.invalid){
                 <div class="error-message">
                   @if(incoForm.get('IncoDescription')?.hasError('maxlength')){
-                  <span>Max 500 Characters</span>
+                  <span>Max 500 Chars</span>
                   }
                 </div>
                 }
@@ -280,7 +280,7 @@
                 @if(incoForm.get('Remarks')?.touched && incoForm.get('Remarks')?.invalid){
                 <div class="error-message">
                   @if(incoForm.get('Remarks')?.hasError('maxlength')){
-                  <span>Max 500 Characters</span>
+                  <span>Max 500 Chars</span>
                   }
                 </div>
                 }
@@ -299,7 +299,7 @@
                 <label class="input-label">Status <span class="text-danger">*</span></label>
                 @if(incoForm.get('Status')?.touched && incoForm.get('Status')?.invalid){
                 <div class="error-message">
-                  <span>Status is required</span>
+                  <span>Required</span>
                 </div>
                 }
               </div>

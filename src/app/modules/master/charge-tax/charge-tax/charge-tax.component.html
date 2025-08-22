@@ -24,7 +24,7 @@
   (onResetClick)="resetPage()"
   (onSearchClick)="onSearch($event)">
     </app-listpage> -->
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
@@ -181,7 +181,7 @@
             <form [formGroup]="chargeTaxForm">
                 <div class="col-md-12">
 
-                    <div class="row">
+                    <div class="row compact-form">
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="HSNCode" formControlName="HSNCode" placeholder=""
@@ -192,9 +192,9 @@
                                 chargeTaxForm.get('HSNCode')?.invalid){
                                 <div class="error-message">
                                     @if(chargeTaxForm.get('HSNCode')?.hasError('required')){
-                                    <span>HSN Code is required</span>
+                                    <span> Required</span>
                                     } @else if(chargeTaxForm.get('HSNCode')?.hasError('maxlength')){
-                                    <span>Max 10 Characters</span>
+                                    <span>Max 10 Chars</span>
                                     }
                                 </div>
                                 }
@@ -210,9 +210,9 @@
                                 chargeTaxForm.get('description')?.invalid){
                                 <div class="error-message">
                                     @if(chargeTaxForm.get('description')?.hasError('required')){
-                                    <span>Description is required</span>
+                                    <span>Required</span>
                                     } @else if(chargeTaxForm.get('description')?.hasError('maxlength')){
-                                    <span>Max 100 Characters</span>
+                                    <span>Max 100 Chars</span>
                                     }
                                 </div>
                                 }
@@ -220,7 +220,7 @@
                         </aside>
                         <aside class="col-md-6">
                             <div class="custom-form-group">
-                                <input type="text" id="TaxGroup" formControlName="TaxGroup"
+                                <input type="text" id="TaxGroup" formControlName="TaxGroup"  placeholder=""
                                     class="custom-input-field sm">
                                 <label for="TaxGroup" class="input-label">Tax Group <span
                                         class="text-danger fw-bold">*</span></label>
@@ -228,9 +228,9 @@
                                 chargeTaxForm.get('TaxGroup')?.invalid){
                                 <div class="error-message">
                                     @if(chargeTaxForm.get('TaxGroup')?.hasError('required')){
-                                    <span>Tax Group is required</span>
+                                    <span>Required</span>
                                     } @else if(chargeTaxForm.get('TaxGroup')?.hasError('maxlength')){
-                                    <span>Max 10 Characters</span>
+                                    <span>Max 10 Chars</span>
                                     }
                                 </div>
                                 }
@@ -238,7 +238,7 @@
                         </aside>
                         <aside class="col-md-6">
                             <div class="custom-form-group">
-                                <input type="number" step="0.01" id="TaxRate" formControlName="TaxRate"
+                                <input type="number" step="0.01" id="TaxRate" formControlName="TaxRate"  placeholder=""
                                     class="custom-input-field sm">
                                 <label for="TaxRate" class="input-label">Tax Rate (%) <span
                                         class="text-danger fw-bold">*</span></label>
@@ -246,7 +246,7 @@
                                 chargeTaxForm.get('TaxRate')?.invalid){
                                 <div class="error-message">
                                     @if(chargeTaxForm.get('TaxRate')?.hasError('required')){
-                                    <span>Tax Rate is required</span>
+                                    <span>Required</span>
                                     } @else if(chargeTaxForm.get('TaxRate')?.hasError('min') ||
                                     chargeTaxForm.get('TaxRate')?.hasError('max')){
                                     <span>Must be between 0 and 100</span>
@@ -257,7 +257,7 @@
                         </aside>
                         <aside class="col-md-6">
                             <div class="custom-form-group">
-                                <input type="text" id="Remarks" formControlName="Remarks" class="custom-input-field sm">
+                                <input type="text" id="Remarks" formControlName="Remarks" class="custom-input-field sm"  placeholder="">
                                 <label for="Remarks" class="input-label">Remarks</label>
                             </div>
                         </aside>

@@ -45,7 +45,7 @@
     <div class="col-12">
         <div class="card h-100 mb-0">
             <div class="card-body">
-                <div class="row">
+                <div class="row compact-form">
                     <h6 class="card-title mb-0">Vessel Information</h6>
 
                     <aside class="col-md-4">
@@ -56,16 +56,16 @@
                             @if(vesselForm.get('VesselName')?.touched && vesselForm.get('VesselName')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('VesselName')?.hasError('required')){
-                                <span>Vessel Name is required</span>
+                                <span>Required</span>
                                 } @else if(vesselForm.get('VesselName')?.hasError('maxlength')) {
-                                <span>Max 100 characters</span>
+                                <span>Max 100 chars</span>
                                 }
                             </div>
                             }
                         </div>
                     </aside>
 
-                    <aside class="col-md-2">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="VesselShortCode" placeholder=""
                                 class="custom-input-field sm" [onlyText]="5">
@@ -74,16 +74,16 @@
                             vesselForm.get('VesselShortCode')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('VesselShortCode')?.hasError('required')){
-                                <span>VesselCode is required</span>
+                                <span>Required</span>
                                 } @else if(vesselForm.get('VesselShortCode')?.hasError('maxlength')) {
-                                <span>Max 5 characters</span>
+                                <span>Max 5 chars</span>
                                 }
                             </div>
                             }
                         </div>
                     </aside>
 
-                    <aside class="col-md-2">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="IMOCode" placeholder=""
                                 class="custom-input-field sm" [onlyText]="10">
@@ -92,15 +92,15 @@
                             @if(vesselForm.get('IMOCode')?.touched && vesselForm.get('IMOCode')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('IMOCode')?.hasError('required')){
-                                <span>IMO code is required</span>
+                                <span>Required</span>
                                 } @else if(vesselForm.get('IMOCode')?.hasError('maxlength')) {
-                                <span>Max 10 characters</span>
+                                <span>Max 10 chars</span>
                                 }
                             </div>
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-2">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="CallSignIn" placeholder=""
                                 class="custom-input-field sm" [onlyText]="10">
@@ -109,15 +109,15 @@
                             @if(vesselForm.get('CallSignIn')?.touched && vesselForm.get('CallSignIn')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('CallSignIn')?.hasError('required')){
-                                <span>Call Sign In is required</span>
+                                <span>Required</span>
                                 } @else if(vesselForm.get('CallSignIn')?.hasError('maxlength')) {
-                                <span>Max 10 characters</span>
+                                <span>Max 10 chars</span>
                                 }
                             </div>
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-2">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="YearofBuilt" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="4">
@@ -126,7 +126,7 @@
                             @if(vesselForm.get('YearofBuilt')?.touched && vesselForm.get('YearofBuilt')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('YearofBuilt')?.hasError('required')){
-                                <span>Year of built is required</span>
+                                <span>Required</span>
                                 } @else if(vesselForm.get('YearofBuilt')?.hasError('onlyNumbers')) {
                                 <span>Only digit are allowed</span>
                                 } @else if(vesselForm.get('YearofBuilt')?.hasError('maxlength')){
@@ -136,7 +136,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-2">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="MMSINo" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="">
@@ -145,7 +145,7 @@
                             @if(vesselForm.get('MMSINo')?.touched && vesselForm.get('MMSINo')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('MMSINo')?.hasError('required')){
-                                <span>MMSI no is required</span>
+                                <span>Required</span>
                                 } @else if(vesselForm.get('MMSINo')?.hasError('onlyNumbers')) {
                                 <span>Only digit are allowed</span>
                                 }
@@ -153,7 +153,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-2">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="GRT" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="">
@@ -161,7 +161,7 @@
                             @if(vesselForm.get('GRT')?.touched && vesselForm.get('GRT')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('GRT')?.hasError('required')){
-                                <span>GRT is required</span>
+                                <span>Required</span>
                                 } @else if(vesselForm.get('GRT')?.hasError('onlyNumbers')) {
                                 <span>Only digit are allowed</span>
                                 }
@@ -169,7 +169,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-2">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="NRT" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="">
@@ -177,7 +177,7 @@
                             @if(vesselForm.get('NRT')?.touched && vesselForm.get('NRT')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('NRT')?.hasError('required')){
-                                <span>NRT is required</span>
+                                <span>Required</span>
                                 } @else if(vesselForm.get('NRT')?.hasError('onlyNumbers')) {
                                 <span>Only digit are allowed</span>
                                 }
@@ -186,10 +186,8 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-2">
+                    <!-- <aside class="col-md-2">
                         <div class="custom-form-group">
-                            <!-- <input type="text" id="text-input" formControlName="VesselType" placeholder=""
-                                class="custom-input-field sm"> -->
                             <select name="vesselType" id="" class="form-select" formControlName="VesselType"
                                 [onlyText]="10">
                                 <option value="">Vessel Type</option>
@@ -202,16 +200,46 @@
                             @if(vesselForm.get('VesselType')?.touched && vesselForm.get('VesselType')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('VesselType')?.hasError('required')){
-                                <span>Vessel Type is required</span>
+                                <span>Required</span>
                                 } @else if(vesselForm.get('VesselType')?.hasError('numberNotAllowed')) {
                                 <span>Only alphabets are allowed</span>
                                 }
                                 @else if(vesselForm.get('VesselType')?.hasError('maxlength')) {
-                                <span>Max 10 characters</span>
+                                <span>Max 10 chars</span>
                                 }
                             </div>
                             }
                         </div>
+                    </aside> -->
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                        <ng-select
+                            [items]="vesselTypes"
+                            formControlName="VesselType"
+                            placeholder="Vessel Type"
+                            [searchable]="false"
+                            [clearable]="false">
+                        </ng-select>
+
+                        <label for="text-input" class="input-label">
+                            Vessel Type <span class="text-danger">*</span>
+                        </label>
+
+                        @if(vesselForm.get('VesselType')?.touched && vesselForm.get('VesselType')?.errors){
+                            <div class="error-message">
+                            @if(vesselForm.get('VesselType')?.hasError('required')){
+                                <span>Required</span>
+                            } 
+                            @else if(vesselForm.get('VesselType')?.hasError('numberNotAllowed')){
+                                <span>Only alphabets are allowed</span>
+                            } 
+                            @else if(vesselForm.get('VesselType')?.hasError('maxlength')){
+                                <span>Max 10 chars</span>
+                            }
+                            </div>
+                        }
+                        </div>
+
                     </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
@@ -222,18 +250,18 @@
                             @if(vesselForm.get('VesselOperator')?.touched && vesselForm.get('VesselOperator')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('VesselOperator')?.hasError('required')){
-                                <span>Vessel Operator is required</span>
+                                <span>Required</span>
                                 } @else if(vesselForm.get('VesselOperator')?.hasError('numberNotAllowed')) {
                                 <span>Only alphabets are allowed</span>
                                 }
                                 @else if(vesselForm.get('VesselOperator')?.hasError('maxlength')) {
-                                <span>Max 100 characters</span>
+                                <span>Max 100 chars</span>
                                 }
                             </div>
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-2">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="LengthinMtr" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="">
@@ -242,7 +270,7 @@
                             @if(vesselForm.get('LengthinMtr')?.touched && vesselForm.get('LengthinMtr')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('LengthinMtr')?.hasError('required')){
-                                <span>Length is required</span>
+                                <span>Required</span>
                                 } @else if(vesselForm.get('LengthinMtr')?.hasError('onlyNumbers')) {
                                 <span>Only digit are allowed</span>
                                 }
@@ -250,7 +278,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-2">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="BreadthinMtr" placeholder=""
                                 class="custom-input-field sm" [onlyNumbers]="">
@@ -259,7 +287,7 @@
                             @if(vesselForm.get('BreadthinMtr')?.touched && vesselForm.get('BreadthinMtr')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('BreadthinMtr')?.hasError('required')){
-                                <span>Breadth is required</span>
+                                <span>Required</span>
                                 } @else if(vesselForm.get('BreadthinMtr')?.hasError('onlyNumbers')) {
                                 <span>Only digit are allowed</span>
                                 }
@@ -267,7 +295,7 @@
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-6">
+                    <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" formControlName="Remarks" placeholder=""
                                 class="custom-input-field sm" [textWithNumbers]="200">
@@ -276,17 +304,17 @@
                             @if(vesselForm.get('Remarks')?.touched && vesselForm.get('Remarks')?.errors){
                             <div class="error-message">
                                 @if(vesselForm.get('Remarks')?.hasError('required')){
-                                <span>Remarks is required</span>
+                                <span>Required</span>
                                 } @else if(vesselForm.get('Remarks')?.hasError('maxlength')) {
-                                <span>Max 200 characters</span>
+                                <span>Max 200 chars</span>
                                 }
                             </div>
                             }
                         </div>
                     </aside>
-                    <aside class="col-md-2">
+                    <!-- <aside class="col-md-4">
                         <div class="custom-form-group">
-                            <!-- <input type="text" id="text-input" placeholder="" class="custom-input-field sm"> -->
+                        
                             @if(isEditMode){
                             <select name="status" class="form-select" formControlName="status" id="text-input">
                                 <option value="Active">Active</option>
@@ -298,7 +326,30 @@
                             }
                             <label for="text-input" class="input-label">Status<span class="text-danger"></span></label>
                         </div>
-                    </aside>
+                    </aside> -->
+                   <aside class="col-md-4">
+  <div class="custom-form-group">
+    <ng-select *ngIf="isEditMode"
+      formControlName="status"
+      [items]="['Active', 'Suspended']"
+      bindLabel=""
+      bindValue=""
+      class="custom-input-field sm" style="border: none;">
+    </ng-select>
+
+    <input *ngIf="!isEditMode"
+      type="text"
+      class="custom-input-field sm"
+      formControlName="status"
+      readonly>
+
+    <label for="text-input" class="input-label">
+      Status <span class="text-danger"></span>
+    </label>
+  </div>
+</aside>
+
+
 
                 </div>
             </div>

@@ -29,7 +29,7 @@
   (onSearchClick)="onSearch($event)">
     </app-listpage> -->
 
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
@@ -208,7 +208,7 @@
             <form [formGroup]="hssacForm">
                 <div class="col-md-12">
 
-                    <div class="row">
+                    <div class="row compact-form">
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" formControlName="HSSACName" placeholder=""
@@ -218,11 +218,11 @@
                                 @if(hssacForm.get('HSSACName')?.touched && hssacForm.get('HSSACName')?.invalid){
                                 <div class="error-message">
                                     @if(hssacForm.get('HSSACName')?.hasError('required')){
-                                    <span>HS-SAC Name is required</span>
+                                    <span>Required</span>
                                     } @else if(hssacForm.get('HSSACName')?.hasError('maxlength')){
-                                    <span>Max 100 Characters</span>
+                                    <span>Max 100 Chars</span>
                                     } @else if(hssacForm.get('HSSACName')?.hasError('numberNotAllowed')){
-                                    <span>Only Alphabets are allowed</span>
+                                    <span>Only Alphabets</span>
                                     }
                                 </div>
                                 }
@@ -237,9 +237,9 @@
                                 @if(hssacForm.get('HSSACCode')?.touched && hssacForm.get('HSSACCode')?.invalid){
                                 <div class="error-message">
                                     @if(hssacForm.get('HSSACCode')?.hasError('required')){
-                                    <span>HS-SAC Code is required</span>
+                                    <span>Required</span>
                                     } @else if(hssacForm.get('HSSACCode')?.hasError('maxlength')){
-                                    <span>Max 9 Characters</span>
+                                    <span>Max 9 Chars</span>
                                     }
                                 </div>
                                 }
@@ -254,9 +254,9 @@
                                 @if(hssacForm.get('ServiceName')?.touched && hssacForm.get('ServiceName')?.invalid){
                                 <div class="error-message">
                                     @if(hssacForm.get('ServiceName')?.hasError('required')){
-                                    <span>Service Name is required</span>
+                                    <span>Required</span>
                                     } @else if(hssacForm.get('ServiceName')?.hasError('maxlength')){
-                                    <span>Max 100 Characters</span>
+                                    <span>Max 100 Chars</span>
                                     }
                                 </div>
                                 }
@@ -271,7 +271,7 @@
                                 @if(hssacForm.get('TaxRate')?.touched && hssacForm.get('TaxRate')?.invalid){
                                 <div class="error-message">
                                     @if(hssacForm.get('TaxRate')?.hasError('required')){
-                                    <span>Tax Rate is required</span>
+                                    <span>Required</span>
                                     } @else if(hssacForm.get('TaxRate')?.hasError('min') ||
                                     hssacForm.get('TaxRate')?.hasError('max')){
                                     <span>Tax Rate must be between 0 and 100</span>
@@ -288,7 +288,7 @@
                                 @if(hssacForm.get('TaxRate')?.touched && hssacForm.get('TaxRate')?.invalid){
                                 <div class="error-message">
                                     @if(hssacForm.get('TaxRate')?.hasError('required')){
-                                    <span>Tax Rate is required</span>
+                                    <span>Required</span>
                                     } @else if(hssacForm.get('TaxRate')?.hasError('min') ||
                                     hssacForm.get('TaxRate')?.hasError('max')){
                                     <span>Tax Rate must be between 0 and 100</span>
@@ -325,7 +325,7 @@
                                         [footerTemplate]="footerTemplate2" readonly />
 
                                 <button 
-                                    class="btn btn-info bi bi-calendar3 text-white" 
+                                    class="btn bi bi-calendar3" 
                                       (click)="d2.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>
@@ -337,7 +337,7 @@
                                  <div
                                         *ngIf="hssacForm.get('EffectiveFrom')?.touched && hssacForm.get('EffectiveFrom')?.invalid">
                                         <p *ngIf="hssacForm.get('EffectiveFrom')?.errors?.['required']"
-                                            class="error-message">Effective From date is required.</p>
+                                            class="error-message">Required</p>
                                     </div>
                             </div>
                             </aside>
@@ -361,9 +361,9 @@
                                 @if(hssacForm.get('Remarks')?.touched && hssacForm.get('Remarks')?.invalid){
                                 <div class="error-message">
                                     @if(hssacForm.get('Remarks')?.hasError('required')){
-                                    <span>Remarks is required</span>
+                                    <span>Required</span>
                                     } @else if(hssacForm.get('Remarks')?.hasError('maxlength')){
-                                    <span>Max 500 Characters</span>
+                                    <span>Max 500 Chars</span>
                                     }
                                 </div>
                                 }
@@ -380,7 +380,7 @@
                                 <label class="input-label">Status <span class="text-danger">*</span></label>
                                 @if(hssacForm.get('status')?.touched && hssacForm.get('status')?.invalid){
                                 <div class="error-message">
-                                    <span>Status is required</span>
+                                    <span>Required</span>
                                 </div>
                                 }
                             </div>

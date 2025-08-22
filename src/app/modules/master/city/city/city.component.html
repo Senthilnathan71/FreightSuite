@@ -25,7 +25,7 @@
   (onResetClick)="resetPage()"
   (onSearchClick)="onSearch($event)">
     </app-listpage> -->
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
@@ -185,7 +185,7 @@
             <form [formGroup]="cityForm">
                 <div class="col-md-12">
 
-                    <div class="row">
+                    <div class="row compact-form">
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input formControlName="cityName" type="text" id="text-input" placeholder=""
@@ -195,9 +195,9 @@
                                 @if(cityForm.get('cityName')?.touched && cityForm.get('cityName')?.invalid){
                                 <div class="error-message">
                                     @if(cityForm.get('cityName')?.hasError('required')){
-                                    <span>City Name is required</span>
+                                    <span>Required</span>
                                     } @else if(cityForm.get('cityName')?.hasError('maxlength')){
-                                    <span>Max 100 Characters</span>
+                                    <span>Max 100 Chars</span>
                                     } @else if(cityForm.get('cityName')?.hasError('numberNotAllowed')){
                                     <span>Only Alphabets are allowed</span>
                                     }
@@ -215,16 +215,16 @@
                                 @if(cityForm.get('cityCode')?.touched && cityForm.get('cityCode')?.invalid){
                                 <div class="error-message">
                                     @if(cityForm.get('cityCode')?.hasError('required')){
-                                    <span>City Code is required</span>
+                                    <span>Required</span>
                                     } @else if(cityForm.get('cityCode')?.hasError('maxlength')){
-                                    <span>Max 3 Characters</span>
+                                    <span>Max 3 Chars</span>
                                     }
                                 </div>
                                 }
                             </div>
                         </aside>
 
-                        <aside class="col-md-6">
+                        <!-- <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <select formControlName="CountryMasterSid" class="form-select">
                                     <option value="" disabled selected>Select Country</option>
@@ -237,14 +237,41 @@
                                 cityForm.get('CountryMasterSid')?.invalid){
                                 <div class="error-message">
                                     @if(cityForm.get('CountryMasterSid')?.hasError('required')){
-                                    <span>Country is required</span>
+                                    <span>Required</span>
                                     }
                                 </div>
                                 }
                             </div>
-                        </aside>
-
+                        </aside> -->
                         <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <ng-select 
+                                formControlName="CountryMasterSid"
+                                [items]="countryList"
+                                bindLabel="countryName"
+                                bindValue="CountryMasterSid"
+                                placeholder="Select Country"
+                               
+                                class="custom-input-field sm p-0"
+                                style="border: none;">
+                                </ng-select>
+
+                                <label for="text-input" class="input-label">
+                                Country <span class="text-danger fw-bold">*</span>
+                                </label>
+
+                                @if(cityForm.get('CountryMasterSid')?.touched && cityForm.get('CountryMasterSid')?.invalid){
+                                <div class="error-message">
+                                    @if(cityForm.get('CountryMasterSid')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                            </aside>
+
+
+                        <!-- <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <select formControlName="StateMasterSid" class="form-select">
                                     <option value="" disabled selected>Select State</option>
@@ -257,12 +284,40 @@
                                 cityForm.get('StateMasterSid')?.invalid){
                                 <div class="error-message">
                                     @if(cityForm.get('StateMasterSid')?.hasError('required')){
-                                    <span>State is required</span>
+                                    <span>Required</span>
                                     }
                                 </div>
                                 }
                             </div>
+                        </aside> -->
+
+                        <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <ng-select
+                            formControlName="StateMasterSid"
+                            [items]="stateList"
+                            bindLabel="stateName"
+                            bindValue="StateMasterSid"
+                            placeholder="Select State"
+                            class="custom-input-field sm p-0"
+                            style="border: none;"
+                                >
+                            </ng-select>
+
+                            <label for="text-input" class="input-label">
+                            State <span class="text-danger fw-bold">*</span>
+                            </label>
+
+                            @if(cityForm.get('StateMasterSid')?.touched && cityForm.get('StateMasterSid')?.invalid){
+                            <div class="error-message">
+                                @if(cityForm.get('StateMasterSid')?.hasError('required')){
+                                <span>Required</span>
+                                }
+                            </div>
+                            }
+                        </div>
                         </aside>
+
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select [items]="statusList" formControlName="status"
@@ -272,7 +327,7 @@
                                 <label class="input-label">Status <span class="text-danger">*</span></label>
                                 @if(cityForm.get('status')?.touched && cityForm.get('status')?.invalid){
                                 <div class="error-message">
-                                    <span>Status is required</span>
+                                    <span>Required</span>
                                 </div>
                                 }
                             </div>

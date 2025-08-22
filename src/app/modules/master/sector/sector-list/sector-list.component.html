@@ -8,7 +8,7 @@
     style="cursor: pointer;">
   </i>
 </div> -->
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
@@ -169,7 +169,7 @@
             <form [formGroup]="sectorForm">
                 <div class="col-md-12">
 
-                    <div class="row">
+                    <div class="row compact-form">
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="sectorName" formControlName="sectorName" placeholder=""
@@ -179,9 +179,9 @@
                                 @if(sectorForm.get('sectorName')?.touched && sectorForm.get('sectorName')?.invalid){
                                 <div class="error-message">
                                     @if(sectorForm.get('sectorName')?.hasError('required')){
-                                    <span>Sector Name is required</span>
+                                    <span>Required</span>
                                     } @else if(sectorForm.get('sectorName')?.hasError('maxlength')){
-                                    <span>Max 50 Characters</span>
+                                    <span>Max 50 Chars</span>
                                     }
                                 </div>
                                 }
@@ -196,9 +196,9 @@
                                 @if(sectorForm.get('sectorCode')?.touched && sectorForm.get('sectorCode')?.invalid){
                                 <div class="error-message">
                                     @if(sectorForm.get('sectorCode')?.hasError('required')){
-                                    <span>Sector Code is required</span>
+                                    <span>Required</span>
                                     } @else if(sectorForm.get('sectorCode')?.hasError('maxlength')){
-                                    <span>Max 10 Characters</span>
+                                    <span>Max 10 Chars</span>
                                     } @else if(sectorForm.get('sectorCode')?.hasError('invalidAlphaNumeric')){
                                     <span>Only alphanumeric characters allowed</span>
                                     } @else if(sectorForm.get('sectorCode')?.hasError('notUppercase')){

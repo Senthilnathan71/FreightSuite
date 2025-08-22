@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
@@ -50,8 +50,7 @@
 
         <div *ngIf="chargeForm.get('chargeCode')?.touched && chargeForm.get('chargeCode')?.invalid"
             class="error-message">
-            <span *ngIf="chargeForm.get('chargeCode')?.hasError('required')">Charge Code
-                is required</span>
+            <span *ngIf="chargeForm.get('chargeCode')?.hasError('required')">Required</span>
             <span *ngIf="chargeForm.get('chargeCode')?.hasError('maxlength')">Maximum 5
                 characters allowed</span>
             <span *ngIf="chargeForm.get('chargeCode')?.hasError('pattern')">Only uppercase letters and numbers allowed</span>
@@ -70,8 +69,7 @@
 
         <div *ngIf="chargeForm.get('chargeName')?.touched && chargeForm.get('chargeName')?.invalid"
             class="error-message">
-            <span *ngIf="chargeForm.get('chargeName')?.hasError('required')">Charge Name
-                is required</span>
+            <span *ngIf="chargeForm.get('chargeName')?.hasError('required')">Required</span>
             <span *ngIf="chargeForm.get('chargeName')?.hasError('maxlength')">Maximum 100
                 characters allowed</span>
             <span *ngIf="chargeForm.get('chargeName')?.hasError('duplicate')">This charge name already exists</span>
@@ -94,7 +92,7 @@
                                 <label class="input-label">Departments <span class="text-danger fw-semibold">*</span></label>
                                 <div *ngIf="chargeForm.get('DepartmentMasterSid')?.touched && chargeForm.get('DepartmentMasterSid')?.invalid">
                                     <p *ngIf="chargeForm.get('DepartmentMasterSid')?.errors?.['required']" class="error-message">
-                                        At least one department is required.
+                                        At least one dept is required.
                                     </p>
                                 </div>
                             </div>
@@ -111,7 +109,7 @@
                                         <label class="input-label">UOM <span class="text-danger">*</span></label>
                                         <div *ngIf="chargeForm.get('UOM')?.touched && chargeForm.get('UOM')?.invalid"
                                             class="error-message">
-                                            <span *ngIf="chargeForm.get('UOM')?.hasError('required')">UOM is required</span>
+                                            <span *ngIf="chargeForm.get('UOM')?.hasError('required')">Required</span>
                                         </div>
                                     </div>
                                 </aside>
@@ -126,7 +124,7 @@
                                         <label class="input-label">Currency <span class="text-danger">*</span></label>
                                         <div *ngIf="chargeForm.get('CurrencyMasterSid')?.touched && chargeForm.get('CurrencyMasterSid')?.invalid"
                                             class="error-message">
-                                            <span *ngIf="chargeForm.get('CurrencyMasterSid')?.hasError('required')">Currency is required</span>
+                                            <span *ngIf="chargeForm.get('CurrencyMasterSid')?.hasError('required')">Required</span>
                                         </div>
                                     </div>
                                 </aside>
@@ -141,7 +139,7 @@
                                         <label class="input-label">Charge Group <span class="text-danger">*</span></label>
                                         <div *ngIf="chargeForm.get('ChargeGroupSid')?.touched && chargeForm.get('ChargeGroupSid')?.invalid"
                                             class="error-message">
-                                            <span *ngIf="chargeForm.get('ChargeGroupSid')?.hasError('required')">Charge Group is required</span>
+                                            <span *ngIf="chargeForm.get('ChargeGroupSid')?.hasError('required')">Required</span>
                                         </div>
                                     </div>
                                 </aside>
@@ -164,7 +162,7 @@
                                         <label class="input-label">Status <span class="text-danger">*</span></label>
                                         <div *ngIf="chargeForm.get('Status')?.touched && chargeForm.get('Status')?.invalid"
                                             class="error-message">
-                                            <span *ngIf="chargeForm.get('Status')?.hasError('required')">Status is required</span>
+                                            <span *ngIf="chargeForm.get('Status')?.hasError('required')">Required</span>
                                         </div>
                                     </div>
                                 </aside>
@@ -356,7 +354,7 @@
     </div>
     <div class="modal-body">
         <form [formGroup]="gstForm">
-            <div class="row">
+            <div class="row compact-form">
                 <!-- HSN/SAC Code -->
                 <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select">
@@ -368,7 +366,7 @@
                         <label class="input-label">HSN/SAC Code <span class="text-danger">*</span></label>
                         <div *ngIf="gstForm.get('HSNCode')?.touched && gstForm.get('HSNCode')?.invalid"
                             class="error-message">
-                            <span *ngIf="gstForm.get('HSNCode')?.hasError('required')">HSN/SAC Code is required</span>
+                            <span *ngIf="gstForm.get('HSNCode')?.hasError('required')">Required</span>
                         </div>
                     </div>
                 </aside>
@@ -390,7 +388,7 @@
                         <label for="TaxGroup" class="input-label">Tax Group <span class="text-danger">*</span></label>
                         <div *ngIf="gstForm.get('TaxGroup')?.touched && gstForm.get('TaxGroup')?.invalid"
                             class="error-message">
-                            <span *ngIf="gstForm.get('TaxGroup')?.hasError('required')">Tax Group is required</span>
+                            <span *ngIf="gstForm.get('TaxGroup')?.hasError('required')">Required</span>
                         </div>
                     </div>
                 </aside>
@@ -403,7 +401,7 @@
                         <label for="TaxRate" class="input-label">Tax Rate (%) <span class="text-danger">*</span></label>
                         <div *ngIf="gstForm.get('TaxRate')?.touched && gstForm.get('TaxRate')?.invalid"
                             class="error-message">
-                            <span *ngIf="gstForm.get('TaxRate')?.hasError('required')">Tax Rate is required</span>
+                            <span *ngIf="gstForm.get('TaxRate')?.hasError('required')">Required</span>
                             <span *ngIf="gstForm.get('TaxRate')?.hasError('min')">Minimum value is 0</span>
                             <span *ngIf="gstForm.get('TaxRate')?.hasError('max')">Maximum value is 100</span>
                         </div>
@@ -420,7 +418,7 @@
                         <label class="input-label">Status <span class="text-danger">*</span></label>
                         <div *ngIf="gstForm.get('Status')?.touched && gstForm.get('Status')?.invalid"
                             class="error-message">
-                            <span *ngIf="gstForm.get('Status')?.hasError('required')">Status is required</span>
+                            <span *ngIf="gstForm.get('Status')?.hasError('required')">Required</span>
                         </div>
                     </div>
                 </aside>
@@ -446,7 +444,7 @@
     </div>
     <div class="modal-body">
         <form [formGroup]="tdsForm">
-            <div class="row">
+            <div class="row compact-form">
                 <!-- TDS Set -->
                 <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select">
@@ -457,7 +455,7 @@
                         <label class="input-label">TDS Set <span class="text-danger">*</span></label>
                         <div *ngIf="tdsForm.get('TDSSet')?.touched && tdsForm.get('TDSSet')?.invalid"
                             class="error-message">
-                            <span *ngIf="tdsForm.get('TDSSet')?.hasError('required')">TDS Set is required</span>
+                            <span *ngIf="tdsForm.get('TDSSet')?.hasError('required')">Required</span>
                         </div>
                     </div>
                 </aside>
@@ -470,7 +468,7 @@
                         <label for="EffectiveFrom" class="input-label">Effective From <span class="text-danger">*</span></label>
                         <div *ngIf="tdsForm.get('EffectiveFrom')?.touched && tdsForm.get('EffectiveFrom')?.invalid"
                             class="error-message">
-                            <span *ngIf="tdsForm.get('EffectiveFrom')?.hasError('required')">Effective From is required</span>
+                            <span *ngIf="tdsForm.get('EffectiveFrom')?.hasError('required')">Required</span>
                         </div>
                     </div>
                 </aside>
@@ -485,7 +483,7 @@
                         <label class="input-label">Status <span class="text-danger">*</span></label>
                         <div *ngIf="tdsForm.get('Status')?.touched && tdsForm.get('Status')?.invalid"
                             class="error-message">
-                            <span *ngIf="tdsForm.get('Status')?.hasError('required')">Status is required</span>
+                            <span *ngIf="tdsForm.get('Status')?.hasError('required')">Required</span>
                         </div>
                     </div>
                 </aside>

@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
@@ -51,11 +51,11 @@
                             @if(userForm.get('userName')?.touched && userForm.get('userName')?.invalid){
                             <div class="error-message">
                                 @if(userForm.get('userName')?.hasError('required')){
-                                <div>Name is required</div>
+                                <div>Required</div>
                                 } @else if(userForm.get('userName')?.hasError('numberNotAllowed')){
                                 <div>Only Alphabets are allowed</div>
                                 } @else if(userForm.get('userName')?.hasError('maxlength')){
-                                <div>Max 100 Characters</div>
+                                <div>Max 100 Chars</div>
                                 }
                             </div>
                             }
@@ -79,11 +79,11 @@
                             userForm.get('userEmail')?.invalid){
                             <div class="error-message">
                                 @if(userForm.get('userEmail')?.hasError('required')){
-                                <div>Email is required</div>
+                                <div>Required</div>
                                 } @else if(userForm.get('userEmail')?.hasError('invalidEmail')){
                                 <div>Invalid email format</div>
                                 } @else if(userForm.get('userEmail')?.hasError('maxlength')){
-                                <div>Max 50 Characters</div>
+                                <div>Max 50 Chars</div>
                                 }
                             </div>
                             }
@@ -95,7 +95,7 @@
                         <div class="input-group my-2">
                             <input type="password" formControlName="userPassword" class="form-control"
                                 placeholder="Password" #passwordInput />
-                            <span class="input-group-text password-toggle rounded-right"
+                            <span class="input-group-text password-toggle" style="background-color: transparent; border: none;"
                                 (mousedown)="togglePassword(passwordInput)" (mouseup)="resetPassword(passwordInput)"
                                 (mouseleave)="resetPassword(passwordInput)">
                                 @if(!passwordView){
@@ -106,9 +106,9 @@
                             </span>
                             @if (userForm.get('userPassword')?.invalid && (userForm.get('userPassword')?.touched ||
                             userForm.get('userPassword')?.dirty)) {
-                            <div class="error-message">
+                            <div class="error-message pe-4">
                                 @if(userForm.get('userPassword')?.hasError('required')) {
-                                <div>Password is required</div>
+                                <div>Required</div>
                                 } @else if (userForm.get('userPassword')?.hasError('minLength')) {
                                 <div>Password must be at least 4 characters</div>
                                 } @else if (userForm.get('userPassword')?.hasError('missingLetter')) {
@@ -133,7 +133,7 @@
                             @if(userForm.get('department')?.touched && userForm.get('department')?.invalid){
                             <div class="error-message">
                                 @if(userForm.get('department')?.hasError('required')){
-                                <div>Department is required</div>
+                                <div>Required</div>
                                 }
                             </div>
                             }
@@ -151,9 +151,9 @@
                             @if(userForm.get('DefaultDept')?.touched && userForm.get('DefaultDept')?.invalid){
                             <div class="error-message">
                                 @if(userForm.get('DefaultDept')?.hasError('required')){
-                                <div>Default Dept is required</div>
+                                <div>Required</div>
                                 } @else if(userForm.get('DefaultDept')?.hasError('maxlength')){
-                                <div>Max 20 Characters</div>
+                                <div>Max 20 Chars</div>
                                 }
                             </div>
                             }
@@ -179,7 +179,7 @@
                             @if(userForm.get('userTypeId')?.touched && userForm.get('userTypeId')?.invalid){
                             <div class="error-message">
                                 @if(userForm.get('userTypeId')?.hasError('required')){
-                                <div>User Type is required</div>
+                                <div>Required</div>
                                 }
                             </div>
                             }
@@ -196,11 +196,11 @@
                             @if(userForm.get('contactNumber')?.touched && userForm.get('contactNumber')?.invalid){
                             <div class="error-message">
                                 @if(userForm.get('contactNumber')?.hasError('required')){
-                                <div>Mobile No is required</div>
+                                <div>Required</div>
                                 } @else if(userForm.get('contactNumber')?.hasError('onlyNumbers')){
                                 <div>Only Digits are allowed</div>
                                 } @else if(userForm.get('contactNumber')?.hasError('maxlength')){
-                                <div>Max 20 Characters</div>
+                                <div>Max 20 Chars</div>
                                 }
                             </div>
                             }
@@ -218,7 +218,7 @@
                             @if(userForm.get('CountryMasterSid')?.touched && userForm.get('CountryMasterSid')?.invalid){
                             <div class="error-message">
                                 @if(userForm.get('CountryMasterSid')?.hasError('required')){
-                                <div>Country is required</div>
+                                <div>Required</div>
                                 }
                             </div>
                             }
@@ -264,7 +264,7 @@
                             @if(userForm.get('roles')?.touched && userForm.get('roles')?.invalid){
                             <div class="error-message">
                                 @if(userForm.get('roles')?.hasError('required')){
-                                <div>Role is required</div>
+                                <div>Required</div>
                                 }
                             </div>
                             }
@@ -309,14 +309,12 @@
                         @if(userForm.get('companies')?.touched && userForm.get('companies')?.invalid){
                         <div class="error-message">
                             @if(userForm.get('companies')?.hasError('required')){
-                            <div>Company is required</div>
+                            <div>Required</div>
                             }
                         </div>
                         }
                     </div>
                 </div>
-
-
             </div>
         </div>
 

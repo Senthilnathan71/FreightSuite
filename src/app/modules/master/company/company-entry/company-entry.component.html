@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
 
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
@@ -75,7 +75,7 @@
                 @if(companyForm.get('companyName')?.touched && companyForm.get('companyName')?.invalid){
                 <div class="error-message">
                   @if(companyForm.get('companyName')?.hasError('required')){
-                  <span>Company Name is required</span>
+                  <span>Required</span>
                   } @else if(companyForm.get('companyName')?.hasError('numberNotAllowed')){
                   <span>Only Alphabets are allowed</span>
                   } @else if(companyForm.get('companyName')?.hasError('maxlength')){
@@ -98,7 +98,7 @@
                 @if(companyForm.get('companyCode')?.touched && companyForm.get('companyCode')?.invalid){
                 <div class="error-message">
                   @if(companyForm.get('companyCode')?.hasError('required')){
-                  <span>Company Code is required</span>
+                  <span>Required</span>
                   } @else if(companyForm.get('companyCode')?.hasError('maxlength')){
                   <span>Max 10 Characters</span>
                   }
@@ -129,7 +129,7 @@
                 companyForm.get('CountryMasterSid')?.invalid){
                 <div class="error-message">
                   @if(companyForm.get('CountryMasterSid')?.hasError('required')){
-                  <span>Country is required</span>
+                  <span>Required</span>
                   }
                 </div>
                 }
@@ -156,7 +156,7 @@
                 companyForm.get('CurrencyMasterSid')?.invalid){
                 <div class="error-message">
                   @if(companyForm.get('CurrencyMasterSid')?.hasError('required')){
-                  <span>Currency is required</span>
+                  <span>Required</span>
                   }
                 </div>
                 }
@@ -174,9 +174,9 @@
                 <!--  Validation -->
                 @if(companyForm.get('addressLine1')?.touched &&
                 companyForm.get('addressLine1')?.invalid){
-                <div class="error-message">
+                <div class="error-message pb-2">
                   @if(companyForm.get('addressLine1')?.hasError('required')){
-                  <span>Address is required</span>
+                  <span>Required</span>
                   } @else if(companyForm.get('addressLine1')?.hasError('maxlength')){
                   <span>Max 500 Characters</span>
                   }
@@ -384,7 +384,7 @@
                 </label>
 
                 <div class="error-message" *ngIf="companyForm.get('Pan')?.touched && companyForm.get('Pan')?.invalid">
-                  <span *ngIf="companyForm.get('Pan')?.hasError('required')">PAN is required</span>
+                  <span *ngIf="companyForm.get('Pan')?.hasError('required')">Required</span>
                   <span *ngIf="companyForm.get('Pan')?.hasError('invalidPAN')">Provided PAN is invalid</span>
                   <span *ngIf="companyForm.get('Pan')?.hasError('maxlength')">Max 20 Characters</span>
                 </div>
@@ -557,7 +557,7 @@
           </div>
 
           <div class="modal-body">
-            <div class="row">
+            <div class="row compact-form">
               <div class="col-md-6">
                 <div class="card border">
                   <div class="card-body py-1">
@@ -576,7 +576,7 @@
                           @if(branchForm.get('branchName')?.touched && branchForm.get('branchName')?.invalid){
                           <div class="error-message">
                             @if(branchForm.get('branchName')?.hasError('required')){
-                            <span>Branch Name is required</span>
+                            <span>Required</span>
                             }
                             @else if(branchForm.get('branchName')?.hasError('maxlength')){
                             <span>Max 100 characters</span>
@@ -595,7 +595,7 @@
                           @if(branchForm.get('branchCode')?.touched && branchForm.get('branchCode')?.invalid){
                           <div class="error-message">
                             @if(branchForm.get('branchCode')?.hasError('required')){
-                            <span>Branch Code is required</span>
+                            <span>Required</span>
                             }
                             @else if(branchForm.get('branchCode')?.hasError('maxlength')){
                             <span>Max 10 characters</span>
@@ -646,7 +646,7 @@
                           branchForm.get('branchAddressLine1')?.invalid){
                           <div class="error-message">
                             @if(branchForm.get('branchAddressLine1')?.hasError('required')){
-                            <span>Address Line 1 is required</span>
+                            <span>Required</span>
                             }
                             @else if(branchForm.get('branchAddressLine1')?.hasError('maxlength')){
                             <span>Max 500 characters</span>
@@ -681,7 +681,7 @@
                           branchForm.get('branchPostalCode')?.invalid){
                           <div class="error-message">
                             @if(branchForm.get('branchPostalCode')?.hasError('required')){
-                            <span>Postal Code is required</span>
+                            <span>Required</span>
                             }
                             @else if(branchForm.get('branchPostalCode')?.hasError('onlyNumbers')){
                             <span>Only digits are allowed</span>
@@ -708,7 +708,7 @@
                           branchForm.get('branchCountryMasterSid')?.invalid){
                           <div class="error-message">
                             @if(branchForm.get('branchCountryMasterSid')?.hasError('required')){
-                            <span>Country is required</span>
+                            <span>Required</span>
                             }
                           </div>
                           }
@@ -730,7 +730,7 @@
                           branchForm.get('branchStateMasterSid')?.invalid){
                           <div class="error-message">
                             @if(branchForm.get('branchStateMasterSid')?.hasError('required')){
-                            <span>State is required</span>
+                            <span>Required</span>
                             }
                           </div>
                           }
@@ -752,7 +752,7 @@
                           branchForm.get('branchCityMasterSid')?.invalid){
                           <div class="error-message">
                             @if(branchForm.get('branchCityMasterSid')?.hasError('required')){
-                            <span>City is required</span>
+                            <span>Required</span>
                             }
                           </div>
                           }
@@ -815,7 +815,7 @@
                           branchForm.get('branchEmail')?.invalid) {
                           <div class="error-message">
                             @if(branchForm.get('branchEmail')?.hasError('required')) {
-                            <span>Email is required</span>
+                            <span>Required</span>
                             }
                             @else if(branchForm.get('branchEmail')?.hasError('invalidEmails')) {
                             <span>Invalid email format</span>
@@ -1291,9 +1291,8 @@
   <div [formGroup]="branchBankForm">
     <div class="modal-body">
       <div class="col-12">
-        <div class="card mb-0">
-          <div class="card-body py-0">
-            <div class="row">
+    
+            <div class="row compact-form">
 
               <!-- Bank Name -->
               <aside class="col-12 col-sm-6 col-md-4">
@@ -1303,7 +1302,7 @@
                   <label for="bankName" class="input-label">Bank Name <span class="text-danger">*</span></label>
                   @if(branchBankForm.get('BankName')?.touched && branchBankForm.get('BankName')?.invalid){
                   <div class="error-message">
-                    @if(branchBankForm.get('BankName')?.hasError('required')){ <span>Bank Name is required</span> }
+                    @if(branchBankForm.get('BankName')?.hasError('required')){ <span>Required</span> }
                     @if(branchBankForm.get('BankName')?.hasError('maxlength')){ <span>Max 100 characters</span> }
                   </div>
                   }
@@ -1318,7 +1317,7 @@
                   <label for="bankCode" class="input-label">Bank Code <span class="text-danger">*</span></label>
                   @if(branchBankForm.get('BankCode')?.touched && branchBankForm.get('BankCode')?.invalid){
                   <div class="error-message">
-                    @if(branchBankForm.get('BankCode')?.hasError('required')){ <span>Bank Code is required</span> }
+                    @if(branchBankForm.get('BankCode')?.hasError('required')){ <span>Required</span> }
                     @if(branchBankForm.get('BankCode')?.hasError('maxlength')){ <span>Max 50 characters</span> }
                   </div>
                   }
@@ -1347,7 +1346,7 @@
                   <label for="ifscCode" class="input-label">IFSC Code <span class="text-danger">*</span></label>
                   @if(branchBankForm.get('IFSCCode')?.touched && branchBankForm.get('IFSCCode')?.invalid){
                   <div class="error-message">
-                    @if(branchBankForm.get('IFSCCode')?.hasError('required')){ <span>IFSC Code is required</span> }
+                    @if(branchBankForm.get('IFSCCode')?.hasError('required')){ <span>Required</span> }
                     @if(branchBankForm.get('IFSCCode')?.hasError('maxlength')){ <span>Max 20 characters</span> }
                   </div>
                   }
@@ -1363,8 +1362,8 @@
                       class="text-danger">*</span></label>
                   @if(branchBankForm.get('BankAccountNo')?.touched && branchBankForm.get('BankAccountNo')?.invalid){
                   <div class="error-message">
-                    @if(branchBankForm.get('BankAccountNo')?.hasError('required')){ <span>Account Number is
-                      required</span> }
+                    @if(branchBankForm.get('BankAccountNo')?.hasError('required')){ <span>
+                      Required</span> }
                     @if(branchBankForm.get('BankAccountNo')?.hasError('onlyNumbers')){ <span>Only digits are
                       allowed</span> }
                     @if(branchBankForm.get('BankAccountNo')?.hasError('maxlength')){ <span>Max 50 characters</span> }
@@ -1382,8 +1381,8 @@
                       class="text-danger">*</span></label>
                   @if(branchBankForm.get('BeneficiaryName')?.touched && branchBankForm.get('BeneficiaryName')?.invalid){
                   <div class="error-message">
-                    @if(branchBankForm.get('BeneficiaryName')?.hasError('required')){ <span>Beneficiary Name is
-                      required</span> }
+                    @if(branchBankForm.get('BeneficiaryName')?.hasError('required')){ <span>
+                      Required</span> }
                     @if(branchBankForm.get('BeneficiaryName')?.hasError('maxlength')){ <span>Max 100 characters</span> }
                   </div>
                   }
@@ -1393,8 +1392,8 @@
               <!-- Remarks -->
               <aside class="col-12 col-sm-6 col-md-4 ">
                 <div class="custom-form-group">
-                  <textarea id="bankRemarks" placeholder="" rows="1" class="input-field sm" formControlName="Remarks"
-                    [textWithNumbers]="300"></textarea>
+                  <textarea id="bankRemarks" placeholder="" rows="1" formControlName="Remarks"
+                    [textWithNumbers]="300" class="custom-input-field sm"></textarea>
                   <label for="bankRemarks" class="input-label">Remarks</label>
                   @if(branchBankForm.get('Remarks')?.touched && branchBankForm.get('Remarks')?.invalid){
                   <div class="error-message">
@@ -1420,8 +1419,7 @@
               </aside>
 
             </div>
-          </div>
-        </div>
+        
       </div>
     </div>
 

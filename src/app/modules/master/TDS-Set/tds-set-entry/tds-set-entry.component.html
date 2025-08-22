@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
@@ -53,9 +53,9 @@
                             (tdsForm.get('TDSSetName')?.touched || tdsForm.get('TDSSetName')?.dirty)) {
                             <div class="error-message">
                                 @if(tdsForm.get('TDSSetName')?.hasError('required')){
-                                <small>TDS Set is required</small>
+                                <small>Required</small>
                                 } @else if(tdsForm.get('TDSSetName')?.hasError('maxlength')){
-                                <small>Max 50 Characters allowed</small>
+                                <small>Max 50 Characters</small>
                                 }
                             </div>
                             }
@@ -72,11 +72,11 @@
                             (tdsForm.get('TransactionLimit')?.touched || tdsForm.get('TransactionLimit')?.dirty)) {
                             <div class="error-message">
                                 @if(tdsForm.get('TransactionLimit')?.hasError('required')){
-                                <small>Transaction Limit is required</small>
+                                <small>Required</small>
                                 } @else if(tdsForm.get('TransactionLimit')?.hasError('invalidNumber')){
                                 <small>Enter a valid number</small>
                                 } @else if(tdsForm.get('TransactionLimit')?.hasError('decimalPrecision')){
-                                <small>Allowed : 12 Digits before and 3 digits after decimal point</small>
+                                <small>Allowed 12 Digits before and 3 digits after decimal point</small>
                                 }
                             </div>
                             }
@@ -93,11 +93,11 @@
                             (tdsForm.get('AnnualLimit')?.touched || tdsForm.get('AnnualLimit')?.dirty)) {
                             <div class="error-message">
                                 @if(tdsForm.get('AnnualLimit')?.hasError('required')){
-                                <small>Annual Limit is required</small>
+                                <small>Required</small>
                                 } @else if(tdsForm.get('AnnualLimit')?.hasError('invalidNumber')){
                                 <small>Enter a valid number</small>
                                 } @else if(tdsForm.get('AnnualLimit')?.hasError('decimalPrecision')){
-                                <small>Allowed : 9 Digits before and 3 digits after decimal point</small>
+                                <small>Allowed 9 Digits before and 3 digits after decimal point</small>
                                 }
                             </div>
                             }
@@ -115,9 +115,9 @@
                             tdsForm.get('TDSsetTransactionLimit')?.dirty)) {
                             <div class="error-message">
                                 @if(tdsForm.get('TDSsetTransactionLimit')?.hasError('required')){
-                                <small>TDS Set Transaction Limit is required</small>
+                                <small>Required</small>
                                 } @else if(tdsForm.get('TDSsetTransactionLimit')?.hasError('decimalPrecision')){
-                                <small>Allowed : 9 Digits before and 3 digits after decimal point</small>
+                                <small>Allowed 9 Digits before and 3 digits after decimal point</small>
                                 } @else if(tdsForm.get('TDSsetTransactionLimit')?.hasError('invalidNumber')){
                                 <small>Enter a valid number</small>
                                 }
@@ -136,7 +136,7 @@
                             (tdsForm.get('TDSSetAnnualLimit')?.touched || tdsForm.get('TDSSetAnnualLimit')?.dirty)) {
                             <div class="error-message">
                                 @if(tdsForm.get('TDSSetAnnualLimit')?.hasError('required')){
-                                <small>TDS Set Annual Limit is required</small>
+                                <small>Required</small>
                                 } @else if(tdsForm.get('TDSSetAnnualLimit')?.hasError('decimalPrecision')){
                                 <small>Allowed : 9 Digits before and 3 digits after decimal point</small>
                                 } @else if(tdsForm.get('TDSSetAnnualLimit')?.hasError('invalidNumber')){
@@ -169,35 +169,43 @@
                             </button>
                         </div>
                     </aside> -->
-                    <aside class="col-md-3">
-                            <div class="custom-form-group custom-form-group-select">
-                                <div class="input-group">
-                                <input 
-                                   class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d="ngbDatepicker" (click)="d.toggle()" readonly formControlName="EffectiveFrom"
-                                    [footerTemplate]="footerTemplate" [minDate]="minEffectiveFrom"/>
+                  <aside class="col-md-3">
+  <div class="d-flex">
+    <div class="custom-form-group custom-form-group-select w-100 mb-0">
+      <input 
+        class="form-control mb-0" 
+        placeholder="dd-mm-yyyy" 
+        name="dp" 
+        ngbDatepicker
+        #d="ngbDatepicker" 
+        (click)="d.toggle()" 
+        readonly 
+        formControlName="EffectiveFrom"
+        [footerTemplate]="footerTemplate" 
+        [minDate]="minEffectiveFrom"
+      />
+      <label class="input-label" for="text-input">
+        Effective From <span class="text-danger">*</span>
+      </label>
 
-                                <button 
-                                    class="btn btn-info bi bi-calendar3 text-white" 
-                                    (click)="d.toggle()" 
-                                    type="button">
-                                    <i-feather name="calendar" class="feather-sm"></i-feather>
-                                </button>
-                                </div>
+      @if (tdsForm.get('EffectiveFrom')?.touched && tdsForm.get('EffectiveFrom')?.invalid) {
+        <div class="error-message">
+          @if (tdsForm.get('EffectiveFrom')?.hasError('required')) {
+            <small>Required</small>
+          }
+        </div>
+      }
+    </div>
 
-                                <label class="input-label" for="text-input">
-                                Effective From <span class="text-danger">*</span>
-                                </label>
+    <button 
+      class="btn bi bi-calendar3 mx-1 mt-2" 
+      (click)="d.toggle()" 
+      type="button">
+      <i-feather name="calendar" class="feather-sm"></i-feather>
+    </button>
+  </div>
+</aside>
 
-                                @if (tdsForm.get('EffectiveFrom')?.touched && tdsForm.get('EffectiveFrom')?.invalid) {
-                                <div class="error-message">
-                                    @if (tdsForm.get('EffectiveFrom')?.hasError('required')) {
-                                    <small>Effective From is required</small>
-                                    }
-                                </div>
-                                }
-                            </div>
-                            </aside>
 
                     <ng-template #footerTemplate>
                         <hr class="my-0" />
@@ -467,18 +475,18 @@
             <div class="modal-body py-2">
                 <form [formGroup]="tdsDetailForm">
                     <div class="col-md-12">
-                        <div class="row">
+                        <div class="row compact-form">
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="Sno" [onlyNumbers]="2">
-                                    <label for="text-input" class="input-label">Sno. <span
+                                    <label for="text-input" class="input-label">Sno <span
                                             class="text-danger"></span></label>
                                     @if(tdsDetailForm.get('Sno')?.invalid &&
                                     (tdsDetailForm.get('Sno')?.touched || tdsDetailForm.get('Sno')?.dirty)) {
                                     <div class="error-message">
                                         @if(tdsDetailForm.get('Sno')?.hasError('required')){
-                                        <small>Sno. is required</small>
+                                        <small>Required</small>
                                         } @else if(tdsDetailForm.get('Sno')?.hasError('onlyNumbers')){
                                         <small>Only numbers are allowed</small>
                                         } @else if(tdsDetailForm.get('Sno')?.hasError('maxlength')){
@@ -500,7 +508,7 @@
                                     tdsDetailForm.get('CountryMasterSid')?.invalid){
                                     <div class="error-message">
                                         @if(tdsDetailForm.get('CountryMasterSid')?.hasError('required')){
-                                        <small>Country is Required</small>
+                                        <small>Required</small>
                                         }
                                     </div>
                                     }
@@ -517,7 +525,7 @@
                                     tdsDetailForm.get('IncomeCategory')?.dirty)) {
                                     <div class="error-message">
                                         @if(tdsDetailForm.get('IncomeCategory')?.hasError('required')){
-                                        <small>Income Category is required</small>
+                                        <small>Required</small>
                                         } @else if(tdsDetailForm.get('IncomeCategory')?.hasError('maxlength')){
                                         <small>Max 100 Characters</small>
                                         }
@@ -536,7 +544,7 @@
                                     tdsDetailForm.get('CompanyType')?.invalid){
                                     <div class="error-message">
                                         @if(tdsDetailForm.get('CompanyType')?.hasError('required')){
-                                        <small>Company Type is Required</small>
+                                        <small>Required</small>
                                         }
                                     </div>
                                     }
@@ -554,7 +562,7 @@
                                     tdsDetailForm.get('ITSectionCode')?.dirty)) {
                                     <div class="error-message">
                                         @if(tdsDetailForm.get('ITSectionCode')?.hasError('required')){
-                                        <small>IT Section is required</small>
+                                        <small>Required</small>
                                         } @else if(tdsDetailForm.get('ITSectionCode')?.hasError('maxlength')){
                                         <small>Max 10 Characters</small>
                                         }
@@ -574,7 +582,7 @@
                                     tdsDetailForm.get('TDSAmount')?.dirty)) {
                                     <div class="error-message">
                                         @if(tdsDetailForm.get('TDSAmount')?.hasError('required')){
-                                        <small>Amount is required</small>
+                                        <small>Required</small>
                                         } @else if(tdsDetailForm.get('TDSAmount')?.hasError('decimalPrecision')){
                                         <small>Only 8 digit before and 2 digits after decimal point is allowed</small>
                                         } @else if(tdsDetailForm.get('TDSAmount')?.hasError('invalidNumber')){
@@ -596,7 +604,7 @@
                                     tdsDetailForm.get('TDSRate')?.dirty)) {
                                     <div class="error-message">
                                         @if(tdsDetailForm.get('TDSRate')?.hasError('required')){
-                                        <small>Percentage is required</small>
+                                        <small>Required</small>
                                         } @else if(tdsDetailForm.get('TDSRate')?.hasError('decimalPrecision')){
                                         <small>Only 2 digit before and 2 digits after decimal point is allowed</small>
                                         } @else if(tdsDetailForm.get('TDSRate')?.hasError('invalidNumber')){
@@ -619,13 +627,13 @@
                                         tdsDetailForm.get('EffectiveFrom')?.invalid){
                                         <div class="error-message">
                                             @if(tdsDetailForm.get('EffectiveFrom')?.hasError('required')){
-                                            <small>Effective From is required</small>
+                                            <small>Required</small>
                                             }
                                         </div>
                                         }
                                     </div>
                                     <button
-                                        class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2"
+                                        class="btn  bi bi-calendar3   mx-1 mt-2"
                                         (click)="d1.toggle()" type="button">
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
                                     </button>
@@ -665,7 +673,7 @@
                 <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                     (click)="onSubmitDetails()">
                     <i class="fas fa-save me-1"></i>
-                    {{detailModalEdit ? 'Update' : 'Create'}}
+                    {{detailModalEdit ? 'Update' : 'Save'}}
                 </button>
             </div>
         </div>
@@ -683,7 +691,7 @@
             <div class="modal-body py-2">
                 <form [formGroup]="tdsExemptionForm">
                     <div class="col-md-12">
-                        <div class="row">
+                        <div class="row compact-form">
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select">
                                     <ng-select class="ng-select" formControlName="Vessel" [items]="vesselList"
@@ -695,7 +703,7 @@
                                     tdsExemptionForm.get('Vessel')?.invalid){
                                     <div class="error-message">
                                         @if(tdsExemptionForm.get('Vessel')?.hasError('required')){
-                                        <small>Vessel is Required</small>
+                                        <small>Required</small>
                                         }
                                     </div>
                                     }
@@ -716,7 +724,7 @@
                                     tdsExemptionForm.get('Carrier')?.invalid){
                                     <div class="error-message">
                                         @if(tdsExemptionForm.get('Carrier')?.hasError('required')){
-                                        <small>Carrier is Required</small>
+                                        <small>Required</small>
                                         }
                                     </div>
                                     }
@@ -738,7 +746,7 @@
                                     tdsExemptionForm.get('Transporter')?.invalid){
                                     <div class="error-message">
                                         @if(tdsExemptionForm.get('Transporter')?.hasError('required')){
-                                        <small>Transporter is Required</small>
+                                        <small>Required</small>
                                         }
                                     </div>
                                     }
@@ -757,13 +765,13 @@
                                         tdsExemptionForm.get('EffectiveFrom')?.invalid){
                                         <div class="error-message">
                                             @if(tdsExemptionForm.get('EffectiveFrom')?.hasError('required')){
-                                            <small>Effective From is required</small>
+                                            <small>Required</small>
                                             }
                                         </div>
                                         }
                                     </div>
                                     <button
-                                        class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2"
+                                        class="btn  bi bi-calendar3 mx-1 mt-2"
                                         (click)="d2.toggle()" type="button">
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
                                     </button>
@@ -792,13 +800,13 @@
                                         tdsExemptionForm.get('EffectiveTo')?.invalid){
                                         <div class="error-message">
                                             @if(tdsExemptionForm.get('EffectiveTo')?.hasError('required')){
-                                            <small>Effective To is required</small>
+                                            <small>Required</small>
                                             }
                                         </div>
                                         }
                                     </div>
                                     <button
-                                        class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2"
+                                        class="btn bi bi-calendar3 mx-1 mt-2"
                                         (click)="d3.toggle()" type="button">
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
                                     </button>
@@ -838,7 +846,7 @@
                 <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                     (click)="onSubmitExemption()">
                     <i class="fas fa-save me-1"></i>
-                    {{exemptionModalEdit ? 'Update' : 'Create'}}
+                    {{exemptionModalEdit ? 'Update' : 'Save'}}
                 </button>
             </div>
         </div>

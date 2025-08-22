@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-2">
@@ -53,7 +53,7 @@
               @if(supplierTDSForm.get('LedgerName')?.touched && supplierTDSForm.get('LedgerName')?.invalid){
               <div class="error-message">
                 @if (supplierTDSForm.get('LedgerName')?.hasError('required')) {
-                <span>Ledger Name is required</span>
+                <span>Required</span>
                 }
               </div>
               }
@@ -165,7 +165,7 @@
             </tr>
           </thead>
 
-          <tbody formArrayName="TDSDetail">
+          <tbody formArrayName="TDSDetail" class="compact-form">
             @for (tds of tdsDetailArray.controls; track tds; let i = $index) {
             <tr [formGroupName]="i">
               <td class="p-2" *ngIf="tdsDetailArray.length > 1">
@@ -185,7 +185,7 @@
                 @if(tds.get('TDSSetHeaderSid')?.touched && tds.get('TDSSetHeaderSid')?.invalid){
                   <div class="text-danger small">
                     @if (tds.get('TDSSetHeaderSid')?.hasError('required')) {
-                      <span>TDS Set Name is required</span>
+                      <span>Required</span>
                     }
                   </div>
                 }
@@ -216,7 +216,7 @@
                   @if ((tds.get('TransactionLimit')?.touched || tds.get('TransactionLimit')?.dirty) && tds.get('TransactionLimit')?.invalid) {
                     <div class="text-danger small">
                       @if (tds.get('TransactionLimit')?.errors?.['required']) {
-                        <span>Transaction Limit is required</span>
+                        <span>Required</span>
                       } @else if (tds.get('TransactionLimit')?.errors?.['max']) {
                         <span>Amount cannot exceed 1 crore (10,000,000)</span>
                       } @else if (tds.get('TransactionLimit')?.errors?.['decimalPrecision']) {
@@ -232,7 +232,7 @@
                 @if((tds.get('CertificateNo')?.touched || tds.get('CertificateNo')?.dirty) && tds.get('CertificateNo')?.invalid){
                   <div class="text-danger small">
                     @if(tds.get('CertificateNo')?.hasError('required')){
-                      <span>Certificate No is required</span>
+                      <span>Required</span>
                     } @else if(tds.get('CertificateNo')?.hasError('maxlength')){
                       <span>Max 20 Characters allowed</span>
                     } 
@@ -247,7 +247,7 @@
                 @if ((tds.get('CertificatePercentage')?.touched || tds.get('CertificatePercentage')?.dirty) && tds.get('CertificatePercentage')?.invalid) {
                     <div class="text-danger small">
                       @if (tds.get('CertificatePercentage')?.errors?.['required']) {
-                        <span>Certificate % is required</span>
+                        <span>Required</span>
                       }  @else if (tds.get('CertificatePercentage')?.errors?.['decimalPrecision']) {
                         <small>Allowed: 2 Digits before & 2 digits after decimal point</small>
                       }
@@ -260,7 +260,7 @@
                 @if((tds.get('CertificateAmt')?.touched || tds.get('CertificateAmt')?.dirty) && tds.get('CertificateAmt')?.invalid){
                   <div class="text-danger small">
                     @if(tds.get('CertificateAmt')?.hasError('required')){
-                      <span>Certificate Amt is required</span>
+                      <span>Required</span>
                     } @else if(tds.get('CertificateAmt')?.hasError('maxlength')){
                       <span>Max 500 Characters allowed</span>
                     } 
@@ -286,7 +286,7 @@
                        [container]="'body'"/>
                 @if(tds.get('EffectiveFrom')?.touched && tds.get('EffectiveFrom')?.invalid){
                   <div class="text-danger small">
-                    <span *ngIf="tds.get('EffectiveFrom')?.hasError('required')">Effective From is required</span>
+                    <span *ngIf="tds.get('EffectiveFrom')?.hasError('required')">Required</span>
                     <span *ngIf="tds.get('EffectiveFrom')?.hasError('ngbDate')">Must be before Effective To</span>
                   </div>
                 }
@@ -317,7 +317,7 @@
                        [container]="'body'"/>
                 @if(tds.get('EffectiveTo')?.touched && tds.get('EffectiveTo')?.invalid){
                   <div class="text-danger small">
-                    <span *ngIf="tds.get('EffectiveTo')?.hasError('required')">Effective To is required</span>
+                    <span *ngIf="tds.get('EffectiveTo')?.hasError('required')">Required</span>
                     <span *ngIf="tds.get('EffectiveTo')?.hasError('ngbDate')">Must be after Effective From</span>
                   </div>
                 }

@@ -1,7 +1,7 @@
 <div>
   <!-- Form -->
   <form [formGroup]="countryForm">
-    <div class="row">
+    <div class="row compact-form">
       <!-- Top buttons -->
       <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
@@ -72,8 +72,8 @@
 
                   <div *ngIf="countryForm.get('countryName')?.touched && countryForm.get('countryName')?.errors"
                     class="error-message">
-                    <span *ngIf="countryForm.get('countryName')?.hasError('required')">Country name is required</span>
-                    <span *ngIf="countryForm.get('countryName')?.hasError('maxlength')">Max 100 characters</span>
+                    <span *ngIf="countryForm.get('countryName')?.hasError('required')">Required</span>
+                    <span *ngIf="countryForm.get('countryName')?.hasError('maxlength')">Max 100 chars</span>
                   </div>
                 </div>
               </aside>
@@ -107,7 +107,7 @@
 
                   <div *ngIf="countryForm.get('countryCode')?.touched && countryForm.get('countryCode')?.errors"
                     class="error-message">
-                    <span *ngIf="countryForm.get('countryCode')?.hasError('required')">Code is required</span>
+                    <span *ngIf="countryForm.get('countryCode')?.hasError('required')">Required</span>
                     <span
                       *ngIf="countryForm.get('countryCode')?.hasError('minlength') || countryForm.get('countryCode')?.hasError('maxlength')">
                       Country code must be exactly 2 characters
@@ -152,7 +152,7 @@
         countryForm.get('ZoneMasterSid')?.invalid
       " class="error-message">
                     <span *ngIf="countryForm.get('ZoneMasterSid')?.hasError('required')">
-                      Zone is required
+                      Required
                     </span>
                   </div>
                 </div>
@@ -196,7 +196,7 @@
         countryForm.get('CurrencyMasterSid')?.invalid
       " class="error-message">
                     <span *ngIf="countryForm.get('CurrencyMasterSid')?.hasError('required')">
-                      Currency is required
+                    Required
                     </span>
                   </div>
                 </div>

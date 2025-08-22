@@ -11,7 +11,7 @@
 
     <div class="row bg-white" *ngIf="selectedTab === 'Cost'">
         <!-- <ng-container *ngComponentOutlet="costcomponent"></ng-container> -->
-        <div class="text-end mb-1">
+        <div class="text-end mb-1 px-0">
             <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openCostModal()"><i
                     class="fas fa-plus me-1"></i> Add</button>
         </div>
@@ -67,7 +67,7 @@
                     (click)="modal.dismiss()"></button>
             </div>
             <div class="modal-body">
-                <div class="row">
+                <div class="row compact-form">
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
@@ -188,7 +188,7 @@
     <div class="row bg-white" *ngIf="selectedTab === 'Revenue'">
         <!-- <ng-container *ngComponentOutlet="revenuecomponent"></ng-container> -->
 
-        <div class="text-end mb-1">
+        <div class="text-end mb-1 px-0">
             <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                 (click)="openRevenueModal()"><i class="fas fa-plus me-1"></i> Add</button>
         </div>
@@ -248,7 +248,7 @@
                     (click)="modal.dismiss()"></button>
             </div>
             <div class="modal-body">
-                <div class="row">
+                <div class="row compact-form">
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="number" id="text-input" placeholder="" class="custom-input-field sm">

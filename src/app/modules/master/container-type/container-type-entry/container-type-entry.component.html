@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
@@ -50,9 +50,9 @@
                             @if(containertypeForm.get('ContainerName')?.touched && containertypeForm.get('ContainerName')?.invalid){
                                 <div class="error-message">
                                     @if(containertypeForm.get('ContainerName')?.hasError('required')){
-                                        <span>Container-Type Name is required</span>
+                                        <span>Required</span>
                                     } @else if(containertypeForm.get('ContainerName')?.hasError('maxlength')){
-                                        <span>Max 100 Characters</span>
+                                        <span>Max 100 Chars</span>
                                     } @else if(containertypeForm.get('ContainerName')?.hasError('numberNotAllowed')){
                                         <span>Only Alphabets are allowed</span>
                                     }
@@ -70,9 +70,9 @@
                                         @if(containertypeForm.get('ContainerCode')?.touched && containertypeForm.get('ContainerCode')?.invalid){
                                             <div class="error-message">
                                                 @if(containertypeForm.get('ContainerCode')?.hasError('required')){
-                                                    <span>Container Code is required</span>
+                                                    <span>Required</span>
                                                 } @else if(containertypeForm.get('ContainerCode')?.hasError('maxlength')){
-                                                    <span>Max 4 Characters</span>
+                                                    <span>Max 4 Chars</span>
                                                 }
                                             </div>
                                         }
@@ -108,9 +108,9 @@
                                         @if(containertypeForm.get('ContainerIsoCode')?.touched && containertypeForm.get('ContainerIsoCode')?.invalid){
                                             <div class="error-message">
                                                 @if(containertypeForm.get('ContainerIsoCode')?.hasError('required')){
-                                                    <span>Container ISO Code is required</span>
+                                                    <span>Required</span>
                                                 } @else if(containertypeForm.get('ContainerIsoCode')?.hasError('maxlength')){
-                                                    <span>Max 4 Characters</span>
+                                                    <span>Max 4 Chars</span>
                                                 }
                                             </div>
                                         }
@@ -126,9 +126,9 @@
         @if(containertypeForm.get('ContainerSize')?.touched && containertypeForm.get('ContainerSize')?.invalid){
             <div class="error-message">
                 @if(containertypeForm.get('ContainerSize')?.hasError('required')){
-                    <span>Container Size is required</span>
+                    <span>Required</span>
                 } @else if(containertypeForm.get('ContainerSize')?.hasError('maxlength')){
-                    <span>Max 10 Characters allowed</span>
+                    <span>Max 10 Chars allowed</span>
                 }
             </div>
         }
@@ -144,7 +144,7 @@
                                            @if(containertypeForm.get('ContainerCategory')?.touched && containertypeForm.get('ContainerCategory')?.invalid){
                                             <div class="error-message">
                                                 @if(containertypeForm.get('ContainerCategory')?.hasError('required')){
-                                                    <span>Container Category is required</span>
+                                                    <span>Required</span>
                                                 } 
                                             </div>
                                         }
@@ -160,7 +160,7 @@
                                          @if(containertypeForm.get('GrossWeight')?.touched && containertypeForm.get('GrossWeight')?.invalid){
                                             <div class="error-message">
                                                 @if(containertypeForm.get('GrossWeight')?.hasError('required')){
-                                                    <span>Gross Weight is required</span>
+                                                    <span>Required</span>
                                                 } 
                                             </div>
                                         }
@@ -176,7 +176,7 @@
                                           @if(containertypeForm.get('TareWeight')?.touched && containertypeForm.get('TareWeight')?.invalid){
                                             <div class="error-message">
                                                 @if(containertypeForm.get('TareWeight')?.hasError('required')){
-                                                    <span>Tare Weight is required</span>
+                                                    <span>Required</span>
                                                 } 
                                             </div>
                                         }
@@ -192,7 +192,7 @@
                                          @if(containertypeForm.get('MaxVolume')?.touched && containertypeForm.get('MaxVolume')?.invalid){
                                             <div class="error-message">
                                                 @if(containertypeForm.get('MaxVolume')?.hasError('required')){
-                                                    <span>Max Volume is required</span>
+                                                    <span>Required</span>
                                                 } 
                                             </div>
                                         }
@@ -208,7 +208,7 @@
         @if(containertypeForm.get('Length')?.touched && containertypeForm.get('Length')?.invalid){
             <div class="error-message">
                 @if(containertypeForm.get('Length')?.hasError('required')){
-                    <span>Length is required</span>
+                    <span>Required</span>
                 } @else if(containertypeForm.get('Length')?.hasError('min')){
                     <span>Must be positive number</span>
                 } @else if(containertypeForm.get('Length')?.hasError('pattern')){
@@ -227,7 +227,7 @@
                                          @if(containertypeForm.get('Width')?.touched && containertypeForm.get('Width')?.invalid){
                                             <div class="error-message">
                                                 @if(containertypeForm.get('Width')?.hasError('required')){
-                                                    <span>Width is required</span>
+                                                    <span>Required</span>
                                                 } 
                                             </div>
                                         }
@@ -242,7 +242,7 @@
                                         @if(containertypeForm.get('Height')?.touched && containertypeForm.get('Height')?.invalid){
                                             <div class="error-message">
                                                 @if(containertypeForm.get('Height')?.hasError('required')){
-                                                    <span>Height is required</span>
+                                                    <span>Required</span>
                                                 } 
                                             </div>
                                         }
@@ -258,7 +258,7 @@
                                          @if(containertypeForm.get('NoOfTeu')?.touched && containertypeForm.get('NoOfTeu')?.invalid){
                                             <div class="error-message">
                                                 @if(containertypeForm.get('NoOfTeu')?.hasError('required')){
-                                                    <span>No Of Teu is required</span>
+                                                    <span>Required</span>
                                                 } 
                                             </div>
                                         }
@@ -273,7 +273,7 @@
                                   @if(containertypeForm.get('Remarks')?.touched && containertypeForm.get('Remarks')?.invalid){
                                             <div class="error-message">
                                                 @if(containertypeForm.get('Remarks')?.hasError('required')){
-                                                    <span>Remarks is required</span>
+                                                    <span>Required</span>
                                                 } 
                                             </div>
                                         }
@@ -293,7 +293,7 @@
     <label class="input-label">Status <span class="text-danger">*</span></label>
     @if(containertypeForm.get('status')?.touched && containertypeForm.get('status')?.invalid){
     <div class="error-message">
-      <span>Status is required</span>
+      <span>Required</span>
     </div>
     }
   </div>
