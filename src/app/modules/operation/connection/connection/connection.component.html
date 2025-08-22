@@ -1,4 +1,4 @@
-<div class="text-end mb-1">
+<div class="text-end mb-1 px-0">
     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openConnectionModal()"> <i
             class="fas fa-plus me-1" style="font-size: 10px;"></i> Add</button>
 </div>
@@ -46,7 +46,7 @@
     </div>
     <div class="modal-body">
 
-        <div class="row">
+        <div class="row compact-form">
 
 
             <aside class="col-md-4">
@@ -90,7 +90,7 @@
                     <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                             #d10="ngbDatepicker" (click)="d10.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d10.toggle()" type="button">
+                        <button class="btn  bi bi-calendar3 " (click)="d10.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>
                     <label for="" class="input-label"> ETD <span class="text-danger"></span>
@@ -103,7 +103,7 @@
                     <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                             #d11="ngbDatepicker" (click)="d11.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d11.toggle()" type="button">
+                        <button class="btn  bi bi-calendar3 " (click)="d11.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>
                     <label for="" class="input-label"> ETA <span class="text-danger"></span>

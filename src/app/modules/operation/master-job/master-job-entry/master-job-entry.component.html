@@ -1,4 +1,4 @@
-<div class="row ">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
@@ -38,7 +38,7 @@
         <div class="tab-content mb-2">
 
             <div class="row bg-white" *ngIf="selectedTab === 'Container'">
-                <div class="text-end mb-1">
+                <div class="text-end mb-1 px-0">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80 "
                         (click)="openContainerModal()"><i class="fas fa-plus me-1 " style="font-size: 10px;"></i>
                         Add</button>
@@ -147,7 +147,7 @@
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                         #d12="ngbDatepicker" (click)="d12.toggle()" />
-                                    <button class="btn btn-info bi bi-calendar3 text-white" (click)="d12.toggle()"
+                                    <button class="btn  bi bi-calendar3 " (click)="d12.toggle()"
                                         type="button"> <i-feather name="calendar"
                                             class="feather-sm"></i-feather></button>
                                 </div>
@@ -162,7 +162,7 @@
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                         #d13="ngbDatepicker" (click)="d13.toggle()" />
-                                    <button class="btn btn-info bi bi-calendar3 text-white" (click)="d13.toggle()"
+                                    <button class="btn  bi bi-calendar3 " (click)="d13.toggle()"
                                         type="button"> <i-feather name="calendar"
                                             class="feather-sm"></i-feather></button>
                                 </div>
@@ -205,7 +205,7 @@
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                         #d14="ngbDatepicker" (click)="d14.toggle()" />
-                                    <button class="btn btn-info bi bi-calendar3 text-white" (click)="d14.toggle()"
+                                    <button class="btn  bi bi-calendar3" (click)="d14.toggle()"
                                         type="button"> <i-feather name="calendar"
                                             class="feather-sm"></i-feather></button>
                                 </div>
@@ -331,7 +331,7 @@
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d1="ngbDatepicker" (click)="d1.toggle()" />
-                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()"
+                                <button class="btn bi bi-calendar3" (click)="d1.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label for="shipmentDateExpected" class="input-label">Master Job Date <span
@@ -373,7 +373,7 @@
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d2="ngbDatepicker" (click)="d2.toggle()" />
-                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()"
+                                <button class="btn  bi bi-calendar3" (click)="d2.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label for="MBLDate" class="input-label">MBL Date <span class="text-danger">*</span>
@@ -402,7 +402,7 @@
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d3="ngbDatepicker" (click)="d3.toggle()" />
-                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d3.toggle()"
+                                <button class="btn  bi bi-calendar3 " (click)="d3.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label for="MBLDate" class="input-label">SOB Date <span class="text-danger"></span>
@@ -459,7 +459,7 @@
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d4="ngbDatepicker" (click)="d4.toggle()" />
-                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d4.toggle()"
+                                <button class="btn  bi bi-calendar3 " (click)="d4.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label for="shipmentDateExpected" class="input-label">SOB Date <span
@@ -499,7 +499,7 @@
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d5="ngbDatepicker" (click)="d5.toggle()" />
-                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d5.toggle()"
+                                <button class="btn  bi bi-calendar3 " (click)="d5.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label for="MBLDate" class="input-label">ETA <span class="text-danger">*</span>
@@ -512,7 +512,7 @@
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d6="ngbDatepicker" (click)="d6.toggle()" />
-                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d6.toggle()"
+                                <button class="btn  bi bi-calendar3 " (click)="d6.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label for="MBLDate" class="input-label">ETD <span class="text-danger">*</span>
@@ -525,7 +525,7 @@
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d7="ngbDatepicker" (click)="d7.toggle()" />
-                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d7.toggle()"
+                                <button class="btn  bi bi-calendar3 " (click)="d7.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label for="MBLDate" class="input-label">Cut Off Date <span class="text-danger"></span>
@@ -629,7 +629,7 @@
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d8="ngbDatepicker" (click)="d8.toggle()" />
-                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d8.toggle()"
+                                <button class="btn bi bi-calendar3 " (click)="d8.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label for="shipmentDateExpected" class="input-label">DG Booking Date <span
@@ -643,7 +643,7 @@
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                     #d9="ngbDatepicker" (click)="d9.toggle()" />
-                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d9.toggle()"
+                                <button class="btn  bi bi-calendar3 " (click)="d9.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
                             <label for="shipmentDateExpected" class="input-label">DG Approval Date <span
@@ -938,7 +938,7 @@
                                     <div class="input-group">
                                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                             #d15="ngbDatepicker" (click)="d15.toggle()" />
-                                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d15.toggle()"
+                                        <button class="btn bi bi-calendar3 " (click)="d15.toggle()"
                                             type="button"> <i-feather name="calendar"
                                                 class="feather-sm"></i-feather></button>
                                     </div>
@@ -952,7 +952,7 @@
                                     <div class="input-group">
                                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                             #d16="ngbDatepicker" (click)="d16.toggle()" />
-                                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d16.toggle()"
+                                        <button class="btn  bi bi-calendar3 " (click)="d16.toggle()"
                                             type="button"> <i-feather name="calendar"
                                                 class="feather-sm"></i-feather></button>
                                     </div>
@@ -1084,7 +1084,7 @@
         <div class="tab-content mb-2">
 
             <div class="row bg-white" *ngIf="selectedTab1 === 'Product'">
-                <div class="text-end mb-1">
+                <div class="text-end mb-1 px-0">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80 "
                         (click)="openProductModal()"><i class="fas fa-plus me-1" style="font-size: 10px;"></i>
                         Add</button>
@@ -1228,7 +1228,7 @@
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                         #d18="ngbDatepicker" (click)="d18.toggle()" />
-                                    <button class="btn btn-info bi bi-calendar3 text-white" (click)="d18.toggle()"
+                                    <button class="btn  bi bi-calendar3 " (click)="d18.toggle()"
                                         type="button"> <i-feather name="calendar"
                                             class="feather-sm"></i-feather></button>
                                 </div>
@@ -1410,7 +1410,7 @@
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
-        <div class="row">
+        <div class="row compact-form">
 
             <aside class="col-md-4">
                 <div class="custom-form-group">
@@ -1504,7 +1504,7 @@
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
-        <div class="row">
+        <div class="row compact-form">
 
             <aside class="col-md-4">
                 <div class="custom-form-group">
@@ -1525,7 +1525,7 @@
                     <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                             #d17="ngbDatepicker" (click)="d17.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d17.toggle()" type="button">
+                        <button class="btn  bi bi-calendar3 " (click)="d17.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>
                     <label for="Date" class="input-label">Date <span class="text-danger"></span>

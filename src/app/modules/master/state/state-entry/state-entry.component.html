@@ -1,7 +1,7 @@
 <div>
   <!-- Form -->
   <form [formGroup]="stateForm">
-    <div class="row">
+    <div class="row compact-form">
       <!-- Top buttons -->
       <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
@@ -91,11 +91,10 @@
 
                   <div *ngIf="stateForm.get('stateName')?.touched && stateForm.get('stateName')?.errors"
                     class="error-message">
-                    <span *ngIf="stateForm.get('stateName')?.hasError('required')">State name is required</span>
-                    <span *ngIf="stateForm.get('stateName')?.hasError('invalidAlphaSpace')">Only alphabetic characters
+                    <span *ngIf="stateForm.get('stateName')?.hasError('required')">Required</span>
+                    <span *ngIf="stateForm.get('stateName')?.hasError('invalidAlphaSpace')">Only alphabetic chars
                       and spaces are allowed</span>
-                    <span *ngIf="stateForm.get('stateName')?.hasError('maxlength')">Maximum 100 characters
-                      allowed</span>
+                    <span *ngIf="stateForm.get('stateName')?.hasError('maxlength')">Max 100 chars</span>
                   </div>
                 </div>
               </aside>
@@ -128,10 +127,10 @@
 
                   <div *ngIf="stateForm.get('stateCode')?.touched && stateForm.get('stateCode')?.errors"
                     class="error-message">
-                    <span *ngIf="stateForm.get('stateCode')?.hasError('required')">Code is required</span>
+                    <span *ngIf="stateForm.get('stateCode')?.hasError('required')">Required</span>
                     <span *ngIf="stateForm.get('stateCode')?.hasError('maxlength')">State code must be exactly 2
-                      characters</span>
-                    <span *ngIf="stateForm.get('stateCode')?.hasError('invalidAlpha')">Only alphabetic characters are
+                      chars</span>
+                    <span *ngIf="stateForm.get('stateCode')?.hasError('invalidAlpha')">Only alphabetic chars are
                       allowed (A-Z, a-z)</span>
                   </div>
                 </div>
@@ -167,7 +166,7 @@
 
                   <div *ngIf="stateForm.get('stateGSTCode')?.touched && stateForm.get('stateGSTCode')?.errors"
                     class="error-message">
-                    <span *ngIf="stateForm.get('stateGSTCode')?.hasError('required')">GST Code is required</span>
+                    <span *ngIf="stateForm.get('stateGSTCode')?.hasError('required')">Required</span>
                     <span *ngIf="stateForm.get('stateGSTCode')?.hasError('maxlength')">State GST Code must be exactly 2
                       digits</span>
                     <span *ngIf="stateForm.get('stateGSTCode')?.hasError('pattern')">Only numeric values are
@@ -189,7 +188,7 @@
         stateForm.get('CountryMasterSid')?.invalid
       " class="error-message">
                     <span *ngIf="stateForm.get('CountryMasterSid')?.hasError('required')">
-                      Country is required
+                     Required
                     </span>
                   </div>
                 </div>
@@ -210,7 +209,7 @@
         stateForm.get('ZoneMasterSid')?.invalid
       " class="error-message">
                     <span *ngIf="stateForm.get('ZoneMasterSid')?.hasError('required')">
-                      Zone is required
+                      Required
                     </span>
                   </div>
                 </div>

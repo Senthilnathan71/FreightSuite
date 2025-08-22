@@ -25,7 +25,7 @@
   (onSearchClick)="onSearch($event)">
     </app-listpage> -->
 
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
 
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
@@ -181,7 +181,7 @@
             <form [formGroup]="biclauseForm">
                 <div class="col-md-12">
 
-                    <div class="row">
+                    <div class="row compact-form">
                         <aside class="col-md-12">
                             <div class="custom-form-group">
                                 <input type="text" id="ClauseDescription" formControlName="ClauseDescription"
@@ -193,7 +193,7 @@
                                             biclauseForm.get('ClauseDescription')?.errors"
                                     class="error-message">
                                     <span *ngIf="biclauseForm.get('ClauseDescription')?.hasError('required')">
-                                        Clause Description is required
+                                        Required
                                     </span>
                                     <span *ngIf="biclauseForm.get('ClauseDescription')?.hasError('maxlength')">
                                         Maximum 500 characters allowed
@@ -211,7 +211,7 @@
                                 <div *ngIf="biclauseForm.get('Keyword')?.touched && 
                                             biclauseForm.get('Keyword')?.errors" class="error-message">
                                     <span *ngIf="biclauseForm.get('Keyword')?.hasError('required')">
-                                        Keyword is required
+                                        Required
                                     </span>
                                     <span *ngIf="biclauseForm.get('Keyword')?.hasError('maxlength')">
                                         Maximum 5 characters allowed
@@ -244,7 +244,7 @@
                                 <div *ngIf="biclauseForm.get('status')?.touched && 
                biclauseForm.get('status')?.errors" class="error-message">
                                     <span *ngIf="biclauseForm.get('status')?.hasError('required')">
-                                        Status is required
+                                       Required
                                     </span>
                                 </div>
                             </div>

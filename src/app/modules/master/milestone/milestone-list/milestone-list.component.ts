@@ -74,7 +74,7 @@ export class MilestoneListComponent {
     //     this.checkPermissions();
     //   }
     // });
-        this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
@@ -109,6 +109,7 @@ export class MilestoneListComponent {
   loadMilestones(): void {
   this.loading = true;
   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  let BranchMasterSid = this.currentBranch?.BranchMasterSid;
   const params = {
     search: this.filterValue?.trim() || '',
     page: this.page,
@@ -116,6 +117,7 @@ export class MilestoneListComponent {
     sortColumn: this.sortColumn,
     sortDirection: this.sortDirection,
     activeCompanyId : CompanyMasterSid,
+    activeBranchId:BranchMasterSid,
   };
 
   this.masterService.searchMilestoneList(params).subscribe({

@@ -15,6 +15,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
     selector: 'app-vessel-entry',
@@ -26,7 +27,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
         OnlyNumbersDirective,
         OnlyTextDirective,
         TextWithNumbersDirective,
-        DatePipe
+        DatePipe,
+        NgSelectModule
     ],
     templateUrl: './vessel-entry.component.html',
     styleUrl: './vessel-entry.component.scss'

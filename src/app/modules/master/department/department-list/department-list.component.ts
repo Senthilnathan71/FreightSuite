@@ -138,7 +138,7 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
         this.masterService.deleteDepartmentById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           this.router.navigate(['master/department/list'])
-         
+          this.loadDepartments();
         });
       }
     });

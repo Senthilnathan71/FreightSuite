@@ -23,7 +23,7 @@
   (onResetClick)="resetPage()"
   (onSearchClick)="onSearch($event)">
     </app-listpage> -->
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
@@ -179,7 +179,7 @@
             <form [formGroup]="chargeGroupForm">
                 <div class="col-md-12">
 
-                    <div class="row">
+                    <div class="row compact-form">
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select [items]="companyOptions" bindLabel="companyName" bindValue="CompanyMasterSid"
@@ -190,7 +190,7 @@
                                 @if(chargeGroupForm.get('CompanyMasterSid')?.touched &&
                                 chargeGroupForm.get('CompanyMasterSid')?.invalid){
                                 <div class="error-message">
-                                    <span>Company is required</span>
+                                    <span>Required</span>
                                 </div>
                                 }
                             </div>
@@ -205,9 +205,9 @@
                                 chargeGroupForm.get('GroupName')?.invalid){
                                 <div class="error-message">
                                     @if(chargeGroupForm.get('GroupName')?.hasError('required')){
-                                    <span>Group Name is required</span>
+                                    <span>Required</span>
                                     } @else if(chargeGroupForm.get('GroupName')?.hasError('maxlength')){
-                                    <span>Max 100 Characters</span>
+                                    <span>Max 100 Chars</span>
                                     }
                                 </div>
                                 }
@@ -223,9 +223,9 @@
                                 chargeGroupForm.get('Remarks')?.invalid){
                                 <div class="error-message">
                                     @if(chargeGroupForm.get('Remarks')?.hasError('required')){
-                                    <span>Remarks is required</span>
+                                    <span>Required</span>
                                     } @else if(chargeGroupForm.get('Remarks')?.hasError('maxlength')){
-                                    <span>Max 100 Characters</span>
+                                    <span>Max 100 Chars</span>
                                     }
                                 </div>
                                 }
@@ -241,7 +241,7 @@
                                 @if(chargeGroupForm.get('status')?.touched &&
                                 chargeGroupForm.get('status')?.invalid){
                                 <div class="error-message">
-                                    <span>Status is required</span>
+                                    <span>Required</span>
                                 </div>
                                 }
                             </div>

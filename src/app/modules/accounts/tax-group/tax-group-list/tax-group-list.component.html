@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
       <div class="col pb-2">
@@ -176,7 +176,7 @@
 
     <div class="modal-body">
       <form [formGroup]="taxGroupForm">
-        <div class="row">
+        <div class="row compact-form">
           <!-- Tax Name -->
           <aside class="col-md-6">
             <div class="custom-form-group">
@@ -184,7 +184,7 @@
               <label class="input-label">Tax Name <span class="text-danger">*</span></label>
               <div class="error-message"
                 *ngIf="taxGroupForm.get('TaxName')?.touched && taxGroupForm.get('TaxName')?.invalid">
-                <span>Tax Name is required</span>
+                <span>Required</span>
               </div>
             </div>
           </aside>
@@ -196,7 +196,7 @@
               <label class="input-label">Tax Code <span class="text-danger">*</span></label>
               <div class="error-message"
                 *ngIf="taxGroupForm.get('TaxCode')?.touched && taxGroupForm.get('TaxCode')?.invalid">
-                <span>Tax Code is required</span>
+                <span>Required</span>
               </div>
             </div>
           </aside>
@@ -209,7 +209,7 @@
               <label class="input-label">Tax Type <span class="text-danger">*</span></label>
               <div class="error-message"
                 *ngIf="taxGroupForm.get('TaxType')?.touched && taxGroupForm.get('TaxType')?.invalid">
-                <span>Tax Type is required</span>
+                <span>Required</span>
               </div>
             </div>
           </aside>
@@ -245,7 +245,7 @@
               />
 
               <button 
-                class="btn btn-info bi bi-calendar3 text-white" 
+                class="btn  bi bi-calendar3" 
                 (click)="effectiveDate.toggle()" 
                 type="button">
                 <i-feather name="calendar" class="feather-sm"></i-feather>
@@ -253,9 +253,9 @@
             </div>
 
              <label class="input-label">Effective From <span class="text-danger fw-bold">*</span></label>
-                <div class="error-message"
+                <div class="error-message pe-4"
                   *ngIf="taxGroupForm.get('EffectiveFrom')?.touched && taxGroupForm.get('EffectiveFrom')?.invalid">
-                  <span>Effective From is required</span>
+                  <span>Required</span>
                 </div>
            
           </div>
@@ -271,7 +271,7 @@
               <label class="input-label">Tax Rate <span class="text-danger">*</span></label>
               <div class="error-message"
                 *ngIf="taxGroupForm.get('TaxRate')?.touched && taxGroupForm.get('TaxRate')?.invalid">
-                <span>Tax Rate is required</span>
+                <span>Required</span>
               </div>
             </div>
           </aside>

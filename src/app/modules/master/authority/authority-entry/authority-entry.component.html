@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
@@ -53,7 +53,7 @@
                             @if(authorityForm.get('MenuMaster')?.touched && authorityForm.get('MenuMaster')?.invalid){
                             <div class="error-message">
                                 @if(authorityForm.get('MenuMaster')?.hasError('required')){
-                                <span>Menu is required</span>
+                                <span>Required</span>
                                 }
                             </div>
                             }
@@ -70,7 +70,7 @@
                             authorityForm.get('BranchMasterSid')?.invalid){
                             <div class="error-message">
                                 @if(authorityForm.get('BranchMasterSid')?.hasError('required')){
-                                <span>Branch is required</span>
+                                <span>Required</span>
                                 }
                             </div>
                             }
@@ -114,7 +114,7 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-4">
+                    <!-- <aside class="col-md-4">
                         <div class="custom-form-group">
                             @if(isEditMode){
                             <select name="status" class="form-select" formControlName="status" id="text-input">
@@ -127,7 +127,34 @@
                             }
                             <label for="text-input" class="input-label">Status<span class="text-danger">*</span></label>
                         </div>
-                    </aside>
+                    </aside> -->
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            @if(isEditMode){
+                            <ng-select
+                                [items]="['Active', 'Suspended']"
+                                formControlName="status"
+                                bindLabel=""
+                                placeholder="Select Status"
+                                class=" custom-input-field sm p-0"
+                                style="border: none;"
+                            >
+                            </ng-select>
+                            } @else {
+                            <input
+                                type="text"
+                                name="status"
+                                class=" custom-input-field sm"
+                                [value]="'Active'"
+                                id="text-input"
+                                [disabled]="true"
+                            />
+                            }
+                            <label for="text-input" class="input-label">
+                            Status<span class="text-danger">*</span>
+                            </label>
+                        </div>
+                        </aside>
 
 
                 </div>

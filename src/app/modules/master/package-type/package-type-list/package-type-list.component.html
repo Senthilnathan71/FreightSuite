@@ -8,7 +8,7 @@
     style="cursor: pointer;">
   </i>
 </div> -->
-<div class="row">
+<div class="row compact-form">
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
       <div class="col pb-2">
@@ -150,7 +150,7 @@
       <form [formGroup]="packageTypeForm">
         <div class="col-md-12">
 
-          <div class="row">
+          <div class="row compact-form">
             <aside class="col-md-6">
               <div class="custom-form-group">
                 <input type="text" id="PackageName" formControlName="PackageName" placeholder=""
@@ -160,9 +160,9 @@
                 @if(packageTypeForm.get('PackageName')?.touched && packageTypeForm.get('PackageName')?.invalid){
                 <div class="error-message">
                   @if(packageTypeForm.get('PackageName')?.hasError('required')){
-                  <span>Package Name is required</span>
+                  <span>Required</span>
                   } @else if(packageTypeForm.get('PackageName')?.hasError('maxlength')){
-                  <span>Max 100 Characters</span>
+                  <span>Max 100 Chars</span>
                   }
                 </div>
                 }
@@ -177,9 +177,9 @@
                 @if(packageTypeForm.get('PackageCode')?.touched && packageTypeForm.get('PackageCode')?.invalid){
                 <div class="error-message">
                   @if(packageTypeForm.get('PackageCode')?.hasError('required')){
-                  <span>Package Code is required</span>
+                  <span>Required</span>
                   } @else if(packageTypeForm.get('PackageCode')?.hasError('maxlength')){
-                  <span>Max 3 Characters</span>
+                  <span>Max 3 Chars</span>
                   }
                 </div>
                 }
@@ -194,7 +194,7 @@
                 <label class="input-label">Status <span class="text-danger">*</span></label>
                 @if(packageTypeForm.get('status')?.touched && packageTypeForm.get('status')?.invalid){
                 <div class="error-message">
-                  <span>Status is required</span>
+                  <span>Required</span>
                 </div>
                 }
               </div>

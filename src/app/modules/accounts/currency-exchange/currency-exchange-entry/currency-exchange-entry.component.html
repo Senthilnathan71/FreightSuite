@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-2">
@@ -74,7 +74,7 @@
                   />
 
                     <button 
-                      class="btn btn-info bi bi-calendar3 text-white" 
+                      class="btn  bi bi-calendar3" 
                       (click)="d2.toggle()" 
                       type="button">
                       <i-feather name="calendar" class="feather-sm"></i-feather>
@@ -83,8 +83,7 @@
 
                     <label class="input-label" for="dp">Effective From <span class="text-danger">*</span></label>
                   <div *ngIf="currencyExchangeForm.get('EffectiveFrom')?.touched && currencyExchangeForm.get('EffectiveFrom')?.invalid">
-                    <p *ngIf="currencyExchangeForm.get('EffectiveFrom')?.errors?.['required']" class="error-message">Effective From date is
-                      required.</p>
+                    <p *ngIf="currencyExchangeForm.get('EffectiveFrom')?.errors?.['required']" class="error-message">Required</p>
                   </div>
                 </div>
               </aside>
@@ -119,7 +118,7 @@
     </select>
     <label class="input-label">From Currency <span class="text-danger">*</span></label>
     <div class="error-message" *ngIf="currencyExchangeForm.get('FromCurrency')?.touched && currencyExchangeForm.get('FromCurrency')?.invalid">
-      <span *ngIf="currencyExchangeForm.get('FromCurrency')?.errors?.['required']">From Currency is required</span>
+      <span *ngIf="currencyExchangeForm.get('FromCurrency')?.errors?.['required']">Required</span>
     </div>
   </div>
 </aside>
@@ -134,7 +133,7 @@
     </select>
     <label class="input-label">To Currency <span class="text-danger">*</span></label>
     <div class="error-message" *ngIf="currencyExchangeForm.get('ToCurrency')?.touched && currencyExchangeForm.get('ToCurrency')?.invalid">
-      <span *ngIf="currencyExchangeForm.get('ToCurrency')?.errors?.['required']">To Currency is required</span>
+      <span *ngIf="currencyExchangeForm.get('ToCurrency')?.errors?.['required']">Required</span>
     </div>
   </div>
 </aside>
@@ -144,7 +143,7 @@
     <input type="text" formControlName="RateFrom" class="custom-input-field sm" placeholder="" maxlength="100" />
     <label class="input-label">Rate From <span class="text-danger">*</span></label>
     <div class="error-message" *ngIf="currencyExchangeForm.get('RateFrom')?.touched && currencyExchangeForm.get('RateFrom')?.invalid">
-      <span>Rate From is required</span>
+      <span>Required</span>
     </div>
   </div>
 </aside>
@@ -161,7 +160,7 @@
     />
     <label class="input-label">Sell Rate <span class="text-danger">*</span></label>
     <div class="error-message" *ngIf="currencyExchangeForm.get('SellRate')?.touched && currencyExchangeForm.get('SellRate')?.invalid">
-      <span *ngIf="currencyExchangeForm.get('SellRate')?.errors?.['required']">Sell Rate is required</span>
+      <span *ngIf="currencyExchangeForm.get('SellRate')?.errors?.['required']">Required</span>
       <span *ngIf="currencyExchangeForm.get('SellRate')?.errors?.['pattern']">Enter a valid decimal number (max 5 decimal places)</span>
     </div>
   </div>
@@ -179,7 +178,7 @@
     />
     <label class="input-label">Buy Rate <span class="text-danger">*</span></label>
     <div class="error-message" *ngIf="currencyExchangeForm.get('BuyRate')?.touched && currencyExchangeForm.get('BuyRate')?.invalid">
-      <span *ngIf="currencyExchangeForm.get('BuyRate')?.errors?.['required']">Buy Rate is required</span>
+      <span *ngIf="currencyExchangeForm.get('BuyRate')?.errors?.['required']">Required</span>
       <span *ngIf="currencyExchangeForm.get('BuyRate')?.errors?.['pattern']">Enter a valid decimal number (max 5 decimal places)</span>
     </div>
   </div>
@@ -196,7 +195,7 @@
     />
     <label class="input-label">Bank Name <span class="text-danger">*</span></label>
     <div class="error-message" *ngIf="currencyExchangeForm.get('BankName')?.touched && currencyExchangeForm.get('BankName')?.invalid">
-      <span *ngIf="currencyExchangeForm.get('BankName')?.errors?.['required']">Bank Name is required</span>
+      <span *ngIf="currencyExchangeForm.get('BankName')?.errors?.['required']">Required</span>
     </div>
   </div>
 </aside>
@@ -205,7 +204,7 @@
   <div class="custom-form-group">
     <textarea
       formControlName="Remarks"
-      class="custom-textarea-field sm"
+      class="custom-input-field sm"
       rows="1"
       placeholder=""
       maxlength="100"
@@ -223,7 +222,7 @@
                 </select>
                 <label for="status" class="input-label">Status <span class="text-danger fw-bold">*</span></label>
                 <div *ngIf="currencyExchangeForm.get('status').touched && currencyExchangeForm.get('status').errors" class="text-danger">
-                  <div *ngIf="currencyExchangeForm.get('status').errors['required']">Status is required</div>
+                  <div *ngIf="currencyExchangeForm.get('status').errors['required']">Required</div>
                 </div>
               </div>
             </aside>

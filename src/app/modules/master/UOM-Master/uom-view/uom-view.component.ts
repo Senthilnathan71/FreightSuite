@@ -83,7 +83,7 @@ statusOptions = [
     this.uomForm = new FormGroup({
       UOMName: new FormControl('', [Validators.required, Validators.maxLength(20)]),
       UOMCode: new FormControl('', [Validators.required, Validators.maxLength(3)]),
-      UOMType: new FormControl('', []),
+      UOMType: new FormControl('', [Validators.required]),
       DimensionReq: new FormControl('', []),
       WeightReq: new FormControl(null, []),
       VolumeReq: new FormControl('', []),

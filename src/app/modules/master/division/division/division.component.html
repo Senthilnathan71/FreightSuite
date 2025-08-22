@@ -8,7 +8,7 @@
     style="cursor: pointer;">
   </i>
 </div> -->
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
@@ -169,7 +169,7 @@
             <form [formGroup]="divisionForm">
                 <div class="col-md-12">
 
-                    <div class="row">
+                    <div class="row compact-form">
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" formControlName="DivisionName" placeholder=""
@@ -180,11 +180,11 @@
                                 divisionForm.get('DivisionName')?.invalid){
                                 <div class="error-message">
                                     @if(divisionForm.get('DivisionName')?.hasError('required')){
-                                    <span>Division Name is required</span>
+                                    <span>Required</span>
                                     } @else if(divisionForm.get('DivisionName')?.hasError('maxlength')){
-                                    <span>Max 100 Characters</span>
+                                    <span>Max 100 Chars</span>
                                     } @else if(divisionForm.get('DivisionName')?.hasError('numberNotAllowed')){
-                                    <span>Only Alphabets are allowed</span>
+                                    <span>Only Alphabets</span>
                                     }
                                 </div>
                                 }
@@ -200,9 +200,9 @@
                                 divisionForm.get('DivisionCode')?.invalid){
                                 <div class="error-message">
                                     @if(divisionForm.get('DivisionCode')?.hasError('required')){
-                                    <span>Division Code is required</span>
+                                    <span>Required</span>
                                     } @else if(divisionForm.get('DivisionCode')?.hasError('maxlength')){
-                                    <span>Max 9 Characters</span>
+                                    <span>Max 9 Chars</span>
                                     }
                                 </div>
                                 }
@@ -244,7 +244,7 @@
                                 <label class="input-label">Status <span class="text-danger">*</span></label>
                                 @if(divisionForm.get('status')?.touched && divisionForm.get('status')?.invalid){
                                 <div class="error-message">
-                                    <span>Status is required</span>
+                                    <span>Required</span>
                                 </div>
                                 }
                             </div>

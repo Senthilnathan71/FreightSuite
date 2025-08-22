@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
@@ -52,7 +52,7 @@
                                         class="text-danger fw-bold">*</span></label>
                                 <div class="error-message"
                                     *ngIf="yearForm.get('YearName')?.touched && yearForm.get('YearName')?.hasError('required')">
-                                    Year Name is required
+                                    Required
                                 </div>
                             </div>
 
@@ -66,7 +66,7 @@
                                         class="text-danger fw-bold">*</span></label>
                                 <div class="error-message"
                                     *ngIf="yearForm.get('YearCode')?.touched && yearForm.get('YearCode')?.hasError('required')">
-                                    Year Code is required
+                                    Required
                                 </div>
                             </div>
                         </aside>
@@ -98,7 +98,7 @@
                                         #d1="ngbDatepicker" (click)="d1.toggle()" formControlName="StartDate"
                                         readonly />
 
-                                    <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()"
+                                    <button class="btn bi bi-calendar3 " (click)="d1.toggle()"
                                         type="button">
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
                                     </button>
@@ -109,7 +109,7 @@
                                 </label>
                                 <div *ngIf="yearForm.get('StartDate')?.touched && yearForm.get('StartDate')?.invalid">
                                     <p *ngIf="yearForm.get('StartDate')?.errors?.['required']" class="error-message">
-                                        Start date is required.</p>
+                                        Required</p>
                                 </div>
                             </div>
                         </aside>
@@ -139,7 +139,7 @@
                                     <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                         #d2="ngbDatepicker" (click)="d2.toggle()" formControlName="EndDate" readonly />
 
-                                    <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
+                                    <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
                                     </button>
                                 </div>
@@ -148,7 +148,7 @@
                                             class="text-danger">*</span></label>
                                 <div *ngIf="yearForm.get('EndDate')?.touched && yearForm.get('EndDate')?.invalid">
                                         <p *ngIf="yearForm.get('EndDate')?.errors?.['required']" class="error-message">
-                                            End date is required.</p>
+                                            Required</p>
                                     </div>
                             </div>
                         </aside>
@@ -161,8 +161,7 @@
                                         class="text-danger fw-bold">*</span></label>
                                 <div class="error-message"
                                     *ngIf="yearForm.get('CurrentYear')?.touched && yearForm.get('CurrentYear')?.invalid">
-                                    <span *ngIf="yearForm.get('CurrentYear')?.hasError('required')">Current Year is
-                                        required</span>
+                                    <span *ngIf="yearForm.get('CurrentYear')?.hasError('required')">Required</span>
                                     <span *ngIf="yearForm.get('CurrentYear')?.hasError('maxlength')">Only 1 character
                                         allowed</span>
                                 </div>
@@ -178,8 +177,7 @@
                                         class="text-danger fw-bold">*</span></label>
                                 <div class="error-message"
                                     *ngIf="yearForm.get('YearEndCompleted')?.touched && yearForm.get('YearEndCompleted')?.invalid">
-                                    <span *ngIf="yearForm.get('YearEndCompleted')?.hasError('required')">Year-End is
-                                        required</span>
+                                    <span *ngIf="yearForm.get('YearEndCompleted')?.hasError('required')">Required</span>
                                     <span *ngIf="yearForm.get('YearEndCompleted')?.hasError('maxlength')">Only 1
                                         character allowed</span>
                                 </div>
@@ -190,8 +188,8 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <textarea formControlName="Remarks" class="custom-input-field sm" [textWithNumbers]="20"
-                                    rows="1"></textarea>
-                                <label for="text-input" class="input-label">Remarks </label>
+                                    rows="1" placeholder=""></textarea>
+                                <label for="" class="input-label">Remarks </label>
                                 <div class="error-message">
                                     @if(yearForm.get('Remarks')?.touched &&
                                     yearForm.get('Remarks')?.invalid){
@@ -213,7 +211,7 @@
                                 <label class="input-label">Status <span class="text-danger">*</span></label>
                                 @if(yearForm.get('status')?.touched && yearForm.get('status')?.invalid){
                                 <div class="error-message">
-                                    <span>Status is required</span>
+                                    <span>Required</span>
                                 </div>
                                 }
                             </div>

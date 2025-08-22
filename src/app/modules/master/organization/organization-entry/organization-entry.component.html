@@ -1,4 +1,4 @@
-<div class="row  ">
+<div class="row  compact-form">
     <!-- <div class="col-12">
         <div class="d-flex align-items-center gap-2 mb-3">
             <button class="btn btn-sm btn-light-secondary ms-auto" (click)="goBack()">Back</button>
@@ -61,12 +61,12 @@
                                     customerForm.get('CustomerName')?.invalid ){
                                     <div class="error-message">
                                         @if(customerForm.get('CustomerName')?.hasError('required')){
-                                        <span>Customer Name is required</span>
+                                        <span>Required</span>
                                         } @else if(customerForm.get('CustomerName')?.hasError('numberNotAllowed')){
-                                        <span>Only Alphabets are allowed</span>
+                                        <span>Only Alphabets</span>
                                         }
                                         @else if(customerForm.get('CustomerName')?.hasError('maxlength')){
-                                        <span>Max 100 characters</span>
+                                        <span>Max 100 chars</span>
                                         }
                                     </div>
                                     }
@@ -84,10 +84,10 @@
     @if(customerForm.get('CustomerShortCode')?.touched && customerForm.get('CustomerShortCode')?.invalid) {
     <div class="error-message">
       @if(customerForm.get('CustomerShortCode')?.hasError('required')) {
-      <span>Code is required</span>
+      <span>Required</span>
       }
       @else if(customerForm.get('CustomerShortCode')?.hasError('maxlength')) {
-      <span>Max 50 characters</span>
+      <span>Max 50 chars</span>
       }
     </div>
     }
@@ -103,16 +103,16 @@
                                     customerForm.get('CustomerAliasName')?.invalid ){
                                     <div class="error-message">
                                         @if(customerForm.get('CustomerAliasName')?.hasError('required')){
-                                        <span>Alias is required</span>
+                                        <span>Required</span>
                                         }
                                         @else if(customerForm.get('CustomerAliasName')?.hasError('maxlength')){
-                                        <span>Max 100 characters</span>
+                                        <span>Max 100 chars</span>
                                         }
                                     </div>
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-4">
+                            <!-- <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <select formControlName="CountryMasterSid" class="form-select">
                                         <option value="" disabled selected>Select UNO</option>
@@ -125,12 +125,41 @@
                                     customerForm.get('CountryMasterSid')?.invalid ){
                                     <div class="error-message">
                                         @if(customerForm.get('CountryMasterSid')?.hasError('required')){
-                                        <span>Country is required</span>
+                                        <span>Required</span>
                                         }
                                     </div>
                                     }
                                 </div>
-                            </aside>
+                            </aside> -->
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select 
+                                    [items]="countryList"
+                                    bindLabel="countryName"
+                                    bindValue="CountryMasterSid"
+                                    formControlName="CountryMasterSid"
+                                    placeholder="Select UNO"
+                                    [searchable]="true"
+                                    [clearable]="false">
+                                    <ng-template ng-option-tmp let-item="item">
+                                        {{ item.countryName }} - {{ item.countryCode }}
+                                    </ng-template>
+                                    </ng-select>
+
+                                    <label for="text-input" class="input-label">
+                                    UNO Location <span class="text-danger">*</span>
+                                    </label>
+
+                                    @if(customerForm.get('CountryMasterSid')?.touched && customerForm.get('CountryMasterSid')?.invalid){
+                                    <div class="error-message">
+                                        @if(customerForm.get('CountryMasterSid')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                                </aside>
+
 
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
@@ -141,7 +170,7 @@
                                     customerForm.get('GroupName')?.invalid ){
                                     <div class="error-message">
                                         @if(customerForm.get('GroupName')?.hasError('maxlength')){
-                                        <span>Max 20 characters</span>
+                                        <span>Max 20 chars</span>
                                         }
                                     </div>
                                     }
@@ -157,10 +186,10 @@
                                     customerForm.get('CustomerAddress1')?.invalid ){
                                     <div class="error-message">
                                         @if(customerForm.get('CustomerAddress1')?.hasError('required')){
-                                        <span>Address1 is required</span>
+                                        <span>Required</span>
                                         }
                                         @else if(customerForm.get('CustomerAddress1')?.hasError('maxlength')){
-                                        <span>Max 300 characters</span>
+                                        <span>Max 300 chars</span>
                                         }
                                     </div>
                                     }
@@ -176,10 +205,10 @@
                                     customerForm.get('CustomerAddress2')?.invalid ){
                                     <div class="error-message">
                                         @if(customerForm.get('CustomerAddress2')?.hasError('required')){
-                                        <span>Address is required</span>
+                                        <span>Required</span>
                                         }
                                         @else if(customerForm.get('CustomerAddress2')?.hasError('maxlength')){
-                                        <span>Max 300 characters</span>
+                                        <span>Max 300 chars</span>
                                         }
                                     </div>
                                     }
@@ -235,7 +264,7 @@
                                     customerForm.get('Website')?.invalid ){
                                     <div class="error-message">
                                        @if(customerForm.get('Website')?.hasError('maxlength')){
-                                        <span>Max 50 Characters</span>
+                                        <span>Max 50 Chars</span>
                                         }
                                     </div>
                                     }
@@ -280,7 +309,7 @@
 </div>
                             </aside>
                             <aside class="col-md-4">
-                                <div class="border rounded mt-md-2 mt-0" style="padding: 6px 8px;">
+                                <div class="mt-md-3 mt-0">
                                       <div class="d-flex gap-5">
                                     <div class="form-check form-check-inline">
                                     <input type="radio" id="Cash" formControlName="paymentType" class="form-check-input"
@@ -313,14 +342,14 @@
 
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
-                                    <textarea id="" placeholder="" rows="1" class="input-field sm"
+                                    <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
                                         formControlName="Remarks" [textWithNumbers]="100"></textarea>
                                     <label for="text-input" class="input-label">Remarks</label>
                                     @if(customerForm.get('Remarks')?.touched &&
                                     customerForm.get('Remarks')?.invalid ){
                                     <div class="error-message">
                                        @if(customerForm.get('Remarks')?.hasError('maxlength')){
-                                        <span>Max 100 Characters</span>
+                                        <span>Max 100 Chars</span>
                                         }
                                     </div>
                                     }
@@ -361,13 +390,13 @@
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                         formControlName="RegistrationNo">
                                     <label for="text-input" class="input-label">Registration No <span
-                                            class="text-danger">*</span></label>
+                                            class="text-danger"></span></label>
 
                                 </div>
                             </aside>
 
 
-                            <aside class="col-md-4">
+                            <!-- <aside class="col-md-4">
                                 <div class="custom-form-group">
                                     <select formControlName="CompanyType" class="form-select">
                                         <option value="" disabled selected>Select Company Type</option>
@@ -377,7 +406,25 @@
                                     <label for="text-input" class="input-label">Company Type <span
                                             class="text-danger">*</span></label>
                                 </div>
-                            </aside>
+                            </aside> -->
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select 
+                                    [items]="companyList"
+                                    bindLabel="name"
+                                    bindValue="name"
+                                    formControlName="CompanyType"
+                                    placeholder="Select Company Type"
+                                    [searchable]="false"
+                                    [clearable]="false">
+                                    </ng-select>
+
+                                    <label for="text-input" class="input-label">
+                                    Company Type <span class="text-danger">*</span>
+                                    </label>
+                                </div>
+                                </aside>
+
                             <aside class="col-md-4 d-flex align-items-center">
                                 <div class="form-check form-check-inline">
                                     <div class="form-check d-flex align-items-center">
@@ -397,7 +444,7 @@
                                     @if(customerForm.get('PanType').invalid && (customerForm.get('PanType')?.touched || customerForm.get('PanType')?.dirty)){
                                         <div class="error-message">
                                             @if(customerForm.get('PanType')?.hasError('required')){
-                                                <span>PAN/VAT is required</span>
+                                                <span>Required</span>
                                             } @else if(customerForm.get('PanType')?.hasError('invalidPAN')){
                                                 <span>Provided PAN/VAT is invalid</span>
                                             }
@@ -412,6 +459,13 @@
                                         formControlName="PanName" />
                                     <label for="PanName" class="input-label">Name as per PAN <span
                                             class="text-danger">*</span></label>
+                                              @if(customerForm.get('PanName').invalid && (customerForm.get('PanName')?.touched || customerForm.get('PanName')?.dirty)){
+                                        <div class="error-message">
+                                            @if(customerForm.get('PanName')?.hasError('PanName')){
+                                                <span>Required</span>
+                                            } 
+                                        </div>
+                                    }
                                 </div>
                             </aside>
 
@@ -819,7 +873,7 @@
     <div class="modal-body">
         <div class="col-md-12">
           
-                    <div class="row">
+                    <div class="row compact-form">
 
                         <aside class="col-md-6">
                             <div class="custom-form-group">
@@ -886,7 +940,7 @@
     <div class="modal-body" [formGroup]="salespersonForm">
         <div class="col-md-12">
             
-                    <div class="row">
+                    <div class="row compact-form">
 
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
@@ -911,7 +965,7 @@
                                 @if(salespersonForm.get('DepartmentMasterSid').touched && salespersonForm.get('DepartmentMasterSid').invalid){
                                     <div class="error-message">
                                         @if(salespersonForm.get('DepartmentMasterSid').hasError('required')){
-                                            <span>Department is required</span>
+                                            <span>Required</span>
                                         }
                                     </div>
                                 }
@@ -934,7 +988,7 @@
                                 @if(salespersonForm.get('Salesman').touched && salespersonForm.get('Salesman').invalid){
                                     <div class="error-message">
                                         @if(salespersonForm.get('Salesman').hasError('required')){
-                                            <span>Salesperson is required</span>
+                                            <span>Required</span>
                                         }
                                     </div>
                                 }
@@ -973,7 +1027,7 @@
                                 @if(salespersonForm.get('CustomerBranchSid').touched && salespersonForm.get('CustomerBranchSid').invalid){
                                     <div class="error-message">
                                         @if(salespersonForm.get('CustomerBranchSid').hasError('required')){
-                                            <span>Branch is required</span>
+                                            <span>Required</span>
                                         }
                                     </div>
                                 }
@@ -997,7 +1051,7 @@
                                 @if(salespersonForm.get('spEffectiveFrom').touched && salespersonForm.get('spEffectiveFrom').invalid){
                                     <div class="error-message">
                                         @if(salespersonForm.get('spEffectiveFrom').hasError('required')){
-                                            <span>Effective From is required</span>
+                                            <span>Required</span>
                                         }
                                     </div>
                                 }
@@ -1084,7 +1138,7 @@
         <form [formGroup]="customerBranchForm">
             <div class="col-md-12">
                 
-                        <div class="row">
+                        <div class="row compact-form">
 
 
                             <aside class="col-md-4">
@@ -1100,7 +1154,7 @@
                                     customerBranchForm.get('CustBranchState')?.invalid){
                                     <div class="error-message">
                                         @if(customerBranchForm.get('CustBranchState')?.hasError('required')){
-                                        <span>State is required</span>
+                                        <span>Required</span>
                                         }
                                     </div>
                                     }
@@ -1120,7 +1174,7 @@
                                     customerBranchForm.get('CustBranchCity')?.invalid){
                                     <div class="error-message">
                                         @if(customerBranchForm.get('CustBranchCity')?.hasError('required')){
-                                        <span>City is required</span>
+                                        <span>Required</span>
                                         }
                                     </div>
                                     }
@@ -1137,9 +1191,9 @@
                                     customerBranchForm.get('CustBranchName')?.invalid){
                                     <div class="error-message">
                                         @if(customerBranchForm.get('CustBranchName')?.hasError('required')){
-                                        <span>Branch Name is required</span>
+                                        <span>Required</span>
                                         } @else if(customerBranchForm.get('CustBranchName')?.hasError('maxlength')){
-                                        <span>Max 20 Characters</span>
+                                        <span>Max 20 Chars</span>
                                         }
                                     </div>
                                     }
@@ -1189,7 +1243,7 @@
         customerBranchForm.get('CustBranchType')?.invalid){
       <div class="error-message">
         @if(customerBranchForm.get('CustBranchType')?.hasError('required')){
-          <span>Branch type is required</span>
+          <span>Required</span>
         }
       </div>
     }
@@ -1219,7 +1273,7 @@
     customerBranchForm.get('CustBranchPhone')?.invalid ){
     <div class="error-message">
       @if(customerBranchForm.get('CustBranchPhone')?.hasError('required')){
-      <span>Phone is required</span>
+      <span>Required</span>
       }
       @else if(customerBranchForm.get('CustBranchPhone')?.hasError('invalidPhoneNumber')){
       <span>Please enter a valid phone number (6-15 digits)</span>
@@ -1240,7 +1294,7 @@
                                     @if((customerBranchForm.get('CustBranchEmail')?.touched || customerBranchForm.get('CustBranchEmail')?.dirty) && customerBranchForm.get('CustBranchEmail')?.invalid) {
                                     <div class="error-message">
                                         @if(customerBranchForm.get('CustBranchEmail')?.hasError('required')) {
-                                        <span>Email is required</span>
+                                        <span>Required</span>
                                         }
                                         @else if(customerBranchForm.get('CustBranchEmail')?.hasError('invalidEmails')) {
                                         <span>Invalid email format</span>
@@ -1252,7 +1306,7 @@
                                         <span>Duplicate emails detected</span>
                                         }
                                         @else if(customerBranchForm.get('CustBranchEmail')?.hasError('maxlength')) {
-                                        <span>Maximum 100 characters allowed</span>
+                                        <span>Max 100 chars</span>
                                         }
                                     </div>
                                     }
@@ -1277,7 +1331,7 @@
         customerBranchForm.get('CustBranchRegistered')?.invalid){
       <div class="error-message">
         @if(customerBranchForm.get('CustBranchRegistered')?.hasError('required')){
-          <span>Registration status is required</span>
+          <span>Required</span>
         }
       </div>
     }
@@ -1297,7 +1351,7 @@
                                     customerBranchForm.get('CustBranchGSTtype')?.invalid){
                                     <div class="error-message">
                                         @if(customerBranchForm.get('CustBranchGSTtype')?.hasError('maxlength')){
-                                        <span>Max 10 Characters</span>
+                                        <span>Max 10 Chars</span>
                                         }
                                     </div>
                                     }
@@ -1317,7 +1371,7 @@
                                         <span>Provided GSTIN is invalid</span>
                                         }
                                         @else if(customerBranchForm.get('CustBranchGSTIN')?.hasError('maxlength')){
-                                        <span>Max 15 Characters</span>
+                                        <span>Max 15 Chars</span>
                                         }
                                     </div>
                                     }
@@ -1337,7 +1391,7 @@
                                         <span>Only Digits are allowed</span>
                                         } @else{
                                         @if(customerBranchForm.get('CustBranchZipPostCode')?.hasError('maxlength')){
-                                        <span>Max 10 Characters</span>
+                                        <span>Max 10 Chars</span>
                                         }
                                         }
                                     </div>
@@ -1361,10 +1415,10 @@
                                     customerBranchForm.get('CustBranchAddress')?.invalid){
                                     <div class="error-message">
                                         @if(customerBranchForm.get('CustBranchAddress')?.hasError('required')){
-                                        <span>Address is required</span>
+                                        <span>Required</span>
                                         }
                                         @else if(customerBranchForm.get('CustBranchAddress')?.hasError('maxlength')){
-                                        <span>Max 200 Characters</span>
+                                        <span>Max 200 Chars</span>
                                         }
                                     </div>
                                     }
@@ -1520,7 +1574,7 @@
         <div class="modal-body">
             <div class="col-md-12">
                
-                        <div class="row">
+                        <div class="row compact-form">
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <select id="contactType" formControlName="ContactType" class="form-select"
@@ -1535,7 +1589,7 @@
                                     customerBranchContactForm.get('ContactType')?.invalid){
                                     <div class="error-message">
                                         @if(customerBranchContactForm.get('ContactType')?.hasError('required')){
-                                        <span>Contact Type is required</span>
+                                        <span>Required</span>
                                         }
                                     </div>
                                     }
@@ -1551,13 +1605,13 @@
                                     customerBranchContactForm.get('ContactName')?.invalid){
                                     <div class="error-message">
                                         @if(customerBranchContactForm.get('ContactName')?.hasError('required')){
-                                        <span>Contact Name is required</span>
+                                        <span>Required</span>
                                         }@else{
                                         @if(customerBranchContactForm.get('ContactName')?.hasError('numberNotAllowed')){
-                                        <span>Only Alphabets are allowed</span>
+                                        <span>Only Alphabets</span>
                                         }
                                         @else if(customerBranchContactForm.get('ContactName')?.hasError('maxlength')){
-                                        <span>Max 50 Characters</span>
+                                        <span>Max 50 Chars</span>
                                         }
                                         }
                                     </div>
@@ -1591,7 +1645,7 @@
                                     @if((customerBranchContactForm.get('Email')?.touched || customerBranchContactForm.get('Email')?.dirty) && customerBranchContactForm.get('Email')?.invalid) {
                                     <div class="error-message">
                                         @if(customerBranchContactForm.get('Email')?.hasError('required')) {
-                                        <span>Email is required</span>
+                                        <span>Required</span>
                                         }
                                         @else if(customerBranchContactForm.get('Email')?.hasError('invalidEmails')) {
                                         <span>Invalid email format</span>
@@ -1654,7 +1708,7 @@
                                     customerBranchEmailForm.get('BranchName')?.invalid){
                                     <div class="error-message">
                                         @if(customerBranchEmailForm.get('BranchName')?.hasError('required')){
-                                        <span>Branch Name is required</span>
+                                        <span>Required</span>
                                         }
                                     </div>
                                     }
@@ -1717,7 +1771,7 @@
                                     customerBranchEmailForm.get('DepartmentMasterSid')?.invalid){
                                     <div class="error-message">
                                         @if(customerBranchEmailForm.get('DepartmentMasterSid')?.hasError('required')){
-                                        <span>Department is required</span>
+                                        <span>Required</span>
                                         }
                                     </div>
                                     }
@@ -1732,7 +1786,7 @@
                                     @if((customerBranchEmailForm.get('Toemail')?.touched || customerBranchEmailForm.get('Toemail')?.dirty) && customerBranchEmailForm.get('Toemail')?.invalid) {
                                     <div class="error-message">
                                         @if(customerBranchEmailForm.get('Toemail')?.hasError('required')) {
-                                        <span>To Email is required</span>
+                                        <span>Required</span>
                                         }
                                         @else if(customerBranchEmailForm.get('Toemail')?.hasError('invalidEmails')) {
                                         <span>Invalid email format</span>
@@ -1759,7 +1813,7 @@
                                     @if((customerBranchEmailForm.get('CCemail')?.touched || customerBranchEmailForm.get('CCemail')?.dirty) && customerBranchEmailForm.get('CCemail')?.invalid) {
                                     <div class="error-message">
                                         @if(customerBranchEmailForm.get('CCemail')?.hasError('required')) {
-                                        <span>CC Email is required</span>
+                                        <span>Required</span>
                                         }
                                         @else if(customerBranchEmailForm.get('CCemail')?.hasError('invalidEmails')) {
                                         <span>Invalid email format</span>
@@ -1902,7 +1956,7 @@
         <div class="modal-body">
             <div class="col-md-12">
                 
-                        <div class="row">
+                        <div class="row compact-form">
 
                             <!-- <aside class="col-md-6">
                                 <div class="custom-form-group">
@@ -1930,7 +1984,7 @@
                                     customerBranchLoginForm.get('LoginName')?.invalid){
                                     <div class="error-message">
                                         @if(customerBranchLoginForm.get('LoginName').hasError('required')){
-                                        <span>Name is required</span>
+                                        <span>Required</span>
                                         }
                                         @else if(customerBranchLoginForm.get('LoginName').hasError('numberNotAllowed')){
                                         <span>Only Alphabets are allowed</span>
@@ -1951,7 +2005,7 @@
                                     @if((customerBranchLoginForm.get('LoginEmail')?.touched || customerBranchLoginForm.get('LoginEmail')?.dirty) && customerBranchLoginForm.get('LoginEmail')?.invalid) {
                                     <div class="error-message">
                                         @if(customerBranchLoginForm.get('LoginEmail')?.hasError('required')) {
-                                        <span>Email is required</span>
+                                        <span>Required</span>
                                         }
                                         @else if(customerBranchLoginForm.get('LoginEmail')?.hasError('invalidEmail')) {
                                         <span>Invalid email format</span>
@@ -1974,7 +2028,7 @@
                                     <div class="error-message">
                                         @if(customerBranchLoginForm.get('LoginPassword')?.hasError('required')) {
                                         <span>
-                                            Password is required
+                                            Required
                                         </span>
                                         }
                                         @else if(customerBranchLoginForm.get('LoginPassword')?.hasError('minLength')) {
@@ -2042,7 +2096,7 @@
         <div class="col-md-12">
             <div class="card h-100 mb-0">
                 <div class="card-body">
-                    <div class="row">
+                    <div class="row compact-form">
                         <!-- <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="width" >

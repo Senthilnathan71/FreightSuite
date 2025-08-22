@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
@@ -59,7 +59,7 @@
                             tariffHeaderForm.get('DepartmentMasterSid')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('DepartmentMasterSid')?.hasError('required')){
-                                <span>Department is required</span>
+                                <span>Required</span>
                                 }
                             </div>
                             }
@@ -104,7 +104,7 @@
                             @if(tariffHeaderForm.get('POOSid')?.touched && tariffHeaderForm.get('POOSid')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('POOSid')?.hasError('required')){
-                                <span>POO is required</span>
+                                <span>Required</span>
                                 }
                             </div>
                             }
@@ -137,7 +137,7 @@
                             @if(tariffHeaderForm.get('POLSid')?.touched && tariffHeaderForm.get('POLSid')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('POLSid')?.hasError('required')){
-                                <span>POL is required</span>
+                                <span>Required</span>
                                 }
                             </div>
                             }
@@ -170,7 +170,7 @@
                             @if(tariffHeaderForm.get('PODSid')?.touched && tariffHeaderForm.get('PODSid')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('PODSid')?.hasError('required')){
-                                <span>POD is required</span>
+                                <span>Required</span>
                                 }
                             </div>
                             }
@@ -200,7 +200,7 @@
                             @if(tariffHeaderForm.get('FDCSid')?.touched && tariffHeaderForm.get('FDCSid')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('FDCSid')?.hasError('required')){
-                                <span>FDC is required</span>
+                                <span>Required</span>
                                 }
                             </div>
                             }
@@ -230,7 +230,7 @@
                             @if(tariffHeaderForm.get('ViaPortSid')?.touched && tariffHeaderForm.get('ViaPortSid')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('ViaPortSid')?.hasError('required')){
-                                <span>Via Port is required</span>
+                                <span>Required</span>
                                 }
                             </div>
                             }
@@ -248,9 +248,9 @@
                             tariffHeaderForm.get('POLTerminal')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('POLTerminal')?.hasError('required')){
-                                <span>POL Terminal is required</span>
+                                <span>Required</span>
                                 } @else if(tariffHeaderForm.get('POLTerminal')?.hasError('maxlength')) {
-                                <span>Max 5 characters</span>
+                                <span>Max 5 chars</span>
                                 }
                             </div>
                             }
@@ -269,9 +269,9 @@
                             tariffHeaderForm.get('PODTerminal')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('PODTerminal')?.hasError('required')){
-                                <span>POD Terminal is required</span>
+                                <span>Required</span>
                                 } @else if(tariffHeaderForm.get('PODTerminal')?.hasError('maxlength')) {
-                                <span>Max 5 characters</span>
+                                <span>Max 5 chars</span>
                                 }
                             </div>
                             }
@@ -334,7 +334,7 @@
                             tariffHeaderForm.get('MovementType')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('MovementType')?.hasError('maxlength')) {
-                                <span>Max 10 characters</span>
+                                <span>Max 10 chars</span>
                                 }
                             </div>
                             }
@@ -355,7 +355,7 @@
                             @if(tariffHeaderForm.get('Carrier')?.touched && tariffHeaderForm.get('Carrier')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('Carrier')?.hasError('required')){
-                                <span>Carrier is required</span>
+                                <span>Required</span>
                                 }
                             </div>
                             }
@@ -375,7 +375,7 @@
                             @if(tariffHeaderForm.get('AgentSid')?.touched && tariffHeaderForm.get('AgentSid')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('AgentSid')?.hasError('required')){
-                                <span>Agent is required</span>
+                                <span>Required</span>
                                 } @else if(tariffHeaderForm.get('AgentSid')?.hasError('onlyNumbers')) {
                                 <span>Only digit are allowed</span>
                                 }
@@ -393,9 +393,9 @@
                             tariffHeaderForm.get('IncoTerms')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('IncoTerms')?.hasError('required')){
-                                <span>Inco Terms is required</span>
+                                <span>Required</span>
                                 } @else if(tariffHeaderForm.get('IncoTerms')?.hasError('maxlength')) {
-                                <span>Max 10 characters</span>
+                                <span>Max 10 chars</span>
                                 }
                             </div>
                             }
@@ -433,7 +433,7 @@
                                     [minDate]="minEffectiveDate"
                                      />
                             <button 
-                                class="btn btn-info bi bi-calendar3 text-white" 
+                                class="btn  bi bi-calendar3" 
                                 (click)="d2.toggle()" 
                                 type="button">
                                 <i-feather name="calendar" class="feather-sm"></i-feather>
@@ -445,7 +445,7 @@
                                 tariffHeaderForm.get('EffectiveDate')?.invalid){
                                 <div class="error-message">
                                     @if(tariffHeaderForm.get('EffectiveDate')?.hasError('required')){
-                                    <span>Effective Date is required</span>
+                                    <span>Required</span>
                                     }
                                 </div>
                                 }
@@ -473,7 +473,7 @@
                             @if(tariffHeaderForm.get('StuffingAt')?.touched && tariffHeaderForm.get('StuffingAt')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('StuffingAt')?.hasError('required')){
-                                <span>Stuffing At is required</span>
+                                <span>Required</span>
                                 }
                             </div>
                             }
@@ -534,9 +534,9 @@
                             @if(tariffHeaderForm.get('Remarks')?.touched && tariffHeaderForm.get('Remarks')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('Remarks')?.hasError('required')){
-                                <span>Remarks is required</span>
+                                <span>Required</span>
                                 } @else if(tariffHeaderForm.get('Remarks')?.hasError('maxlength')) {
-                                <span>Max 100 characters</span>
+                                <span>Max 100 chars</span>
                                 }
                             </div>
                             }
@@ -558,7 +558,7 @@
                             @if(tariffHeaderForm.get('status')?.touched && tariffHeaderForm.get('status')?.errors){
                             <div class="error-message">
                                 @if(tariffHeaderForm.get('status')?.hasError('required')){
-                                <span>Status is required</span>
+                                <span>Required</span>
                                 }
                             </div>
                             }
@@ -725,7 +725,7 @@
             <div class="modal-body py-1">
                 <form [formGroup]="tariffDetailsForm">
                     <div class="col-md-12">
-                        <div class="row">
+                        <div class="row compact-form">
                             <aside [class.col-md-4]="tariffDetailsForm.get('detailisSlabApplicable')?.value"
                                 [class.col-md-12]="!tariffDetailsForm.get('detailisSlabApplicable')?.value" >
                                 <div class="form-check mt-3 mb-4">
@@ -745,7 +745,7 @@
                                     tariffDetailsForm.get('detailSlabFrom')?.errors){
                                     <div class="error-message">
                                         @if(tariffDetailsForm.get('detailSlabFrom')?.hasError('required')){
-                                        <span>Slab From is required</span>
+                                        <span>Required</span>
                                         } @else if(tariffDetailsForm.get('detailSlabFrom')?.hasError('maxlength')) {
                                         <span>Max 4 Digits</span>
                                         }
@@ -763,7 +763,7 @@
                                     tariffDetailsForm.get('detailSlabTo')?.errors){
                                     <div class="error-message">
                                         @if(tariffDetailsForm.get('detailSlabTo')?.hasError('required')){
-                                        <span>Slab To is required</span>
+                                        <span>Required</span>
                                         } @else if(tariffDetailsForm.get('detailSlabTo')?.hasError('maxlength')) {
                                         <span>Max 4 Digits</span>
                                         }
@@ -784,7 +784,7 @@
                                         tariffDetailsForm.get('detailEffectiveDate')?.invalid){
                                         <div class="error-message">
                                             @if(tariffDetailsForm.get('detailEffectiveDate')?.hasError('required')){
-                                            <span>Effective From is required</span>
+                                            <span>Required</span>
                                             } @else if(tariffDetailsForm.get('detailEffectiveDate').hasError('ngbDate')){
                                                 @if(totalNumberOfCollection > 0){
                                                     <span>Effective From must be after previous ExpiredOn Dates</span>
@@ -796,7 +796,7 @@
                                         }
                                     </div>
                                     <button
-                                        class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2"
+                                        class="btn bi bi-calendar3  mx-1 mt-2"
                                         (click)="d.toggle()" type="button">
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
                                     </button>
@@ -823,13 +823,13 @@
                                         tariffDetailsForm.get('detailExpiredOn')?.invalid){
                                         <div class="error-message">
                                             @if(tariffDetailsForm.get('detailExpiredOn')?.hasError('required')){
-                                            <span>Expired On is required</span>
+                                            <span>Required</span>
                                             }
                                         </div>
                                         }
                                     </div>
                                     <button
-                                        class="btn btn-outline-secondary bi bi-calendar3 bg-info text-white mx-1 mt-2"
+                                        class="btn  bi bi-calendar3 mx-1 mt-2"
                                         (click)="d1.toggle()" type="button">
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
                                     </button>
@@ -855,7 +855,7 @@
                                     tariffDetailsForm.get('detailChargeMasterSid')?.invalid){
                                     <div class="error-message">
                                         @if(tariffDetailsForm.get('detailChargeMasterSid')?.hasError('required')){
-                                        <span>Charge is Required</span>
+                                        <span>Required</span>
                                         }
                                     </div>
                                     }
@@ -873,9 +873,9 @@
                                     tariffDetailsForm.get('detailDescription')?.errors){
                                     <div class="error-message">
                                         @if(tariffDetailsForm.get('detailDescription')?.hasError('required')){
-                                        <span>Description is required</span>
+                                        <span>Required</span>
                                         } @else if(tariffDetailsForm.get('detailDescription')?.hasError('maxlength')) {
-                                        <span>Max 100 characters</span>
+                                        <span>Max 100 chars</span>
                                         }
                                     </div>
                                     }
@@ -895,10 +895,10 @@
                                     tariffDetailsForm.get('detailCargoType')?.errors){
                                     <div class="error-message">
                                         @if(tariffDetailsForm.get('detailCargoType')?.hasError('required')){
-                                        <span>Cargo Type is required</span>
+                                        <span>Required</span>
                                         }
                                         @else if(tariffDetailsForm.get('detailCargoType')?.hasError('maxlength')) {
-                                        <span>Max 10 characters</span>
+                                        <span>Max 10 chars</span>
                                         }
                                     </div>
                                     }
@@ -918,7 +918,7 @@
                                     tariffDetailsForm.get('detailUOMSid')?.invalid){
                                     <div class="error-message">
                                         @if(tariffDetailsForm.get('detailUOMSid')?.hasError('required')){
-                                        <span>UOM is Required</span>
+                                        <span>Required</span>
                                         }
                                     </div>
                                     }
@@ -940,7 +940,7 @@
                                     tariffDetailsForm.get('detailSaleCurrency')?.errors){
                                     <div class="error-message">
                                         @if(tariffDetailsForm.get('detailSaleCurrency')?.hasError('required')){
-                                        <span>Sale Currency is required</span>
+                                        <span>Required</span>
                                         }
                                     </div>
                                     }
@@ -956,7 +956,7 @@
                                     tariffDetailsForm.get('detailSalePerUnitPrice')?.errors){
                                     <div class="error-message">
                                         @if(tariffDetailsForm.get('detailSalePerUnitPrice')?.hasError('required')){
-                                        <span>Sale per Unit Price is required</span>
+                                        <span>Required</span>
                                         } @else if(tariffDetailsForm.get('detailSalePerUnitPrice')?.hasError('decimalPrecision')) {
                                         <span>{{ tariffDetailsForm.get('detailSalePerUnitPrice')?.getError('decimalPrecision')?.message }}</span>
                                         }
@@ -980,7 +980,7 @@
                                     tariffDetailsForm.get('detailBuyCurrency')?.errors){
                                     <div class="error-message">
                                         @if(tariffDetailsForm.get('detailBuyCurrency')?.hasError('required')){
-                                        <span>Buy Currency is required</span>
+                                        <span>Required</span>
                                         }
                                     </div>
                                     }
@@ -996,7 +996,7 @@
                                     tariffDetailsForm.get('detailBuyPerUnitPrice')?.errors){
                                     <div class="error-message">
                                         @if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.hasError('required')){
-                                        <span>Buy per Unit Price is required</span>
+                                        <span>Required</span>
                                         } @else if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.hasError('decimalPrecision')) {
                                         <span>{{ tariffDetailsForm.get('detailBuyPerUnitPrice')?.getError('decimalPrecision')?.message }}</span>
                                         }
@@ -1013,9 +1013,9 @@
                                     tariffDetailsForm.get('detailMinSale')?.errors){
                                     <div class="error-message">
                                         @if(tariffDetailsForm.get('detailMinSale')?.hasError('required')){
-                                        <span>Min Sale is required</span>
+                                        <span>Required</span>
                                         } @else if(tariffDetailsForm.get('detailMinSale')?.hasError('maxlength')) {
-                                        <span>Max 100 characters</span>
+                                        <span>Max 100 chars</span>
                                         }
                                     </div>
                                     }
@@ -1042,14 +1042,14 @@
                             <aside class="col-md-12">
                                 <div class="custom-form-group">
                                     <textarea type="text" formControlName="detailRemarks" id="text-input" placeholder="" class="custom-input-field sm"
-                                        [textWithNumbers]="100"></textarea>
+                                        [textWithNumbers]="100" rows="1"></textarea>
                                     <label for="text-input" class="input-label">Remarks <span class="text-danger"></span></label>
                                     @if(tariffDetailsForm.get('detailRemarks')?.touched && tariffDetailsForm.get('detailRemarks')?.errors){
                                     <div class="error-message">
                                         @if(tariffDetailsForm.get('detailRemarks')?.hasError('required')){
-                                        <span>Remarks is required</span>
+                                        <span>Required</span>
                                         } @else if(tariffDetailsForm.get('detailRemarks')?.hasError('maxlength')) {
-                                        <span>Max 100 characters</span>
+                                        <span>Max 100 chars</span>
                                         }
                                     </div>
                                     }
@@ -1122,7 +1122,7 @@
             <div class="modal-footer p-2">
                 <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onModalSave()">
                     <i class="fas fa-save me-1"></i>
-                    {{isModalEditMode ? 'Update' : 'Create'}}
+                    {{isModalEditMode ? 'Update' : 'Save'}}
                 </button>
             </div>
         </div>

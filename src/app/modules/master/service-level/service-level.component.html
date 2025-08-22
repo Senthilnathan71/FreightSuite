@@ -1,6 +1,6 @@
-<div class="row">
-     <div class="col-12">
-             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+<div class="row compact-form">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
                 <h4 class="page-title mb-0"> Service Level</h4>
             </div>
@@ -8,75 +8,73 @@
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                         (click)="navigateBack()">
+                        (click)="navigateBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                      <!-- <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80">
+                    <!-- <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80">
                         <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
                     </button> -->
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        >
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                        >
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                         <i class="fas fa-save me-1"></i>
                         Save
                     </button>
                 </div>
             </div>
         </div>
-        </div>
-    <div class="col-md-6">
+    </div>
+    <div class="col-md-12">
         <div class="card h-100 mb-0">
             <div class="card-body">
                 <div class="row">
 
-                    <aside class="col-md-8">
+                    <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="commodityName">
                             <label for="text-input" class="input-label">Name <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-6">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="commodityCode">
                             <label for="text-input" class="input-label">Code <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-8 mt-2">
-                        <div class="col-12 mt-3">
-                            <div class="card ">
-                                <div class="card-body p-0">
-                                    <div class="">
-                                        <div class="form-check form-check-inline p-0 me-5">
-                                            <div class="form-check">
-                                                <input type="checkbox" id="DoorToDoor" class="form-check-input">
-                                                <label for="DoorToDoor" class="form-check-label">Door to Door</label>
-                                            </div>
-                                        </div>
-                                        <div class="form-check form-check-inline p-0 me-5">
-                                            <div class="form-check">
-                                                <input type="checkbox" id="IsSea" class="form-check-input">
-                                                <label for="IsSea" class="form-check-label">Is Sea</label>
-                                            </div>
-                                        </div>
-                                        <div class="form-check form-check-inline p-0 me-5">
-                                            <div class="form-check">
-                                                <input type="checkbox" id="IsAir" class="form-check-input">
-                                                <label for="IsAir" class="form-check-label">Is Air</label>
-                                            </div>
-                                        </div>
 
-                                    </div>
-                                </div>
+                    <aside class="col-md-4 mt-md-2 mt-0">
+                        <div class="form-check form-check-inline p-0 me-5">
+                            <div class="form-check">
+                                <input type="checkbox" id="DoorToDoor" class="form-check-input">
+                                <label for="DoorToDoor" class="form-check-label">Door to Door</label>
                             </div>
                         </div>
                     </aside>
+                    <aside class="col-md-4 mt-md-2 mt-0">
+                         <div class="form-check form-check-inline p-0 me-5">
+                        <div class="form-check">
+                            <input type="checkbox" id="IsSea" class="form-check-input">
+                            <label for="IsSea" class="form-check-label">Is Sea</label>
+                        </div>
+                    </div>
+                    </aside>
+                    <aside class="col-md-4 mt-md-2 mt-0">
+                         <div class="form-check form-check-inline p-0 me-5">
+                        <div class="form-check">
+                            <input type="checkbox" id="IsAir" class="form-check-input">
+                            <label for="IsAir" class="form-check-label">Is Air</label>
+                        </div>
+                    </div>
+                    </aside>
+                   
+
+
+
                     <aside class="col-md-4 mt-2">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select formControlName="PortType" [items]="modeOfStatus" bindLabel="name"
@@ -86,18 +84,9 @@
                             <label for="" class="input-label">Status <span class="text-danger">*</span></label>
                         </div>
                     </aside>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 mt-md-0 mt-3">
-        <div class="card h-100 mb-0">
-            <div class="card-body">
-                <div class="row">
-
-                    <aside class="col-md-12 pt-2">
+                    <aside class="col-md-4 pt-2">
                         <div class="custom-form-group">
-                            <textarea id="" placeholder="" rows="" class="input-field sm"
+                            <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
                                 formControlName="Remarks"></textarea>
                             <label for="text-input" class="input-label">Remarks </label>
                         </div>
@@ -106,5 +95,4 @@
             </div>
         </div>
     </div>
-
 </div>

@@ -1,6 +1,6 @@
 <form [formGroup]="uomForm">
 
-    <div class="row">
+    <div class="row ">
 
 
         <!-- <div class="col-12">
@@ -67,7 +67,7 @@
         <ng-container *ngTemplateOutlet="uomform"></ng-container>
     </div>
     <ng-template #uomform>
-        <div class="row">
+        <div class="row compact-form">
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
@@ -81,9 +81,9 @@
                                             class="text-danger">*</span></label>
                                     <div *ngIf="uomForm.get('UOMName')?.touched && uomForm.get('UOMName')?.invalid">
                                         <p *ngIf="uomForm.get('UOMName')?.errors?.['required']" class="error-message">
-                                            UOM Name is required.</p>
+                                            Required</p>
                                         <p *ngIf="uomForm.get('UOMName')?.errors?.['maxlength']" class="error-message">
-                                            UOM Name characters must be maximum 20 characters long.</p>
+                                             Max 20 chars</p>
                                     </div>
                                 </div>
                             </aside>
@@ -95,9 +95,9 @@
                                             class="text-danger">*</span></label>
                                     <div *ngIf="uomForm.get('UOMCode')?.touched && uomForm.get('UOMCode')?.invalid">
                                         <p *ngIf="uomForm.get('UOMCode')?.errors?.['required']" class="error-message">
-                                            UOM Code is required.</p>
+                                           Required.</p>
                                         <p *ngIf="uomForm.get('UOMCode')?.errors?.['maxlength']" class="error-message">
-                                            UOM Code characters must be maximum 3 characters long.</p>
+                                            Max 3 chars</p>
                                     </div>
                                 </div>
                             </aside>
@@ -113,7 +113,7 @@
                                             class="text-danger">*</span></label>
                                     <div *ngIf="uomForm.get('UOMType')?.touched && uomForm.get('UOMType')?.invalid">
                                         <p *ngIf="uomForm.get('UOMType')?.errors?.['required']" class="error-message">
-                                            UOM Type is required.</p>
+                                          Required</p>
                                     </div>
                                 </div>
                             </aside>
@@ -130,7 +130,7 @@
                                     <div
                                         *ngIf="uomForm.get('ShipmentType')?.touched && uomForm.get('ShipmentType')?.invalid">
                                         <p *ngIf="uomForm.get('ShipmentType')?.errors?.['required']"
-                                            class="error-message">Shipment Type is required.</p>
+                                            class="error-message">Required</p>
                                     </div>
                                 </div>
                             </aside>
@@ -243,12 +243,12 @@
 </aside> -->
                             <aside class="col-md-4">
                                 <div class="custom-form-group">
-                                    <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1"
+                                    <textarea id="textarea-input" class="custom-input-field sm" placeholder="" rows="1"
                                         formControlName="Remarks"></textarea>
                                     <label for="text-input" class="input-label">Remarks</label>
                                     <div *ngIf="uomForm.get('Remarks')?.touched && uomForm.get('Remarks')?.invalid">
                                         <p *ngIf="uomForm.get('Remarks')?.errors?.['maxlength']" class="error-message">
-                                            Code characters must be maximum 300 characters long.</p>
+                                             Max 300 chars</p>
                                     </div>
                                 </div>
                             </aside>
@@ -266,7 +266,7 @@
             <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
         </div>
         <div class="modal-body">
-            <div class="row">
+            <div class="row ">
                 <div class="d-flex justify-content-center align-items-center">
                     <label class="">UOM Id : </label>
                     <!-- <input type="text" class="form-control form-control-sm text-center rounded" style="max-width: fit-content;"

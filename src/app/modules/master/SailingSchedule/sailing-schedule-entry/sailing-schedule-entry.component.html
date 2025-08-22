@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
@@ -51,7 +51,7 @@
                             @if(scheduleForm.get('VesselMasterSid').touched && scheduleForm.get('VesselMasterSid').invalid){
                                 <div class="error-message">
                                     @if(scheduleForm.get('VesselMasterSid').hasError('required')){
-                                        <span>Vessel is required</span>
+                                        <span>Required</span>
                                     }
                                 </div>
                             }
@@ -65,9 +65,9 @@
                             @if(scheduleForm.get('VoyageNo').touched && scheduleForm.get('VoyageNo').invalid){
                                 <div class="error-message">
                                     @if(scheduleForm.get('VoyageNo').hasError('required')){
-                                        <span>Voyage No is required</span>
+                                        <span>Required</span>
                                     } @else if(scheduleForm.get('VoyageNo').hasError('maxlength')){
-                                        <span>Max 10 Characters</span>
+                                        <span>Max 10 Chars</span>
                                     }
                                 </div>
                             }
@@ -82,9 +82,9 @@
                             @if(scheduleForm.get('RotationNumber').touched && scheduleForm.get('RotationNumber').invalid){
                                 <div class="error-message">
                                     @if(scheduleForm.get('RotationNumber').hasError('required')){
-                                        <span>Rotation No is required</span>
+                                        <span>Required</span>
                                     } @else if(scheduleForm.get('RotationNumber').hasError('maxlength')){
-                                        <span>Max 10 Characters</span>
+                                        <span>Max 10 Chars</span>
                                     }
                                 </div>
                             }
@@ -100,9 +100,9 @@
                             @if(scheduleForm.get('ShipIRN').touched && scheduleForm.get('ShipIRN').invalid){
                                 <div class="error-message">
                                     @if(scheduleForm.get('ShipIRN').hasError('required')){
-                                        <span>Ship IRN is required</span>
+                                        <span>Required</span>
                                     } @else if(scheduleForm.get('ShipIRN').hasError('maxlength')){
-                                        <span>Max 10 Characters</span>
+                                        <span>Max 10 Chars</span>
                                     }
                                 </div>
                             }
@@ -118,9 +118,9 @@
                             @if(scheduleForm.get('CrewIRN').touched && scheduleForm.get('CrewIRN').invalid){
                                 <div class="error-message">
                                     @if(scheduleForm.get('CrewIRN').hasError('required')){
-                                        <span>Crew IRN is required</span>
+                                        <span>Required</span>
                                     } @else if(scheduleForm.get('CrewIRN').hasError('maxlength')){
-                                        <span>Max 10 Characters</span>
+                                        <span>Max 10 Chars</span>
                                     }
                                 </div>
                             }
@@ -172,7 +172,7 @@
                                     readonly
                                 />
                             <button 
-                                class="btn btn-info bi bi-calendar3 text-white" 
+                                class="btn  bi bi-calendar3 " 
                                (click)="d.toggle()" type="button"
                                 >
                                 <i-feather name="calendar" class="feather-sm"></i-feather>
@@ -184,7 +184,7 @@
                                 @if(scheduleForm.get('SCMETA').touched && scheduleForm.get('SCMETA').invalid){
                                 <div class="error-message">
                                     @if(scheduleForm.get('SCMETA').hasError('required')){
-                                    <span>SCM ETA is required</span>
+                                    <span>Required</span>
                                     } @else if(scheduleForm.get('SCMETA').hasError('ngbDate')){
                                     <span>SCMETA must be a date before SCMETD</span>
                                     }
@@ -240,7 +240,7 @@
                                     readonly
                                 />
 
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()" type="button">
+                        <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather>
                         </button>
                         </div>
@@ -249,7 +249,7 @@
                                 @if(scheduleForm.get('SCMETD').touched && scheduleForm.get('SCMETD').invalid){
                                 <div class="error-message">
                                     @if(scheduleForm.get('SCMETD').hasError('required')){
-                                    <span>SCM ETD is required</span>
+                                    <span>Required</span>
                                     } @else if(scheduleForm.get('SCMETD').hasError('ngbDate')){
                                     <span>SCMETD must be a date after SCMETA</span>
                                     }
@@ -288,9 +288,9 @@
                             @if(scheduleForm.get('SCMTCargoDescription').touched && scheduleForm.get('SCMTCargoDescription').invalid){
                                 <div class="error-message">
                                     @if(scheduleForm.get('SCMTCargoDescription').hasError('required')){
-                                        <span>SCMT Cargo Description is required</span>
+                                        <span>Required</span>
                                     } @else if(scheduleForm.get('SCMTCargoDescription').hasError('maxlength')){
-                                        <span>Max 200 Characters</span>
+                                        <span>Max 200 Chars</span>
                                     }
                                 </div>
                             }
@@ -306,9 +306,9 @@
                             @if(scheduleForm.get('Remarks').touched && scheduleForm.get('Remarks').invalid){
                                 <div class="error-message">
                                     @if(scheduleForm.get('Remarks').hasError('required')){
-                                        <span>Remarks is required</span>
+                                        <span>Required</span>
                                     } @else if(scheduleForm.get('Remarks').hasError('maxlength')){
-                                        <span>Max 200 Characters</span>
+                                        <span>Max 200 Chars</span>
                                     }
                                 </div>
                             }
@@ -486,7 +486,7 @@
         </div>
         <div class="modal-body">
             <div class="col-12">
-                <div class="row">
+                <div class="row compact-form">
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select formControlName="POLSid" [items]="filteredPOLList" bindLabel="PortCode" bindValue="PortMasterSid" placeholder="Select Port" >
@@ -498,7 +498,7 @@
                             @if(scheduleDetailForm.get('POLSid').touched && scheduleDetailForm.get('POLSid').invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('POLSid').hasError('required')){
-                                        <span>POL is required</span>
+                                        <span>Required</span>
                                     }
                                 </div>
                             }
@@ -541,12 +541,12 @@
                                 @if(scheduleDetailForm.get('PortCutoff')?.touched && scheduleDetailForm.get('PortCutoff')?.invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('PortCutoff').hasError('required')){
-                                        <span>Port Cut off is required</span>
+                                        <span>Required</span>
                                     }
                                 </div>
                                 }
                             </div>
-                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d3.toggle()" type="button">
+                            <button class="btn bi bi-calendar3  mx-1 mt-2" (click)="d3.toggle()" type="button">
                                 <i-feather class="feather-sm" name="calendar"></i-feather>
                             </button>
                         </div>
@@ -580,12 +580,12 @@
                                 @if(scheduleDetailForm.get('ETA')?.touched && scheduleDetailForm.get('ETA')?.invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('ETA')?.hasError('required')){
-                                        <span>ETA is required</span>
+                                        <span>Required</span>
                                     }
                                 </div>
                                 }
                             </div>
-                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d4.toggle()" type="button">
+                            <button class="btn  bi bi-calendar3  mx-1 mt-2" (click)="d4.toggle()" type="button">
                                 <i-feather class="feather-sm" name="calendar"></i-feather>
                             </button>
                         </div>
@@ -618,12 +618,12 @@
                                 @if(scheduleDetailForm.get('ETD')?.touched && scheduleDetailForm.get('ETD')?.invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('ETD').hasError('required')){
-                                        <span>ETD is required</span>
+                                        <span>Required</span>
                                     }
                                 </div>
                                 }
                             </div>
-                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d5.toggle()" type="button">
+                            <button class="btn  bi bi-calendar3  mx-1 mt-2" (click)="d5.toggle()" type="button">
                                 <i-feather class="feather-sm" name="calendar"></i-feather>
                             </button>
                         </div>
@@ -649,7 +649,7 @@
                             @if(scheduleDetailForm.get('TransitDays').touched && scheduleDetailForm.get('TransitDays').invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('TransitDays').hasError('required')){
-                                        <span>Transit Days is required</span>
+                                        <span>Required</span>
                                     }
                                 </div>
                             }
@@ -664,9 +664,9 @@
                             @if(scheduleDetailForm.get('RotationNo').touched && scheduleDetailForm.get('RotationNo').invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('RotationNo').hasError('required')){
-                                        <span>Rotation No is required</span>
+                                        <span>Required</span>
                                     }@else if(scheduleDetailForm.get('RotationNo').hasError('maxlength')){
-                                        <span>Max 10 Characters</span>
+                                        <span>Max 10 Chars</span>
                                     }
                                 </div>
                             }
@@ -692,14 +692,14 @@
                                 @if(scheduleDetailForm.get('RotationDate').touched && scheduleDetailForm.get('RotationDate').invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('RotationDate').hasError('required')){
-                                    <span>Rotation Date is required</span>
+                                    <span>Required</span>
                                     }@else if(scheduleDetailForm.get('RotationDate').hasError('ngbDate')){
                                     <span>Rotation Date must between PortCutOff and ETA</span>
                                     }
                                 </div>
                                 }
                             </div>
-                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d6.toggle()" type="button">
+                            <button class="btn  bi bi-calendar3  mx-1 mt-2" (click)="d6.toggle()" type="button">
                                 <i-feather class="feather-sm" name="calendar"></i-feather>
                             </button>
                         </div>
@@ -722,9 +722,9 @@
                             @if(scheduleDetailForm.get('IGMNo').touched && scheduleDetailForm.get('IGMNo').invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('IGMNo').hasError('required')){
-                                        <span>IGM No is required</span>
+                                        <span>Required</span>
                                     }@else if(scheduleDetailForm.get('IGMNo').hasError('maxlength')){
-                                        <span>Max 10 Characters</span>
+                                        <span>Max 10 Chars</span>
                                     }
                                 </div>
                             }
@@ -751,14 +751,14 @@
                                 @if(scheduleDetailForm.get('IGMDate').touched && scheduleDetailForm.get('IGMDate').invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('IGMDate').hasError('required')){
-                                    <span>IGM is required</span>
+                                    <span>Required</span>
                                     }@else if(scheduleDetailForm.get('IGMDate').hasError('ngbDate')){
                                     <span>IGM Date must between ETA and ETD</span>
                                     }
                                 </div>
                                 }
                             </div>
-                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d7.toggle()" type="button">
+                            <button class="btn bi bi-calendar3  mx-1 mt-2" (click)="d7.toggle()" type="button">
                                 <i-feather class="feather-sm" name="calendar"></i-feather>
                             </button>
                         </div>
@@ -782,9 +782,9 @@
                             @if(scheduleDetailForm.get('EGMNo').touched && scheduleDetailForm.get('EGMNo').invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('EGMNo').hasError('required')){
-                                        <span>EGM No is required</span>
+                                        <span>Required</span>
                                     }@else if(scheduleDetailForm.get('EGMNo').hasError('maxlength')){
-                                        <span>Max 10 Characters</span>
+                                        <span>Max 10 Chars</span>
                                     }
                                 </div>
                             }
@@ -810,14 +810,14 @@
                                 @if(scheduleDetailForm.get('EGMDate').touched && scheduleDetailForm.get('EGMDate').invalid){
                                 <div class="error-message">
                                     @if(scheduleDetailForm.get('EGMDate').hasError('required')){
-                                    <span>EGM is required</span>
+                                    <span>Required</span>
                                     }@else if(scheduleDetailForm.get('EGMDate').hasError('ngbDate')){
                                     <span>EGM Date must between ETA and ETD</span>
                                     }
                                 </div>
                                 }
                             </div>
-                            <button class="btn btn-info bi bi-calendar3 text-white mx-1 mt-2" (click)="d8.toggle()" type="button">
+                            <button class="btn  bi bi-calendar3 mx-1 mt-2" (click)="d8.toggle()" type="button">
                                 <i-feather class="feather-sm" name="calendar"></i-feather>
                             </button>
                         </div>
@@ -840,7 +840,7 @@
         <div class="modal-footer p-2">
             <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onModalSubmit()">
                 <i class="fas fa-save me-1"></i>
-                {{isModalEditMode ? 'Update' : 'Create'}}
+                {{isModalEditMode ? 'Update' : 'Save'}}
             </button>
         </div>
     </div>

@@ -1,4 +1,4 @@
-<div class="row" [formGroup]="DocumentGenerationForm">
+<div class="row compact-form" [formGroup]="DocumentGenerationForm">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 pb-2">
@@ -55,7 +55,7 @@
                             <div *ngIf="DocumentGenerationForm.get('StartingNo')?.touched && DocumentGenerationForm.get('StartingNo')?.invalid"
                                 class="error-message">
                                 <span *ngIf="DocumentGenerationForm.get('StartingNo')?.hasError('required')">
-                                    StartingNo is required
+                                    Required
                                 </span>
                             </div>
 
@@ -71,7 +71,7 @@
                             <div *ngIf="DocumentGenerationForm.get('Seperator')?.touched && DocumentGenerationForm.get('Seperator')?.invalid"
                                 class="error-message">
                                 <span *ngIf="DocumentGenerationForm.get('Seperator')?.hasError('required')">
-                                    Seperator is required
+                                   Required
                                 </span>
                             </div>
                         </div>
@@ -125,7 +125,7 @@
                             <div *ngIf="DocumentGenerationForm.get('SerialNoLength')?.touched && DocumentGenerationForm.get('SerialNoLength')?.invalid"
                                 class="error-message">
                                 <span *ngIf="DocumentGenerationForm.get('SerialNoLength')?.hasError('required')">
-                                    Serial No Length is required
+                                    Required
                                 </span>
                             </div>
                         </div>
@@ -139,7 +139,7 @@
                             <div *ngIf="DocumentGenerationForm.get('Type')?.touched && DocumentGenerationForm.get('Type')?.invalid"
                                 class="error-message">
                                 <span *ngIf="DocumentGenerationForm.get('Type')?.hasError('required')">
-                                    Type is required
+                                    Required
                                 </span>
                             </div>
                         </div>
@@ -154,7 +154,7 @@
                             <div *ngIf="DocumentGenerationForm.get('ResetValue')?.touched && DocumentGenerationForm.get('ResetValue')?.invalid"
                                 class="error-message">
                                 <span *ngIf="DocumentGenerationForm.get('ResetValue')?.hasError('required')">
-                                    Reset Value is required
+                                   Required
                                 </span>
                             </div>
                         </div>
