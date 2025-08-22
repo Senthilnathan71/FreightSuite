@@ -198,8 +198,8 @@ auditLogs: any[] = []; // Stores audit logs
       AnnualRevenue : parseInt(formData.AnnualRevenue),
       ...(this.isEditMode ? {updatedBy : userEmail}:{createdBy : userEmail}),
       status : formData.status.charAt(0),
-      CompanyMasterSid : CompanyMasterSid,
-      BranchMasterSid: BranchMasterSid,
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+			BranchMasterSid : this.currentBranch?. BranchMasterSid,
     }
 
     if(this.isEditMode){

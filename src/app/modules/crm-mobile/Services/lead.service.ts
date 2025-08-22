@@ -14,8 +14,8 @@ export class LeadService {
   private quotationData: any = {};
 
 
-  getAllLeads() {
-    return this.http.get<Lead>('precustomer').pipe(
+  getAllLeads(CompanyMasterSid:number,BranchMasterSid:number) {
+    return this.http.post<Lead>('precustomer',{CompanyMasterSid,BranchMasterSid}).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -23,8 +23,8 @@ export class LeadService {
     )
   }
 
-  getAllPendingMeetings() {
-    return this.http.get('precustomer-meeting/pendingMeetings').pipe(
+  getAllPendingMeetings(CompanyMasterSid:number,BranchMasterSid:number) {
+    return this.http.post('precustomer-meeting/pendingMeetings',{CompanyMasterSid,BranchMasterSid}).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -123,8 +123,8 @@ export class LeadService {
     )
   }
 
-  getAllCustomers() {
-    return this.http.get('precustomer/customer').pipe(
+  getAllCustomers(CompanyMasterSid:number) {
+    return this.http.post('precustomer/customer',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         console.log(resp)
         let response = resp.data;
@@ -133,8 +133,8 @@ export class LeadService {
     )
   }
 
-  getAllCarrier() {
-    return this.http.get('ff-quotation/carrier').pipe(
+  getAllCarrier(CompanyMasterSid: number) {
+    return this.http.post('ff-quotation/carrier',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         console.log(resp)
         let response = resp.data;
@@ -144,8 +144,8 @@ export class LeadService {
   }
 
 
-  getAllDepartments() {
-    return this.http.get('ff-enquiry/department').pipe(
+  getAllDepartments(CompanyMasterSid: number) {
+    return this.http.post('ff-enquiry/department',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -154,8 +154,8 @@ export class LeadService {
   }
 
 
-  getAllMasters() {
-    return this.http.get('ff-quotation/unit-currency-charge').pipe(
+  getAllMasters(CompanyMasterSid:number) {
+    return this.http.post('ff-quotation/unit-currency-charge',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -163,8 +163,8 @@ export class LeadService {
     )
   }
 
-  getAllCargoTypes() {
-    return this.http.get('ff-enquiry/package-type').pipe(
+  getAllCargoTypes(CompanyMasterSid:number) {
+    return this.http.post('ff-enquiry/package-type',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -181,8 +181,8 @@ export class LeadService {
       })
     )
   }
-  getAllPackageTypes(payload) {
-    return this.http.post('package-type', { payload }).pipe(
+  getAllPackageTypes(CompanyMasterSid:number) {
+    return this.http.post('package-type', { CompanyMasterSid }).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -261,8 +261,8 @@ export class LeadService {
     )
   }
 
-  getAllQuotes() {
-    return this.http.get<any>('ff-quotation').pipe(
+  getAllQuotes(CompanyMasterSid: number, BranchMasterSid: number) {
+    return this.http.post<any>('ff-quotation',{CompanyMasterSid,BranchMasterSid}).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -298,8 +298,8 @@ export class LeadService {
   }
 
 
-  getAllEnquiries() {
-    return this.http.get<any>('ff-enquiry').pipe(
+  getAllEnquiries(CompanyMasterSid:number, BranchMasterSid:number) {
+    return this.http.post<any>('ff-enquiry/fetch',{CompanyMasterSid,BranchMasterSid}).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -343,16 +343,16 @@ export class LeadService {
     )
   }
 
-  getAllShippers() {
-    return this.http.get('customer/shipper').pipe(
+  getAllShippers(CompanyMasterSid: number) {
+    return this.http.post('customer/shipper',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
       })
     )
   }
-  getAllConsignees() {
-    return this.http.get('customer/consignee').pipe(
+  getAllConsignees(CompanyMasterSid:number) {
+    return this.http.post('customer/consignee',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -372,8 +372,8 @@ export class LeadService {
     return this.quotationData || {};
   }
 
-  getAllTodo() {
-    return this.http.get('precustomer-meeting/lead/todo').pipe(
+  getAllTodo(CompanyMasterSid:number,BranchMasterSid:number) {
+    return this.http.post('precustomer-meeting/lead/todo',{CompanyMasterSid,BranchMasterSid}).pipe(
       map((resp: any) => {
         let response = resp;
         return response;
@@ -481,8 +481,8 @@ export class LeadService {
     )
   }
   // Get all pre-customer meetings
-  getAllPreCustomerMeetings() {
-    return this.http.get<{ data: any[] }>('pre-customer-meeting').pipe(
+  getAllPreCustomerMeetings(CompanyMasterSid:number, BranchMasterSid:number) {
+    return this.http.post<{ data: any[] }>('pre-customer-meeting',{CompanyMasterSid,BranchMasterSid}).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -550,8 +550,8 @@ export class LeadService {
     )
   }
 
-  getAllProducts(payload) {
-    return this.http.post<{ data: any[] }>('product', { payload }).pipe(
+  getAllProducts(CompanyMasterSid:number) {
+    return this.http.post<{ data: any[] }>('product', {  CompanyMasterSid}).pipe(
       map((resp) => {
         let response = resp.data;
         return response;

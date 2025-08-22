@@ -237,15 +237,16 @@ export class EnquiryEntryComponent implements OnInit {
   }
 
   loadAllLookups() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     return forkJoin({
-      departments: this.leadService.getAllDepartments().pipe(catchError(() => of([]))),
+      departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(() => of([]))),
       ports: this.leadService.getAllPorts().pipe(catchError(() => of([]))),
-      customers: this.leadService.getAllCustomers().pipe(catchError(() => of([]))),
+      customers: this.leadService.getAllCustomers(CompanyMasterSid).pipe(catchError(() => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(() => of([]))),
       weightUnits: this.leadService.getAllWeightUnits().pipe(catchError(() => of([]))),
       packageTypes: this.leadService.getAllPackageTypes(this.currentCompany?.CompanyMasterSid).pipe(catchError(() => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(() => of([]))),
-      products: this.leadService.getAllProducts(this.currentCompany?.CompanyMasterSid).pipe(catchError(() => of([]))),
+      products: this.leadService.getAllProducts(CompanyMasterSid).pipe(catchError(() => of([]))),
     }).pipe(tap(({ departments, ports, customers, incos, weightUnits, packageTypes, containerTypes, products }) => {
       this.departments = departments;
       this.ports = ports;
@@ -305,9 +306,10 @@ export class EnquiryEntryComponent implements OnInit {
   }
 
   loadOtherFormLookups() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     forkJoin({
-      shippers: this.leadService.getAllShippers(),
-      consignees: this.leadService.getAllConsignees()
+      shippers: this.leadService.getAllShippers(CompanyMasterSid),
+      consignees: this.leadService.getAllConsignees(CompanyMasterSid)
     }).subscribe(({ shippers, consignees }) => {
       this.shipperList = shippers.data;
       this.finalShipperList = [...this.shipperList];
@@ -695,8 +697,8 @@ export class EnquiryEntryComponent implements OnInit {
     if (this.EnquiryHeaderSid) {
       const updatePayload = {
         ...this.rateRequestForm.value,
-        CompanyMasterSid: CompanyMasterSid,
-        BranchMasterSid: BranchMasterSid,
+        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+			BranchMasterSid : this.currentBranch?. BranchMasterSid,
         enquiryOther: otherFormValue,
         updatedBy: userEmail,
         MenuMaster: this.currentMenuId,
@@ -732,8 +734,8 @@ export class EnquiryEntryComponent implements OnInit {
       const createPayload = {
         ...this.rateRequestForm.value,
         enquiryOther: otherFormValue,
-        CompanyMasterSid: CompanyMasterSid,
-        BranchMasterSid: BranchMasterSid,
+        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+			BranchMasterSid : this.currentBranch?. BranchMasterSid,
         createdBy: userEmail,
         DepartmentMasterSid: this.rateRequestForm.get('DepartmentMasterSid')
           ?.value,

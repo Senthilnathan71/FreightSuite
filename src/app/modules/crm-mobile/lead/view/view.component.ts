@@ -1,15 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-// import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { LeadService } from '../../Services/lead.service';
-import { Lead } from '../../Interfaces/lead.interface';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { AppService } from 'src/app/service/app.service';
 import { FormsModule } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-view',
@@ -24,102 +22,124 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
   styleUrl: './view.component.scss'
 })
 export class ViewComponent implements OnInit {
-  leads: any[] = [];        // Array to store the leads
-  errorMessage: string = '';  // To store any error messages
+  leads: any[] = [];        
+  errorMessage: string = '';  
+  searchPerformed: boolean = false;
+  
   // pagination
   page = 1;
   pageSize = 5;
   totalLengthOfCollection: number;
   searchText: string = '';
-  filteredLeads: Lead[] = [];
   isMobile: boolean = false;
   statusList = ["Active", "Suspended"];
 
-  constructor(private leadService: LeadService, private route: Router, private appService: AppService,private appSettingService:AppSettingsService) { }
+  // Sorting
+  sortColumn = "preCustomerName";
+  sortDirection = "asc";
+
+  // Company context
+  currentCompany: any;
+  currentBranch: any;
+
+  constructor(
+    private leadService: LeadService, 
+    private route: Router, 
+    private appService: AppService,
+    private appSettingService: AppSettingsService
+  ) { }
 
   ngOnInit(): void {
-    this.loadLeads();
-    this.isMobile = this.appService.getDevice()
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.searchLeads();
+    this.isMobile = this.appService.getDevice();
   }
 
-  // Method to load the leads
-  // loadLeads(): void {
-  //   this.leadService.getAllLeads().subscribe(
-  //     (resp: Lead[]) => {
-  //       this.leads = resp['data'];  // On success, store the leads data in the component
-  //       this.filteredLeads = [...this.leads]; // Ensure filteredLeads starts with all data
-  //       this.updatePaginatedData();  // Update paginated data
-  //       this.totalLengthOfCollection = this.leads.length || 0;
-  //     },
-  //     (error) => {
-  //       this.errorMessage = error.message;  // On error, store the error message
-  //       console.error('Error loading leads:', error);  // Optionally log the error
-  //     }
-  //   );
-  // }
-
-
-  updatePaginatedData(): void {
-    const startIndex = (this.page - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.filteredLeads = this.leads.slice(startIndex, endIndex);
-  }
-
+  // Server-side search implementation
   searchLeads(): void {
-    const searchQuery = this.searchText?.toLowerCase().trim(); // Trim spaces and handle null/undefined
-
-    if (!searchQuery) {
-      this.filteredLeads = [...this.leads]; // Reset to original leads when search is empty
-    } else {
-      this.filteredLeads = this.leads.filter((lead) => {
-        return (
-          lead.preCustomerName?.toLowerCase().includes(searchQuery) ||
-          lead.preCustomerAddress1?.toLowerCase().includes(searchQuery) ||
-          lead.contactPerson?.toLowerCase().includes(searchQuery) ||
-          String(lead.phone).includes(searchQuery) || // Convert number to string
-          (lead.status === 'A' ? 'Active' : 'Cancelled').toLowerCase().includes(searchQuery)
-        );
-      });
+    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    let BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    
+    const params = {
+      search: this.searchText.trim() || '',
+      page: this.page,
+      pageSize: this.pageSize,
+      activeCompanyId: CompanyMasterSid,
+      activeBranchId: BranchMasterSid,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
     }
 
-    this.totalLengthOfCollection = this.filteredLeads.length;
+    this.leadService.searchLead(params).subscribe({
+      next: (resp: any) => {
+        if (resp.status) {
+          this.leads = resp.data?.items || [];
+          this.totalLengthOfCollection = resp.data?.totalCount || 0;
+          this.searchPerformed = true;
+        } else {
+          this.appSettingService.showError('Error searching leads.');
+          console.error('Error searching leads', resp.message);
+          this.leads = [];
+          this.totalLengthOfCollection = 0;
+        }
+      }, 
+      error: (error: any) => {
+        console.error(error);
+        this.appSettingService.showError('Error searching leads.');
+      }
+    });
   }
 
-  loadLeads(){
-    this.leadService.fetchAllLeads().subscribe(
-      (resp:any)=>{
-        if(resp.status){
-          this.leads = resp.data;
-          this.filteredLeads = this.leads;
-          this.updatePaginatedData();
-          this.totalLengthOfCollection = this.leads.length;
-        } else {
-          this.appSettingService.showError('Error Loading Leads');
-        }
-      },(error)=>{
-        console.log('Error Loading Leads',error);
-      }
-    )
+  clearSearchText() {
+    this.searchText = "";
+    this.page = 1;
+    this.searchLeads();
+  }
+
+  sort(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.searchLeads(); // Re-fetch with new sorting
+  }
+
+  updatePaginatedData(): void {
+    this.searchLeads();
   }
 
   createNew() {
     this.route.navigate(['crm/lead'])
   }
+
   viewLead(id) {
     this.route.navigate(['crm/lead', id])
   }
+
   createMeeting(PreCustomerMasterSid: number) {
     this.route.navigate([`/crm/lead-schedule-meeting/${PreCustomerMasterSid}`]);
   }
 
-  findStatus(value){
+  findStatus(value) {
     switch (value) {
       case 'A':
         return 'Active'
-      
       default:
         return 'Suspended'
     }
   }
 
+  resetFilters(): void {
+    this.searchText = '';
+    this.sortColumn = "preCustomerName";
+    this.sortDirection = "asc";
+    this.leads = [];
+    this.totalLengthOfCollection = 0;
+    this.page = 1;
+    this.searchPerformed = false;
+    this.searchLeads();
+  }
 }

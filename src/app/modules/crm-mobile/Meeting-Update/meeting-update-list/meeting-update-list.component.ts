@@ -46,6 +46,8 @@ export class MeetingUpdateListComponent implements OnInit {
   meetingData : any;
   currentMenuId: number;
   TandCList: any;
+  currentCompany: any;
+  currentBranch:any;
 
   constructor(
     private router: Router,
@@ -58,6 +60,8 @@ export class MeetingUpdateListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.isMobile = this.appService.getDevice();
     this.loadMeetings();
     this.loadSalesPersons();
@@ -104,7 +108,9 @@ export class MeetingUpdateListComponent implements OnInit {
   }
 
   loadMeetings(): void {
-    this.leadService.getAllPreCustomerMeetings().subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentCompany?.BranchMasterSid;
+    this.leadService.getAllPreCustomerMeetings(CompanyMasterSid,BranchMasterSid).subscribe(
       (resp: any) => {
         if (resp.status && resp.data.length) {
           // Filter meetings to only include specified statuses

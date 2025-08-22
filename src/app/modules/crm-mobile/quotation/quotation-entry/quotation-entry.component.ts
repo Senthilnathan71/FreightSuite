@@ -424,15 +424,16 @@ openAuditLogs(modal: TemplateRef<any>) {
   // SECTION5 - MAIN FUNCTIONS
 
   loadAllLookUps() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     return forkJoin({
-      cargoTypes: this.leadService.getAllCargoTypes().pipe(catchError(err => of([]))),
-      carriers: this.leadService.getAllCarrier().pipe(catchError(err => of([]))),
-      customers: this.leadService.getAllCustomers().pipe(catchError(err => of([]))),
-      departments: this.leadService.getAllDepartments().pipe(catchError(err => of([]))),
+      cargoTypes: this.leadService.getAllCargoTypes(CompanyMasterSid).pipe(catchError(err => of([]))),
+      carriers: this.leadService.getAllCarrier(CompanyMasterSid).pipe(catchError(err => of([]))),
+      customers: this.leadService.getAllCustomers(CompanyMasterSid).pipe(catchError(err => of([]))),
+      departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
       ports: this.leadService.getAllPorts().pipe(catchError(err => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(err => of([]))),
       salesman: this.leadService.getAllSalesman().pipe(catchError(err => of([]))),
-      masters: this.leadService.getAllMasters().pipe(catchError(err => of({ charges: [], currencies: [], units: [] }))),
+      masters: this.leadService.getAllMasters(CompanyMasterSid).pipe(catchError(err => of({ charges: [], currencies: [], units: [] }))),
       units : this.leadService.getAllUOMs().pipe(catchError(err => of([]))),
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([])))
     }).pipe(tap(({ cargoTypes, carriers, customers, departments, ports, incos, salesman, masters,units, containerTypes }) => {

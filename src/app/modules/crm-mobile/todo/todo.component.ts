@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { NgbDropdownModule, NgbNavModule, NgbTooltip, ModalDismissReasons, NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AppService } from 'src/app/service/app.service';
-
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 @Component({
   selector: 'app-todo',
   standalone: true,
@@ -26,6 +26,8 @@ export class TodoComponent implements OnInit {
   @ViewChild('nav', { static: true }) nav!: NgbNavModule;
 
   isMobile: boolean = false;
+  currentCompany:any;
+  currentBranch:any;
 
   toDoList = [
     { id: 1, status: 'Not Meet', text: 'Follow up on outstanding payment from "BlueWave Shipping" client', isChecked: false },
@@ -49,9 +51,11 @@ export class TodoComponent implements OnInit {
     this.modalService.open(content, { scrollable: true, size: 'lg', centered: true, windowClass: 'todo-modal' }).result.then();
   }
 
-  constructor(private appService: AppService, private leadService: LeadService, private datePipe: DatePipe) { }
+  constructor(private appService: AppService, private leadService: LeadService, private datePipe: DatePipe, private appSettingService: AppSettingsService) { }
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.getAllLeadPendingMeetings()
     this.getAllTodo()
     this.isMobile = this.appService.getDevice()
@@ -62,7 +66,9 @@ export class TodoComponent implements OnInit {
   pendingSchedule: any
 
   getAllLeadPendingMeetings() {
-    this.leadService.getAllPendingMeetings().subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    this.leadService.getAllPendingMeetings(CompanyMasterSid,BranchMasterSid).subscribe(
       (resp: any[]) => {
         console.log(resp)
         this.todoNeverMet = resp['data'].map(meeting => ({
@@ -76,7 +82,9 @@ export class TodoComponent implements OnInit {
   todoNeverMet: any
   todoInActive: any
   getAllTodo() {
-    this.leadService.getAllTodo().subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    this.leadService.getAllTodo(CompanyMasterSid,BranchMasterSid).subscribe(
       (resp: any[]) => {
         this.todoNotMet = resp['data'].notMet.map(meeting => ({
           ...meeting,

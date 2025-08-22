@@ -145,16 +145,17 @@ auditLogs: any[] = []; // Stores audit logs
      const storedBranch = localStorage.getItem('selected-branch');
     this.currentBranch = storedBranch ? this.appSettingsService.decrypt(storedBranch) : null;
     console.info(this.currentBranch)
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 
     forkJoin({
-      cargoTypes: this.leadService.getAllCargoTypes().pipe(catchError(err => of([]))),
-      carriers: this.leadService.getAllCarrier().pipe(catchError(err => of([]))),
-      customers: this.leadService.getAllCustomers().pipe(catchError(err => of([]))),
-      departments: this.leadService.getAllDepartments().pipe(catchError(err => of([]))),
+      cargoTypes: this.leadService.getAllCargoTypes(CompanyMasterSid).pipe(catchError(err => of([]))),
+      carriers: this.leadService.getAllCarrier(CompanyMasterSid).pipe(catchError(err => of([]))),
+      customers: this.leadService.getAllCustomers(CompanyMasterSid).pipe(catchError(err => of([]))),
+      departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
       ports: this.leadService.getAllPorts().pipe(catchError(err => of([]))),
       incos : this.leadService.getAllIncos().pipe(catchError(err => of([]))),
       salesman : this.leadService.getAllSalesman().pipe(catchError(err => of([]))),
-      masters: this.leadService.getAllMasters().pipe(catchError(err => of({ charges: [], currencies: [], units: [] })))
+      masters: this.leadService.getAllMasters(CompanyMasterSid).pipe(catchError(err => of({ charges: [], currencies: [], units: [] })))
     }).subscribe(({ cargoTypes, carriers, customers, departments, ports,incos,salesman, masters }) => {
       this.packageTypes = cargoTypes || [];
       this.carriers = carriers || [];
@@ -865,8 +866,10 @@ openAuditLogs(modal: TemplateRef<any>) {
 
  
   getEnquiryName(EnquirySid:number){
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     if(!EnquirySid) return;
-    this.leadService.getAllEnquiries().subscribe(
+    this.leadService.getAllEnquiries(CompanyMasterSid,BranchMasterSid).subscribe(
       (resp:any)=>{
         if(resp.status){
           let enquiryData = resp.data;

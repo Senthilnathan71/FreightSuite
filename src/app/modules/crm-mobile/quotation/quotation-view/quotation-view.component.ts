@@ -107,7 +107,9 @@ export class QuotationViewComponent {
 
   // Method to load the leads
   loadQuotes(): void {
-    this.leadService.getAllQuotes().subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    this.leadService.getAllQuotes(CompanyMasterSid,BranchMasterSid).subscribe(
       (resp: any[]) => {
         console.log(resp)
         this.quoteData = resp['data'];  // On success, store the leads data in the component
@@ -124,6 +126,7 @@ export class QuotationViewComponent {
     );
   }
   searchEnquiry(): void {
+   
     const searchQuery = this.searchText?.toLowerCase().trim(); // Trim spaces and handle null/undefined
 
     if (!searchQuery) {
@@ -151,7 +154,9 @@ export class QuotationViewComponent {
 
 
   loadEnquiries(): void {
-    this.leadService.getAllEnquiries().subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    this.leadService.getAllEnquiries(CompanyMasterSid,BranchMasterSid).subscribe(
       (resp: any[]) => {
         console.log(resp)
         this.enquiryData = resp['data'];  // On success, store the leads data in the component

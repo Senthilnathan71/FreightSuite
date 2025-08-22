@@ -146,9 +146,13 @@ export class FullcalendarComponent implements OnInit {
   };
   currentMenuId: number;
   TandCList: any;
+  currentCompany: any;
+  currentBranch: any;
   constructor(private modalService: ModalService, private cdr: ChangeDetectorRef, private appSettingService: AppSettingsService, private fb: FormBuilder, private leadService: LeadService, private modal: NgbModal, private appService: AppService,private ngbModal: NgbModal) { }
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.isMobile = this.appService.getDevice()
     this.loadCustomers()
     this.loadSalesPersons()
@@ -219,7 +223,8 @@ export class FullcalendarComponent implements OnInit {
   }
 
   loadCustomers(): void {
-    this.leadService.getAllCustomers().subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    this.leadService.getAllCustomers(CompanyMasterSid).subscribe(
       (resp: any) => {
         this.customers = resp
       });

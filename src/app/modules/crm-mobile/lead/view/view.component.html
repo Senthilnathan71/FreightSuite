@@ -3,10 +3,15 @@
     <div class="col-12">
         <div class="bg-white rounded-3 p-2  shadow mb-2" data-bs-theme="light">
             <form class="d-flex align-items-center gap-2">
-                <div class="form-outline col">
+                <div class="form-outline col position-relative">
                     <input type="search" class="form-control ps-5" [(ngModel)]="searchText" name="search"
                         (input)="searchLeads()" autocomplete="off" placeholder="Search">
-                    <i class="fas fa-search ms-3"></i>
+                    <i class="fas fa-search ms-3 position-absolute start-0 top-50 translate-middle-y"></i>
+                    <!-- Clear button (X) when there's text -->
+                    <button *ngIf="searchText" type="button" class="btn btn-sm position-absolute end-0 top-50 translate-middle-y me-2" 
+                            (click)="clearSearchText()" style="background: none; border: none;">
+                        <i class="fas fa-times text-muted"></i>
+                    </button>
                 </div>
                 <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
                     <i class="mdi mdi-plus" [class.me-1]="!isMobile"></i>
@@ -29,7 +34,7 @@
 <!-- MOBILE CODE -->
 <ng-template #mobileTemplate>
     <div class="mobile-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
-        <div class="card" *ngFor="let lead of filteredLeads">
+        <div class="card" *ngFor="let lead of leads">
             <div class="card-body">
                 <div class="d-flex flex-column gap-2 position-relative">
                     <div class="d-flex align-items-center fw-bold dofi-font-16 text-uppercase">
@@ -50,7 +55,6 @@
                         <div class="ms-auto d-flex align-items-center gap-1">
 
                             <a class="text-info" (click)="viewLead(lead.PreCustomerMasterSid)">
-                                <!-- <i-feather name="edit" class="feather-sm"></i-feather> -->
                                 <i-feather name="eye" class="feather-sm"></i-feather>
                             </a>
                         </div>
@@ -63,22 +67,6 @@
                         <i-feather name="map-pin" class="feather-sm"></i-feather>
                         <div class="ms-2">{{ lead.preCustomerAddress1 }}</div>
                     </div>
-                    <!-- <div class="d-flex">
-                        <div class="col">
-                            <div class="text-muted font-14">Last Meeting</div>
-                            <div class="d-flex align-items-center">
-                                <i-feather name="calendar" class="feather-sm"></i-feather>
-                                <div class="ms-2"> -- </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="text-muted font-14">Last Meeting</div>
-                            <div class="d-flex align-items-center">
-                                <i-feather name="calendar" class="feather-sm"></i-feather>
-                                <div class="ms-2 col"> -- </div>
-                            </div>
-                        </div>
-                    </div> -->
                 </div>
             </div>
         </div>
@@ -96,101 +84,85 @@
 <ng-template #desktopTemplate>
     <div class="desktop-view" *ngIf="totalLengthOfCollection > 0; else noDataTemplate">
         <div class="row bg-white py-2 rounded shadow-sm mx-auto">
-
             <div class="col-12">
-                <!-- #region filter and add new -->
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('preCustomerName')">
+                                    Lead Name
+                                    <i-feather [name]="sortColumn === 'preCustomerName' ? (sortDirection === 'asc' ? 'arrow-up' : 'arrow-down') : 'minus'" class="feather-sm ms-1"></i-feather>
+                                </th>
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('phone')">
+                                    Phone
+                                    <i-feather [name]="sortColumn === 'phone' ? (sortDirection === 'asc' ? 'arrow-up' : 'arrow-down') : 'minus'" class="feather-sm ms-1"></i-feather>
+                                </th>
+                                <th class="bg-transparent text-light" scope="col">Type</th>
+                                <th class="bg-transparent text-light" scope="col">Schedule</th>
+                                <th class="bg-transparent text-light" scope="col" (click)="sort('status')">
+                                    Status
+                                    <i-feather [name]="sortColumn === 'status' ? (sortDirection === 'asc' ? 'arrow-up' : 'arrow-down') : 'minus'" class="feather-sm ms-1"></i-feather>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let lead of leads">
+                                <td data-label="Action" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <section class="action-items text-center">
+                                        <a class="text-info mx-2" (click)="viewLead(lead.PreCustomerMasterSid)">
+                                            <i-feather name="eye" class="feather-sm"></i-feather>
+                                        </a>
+                                    </section>
+                                </td>
+                                <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">
+                                        {{ lead.preCustomerName }}
+                                    </div>
+                                </td>
+                                <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">
+                                        <i-feather name="phone" class="feather-sm"></i-feather> {{ lead.phone }}
+                                    </div>
+                                </td>
+                                <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">
+                                        {{ lead.preCustomerType }}
+                                    </div>
+                                </td>
+                                <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">
+                                        <button class="btn btn-sm btn-light-success" (click)="createMeeting(lead.PreCustomerMasterSid)">
+                                            <i-feather name="calendar" class="feather-sm"></i-feather>Schedule Meeting
+                                        </button>
+                                    </div>
+                                </td>
+                                <td data-label="status" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">
+                                        {{ lead.status === 'A' ? 'Active' : 'Suspended' }}
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                <!-- #endregion -->
-
-             
-                    <!-- #region lead view -->
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                            <thead>
-                                <tr class="bg-info">
-                                    <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
-                                    <th class="bg-transparent text-light" scope="col">Lead Name</th>
-                                    <th class="bg-transparent text-light" scope="col">Phone</th>
-                                    <th class="bg-transparent text-light" scope="col">Type</th>
-                                    <th class="bg-transparent text-light" scope="col">Schedule</th>
-                                    <!-- <th class="bg-transparent text-light" scope="col">Last Met</th>
-                                    <th class="bg-transparent text-light" scope="col">Last Booking</th> -->
-                                    <th class="bg-transparent text-light" scope="col">Status</th>
-                                    
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let lead of filteredLeads">
-                                     <td data-label="Action" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <section class="action-items text-center">
-                                            <a class="text-info mx-2" (click)="viewLead(lead.PreCustomerMasterSid)">
-                                                <!-- <i-feather name="edit" class="feather-sm"></i-feather> -->
-                                                <i-feather name="eye" class="feather-sm"></i-feather>
-                                            </a>
-                                        </section>
-                                    </td>
-                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ lead.preCustomerName }}
-                                        </div>
-                                    </td>
-                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                             <i-feather name="phone" class="feather-sm"></i-feather> {{ lead.phone }}
-                                        </div>
-                                    </td>
-                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ lead.preCustomerType }}
-                                        </div>
-                                    </td>
-                                    <td data-label="Phone" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            <button class="btn btn-sm btn-light-success" (click)="createMeeting(lead.PreCustomerMasterSid)">
-                                                <i-feather name="calendar" class="feather-sm"></i-feather>Schedule Meeting
-                                            </button>
-                                            <!-- <i-feather name="phone" class="feather-sm"></i-feather> {{ lead.phone }} -->
-                                        </div>
-                                    </td>
-                                    <!-- <td data-label="Type"> -- </td> -->
-                                    <!-- <td data-label="Schedule">
-                                        <span class="badge font-medium" [ngClass]="getScheduleClass(company.schedule)">{{
-                                            company.schedule }}</span>
-                                        <div class="">
-                                            <i-feather name="calendar" class="feather-sm"></i-feather> --
-                                        </div>
-                                    </td> -->
-                                    <td data-label="status" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                        <div class="text-truncate">
-                                            {{ lead.status === 'A' ? 'Active' : 'Suspended' }}
-                                              <!-- {{findStatus(lead.status)}} -->
-                                        </div>
-                                    </td>
-                                   
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="card-body">
+                    <!-- #region Pagination -->
+                    <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                        [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
+                    </ngb-pagination>
                     <!-- #endregion -->
-
-                    <div class="card-body">
-                        <!-- #region Pagination -->
-                        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
-                            [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()">
-                        </ngb-pagination>
-                        <!-- #endregion -->
-                    </div>
-             
-
+                </div>
             </div>
         </div>
     </div>
 </ng-template>
 
-
 <!-- NO DATA TEMPLATE -->
 <ng-template #noDataTemplate>
     <div class="text-center py-5">
-        <p class="text-muted">No data available.</p>
+        <p class="text-muted" *ngIf="searchPerformed">No leads found.</p>
+       
     </div>
 </ng-template>
