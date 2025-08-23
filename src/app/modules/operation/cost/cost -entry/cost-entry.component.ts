@@ -1,4 +1,4 @@
-import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -38,6 +38,8 @@ export class CostEntryComponent implements OnInit {
   docTypeList: any[] = [];
   slicedCostFormArray: any[] = [];
   slicedRevenueFormArray: any[] = [];
+  tariffLoading : boolean;
+  tariffDetails : any[] = [];
   profitSummary: any[] = [];
   costDataLength: number = 0;
   page = 1;
@@ -89,6 +91,23 @@ export class CostEntryComponent implements OnInit {
     return this._customerList;
   }
 
+  private prevValue;
+  @Input()
+  set resetTrigger(value: boolean) {
+    if(value !== this.prevValue){
+      this.prevValue = value;
+      this.costFormArray?.clear();
+      this.revenueFormArray?.clear();
+      this.costDataLength = 0;
+      this.revenueDataLength = 0;
+      this.profitSummary = [];
+      this.slicedCostFormArray = [];
+      this.slicedRevenueFormArray = [];
+    }
+  }
+
+  
+
   @Input()
   set dataItems(value: any[]) {
     if (value && value.length > 0) {
@@ -99,7 +118,8 @@ export class CostEntryComponent implements OnInit {
       this.costFormArray?.clear();
       this.revenueFormArray?.clear();
       this.costDataLength = 0;
-      this.revenueDataLength
+      this.revenueDataLength = 0;
+      this.profitSummary = [];
       this.slicedCostFormArray = [];
       this.slicedRevenueFormArray = [];
     }
@@ -108,11 +128,18 @@ export class CostEntryComponent implements OnInit {
     return this._dataItems;
   }
 
+  private parentFormValue : any = {};
+  @Input() 
+  set formData(value:any){
+    if(value){
+      this.parentFormValue = value;
+    } else {
+      this.parentFormValue = {};
+    }
+  }
+
   @Output() dataEmitter = new EventEmitter<any[]>();
 
-  @ViewChild('costModal') costModal!: TemplateRef<any>;
-  @ViewChild('revenueModal') revenueModal!: TemplateRef<any>;
-  @ViewChild('profitModal') profitModal!: TemplateRef<any>;
 
   rateForm!: FormGroup;
   currentRateIndex: number = -1;
@@ -150,7 +177,8 @@ export class CostEntryComponent implements OnInit {
 
   initRateForm() {
     this.rateForm = this.fb.group({
-      BookingRatesSid: [null],
+      CostRevenueChargesSid: [null],
+      TransactionSid : [null],
       SerialNumber: [{ value: '', disabled: true }],
       ChargeMasterSid: [null],
       ChargeDescription: [''],
@@ -187,8 +215,8 @@ export class CostEntryComponent implements OnInit {
         this.revenueFormArray.push(formGroup);
       }
     }
-    this.costDataLength = items.length;
-    this.revenueDataLength = items.length;
+    this.costDataLength = this.costFormArray.length;
+    this.revenueDataLength = this.revenueFormArray.length;
     this.costFormArray.updateValueAndValidity();
     this.revenueFormArray.updateValueAndValidity();
     this.updateCostPagination();
@@ -198,7 +226,8 @@ export class CostEntryComponent implements OnInit {
 
   createRateFormGroup(data?: any): FormGroup {
     return this.fb.group({
-      BookingRatesSid: [data?.BookingRatesSid || null],
+      CostRevenueChargesSid: [data?.CostRevenueChargesSid || null],
+      TransactionSid : [data?.TransactionSid || null],
       SerialNumber: [data?.SerialNumber || ''],
       ChargeMasterSid: [data?.ChargeMasterSid || null],
       ChargeDescription: [data?.ChargeDescription || ''],
@@ -208,7 +237,7 @@ export class CostEntryComponent implements OnInit {
       DrCr: [data?.DrCr || null],
       CurrencyMasterSid: [data?.CurrencyMasterSid || null],
       ExchangeRate: [Number(data?.ExchangeRate).toFixed(2) || ''],
-      Rate: [data?.Rate || ''],
+      Rate: [Number(data?.Rate).toFixed(2) || ''],
       Amount: [Number(data?.Amount).toFixed(2) || ''],
       CostRevenue: [data?.CostRevenue || ''],
       LocalAmount: [Number(data?.LocalAmount).toFixed(2) || ''],
@@ -230,7 +259,8 @@ export class CostEntryComponent implements OnInit {
     }
     if (data) {
       this.rateForm.patchValue({
-        BookingRatesSid: data.BookingRatesSid,
+        CostRevenueChargesSid: data?.CostRevenueChargesSid,
+        TransactionSid : data?.TransactionSid,
         SerialNumber: originalIndex + 1,
         ChargeMasterSid: data.ChargeMasterSid,
         ChargeDescription: data.ChargeDescription,
@@ -555,8 +585,115 @@ export class CostEntryComponent implements OnInit {
     return (this.docTypeList.find(docType => docType.DocumentTypeMasterSid === VoucherTypeSid)?.DocumentTypeName);
   }
 
-  onTariffDetails(){
-      
+  getTariffDetails(content:TemplateRef<any>){
+    if(!this.hasRequiredFieldsFilled()){
+      this.appSettingService.showWarning("Please fill all the required fields correctly to get Tariff.");
+      return;
+    }
+    this.tariffLoading = true;
+    let segment = this.parentFormValue.Segment;
+    let value;
+    if (segment === "FCL") {
+      value = this.parentFormValue.NoofContainers
+    } else if (segment === "LCL") {
+      value = this.parentFormValue.Volume
+    } else if (segment === "AIR") {
+      value = this.parentFormValue.ChargeableWeight
+    }
+    this.modalService.open(content,{size : 'lg',centered : true , backdrop:'static'});
+    this.operationService.getTariffDetails(this.parentFormValue).subscribe(
+      (resp:any)=>{
+        if(resp.status){
+          const response : any[] = resp.data || [];
+          this.tariffDetails = response
+            .map((td:any)=>{
+            const charge = this.getCharge(td.ChargeCode);
+            return {
+              ChargeMasterSid : charge.ChargeMasterSid,
+              ChargeDescription : td.Description,
+              PrepaidCollect : "Collect",
+              ChargeUomSid : td.UOMSid,
+              NumberOfUnit : value,
+              Cost : {
+                DrCr : 'D',
+                CurrencyMasterSid : td.BuyCurrency,
+                Rate : Number(td.BuyPerUnitPrice).toFixed(2),
+                Amount : (Number(value) * Number(td.BuyPerUnitPrice)).toFixed(2),
+                LocalAmount : (Number(td.costExchangeRate) * Number(value) * Number(td.BuyPerUnitPrice)).toFixed(2),
+                ExchangeRate : Number(td.costExchangeRate).toFixed(2)
+              },
+              Revenue : {
+                DrCr : 'C',
+                CurrencyMasterSid : td.SaleCurrency,
+                Rate : Number(td.SalePerUnitPrice).toFixed(2),
+                Amount : (Number(value) * Number(td.SalePerUnitPrice)).toFixed(2),
+                LocalAmount : (Number(td.revenueExchangeRate) * Number(value) * Number(td.SalePerUnitPrice)).toFixed(2),
+                ExchangeRate : Number(td.revenueExchangeRate).toFixed(2)
+              }
+            }
+          })
+          console.log(this.tariffDetails);
+          this.tariffLoading = false;
+        } else {
+          this.appSettingService.showError("Error loading Tariff Details");
+          this.tariffLoading = false;
+        }
+      }
+    )
+    
+  }
+
+  getCharge(chargeCode) {
+    if (!chargeCode || !this.chargeList || this.chargeList.length === 0) {
+      return {};
+    }
+    const charge = this.chargeList.find(ch => ch.chargeCode === chargeCode);
+    return charge;
+  }
+
+  hasRequiredFieldsFilled(){
+    const data = this.parentFormValue;
+    return (data.DepartmentMasterSid || data.POLSid || data.PODSid || data.EffectiveDate || data.ExpiredDate)
+  }
+
+  applyTariff(detail){
+    const costFormValue = {
+      ChargeMasterSid: detail.ChargeMasterSid,
+      ChargeDescription: detail.ChargeDescription,
+      PrepaidCollect: "Collect",
+      ChargeUomSid: detail.ChargeUomSid,
+      NumberOfUnit: detail.NumberOfUnit,
+      CostRevenue : "Cost",
+      ...detail.Cost
+    }
+    console.log(costFormValue);
+    const costFormGroup = this.createRateFormGroup(costFormValue); 
+    this.costFormArray.push(costFormGroup);
+    const revenueFormValue = {
+      ChargeMasterSid: detail.ChargeMasterSid,
+      ChargeDescription: detail.ChargeDescription,
+      PrepaidCollect: "Collect",
+      ChargeUomSid: detail.ChargeUomSid,
+      NumberOfUnit: detail.NumberOfUnit,
+      CostRevenue : "Revenue",
+      ...detail.Revenue
+    }
+    const revenueFormGroup = this.createRateFormGroup(revenueFormValue);
+    this.revenueFormArray.push(revenueFormGroup)
+    this.costDataLength = this.costFormArray.length;
+    this.revenueDataLength = this.revenueFormArray.length;
+    this.costFormArray.updateValueAndValidity();
+    this.revenueFormArray.updateValueAndValidity();
+    this.updateCostPagination();
+    this.updateRevenuePagination();
+    this.calculateProfit();
+    this.syncDataWithParentComponent();
+    this.modalService.dismissAll();
+  }
+
+  closeTariffModal() {
+    this.tariffDetails = [];
+    this.modalService.dismissAll();
   }
 
 }

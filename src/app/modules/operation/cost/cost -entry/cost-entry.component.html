@@ -11,8 +11,8 @@
     <!-- Add Button -->
     <div *ngIf="selectedTab !== 'Profit'">
 
-        <button type="button" class="btn btn-info btn-sm me-2 dofi-min-w-80 dofi-max-w-80"
-            (click)="openModalBasedOnTab(rateModal)">
+        <button type="button" class="btn btn-info btn-sm me-2 dofi-min-w-100 dofi-max-w-100"
+            (click)="getTariffDetails(tariffDetailsModal)">
             <i class="fas fa-plus me-1" style="font-size: 10px;"></i> Get Tariff
         </button>
         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
@@ -89,6 +89,11 @@
                     </tbody>
                 </table>
             </div>
+            <div>
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="costDataLength" [pageSize]="pageSize"
+                    [(page)]="page" (pageChange)="updateCostPagination()" [rotate]="true" [ellipses]="false" [maxSize]="10">
+                </ngb-pagination>
+            </div>
         </div>
     </div>
     } @else if(selectedTab === 'Cost') {
@@ -164,6 +169,11 @@
                     </tbody>
                 </table>
             </div>
+            <div>
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="revenueDataLength" [pageSize]="pageSize1"
+                    [(page)]="page1" (pageChange)="updateRevenuePagination()" [rotate]="true" [ellipses]="false" [maxSize]="10">
+                </ngb-pagination>
+            </div>
         </div>
     </div>
     } @else if(selectedTab === 'Revenue') {
@@ -171,7 +181,7 @@
         <div class="alert alert-info text-center">No Revenue Rate added yet.</div>
     </div>
     }
-
+    @if(selectedTab === 'Profit' && profitSummary.length > 0){
     <div class="row g-white" *ngIf="selectedTab === 'Profit'">
         <div class="col-12 p-0">
             <div class="table-responsive">
@@ -200,6 +210,11 @@
         </div>
 
     </div>
+    } @else if(selectedTab === 'Profit') {
+    <div class="col-12">
+        <div class="alert alert-info text-center">No Records found.</div>
+    </div>
+    }
 
 </div>
 
@@ -401,4 +416,96 @@
         <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
         <button type="button" class="btn btn-info btn-sm" (click)="onRateSubmit()">Save</button>
     </div>
+</ng-template>
+<ng-template #tariffDetailsModal let-modal>
+  <div class="modal-container">
+    <div class="modal-responsive-wrapper">
+      <div class="modal-content custom-modal">
+        <div class="modal-header">
+          <h5 class="modal-title">Tariff Details</h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="closeTariffModal()"></button>
+        </div>
+
+        <div class="modal-body d-flex justify-content-center align-items-center flex-column" style="min-height: 300px;">
+          
+          <!-- Loader -->
+          <div *ngIf="tariffLoading" class="text-center py-4 w-100">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading tariff...</span>
+            </div>
+            <div class="mt-2">Loading tariff...</div>
+          </div>
+
+          <!-- Tariff Table -->
+          <div *ngIf="!tariffLoading && tariffDetails?.length" class="table-responsive w-100">
+            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 text-center">
+              <thead>
+                <tr class="bg-info text-white">
+                  <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                  <th class="bg-transparent text-light" scope="col">Sno</th>
+                  <th class="bg-transparent text-light" scope="col">Charge</th>
+                  <th class="bg-transparent text-light" scope="col">Charge Desc</th>
+                  <th class="bg-transparent text-light" scope="col">PP/CC</th>
+                  <th class="bg-transparent text-light" scope="col">Unit</th>
+                  <th class="bg-transparent text-light" scope="col">No of Unit</th>
+                  <th class="bg-transparent text-light" scope="col">Cost/Revenue</th>
+                  <th class="bg-transparent text-light" scope="col">Dr/Cr</th>
+                  <th class="bg-transparent text-light" scope="col">Curr</th>
+                  <th class="bg-transparent text-light" scope="col">Ex Rate</th>
+                  <th class="bg-transparent text-light" scope="col">Rate</th>
+                  <th class="bg-transparent text-light" scope="col">Amt</th>
+                  <th class="bg-transparent text-light" scope="col">Local Amt</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <ng-container *ngFor="let sc of tariffDetails; let i = index">
+                  
+                  <!-- Cost Row -->
+                  <tr>
+                    <td rowspan="2">
+                      <button class="btn btn-info btn-sm" (click)="applyTariff(sc)">Apply Charge</button>
+                    </td>
+                    <td rowspan="2">{{ i + 1 }}</td>
+                    <td rowspan="2">{{ getChargeCode(sc.ChargeMasterSid) }}</td>
+                    <td rowspan="2">{{ sc.ChargeDescription }}</td>
+                    <td rowspan="2">{{ sc.PrepaidCollect }}</td>
+                    <td rowspan="2">{{ getUnitCode(sc.ChargeUomSid) }}</td>
+                    <td rowspan="2">{{ sc.NumberOfUnit }}</td>
+                    <td class="text-info fw-bold">Cost</td>
+                    <td>{{ sc.Cost?.DrCr === 'D' ? 'Debit' : 'Credit' }}</td>
+                    <td>{{ getCurrencyCode(sc.Cost?.CurrencyMasterSid) }}</td>
+                    <td>{{ sc.Cost?.ExchangeRate }}</td>
+                    <td>{{ sc.Cost?.Rate }}</td>
+                    <td>{{ sc.Cost?.Amount }}</td>
+                    <td>{{ sc.Cost?.LocalAmount }}</td>
+                  </tr>
+
+                  <!-- Revenue Row -->
+                  <tr>
+                    <td class="text-info fw-bold">Revenue</td>
+                    <td>{{ sc.Revenue?.DrCr === 'D' ? 'Debit' : 'Credit' }}</td>
+                    <td>{{ getCurrencyCode(sc.Revenue?.CurrencyMasterSid) }}</td>
+                    <td>{{ sc.Revenue?.ExchangeRate }}</td>
+                    <td>{{ sc.Revenue?.Rate }}</td>
+                    <td>{{ sc.Revenue?.Amount }}</td>
+                    <td>{{ sc.Revenue?.LocalAmount }}</td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!tariffLoading && !tariffDetails?.length" class="text-center text-muted py-3">
+            No tariff details found.
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeTariffModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </ng-template>

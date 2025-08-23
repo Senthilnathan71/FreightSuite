@@ -211,6 +211,12 @@ getShipmentMilestones(payload: any) {
     )
   }
 
-
+  getTariffDetails(payload){
+    return this.http.post<{ data: any }>(`ff-booking/tariffDetails`,payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
 
 }

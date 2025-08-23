@@ -54,6 +54,17 @@ export class MilestoneComponent implements OnInit {
       this.loadShipmentMilestones(this._shipmentNo);
     }
   }
+
+  private prevValue;
+  @Input()
+  set resetTrigger(value: boolean) {
+    if (value !== this.prevValue) {
+      this.prevValue = value;
+      this.milestoneFormArray.clear();
+      this.milestoneDataLength = 0;
+      this.slicedMilestoneFormArr = [];
+    }
+  }
  
 
   @Output() dataEmitter = new EventEmitter<any[]>()
@@ -71,7 +82,6 @@ export class MilestoneComponent implements OnInit {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentCompany?.BranchMasterSid,
     }
-    console.log("This is the screen", this.screenName)
     this.loadAllMilestones();
     this.milestoneFormArray = this.fb.array([])
   }
@@ -84,7 +94,6 @@ export class MilestoneComponent implements OnInit {
 
     this.operationService.getAllMilestones(payload).subscribe({
       next: (milestones) => {
-        console.log('Loaded all master milestones', milestones);
         this.allMilestones = milestones;
       },
       error: (err) => {
@@ -104,7 +113,6 @@ export class MilestoneComponent implements OnInit {
 
   this.operationService.getShipmentMilestones(payload).subscribe({
     next: (milestones) => {
-      console.log("Fetched shipment milestones", milestones);
       this.patchValues(milestones || []);   // populate formArray
     },
     error: (err) => {
@@ -128,7 +136,6 @@ export class MilestoneComponent implements OnInit {
   }
 
   patchValues(items: any[]) {
-    console.log(items);
     for (const item of items) {
       const formGroupWithData = this.createShipmentMilestone(item);
       this.milestoneFormArray.push(formGroupWithData);
@@ -139,7 +146,6 @@ export class MilestoneComponent implements OnInit {
   }
 
   createShipmentMilestone(data?:any): FormGroup {
-    console.log(data);
     const milestoneForm = this.fb.group({
       ShipmentMilestoneSid: [data?.ShipmentMilestoneSid || null],
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -222,7 +228,6 @@ export class MilestoneComponent implements OnInit {
   }
 
     onMilestoneChange(milestone: any) {
-      console.log(milestone)
     if (!milestone) {
       // Reset fields if milestone is cleared
       this.milestoneForm.patchValue({
@@ -264,6 +269,5 @@ export class MilestoneComponent implements OnInit {
     const start = (this.page1 - 1) * this.pageSize1;
     const end = start + this.pageSize1;
     this.slicedMilestoneFormArr = this.milestoneFormArray.getRawValue().slice(start, end);
-    console.log("error",this.slicedMilestoneFormArr);
   }
 }

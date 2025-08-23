@@ -23,7 +23,7 @@
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
@@ -54,7 +54,7 @@
                         <div class=" custom-form-group custom-form-group-select">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp"
-                                    formControlName="BookingDateTime" ngbDatepicker #d1="ngbDatepicker"
+                                    formControlName="BookingDateTime" ngbDatepicker #d1="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d1.open()"
                                     (click)="d1.toggle()" />
                                 <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
@@ -281,7 +281,7 @@
                         <div class=" custom-form-group custom-form-group-select">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="MBLDate"
-                                    ngbDatepicker #d2="ngbDatepicker" (click)="d2.toggle()" />
+                                    ngbDatepicker #d2="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d2.open()" (click)="d2.toggle()" />
                                 <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
@@ -363,12 +363,30 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode"
-                                class="ng-select" formControlName="FPD" placeholder="Select FPD">
+                                class="ng-select" formControlName="FPD" placeholder="Select FPD" (change)="handleFPODChange($event)">
                             </ng-select>
                             <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-3">
+                     <div class="row justify-content-center" style="margin-left: 2px;">
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder=""
+                                    class="form-control custom-input-field sm" formControlName="POLTerminal">
+                                <label for="text-input" class="input-label">POL Terminal<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder=""
+                                    class="form-control custom-input-field sm" formControlName="PODTerminal">
+                                <label for="text-input" class="input-label">POD Terminal<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                    </div>
+                    <!-- <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                                 formControlName="POLTerminal">
@@ -381,7 +399,7 @@
                                 formControlName="PODTerminal">
                             <label for="text-input" class="input-label">POD Terminal<span class="text-danger"></span></label>
                         </div>
-                    </aside>
+                    </aside> -->
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName"
@@ -404,7 +422,7 @@
                         <div class=" custom-form-group custom-form-group-select">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETA"
-                                    ngbDatepicker #d4="ngbDatepicker" (click)="d4.toggle()" />
+                                    ngbDatepicker #d4="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d4.open()" (click)="d4.toggle()" />
                                 <button class="btn btn-info bi bi-calendar3 text-white" (click)="d4.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
@@ -415,8 +433,8 @@
                     <aside class="col-md-3">
                         <div class=" custom-form-group custom-form-group-select">
                             <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETD"
-                                    ngbDatepicker #d5="ngbDatepicker" (click)="d5.toggle()" />
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETD" [minDate]="b['ETA']?.value"
+                                    ngbDatepicker #d5="ngbDatepicker" (keydown.arrowDown)="d5.open()" (click)="d5.toggle()" />
                                 <button class="btn btn-info bi bi-calendar3 text-white" (click)="d5.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
@@ -438,8 +456,8 @@
                     <aside class="col-md-3">
                         <div class=" custom-form-group custom-form-group-select">
                             <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="DoValid"
-                                    ngbDatepicker #d6="ngbDatepicker" (click)="d6.toggle()" />
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="DoValid" [minDate]="minDate"
+                                    ngbDatepicker #d6="ngbDatepicker" (keydown.arrowDown)="d6.open()" (click)="d6.toggle()" />
                                 <button class="btn btn-info bi bi-calendar3 text-white" (click)="d6.toggle()"
                                     type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
@@ -451,7 +469,7 @@
                     <aside class="col-md-3 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0">
                             <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="" class="form-check-input sm" formControlName="Coload">
+                                <input type="checkbox" id="" class="focus-ring form-check-input sm" formControlName="Coload" (keydown.enter)="toggleHeaderCheckboxes($event,'Coload')">
                                 <label for="" class="form-check-label sm">Co Load <span
                                         class="text-danger"></span></label>
                             </div>
@@ -460,7 +478,7 @@
                     <aside class="col-md-3 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0">
                             <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="" class="form-check-input sm" formControlName="Nominated">
+                                <input type="checkbox" id="" class="focus-ring form-check-input sm" formControlName="Nominated" (keydown.enter)="toggleHeaderCheckboxes($event,'Nominated')">
                                 <label for="" class="form-check-label sm">Nominated <span
                                         class="text-danger"></span></label>
                             </div>
@@ -553,7 +571,7 @@
 
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" [onlyNumbers]
                                     formControlName="NoofContainers">
                                 <label for="text-input" class="input-label">No of Container<span
                                         class="text-danger"></span></label>
@@ -566,7 +584,10 @@
                                 <input type="text" id="gross-weight" placeholder="" class="form-control custom-input-field sm"
                                     formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
                                     max="9999999.999">
-                                <label for="gross-weight" class="input-label">
+                                <label for="gross-weight" [ngClass]="{
+                                'input-label': true,
+                                'bg-transparent': !c['GrossWeight']?.getRawValue()
+                              }">
                                     Gr Weight
                                 </label>
                         
@@ -590,7 +611,10 @@
                                 <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                                     formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
                                     max="9999999.999">
-                                <label for="text-input" class="input-label">Net Weight<span class="text-danger"></span></label>
+                                <label for="text-input" [ngClass]="{
+                                'input-label': true,
+                                'bg-transparent': !c['NetWeight']?.getRawValue()
+                              }">Net Weight<span class="text-danger"></span></label>
                                 <!-- Validation Messages -->
                                 @if ((cargoForm.get('NetWeight')?.touched || cargoForm.get('NetWeight')?.dirty) &&
                                 cargoForm.get('NetWeight')?.invalid) {
@@ -609,7 +633,10 @@
                                 <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                                     formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
                                     max="9999999.999">
-                                <label for="text-input" class="input-label">Volume(CBM)<span
+                                <label for="text-input" [ngClass]="{
+                                'input-label': true,
+                                'bg-transparent': !c['Volume']?.getRawValue()
+                              }">Volume(CBM)<span
                                         class="text-danger"></span></label>
                            <!-- Validation Messages -->
                                 @if ((cargoForm.get('Volume')?.touched || cargoForm.get('Volume')?.dirty) &&
@@ -651,7 +678,10 @@
                                 <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm"
                                     formControlName="NoOfPackage" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="0"
                                     max="9999999.999">
-                                <label for="text-input" class="input-label">No of Pkg<span
+                                <label for="text-input" [ngClass]="{
+                                'input-label': true,
+                                'bg-transparent': !c['NoOfPackage']?.getRawValue()
+                                }">No of Pkg<span
                                         class="text-danger"></span></label>
                              <!-- Validation Messages -->
                                 @if ((cargoForm.get('NoOfPackage')?.touched || cargoForm.get('NoOfPackage')?.dirty) &&
@@ -767,13 +797,11 @@
                                     <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         {{product.value.CargoRecDate | formatDate}}</td>
                                 </tr>
-                                } @empty {
-                                    
                                 }
                             </tbody>
                         </table>
                     </div>
-                    <div *ngIf="productDataLength > 0">
+                    <div>
                         <ngb-pagination class="d-flex justify-content-end" [collectionSize]="productDataLength"
                             [pageSize]="pageSize" [(page)]="page" (pageChange)="updateProductPagination()">
                         </ngb-pagination>
@@ -875,11 +903,40 @@
                                         class="text-danger"></span></label>
                             </div>
                         </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName"
+                                class="ng-select" formControlName="Notify2" placeholder="Select Notify"
+                                (change)="setAddressOthers('NotifyAddress2',$event)">
+                            </ng-select>
+                                <label for="text-input" class="input-label">Notify 2<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="NotifyAddress2" [textWithNumbers]="200">
+                                <label for="text-input" class="input-label">Notify Address 2<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        @if(b['Coload'].value){
+                        <aside class="col-md-3">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName"
+                                class="ng-select" formControlName="Coloader" placeholder="Select Forwarder">
+                            </ng-select>
+                                <label for="text-input" class="input-label">Coloader<span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        }
 
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="PickupPlace" [textWithNumbers]="20">
+                                    formControlName="PickupPlace" [textWithNumbers]="200">
                                 <label for="text-input" class="input-label">Pick Up Place<span
                                         class="text-danger"></span></label>
                             </div>
@@ -887,7 +944,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="DeliveryPlace" [textWithNumbers]="20">
+                                    formControlName="DeliveryPlace" [textWithNumbers]="200">
                                 <label for="text-input" class="input-label">Delivery Place<span
                                         class="text-danger"></span></label>
                             </div>
@@ -896,7 +953,7 @@
                             <div class=" custom-form-group custom-form-group-select">
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        formControlName="DeliveryDate" #d3="ngbDatepicker" (click)="d3.toggle()" />
+                                        formControlName="DeliveryDate" [minDate]="minDate" #d3="ngbDatepicker" (keydown.arrowDown)="d3.open()" (click)="d3.toggle()" />
                                     <button class="btn btn-info bi bi-calendar3 text-white" (click)="d3.toggle()"
                                         type="button"> <i-feather name="calendar"
                                             class="feather-sm"></i-feather></button>
@@ -910,7 +967,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="CHAName" [textWithNumbers]="20">
+                                    formControlName="CHAName" [textWithNumbers]="200">
                                 <label for="text-input" class="input-label">CHA Name<span
                                         class="text-danger"></span></label>
                             </div>
@@ -918,7 +975,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="PickupAddress" [textWithNumbers]="20">
+                                    formControlName="PickupAddress" [textWithNumbers]="200">
                                 <label for="text-input" class="input-label">Pick Up Address<span
                                         class="text-danger"></span></label>
                             </div>
@@ -926,7 +983,7 @@
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="DeliveryAddress" [textWithNumbers]="20">
+                                    formControlName="DeliveryAddress" [textWithNumbers]="200">
                                 <label for="text-input" class="input-label">Delivery Address<span
                                         class="text-danger"></span></label>
                             </div>
@@ -943,7 +1000,7 @@
                         </aside>
                         <aside class="col-md-3">
                             <div class="custom-form-group">
-                                <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                     formControlName="CargoValue"DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="2" max="9999999.999">
                                 <label for="text-input" class="input-label">Cargo Value<span
                                         class="text-danger"></span></label>
@@ -978,11 +1035,11 @@
                                 </div>
                             </div>
                         </aside>
-
+                        @if(selectedFCLLCL === "FCL"){
                         <aside class="col-md-3">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="Depo"[textWithNumbers]="20">
+                                    formControlName="Depo"[textWithNumbers]="200">
                                 <label for="text-input" class="input-label">Depo<span
                                         class="text-danger"></span></label>
                             </div>
@@ -991,34 +1048,72 @@
                             <div class=" custom-form-group custom-form-group-select">
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        formControlName="ROValidity" #d7="ngbDatepicker" (click)="d7.toggle()" />
+                                        formControlName="ROValidity" [minDate]="minDate" #d7="ngbDatepicker" (keydown.arrowDown)="d7.open()" (click)="d7.toggle()" />
                                     <button class="btn btn-info bi bi-calendar3 text-white" (click)="d7.toggle()"
                                         type="button"> <i-feather name="calendar"
                                             class="feather-sm"></i-feather></button>
                                 </div>
-                                <label for="shipmentDateExpected" class="input-label">Ro Validity <span
+                                <label for="shipmentDacteExpected" class="input-label">Ro Validity <span
                                         class="text-danger"></span>
                                 </label>
 
                             </div>
                         </aside>
+                        }
+                        @if(otherForm.get('SwitchBL')?.value){
+                        <aside class="col-md-3">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" [items]="agentList" bindLabel="CustomerName" bindValue="CustomerName" placeholder="Select BL Agent" formControlName="SwitchBLAgent"></ng-select>
+                                <label for="text-input" class="input-label">BL Agent <span class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="AgentAddress">
+                                <label for="text-input" class="input-label">Agent Address<span class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        
+                        <aside class="col-md-3">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName" placeholder="Select BL Shipper" formControlName="SwitchBLShipper"></ng-select>
+                                <label for="text-input" class="input-label">BL Shipper<span class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        
+                        <aside class="col-md-3">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName" formControlName="SwitchBLConsignee" placeholder="Select BL Consignee"></ng-select>
+                                <label for="text-input" class="input-label">BL Consignee<span class="text-danger"></span></label>
+                            </div>
+                        
+                        </aside>
+                        
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="SwitchLocation">
+                                <label for="text-input" class="input-label">Location<span class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        }
                     </div>
                 </div>
             </div>
 
             <div class="row bg-white" [hidden]="selectedTab !== 'Connection'">
                 
-                <app-connection screenName="Booking" [dataItems]="bookingConnectionsArr" [portList]="portList" [vesselList]="vesselList" (dataEmitter)="handleConnectionChange($event)">
+                <app-connection screenName="Booking" [dataItems]="bookingConnectionsArr" [resetTrigger]="resetTriggerConnection" [portList]="portList" [disableAdd]="PODandFPODsame" [vesselList]="vesselList" (dataEmitter)="handleConnectionChange($event)">
 
                 </app-connection>
             </div>
 
             <div class="row bg-white" [hidden]="selectedTab !== 'Rate'">
-                <app-cost-entry screenName="Booking" [currencyList]="currencyList" [customerList]="customerList" [dataItems]="bookingRateArr" (dataEmitter)="handleRateChange($event)"></app-cost-entry>
+                <app-cost-entry screenName="Booking" [currencyList]="currencyList" [customerList]="customerList" [dataItems]="bookingRateArr" [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)"></app-cost-entry>
             </div>
 
             <div class="row bg-white" [hidden]="selectedTab !== 'Milestone'">
-                <app-milestone screenName="Booking" [shipmentNo]="bookingHeader?.ShipmentNo" (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
+                <app-milestone screenName="Booking" [resetTrigger]="resetTriggerMilestone" [shipmentNo]="bookingHeader?.ShipmentNo" (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
             </div>
 
             <div class="row bg-white" [hidden]="selectedTab !== 'AR/AP'">
@@ -1112,22 +1207,35 @@
             <aside class="col-md-6">
                 <div class="custom-form-group">
                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="ShippingBillNo"  [textWithNumbers]="20">
+                        formControlName="ShippingBillNo"  [textWithNumbers]="100">
                     <label for="text-input" class="input-label">Shipping Bill No <span
-                            class="text-danger"></span></label>
+                            class="text-danger">{{countryOfCompany === "india" ? '*' : ''}}</span></label>
+                    @if(productForm.get('ShippingBillNo')?.touched && productForm.get('ShippingBillNo')?.invalid){
+                        <div class="error-message">
+                            @if(productForm.get('ShippingBillNo')?.hasError('required')){
+                                <span>Shipping Bill No is required</span>
+                            }
+                        </div>
+                    }
                 </div>
             </aside>
             <div class="col-md-6">
                 <div class=" custom-form-group custom-form-group-select">
                     <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d2.open()"
                             (click)="d2.toggle()" formControlName="ShippingBillDate" />
                         <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>
-                    <label for="shipmentDateExpected" class="input-label"> Date <span class="text-danger"></span>
+                    <label for="shipmentDateExpected" class="input-label"> Date <span class="text-danger">{{countryOfCompany === "india" ? '*' : ''}}</span>
                     </label>
-
+                    @if(productForm.get('ShippingBillDate')?.touched && productForm.get('ShippingBillDate')?.invalid){
+                        <div class="error-message">
+                            @if(productForm.get('ShippingBillDate')?.hasError('required')){
+                                <span>Shipping Bill Date is required</span>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
             <aside class="col-md-6">
@@ -1179,7 +1287,7 @@
 </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="NetWeight"  DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
                     <label for="text-input" class="input-label">Net Wt <span class="text-danger">*</span></label>
                 <!-- Validation Messages -->
@@ -1198,7 +1306,7 @@
 </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
                     <label for="text-input" class="input-label">CBM <span class="text-danger">*</span></label>
                  <!-- Validation Messages -->
@@ -1219,7 +1327,7 @@
                 <div class=" custom-form-group custom-form-group-select">
                     <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker formControlName="CargoRecDate"
-                            #d8="ngbDatepicker" (click)="d8.toggle()" />
+                            #d8="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d8.open()" (click)="d8.toggle()" />
                         <button class="btn btn-info bi bi-calendar3 text-white" (click)="d8.toggle()" type="button"> <i-feather
                                 name="calendar" class="feather-sm"></i-feather></button>
                     </div>
@@ -1248,7 +1356,7 @@
             </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="UnNo"DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
                     <label for="text-input" class="input-label">Un No <span class="text-danger"></span></label>
                 </div>
@@ -1264,21 +1372,21 @@
             @if(selectedDepartmentType === "AIR"){
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="Length" DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
                     <label for="text-input" class="input-label">Length <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="Width" DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
                     <label for="text-input" class="input-label">Width <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm"
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="Height" DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
                     <label for="text-input" class="input-label">Height <span class="text-danger"></span></label>
                 </div>
@@ -1311,7 +1419,7 @@
         <div class="row">
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">Sno <span class="text-danger"></span></label>
                 </div>
             </aside>
@@ -1347,7 +1455,7 @@
             </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">No of Unit <span class="text-danger"></span></label>
                 </div>
             </aside>
@@ -1369,25 +1477,25 @@
             </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">Ex Rate<span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">Rate<span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">Amt <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">Local Amt <span class="text-danger"></span></label>
                 </div>
             </aside>
@@ -1432,7 +1540,7 @@
 
             <aside class="col-md-6">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">Sno <span class="text-danger"></span></label>
                 </div>
             </aside>
@@ -1447,7 +1555,7 @@
             <div class="col-md-6">
                 <div class=" custom-form-group custom-form-group-select">
                     <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d2.open()"
                             (click)="d2.toggle()" />
                         <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>

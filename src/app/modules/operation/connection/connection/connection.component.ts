@@ -1,6 +1,6 @@
 import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -19,7 +19,8 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
     FeatherModule,
     CustomDatePipe,
     CommonModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgbPaginationModule
   ],
   templateUrl: './connection.component.html',
   styleUrl: './connection.component.scss',
@@ -99,6 +100,25 @@ export class ConnectionComponent implements OnInit {
   get vesselList(): any[] {
     return this._vesselList
   }
+
+  private prevValue;
+  @Input()
+  set resetTrigger(value: boolean) {
+    if (value !== this.prevValue) {
+      this.prevValue = value;
+      this.connectionFormArray.clear();
+      this.connectionDataLength = 0;
+      this.slicedConnectionFormArr = [];
+    }
+  }
+
+  disableAddBtn : boolean;
+  @Input()
+  set disableAdd(value:boolean){
+    console.log(value);
+    this.disableAddBtn = value;
+  }
+
 
   @Output() dataEmitter = new EventEmitter<any[]>()
 

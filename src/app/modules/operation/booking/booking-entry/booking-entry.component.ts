@@ -1,5 +1,5 @@
 import { Component, ViewChild, TemplateRef, OnInit } from '@angular/core';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -25,6 +25,7 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { MilestoneComponent } from '../../milestone/milestone/milestone.component';
 import { CostEntryComponent } from '../../cost/cost -entry/cost-entry.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-booking-entry',
@@ -151,6 +152,7 @@ auditLogs: any[] = []; // Stores audit logs
   productList: any[];
   packageTypeList: any[];
   productForm !: FormGroup;
+  countryOfCompany : string;
 
   // Variable Declaration - Other Part
   YardCFSLabel: string = "Yard/CFS"
@@ -161,25 +163,24 @@ auditLogs: any[] = []; // Stores audit logs
   otherForm !: FormGroup;
 
   // Variable Declaration - Connection Part
+  PODandFPODsame : boolean;
+  resetTriggerConnection : boolean;
   bookingConnectionsArr : any[] = [];
   connectionResult : any[] =[];
+    
+
+  // Variable Declaration - Rate Part
+  resetTriggerRate : boolean;
+  rateResult : any[] = [];
+  bookingRateArr : any[] = [];
+  currentFormValue : any;
+  
+  // Variable Declaration - Milestone Part
+  resetTriggerMilestone : boolean;
   milestoneResult: any[] =[];
 
-  typeofmodes = [
-    { id: 1, name: "Sea" },
-    { id: 2, name: "Air" },
-    { id: 3, name: "Road" },
-  ]
-
-  // Variable Declaration - Rate Part
-  rateForm !: FormGroup;
-
-  // Variable Declaration - Milestone Part
-  milestoneForm !: FormGroup;
-
-  // Variable Declaration - Rate Part
-  bookingRateArr : any[] = [];
-  rateResult : any[] = [];
+  today : any;
+  minDate : any;
 
   modeOfShippmentTerms = [
     { id: 1, name: 'LCL' },
@@ -232,9 +233,6 @@ auditLogs: any[] = []; // Stores audit logs
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
   ];
 
-  @ViewChild('connectionModal') connectionModal!: TemplateRef<any>;
-  @ViewChild('rateModal') rateModal!: TemplateRef<any>;
-
   /**
     |--------------------------------------------------
     |   Section-2 : Constructor Part
@@ -248,7 +246,10 @@ auditLogs: any[] = []; // Stores audit logs
     private currentRoute: ActivatedRoute,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
-  ) { }
+    private calendar : NgbCalendar
+  ) {
+    this.today = this.calendar.getToday();
+   }
 
   /**
     |--------------------------------------------------
@@ -273,6 +274,8 @@ auditLogs: any[] = []; // Stores audit logs
         if (this.BookingHeaderSid) {
           this.isEditMode = true;
           this.loadBookingById(this.BookingHeaderSid);
+        } else {
+          this.minDate = this.today;
         }
         this.loadCargoLookups();
         this.loadOtherLookups();
@@ -336,6 +339,9 @@ auditLogs: any[] = []; // Stores audit logs
 
       ShipmentNo: ['']
     })
+    this.bookingForm.valueChanges.subscribe(()=>{
+      this.syncFormValueWithRateComponent();
+    })
   }
 
   // Cargo Form Initiation
@@ -355,15 +361,19 @@ auditLogs: any[] = []; // Stores audit logs
       FreightTerms: [null],
       StuffingAt: ['Dock']
     })
+    this.cargoForm.valueChanges.subscribe(() => {
+      this.syncFormValueWithRateComponent();
+    })
   }
 
   // Product Form Initialization
   initProductForm() {
+    const isIndianCompany = this.countryOfCompany === 'india';
     this.productForm = this.fb.group({
       BookingProductSid: [null],
       ProductName: [null],
-      ShippingBillNo: [''],
-      ShippingBillDate: [''],
+      ShippingBillNo: ['',isIndianCompany ? [Validators.required] : []],
+      ShippingBillDate: [null,isIndianCompany ? [Validators.required] : []],
       ExternaPkg: [null, [Validators.required]],
       ExternlQty: ['', [Validators.required]],
       GrossWeight: ['', [Validators.required]],
@@ -377,7 +387,7 @@ auditLogs: any[] = []; // Stores audit logs
       Width: [''],
       Height: [''],
       UomMasterSid: [null],
-      CargoRecDate : ['']
+      CargoRecDate : [null]
     })
   }
 
@@ -392,6 +402,9 @@ auditLogs: any[] = []; // Stores audit logs
       ForwarderAddress: [''],
       NotifyParty: [null],
       NotifyPartyAddress: [''],
+      Notify2 : [null],
+      NotifyAddress2 : [''],
+      Coloader : [null],
       PickupPlace: [''],
       DeliveryPlace: [''],
       DeliveryDate: [''],
@@ -403,51 +416,18 @@ auditLogs: any[] = []; // Stores audit logs
       SwitchBL: [false],
       BacktoBack: [false],
       Depo: [''],
-      ROValidity: ['']
-    })
-  }
-
-
-
-  initRateForm() {
-    this.rateForm = this.fb.group({
-      BookingRatesSid: [null],
-      SerialNumber: [''],
-      ChargeMasterSid: [null],
-      ChargeDescription: [''],
-      PrepaidCollect: [null],
-      ChargeUomSid: [null],
-      NumberOfUnit: [''],
-      DrCr: [null],
-      CurrencyMasterSid: [null],
-      ExchangeRate: [''],
-      Rate: [''],
-      Amount: [''],
-      LocalAmount: [''],
-      CustomerMasterSid: [''],
-      CustomerBranchSid: [null],
-      VoucherHeaderSid: [null],
-      VoucherTypeSid: [null],
-    })
-  }
-
-  initMilestoneForm() {
-    this.milestoneForm = this.fb.group({
-      ShipmentMilestoneSid: [null],
-      ShipmentNo: [''],
-      MilestoneMasterSid: [null],
-      MilestoneName: [''],
-      MilestoneDate: [''],
-      AutoCaptured: [false]
+      ROValidity: [''],
+      SwitchBLAgent: [null],
+      AgentAddress: [''],
+      SwitchBLShipper: [null],
+      SwitchBLConsignee: [null],
+      SwitchLocation: ['']
     })
   }
 
   initDetailsForm() {
     this.detailForm = this.fb.group({
       bookingProducts: this.fb.array([]),
-      bookingConnections: this.fb.array([]),
-      bookingRates: this.fb.array([]),
-      milestones: this.fb.array([])
     })
   }
 
@@ -488,7 +468,7 @@ auditLogs: any[] = []; // Stores audit logs
       BookingProductSid: [data?.BookingProductSid || null],
       ProductName: [data?.ProductName || ''],
       ShippingBillNo: [data?.ShippingBillNo || ''],
-      ShippingBillDate: [(data?.ShippingBillDate ? new Date(data?.ShippingBillDate) : null) || ''],
+      ShippingBillDate: [data?.ShippingBillDate ? new Date(data?.ShippingBillDate) : null],
       ExternaPkg: [data?.ExternaPkg || null, [Validators.required]],
       ExternlQty: [data?.ExternlQty || '', [Validators.required]],
       GrossWeight: [data?.GrossWeight || '', [Validators.required]],
@@ -502,7 +482,7 @@ auditLogs: any[] = []; // Stores audit logs
       Width : [data?.Width || ''],
       Height : [data?.Height || ''],
       UomMasterSid : [data?.UomMasterSid || null],
-      CargoRecDate : [(data?.CargoRecDate ? new Date(data?.CargoRecDate) : null) ||  '']
+      CargoRecDate : [data?.ProductDescription ? new Date(data?.ProductDescription) : null]
     })
     return productForm;
   }
@@ -527,7 +507,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   loadHeaderLookups() {
     return forkJoin({
-      allMasters: this.operationService.getBookingHeaderLookups(this.filterOption).pipe(catchError(err => of( {departments: [],vessels: [], ports: [], incos: [] }))),
+      allMasters: this.operationService.getBookingHeaderLookups(this.filterOption).pipe(catchError(err => of( {departments: [],vessels: [], ports: [], incos: [] , country : Object }))),
       customerMaster: this.operationService.getAllCustomerRelatedLookups(this.filterOption).pipe(catchError(err => of({ customers: [], salesmans: [], shippers: [], consignees: [], agents: [], carriers: [], forwarder: [], notify: [] }))),
     }).pipe(tap(({ allMasters, customerMaster}) => {
       this.departmentList = allMasters.departments;
@@ -542,6 +522,7 @@ auditLogs: any[] = []; // Stores audit logs
       this.vesselList = allMasters.vessels;
       this.portList = allMasters.ports;
       this.incoList = allMasters.incos;
+      this.countryOfCompany = (allMasters?.country.countryMaster?.countryName).trim().toLowerCase();
     }))
   }
 
@@ -579,6 +560,7 @@ auditLogs: any[] = []; // Stores audit logs
         if (resp.status) {
           this.patchValues(resp.data);
           this.bookingData = resp.data;
+          this.minDate = undefined;
         }
       }
     )
@@ -639,6 +621,7 @@ auditLogs: any[] = []; // Stores audit logs
     })
     this.b['DepartmentMasterSid']?.disable();
     this.b['CustomerMasterSid']?.disable();
+    this.PODandFPODsame = this.b['POD']?.value === this.b['FPD']?.value;
 
     const cargoData = response.bookingCargo[0];
     this.cargoForm.patchValue({
@@ -668,6 +651,9 @@ auditLogs: any[] = []; // Stores audit logs
       ForwarderAddress: otherData?.ForwarderAddress,
       NotifyParty: otherData?.NotifyParty,
       NotifyPartyAddress: otherData?.NotifyPartyAddress,
+      Notify2 : otherData?.Notify2,
+      NotifyAddress2 : otherData?.NotifyAddress2,
+      Coloader : otherData?.Coloader,
       PickupPlace: otherData?.PickupPlace,
       DeliveryPlace: otherData?.DeliveryPlace,
       DeliveryDate: new Date(otherData?.DeliveryDate),
@@ -679,7 +665,12 @@ auditLogs: any[] = []; // Stores audit logs
       SwitchBL: otherData?.SwitchBL === "Y" ? true : false,
       BacktoBack: otherData?.BacktoBack === "Y" ? true : false,
       Depo: otherData?.Depo,
-      ROValidity: new Date(otherData?.ROValidity)
+      ROValidity: new Date(otherData?.ROValidity),
+      SwitchBLAgent : otherData?.SwitchBLAgent,
+      AgentAddress : otherData?.AgentAddress,
+      SwitchBLShipper : otherData?.SwitchBLShipper,
+      SwitchBLConsignee : otherData?.SwitchBLConsignee,
+      SwitchLocation  : otherData?.SwitchLocation
     })
 
     this.bookingProducts.clear();
@@ -747,6 +738,12 @@ auditLogs: any[] = []; // Stores audit logs
   }
 
   onProductSubmit() {
+    if(this.productForm.invalid){
+      this.productForm.markAllAsTouched();
+      this.productForm.updateValueAndValidity();
+      this.appSettingService.showWarning('Please fill all the required fields correctly.')
+      return;
+    }
     if (this.currentProductIndex === -1) {
       const productForm = this.productForm;
       this.bookingProducts.push(productForm);
@@ -803,10 +800,12 @@ auditLogs: any[] = []; // Stores audit logs
     const otherFormValue = this.otherForm.getRawValue();
     const detailFormValue = this.detailForm.getRawValue();
     const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
 
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MenuMasterSid : currentMenuId,
       DepartmentMasterSid: bookingFormValue.DepartmentMasterSid,
       CustomerMasterSid: bookingFormValue.CustomerMasterSid,
       CustomerBranchSid: bookingFormValue.CustomerBranchSid || null,
@@ -872,6 +871,9 @@ auditLogs: any[] = []; // Stores audit logs
         ForwarderAddress: otherFormValue.ForwarderAddress || '',
         NotifyParty: otherFormValue.NotifyParty || null,
         NotifyPartyAddress: otherFormValue.NotifyPartyAddress || '',
+        Notify2: otherFormValue?.Notify2,
+        NotifyAddress2: otherFormValue?.NotifyAddress2,
+        Coloader: otherFormValue?.Coloader,
         PickupPlace: otherFormValue.PickupPlace || '',
         DeliveryPlace: otherFormValue.DeliveryPlace || '',
         DeliveryDate: otherFormValue.DeliveryDate ? new Date(otherFormValue.DeliveryDate) : null,
@@ -883,7 +885,12 @@ auditLogs: any[] = []; // Stores audit logs
         SwitchBL: otherFormValue.SwitchBL ? 'Y' : 'N',
         BacktoBack: otherFormValue.BacktoBack ? 'Y' : 'N',
         Depo: otherFormValue.Depo || '',
-        ROValidity: otherFormValue.ROValidity ? new Date(otherFormValue.ROValidity) : null
+        ROValidity: otherFormValue.ROValidity ? new Date(otherFormValue.ROValidity) : null,
+        SwitchBLAgent: otherFormValue?.SwitchBLAgent,
+        AgentAddress: otherFormValue?.AgentAddress,
+        SwitchBLShipper: otherFormValue?.SwitchBLShipper,
+        SwitchBLConsignee: otherFormValue?.SwitchBLConsignee,
+        SwitchLocation: otherFormValue?.SwitchLocation
       },
       bookingProducts: detailFormValue.bookingProducts.map((product: any) => ({
         BookingProductSid : product.BookingProductSid || null,
@@ -1071,12 +1078,22 @@ auditLogs: any[] = []; // Stores audit logs
       this.b['VoyageNo']?.setValue(null);
       this.b['ETA']?.setValue('');
       this.b['ETD']?.setValue('');
+      this.PODandFPODsame = true;
       return;
     }
     this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
     this.b['ETD']?.setValue(new Date(selectedPort.ETD));
     this.b['FPD']?.setValue(selectedPort.PortCode);
+    this.PODandFPODsame = this.b['FPD']?.value === this.b['POD']?.value
     this.getVesselBasedOnPorts();
+  }
+
+  handleFPODChange(port){
+    if(!port){
+      this.PODandFPODsame = true;
+      return;
+    }
+    this.PODandFPODsame = this.b['FPD']?.value === this.b['POD']?.value
   }
 
   onVesselChange(vessel: any) {
@@ -1094,10 +1111,12 @@ auditLogs: any[] = []; // Stores audit logs
     if (!voyage) {
       this.b['ETA'].setValue('');
       this.b['ETD'].setValue('');
+      this.b['VoyageMasterSid']?.setValue('')
       return;
     }
     const POL = this.b['POL'].value;
     const POD = this.b['POD'].value;
+    this.b['VoyageMasterSid']?.setValue(voyage.VoyageMasterHeaderSid);
     const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
     const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
     const details = voyage.Ports || [];
@@ -1165,6 +1184,14 @@ auditLogs: any[] = []; // Stores audit logs
         }
       }
     )
+  }
+
+  toggleHeaderCheckboxes(event: Event, fieldName: string) {
+    if (fieldName) {
+      const element = event.target as HTMLInputElement;
+      element.checked = !element.checked;
+      this.bookingForm.get(`${fieldName}`)?.setValue(element.checked);
+    }
   }
 
   // ************ END OF HEADER RELATED FUNCTIONS *************
@@ -1289,30 +1316,83 @@ auditLogs: any[] = []; // Stores audit logs
 
   // ************ END OF CONNECTION RELATED FUNCTIONS *************
 
+  syncFormValueWithRateComponent(){
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const DepartmentMasterSid = this.b['DepartmentMasterSid']?.value;
+    const selectedPOO = this.b['POO']?.value;
+    const selectedPOL = this.b['POL']?.value;
+    const selectedPOD = this.b['POD']?.value;
+    const selectedFPD = this.b['FPD']?.value;
+    const EffectiveDate = this.b['ETA']?.value;
+    const ExpiredDate = this.b['ETD']?.value;
+    const PORSid = (this.portList.find(p => p.PortCode === selectedPOO)?.PortMasterSid)
+    const POLSid = (this.portList.find(p => p.PortCode === selectedPOL)?.PortMasterSid)
+    const PODSid = (this.portList.find(p => p.PortCode === selectedPOD)?.PortMasterSid)
+    const FPODSid = (this.portList.find(p => p.PortCode === selectedFPD)?.PortMasterSid)
+    const CargoType = this.c['CargoType']?.value;
+    const NoofContainers = this.c['NoofContainers']?.value;
+    const Volume = this.c['Volume']?.value;
+    const ChargeableWeight = this.c['ChargeableWeight']?.value;
+
+    this.currentFormValue = {
+      CompanyMasterSid,
+      DepartmentMasterSid,
+      Segment : this.selectedFCLLCL,
+      PORSid,
+      POLSid,
+      PODSid,
+      FPODSid,
+      EffectiveDate,
+      ExpiredDate,
+      CargoType,
+      NoofContainers,
+      Volume,
+      ChargeableWeight
+    }
+  }
 
   navigateBack() {
     this.router.navigate(['operation/booking/list']);
   }
 
 
+resetForm() {
+  this.bookingForm.reset({
+    status: 'Active'
+  });
 
-  saveConnection(modal: any) {
-    console.log('Connection saved');
-    modal.close();
+  this.filteredPorts = [];
+  this.filteredPOL = [];
+  this.filteredPOD = [];
+  this.vesselList = [];
+  this.voyageList = [];
+
+  this.resetTriggerConnection = !this.resetTriggerConnection;
+  this.connectionResult = [];
+  this.resetTriggerRate = !this.resetTriggerRate;
+  this.rateResult = [];
+  this.resetTriggerMilestone = !this.resetTriggerMilestone;
+  this.milestoneResult = [];
+
+  this.detailForm.reset();
+  (this.detailForm.get('bookingProducts') as FormArray).clear();
+
+  this.slicedProductArr = [];
+  this.productDataLength = 0;
+
+  this.cargoForm.reset();
+  this.otherForm.reset();
+}
+
+  toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+    if (!date) return null;
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate()
+    };
   }
 
-  openRateModal() {
-    this.modalService.open(this.rateModal, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true,
-    });
-  }
-
-  saveRate(modal: any) {
-    console.log('Rate saved');
-    modal.close();
-  }
 
   
     showInfo() {
@@ -1359,7 +1439,7 @@ auditLogs: any[] = []; // Stores audit logs
   
   openAuthority() {
     if (!this.bookingData) return;
-    const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+    const modalRef = this.modalService.open(AuthorityLogComponent, { 
       size: 'lg', 
       centered: true, 
       backdrop: 'static' 

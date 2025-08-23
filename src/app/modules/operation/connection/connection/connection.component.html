@@ -1,6 +1,6 @@
 <div class="text-end mb-1">
     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-        (click)="openConnectionModal(connectionModal)"> <i class="fas fa-plus me-1"></i> Add</button>
+        (click)="openConnectionModal(connectionModal)" [disabled]="disableAddBtn"> <i class="fas fa-plus me-1"></i> Add</button>
 </div>
 @if(connectionDataLength > 0){
 <div class="col-12 p-0">
@@ -60,6 +60,11 @@
                 }
             </tbody>
         </table>
+        <div>
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="connectionDataLength" [pageSize]="pageSize1"
+                [(page)]="page1" (pageChange)="updateConnectionPagination()" [rotate]="true" [ellipses]="false" [maxSize]="10">
+            </ngb-pagination>
+        </div>
     </div>
 </div>
 } @else {
@@ -120,7 +125,7 @@
             <div class="col-md-6">
                 <div class=" custom-form-group custom-form-group-select">
                     <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker" 
                             formControlName="ETA" (click)="d1.toggle()" />
                         <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
