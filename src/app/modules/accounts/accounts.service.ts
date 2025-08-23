@@ -142,16 +142,16 @@ export class AccountsService {
     );
   }
 
-  getAllSuppliers(){
-    return this.http.get<{data:any}>('customer/suppliers').pipe(
+  getAllSuppliers(CompanyMasterSid: number){
+    return this.http.post<{data:any}>('customer/suppliers',{CompanyMasterSid}).pipe(
       map((resp:any)=>{
         let response = resp;
         return response;
       })
     )
   }
-  getAllTDSSet(){
-    return this.http.get<{data:any}>('tds').pipe(
+  getAllTDSSet(CompanyMasterSid:number){
+    return this.http.post<{data:any}>('tds',{CompanyMasterSid}).pipe(
       map((resp:any)=>{
         let response = resp;
         return response;

@@ -93,7 +93,8 @@ export class SailingScheduleEntryComponent implements OnInit {
     
 auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
-
+currentCompany: any;
+currentBranch: any
 
 
 
@@ -117,6 +118,8 @@ auditLogs: any[] = []; // Stores audit logs
         //      }
         //    }
         //  )
+        this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
@@ -211,9 +214,10 @@ auditLogs: any[] = []; // Stores audit logs
     }
 
     loadAllFields(){
+        const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
         forkJoin({
             vessels : this.masterService.getAllVessels(),
-            carriers : this.masterService.getAllCarriers(),
+            carriers : this.masterService.getAllCarriers(CompanyMasterSid),
             ports : this.masterService.getAllPorts()
         }).subscribe(({vessels,carriers,ports})=>{
             this.vesselList = vessels.data,

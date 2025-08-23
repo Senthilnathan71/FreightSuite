@@ -115,24 +115,24 @@ export class MasterService {
     );
   }
 
-  getAllCarriers() {
-    return this.http.get('customer/carrier').pipe(
+  getAllCarriers(CompanyMasterSid: number) {
+    return this.http.post('customer/carrier',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
       })
     );
   }
-  getAllAgents() {
-    return this.http.get('customer/agent').pipe(
+  getAllAgents(CompanyMasterSid: number) {
+    return this.http.post('customer/agent',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
       })
     );
   }
-  getAllTransporters() {
-    return this.http.get('customer/transporter').pipe(
+  getAllTransporters(CompanyMasterSid: any) {
+    return this.http.post('customer/transporter',{CompanyMasterSid}).pipe(
       map((resp: any) => {
         let response = resp.data;
         return response;
@@ -1867,8 +1867,8 @@ getFieldConfiguration() {
 
   // Charge Group Master
 
-  getAllChargeGroups() {
-    return this.http.get<{ data: any[] }>('charge-group').pipe(
+  getAllChargeGroups(CompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('charge-group',{CompanyMasterSid}).pipe(
       map((resp) => {
         let response = resp;
         return response;

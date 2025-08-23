@@ -95,10 +95,12 @@ export class VendorTdsListComponent implements OnInit {
 
     // Search
     searchSupplierTDS() {
+        let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
         const params = {
             search: this.filterValue.trim() || '',
             page: this.page,
             pageSize: this.pageSize,
+            activeCompanyId : CompanyMasterSid,
         }
         this.accountService.searchSupplierTDS(params).subscribe({
             next : (resp: any) => {

@@ -89,11 +89,11 @@
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col" (click)="sort('company')">
+                            <!-- <th class="bg-transparent text-light" scope="col" (click)="sort('company')">
                                 Company
                                 <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'company', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'company'}"></i>
-                            </th>
+                            </th> -->
                             <th class="bg-transparent text-light" scope="col" (click)="sort('GroupName')" width="10%">
                                 Group Name
                                 <i class="fas fa-sort ms-1"
@@ -125,9 +125,9 @@
                                 }
                                 </div>
                             </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                            <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.companyMaster?.companyName || '-'}}</div>
-                            </td>
+                            </td> -->
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">{{item.GroupName}}</div>
                             </td>
@@ -180,7 +180,7 @@
                 <div class="col-md-12">
 
                     <div class="row compact-form">
-                        <aside class="col-md-6">
+                        <!-- <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select">
                                 <ng-select [items]="companyOptions" bindLabel="companyName" bindValue="CompanyMasterSid"
                                     formControlName="CompanyMasterSid" placeholder="Select company"
@@ -194,7 +194,7 @@
                                 </div>
                                 }
                             </div>
-                        </aside>
+                        </aside> -->
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="GroupName" formControlName="GroupName" placeholder=""

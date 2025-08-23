@@ -328,8 +328,8 @@ auditLogs: any[] = []; // Stores audit logs
 		 const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 		forkJoin({
 			ports: this.masterServ.getAllPorts(),
-			agents: this.masterServ.getAllAgents(),
-			carriers: this.masterServ.getAllCarriers(),
+			agents: this.masterServ.getAllAgents(CompanyMasterSid),
+			carriers: this.masterServ.getAllCarriers(CompanyMasterSid),
 			departments: this.masterServ.getAllDepartments(CompanyMasterSid),
 			companies: this.masterServ.getAllCompanies(),
 			currencies : this.masterServ.getAllCurrencies(),

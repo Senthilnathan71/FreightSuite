@@ -146,10 +146,12 @@ export class ChargegroupComponent implements OnInit {
 }
 
   loadChargeGroups(): void {
+    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
   const params = {
     search: this.filterValue?.trim() || '',
     page: this.page,
-    pageSize: this.pageSize
+    pageSize: this.pageSize,
+    activeCompanyId : CompanyMasterSid
   };
 
   this.masterService.searchChargeGroups(params).subscribe({
@@ -188,7 +190,7 @@ export class ChargegroupComponent implements OnInit {
 
   initForm() {
     this.chargeGroupForm = this.fb.group({
-      CompanyMasterSid: ['', Validators.required],
+     
       GroupName: ['', [Validators.required, Validators.maxLength(100)]],
       Remarks: ['', [Validators.required, Validators.maxLength(100)]],
       status: [{ value: 'Active', disabled: false }, Validators.required]
@@ -220,7 +222,7 @@ export class ChargegroupComponent implements OnInit {
         this.chargeGroupData = chargeGroup;
         this.chargeGroupForm.get('status')?.enable();
         this.chargeGroupForm.patchValue({
-          CompanyMasterSid: chargeGroup.CompanyMasterSid,
+          CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
           GroupName: chargeGroup.GroupName,
           Remarks: chargeGroup.Remarks || '',
           status: chargeGroup.status === 'A' ? 'Active' : 'Suspended'
@@ -308,7 +310,7 @@ export class ChargegroupComponent implements OnInit {
     const payload = {
       ...formValue,
       status: formValue.status === "Active" ? "A" : "S",
-      CompanyMasterSid: Number(formValue.CompanyMasterSid),
+    CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
       ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail })
     };
 

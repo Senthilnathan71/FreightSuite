@@ -85,7 +85,7 @@ loadCurrencyExchanges(): void {
     sortColumn: this.sortColumn,
     sortDirection: this.sortDirection,
     activeCompanyId : CompanyMasterSid,
-    activeBrachId: BranchMasterSid,
+    activeBranchId: BranchMasterSid,
   };
 
   this.accountService.searchCurrencyExchangeList(params).subscribe({

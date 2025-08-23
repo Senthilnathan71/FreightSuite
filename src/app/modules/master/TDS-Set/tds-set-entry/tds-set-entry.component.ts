@@ -528,10 +528,11 @@ export class TdsSetEntryComponent implements OnInit {
     }
 
     loadExemptionLookups() {
+        const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
         forkJoin({
             vessels: this.masterService.getAllVessels(),
-            carriers: this.masterService.getAllCarriers(),
-            transporters: this.masterService.getAllTransporters()
+            carriers: this.masterService.getAllCarriers(CompanyMasterSid),
+            transporters: this.masterService.getAllTransporters(CompanyMasterSid)
         }).subscribe(({ vessels, carriers, transporters }) => {
             this.vesselList = vessels.data,
                 this.carrierList = carriers,

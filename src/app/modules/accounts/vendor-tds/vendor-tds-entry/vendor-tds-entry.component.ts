@@ -60,6 +60,8 @@ export class VendorTdsEntryComponent {
   minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
   currentMenuId: number;
   TandCList: any;
+  currentCompany: any;
+  currentBranch: any;
 
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
@@ -76,6 +78,8 @@ export class VendorTdsEntryComponent {
   ) { }
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.initTdsForm();
     this.loadLookUps();
     this.currRoute.paramMap.subscribe(
@@ -170,9 +174,10 @@ export class VendorTdsEntryComponent {
   }
 
   loadLookUps() {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     forkJoin({
-      suppliers: this.accountService.getAllSuppliers(),
-      tdsSet: this.accountService.getAllTDSSet(),
+      suppliers: this.accountService.getAllSuppliers(CompanyMasterSid),
+      tdsSet: this.accountService.getAllTDSSet(CompanyMasterSid),
     }).subscribe(({ suppliers, tdsSet }) => {
       this.supplierList = suppliers.data;
       this.tdsList = tdsSet.data;
@@ -244,6 +249,7 @@ export class VendorTdsEntryComponent {
     console.log(detailFormValue);
 
     const payload = {
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
       CustomerMasterSid: formValue.CustomerMasterSid,
       CustomerBranchSid: detailFormValue.CustomerBranchSid,
       TDSSetHeaderSid: detailFormValue.TDSSetHeaderSid,
