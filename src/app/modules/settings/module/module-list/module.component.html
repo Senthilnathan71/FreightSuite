@@ -1,5 +1,5 @@
 
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col pb-2">
@@ -149,7 +149,7 @@
         <form [formGroup]="moduleForm">
             <div class="col-md-12">
                
-                        <div class="row">
+                        <div class="row compact-form">
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
                                     <input type="text" id="ModuleName" formControlName="ModuleName" placeholder=""
@@ -159,9 +159,9 @@
                                         @if(moduleForm.get('ModuleName')?.touched && moduleForm.get('ModuleName')?.invalid){
                                           <div class="error-message">
                                             @if(moduleForm.get('ModuleName')?.hasError('required')){
-                                              <span>Module Name is required</span>
+                                              <span>Required</span>
                                             } @else if(moduleForm.get('ModuleName')?.hasError('maxlength')){
-                                              <span>Max 50 Characters</span>
+                                              <span>Max 50 Chars</span>
                                             }
                                           </div>
                                         }
@@ -176,9 +176,9 @@
                                         @if(moduleForm.get('ModuleCode')?.touched && moduleForm.get('ModuleCode')?.invalid){
                                           <div class="error-message">
                                             @if(moduleForm.get('ModuleCode')?.hasError('required')){
-                                              <span>Module Code is required</span>
+                                              <span>Required</span>
                                             } @else if(moduleForm.get('ModuleCode')?.hasError('maxlength')){
-                                              <span>Max 20 Characters</span>
+                                              <span>Max 20 Chars</span>
                                             }
                                           </div>
                                         }
@@ -218,15 +218,15 @@
                             </aside>
                             <aside class="col-md-6">
                                 <div class="custom-form-group">
-                                    <textarea formControlName="Remarks" class="custom-input-field sm" rows="1"></textarea>
+                                    <textarea formControlName="Remarks" class="custom-input-field sm" rows="1" placeholder=""></textarea>
                                     <label for="Remarks" class="input-label">Remarks <span
                                         class="text-danger fw-bold">*</span></label>
                                         @if(moduleForm.get('Remarks')?.touched && moduleForm.get('Remarks')?.invalid){
-                                          <div class="error-message">
+                                          <div class="error-message pb-2">
                                             @if(moduleForm.get('Remarks')?.hasError('required')){
-                                              <span>Remarks is required</span>
+                                              <span>Required</span>
                                             } @else if(moduleForm.get('Remarks')?.hasError('maxlength')){
-                                              <span>Max 300 Characters</span>
+                                              <span>Max 300 Chars</span>
                                             }
                                           </div>
                                         }

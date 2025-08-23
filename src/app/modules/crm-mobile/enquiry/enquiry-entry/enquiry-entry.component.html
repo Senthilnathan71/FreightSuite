@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
 
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
@@ -110,7 +110,7 @@
                         <label class="input-label">Customer <span class="text-danger">*</span></label>
                         <div *ngIf="f['CustomerMasterSid'].touched && f['CustomerMasterSid'].invalid"
                             class="error-message">
-                            Customer Name is required.
+                            Required
                         </div>
                     </div>
                 </div>
@@ -156,7 +156,7 @@
                                 formControlName="shipmentDate" [minDate]="minExpDate" readonly
                                 [footerTemplate]="footerTemplateShip" />
                             <div>
-                                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()"
+                                <button class="btn  bi bi-calendar3" (click)="d1.toggle()"
                                     type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
@@ -166,7 +166,7 @@
                                 class="text-danger">*</span>
                         </label>
                         <div *ngIf="f['shipmentDate'].touched && f['shipmentDate'].invalid" class="error-message">
-                            Shipment Date is required.
+                            Required
                         </div>
                     </div>
                 </div>
@@ -200,7 +200,7 @@
                         </ng-select>
                         <label for="customer" class="input-label">Dept Name <span class="text-danger">*</span></label>
                         <div *ngIf="f['Segment'].touched && f['Segment'].invalid" class="error-message">
-                            Segment is required.
+                           Required
                         </div>
                     </div>
                 </div>
@@ -214,7 +214,7 @@
                         </ng-select>
                         <label class="input-label">Customer Address</label>
                         <div *ngIf="f['CustomerAddress'].touched && f['CustomerAddress'].invalid" class="error-message">
-                            Address is required.
+                          Required
                         </div>
                     </div>
                 </aside>
@@ -262,7 +262,7 @@
                 </aside>
                 <aside class="col-md-4">
                     <div class="custom-form-group">
-                        <textarea id="" placeholder="" rows="1" class="input-field sm"
+                        <textarea id="" placeholder="" rows="1" class="custom-input-field sm"
                             formControlName="Remarks"></textarea>
                         <label for="text-input" class="input-label">Remarks </label>
                     </div>
@@ -275,7 +275,7 @@
                         </ng-select>
                         <label for="status" class="input-label">Status</label>
                         <small *ngIf="f['status'].touched && f['status'].invalid" class="text-danger">
-                            Status is required.
+                            Required
                         </small>
                     </div>
                 </div>
@@ -302,7 +302,7 @@
                         @if(f['authorizerStatus']?.invalid && f['authorizerStatus']?.touched){
                         <div class="error-message">
                             @if(f['authorizerStatus']?.hasError('required')){
-                            <span>Authorizer Status is required</span>
+                            <span>Required</span>
                             }
                         </div>
                         }
@@ -325,7 +325,7 @@
                         enquiryOtherForm.get('ShipperName')?.touched){
                         <div class="error-message">
                             @if(enquiryOtherForm.get('ShipperName')?.hasError('required')){
-                            <span>Shipper name is required</span>
+                            <span>Required</span>
                             }
                         </div>
                         }
@@ -350,7 +350,7 @@
                         enquiryOtherForm.get('ConsigneeName')?.touched){
                         <div class="error-message">
                             @if(enquiryOtherForm.get('ConsigneeName')?.hasError('required')){
-                            <span>Consignee name is required</span>
+                            <span>Required</span>
                             }
                         </div>
                         }
@@ -461,7 +461,7 @@
                                     <label class="input-label">POL <span class="text-danger">*</span></label>
                                     <div *ngIf="route.get('POL')?.touched && route.get('POL')?.invalid"
                                         class="error-message">
-                                        POL is required.
+                                        Required
                                     </div>
 
                                 </div>
@@ -479,7 +479,7 @@
                                     <label class="input-label">POD <span class="text-danger">*</span></label>
                                     <div *ngIf="route.get('POD')?.touched && route.get('POD')?.invalid"
                                         class="error-message">
-                                        POD is required.
+                                       Required
                                     </div>
                                 </div>
                             </div>

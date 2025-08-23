@@ -8,7 +8,7 @@
     style="cursor: pointer;">
   </i>
 </div> -->
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col pb-2">
@@ -154,7 +154,7 @@
             <form [formGroup]="roleForm">
                 <div class="col-md-12">
                     
-                            <div class="row">
+                            <div class="row compact-form">
                                 <aside class="col-md-6">
                                     <div class="custom-form-group">
                                         <input type="text" id="UserRoleName" formControlName="UserRoleName"
@@ -164,9 +164,9 @@
                                         @if(roleForm.get('UserRoleName')?.touched && roleForm.get('UserRoleName')?.invalid){
 <div class="error-message">
   @if(roleForm.get('UserRoleName')?.hasError('required')){
-  <span>Role Name is required</span>
+  <span>Required</span>
   } @else if(roleForm.get('UserRoleName')?.hasError('maxlength')){
-  <span>Max 50 Characters</span>
+  <span>Max 50 Chars</span>
   } @else if(roleForm.get('UserRoleName')?.hasError('invalidCharacters')){
   <span>Only letters are allowed</span>
   }
@@ -183,9 +183,9 @@
                                        @if(roleForm.get('UserRoleCode')?.touched && roleForm.get('UserRoleCode')?.invalid){
 <div class="error-message">
   @if(roleForm.get('UserRoleCode')?.hasError('required')){
-  <span>Role Code is required</span>
+  <span>Required</span>
   } @else if(roleForm.get('UserRoleCode')?.hasError('maxlength')){
-  <span>Max 3 Characters</span>
+  <span>Max 3 Chars</span>
   } @else if(roleForm.get('UserRoleCode')?.hasError('invalidCharacters')){
   <span>Only letters are allowed</span>
   }
@@ -196,12 +196,12 @@
                                 <aside class="col-md-6">
                                     <div class="custom-form-group">
                                         <input type="text" id="LicenseType" formControlName="LicenseType"
-                                            class="custom-input-field sm" (keypress)="onKeyPress($event, 'LicenseType')" maxlength="100">
+                                            class="custom-input-field sm" (keypress)="onKeyPress($event, 'LicenseType')" maxlength="100" placeholder="">
                                         <label for="LicenseType" class="input-label">License Type</label>
                                         @if(roleForm.get('LicenseType')?.touched && roleForm.get('LicenseType')?.invalid){
 <div class="error-message">
   @if(roleForm.get('LicenseType')?.hasError('maxlength')){
-  <span>Max 50 Characters</span>
+  <span>Max 50 Chars</span>
   } @else if(roleForm.get('LicenseType')?.hasError('invalidCharacters')){
   <span>Only letters are allowed</span>
   }

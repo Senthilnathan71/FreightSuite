@@ -147,13 +147,13 @@
       <form [formGroup]="meetingForm">
         <div class="modal-body">
           <section class="">
-            <div class="row">
+            <div class="row compact-form">
               <div class="col-12 col-md-12">
                 <div class="mb-2">
                   <label class="control-label col-form-label">Customer Name</label>
                   <input type="text" formControlName="customerName" class="form-control" />
                   <small *ngIf="f['customerName'].touched && f['customerName'].invalid" class="text-danger">
-                    Customer name is required.
+                   Required
                   </small>
                 </div>
               </div>
@@ -168,7 +168,7 @@
                     <option value="eMeeting">eMeeting</option>
                   </select>
                   <small *ngIf="f['meetingType'].touched && f['meetingType'].invalid" class="text-danger">
-                    Meeting type is required.
+                   Required
                   </small>
                 </div>
               </div>
@@ -177,7 +177,7 @@
                   <label class="control-label col-form-label">Meeting Date</label>
                   <input type="datetime-local" formControlName="meetingDate" class="form-control" [min]="minDate" />
                   <small *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="text-danger">
-                    Meeting date is required.
+                  Required
                   </small>
                 </div>
               </div>
@@ -191,7 +191,7 @@
                     </option>
                   </select>
                   <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="text-danger">
-                    Salesperson is required.
+                   Required
                   </small>
                 </div>
               </div>
@@ -220,7 +220,7 @@
                     <option value="completed">Completed</option>
                   </select>
                   <small *ngIf="f['meetingStatus'].touched && f['meetingStatus'].invalid" class="text-danger">
-                    Meeting status is required.
+                    Required
                   </small>
                 </div>
               </div>
@@ -315,23 +315,23 @@
           <section class="">
 
 
-            <div class="row">
+            <div class="row compact-form">
   <aside class="col-12">
     <div class="custom-form-group">
-      <select id="customerName" formControlName="customerName" (change)="onCustomerChange($event)" class="custom-input-field sm">
+      <select id="customerName" formControlName="customerName" (change)="onCustomerChange($event)" class="custom-input-field sm" aria-placeholder="">
         <option value="">Select</option>
         <option *ngFor="let item of customers" [value]="item.CustomerName">{{ item.CustomerName }}</option>
       </select>
       <label for="customerName" class="input-label">Customer Name <span class="text-danger">*</span></label>
       <small *ngIf="f['customerName'].touched && f['customerName'].invalid" class="error-message">
-        Customer name is required.
+       Required
       </small>
     </div>
   </aside>
 
   <aside class="col-12 col-md-4">
     <div class="custom-form-group">
-      <select id="meetingType" formControlName="meetingType" class="custom-input-field sm">
+      <select id="meetingType" formControlName="meetingType" class="custom-input-field sm" aria-placeholder="">
         <option value="">Select</option>
         <option value="Call">Call</option>
         <option value="Visit">Visit</option>
@@ -340,47 +340,47 @@
       </select>
       <label for="meetingType" class="input-label">Meeting Type <span class="text-danger">*</span></label>
       <small *ngIf="f['meetingType'].touched && f['meetingType'].invalid" class="error-message">
-        Meeting type is required.
+       Required
       </small>
     </div>
   </aside>
 
   <aside class="col-12 col-md-4">
     <div class="custom-form-group">
-      <input type="datetime-local" id="meetingDate" formControlName="meetingDate" class="custom-input-field sm" [min]="minDate" />
+      <input type="datetime-local" id="meetingDate" formControlName="meetingDate" class="custom-input-field sm" [min]="minDate" placeholder=""/>
       <label for="meetingDate" class="input-label">Meeting Date <span class="text-danger">*</span></label>
       <small *ngIf="f['meetingDate'].touched && f['meetingDate'].invalid" class="error-message">
-        Meeting date is required.
+       Required
       </small>
     </div>
   </aside>
 
   <aside class="col-12 col-md-4">
     <div class="custom-form-group">
-      <select id="leadAssignTo" formControlName="leadAssignTo" class="custom-input-field sm">
+      <select id="leadAssignTo" formControlName="leadAssignTo" class="custom-input-field sm" aria-placeholder="">
         <option value="">Select</option>
         <option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">{{ person.userName }}</option>
       </select>
       <label for="leadAssignTo" class="input-label">Salesperson <span class="text-danger">*</span></label>
       <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="error-message">
-        Salesperson is required.
+       Required
       </small>
     </div>
   </aside>
 
   <aside class="col-12">
     <div class="custom-form-group">
-      <textarea id="meetingNote" formControlName="meetingNote" class="custom-input-field sm" rows="1"></textarea>
+      <textarea id="meetingNote" formControlName="meetingNote" class="custom-input-field sm" rows="1" placeholder=""></textarea>
       <label for="meetingNote" class="input-label">Meeting Note <span class="text-danger">*</span></label>
       <small *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="error-message">
-        Meeting Note is required.
+       Required
       </small>
     </div>
   </aside>
 
   <aside class="col-12 col-md-6">
     <div class="custom-form-group">
-      <select id="meetingStatus" formControlName="meetingStatus" class="custom-input-field sm">
+      <select id="meetingStatus" formControlName="meetingStatus" class="custom-input-field sm" aria-placeholder="">
         <option value="">Select</option>
         <option value="scheduled">Scheduled</option>
         <option value="confirmed">Confirmed</option>
@@ -390,7 +390,7 @@
       </select>
       <label for="meetingStatus" class="input-label">Meeting Status <span class="text-danger">*</span></label>
       <small *ngIf="f['meetingStatus'].touched && f['meetingStatus'].invalid" class="error-message">
-        Meeting status is required.
+       Required
       </small>
     </div>
   </aside>
@@ -399,7 +399,7 @@
     <div class="custom-form-group dofi-mt-6">
       <div class="form-check form-switch">
         <input class="form-check-input" type="checkbox" role="switch" id="followUp" formControlName="followUp"
-          [checked]="meetingForm.get('followUp')?.value" (change)="toggleFollowUp($event)" />
+          [checked]="meetingForm.get('followUp')?.value" (change)="toggleFollowUp($event)" placeholder=""/>
         <label class="form-check-label" for="followUp">Follow up required?</label>
       </div>
     </div>
@@ -409,14 +409,14 @@
   <div class="row" *ngIf="meetingForm.get('followUp')?.value">
     <aside class="col-12 col-md-6">
       <div class="custom-form-group">
-        <input type="datetime-local" id="followUpDate" formControlName="followUpDate" class="custom-input-field sm" [min]="minDate" />
+        <input type="datetime-local" id="followUpDate" formControlName="followUpDate" class="custom-input-field sm" [min]="minDate" placeholder=""/>
         <label for="followUpDate" class="input-label">Follow Up Date</label>
       </div>
     </aside>
 
     <aside class="col-12 col-md-6">
       <div class="custom-form-group">
-        <textarea id="followUpNote" formControlName="followUpNote" class="custom-input-field sm" rows="1"></textarea>
+        <textarea id="followUpNote" formControlName="followUpNote" class="custom-input-field sm" rows="1" placeholder=""></textarea>
         <label for="followUpNote" class="input-label">Follow Up Note</label>
       </div>
     </aside>

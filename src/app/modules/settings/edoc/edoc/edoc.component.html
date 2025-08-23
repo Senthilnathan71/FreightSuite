@@ -1,6 +1,6 @@
 <form [formGroup]="edocform">
 
-    <div class="row py-3">
+    <div class="row py-3 compact-form">
         <div class="col-12">
             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
                 <div class="col-md-4 pb-2">
@@ -44,7 +44,7 @@
                                             class="text-danger"></span></label>
                                     <div class="error-message"
                                         *ngIf="edocform.get('DocuNo')?.touched && edocform.get('DocuNo')?.hasError('required')">
-                                        Document No is required
+                                       Required
                                     </div>
                                 </div>
                             </aside>
@@ -56,7 +56,7 @@
                                             class="text-danger"></span></label>
                                          <div class="error-message"
                                         *ngIf="edocform.get('Date')?.touched && edocform.get('Date')?.hasError('required')">
-                                        Date is required
+                                       Required
                                     </div>
                                 </div>
                             </aside>
@@ -66,7 +66,7 @@
                                         formControlName="file">
                                       <div class="error-message"
                                         *ngIf="edocform.get('file')?.touched && edocform.get('file')?.hasError('required')">
-                                        File is required
+                                      Required
                                     </div>  
                                 </div>
                             </aside>
@@ -78,7 +78,7 @@
                                             class="text-danger"></span></label>
                                          <div class="error-message"
                                         *ngIf="edocform.get('Filename')?.touched && edocform.get('Filename')?.hasError('required')">
-                                        Filename is required
+                                        Required
                                     </div> 
                                 </div>
                             </aside>
@@ -91,7 +91,7 @@
                                     <label for="" class="input-label">Type <span class="text-danger"></span></label>
                                      <div class="error-message"
                                         *ngIf="edocform.get('Type')?.touched && edocform.get('Type')?.hasError('required')">
-                                        Type is required
+                                        Required
                                     </div> 
                                 </div>
                             </aside>
@@ -103,7 +103,7 @@
                                             class="text-danger"></span></label>
                                          <div class="error-message"
                                         *ngIf="edocform.get('ReceivedDate')?.touched && edocform.get('ReceivedDate')?.hasError('required')">
-                                        Received Date is required
+                                       Required
                                     </div> 
                                 </div>
                             </aside>
@@ -115,7 +115,7 @@
                                             class="text-danger"></span></label>
                                          <div class="error-message"
                                         *ngIf="edocform.get('SentDate')?.touched && edocform.get('SentDate')?.hasError('required')">
-                                        Sent Date is required
+                                        Required
                                     </div> 
                                 </div>
                             </aside>
@@ -150,7 +150,7 @@
                                             class="text-danger"></span></label>
                                             <div class="error-message"
                                         *ngIf="edocform.get('FollowupDate')?.touched && edocform.get('FollowupDate')?.hasError('required')">
-                                        Followup Date is required
+                                       Required
                                     </div> 
                                 </div>
                             </aside>
@@ -163,13 +163,13 @@
                                             class="text-danger"></span></label>
                                           <div class="error-message"
                                         *ngIf="edocform.get('FollowupAction')?.touched && edocform.get('FollowupAction')?.hasError('required')">
-                                        Followup Action is required
+                                        Required
                                     </div> 
                                 </div>
                             </aside>
                             <aside class="col-md-12">
                                 <div class="custom-form-group">
-                                    <textarea id="textarea-input" class="input-field sm" placeholder="" rows="1"
+                                    <textarea id="textarea-input" class="custom-input-field sm" placeholder="" rows="1"
                                         formControlName="Remarks"></textarea>
                                     <label for="text-input" class="input-label">Remarks</label>
                                 </div>
@@ -204,7 +204,7 @@
                                     <label for="" class="input-label">Status <span class="text-danger"></span></label>
                                      <div class="error-message"
                                         *ngIf="edocform.get('Status')?.touched && edocform.get('Status')?.hasError('required')">
-                                         Status is required
+                                        Required
                                     </div> 
                                 </div>
                             </aside>
