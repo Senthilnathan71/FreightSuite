@@ -1,5 +1,5 @@
 <form [formGroup]="followupForm">
-    <div class="row ">
+    <div class="row compact-form">
         <div class="col-12">
             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
                 <div class="col-md-4 pb-2">
@@ -51,7 +51,7 @@
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                                         #d15="ngbDatepicker" (click)="d15.toggle()" formControlName="FollowUpDate" />
-                                    <button class="btn btn-info bi bi-calendar3 text-white" (click)="d15.toggle()"
+                                    <button class="btn bi bi-calendar3" (click)="d15.toggle()"
                                         type="button"> <i-feather name="calendar"
                                             class="feather-sm"></i-feather></button>
                                 </div>
@@ -60,9 +60,9 @@
                                 </label>
                                 @if(followupForm.get('FollowUpDate')?.touched &&
                                 followupForm.get('FollowUpDate')?.invalid){
-                                <div class="error-message">
+                                <div class="error-message pe-4">
                                     @if(followupForm.get('FollowUpDate')?.hasError('required')){
-                                    <span>FollowUpDate is required</span>
+                                    <span>Required</span>
                                     }
                                 </div>
                                 }
@@ -80,7 +80,7 @@
                                 followupForm.get('FollowupAction')?.invalid){
                                 <div class="error-message">
                                     @if(followupForm.get('FollowupAction')?.hasError('required')){
-                                    <span>FollowupAction is required</span>
+                                    <span>Required</span>
                                     }
                                 </div>
                                 }

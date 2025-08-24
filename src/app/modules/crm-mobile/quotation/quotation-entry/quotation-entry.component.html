@@ -52,7 +52,7 @@
   <div [hidden]="selectedTab !== 'Quotation'">
     <div class="row">
       <div class="col-12">
-        <div class="row" [formGroup]="quotationForm">
+        <div class="row compact-form" [formGroup]="quotationForm">
           @if(isEditMode){
           <aside class="col-md-4">
             <div class="custom-form-group">
@@ -108,7 +108,7 @@
               @if(f['CustomerMasterSid']?.invalid && f['CustomerMasterSid']?.touched){
               <div class="error-message">
                 @if(f['CustomerMasterSid']?.hasError('required')){
-                <span>Customer is required</span>
+                <span>Required</span>
                 }
               </div>
               }
@@ -122,7 +122,7 @@
               @if(f['CustomerAddress']?.invalid && f['CustomerAddress']?.touched){
               <div class="error-message">
                 @if(f['CustomerAddress']?.hasError('required')){
-                <span>Customer Address is required</span>
+                <span>Required</span>
                 }
               </div>
               }
@@ -210,7 +210,7 @@
                 <div class="card-body p-2">
                   <div class="col-12">
 
-                    <div class="row">
+                    <div class="row compact-form">
                       <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
                           <ng-select formControlName="DepartmentMasterSid" [items]="departments"
@@ -222,7 +222,7 @@
                           @if(route.get('DepartmentMasterSid')?.invalid && route.get('DepartmentMasterSid')?.touched){
                           <div class="error-message">
                             @if(route.get('DepartmentMasterSid')?.hasError('required')){
-                            <span>Department is required</span>
+                            <span>Required</span>
                             }
                           </div>
                           }
@@ -247,7 +247,7 @@
                           @if(route.get('POLSid')?.invalid && route.get('POLSid').touched){
                           <div class="error-message">
                             @if(route.get('POLSid')?.hasError('required')){
-                            <span>POL is required</span>
+                            <span>Required</span>
                             }
                           </div>
                           }
@@ -264,7 +264,7 @@
                           @if(route.get('PODSid')?.invalid && route.get('PODSid').touched){
                           <div class="error-message">
                             @if(route.get('PODSid')?.hasError('required')){
-                            <span>POD is required</span>
+                            <span>Required</span>
                             }
                           </div>
                           }
@@ -280,7 +280,7 @@
                           @if(route.get('FPODSid')?.invalid && route.get('FPODSid')?.touched){
                           <div class="error-message">
                             @if(route.get('FPODSid')?.hasError('required')){
-                            <span>FPOD is required</span>
+                            <span>Required</span>
                             }
                           </div>
                           }
@@ -306,7 +306,7 @@
                           @if(route.get('CargoType')?.invalid && route.get('CargoType')?.touched){
                           <div class="error-message">
                             @if(route.get('CargoType')?.hasError('required')){
-                            <span>Cargo Type is required</span>
+                            <span>Required</span>
                             }
                           </div>
                           }
@@ -321,7 +321,7 @@
                               #d3="ngbDatepicker" (click)="d3.toggle()" formControlName="effDate"
                               [minDate]="route.get('QuoteRouteSid')?.value ? toNgbDateStruct(null) : toNgbDateStruct(todayDate)"
                               (keydown.arrowDown)="d3.open()" />
-                            <button class="btn btn-info text-white" (click)="d3.toggle()" type="button"> <i-feather
+                            <button class="btn" (click)="d3.toggle()" type="button"> <i-feather
                                 name="calendar" class="feather-sm"></i-feather></button>
                           </div>
                           <label for="effectiveDate" class="input-label">Eff Date <span
@@ -329,7 +329,7 @@
                           @if(route.get('effDate')?.invalid && route.get('effDate')?.touched){
                           <div class="error-message">
                             @if(route.get('effDate')?.hasError('required')){
-                            <span>Effective Date is required</span>
+                            <span>Required</span>
                             }
                           </div>
                           }
@@ -342,7 +342,7 @@
                             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                               #d4="ngbDatepicker" (click)="d4.toggle()" formControlName="expDate"
                               [minDate]="toNgbDateStruct(route.get('effDate').value)" (keydown.arrowDown)="d4.open()" />
-                            <button class="btn btn-info text-white" (click)="d4.toggle()" type="button"> <i-feather
+                            <button class="btn" (click)="d4.toggle()" type="button"> <i-feather
                                 name="calendar" class="feather-sm"></i-feather></button>
                           </div>
                           <label for="effectiveDate" class="input-label">Exp Date <span
@@ -350,7 +350,7 @@
                           @if(route.get('expDate')?.invalid && route.get('expDate')?.touched){
                           <div class="error-message">
                             @if(route.get('expDate')?.hasError('required')){
-                            <span>Expired Date is required</span>
+                            <span>Required</span>
                             } @else if(route.get('expDate')?.hasError('ngbDate')){
                             <span>Must be before Effective Date</span>
                             }
@@ -366,7 +366,7 @@
                           @if(route.get('CBM')?.invalid && route.get('CBM')?.touched){
                           <div class="error-message">
                             @if(route.get('cbm')?.hasError('required')){
-                            <span>CBM is required</span>
+                            <span>Required</span>
                             }
                           </div>
                           }
@@ -381,7 +381,7 @@
                           @if(route.get('ChargeableWeight')?.invalid && route.get('ChargeableWeight')?.touched){
                           <div class="error-message">
                             @if(route.get('ChargeableWeight')?.hasError('required')){
-                            <span>Chargable Weight is required</span>
+                            <span>Required</span>
                             }
                           </div>
                           }
@@ -397,7 +397,7 @@
                           @if(route.get('ContainerType')?.invalid && route.get('ContainerType')?.touched){
                           <div class="error-message">
                             @if(route.get('ContainerType')?.hasError('required')){
-                            <span>Container Type is required</span>
+                            <span>Required</span>
                             }
                           </div>
                           }
@@ -412,7 +412,7 @@
                           @if(route.get('ContainerQty')?.invalid && route.get('ContainerQty')?.touched){
                           <div class="error-message">
                             @if(route.get('ContainerQty')?.hasError('required')){
-                            <span>Container Qty is required</span>
+                            <span>Required</span>
                             }
                           </div>
                           }

@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
@@ -49,9 +49,9 @@
                             menuForm.get('MenuName')?.invalid){
                             <div class="error-message">
                                 @if(menuForm.get('MenuName')?.hasError('required')){
-                                <span>Menu Name is required</span>
+                                <span>Required</span>
                                 } @else if(menuForm.get('MenuName')?.hasError('maxlength')){
-                                <span>Max 50 Characters</span>
+                                <span>Max 50 Chars</span>
                                 } @else if(menuForm.get('MenuName')?.hasError('invalidChars')){
                                 <span>Special characters are not allowed</span>
                                 }
@@ -83,7 +83,7 @@
     <label class="input-label">Parent Menu <span class="text-danger">*</span></label>
     @if(menuForm.get('parentId')?.touched && menuForm.get('parentId')?.invalid){
     <div class="error-message">
-      <span>Parent menu is required for submenus</span>
+      <span>Required</span>
     </div>
     }
   </div>
@@ -98,9 +98,9 @@
                             menuForm.get('MenuCode')?.invalid){
                             <div class="error-message">
                                 @if(menuForm.get('MenuCode')?.hasError('required')){
-                                <span>Menu Code is required</span>
+                                <span>Required</span>
                                 } @else if(menuForm.get('MenuCode')?.hasError('maxlength')){
-                                <span>Max 3 Characters</span>
+                                <span>Max 3 Chars</span>
                                 } @else if(menuForm.get('MenuCode')?.hasError('invalidUppercase')){
                                 <span>Only uppercase letters and numbers allowed</span>
                                 }
@@ -119,7 +119,7 @@
                             @if(menuForm.get('ModuleMasterSid')?.touched &&
                             menuForm.get('ModuleMasterSid')?.invalid){
                             <div class="error-message">
-                                <span>Module is required</span>
+                                <span>Required</span>
                             </div>
                             }
                         </div>
@@ -133,7 +133,7 @@
                             @if(menuForm.get('path')?.touched && menuForm.get('path')?.invalid){
                             <div class="error-message">
                                 @if(menuForm.get('path')?.hasError('required')){
-                                <span>Path is required</span>
+                                <span>Required</span>
                                 } @else if(menuForm.get('path')?.hasError('invalidPath')){
                                 <span>Only lowercase letters, numbers, hyphens and slashes
                                     allowed (e.g., dashboard/list)</span>
@@ -210,7 +210,7 @@
                                                         (permission.get('permissionName')?.dirty ||
                                                         permission.get('permissionName')?.touched)) {
                                                         <div class="error-message">
-                                                            Permission name is required
+                                                            Required
                                                         </div>
                                                         }
                                                         @if(permission.get('permissionName')?.hasError('maxlength') &&

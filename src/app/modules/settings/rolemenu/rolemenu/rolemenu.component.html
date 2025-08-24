@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row compact-form">
 
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
@@ -79,10 +79,10 @@
         <div class="modal-body">
             <form [formGroup]="roleMenuForm">
                 <div class="col-md-12 p-0">
-                    <div class="card h-100 mb-0">
-                        <section class="card-body py-0">
-                            <section class="row">
-                                <h6 class="card-title">Role Access Details</h6>
+                 
+                       
+                            <section class="row compact-form">
+                                <h6 class="card-title pb-1">Role Access Details</h6>
                                 <aside class="col-md-6">
                                     <div class="custom-form-group custom-form-group-select">
                                         <ng-select class="ng-select" [items]="moduleList" bindLabel="ModuleName"
@@ -94,9 +94,9 @@
                                         @if(f['Module']?.touched && f['Module']?.invalid ){
                                         <div class="error-message">
                                             @if(f['Module']?.hasError('required')){
-                                            <span>Module is required</span>
+                                            <span>Required</span>
                                             } @else if(f['Module'].hasError('maxlength')){
-                                            <span>Max 50 Characters</span>
+                                            <span>Max 50 Chars</span>
                                             }
                                         </div>
                                         }
@@ -114,7 +114,7 @@
                                         @if(f['MenuMasterSid']?.touched && f['MenuMasterSid']?.invalid ){
                                         <div class="error-message">
                                             @if(f['MenuMasterSid']?.hasError('required')){
-                                            <span>Menu is required</span>
+                                            <span>Required</span>
                                             }
                                         </div>
                                         }
@@ -131,7 +131,7 @@
                                         @if(f['RoleMasterSid']?.touched && f['RoleMasterSid']?.invalid ){
                                         <div class="error-message">
                                             @if(f['RoleMasterSid']?.hasError('required')){
-                                            <span>Role Name is required</span>
+                                            <span>Required</span>
                                             }
                                         </div>
                                         }
@@ -146,9 +146,9 @@
                                         @if(f['Remarks']?.touched && f['Remarks']?.invalid ){
                                         <div class="error-message">
                                             @if(f['Remarks']?.hasError('required')){
-                                            <span>Remarks is required</span>
+                                            <span>Required</span>
                                             } @else if(f['Remarks']?.hasError('maxlength')){
-                                            <span>Max 100 Characters</span>
+                                            <span>Max 100 Chars</span>
                                             }
                                         </div>
                                         }
@@ -169,7 +169,7 @@
                                     </div>
                                 </aside>
                             </section>
-                        </section>
+                       
                         <section class="card-body pb-0" *ngIf="roleMenuForm.get('MenuMasterSid')?.value">
                             <section >
                                 <h6 class="card-title">Role Access Permissions</h6>
@@ -202,7 +202,7 @@
                                 </section>
                             </section>
                         </section>
-                    </div>
+                    
                 </div>
             </form>
         </div>
