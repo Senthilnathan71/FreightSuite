@@ -263,7 +263,7 @@ export class EnquiryEntryComponent implements OnInit {
 
   initializeForm() {
     this.rateRequestForm = this.fb.group({
-      CustomerMasterSid: [null],
+      CustomerMasterSid: [null,Validators.required],
       customerName: ['', Validators.required],
       enquiryNo: [''],
       EnquiryDate: [''],
