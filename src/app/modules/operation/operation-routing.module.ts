@@ -25,6 +25,14 @@ export const OperationRoutes: Routes = [
         },
       },
       {
+        path: 'booking/entry/:id',
+        component: BookingEntryComponent,
+        data: {
+          title: 'Booking',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Booking' }],
+        },
+      },
+      {
         path: 'master-job/entry',
         component: MasterJobEntryComponent,
         data: {
