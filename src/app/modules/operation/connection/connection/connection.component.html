@@ -83,7 +83,7 @@
     </div>
     <div class="modal-body">
 
-        <div class="row" [formGroup]="connectionForm">
+        <div class="row compact-form" [formGroup]="connectionForm">
             <aside class="col-md-6">
                 <div class="custom-form-group custom-form-group-select">
                     <ng-select formControlName="Mode" [items]="typeofmodes" bindLabel="name" bindValue="name"
@@ -131,7 +131,7 @@
 
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
                             formControlName="ETA" (click)="d1.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()" type="button">
+                        <button class="btn  bi bi-calendar3" (click)="d1.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>
                     <label for="" class="input-label"> ETA <span class="text-danger"></span>
@@ -143,7 +143,7 @@
                     <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
                             formControlName="ETD" (click)="d2.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
+                        <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>
                     <label for="" class="input-label"> ETD <span class="text-danger"></span>

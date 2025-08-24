@@ -250,8 +250,8 @@
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
-        <div class="row" [formGroup]="rateForm">
-            <aside class="col-md-6">
+        <div class="row compact-form" [formGroup]="rateForm">
+            <aside class="col-md-4">
                 <div class="custom-form-group">
                     <input type="number" id="text-input" placeholder="" class="form-control custom-input-field sm"
                         formControlName="SerialNumber" DecimalPrecision [DecimalPrecisionBefore]="3"
@@ -270,7 +270,7 @@
                     }
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
                     <ng-select class="ng-select" [items]="chargeList" formControlName="ChargeMasterSid"
                         bindValue="ChargeMasterSid" placeholder="Select Charge" bindLabel="chargeName"
@@ -279,7 +279,7 @@
                     <label for="text-input" class="input-label">Charge <span class="text-danger"></span></label>
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group">
                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="ChargeDescription" [textWithNumbers]="100">
@@ -288,13 +288,13 @@
                     r['ChargeDescription']?.invalid) {
                     <div class="error-message">
                         @if (r['ChargeDescription']?.errors?.['maxlength']) {
-                        <span>Max 100 Characters</span>
+                        <span>Max 100 Chars</span>
                         }
                     </div>
                     }
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
                     <ng-select [items]="ppcc" bindLabel="name" bindValue="name" formControlName="PrepaidCollect"
                         placeholder="Select PP/CC">
@@ -302,7 +302,7 @@
                     <label for="" class="input-label">PP/CC <span class="text-danger"></span></label>
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
                     <ng-select [items]="uomList" bindLabel="UOMName" bindValue="UOMMasterSid"
                         formControlName="ChargeUomSid" placeholder="Select Unit">
@@ -310,7 +310,7 @@
                     <label for="" class="input-label">Unit<span class="text-danger"></span></label>
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group">
                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="NumberOfUnit" (input)="calculateLocalAmount() ; calculateAmount()"
@@ -326,7 +326,7 @@
                     }
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
                     <ng-select [items]="drcr" bindLabel="name" bindValue="value" formControlName="DrCr"
                         class="ng-select" placeholder="Select Dr/Cr">
@@ -335,7 +335,7 @@
                     <label for="" class="input-label">Dr/Cr<span class="text-danger"></span></label>
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
                     <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
                         formControlName="CurrencyMasterSid" placeholder="Select Currency"
@@ -345,7 +345,7 @@
                     <label for="" class="input-label">Curr<span class="text-danger"></span></label>
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group">
                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="Rate" (input)="calculateLocalAmount() ; calculateAmount()" DecimalPrecision
@@ -361,7 +361,7 @@
                     }
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group">
                     <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                         formControlName="ExchangeRate" DecimalPrecision [DecimalPrecisionBefore]="12"
@@ -381,7 +381,7 @@
                 </div>
             </aside>
 
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group">
                     <input type="number" id="text-input" placeholder="" class="form-control custom-input-field sm"
                         formControlName="Amount" DecimalPrecision [DecimalPrecisionBefore]="12"
@@ -400,7 +400,7 @@
                     }
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group">
                     <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                         formControlName="LocalAmount" DecimalPrecision [DecimalPrecisionBefore]="12"
@@ -419,7 +419,7 @@
                     }
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
                     <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                         formControlName="CustomerMasterSid" placeholder="Select Billing Party">
@@ -428,14 +428,14 @@
                     <label for="" class="input-label">Billing Party<span class="text-danger"></span></label>
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="VoucherHeaderSid">
                     <label for="" class="input-label">Voucher No<span class="text-danger"></span></label>
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
                     <ng-select [items]="docTypeList" bindLabel="DocumentTypeName" bindValue="DocumentTypeMasterSid"
                         placeholder="Select Type" formControlName="VoucherTypeSid">
