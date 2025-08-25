@@ -3,6 +3,7 @@ import { BookingListComponent } from './booking/booking-list/booking-list.compon
 import { BookingEntryComponent } from './booking/booking-entry/booking-entry.component';
 import { MasterJobEntryComponent } from './master-job/master-job-entry/master-job-entry.component';
 import { ReportComponent } from './report/report/report.component';
+import { MasterJobListComponent } from './master-job/master-job-list/master-job-list.component';
 
 export const OperationRoutes: Routes = [
   {
@@ -32,6 +33,14 @@ export const OperationRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Booking' }],
         },
       },
+       {
+        path: 'master-job/list',
+        component: MasterJobListComponent,
+        data: {
+          title: 'Master Job',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Master Job' }],
+        },
+      },
       {
         path: 'master-job/entry',
         component: MasterJobEntryComponent,
@@ -40,6 +49,7 @@ export const OperationRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Master Job' }],
         },
       },
+      
       {
         path: 'report',
         component: ReportComponent,

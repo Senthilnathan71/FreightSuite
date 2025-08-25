@@ -200,7 +200,7 @@ applySorting() {
         this.masterService.deleteHawbStock(id).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("Deleted successfully!");
-           
+            this.loadHawbStocks();
           },
           error: (err) => {
             console.error('Delete error:', err);

@@ -202,7 +202,7 @@ export class ContainerTypeListComponent {
         this.masterService.deleteContainerTypeById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
           this.router.navigate(['master/container-type/list'])
-
+          this.loadContainerTypes();
         });
       }
     });
