@@ -74,11 +74,12 @@ export class BookingEntryComponent {
   ];
 
   tabs = [
+    { name: 'Shipment', icon: 'fas fa-ship' },
+    { name: 'Charges', icon: 'fas fa-credit-card' },
     { name: 'Cargo', icon: 'fas fa-boxes' },
-    { name: 'Product', icon: 'fas fa-tags' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Connection', icon: 'fas fa-link' },
-    { name: 'Rate', icon: 'fas fa-dollar-sign' },
+    { name: 'Rate', icon: 'fas fa-chart-line' },
     { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
   ];
@@ -92,10 +93,15 @@ export class BookingEntryComponent {
     this.router.navigate(['operation/booking/list']);
   }
 
-  selectedTab = 'Cargo';
+  selectedTab = 'Shipment';
+  isQuickFormExpanded = false;
 
   selectTab(tab: string) {
     this.selectedTab = tab;
+  }
+
+  toggleQuickForm() {
+    this.isQuickFormExpanded = !this.isQuickFormExpanded;
   }
 
   
