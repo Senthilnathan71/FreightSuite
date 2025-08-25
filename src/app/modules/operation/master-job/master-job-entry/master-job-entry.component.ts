@@ -11,6 +11,9 @@ import { ConnectionComponent } from '../../connection/connection/connection.comp
 import { ContainerActivityComponent } from '../../container-activity/container-activity/container-activity.component';
 import { ArApComponent } from '../../AR-AP/ar-ap/ar-ap.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { MilestoneComponent } from '../../milestone/milestone/milestone.component';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
 @Component({
   selector: 'app-master-job-entry',
@@ -28,7 +31,10 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
     ConnectionComponent,
     ContainerActivityComponent,
     ArApComponent,
-    EmailEntryComponent
+    EmailEntryComponent,
+    MilestoneComponent,
+    FollowUpComponent,
+    EdocComponent
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrl: './master-job-entry.component.scss',
@@ -39,12 +45,15 @@ export class MasterJobEntryComponent {
   public connectionComponent = ConnectionComponent;
   public containerComponent = ContainerActivityComponent;
   public ARAPcompoent = ArApComponent;
- 
+  public milestoneComponent = MilestoneComponent;
+
+  public emailcomponent = EmailEntryComponent;
+  public followupComponent = FollowUpComponent;
+  public edocComponent = EdocComponent;
   tabs = [
     { name: 'Container', icon: 'fas fa-boxes' },
     { name: 'Connection', icon: 'fas fa-plug' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
-    // { name: 'Revenue', icon: 'fas fa-chart-line' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'AR/AP', icon: 'fas fa-balance-scale' },
     { name: 'Mail', icon: 'fas fa-envelope' },
@@ -57,14 +66,14 @@ export class MasterJobEntryComponent {
   tabs1 = [
     { name: 'Product', icon: 'fas fa-box' } ,
     { name: 'Connection', icon: 'fas fa-plug' },
-    { name: 'AR/AP', icon: 'fas fa-balance-scale' },
-    { name: 'Mail', icon: 'fas fa-envelope' },
-    { name: 'Follow Up', icon: 'fas fa-tasks' },
-    { name: 'Milestone', icon: 'fas fa-flag-checkered' },
+    { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
+    { name: 'AR/AP', icon: 'fas fa-balance-scale' },
+    { name: 'Follow Up', icon: 'fas fa-tasks' },
+    { name: 'Mail', icon: 'fas fa-envelope' },
+    { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
     { name: 'History', icon: 'fas fa-history' },
-    { name: 'Others', icon: 'fas fa-ellipsis-h' },
   ];
 
   modeOfBLReleaseType = [
@@ -96,7 +105,9 @@ export class MasterJobEntryComponent {
   selectedTab = 'Container';
 
   selectTab(tab: string) {
+    console.log(tab);
     this.selectedTab = tab;
+    console.log(this.selectedTab);
   }
 
   selectedTab1 = 'Product';
@@ -118,5 +129,10 @@ export class MasterJobEntryComponent {
       backdrop: 'static',
       centered: true,
     });
+  }
+
+
+  navigateToback() {
+    this.router.navigate(['operation/master-job/list']);
   }
 }

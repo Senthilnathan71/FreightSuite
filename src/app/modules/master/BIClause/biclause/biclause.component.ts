@@ -348,7 +348,7 @@ updatePaginatedData(): void {
         this.masterService.deleteBlclauseById(id).subscribe({
           next: () => {
             this.appSettingService.showSuccess("BI Clause deleted successfully!");
-            
+            this.loadAllClauses();
           },
           error: (err) => {
             console.error('Delete error:', err);

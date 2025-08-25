@@ -191,6 +191,7 @@ export class YearListComponent {
         this.masterService.deleteYearById(YearMasterSid).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess("Deleted successfully!");
+             this.loadYears();
           },
           error: (err) => {
             console.error('Delete error:', err);

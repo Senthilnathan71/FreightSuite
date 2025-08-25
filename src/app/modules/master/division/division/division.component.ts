@@ -359,6 +359,7 @@ export class DivisionComponent {
                 this.appSettingService.showSuccess(resp.message);
                 this.closeModal();
                 this.router.navigate(['master/division']);
+                this.loadDivisions();
               } else {
                 this.appSettingService.showError(resp.message);
               }
@@ -377,6 +378,7 @@ export class DivisionComponent {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.router.navigate(['master/division']);
+              this.loadDivisions();
             } else {
               this.appSettingService.showError(resp.message);
             }
