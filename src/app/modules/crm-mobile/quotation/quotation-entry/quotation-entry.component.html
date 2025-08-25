@@ -352,7 +352,7 @@
                             @if(route.get('expDate')?.hasError('required')){
                             <span>Required</span>
                             } @else if(route.get('expDate')?.hasError('ngbDate')){
-                            <span>Must be before Effective Date</span>
+                            <span>Must be after Effective Date</span>
                             }
                           </div>
                           }

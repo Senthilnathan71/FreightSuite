@@ -9,6 +9,7 @@ import { FeatherModule } from 'angular-feather';
 import { DateFormatPipe } from 'src/app/core/pipes/date-format.pipe';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import * as html2pdf from 'html2pdf.js';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ToastrService } from 'ngx-toastr';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { firstValueFrom } from 'rxjs';
@@ -55,7 +56,7 @@ export class QuotationViewComponent {
   currentCompany: any;
   currentBranch: any;
 
-  constructor(private toastr: ToastrService, private modalService: NgbModal, private leadService: LeadService, private route: Router, private appService: AppService,private appSettingService : AppSettingsService) { }
+  constructor(private toastr: ToastrService,private excelReportService : ExcelExportService, private modalService: NgbModal, private leadService: LeadService, private route: Router, private appService: AppService,private appSettingService : AppSettingsService) { }
 
   ngOnInit(): void {
     const storedCompany = localStorage.getItem('selected-company');
@@ -404,6 +405,37 @@ export class QuotationViewComponent {
       console.error('PDF generation error:', err);
       this.toastr.error('Error generating PDF.');
     }
+  }
+
+   report(): void {
+    const formattedData = this.quoteItems.map(item => ({
+      ...item,
+      department: item.quoteRoute[0]?.departmentMaster?.departmentName,
+      pol: item.quoteRoute[0]?.PortPOL?.PortName,
+      pod: item.quoteRoute[0]?.PortPOD?.PortName,
+      status: item.authorizerStatus === "Approved" 
+           ? "Approved" 
+           : item.authorizerStatus === "Rejected" 
+             ? "Rejected" 
+             : "Pending",
+    }));
+
+    // const companyName = this.userData?.userCompanyMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+    this.excelReportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'QuoteNumber', label: 'Quote Number' },
+        { key: 'QuoteDate', label: 'Quote Date' },
+        { key: 'CustomerName', label: 'Customer Name' },
+        { key: 'department', label: 'Department' },
+        { key: 'pol', label: 'POL' },
+        { key: 'pod', label: 'POD' },
+        { key: 'status', label: 'Status' }
+      ],
+      fileName: 'Quotation-Report',
+      title: companyName
+    });
   }
 
   goForBookingCreation(QuoteHeaderSid){
