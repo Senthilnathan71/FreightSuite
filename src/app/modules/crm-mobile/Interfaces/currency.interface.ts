@@ -12,7 +12,7 @@ export interface Currency {
   createdBy: string;
   createdOn: Date;
   updatedOn: Date;
-  deletedAt: Date | null;
+  // deletedAt: Date | null;
   updatedBy: string | null;
   status: 'A' | 'S';
   RoundOf: string | null;

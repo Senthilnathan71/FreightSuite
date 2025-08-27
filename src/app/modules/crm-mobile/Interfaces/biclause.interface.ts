@@ -6,7 +6,7 @@ export interface BLClause {
     DefaultClause?: string;
     createdOn?: Date;
     updatedOn?: Date | null;
-    deletedAt?: Date | null;
+    // deletedAt?: Date | null;
     createdBy: string;
     updatedBy?: string | null;
     status?: string; 
