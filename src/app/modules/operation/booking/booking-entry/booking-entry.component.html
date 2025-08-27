@@ -6,7 +6,7 @@
         <i class="fas fa-anchor"></i>
       </div>
       <div class="brand-content">
-        <h1 class="workspace-title">Freight Booking Portal</h1>
+        <h1 class="workspace-title">booking</h1>
         <span class="workspace-subtitle">Advanced Booking Management • Singapore Branch</span>
       </div>
     </div>
@@ -37,55 +37,67 @@
 
   <!-- Smart Quick Form -->
   <div class="quick-form-panel">
-    <div class="quick-form-header">
-      <h3 class="panel-title">
-        <i class="fas fa-bolt"></i>
-        Quick Entry
-      </h3>
-      <button class="expand-toggle" (click)="toggleQuickForm()">
-        <i class="fas fa-expand-alt" [class.fa-compress-alt]="isQuickFormExpanded"></i>
-      </button>
-    </div>
-    
+
     <div class="quick-form-grid" [class.expanded]="isQuickFormExpanded">
       <div class="smart-field-group">
-        <label class="smart-label">Booking Reference</label>
-        <div class="smart-input-wrapper">
-          <input type="text" class="smart-input" placeholder="Auto-generated" readonly>
-          <div class="input-status status-auto">AUTO</div>
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+            formControlName="BookingNo">
+          <label for="text-input" class="input-label">Booking No <span class="text-danger">*</span></label>
+          <div class="error-message">
+            <span>Required</span>
+          </div>
         </div>
       </div>
-
       <div class="smart-field-group">
-        <label class="smart-label required">Department</label>
-        <div class="smart-select-wrapper">
-          <ng-select [items]="modeOfDept" bindLabel="name" bindValue="name" 
-            class="smart-select" placeholder="Select department">
-          </ng-select>
-          <div class="select-icon"><i class="fas fa-building"></i></div>
-        </div>
-      </div>
+        <div class=" custom-form-group custom-form-group-select">
+              <div class="input-group">
+                  <input class="form-control" placeholder="dd-mm-yyyy" name="dp"
+                      formControlName="BookingDateTime" ngbDatepicker #d1="ngbDatepicker" type="date"  />
+                  <!-- <button class="btn bi bi-calendar3 border border-start-0"
+                      type="button"> <i-feather name="calendar" class="feather-sm"></i-feather></button> -->
+              </div>
+              <label for="shipmentDateExpected" class="input-label">Booking Date <span
+                      class="text-danger">*</span>
+              </label>
 
+          </div>
+      </div>
       <div class="smart-field-group">
-        <label class="smart-label">Booking Date</label>
-        <div class="smart-date-wrapper">
-          <input class="smart-input" placeholder="Select date" name="dp" ngbDatepicker
-            #d1="ngbDatepicker" (click)="d1.toggle()" readonly />
-          <button class="date-trigger" (click)="d1.toggle()" type="button">
-            <i class="fas fa-calendar-alt"></i>
-          </button>
+        <div class=" custom-form-group custom-form-group-select">
+              <div class="input-group">
+                <select class="form-select" aria-label="Default select example">
+                  <option selected>Open this select menu</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+                </select>
+              </div>
+              <label for="shipmentDateExpected" class="input-label">Dept <span
+                      class="text-danger">*</span>
+              </label>
         </div>
       </div>
+      <div class="smart-field-group">
+        <div class=" custom-form-group custom-form-group-select">
+              <div class="input-group">
+                <select class="form-select" aria-label="Default select example">
+                  <option selected>Open this select menu</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+                </select>
+              </div>
+              <label for="shipmentDateExpected" class="input-label">Customer <span
+                      class="text-danger">*</span>
+              </label>
+        </div>
+      </div>
+    </div>
+    <div class="quick-form-grid d-none" [class.expanded]="isQuickFormExpanded">
+      
 
-      <div class="smart-field-group">
-        <label class="smart-label required">Customer</label>
-        <div class="smart-input-wrapper">
-          <input type="text" class="smart-input" placeholder="Search or enter customer">
-          <button class="input-action">
-            <i class="fas fa-search"></i>
-          </button>
-        </div>
-      </div>
+  
 
       <!-- Expandable Fields -->
       <div class="expandable-fields" *ngIf="isQuickFormExpanded">
