@@ -3,7 +3,7 @@ export interface Branch {
     branchCode: string,
     createdOn?: Date,
     updatedOn?: Date,
-    deletedAt?: Date,
+    // deletedAt?: Date,
     createdBy: string,
     updatedBy?: string,
     taxRegistrationNo?: string,

@@ -20,7 +20,7 @@ export interface Tariff {
     EffectiveDate: Date,
     createdOn?: Date,
     updatedOn?: Date,
-    deletedAt?: Date,
+    // deletedAt?: Date,
     createdBy?: string,
     updatedBy?: string,
     IsSlabApplicable?: string

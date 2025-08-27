@@ -17,6 +17,6 @@ export interface CurrencyExchange {
     Remarks: string;
     createdOn: string;
     updatedOn: string;
-    deletedAt?: string;
+    // deletedAt?: string;
     
 }

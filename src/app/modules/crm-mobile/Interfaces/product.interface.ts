@@ -21,7 +21,7 @@ export interface Product {
     FlashPoint ?: string,
     createdOn ?: Date,
     updatedOn ?: Date,
-    deletedAt ?: Date,
+    // deletedAt ?: Date,
     createdBy : string,
     updatedBy ?: string,
     status ?: string,
