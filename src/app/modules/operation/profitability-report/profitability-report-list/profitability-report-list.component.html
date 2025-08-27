@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col pb-2">
-                <h4 class="page-title mb-0">Booking Report</h4>
+                <h4 class="page-title mb-0">Profitability Report</h4>
             </div>
 
             <div class="col-md pb-2">
@@ -33,7 +33,7 @@
                 <div class="" data-bs-theme="light">
                     <form
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToCreate()">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="TonavigateCreate()">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
@@ -51,39 +51,32 @@
         </div>
     </div>
     <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+        <h4 class="page-title mb-2 p-0">Branch Profitability</h4>
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Branch</th>
-                            <th class="bg-transparent text-light" scope="col">Quotation No</th>
-                            <th class="bg-transparent text-light" scope="col">Quotation Date</th>
-                            <th class="bg-transparent text-light" scope="col">Booking No</th>
-                            <th class="bg-transparent text-light" scope="col">Booking Date</th>
-                            <th class="bg-transparent text-light" scope="col">Customer</th>
-                            <th class="bg-transparent text-light" scope="col">Dept</th>
-                            <th class="bg-transparent text-light" scope="col">Sales Person</th>
-                            <th class="bg-transparent text-light" scope="col">POO</th>
-                            <th class="bg-transparent text-light" scope="col">POL</th>
-                            <th class="bg-transparent text-light" scope="col">POD</th>
-                            <th class="bg-transparent text-light" scope="col">FPD</th>
-                            <th class="bg-transparent text-light" scope="col">G Weight</th>
-                            <th class="bg-transparent text-light" scope="col">Chr Weight</th>
-                            <th class="bg-transparent text-light" scope="col">Volume(CBM)</th>
-                            <th class="bg-transparent text-light" scope="col">Cont Type</th>
-                            <th class="bg-transparent text-light" scope="col">Cont No</th>
-                            <th class="bg-transparent text-light" scope="col">Pkg type</th>
-                            <th class="bg-transparent text-light" scope="col">No of Pack</th>
-                            <th class="bg-transparent text-light" scope="col">HBL No</th>
-                            <th class="bg-transparent text-light" scope="col">Vessel</th>
-                            <th class="bg-transparent text-light" scope="col">Voyage</th>
-                            <th class="bg-transparent text-light" scope="col">ETD</th>
-                            <th class="bg-transparent text-light" scope="col">ETA</th>
-                            <th class="bg-transparent text-light" scope="col">Created By</th>
-                            <th class="bg-transparent text-light" scope="col">Created Date</th>
+                            <th class="bg-transparent text-light" scope="col">Location Name</th>
+                            <th class="bg-transparent text-light" scope="col">Prov Revenue</th>
+                            <th class="bg-transparent text-light" scope="col">Prov Cost</th>
+                            <th class="bg-transparent text-light" scope="col">Prov GP</th>
+                            <th class="bg-transparent text-light" scope="col">Actual Revenue</th>
+                            <th class="bg-transparent text-light" scope="col">Actual Cost</th>
+                            <th class="bg-transparent text-light" scope="col">Actual GP</th>
+                            <th class="bg-transparent text-light" scope="col">Profit %</th>
+                            <th class="bg-transparent text-light" scope="col">No of Shipment</th>
+                            <th class="bg-transparent text-light" scope="col">No of 20ft</th>
+                            <th class="bg-transparent text-light" scope="col">No of 40ft</th>
+                            <th class="bg-transparent text-light" scope="col">Container No</th>
+                            <th class="bg-transparent text-light" scope="col">Total Gross Wt</th>
+                            <th class="bg-transparent text-light" scope="col">Total Chargeable Wt</th>
+                            <th class="bg-transparent text-light" scope="col">Total CBM/Volume</th>
+                             <th class="bg-transparent text-light" scope="col">Total Chargeable Wt</th>
+                            <th class="bg-transparent text-light" scope="col">Total CBM/Volume</th>
                             <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+
                         </tr>
                     </thead>
                     <tbody>
@@ -103,23 +96,6 @@
                                 <div class="text-truncate">OMR</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">
-                                    <a href="">
-                                        OMR
-                                    </a>
-                                </div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">
-                                    <a href="">
-                                        OMR
-                                    </a>
-                                </div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">OMR</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
@@ -146,7 +122,7 @@
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">OMR</div>
                             </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">OMR</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
@@ -164,24 +140,7 @@
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">OMR</div>
                             </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
+
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">RO</div>
                             </td>
@@ -198,4 +157,5 @@
             </div>
         </div>
     </div>
+
 </div>

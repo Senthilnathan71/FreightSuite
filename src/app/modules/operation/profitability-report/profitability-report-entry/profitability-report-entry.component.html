@@ -1,0 +1,84 @@
+<div class="row compact-form">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-2">
+                <h4 class="page-title mb-0">Profitability Report</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        (click)="openAuditLogs(auditLogModal)">
+                        <i class="fas fa-history me-1"></i>Logs
+                    </button> -->
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="goBack()">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="card h-100 mb-0">
+            <div class="card-body pb-0">
+                <div class="row">
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select formControlName="" [items]="" bindLabel="name" bindValue="id" [multiple]="true"
+                                placeholder="Select Departments">
+                            </ng-select>
+                            <label for="" class="input-label">
+                                Dept <span class="text-danger"></span>
+                            </label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Branch <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d1="ngbDatepicker" formControlName="" (click)="d1.toggle()" />
+                                <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label class="input-label">From Job Date <span class="text-danger">*</span>
+                            </label>
+
+                        </div>
+                    </aside>
+                     <aside class="col-md-4">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d2="ngbDatepicker" formControlName="" (click)="d2.toggle()" />
+                                <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label class="input-label">To Job Date <span class="text-danger">*</span>
+                            </label>
+
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

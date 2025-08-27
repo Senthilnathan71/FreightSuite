@@ -445,7 +445,7 @@ applySorting() {
         this.masterService.softDeleteHssac(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
           this.router.navigate(['master/hs-sac']);
-         
+          this.loadHssacs();
         });
       }
     });

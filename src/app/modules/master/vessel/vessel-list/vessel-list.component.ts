@@ -205,6 +205,7 @@ export class VesselListComponent {
       if (result === true) {
         this.masterService.deleteVesselById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
+          this.loadVessels();
           // this.router.navigate(['master/vessel/list'])
           // this.search();
         }, (error) => {

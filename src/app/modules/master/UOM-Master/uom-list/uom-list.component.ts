@@ -172,6 +172,7 @@ applySorting() {
       if (result === true) {
         this.masterService.deleteUomById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
+          this.loadUoms();
         });
       }
     });

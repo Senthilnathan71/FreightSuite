@@ -4,6 +4,9 @@ import { BookingEntryComponent } from './booking/booking-entry/booking-entry.com
 import { MasterJobEntryComponent } from './master-job/master-job-entry/master-job-entry.component';
 import { ReportComponent } from './report/report/report.component';
 import { MasterJobListComponent } from './master-job/master-job-list/master-job-list.component';
+import { ReportEntryComponent } from './report/report-entry/report-entry.component';
+import { ProfitabilityReportListComponent } from './profitability-report/profitability-report-list/profitability-report-list.component';
+import { ProfitabilityReportEntryComponent } from './profitability-report/profitability-report-entry/profitability-report-entry.component';
 
 export const OperationRoutes: Routes = [
   {
@@ -51,11 +54,35 @@ export const OperationRoutes: Routes = [
       },
       
       {
-        path: 'report',
+        path: 'report/list',
         component: ReportComponent,
         data: {
           title: 'Report',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Report' }],
+        },
+      },
+       {
+        path: 'report/entry',
+        component: ReportEntryComponent,
+        data: {
+          title: 'Report',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Report' }],
+        },
+      },
+       {
+        path: 'profitability-report/list',
+        component: ProfitabilityReportListComponent,
+        data: {
+          title: 'Profitability Report',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Profitability Report' }],
+        },
+      },
+      {
+        path: 'profitability-report/entry',
+        component: ProfitabilityReportEntryComponent,
+        data: {
+          title: 'Profitability Report',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Profitability Report' }],
         },
       },
     ],
