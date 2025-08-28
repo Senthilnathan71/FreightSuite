@@ -75,11 +75,11 @@ export class BookingEntryComponent {
 
   tabs = [
     { name: 'Shipment', icon: 'fas fa-ship' },
-    { name: 'Charges', icon: 'fas fa-credit-card' },
     { name: 'Cargo', icon: 'fas fa-boxes' },
+    { name: 'Product', icon: 'fas fa-box' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Connection', icon: 'fas fa-link' },
-    { name: 'Rate', icon: 'fas fa-chart-line' },
+    { name: 'Charges', icon: 'fas fa-credit-card' },
     { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
   ];
@@ -100,48 +100,59 @@ export class BookingEntryComponent {
     this.selectedTab = tab;
   }
 
+  activeTab1: string = 'revenue';
+
+  setTab(tab1: string) {
+    this.activeTab1 = tab1;
+  }
   toggleQuickForm() {
     this.isQuickFormExpanded = !this.isQuickFormExpanded;
   }
 
-  
-
-  openProductModal() {
-    this.modalService.open(this.productModal, {
+  openRevenueModal(content: any) {
+    this.modalService.open(content, {
       size: 'lg',
       backdrop: 'static',
       centered: true,
     });
   }
 
-  saveProduct(modal: any) {
-    console.log('Product saved');
-    modal.close();
-  }
-
-  openConnectionModal() {
-    this.modalService.open(this.connectionModal, {
+  openCostModal(content: any) {
+    this.modalService.open(content, {
       size: 'lg',
       backdrop: 'static',
       centered: true,
     });
   }
 
-  saveConnection(modal: any) {
-    console.log('Connection saved');
-    modal.close();
-  }
-
-  openRateModal() {
-    this.modalService.open(this.rateModal, {
+  openProfitModal(content: any) {
+    this.modalService.open(content, {
       size: 'lg',
       backdrop: 'static',
       centered: true,
     });
   }
 
-  saveRate(modal: any) {
-    console.log('Rate saved');
-    modal.close();
+  openConnectionModal(content: any) {
+    this.modalService.open(content, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
+  }
+  openMilestoneModal(content: any) {
+    this.modalService.open(content, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
+  }
+
+  openProductModal(content: any) {
+    this.modalService.open(content, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
   }
 }
