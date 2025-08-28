@@ -7,6 +7,10 @@ import { MasterJobListComponent } from './master-job/master-job-list/master-job-
 import { ReportEntryComponent } from './report/report-entry/report-entry.component';
 import { ProfitabilityReportListComponent } from './profitability-report/profitability-report-list/profitability-report-list.component';
 import { ProfitabilityReportEntryComponent } from './profitability-report/profitability-report-entry/profitability-report-entry.component';
+import { InvoiceListComponent } from './Invoice/invoice-list/invoice-list.component';
+import { InvoiceEntryComponent } from './Invoice/invoice-entry/invoice-entry.component';
+import { CragoReceiptEntryComponent } from './cargo-receipt/crago-receipt-entry/crago-receipt-entry.component';
+import { CragoReceiptListComponent } from './cargo-receipt/crago-receipt-list/crago-receipt-list.component';
 
 export const OperationRoutes: Routes = [
   {
@@ -83,6 +87,38 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'Profitability Report',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Profitability Report' }],
+        },
+      },
+       {
+        path: 'invoice/list',
+        component: InvoiceListComponent,
+        data: {
+          title: 'Invoice',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Invoice' }],
+        },
+      },
+       {
+        path: 'invoice/entry',
+        component: InvoiceEntryComponent,
+        data: {
+          title: 'Invoice',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Invoice' }],
+        },
+      },
+        {
+        path: 'cargo-receipt/entry',
+        component: CragoReceiptEntryComponent,
+        data: {
+          title: 'Cargo Receipt',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Cargo Receipt' }],
+        },
+      },
+       {
+        path: 'cargo-receipt/list',
+        component: CragoReceiptListComponent,
+        data: {
+          title: 'Cargo Receipt',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Cargo Receipt' }],
         },
       },
     ],

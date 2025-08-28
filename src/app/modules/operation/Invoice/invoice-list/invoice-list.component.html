@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col pb-2">
-                <h4 class="page-title mb-0">Profitability Report</h4>
+                <h4 class="page-title mb-0">Invoice</h4>
             </div>
 
             <div class="col-md pb-2">
@@ -33,7 +33,8 @@
                 <div class="" data-bs-theme="light">
                     <form
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="TonavigateCreate()">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="TonavigateCreate()">
                             <i class="fas fa-plus me-1"></i> Create
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
@@ -51,32 +52,23 @@
         </div>
     </div>
     <div class="row bg-white py-2 rounded shadow-sm mx-auto">
-        <h4 class="page-title mb-2 p-0">Branch Profitability</h4>
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Location Name</th>
-                            <th class="bg-transparent text-light" scope="col">Prov Revenue</th>
-                            <th class="bg-transparent text-light" scope="col">Prov Cost</th>
-                            <th class="bg-transparent text-light" scope="col">Prov GP</th>
-                            <th class="bg-transparent text-light" scope="col">Actual Revenue</th>
-                            <th class="bg-transparent text-light" scope="col">Actual Cost</th>
-                            <th class="bg-transparent text-light" scope="col">Actual GP</th>
-                            <th class="bg-transparent text-light" scope="col">Profit %</th>
-                            <th class="bg-transparent text-light" scope="col">No of Shipment</th>
-                            <th class="bg-transparent text-light" scope="col">No of 20ft</th>
-                            <th class="bg-transparent text-light" scope="col">No of 40ft</th>
-                            <th class="bg-transparent text-light" scope="col">Container No</th>
-                            <th class="bg-transparent text-light" scope="col">Total Gross Wt</th>
-                            <th class="bg-transparent text-light" scope="col">Total Chargeable Wt</th>
-                            <th class="bg-transparent text-light" scope="col">Total CBM/Volume</th>
-                             <th class="bg-transparent text-light" scope="col">Total Chargeable Wt</th>
-                            <th class="bg-transparent text-light" scope="col">Total CBM/Volume</th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
-
+                            <th class="bg-transparent text-light" scope="col">Invoice No</th>
+                            <th class="bg-transparent text-light" scope="col">Invoice Date</th>
+                            <th class="bg-transparent text-light" scope="col">Customer Name</th>
+                            <th class="bg-transparent text-light" scope="col">Curr</th>
+                            <th class="bg-transparent text-light" scope="col">Local Amount</th>
+                            <th class="bg-transparent text-light" scope="col">INR No</th>
+                            <th class="bg-transparent text-light" scope="col">Job No</th>
+                            <th class="bg-transparent text-light" scope="col">House No</th>
+                            <th class="bg-transparent text-light" scope="col">Status</th>
+                            <th class="bg-transparent text-light" scope="col">Create On</th>
+                            <th class="bg-transparent text-light" scope="col">Credit Note No</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -117,39 +109,18 @@
                                 <div class="text-truncate">OMR</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">RO</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <span
                                     class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
                                     Active</span>
                             </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">RO</div>
+                            </td>
+
                         </tr>
                         }
                     </tbody>
