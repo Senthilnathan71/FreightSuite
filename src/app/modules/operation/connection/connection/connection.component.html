@@ -1,141 +1,140 @@
-<div class="text-end mb-1">
-    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openConnectionModal()"> <i
-            class="fas fa-plus me-1"></i> Add</button>
-</div>
-
-<div class="col-12 p-0">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-            <thead>
-                <tr class="bg-info">
-                    <th class="bg-transparent text-light">Mode</th>
-                    <th class="bg-transparent text-light">Vsl</th>
-                    <th class="bg-transparent text-light">Voy</th>
-                    <th class="bg-transparent text-light">POL</th>
-                    <th class="bg-transparent text-light">POD</th>
-                    <th class="bg-transparent text-light">ETD</th>
-                    <th class="bg-transparent text-light">ETA</th>
-                    <th class="bg-transparent text-light">ATD</th>
-                    <th class="bg-transparent text-light">ATA</th>
-                    <th class="bg-transparent text-light">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                </tr>
-            </tbody>
-        </table>
+<div class="modern-table-container">
+    <div>
+        <div class="table-toolbar">
+            <div class="toolbar-left">
+                <button class="table-action-btn primary" (click)="openConnectionModal(connectionModal)">
+                    <i class="fas fa-plus"></i> Add Connection
+                </button>
+            </div>
+            <div class="toolbar-right">
+                <button class="table-action-btn export">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <button class="table-action-btn print">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+        </div>
+        <div class="modern-table-wrapper">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th width="10%">Actions</th>
+                        <th>Mode</th>
+                        <th>Vsl</th>
+                        <th>Vol</th>
+                        <th>POL</th>
+                        <th>POD</th>
+                        <th>ETD</th>
+                        <th>ETA</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="table-row">
+                        <td class="actions-cell">
+                            <div class="action-buttons"> <button class="action-icon edit"><i
+                                        class="fas fa-edit"></i></button>
+                                <button class="action-icon copy"><i class="fas fa-copy"></i></button> <button
+                                    class="action-icon delete"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                        <td>dgd</td>
+                        <td>dgd</td>
+                        <td>dgd</td>
+                        <td>dgd</td>
+                        <td>dgd</td>
+                        <td>dgd</td>
+                        <td>dgd</td>
+                        <td>dgd</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 
 <ng-template #connectionModal let-modal>
     <div class="modal-header p-2 bg-info">
-        <h5 class="modal-title text-white"> Connection</h5>
-        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+        <h5 class="modal-title text-white">Add Connection</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close"
+            (click)="modal.dismiss('Cross click')"></button>
     </div>
+
     <div class="modal-body">
-
         <div class="row">
-
-
             <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="typeofmodes" bindLabel="name" bindValue="name">
+                    <ng-select [items]="" bindLabel="name" bindValue="name">
 
                     </ng-select>
-                    <label for="" class="input-label"> Mode <span class="text-danger"></span></label>
+                    <label for="" class="input-label">Mode <span class="text-danger"></span></label>
                 </div>
             </aside>
+
             <aside class="col-md-4">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">Vsl <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-4">
                 <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="" bindLabel="name" bindValue="name" class="ng-select">
-
-                    </ng-select>
-                    <label for="" class="input-label"> POL <span class="text-danger"></span></label>
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">POL <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="" [items]="" bindLabel="name" bindValue="name" class="ng-select">
-
-                    </ng-select>
-                    <label for="" class="input-label"> POD <span class="text-danger"></span></label>
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">POD <span class="text-danger"></span></label>
                 </div>
             </aside>
             <div class="col-md-4">
                 <div class=" custom-form-group custom-form-group-select">
                     <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                            #d10="ngbDatepicker" (click)="d10.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d10.toggle()" type="button">
-                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                    </div>
-                    <label for="" class="input-label"> ETD <span class="text-danger"></span>
-                    </label>
-
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class=" custom-form-group custom-form-group-select">
-                    <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                            #d11="ngbDatepicker" (click)="d11.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d11.toggle()" type="button">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d6="ngbDatepicker"
+                            (click)="d6.toggle()" />
+                        <button class="btn  bi bi-calendar3 " (click)="d6.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>
                     <label for="" class="input-label"> ETA <span class="text-danger"></span>
                     </label>
-
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class=" custom-form-group custom-form-group-select">
+                    <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d7="ngbDatepicker"
+                            (click)="d7.toggle()" />
+                        <button class="btn  bi bi-calendar3 " (click)="d7.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                    </div>
+                    <label for="" class="input-label"> ETD <span class="text-danger"></span>
+                    </label>
                 </div>
             </div>
             <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">ATD <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">ATA <span class="text-danger"></span></label>
-                </div>
-            </aside>
-
-            <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="name" class="ng-select">
-
+                    <ng-select [items]="" bindLabel="name" bindValue="name">
                     </ng-select>
                     <label for="" class="input-label">Status <span class="text-danger"></span></label>
                 </div>
             </aside>
+
+
         </div>
     </div>
+
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-        <button type="button" class="btn btn-info btn-sm">Save</button>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss('Cancel')">Cancel</button>
+        <button type="button" class=" btn btn-sm btn-info" (click)="modal.close('Save')">Save</button>
     </div>
 </ng-template>

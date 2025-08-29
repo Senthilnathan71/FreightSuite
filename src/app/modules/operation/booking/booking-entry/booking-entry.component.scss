@@ -40,8 +40,8 @@
 }
 
 .workspace-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: #1a202c;
   margin: 0;
   background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
@@ -141,6 +141,10 @@
   align-items: center;
   border-bottom: 1px solid rgba(23, 162, 184, 0.1);
 }
+.ng-dropdown-panel {
+  z-index: 9999 !important; 
+}
+/////////////////
 
 .panel-title {
   font-size: 12px;
@@ -1398,6 +1402,10 @@
     grid-template-columns: 1fr;
     gap: 8px;
   }
+  .form-check {
+  margin-top: 0px !important;
+  padding-left: 10px;
+}
  
 }
 

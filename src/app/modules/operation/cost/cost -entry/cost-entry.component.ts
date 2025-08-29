@@ -23,23 +23,27 @@ export class CostEntryComponent {
 
   constructor(private modalService: NgbModal) {}
 
-  selectTab(tab: string) {
-    this.selectedTab = tab;
+ 
+  activeTab1: string = 'revenue';
+
+  setTab(tab1: string) {
+    this.activeTab1 = tab1;
   }
 
-  openCostModal() {
-    this.modalService.open(this.costModal, {
+    openRevenueModal(content: any) {
+    this.modalService.open(content, {
       size: 'lg',
       backdrop: 'static',
       centered: true,
     });
   }
 
-  openRevenueModal() {
-    this.modalService.open(this.revenueModal, {
+  openCostModal(content: any) {
+    this.modalService.open(content, {
       size: 'lg',
       backdrop: 'static',
       centered: true,
     });
   }
+
 }

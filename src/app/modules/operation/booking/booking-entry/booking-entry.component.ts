@@ -4,8 +4,11 @@ import { Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgComponentOutlet } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ConnectionComponent } from '../../connection/connection/connection.component';
+import { CostEntryComponent } from '../../cost/cost -entry/cost-entry.component';
+import { ArApComponent } from '../../AR-AP/ar-ap/ar-ap.component';
 
 @Component({
   selector: 'app-booking-entry',
@@ -17,11 +20,18 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    NgComponentOutlet,
+    ConnectionComponent,
+    CostEntryComponent,
+    ArApComponent
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
 })
 export class BookingEntryComponent {
+    public connectionComponent =ConnectionComponent;
+    public rateComponent = CostEntryComponent;
+    public ArApcomponent = ArApComponent;
   modeOfStatus = [
     { id: 1, name: 'Active' },
     { id: 2, name: 'Suspended' },
@@ -79,7 +89,7 @@ export class BookingEntryComponent {
     { name: 'Product', icon: 'fas fa-box' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Connection', icon: 'fas fa-link' },
-    { name: 'Charges', icon: 'fas fa-credit-card' },
+    { name: 'Rate', icon: 'fas fa-credit-card' },
     { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
   ];
@@ -88,6 +98,7 @@ export class BookingEntryComponent {
   @ViewChild('connectionModal') connectionModal!: TemplateRef<any>;
   @ViewChild('rateModal') rateModal!: TemplateRef<any>;
   constructor(private router: Router, private modalService: NgbModal) {}
+
 
   navigateBack() {
     this.router.navigate(['operation/booking/list']);
@@ -100,30 +111,10 @@ export class BookingEntryComponent {
     this.selectedTab = tab;
   }
 
-  activeTab1: string = 'revenue';
-
-  setTab(tab1: string) {
-    this.activeTab1 = tab1;
-  }
   toggleQuickForm() {
     this.isQuickFormExpanded = !this.isQuickFormExpanded;
   }
 
-  openRevenueModal(content: any) {
-    this.modalService.open(content, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true,
-    });
-  }
-
-  openCostModal(content: any) {
-    this.modalService.open(content, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true,
-    });
-  }
 
   openProfitModal(content: any) {
     this.modalService.open(content, {

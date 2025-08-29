@@ -32,11 +32,12 @@ import { ArApComponent } from '../../AR-AP/ar-ap/ar-ap.component';
   styleUrl: './master-job-entry.component.scss',
 })
 export class MasterJobEntryComponent {
-  public costcomponent = CostEntryComponent;
+  public ratecomponent = CostEntryComponent;
   public revenuecomponent = RevenueEntryComponent;
   public connectionComponent = ConnectionComponent;
   public containerComponent = ContainerActivityComponent;
   public ARAPcompoent =ArApComponent;
+
   tabs = [
     { name: 'Container', icon: 'fas fa-boxes' },
     { name: 'Connection', icon: 'fas fa-plug' },
@@ -47,6 +48,20 @@ export class MasterJobEntryComponent {
     { name: 'Mail', icon: 'fas fa-envelope' },
     { name: 'Follow Up', icon: 'fas fa-tasks' },
     { name: 'Container Activity', icon: 'fas fa-shipping-fast' },
+    { name: 'Edoc', icon: 'fas fa-file-pdf' },
+    { name: 'History', icon: 'fas fa-history' },
+  ];
+
+
+    tabs1 = [
+    { name: 'Product', icon: 'fas fa-boxes' },
+    { name: 'Connection', icon: 'fas fa-plug' },
+    { name: 'Others', icon: 'fas fa-ellipsis-h' },
+    { name: 'Rate', icon: 'fas fa-rupee-sign' },
+    { name: 'AR/AP', icon: 'fas fa-balance-scale' },
+    { name: 'Follow Up', icon: 'fas fa-tasks' },
+    { name: 'Mail', icon: 'fas fa-envelope' },
+    { name: 'Milestone', icon: 'fas fa-shipping-fast' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
     { name: 'History', icon: 'fas fa-history' },
   ];
@@ -77,14 +92,23 @@ export class MasterJobEntryComponent {
   @ViewChild('containerModal') containerModal!: TemplateRef<any>;
 
   constructor(private router: Router, private modalService: NgbModal) {}
+
   selectedTab = 'Container';
 
   selectTab(tab: string) {
     this.selectedTab = tab;
   }
 
-  openContainerModal() {
-    this.modalService.open(this.containerModal, {
+
+  selectedTab1 = 'Product';
+
+  selectTab1(tab1: string) {
+    this.selectedTab1 = tab1;
+  }
+
+
+   openContainerModal(content: any) {
+    this.modalService.open(content, {
       size: 'lg',
       backdrop: 'static',
       centered: true,

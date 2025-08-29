@@ -1,0 +1,47 @@
+.compact-form {
+  .custom-form-group {
+    margin-bottom: .25rem;
+  }
+
+  .custom-input-field {
+    border-radius: 0;
+    padding: 7px 12px;
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+  }
+
+  .input-label {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .error-message {
+    top: inherit;
+    bottom: 0;
+  }
+
+  .ng-select {
+    .ng-select-container {
+      border-radius: 0;
+      border-top: 0;
+      border-left: 0;
+      border-right: 0;
+      max-height: 34px;
+    }
+  }
+
+  .form-control {
+      border-radius: 0;
+      border-top: 0;
+      border-left: 0;
+      border-right: 0;
+    //   max-height: 34px;
+    }
+  
+
+  .card {
+    --bs-card-spacer-y: 8px;
+    --bs-card-spacer-x: 8px;
+  }
+}

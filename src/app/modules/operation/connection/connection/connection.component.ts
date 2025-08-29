@@ -26,8 +26,8 @@ export class ConnectionComponent {
 
   constructor(private modalService: NgbModal) {}
   
-  openConnectionModal() {
-    this.modalService.open(this.connectionModal, {
+  openConnectionModal(content: any) {
+    this.modalService.open(content, {
       size: 'lg',
       backdrop: 'static',
       centered: true,
