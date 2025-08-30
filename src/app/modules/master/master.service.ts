@@ -3563,6 +3563,14 @@ searchContainerActivities(payload: any) {
     })
   );
 }
+getAuditLogsContainer(tableName: string, recordId?: string) {
+    let url = `container-activity-master/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
 
 
 

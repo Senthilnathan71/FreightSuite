@@ -14,9 +14,9 @@
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                        (click)="openAuditLogs(auditLogModal)">
-                        <i class="fas fa-history me-1"></i>Logs
-                    </button>
+                  (click)="openAuditLogs(auditLogModal)">
+            <i class="fas fa-history me-1"></i>Logs
+          </button>
 
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="goBack()">
@@ -30,7 +30,7 @@
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
                         *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
-                        [disabled]="containerActivityForm.invalid || containerActivityForm.pristine">
+                        [disabled]="containerActivityForm.invalid || (isEditMode && !hasFormChanges())">
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Update':'Save'}}
                     </button>
@@ -114,22 +114,21 @@
                             </div>
                         </aside>
 
-
                         <aside class="col-md-4 d-flex align-items-center">
-                            <div class="form-check form-check-inline p-0">
-                                <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" formControlName="IsDamageMove" id="IsDamageMove"
-                                        class="form-check-input sm" [value]="'N'">
-                                    <label for="IsDamageMove" class="form-check-label sm">Damage Move</label>
-                                    @if(containerActivityForm.get('IsDamageMove')?.touched &&
-                                    containerActivityForm.get('IsDamageMove')?.invalid){
-                                    <div class="error-message">
-                                        <span>Required</span>
-                                    </div>
-                                    }
-                                </div>
-                            </div>
-                        </aside>
+  <div class="form-check form-check-inline p-0">
+    <div class="form-check d-flex align-items-center">
+      <input type="checkbox" formControlName="IsDamageMove" id="IsDamageMove"
+             class="form-check-input sm">
+      <label for="IsDamageMove" class="form-check-label sm">Damage Move</label>
+      @if(containerActivityForm.get('IsDamageMove')?.touched &&
+      containerActivityForm.get('IsDamageMove')?.invalid){
+      <div class="error-message">
+        <span>Required</span>
+      </div>
+      }
+    </div>
+  </div>
+</aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -138,7 +137,6 @@
                                 <label for="Remarks" class="input-label">Remarks</label>
                             </div>
                         </aside>
-
 
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
@@ -159,97 +157,77 @@
             </div>
         </div>
 
+        <!-- Activity Mapping Section - Updated to match image design -->
         <div class="col-md-12 mt-3">
-
             <h6 class="mb-3 fw-bold">Activity Mapping</h6>
-
+            
             <div class="row justify-content-center align-items-stretch">
-
+                <!-- Available Activities -->
                 <div class="col-md-5">
                     <div class="card h-100 flex-fill">
                         <div class="card-title text-center p-2 bg-info text-white">Available Activity</div>
-                        <div class="card-body p-0">
-                            <div class="p-2" style="max-height: 250px; overflow-y: auto;">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="exp1">
-                                    <label class="form-check-label" for="exp1">EXP RAIL/ROAD IN</label>
+                        <div class="card-body p-0" style="max-height: 200px; overflow-y: auto;">
+                            <div class="p-2" >
+                                <div class="form-check" *ngFor="let activity of availableActivities">
+                                    <input class="form-check-input" type="checkbox" 
+                                        [id]="'avail_' + activity.ActivityCode"
+                                        (change)="toggleActivitySelection(activity, 'available')"
+                                        [checked]="isActivitySelected(activity, 'available')">
+                                    <label class="form-check-label" [for]="'avail_' + activity.ActivityCode">
+                                       {{activity.ActivityName}}
+                                    </label>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="imp1">
-                                    <label class="form-check-label" for="imp1">IMP RAIL/ROAD IN</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="cfs1">
-                                    <label class="form-check-label" for="cfs1">CFS OUT POST STUFFING</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="mt1">
-                                    <label class="form-check-label" for="mt1">MT RETURN TO YARD</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="del1">
-                                    <label class="form-check-label" for="del1">DELIVERED TO CONSIGNEE</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="cfs2">
-                                    <label class="form-check-label" for="cfs2">CFS IN IMP FULL</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="dpd1">
-                                    <label class="form-check-label" for="dpd1">DPD TO CONSIGNEE</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="load1">
-                                    <label class="form-check-label" for="load1">LOAD TO ...</label>
+                                <div *ngIf="availableActivities.length === 0" class="text-center text-muted py-3">
+                                    No available activities
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
 
+                <!-- Action Buttons -->
                 <div class="col-12 col-md-1 d-flex flex-column justify-content-center align-items-center my-3 my-md-0">
                     <!-- Desktop arrows -->
-                    <button class="btn btn-info mb-2 d-none d-md-block">
+                    <button class="btn btn-info mb-2 d-none d-md-block" (click)="moveSelectedToNext()">
                         <i class="fas fa-chevron-right"></i>
                     </button>
-                    <button class="btn btn-info d-none d-md-block">
+                    <button class="btn btn-info d-none d-md-block" (click)="moveSelectedToAvailable()">
                         <i class="fas fa-chevron-left"></i>
                     </button>
 
                     <!-- Mobile arrows -->
-                    <button class="btn btn-info mb-2 d-block d-md-none">
+                    <button class="btn btn-info mb-2 d-block d-md-none" (click)="moveSelectedToNext()">
                         <i class="fas fa-chevron-down"></i>
                     </button>
-                    <button class="btn btn-info d-block d-md-none">
+                    <button class="btn btn-info d-block d-md-none" (click)="moveSelectedToAvailable()">
                         <i class="fas fa-chevron-up"></i>
                     </button>
                 </div>
 
+                <!-- Next Activities -->
                 <div class="col-md-5 mt-md-0 mt-3">
-                    <div class="card  h-100 flex-fill">
+                    <div class="card h-100 flex-fill">
                         <div class="card-title text-center p-2 bg-info text-white">Next Activity</div>
-                        <div class="card-body p-0">
-                            <div class="p-2" style="max-height: 250px; overflow-y: auto;">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="gate1">
-                                    <label class="form-check-label" for="exp1">GATE IN TERMINAL (EXP)</label>
+                        <div class="card-body p-0"  style="max-height: 200px; overflow-y: auto;">
+                            <div class="p-2">
+                                <div class="form-check" *ngFor="let activity of nextActivities">
+                                    <input class="form-check-input" type="checkbox" 
+                                        [id]="'next_' + activity.ActivityCode"
+                                        (change)="toggleActivitySelection(activity, 'next')"
+                                        [checked]="isActivitySelected(activity, 'next')">
+                                    <label class="form-check-label" [for]="'next_' + activity.ActivityCode">
+                                         {{activity.ActivityName}}
+                                    </label>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="back">
-                                    <label class="form-check-label" for="imp1">BACK TO TOWN</label>
+                                <div *ngIf="nextActivities.length === 0" class="text-center text-muted py-3">
+                                    No next activities
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
-
-
-
-
 
         @if(isEditMode){
         <div class="col-12 mt-3">
@@ -269,7 +247,7 @@
                                 <i class="fas fa-clipboard me-1"></i> Terms & Condition
                             </button>
                             }
-                            @if(hasPermission('Authority')) {
+                           @if(hasPermission('Authority')) {
                             <button type="button" appPreventMultiClick class="btn btn-outline-info"
                                 (click)="openAuthority()">
                                 <i class="fas fa-shield-alt me-1"></i> Authorize
@@ -291,46 +269,46 @@
 </div>
 
 <ng-template #auditLogModal let-modal>
-    <div class="modal-header bg-info text-white p-2">
-        <h5 class="modal-title mb-0">Audit Logs</h5>
-        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-    </div>
-    <div class="modal-body p-3">
-        <div class="table-responsive">
-            <table class="table align-middle no-wrap table-bordered table-sm mb-0">
-                <thead>
-                    <tr>
-                        <th>Changed At</th>
-                        <th>Changed By</th>
-                        <th>Operation</th>
-                        <th class="text-center">Old Value</th>
-                        <th class="text-center">New Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let log of auditLogs">
-                        <td>{{ log.changedAt | date:'medium' }}</td>
-                        <td>{{ log.changedBy || '-' }}</td>
-                        <td>{{ log.operation }}</td>
-                        <td class="bg-light-danger">
-                            <ul>
-                                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-                            </ul>
-                        </td>
-                        <td class="bg-light-success">
-                            <ul>
-                                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-                            </ul>
-                        </td>
-                    </tr>
-                    <tr *ngIf="auditLogs.length === 0">
-                        <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
-    </div>
+  <div class="modal-header bg-info text-white p-2">
+    <h5 class="modal-title mb-0">Audit Logs</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body p-3">
+  <div class="table-responsive">
+    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+      <thead>
+        <tr>
+          <th>Changed At</th>
+          <th>Changed By</th>
+          <th>Operation</th>
+          <th class="text-center">Old Value</th>
+          <th class="text-center">New Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of auditLogs">
+          <td>{{ log.changedAt | date:'medium' }}</td>
+          <td>{{ log.changedBy || '-' }}</td>
+          <td>{{ log.operation }}</td>
+          <td class="bg-light-danger">
+        <ul>
+          <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+        </ul>
+      </td>
+      <td class="bg-light-success">
+        <ul>
+          <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+        </ul>
+      </td>
+        </tr>
+        <tr *ngIf="auditLogs.length === 0">
+          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+  </div>
 </ng-template>

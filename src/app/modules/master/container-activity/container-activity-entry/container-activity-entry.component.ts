@@ -15,6 +15,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-container-activity-entry',
@@ -47,6 +48,10 @@ export class ContainerActivityEntryComponent implements OnInit {
   currentMenuPermissions: any = {};
   isLoading: boolean = false;
   
+  // Track original values for comparison
+  originalFormValues: any;
+  originalNextActivities: any[] = [];
+  
   statusList = [
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }
@@ -69,8 +74,8 @@ export class ContainerActivityEntryComponent implements OnInit {
 
   availableActivities: any[] = [];
   nextActivities: any[] = [];
-  selectedAvailableActivities: any[] = [];
-  selectedNextActivities: any[] = [];
+  selectedAvailableActivities: Set<number> = new Set();
+  selectedNextActivities: Set<number> = new Set();
   
   companyList: any[] = [];
   currentMenuId: number;
@@ -155,6 +160,7 @@ export class ContainerActivityEntryComponent implements OnInit {
 
   loadContainerActivityData(id: number): void {
     this.isLoading = true;
+    
     this.masterService.getContainerActivityById(id).subscribe(
       (resp: any) => {
         this.isLoading = false;
@@ -164,12 +170,36 @@ export class ContainerActivityEntryComponent implements OnInit {
           this.containerActivityData = resp.data;
           this.populateForm(this.containerActivityData);
           
+          // Store original values for change detection
+          this.originalFormValues = {...this.containerActivityForm.value};
+          
           // Load next activities if editing
-          if (this.containerActivityData.nextActivities) {
-            this.nextActivities = [...this.containerActivityData.nextActivities];
+          if (this.containerActivityData.nextActivities && this.containerActivityData.nextActivities.length > 0) {
+            // Store original next activities for change detection
+            this.originalNextActivities = [...this.containerActivityData.nextActivities];
+            
+            // Map next activities to match the structure of available activities
+            this.nextActivities = this.containerActivityData.nextActivities.map((nextAct: any) => {
+              // Try to find the full activity object from the containerActivities list
+              const fullActivity = this.containerActivities.find(
+                a => a.ActivityCode === nextAct.ActivityCode || 
+                     a.ContainerActivityMasterSid === nextAct.ContainerActivityMasterSid
+              );
+              return fullActivity || nextAct; // Use the full object if found, otherwise use the basic one
+            });
+            
+            // Filter available activities to exclude those already in nextActivities
             this.availableActivities = this.containerActivities.filter(
-              a => !this.nextActivities.some(na => na.ActivityCode === a.ActivityCode)
+              a => !this.nextActivities.some(na => 
+                na.ActivityCode === a.ActivityCode || 
+                na.ContainerActivityMasterSid === a.ContainerActivityMasterSid
+              )
             );
+          } else {
+            // If no next activities, all activities are available
+            this.availableActivities = [...this.containerActivities];
+            this.nextActivities = [];
+            this.originalNextActivities = [];
           }
         } else {
           this.errorMessage = resp.message;
@@ -214,10 +244,45 @@ export class ContainerActivityEntryComponent implements OnInit {
       ]],
       ContainerMoveStatus: ['', Validators.required],
       MoveType: ['', Validators.required],
-      IsDamageMove: ['N'],
+      IsDamageMove: [false],
       Remarks: ['', Validators.maxLength(100)],
       Status: [{ value: 'A', disabled: true }, Validators.required], 
     });
+  }
+
+  // Check if form has changes
+  hasFormChanges(): boolean {
+    if (!this.isEditMode) return true; // Always enable for new entries
+    
+    // Check if form values have changed
+    const currentValues = this.containerActivityForm.value;
+    const hasFormValueChanges = JSON.stringify(currentValues) !== JSON.stringify(this.originalFormValues);
+    
+    // Check if activity mapping has changed
+    const hasActivityChanges = this.hasActivityMappingChanged();
+    
+    return hasFormValueChanges || hasActivityChanges;
+  }
+
+  // Check if activity mapping has changed
+  hasActivityMappingChanged(): boolean {
+    if (this.nextActivities.length !== this.originalNextActivities.length) {
+      return true;
+    }
+    
+    // Check if the same activities are in the same order
+    for (let i = 0; i < this.nextActivities.length; i++) {
+      const currentActivity = this.nextActivities[i];
+      const originalActivity = this.originalNextActivities[i];
+      
+      if (!originalActivity || 
+          currentActivity.ActivityCode !== originalActivity.ActivityCode ||
+          currentActivity.ContainerActivityMasterSid !== originalActivity.ContainerActivityMasterSid) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   resetForm(): void {
@@ -233,7 +298,39 @@ export class ContainerActivityEntryComponent implements OnInit {
     
     this.availableActivities = [...this.containerActivities];
     this.nextActivities = [];
+    this.selectedAvailableActivities.clear();
+    this.selectedNextActivities.clear();
     this.errorMessage = '';
+    
+    // Reset original values if in edit mode
+    if (this.isEditMode && this.containerActivityData) {
+      this.populateForm(this.containerActivityData);
+      this.originalFormValues = {...this.containerActivityForm.value};
+      
+      // Reset next activities
+      if (this.containerActivityData.nextActivities && this.containerActivityData.nextActivities.length > 0) {
+        this.nextActivities = this.containerActivityData.nextActivities.map((nextAct: any) => {
+          const fullActivity = this.containerActivities.find(
+            a => a.ActivityCode === nextAct.ActivityCode || 
+                 a.ContainerActivityMasterSid === nextAct.ContainerActivityMasterSid
+          );
+          return fullActivity || nextAct;
+        });
+        
+        this.availableActivities = this.containerActivities.filter(
+          a => !this.nextActivities.some(na => 
+            na.ActivityCode === a.ActivityCode || 
+            na.ContainerActivityMasterSid === a.ContainerActivityMasterSid
+          )
+        );
+        
+        this.originalNextActivities = [...this.containerActivityData.nextActivities];
+      } else {
+        this.availableActivities = [...this.containerActivities];
+        this.nextActivities = [];
+        this.originalNextActivities = [];
+      }
+    }
   }
 
   onSubmit() {
@@ -258,9 +355,9 @@ export class ContainerActivityEntryComponent implements OnInit {
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const formValue = this.containerActivityForm.value;
     const processedValue = {
-    ...formValue,
-    IsDamageMove: formValue.IsDamageMove ? 'Y' : 'N'
-  };
+      ...formValue,
+      IsDamageMove: formValue.IsDamageMove ? 'Y' : 'N'
+    };
 
     // Prepare next activities in the format expected by the backend
     const nextActivities = this.nextActivities.map((nextAct) => ({
@@ -268,15 +365,15 @@ export class ContainerActivityEntryComponent implements OnInit {
     }));
 
     const payload = this.isEditMode ? {
-      ...formValue,
+      ...processedValue,
       UpdatedBy: userEmail,
-      Status: formValue.Status,
+      Status: processedValue.Status,
       TransactionSid: 0,
       nextActivities: nextActivities
     } : {
-      ...formValue,
+      ...processedValue,
       CreatedBy: userEmail,
-      Status: formValue.Status,
+      Status: processedValue.Status,
       TransactionSid: 0,
       nextActivities: nextActivities
     };
@@ -331,25 +428,90 @@ export class ContainerActivityEntryComponent implements OnInit {
     }
   }
 
-  moveActivityToNext(activity: any) {
-    this.nextActivities.push(activity);
-    this.availableActivities = this.availableActivities.filter(a => a.ActivityCode !== activity.ActivityCode);
+  // Activity mapping methods
+  toggleActivitySelection(activity: any, type: 'available' | 'next'): void {
+    const activityId = activity.ContainerActivityMasterSid || activity.ActivityCode;
+    
+    if (type === 'available') {
+      if (this.selectedAvailableActivities.has(activityId)) {
+        this.selectedAvailableActivities.delete(activityId);
+      } else {
+        this.selectedAvailableActivities.add(activityId);
+      }
+    } else {
+      if (this.selectedNextActivities.has(activityId)) {
+        this.selectedNextActivities.delete(activityId);
+      } else {
+        this.selectedNextActivities.add(activityId);
+      }
+    }
   }
 
-  moveActivityToAvailable(activity: any) {
+  isActivitySelected(activity: any, type: 'available' | 'next'): boolean {
+    const activityId = activity.ContainerActivityMasterSid || activity.ActivityCode;
+    return type === 'available' 
+      ? this.selectedAvailableActivities.has(activityId)
+      : this.selectedNextActivities.has(activityId);
+  }
+
+  moveSelectedToNext(): void {
+    const activitiesToMove = this.availableActivities.filter(activity => 
+      this.selectedAvailableActivities.has(activity.ContainerActivityMasterSid || activity.ActivityCode)
+    );
+    
+    activitiesToMove.forEach(activity => {
+      this.nextActivities.push(activity);
+      this.availableActivities = this.availableActivities.filter(a => 
+        a.ContainerActivityMasterSid !== activity.ContainerActivityMasterSid && 
+        a.ActivityCode !== activity.ActivityCode
+      );
+    });
+    
+    this.selectedAvailableActivities.clear();
+  }
+
+  moveSelectedToAvailable(): void {
+    const activitiesToMove = this.nextActivities.filter(activity => 
+      this.selectedNextActivities.has(activity.ContainerActivityMasterSid || activity.ActivityCode)
+    );
+    
+    activitiesToMove.forEach(activity => {
+      this.availableActivities.push(activity);
+      this.nextActivities = this.nextActivities.filter(a => 
+        a.ContainerActivityMasterSid !== activity.ContainerActivityMasterSid && 
+        a.ActivityCode !== activity.ActivityCode
+      );
+    });
+    
+    this.selectedNextActivities.clear();
+  }
+
+  moveActivityToNext(activity: any): void {
+    this.nextActivities.push(activity);
+    this.availableActivities = this.availableActivities.filter(a => 
+      a.ContainerActivityMasterSid !== activity.ContainerActivityMasterSid && 
+      a.ActivityCode !== activity.ActivityCode
+    );
+  }
+
+  moveActivityToAvailable(activity: any): void {
     this.availableActivities.push(activity);
-    this.nextActivities = this.nextActivities.filter(a => a.ActivityCode !== activity.ActivityCode);
+    this.nextActivities = this.nextActivities.filter(a => 
+      a.ContainerActivityMasterSid !== activity.ContainerActivityMasterSid && 
+      a.ActivityCode !== activity.ActivityCode
+    );
   }
 
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.ContainerActivityMasterSid) return;
 
-    this.masterService.getAuditLogsContainerType('ContainerActivityMaster', this.ContainerActivityMasterSid.toString()).subscribe({
+    this.masterService.getAuditLogsContainer('ContainerActivityMaster', this.ContainerActivityMasterSid.toString()).subscribe({
       next: (logs: any[]) => {
         const formatFields = (val: any) => {
           if (!val) return ['NA'];
           const obj = typeof val === 'string' ? JSON.parse(val) : val;
-          delete obj.updatedOn;
+          delete obj.updatedOn; // Remove updatedOn field
+          // If no fields exist after deleting updatedOn
           if (Object.keys(obj).length === 0) return ['NA'];
           return Object.entries(obj).map(
             ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
@@ -364,10 +526,7 @@ export class ContainerActivityEntryComponent implements OnInit {
 
         this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
       },
-      error: err => {
-        console.error('Error fetching audit logs:', err);
-        this.appSettingService.showError('Error loading audit logs');
-      }
+      error: err => console.error('Error fetching audit logs:', err)
     });
   }
 
@@ -433,15 +592,15 @@ export class ContainerActivityEntryComponent implements OnInit {
   }
 
   openAuthority() {
-    if (!this.containerActivityData) return;
-    const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-      size: 'lg', 
-      centered: true, 
-      backdrop: 'static' 
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
     });
-    modalRef.componentInstance.item = this.containerActivityData;
-    modalRef.componentInstance.idLabel = 'Container Activity Id';
-    modalRef.componentInstance.idValue = this.containerActivityData?.ContainerActivityMasterSid;
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.ContainerActivityMasterSid;
   }
 
   openEDoc() {
