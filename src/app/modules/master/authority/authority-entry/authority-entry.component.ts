@@ -297,7 +297,7 @@ auditLogs: any[] = []; // Stores audit logs
       this.masterService.updateAuthorityById(this.AuthorityMasterSid,payload).subscribe({
         next :(resp:any)=>{
           if(resp.status) {
-            this.appSettingService.showSuccess("Authorization updated successfully");
+            this.appSettingService.showSuccess(resp.message);
             this.route.navigate(['master/authorization/list'])
           } else {
             this.appSettingService.showError(resp.message);
@@ -312,7 +312,7 @@ auditLogs: any[] = []; // Stores audit logs
       this.masterService.createAuthority(payload).subscribe({
         next :(resp:any)=>{
           if(resp.status) {
-            this.appSettingService.showSuccess("New authorization create successfully");
+           this.appSettingService.showSuccess(resp.message);
             this.route.navigate(['master/authorization/list'])
           } else {
             this.appSettingService.showError(resp.message);

@@ -78,7 +78,7 @@ export class ViewComponent implements OnInit {
           this.totalLengthOfCollection = resp.data?.totalCount || 0;
           this.searchPerformed = true;
         } else {
-          this.appSettingService.showError('Error searching leads.');
+          this.appSettingService.showError(resp.message)
           console.error('Error searching leads', resp.message);
           this.leads = [];
           this.totalLengthOfCollection = 0;

@@ -90,11 +90,13 @@ loadCurrencyExchanges(): void {
 
   this.accountService.searchCurrencyExchangeList(params).subscribe({
     next: (response) => {
-      if(response) {
-        this.currencyExchangeList = response.items || response.data || [];
-        this.totalLengthOfCollection = response.totalCount || response.length || 0;
+      if(response.status) {
+        this.currencyExchangeList = response.data.items || response.data || [];
+        this.totalLengthOfCollection = response.data.totalCount || response.length || 0;
         this.applySorting();
         this.searchPerformed = true;
+      }else {
+        this.appSettingService.showError(response.message);
       }
       this.loading = false;
     },

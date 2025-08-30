@@ -165,12 +165,15 @@ export class IncoComponent{
 
   this.masterService.searchInco(params).subscribe({
     next: (response) => {
-      if(response) {
-        this.incoList = response.items;
-        this.totalLengthOfCollection = response.totalCount;
+      if(response.status) {
+        this.incoList = response.data.items;
+        this.totalLengthOfCollection = response.data.totalCount;
         this.applySorting();
         this.searchPerformed = true;
+      }else {
+        this.appSettingService.showError(response.message);
       }
+
       this.loading = false;
     },
     error: (err) => {

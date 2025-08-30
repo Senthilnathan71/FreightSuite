@@ -118,13 +118,16 @@ export class TarrifListComponent implements OnInit {
 
     this.masterServ.searchTariffList(params).subscribe({
       next: (response) => {
-        if(response.data) {
+        if(response.status) {
           this.tariffList = response.data.items;
           this.results = [...this.tariffList];
           this.totalNumberOfCollection = response.data.totalCount;
           this.applySorting();
           this.searched = true;
-        }
+        }else {
+        this.appSettingService.showError(response.message);
+      }
+
       },
       error: (err) => {
         console.error('Error fetching tariffs:', err);

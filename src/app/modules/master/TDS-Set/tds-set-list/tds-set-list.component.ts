@@ -108,10 +108,8 @@ export class TdsSetListComponent implements OnInit {
                     this.applySorting();
                     this.searchPerformed = true;
                 } else {
-                    console.error('Error fetching TDS Set');
-                    this.tdsList = [];
-                    this.totalLengthOfCollection = 0;
-                }
+        this.appSettingService.showError(resp.message);
+      }
             }
         )
     }

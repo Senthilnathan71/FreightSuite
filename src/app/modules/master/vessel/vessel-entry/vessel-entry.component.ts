@@ -161,7 +161,8 @@ export class VesselEntryComponent implements OnInit {
                 this.masterServ.updateVesselById(this.VesselMasterSid, payload).subscribe(
                     (resp: any) => {
                         if (resp.status) {
-                            this.appSettingService.showSuccess("Vessel Updated Successfully");
+                            this.appSettingService.showSuccess(resp.message);
+
                             this.route.navigate(['/master/vessel/list']);
                         } else {
                             this.appSettingService.showError(resp.message)
@@ -175,7 +176,8 @@ export class VesselEntryComponent implements OnInit {
                 this.masterServ.createVessel(payload).subscribe(
                     (resp: any) => {
                         if (resp.status) {
-                            this.appSettingService.showSuccess('Vessel Created Successfully');
+                            this.appSettingService.showSuccess(resp.message);
+
                             this.route.navigate(['/master/vessel/list']);
                         } else {
                             this.appSettingService.showError(resp.message)

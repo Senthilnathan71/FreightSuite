@@ -119,7 +119,7 @@ export class AuthorityListComponent {
           this.applySorting();
           this.searchPerformed = true;
         } else {
-          this.appSettingService.showError('Error searching Authorization.');
+          this.appSettingService.showError(resp.message);
           console.error('Error searching authorization', resp.message)
           this.authorityList = [];
           this.totalLengthOfCollection = 0;

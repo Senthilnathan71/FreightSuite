@@ -152,13 +152,16 @@ export class ProfitCenterComponent {
 
          this.masterService.searchProfitCenterList(params).subscribe({
           next: (response) => {
-            if(response.data) {
+            if(response.status) {
               this.profitCenterList = response.data.items;
               this.results = [...this.profitCenterList];
               this.totalLengthOfCollection = response.data.totalCount;
               this.applySorting();
               this.searched = true;
             }
+            else {
+        this.appSettingService.showError(response.message);
+      }
           },
           error: (err) => {
             console.error('Error fetching profit-centers:', err);

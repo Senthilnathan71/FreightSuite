@@ -154,11 +154,15 @@ export class SectorComponent implements OnInit {
 
   this.masterService.searchSectorList(params).subscribe({
     next: (response) => {
-      if(response.data) {
+      if(response.status) {
         this.sectorList = response.data.items;
         this.totalLengthOfCollection = response.data.totalCount;
         this.searched = true;
       }
+      else {
+        this.appSettingService.showError(response.message);
+      }
+
       this.isLoading = false;
     },
     error: (err) => {

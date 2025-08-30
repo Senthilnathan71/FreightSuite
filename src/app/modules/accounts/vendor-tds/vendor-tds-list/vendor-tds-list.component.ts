@@ -120,7 +120,7 @@ export class VendorTdsListComponent implements OnInit {
                     this.applySorting();
                     this.searchPerformed = true;
                 } else {
-                    this.appSettingService.showError('Error searching supplier TDS mapping.');
+                    this.appSettingService.showError(resp.message);
                     console.error('Error searching supplier TDS mapping', resp.message)
                     this.allSupplierTDS = [];
                     this.totalLengthOfCollection = 0;

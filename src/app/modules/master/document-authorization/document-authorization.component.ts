@@ -81,7 +81,7 @@ export class DocumentAuthorizationComponent {
                     this.applySorting();
                     this.searchPerformed = true;
                 } else {
-                    this.appSettingService.showError('Error searching document authorization.');
+                    this.appSettingService.showError(resp.message)
                     console.error('Error searching document authorization', resp.message)
                     this.allPendingApprovals = [];
                     this.totalLengthOfCollection = 0;

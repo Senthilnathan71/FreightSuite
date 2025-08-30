@@ -124,6 +124,7 @@ export class CostCenterComponent {
     }
     loadCostCenters(): void {
   this.loading = true;
+   this.errorMessage = ''; 
   
   const params = {
     search: this.filterValue?.trim() || '',
@@ -135,11 +136,13 @@ export class CostCenterComponent {
 
   this.masterService.searchCostCenter(params).subscribe({
     next: (response) => {
-      if(response) {
-        this.costCenterList = response.items;
-        this.totalLengthOfCollection = response.totalCount;
+      if(response.status) {
+        this.costCenterList = response.data.items;
+        this.totalLengthOfCollection = response.data.totalCount;
         this.applySorting();
         this.searchPerformed = true;
+      } else {
+        this.appSettingService.showError(response.message);
       }
       this.loading = false;
     },
@@ -147,6 +150,8 @@ export class CostCenterComponent {
       console.error('Error fetching cost centers:', err);
       this.costCenterList = [];
       this.totalLengthOfCollection = 0;
+      this.errorMessage = err?.error?.message || 'Failed to load Cost Centers';
+      this.appSettingService.showError(this.errorMessage);  
       this.loading = false;
     }
   });

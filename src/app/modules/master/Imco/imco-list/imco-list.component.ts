@@ -109,12 +109,15 @@ export class ImcoListComponent implements OnInit{
 
     this.masterService.searchIMCO(params).subscribe({
       next: (response: any) => {
-        if(response.data) {
+        if(response.status) {
           this.imcoList = response.data.items;
           this.totalAmountOfCollection = response.data.totalCount || response.data.length;
           this.applySorting();
           this.searchPerformed = true;
-        }
+        }else {
+        this.appSettingService.showError(response.message);
+      }
+
         this.loading = false;
       },
       error: (err) => {

@@ -766,7 +766,8 @@ export class CompanyEntryComponent implements OnInit {
 			this.masterService.updateCompanyById(this.CompanyMasterSid, payload).subscribe(
 				(resp: any) => {
 					if (resp.status) {
-						this.appSettingService.showSuccess('Company updated successfully.');
+						this.appSettingService.showSuccess(resp.message);
+
 						const companyId = resp.company?.CompanyMasterSid
 						console.log(resp);
 						if (companyId) {

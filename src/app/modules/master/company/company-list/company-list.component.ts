@@ -104,12 +104,15 @@ export class CompanyListComponent implements OnInit {
  
   this.masterService.searchCompanyList(params).subscribe({
     next: (response) => {
-      if(response) {
-        this.companyList = response.items;
-        this.totalLengthOfCollection = response.totalCount;
+      if(response.status) {
+        this.companyList = response.data.items;
+        this.totalLengthOfCollection = response.data.totalCount;
         this.applySorting();
         this.searchPerformed = true;
+      } else {
+        this.appSettingService.showError(response.message);
       }
+      
      
     },
     error: (err) => {

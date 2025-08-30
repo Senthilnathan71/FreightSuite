@@ -118,12 +118,16 @@ export class PostMasterListComponent implements OnInit {
 
     this.masterService.searchPortList(params).subscribe({
       next: (response) => {
-        if(response.data) {
+        if(response.status) {
           this.portList = response.data.items;
           this.totalLengthOfCollection = response.data.totalCount;
           this.applySorting();
           this.searched = true;
         }
+else {
+        this.appSettingService.showError(response.message);
+      }
+
       },
       error: (err) => {
         console.error('Error fetching ports:', err);

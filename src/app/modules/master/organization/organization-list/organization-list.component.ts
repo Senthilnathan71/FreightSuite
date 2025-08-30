@@ -122,12 +122,15 @@ export class OrganizationListComponent implements OnInit {
 
     this.masterService.searchOrganizationList(params).subscribe({
       next: (response) => {
-        if(response) {
-          this.organizationList = response.items;
-          this.totalLengthOfCollection = response.totalCount;
+        if(response.status) {
+          this.organizationList = response.data.items;
+          this.totalLengthOfCollection = response.data.totalCount;
           this.applySorting();
           this.searchPerformed = true;
-        }
+        }else {
+        this.appSettingService.showError(response.message);
+      }
+
         this.loading = false;
       },
       error: (err) => {

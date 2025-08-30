@@ -140,10 +140,12 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
                 this.masterService.updateIMCOById(this.ImcoMasterSid, payload).subscribe(
                     (resp: any) => {
                         if (resp.status) {
-                            this.appSettingService.showSuccess('Imco Updated Successfully');
+                            this.appSettingService.showSuccess(resp.message);
+
                             this.route.navigate(['/master/imco/list']);
                         } else {
-                            this.appSettingService.showWarning('Problem Updating Imco');
+                            this.appSettingService.showError(resp.message);
+
                         }
                     },
                     (error) => {
@@ -154,10 +156,11 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
                 this.masterService.createNewIMCO(payload).subscribe(
                     (resp: any) => {
                         if (resp.status) {
-                            this.appSettingService.showSuccess('New Imco Created');
+                            this.appSettingService.showSuccess(resp.message);
                             this.route.navigate(['/master/imco/list']);
                         } else {
-                            this.appSettingService.showWarning('Problem Creating Imco');
+                            this.appSettingService.showError(resp.message);
+
                         }
                     },
                     (error) => {

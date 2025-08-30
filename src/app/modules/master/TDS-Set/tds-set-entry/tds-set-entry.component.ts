@@ -223,7 +223,8 @@ export class TdsSetEntryComponent implements OnInit {
             this.masterService.updateTdsById(this.TDSSetHeaderSid, payload).subscribe(
                 (resp: any) => {
                     if (resp.status) {
-                        this.appSettingService.showSuccess("TDS Set updated successfully.");
+                       this.appSettingService.showSuccess(resp.message);
+
                         this.loadTDS(this.TDSSetHeaderSid);
                     } else {
                         this.appSettingService.showError(resp.message);
@@ -235,7 +236,8 @@ export class TdsSetEntryComponent implements OnInit {
             this.masterService.createNewTds(payload).subscribe(
                 (resp: any) => {
                     if (resp.status) {
-                        this.appSettingService.showSuccess("New TDS Set created successfully.");
+                        this.appSettingService.showSuccess(resp.message);
+
                         const tdsId = resp.data?.TDSSetHeaderSid;
                         if (tdsId) {
                             this.router.navigate(['/master/tds-set/entry', tdsId]);

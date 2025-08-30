@@ -237,10 +237,10 @@ export class CurrencyExchangeEntryComponent implements OnInit {
   handleSuccess(resp: any, successMsg: string) {
     this.loading = false;
     if (resp.status) {
-      this.appSettingService.showSuccess(successMsg);
+      this.appSettingService.showSuccess(resp.message);
       this.router.navigate(['accounts/currency-exchange/list']);
     } else {
-      this.appSettingService.showError(resp.message || 'Operation failed');
+      this.appSettingService.showError(resp.message );
     }
   }
 

@@ -165,19 +165,21 @@ export class CityComponent {
 
   this.masterService.searchCityList(params).subscribe({
     next: (response: any) => {
-      if (response) {
-        this.cityList = response.items.map((city: any) => {
+      if (response.status) {
+        this.cityList = response.data.items.map((city: any) => {
           return {
             ...city,
             countryName: city?.countryMaster?.countryName || 'N/A',
             stateName: city?.stateMaster?.stateName || 'N/A'
           };
         });
-        this.totalLengthOfCollection = response.totalCount;
+        this.totalLengthOfCollection = response.data.totalCount;
         this.applySorting();
       } else {
         this.cityList = [];
         this.totalLengthOfCollection = 0;
+        this.appSettingService.showError(response.message);
+
       }
       this.searchPerformed = true;
     },
@@ -382,7 +384,7 @@ export class CityComponent {
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-               this.closeModal();             // <-- Close the modal here
+               this.closeModal();           
               this.router.navigate(['master/city']);
             } else {
               this.appSettingService.showError(resp.message);

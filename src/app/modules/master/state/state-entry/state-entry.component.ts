@@ -301,10 +301,10 @@ openAuditLogs(modal: TemplateRef<any>) {
           (this.isEditMode ? 'State updated successfully!' : 'State created successfully!');
         
         if (resp.status) {
-          this.appSettingService.showSuccess(message);
+          this.appSettingService.showSuccess(resp.message);
           this.router.navigate(['/master/state/list']);
         } else {
-          this.appSettingService.showError(resp.message || 'Operation failed');
+          this.appSettingService.showError(resp.message );
         }
       },
       error: (err) => {

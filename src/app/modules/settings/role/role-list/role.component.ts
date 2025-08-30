@@ -124,12 +124,15 @@ export class RoleComponent implements OnInit {
 
   this.settingsService.searchRole(params).subscribe({
     next: (response: any) => {
-      if(response){
+      if(response.status){
         this.roleList = response.data.items || response.data;
         this.totalLengthOfCollection = response.data.totalCount || response.length;
         this.applySorting();
         this.searchPerformed = true;
+      }else {
+        this.appSettingService.showError(response.message);
       }
+
       this.isLoading = false;
     },
     error: (err) => {

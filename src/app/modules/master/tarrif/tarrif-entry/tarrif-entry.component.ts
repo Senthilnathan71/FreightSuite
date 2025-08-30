@@ -409,7 +409,8 @@ openAuditLogs(modal: TemplateRef<any>) {
 				this.masterServ.updateTariffById(this.TariffHeaderSid, payload).subscribe(
 					(resp: any) => {
 						if (resp.status) {
-							this.appSettingServ.showSuccess('Tariff Updated Successfully');
+							this.appSettingService.showSuccess(resp.message);
+
 							// this.route.navigate(['master/tarrif/list']);
 							this.loadTariff(this.TariffHeaderSid);
 						} else {
@@ -424,7 +425,8 @@ openAuditLogs(modal: TemplateRef<any>) {
 				this.masterServ.createTariff(payload).subscribe(
 					(resp: any) => {
 						if (resp.status) {
-							this.appSettingServ.showSuccess('Tariff Created Successfully');
+							this.appSettingService.showSuccess(resp.message);
+
 							const tariffId = resp?.data?.TariffHeaderSid;
 							if(tariffId){
 								this.route.navigate(['master/tarrif/entry',tariffId]);
@@ -476,7 +478,8 @@ openAuditLogs(modal: TemplateRef<any>) {
 				this.masterServ.updateTariffDetailById(this.TariffDetailSid,payload).subscribe(
 					(resp:any)=>{
 						if(resp.status){
-							this.appSettingServ.showSuccess('Tariff Detail Updated')
+							this.appSettingService.showSuccess(resp.message);
+
 							this.tariffDetailsForm.reset();
 							this.modalRef.close();
 							this.loadTariffDetails();

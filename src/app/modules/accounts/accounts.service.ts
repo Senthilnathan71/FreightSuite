@@ -24,7 +24,7 @@ export class AccountsService {
   searchCurrencyExchangeList(payload: any) {
     return this.http.post("currency-exchange/search-list", payload).pipe(
       map((res: any) => {
-        return res.data;
+        return res;
       })
     );
   }

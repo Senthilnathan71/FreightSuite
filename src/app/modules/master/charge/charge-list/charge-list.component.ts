@@ -102,17 +102,17 @@ export class ChargeListComponent {
   }
 
   loadCharges(): void {
-    this.loading = true;
-    let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    this.masterService.searchChargeList({
-      search: this.filterValue || '',
-      page: this.page,
-      pageSize: this.pageSize,
-      activeCompanyId : CompanyMasterSid
-
-    }).subscribe({
-      next: (res) => {
-        const items = res?.items || res || [];
+  this.loading = true;
+  let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  this.masterService.searchChargeList({
+    search: this.filterValue || '',
+    page: this.page,
+    pageSize: this.pageSize,
+    activeCompanyId: CompanyMasterSid
+  }).subscribe({
+    next: (res) => {
+      if (res.status) {
+        const items = res?.data.items || res.data || [];
         this.chargeList = items.map(item => ({
           ...item,
           UOM: item.UOM,
@@ -121,19 +121,22 @@ export class ChargeListComponent {
           // Get TDS Set from ChargeTds relation
           TDSSet: item.chargeTds?.[0]?.tdsSetHeader?.TDSSetName || ''
         }));
-
+        
         this.totalLengthOfCollection = res.totalCount || this.chargeList.length;
         this.applySorting();
         this.searchPerformed = true;
-        this.loading = false;
-      },
-      error: () => {
-        this.chargeList = [];
-        this.totalLengthOfCollection = 0;
-        this.loading = false;
+      } else {
+        this.appSettingService.showError(res.message);
       }
-    });
-  }
+      this.loading = false;
+    },
+    error: () => {
+      this.chargeList = [];
+      this.totalLengthOfCollection = 0;
+      this.loading = false;
+    }
+  });
+}
   getUomCode(UOMMasterSid) {
     if (!UOMMasterSid || !this.uoms?.length) return '';
     const found = this.uoms.find(uom => uom.UOMMasterSid === UOMMasterSid);
