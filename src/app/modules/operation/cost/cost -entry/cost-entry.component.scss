@@ -1,368 +1,54 @@
-.modern-table-container {
-  background: #ffffff;
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+.tab-wrapper {
+  display: flex;
+  border-radius: 5px;
+  border: 2px solid #ddd;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.table-toolbar {
-  margin-top: 5px;
-  padding: 6px 0px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #f1f5f9;
- 
-}
-
-.table-action-btn {
+  min-width: 120px;
+  text-align: center;
+  padding: 4px 15px;
+  font-size: 13px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 6px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  background: white;
-  color: #6b7280;
- font-size: 0.7rem;
+  justify-content: center;
+  gap: 8px;
   font-weight: 500;
+  color: #6b7280;
   cursor: pointer;
+  background-color: #fff;
   transition: all 0.2s ease;
-
-  &:hover {
-    border-color: #17a2b8;
-    color: #17a2b8;
-  }
-
-  &.primary {
-    background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
-    color: white;
-    border-color: transparent;
-
-    &:hover {
-      background: linear-gradient(135deg, #195b7c 0%, #1a80b4 100%);
-    }
-  }
+  border-right: 2px solid #ddd;
+  flex-shrink: 0;
 }
 
-.toolbar-right {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.tab:last-child {
+  border-right: none;
 }
 
-.toolbar-right1 {
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  margin-bottom: 6px;
-  gap: 5px;
-}
-.table-action-btn.export {
-   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-}
-.table-action-btn.export:hover {
-  background-color: #218838;
+.tab:hover {
+  background-color: #f1f5f9;
+  color: #111827;
 }
 
-.table-action-btn.print {
-  background-color: #056a9c;
+.tab.active {
+  background-color: #05608d;
   color: #fff;
-}
-.table-action-btn.print:hover {
-  background-color: #1073a4;
-}
-
-.modern-table-wrapper {
-  overflow: auto;
-  flex: 1;
-}
-
-.modern-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 10px;
-
-  thead {
-    background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
-
-    th {
-      padding: 6px 4px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 0.8rem;
-      color: white;
-      white-space: nowrap;
-    }
-  }
-
-  tbody {
-    .table-row {
-      border-bottom: 1px solid #d6d8da;
-
-      &:hover {
-        cursor: pointer;
-        background: rgba(102, 126, 234, 0.02);
-      }
-    }
-
-    td {
-      padding: 6px;
-      color: #374151;
-        white-space: nowrap;  
-      vertical-align: middle;
-      font-size: 0.8rem;
-    }
-  }
-}
-
-.actions-cell {
-  .action-buttons {
-    display: flex;
-    gap: 2px;
-  }
-}
-
-.action-icon {
-  background: none;
-  border: none;
-  padding: 3px;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.8rem;
-
-  &.edit {
-    color: #17a2b8;
-    &:hover {
-      background: rgba(102, 126, 234, 0.1);
-    }
-  }
-
-  &.copy {
-    color: #10b981;
-    &:hover {
-      background: rgba(16, 185, 129, 0.1);
-    }
-  }
-
-  &.delete {
-    color: #ef4444;
-    &:hover {
-      background: rgba(239, 68, 68, 0.1);
-    }
-  }
-}
-
-.charge-code-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-
-  .code {
-    font-weight: 700;
-    color: #17a2b8;
-    font-size: 10px;
-  }
-
-  .code-desc {
-    font-size: 8px;
-    color: #6b7280;
-  }
-}
-
-.type-badge {
-  padding: 2px 4px;
-  border-radius: 3px;
-  font-size: 8px;
-  font-weight: 600;
-
-  &.type-prepaid {
-    background: rgba(16, 185, 129, 0.1);
-    color: #059669;
-  }
-
-  &.type-collect {
-    background: rgba(245, 158, 11, 0.1);
-    color: #d97706;
-  }
-}
-
-.currency-cell {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-
-  .currency {
-    font-weight: 600;
-    color: #17a2b8;
-    font-size: 9px;
-  }
-}
-
-.currency-remove {
-  background: #ef4444;
-  border: none;
-  padding: 1px 2px;
-  border-radius: 2px;
-  color: white;
-  font-size: 7px;
-  cursor: pointer;
-}
-
-.party-cell {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  .party-indicator {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #d1d5db;
-
-    &.active {
-      background: #10b981;
-    }
-  }
-}
-
-.table-summary {
-  background: linear-gradient(
-    135deg,
-    rgba(102, 126, 234, 0.05) 0%,
-    rgba(118, 75, 162, 0.05) 100%
-  );
-  padding: 6px 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-top: 1px solid #f1f5f9;
-}
-
-.summary-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  .summary-label {
-    font-size: 10px;
-    color: #6b7280;
-    font-weight: 500;
-  }
-
-  .summary-value {
-    font-size: 11px;
-    font-weight: 700;
-
-    &.revenue {
-      color: #10b981;
-    }
-
-    &.profit {
-      color: #17a2b8;
-    }
-  }
 }
 
 .tab-content {
 
-.charges-nav {
-  background: #ffffff;
-  border-radius: 6px;
-  padding: 6px 0px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background-color: #fff;
+  border-radius: 5px;
+  margin-top: 10px;
 }
 
-.charge-types {
-  display: flex;
-  gap: 8px;
-}
-
-.charge-type {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #6b7280;
-  font-weight: 500;
-  font-size: 0.7rem;
-
-  &:hover {
-   background: linear-gradient(135deg, rgba(5, 96, 141, 0.08), rgba(5, 106, 156, 0.12));
-    color: #05608d; 
-  }
-
-  &.active {
-    background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
-    color: white;
+@media (min-width: 768px) {
+  .tab {
+    flex: 1;
   }
 }
-
-.voucher-indicators {
-  display: flex;
-  gap: 8px;
-}
-
-.indicator {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 9px;
-  color: #6b7280;
-
-  &.active i {
-    color: #10b981;
-  }
-
-  i {
-    color: #d1d5db;
-    font-size: 8px;
-  }
-}
-
-
-@media (max-width: 768px) {
-  .modern-booking-workspace {
-    // padding: 4px;
-    font-size: 11px;
-  }
-
-  .smart-header {
-    flex-direction: column;
-    gap: 6px;
-    align-items: stretch;
-  }
-
-  .action-group {
-    justify-content: center;
-  }
-
-  .quick-form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .charges-nav {
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .table-toolbar {
-    flex-direction: column;
-    gap: 4px;
-    align-items: stretch;
-  }
-
-  .content-workspace {
-    height: calc(100vh - 160px);
-  }
-

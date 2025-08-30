@@ -696,26 +696,4 @@ export class CostEntryComponent implements OnInit {
     this.modalService.dismissAll();
   }
 
-  activeTab1: string = 'revenue';
-
-  setTab(tab1: string) {
-    this.activeTab1 = tab1;
-  }
-
-    openRevenueModal(content: any) {
-    this.modalService.open(content, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true,
-    });
-  }
-
-  openCostModal(content: any) {
-    this.modalService.open(content, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true,
-    });
-  }
-
 }
