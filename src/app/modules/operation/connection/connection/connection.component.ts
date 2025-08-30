@@ -215,13 +215,8 @@ export class ConnectionComponent implements OnInit {
     } else {
       this.currentConnectIndex = -1;
     }
-
-    this.modalService.open(content, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true,
-    });
   }
+  
 
   onConnectionSubmit() {
     if(this.connectionForm.invalid){
@@ -257,7 +252,7 @@ export class ConnectionComponent implements OnInit {
   |--------------------------------------------------
   */
 
-  onModeChange(mode: any) {
+  onX(mode: any) {
     if (!mode) {
       this.selectedMode = '';
       this.filteredPorts = [];

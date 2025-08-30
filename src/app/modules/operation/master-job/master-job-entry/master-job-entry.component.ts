@@ -1,5 +1,9 @@
 import { Component, ViewChild, TemplateRef } from '@angular/core';
-import { NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbAccordionModule,
+  NgbDatepickerModule,
+  NgbModal,
+} from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -31,30 +35,23 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     ConnectionComponent,
     ContainerActivityComponent,
     ArApComponent,
-    EmailEntryComponent,
-    MilestoneComponent,
-    FollowUpComponent,
-    EdocComponent
+    NgbAccordionModule,
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrl: './master-job-entry.component.scss',
 })
 export class MasterJobEntryComponent {
-  public costcomponent = CostEntryComponent;
+  public ratecomponent = CostEntryComponent;
   public revenuecomponent = RevenueEntryComponent;
   public connectionComponent = ConnectionComponent;
   public containerComponent = ContainerActivityComponent;
   public ARAPcompoent = ArApComponent;
-  public milestoneComponent = MilestoneComponent;
-
-  public emailcomponent = EmailEntryComponent;
-  public followupComponent = FollowUpComponent;
-  public edocComponent = EdocComponent;
   tabs = [
+    { name: 'Master', icon: 'fas fa-database' },
     { name: 'Container', icon: 'fas fa-boxes' },
-    { name: 'Connection', icon: 'fas fa-plug' },
+    { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
-    { name: 'Others', icon: 'fas fa-ellipsis-h' },
+    // { name: 'Revenue', icon: 'fas fa-chart-line' },
     { name: 'AR/AP', icon: 'fas fa-balance-scale' },
     { name: 'Mail', icon: 'fas fa-envelope' },
     { name: 'Follow Up', icon: 'fas fa-tasks' },
@@ -74,7 +71,9 @@ export class MasterJobEntryComponent {
     { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
     { name: 'History', icon: 'fas fa-history' },
+    { name: 'Others', icon: 'fas fa-ellipsis-h' },
   ];
+
 
   modeOfBLReleaseType = [
     { id: 1, name: 'Express' },
@@ -102,7 +101,8 @@ export class MasterJobEntryComponent {
   @ViewChild('containerModal') containerModal!: TemplateRef<any>;
   @ViewChild('productModal') productModal!: TemplateRef<any>;
   constructor(private router: Router, private modalService: NgbModal) {}
-  selectedTab = 'Container';
+
+  selectedTab = 'Master';
 
   selectTab(tab: string) {
     console.log(tab);
@@ -115,24 +115,16 @@ export class MasterJobEntryComponent {
   selectTab1(tab1: string) {
     this.selectedTab1 = tab1;
   }
-  openContainerModal() {
-    this.modalService.open(this.containerModal, {
+
+  openContainerModal(content: any) {
+    this.modalService.open(content, {
       size: 'lg',
       backdrop: 'static',
       centered: true,
     });
   }
 
-  openProductModal() {
-    this.modalService.open(this.productModal, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true,
-    });
-  }
-
-
-  navigateToback() {
-    this.router.navigate(['operation/master-job/list']);
+  navigateToBooking() {
+    this.router.navigate(['operation/booking/entry']);
   }
 }
