@@ -55,7 +55,7 @@ export class MasterJobEntryComponent {
     { name: 'AR/AP', icon: 'fas fa-balance-scale' },
     { name: 'Mail', icon: 'fas fa-envelope' },
     { name: 'Follow Up', icon: 'fas fa-tasks' },
-    { name: 'ContainerActivity', icon: 'fas fa-shipping-fast' },
+    { name: 'Container Activity', icon: 'fas fa-shipping-fast' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
     { name: 'History', icon: 'fas fa-history' },
   ];

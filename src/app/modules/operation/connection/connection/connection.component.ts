@@ -215,6 +215,11 @@ export class ConnectionComponent implements OnInit {
     } else {
       this.currentConnectIndex = -1;
     }
+    this.modalService.open(content, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
   }
   
 

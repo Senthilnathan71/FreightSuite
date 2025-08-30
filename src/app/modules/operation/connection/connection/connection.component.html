@@ -22,7 +22,7 @@
                         <th width="10%">Actions</th>
                         <th>Mode</th>
                         <th>Vsl</th>
-                        <th>Vol</th>
+                        <th>Voy</th>
                         <th>POL</th>
                         <th>POD</th>
                         <th>ETD</th>
@@ -53,11 +53,6 @@
         </div>
     </div>
 </div>
-} @else {
-<div class="col-12">
-    <div class="alert alert-info text-center">No Connection added yet.</div>
-</div>
-}
 
 
 <ng-template #connectionModal let-modal>
@@ -77,18 +72,20 @@
                     <label for="" class="input-label">Mode <span class="text-danger"></span></label>
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <!-- <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
-                    <ng-select formControlName="POL" [items]="filteredPOL" bindLabel="PortName" bindValue="PortName"
+                    <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortName"
                         placeholder="Select POL" (change)="handlePOLChange($event)">
                     </ng-select>
                     <label for="" class="input-label"> POL <span class="text-danger"></span></label>
                 </div>
-            </aside>
+            </aside> -->
+            <!-- <aside class="col-md-4">
+                <div class="custom-form-group">
                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
                     <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
                 </div>
-            </aside>
+            </aside> -->
             <aside class="col-md-4">
                 <div class="custom-form-group">
                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
@@ -101,23 +98,23 @@
                     <label for="text-input" class="input-label">POD <span class="text-danger"></span></label>
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
                     <ng-select [items]="filteredVesselList" bindLabel="VesselName" bindValue="VesselName"
-                        class="ng-select" formControlName="VesselName" placeholder="Select Vessel"
+                        class="ng-select" placeholder="Select Vessel"
                         (change)="onVesselChange($event)">
                     </ng-select>
                 </div>
             </aside>
-            <aside class="col-md-6">
+            <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
                     <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
-                        formControlName="VoyageNo" placeholder="Select Voyage No" (change)="onVoyageChange($event)">
+                         placeholder="Select Voyage No" (change)="onVoyageChange($event)">
                     </ng-select>
                     <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
                 </div>
             </aside>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class=" custom-form-group custom-form-group-select">
                     <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d6="ngbDatepicker"
@@ -129,21 +126,22 @@
                     </label>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class=" custom-form-group custom-form-group-select">
-                    <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
-                            formControlName="ETD" (click)="d2.toggle()" />
-                        <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
             <div class="col-md-4">
                 <div class=" custom-form-group custom-form-group-select">
                     <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                             (click)="d2.toggle()" />
+                        <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                        </button>
+                    </div>
                     <label for="" class="input-label"> ETD <span class="text-danger"></span>
                     </label>
                 </div>
             </div>
             <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
+                    @if(currentConnectIndex){
                     <ng-select [items]="" bindLabel="name" bindValue="name">
                     </ng-select>
                     } @else {
