@@ -596,6 +596,8 @@
                                     [footerTemplate]="footerTemplateETA" 
                                     (click)="d4.toggle()" 
                                     formControlName="ETA"
+                                    [minDate]="minETADate"
+                                    [maxDate]="toNgbDateStruct(scheduleDetailForm.get('ETD')?.value)"
                                     readonly
                                 />
                                 <label for="text-input" class="input-label">ETA <span
@@ -633,6 +635,7 @@
                                     [footerTemplate]="footerTemplateETD" 
                                     (click)="d5.toggle()" 
                                     formControlName="ETD" 
+                                    [minDate]="toNgbDateStruct(scheduleDetailForm?.get('ETA').value)"
                                     readonly
                                 />
                                 <label for="text-input" class="input-label">ETD <span

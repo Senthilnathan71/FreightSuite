@@ -1,6 +1,6 @@
 
 import { ChangeDetectorRef, Component, OnInit, TemplateRef } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -40,7 +40,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
         OnlyTextDirective,
         TextWithNumbersDirective,
         CustomDatePipe,
-        DatePipe
+        DatePipe,
+        RouterModule
     ],
     templateUrl: './sailing-schedule-entry.component.html',
     styleUrl: './sailing-schedule-entry.component.scss',
