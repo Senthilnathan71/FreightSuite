@@ -9,11 +9,7 @@
 }
 
 .table-toolbar {
-  background: linear-gradient(
-    135deg,
-    rgba(102, 126, 234, 0.05) 0%,
-    rgba(118, 75, 162, 0.05) 100%
-  );
+  margin-top: 5px;
   padding: 6px 0px;
   display: flex;
   justify-content: space-between;
@@ -98,6 +94,7 @@
       padding: 6px 4px;
       text-align: left;
       font-weight: 600;
+      font-size: 0.8rem;
       color: white;
       white-space: nowrap;
     }
@@ -105,16 +102,18 @@
 
   tbody {
     .table-row {
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid #d6d8da;
 
       &:hover {
+        cursor: pointer;
         background: rgba(102, 126, 234, 0.02);
       }
     }
 
     td {
-      padding: 4px;
+      padding: 6px;
       color: #374151;
+        white-space: nowrap;  
       vertical-align: middle;
       font-size: 0.8rem;
     }
@@ -135,7 +134,7 @@
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
 
   &.edit {
     color: #17a2b8;
@@ -274,12 +273,10 @@
 .charges-nav {
   background: #ffffff;
   border-radius: 6px;
-  padding: 6px 8px;
+  padding: 6px 0px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
-    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
 }
 
 .charge-types {
@@ -291,8 +288,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 4px 10px;
+  border-radius: 3px;
   cursor: pointer;
   transition: all 0.2s ease;
   color: #6b7280;
@@ -300,8 +297,8 @@
   font-size: 0.7rem;
 
   &:hover {
-    background: rgba(23, 162, 184, 0.1);
-    color: #17a2b8;
+   background: linear-gradient(135deg, rgba(5, 96, 141, 0.08), rgba(5, 106, 156, 0.12));
+    color: #05608d; 
   }
 
   &.active {

@@ -87,11 +87,11 @@ export class BookingEntryComponent {
     { name: 'Shipment', icon: 'fas fa-ship' },
     { name: 'Cargo', icon: 'fas fa-boxes' },
     { name: 'Product', icon: 'fas fa-box' },
-    { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Connection', icon: 'fas fa-link' },
-    { name: 'Rate', icon: 'fas fa-credit-card' },
+    { name: 'Rate', icon: 'fas fa-rupee-sign' },
     { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
+    { name: 'Others', icon: 'fas fa-ellipsis-h' },
   ];
 
   @ViewChild('productModal') productModal!: TemplateRef<any>;

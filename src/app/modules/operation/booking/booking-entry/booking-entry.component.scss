@@ -73,9 +73,9 @@
   gap: 6px;
   padding: 4px 8px;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
   min-height: 24px;
@@ -369,19 +369,19 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
-  border-radius: 6px;
+  padding: 6px 15px;
+  border-radius: 3px;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
   position: relative;
   color: #6b7280;
   font-weight: 500;
-  font-size: 11px;
+  font-size: 1rem !important;
 
-  &:hover {
-    background: rgba(23, 162, 184, 0.1);
-    color: #17a2b8;
+   &:hover {
+    background: linear-gradient(135deg, rgba(5, 96, 141, 0.08), rgba(5, 106, 156, 0.12));
+    color: #05608d; 
   }
 
   &.active {
@@ -440,7 +440,7 @@
   padding: 12px;
   height: 100%;
   overflow-y: auto;
-  animation: fadeInUp 0.3s ease;
+  animation: fadeInUp 0.50s ease;
 }
 
 @keyframes fadeInUp {
@@ -1039,22 +1039,25 @@
       padding: 6px 4px;
       text-align: left;
       font-weight: 600;
+      font-size: 0.8rem;
       color: white;
       white-space: nowrap;
     }
   }
 
-  tbody {
+ tbody {
     .table-row {
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid #d6d8da;
 
       &:hover {
+        cursor: pointer;
         background: rgba(102, 126, 234, 0.02);
       }
     }
 
     td {
-      padding: 4px;
+      padding: 6px;
+        white-space: nowrap;  
       color: #374151;
       vertical-align: middle;
       font-size: 0.8rem;
@@ -1076,7 +1079,7 @@
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
 
   &.edit {
     color: #17a2b8;
@@ -1404,7 +1407,7 @@
   }
   .form-check {
   margin-top: 0px !important;
-  padding-left: 10px;
+  padding-left: 25px;
 }
  
 }

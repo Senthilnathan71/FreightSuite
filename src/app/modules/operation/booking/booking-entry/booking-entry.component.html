@@ -37,14 +37,14 @@
 
     <div class="quick-form-grid " [class.expanded]="isQuickFormExpanded">
       <div class="smart-field-group">
-        <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="BookingNo">
+        <div class="custom-form-group" style="margin-top: 9px;">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
           <label for="text-input" class="input-label">Booking No <span class="text-danger"></span></label>
         </div>
       </div>
       <div class="smart-field-group">
         <div class=" custom-form-group custom-form-group-select">
-          <div class="input-group">
+          <div class="input-group ">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
               (click)="d1.toggle()" container="body" />
             <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
@@ -66,7 +66,7 @@
         </aside>
       </div>
       <div class="smart-field-group">
-        <div class="custom-form-group">
+        <div class="custom-form-group" style="margin-top: 9px;">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
           <label for="text-input" class="input-label">HBL No <span class="text-danger"></span></label>
         </div>
@@ -191,10 +191,10 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group">
+                    <div class="custom-form-group" style="margin-top: 10px;">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
-                      <label for="text-input" class="input-label">Shipper Address<span
+                        >
+                      <label for="text-input" class="input-label">Shipper Address <span
                           class="text-danger">*</span></label>
                     </div>
                   </aside>
@@ -210,27 +210,27 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group">
+                    <div class="custom-form-group" style="margin-top: 10px;">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
+                        >
                       <label for="text-input" class="input-label">Consignee Address <span
                           class="text-danger">*</span></label>
                     </div>
                   </aside>
 
+                   <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="name">
 
-                  <aside class="col-md-6">
-                    <div class="custom-form-group">
-                      <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
-                      <label for="text-input" class="input-label">Notify <span class="text-danger"></span></label>
+                      </ng-select>
+                      <label for="" class="input-label">Notify <span class="text-danger"></span></label>
                     </div>
                   </aside>
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group">
+                    <div class="custom-form-group" style="margin-top: 10px;">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
+                        >
                       <label for="text-input" class="input-label">Notify Address <span
                           class="text-danger"></span></label>
                     </div>
@@ -251,7 +251,7 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
+                        >
                       <label for="text-input" class="input-label">Agent Address <span
                           class="text-danger"></span></label>
                     </div>
@@ -279,7 +279,7 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
+                        >
                       <label for="text-input" class="input-label">Quotation No<span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -288,7 +288,7 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
+                        >
                       <label for="text-input" class="input-label">MBL No<span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -330,14 +330,14 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
+                        >
                       <label for="text-input" class="input-label">Vessel<span class="text-danger"></span></label>
                     </div>
                   </aside>
                   <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
+                        >
                       <label for="text-input" class="input-label">Voy<span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -409,7 +409,7 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
+                        >
                       <label for="text-input" class="input-label">POL Terminal<span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -417,7 +417,7 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
+                        >
                       <label for="text-input" class="input-label">POD Terminal<span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -426,7 +426,7 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
+                        >
                       <label for="text-input" class="input-label">Inco Terms<span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -435,7 +435,7 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
+                        >
                       <label for="text-input" class="input-label">Do Validity<span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -443,8 +443,8 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
-                      <label for="text-input" class="input-label">Friegth PP/CC <span
+                        >
+                      <label for="text-input" class="input-label">Freight PP/CC <span
                           class="text-danger">*</span></label>
                     </div>
                   </aside>
@@ -453,7 +453,7 @@
                     <div class="form-check form-check-inline p-0">
                       <div class="form-check d-flex align-items-center">
                         <input type="checkbox" id="" class="focus-ring form-check-input sm p-0"
-                          formControlName="Coload">
+                      >
                         <label for="" class="form-check-label sm">Co Load <span class="text-danger"></span></label>
                       </div>
                     </div>
@@ -470,7 +470,7 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
+                        >
                       <label for="text-input" class="input-label">Internal Note<span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -478,7 +478,7 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="">
+                        >
                       <label for="text-input" class="input-label">General Note<span class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -580,13 +580,13 @@
           </aside>
           <aside class="col-md-4">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Container Type<span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-4">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">No of Container<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -625,31 +625,31 @@
           </aside>
           <aside class="col-md-4">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Gr Weight<span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-4">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Net Weight<span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-4">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Volume(CBM)<span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-4">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Chargeable Wt<span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-4">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">No of Pkg<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -675,13 +675,13 @@
         <div class="row compact-form">
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Customer Ref No<span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Yard/CFS<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -695,7 +695,7 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">HBL No<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -709,7 +709,7 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Forwarder Address<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -723,7 +723,7 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Notify Address<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -737,28 +737,28 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Notify2 Address<span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-3 d-flex align-items-center">
             <div class="form-check form-check-inline p-0">
               <div class="form-check d-flex align-items-center">
-                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" formControlName="Coload">
+                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" >
                 <label for="" class="form-check-label sm">Co Loader <span class="text-danger"></span></label>
               </div>
             </div>
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Pick Up Place<span class="text-danger"></span></label>
             </div>
           </aside>
 
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Delivery Place<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -779,19 +779,19 @@
           </div>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">CHA Name<span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Pick Up Address<span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Delivery Address<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -808,7 +808,7 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Cargo Value<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -816,7 +816,7 @@
           <aside class="col-md-3 d-flex align-items-center">
             <div class="form-check form-check-inline p-0 mt-0">
               <div class="form-check d-flex align-items-center">
-                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" formControlName="Coload">
+                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" >
                 <label for="" class="form-check-label sm">Switch BL <span class="text-danger"></span></label>
               </div>
             </div>
@@ -824,7 +824,7 @@
           <aside class="col-md-3 d-flex align-items-center">
             <div class="form-check form-check-inline p-0 mt-0">
               <div class="form-check d-flex align-items-center">
-                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" formControlName="Coload">
+                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" >
                 <label for="" class="form-check-label sm">Back To Back <span class="text-danger"></span></label>
               </div>
             </div>
@@ -832,13 +832,13 @@
 
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Depo<span class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" >
               <label for="text-input" class="input-label">Ro Validity<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -919,7 +919,8 @@
 
             <div class="toolbar-right">
               <button class="table-action-btn export">
-                <i class="fas fa-download"></i> Export
+                <i class="fas fa-save fs-2"></i>
+                Save
               </button>
               <button class="table-action-btn print">
                 <i class="fas fa-print"></i> Print
@@ -973,7 +974,7 @@
 
 <ng-template #productModal let-modal>
   <div class="modal-header p-2 bg-info">
-    <h5 class="modal-title text-white">Product Details</h5>
+    <h5 class="modal-title text-white">Add Product</h5>
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
   </div>
   <div class="modal-body">
@@ -1098,7 +1099,7 @@
       <aside class="col-md-4 d-flex align-items-center">
         <div class="form-check form-check-inline p-0">
           <div class="form-check d-flex align-items-center">
-            <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" formControlName="Coload">
+            <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" >
             <label for="" class="form-check-label sm">Auto Caputered <span class="text-danger"></span></label>
           </div>
         </div>
