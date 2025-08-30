@@ -219,4 +219,22 @@ getShipmentMilestones(payload: any) {
     );
   }
 
+  searchMasterJobs(payload:any){
+    return this.http.post<{ data: any[] }>('master-job/search-list', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  deleteMasterJob(MasterJobSid: number) {
+    return this.http.delete<{ data: any }>(`master-job/${MasterJobSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  
+
 }
