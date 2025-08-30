@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
-import { CommonModule } from '@angular/common';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, forkJoin, of, tap } from 'rxjs';
 import { OperationService } from '../../operation.service';
@@ -12,7 +11,6 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
-import { ConnectionComponent } from '../../connection/connection/connection.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -26,6 +24,9 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { MilestoneComponent } from '../../milestone/milestone/milestone.component';
 import { CostEntryComponent } from '../../cost/cost -entry/cost-entry.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { CommonModule, NgComponentOutlet } from '@angular/common';
+import { ConnectionComponent } from '../../connection/connection/connection.component';
+import { ArApComponent } from '../../AR-AP/ar-ap/ar-ap.component';
 
 @Component({
   selector: 'app-booking-entry',
@@ -45,7 +46,11 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     OnlyNumbersDirective,
     TextWithNumbersDirective,
     MilestoneComponent,
-    CostEntryComponent
+    CostEntryComponent,
+    NgComponentOutlet,
+    ConnectionComponent,
+    CostEntryComponent,
+    ArApComponent
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
@@ -64,14 +69,17 @@ export class BookingEntryComponent implements OnInit {
   */
 
   //Variable Declaration - Common 
-  selectedTab = 'Cargo';
   detailForm !: FormGroup;
   currentCompany : any;
   currentBranch : any;
   filterOption : any;
+  public connectionComponent =ConnectionComponent;
+    public rateComponent = CostEntryComponent;
+    public ArApcomponent = ArApComponent;
   selectTab(tab: string) {
     this.selectedTab = tab;
   }
+
   modeOfStatus = [
     { id: 1, name: 'Active' },
     { id: 2, name: 'Suspended' },
@@ -224,13 +232,14 @@ auditLogs: any[] = []; // Stores audit logs
   ];
 
   tabs = [
+    { name: 'Shipment', icon: 'fas fa-ship' },
     { name: 'Cargo', icon: 'fas fa-boxes' },
-    { name: 'Product', icon: 'fas fa-tags' },
-    { name: 'Others', icon: 'fas fa-ellipsis-h' },
+    { name: 'Product', icon: 'fas fa-box' },
     { name: 'Connection', icon: 'fas fa-link' },
-    { name: 'Rate', icon: 'fas fa-dollar-sign' },
+    { name: 'Rate', icon: 'fas fa-rupee-sign' },
     { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'AR/AP', icon: 'fas fa-file-alt' },
+    { name: 'Others', icon: 'fas fa-ellipsis-h' },
   ];
 
   /**
@@ -1351,10 +1360,13 @@ auditLogs: any[] = []; // Stores audit logs
     }
   }
 
+
   navigateBack() {
     this.router.navigate(['operation/booking/list']);
   }
 
+  selectedTab = 'Shipment';
+  isQuickFormExpanded = false;
 
 resetForm() {
   this.bookingForm.reset({
@@ -1443,10 +1455,20 @@ resetForm() {
       size: 'lg', 
       centered: true, 
       backdrop: 'static' 
-    });
-    modalRef.componentInstance.item = this.bookingData;
-    modalRef.componentInstance.idLabel = 'Booking Id';
-    modalRef.componentInstance.idValue = this.bookingData?.BookingHeaderSid;
+    })
+  }
+  toggleQuickForm() {
+    this.isQuickFormExpanded = !this.isQuickFormExpanded;
+  }
+
+
+  openProfitModal(content: any) {
+    const modalRef = this.modalService.open(content, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+
+    })
   }
   
   openEDoc() {
@@ -1455,10 +1477,22 @@ resetForm() {
       size: 'lg', 
       centered: true, 
       backdrop: 'static' 
+    })
+  }
+
+  openConnectionModal(content: any) {
+    this.modalService.open(content, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
     });
-    modalRef.componentInstance.item = this.bookingData;
-    modalRef.componentInstance.idLabel = 'Booking Id';
-    modalRef.componentInstance.idValue = this.bookingData?.BookingHeaderSid;
+  }
+  openMilestoneModal(content: any) {
+    this.modalService.open(content, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    })
   }
 
   openAuditLogs(modal: TemplateRef<any>) {
@@ -1488,5 +1522,7 @@ resetForm() {
     error: err => console.error('Error fetching audit logs:', err)
   });
 }
+
+  
   
 }

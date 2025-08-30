@@ -1,547 +1,433 @@
-<div class="d-flex justify-content-between align-items-center  mb-1">
-    <!-- Tabs -->
-    <div class="tab-wrapper">
-        <div class="tab" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
-            (click)="selectTab(tab.name)">
-            <i [class]="tab.icon"></i>
-            {{ tab.name }}
-        </div>
+<div class="charges-workspace">
+
+  <!-- Charges Header -->
+  <div class="charges-control-panel d-none">
+    <div class="panel-left">
+      <div class="booking-reference">
+        <span class="ref-label">Booking:</span>
+        <span class="ref-value">BKG-2023-001234</span>
+      </div>
+      <div class="department-info">
+        <span class="dept-label">Department:</span>
+        <span class="dept-value">Sea Freight Export</span>
+      </div>
     </div>
 
-    <!-- Add Button -->
-    <div *ngIf="selectedTab !== 'Profit'">
+    <div class="panel-center">
+      <div class="search-controls">
+        <label class="search-label">Search Type</label>
+        <select class="search-select">
+          <option>Invoice</option>
+          <option>Quotation</option>
+          <option>Cost</option>
+        </select>
+      </div>
+    </div>
 
-        <button type="button" class="btn btn-info btn-sm me-2 dofi-min-w-100 dofi-max-w-100"
-            (click)="getTariffDetails(tariffDetailsModal)">
-            <i class="fas fa-plus me-1" style="font-size: 10px;"></i> Get Tariff
+    <div class="panel-right">
+      <div class="control-actions">
+        <button class="control-btn btn-generate">
+          <i class="fas fa-magic"></i>Generate
         </button>
-        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="openModalBasedOnTab(rateModal)">
-            <i class="fas fa-plus me-1" style="font-size: 10px;"></i> Add
+        <button class="control-btn btn-rates">
+          <i class="fas fa-calculator"></i>Get Rates
         </button>
+        <button class="control-btn btn-history">
+          <i class="fas fa-history"></i>History
+        </button>
+        <button class="control-btn btn-primary">
+          <i class="fas fa-save"></i>Save
+        </button>
+      </div>
     </div>
-</div>
+  </div>
 
-<div class="tab-content mb-2">
+  <div class="charges-nav">
+    <div class="charge-types">
+      <div class="charge-type" [ngClass]="{ 'active': selectedTab === 'Cost' }" (click)="selectTab('Cost')">
+        <i class="far fa-money-bill-alt fs-3"></i>
+        <span>Cost</span>
+      </div>
 
-    @if(selectedTab === 'Cost' && costDataLength > 0){
-    <div class="row bg-white">
-        <div class="col-12 p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" width="8%">Action</th>
-                            <th class="bg-transparent text-light">Sno</th>
-                            <th class="bg-transparent text-light">Charge</th>
-                            <th class="bg-transparent text-light">Charge Desc</th>
-                            <th class="bg-transparent text-light">PP/CC</th>
-                            <th class="bg-transparent text-light">Unit</th>
-                            <th class="bg-transparent text-light">No of Unit</th>
-                            <th class="bg-transparent text-light">Dr/Cr</th>
-                            <th class="bg-transparent text-light">Curr</th>
-                            <th class="bg-transparent text-light">Ex Rate</th>
-                            <th class="bg-transparent text-light">Rate</th>
-                            <th class="bg-transparent text-light">Amt</th>
-                            <th class="bg-transparent text-light">Local Amt</th>
-                            <th class="bg-transparent text-light">Billing Party</th>
-                            <th class="bg-transparent text-light">Voucher No</th>
-                            <th class="bg-transparent text-light">Type</th>
+      <div class="charge-type" [ngClass]="{ 'active': selectedTab === 'Revenue' }" (click)="selectTab('Revenue')">
+        <i class="fas fa-hand-holding-usd fs-3"></i>
+        <span>Revenue</span>
+      </div>
+      
+      <div class="charge-type" [ngClass]="{ 'active': selectedTab === 'Profit' }" (click)="selectTab('Profit')">
+        <i class="fas fa-chart-line fs-3"></i>
+        <span>Profit</span>
+      </div>
+    </div>
+  </div>
 
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for(rate of slicedCostFormArray ; track rate ; let rateIndex = $index){
-                        <tr>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2" class="link mx-2 ps-3"
-                                        (click)="openModalBasedOnTab(rateModal,rate,rateIndex)">
-                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
-                                    </a>
-
-                                    <a class="text-danger mx-2 ps-3 border-start"
-                                        (click)="deleteRate(rateIndex,'Cost',rate.BookingRatesSid)">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
-
-                                </div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rateIndex + 1}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{getChargeCode(rate.ChargeMasterSid)}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{rate.ChargeDescription}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ rate.PrepaidCollect
-                                }}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{getUnitCode(rate.ChargeUomSid)}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.NumberOfUnit}}
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.DrCr === 'D' ?
-                                'Debit' : 'Credit'}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{getCurrencyCode(rate.CurrencyMasterSid)}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.ExchangeRate}}
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.Rate}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.Amount}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.LocalAmount}}
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{getCustomerName(rate.CustomerMasterSid)}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{rate.VoucherHeaderSid}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{getDocTypeName(rate.VoucherTypeSid)}}</td>
-                        </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-            <div>
-                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="costDataLength"
-                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updateCostPagination()" [rotate]="true"
-                    [ellipses]="false" [maxSize]="10">
-                </ngb-pagination>
-            </div>
+  <!-- Modern Table Container -->
+  <div class="modern-table-container">
+    <!-- Revenue Table -->
+    <div *ngIf="selectedTab === 'Revenue'">
+      <div class="table-toolbar">
+        <div class="toolbar-left">
+          <button class="table-action-btn primary" (click)="openRevenueModal(rateModal)">
+            <i class="fas fa-plus"></i> Add Revenue
+          </button>
         </div>
-
-    </div>
-    } @else if(selectedTab === 'Cost') {
-    <div class="col-12">
-        <div class="alert alert-info text-center">No Cost Rate added yet.</div>
-    </div>
-    }
-
-
-    @if(selectedTab === 'Revenue' && revenueDataLength > 0){
-    <div class="row bg-white">
-        <div class="col-12 p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" width="8%">Action</th>
-                            <th class="bg-transparent text-light">Sno</th>
-                            <th class="bg-transparent text-light">Charge</th>
-                            <th class="bg-transparent text-light">Charge Desc</th>
-                            <th class="bg-transparent text-light">PP/CC</th>
-                            <th class="bg-transparent text-light">Unit</th>
-                            <th class="bg-transparent text-light">No of Unit</th>
-                            <th class="bg-transparent text-light">Dr/Cr</th>
-                            <th class="bg-transparent text-light">Curr</th>
-                            <th class="bg-transparent text-light">Ex Rate</th>
-                            <th class="bg-transparent text-light">Rate</th>
-                            <th class="bg-transparent text-light">Amt</th>
-                            <th class="bg-transparent text-light">Local Amt</th>
-                            <th class="bg-transparent text-light">Billing Party</th>
-                            <th class="bg-transparent text-light">Voucher No</th>
-                            <th class="bg-transparent text-light">Type</th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for(rate of slicedRevenueFormArray ; track rate ; let rateIndex = $index){
-                        <tr>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2" class="link mx-2 ps-3"
-                                        (click)="openModalBasedOnTab(rateModal,rate,rateIndex)">
-                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
-                                    </a>
-
-                                    <a class="text-danger mx-2 ps-3 border-start"
-                                        (click)="deleteRate(rateIndex,'Revenue',rate.BookingRatesSid)">
-                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                                    </a>
-
-                                </div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rateIndex + 1}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{getChargeCode(rate.ChargeMasterSid)}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{rate.ChargeDescription}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ rate.PrepaidCollect
-                                }}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{getUnitCode(rate.ChargeUomSid)}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.NumberOfUnit}}
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.DrCr === 'D' ?
-                                'Debit' : 'Credit'}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{getCurrencyCode(rate.CurrencyMasterSid)}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.ExchangeRate}}
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.Rate}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.Amount}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{rate.LocalAmount}}
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{getCustomerName(rate.CustomerMasterSid)}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{rate.VoucherHeaderSid}}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                {{getDocTypeName(rate.VoucherTypeSid)}}</td>
-                        </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-            <div>
-                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="revenueDataLength"
-                    [pageSize]="pageSize1" [(page)]="page1" (pageChange)="updateRevenuePagination()" [rotate]="true"
-                    [ellipses]="false" [maxSize]="10">
-                </ngb-pagination>
-            </div>
+        <div class="toolbar-right">
+          <button class="table-action-btn export">
+            <i class="fas fa-download"></i> Export
+          </button>
+          <button class="table-action-btn print">
+            <i class="fas fa-print"></i> Print
+          </button>
         </div>
+      </div>
+      <div class="modern-table-wrapper">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th width="10%">Actions</th>
+              <th>Sno</th>
+              <th>Charge</th>
+              <th>Charge Desc</th>
+              <th>PP/CC</th>
+              <th>Unit</th>
+              <th>No of Unit</th>
+              <th>Dr/Cr</th>
+              <th>Curr</th>
+              <th>Ex Rate</th>
+              <th>Rate</th>
+              <th>Amount</th>
+              <th>Local Amount</th>
+              <th>Billing Party</th>
+              <th>Voucher No</th>
+              <th>Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="table-row">
+              <td class="actions-cell">
+                <div class="action-buttons"> <button class="action-icon edit"><i class="fas fa-edit"></i></button>
+                  <button class="action-icon copy"><i class="fas fa-copy"></i></button> <button
+                    class="action-icon delete"><i class="fas fa-trash"></i></button>
+                </div>
+              </td>
+              <td>
+                <div class="charge-code-cell"> <span class="code">OFT</span> <span class="code-desc">Ocean
+                    Freight</span> </div>
+              </td>
+              <td>Ocean Freight Charges</td>
+              <td> <span class="type-badge type-prepaid">PREPAID</span> </td>
+              <td>Container</td>
+              <td>2.00</td>
+              <td>
+                <div class="currency-cell"> <span class="currency">USD</span> <button class="currency-remove"><i
+                      class="fas fa-times"></i></button> </div>
+              </td>
+              <td>850.00</td>
+              <td>1,700.00</td>
+              <td>2,312.50</td>
+              <td>
+                <div class="party-cell">
+                  <div class="party-indicator active"></div> <span>Customer ABC</span>
+                </div>
+              </td>
+              <td>850.00</td>
+              <td>1,700.00</td>
+              <td>850.00</td>
+              <td>1,700.00</td>
+              <td>1,700.00</td>
+            </tr>
+            <tr class="table-row">
+              <td class="actions-cell">
+                <div class="action-buttons"> <button class="action-icon edit"><i class="fas fa-edit"></i></button>
+                  <button class="action-icon copy"><i class="fas fa-copy"></i></button> <button
+                    class="action-icon delete"><i class="fas fa-trash"></i></button>
+                </div>
+              </td>
+              <td>
+                <div class="charge-code-cell"> <span class="code">BLF</span> <span class="code-desc">B/L
+                    Fee</span> </div>
+              </td>
+              <td>Bill of Lading Fee</td>
+              <td> <span class="type-badge type-collect">COLLECT</span> </td>
+              <td>B/L</td>
+              <td>1.00</td>
+              <td>
+                <div class="currency-cell"> <span class="currency">SGD</span> <button class="currency-remove"><i
+                      class="fas fa-times"></i></button> </div>
+              </td>
+              <td>75.00</td>
+              <td>75.00</td>
+              <td>102.15</td>
+              <td>
+                <div class="party-cell">
+                  <div class="party-indicator active"></div> <span>Customer ABC</span>
+                </div>
+              </td>
+              <td>850.00</td>
+              <td>1,700.00</td>
+              <td>850.00</td>
+              <td>1,700.00</td>
+              <td>1,700.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    } @else if(selectedTab === 'Revenue') {
-    <div class="col-12">
-        <div class="alert alert-info text-center">No Revenue Rate added yet.</div>
-    </div>
-    }
-    @if(selectedTab === 'Profit' && profitSummary.length > 0){
-    <div class="row g-white" *ngIf="selectedTab === 'Profit'">
-        <div class="col-12 p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                    <thead>
-                        <tr class="bg-info">
 
-                            <th class="bg-transparent text-light">Charge</th>
-                            <th class="bg-transparent text-light">Sales Amt</th>
-                            <th class="bg-transparent text-light">Cost Amt</th>
-                            <th class="bg-transparent text-light">Profit</th>
-                            <th class="bg-transparent text-light">Profit %</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let row of profitSummary">
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ row.chargeName }}
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ row.totalSales }}
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ row.totalCost }}
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ row.profit }}</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ row.profitPercent }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    <!-- Cost Table -->
+    <div *ngIf="selectedTab === 'Cost'">
+      <div class="table-toolbar">
+        <div class="toolbar-left">
+          <button class="table-action-btn primary" (click)="openCostModal(rateModal)">
+            <i class="fas fa-plus"></i> Add Cost
+          </button>
         </div>
+        <div class="toolbar-right">
+          <button class="table-action-btn export">
+            <i class="fas fa-download"></i> Export
+          </button>
+          <button class="table-action-btn print">
+            <i class="fas fa-print"></i> Print
+          </button>
+        </div>
+      </div>
+      <div class="modern-table-wrapper">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th width="10%">Actions</th>
+              <th>Sno</th>
+              <th>Charge</th>
+              <th>Charge Desc</th>
+              <th>PP/CC</th>
+              <th>Unit</th>
+              <th>No of Unit</th>
+              <th>Dr/Cr</th>
+              <th>Curr</th>
+              <th>Ex Rate</th>
+              <th>Rate</th>
+              <th>Amount</th>
+              <th>Local Amount</th>
+              <th>Billing Party</th>
+              <th>Voucher No</th>
+              <th>Type</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr class="table-row">
+              <td class="actions-cell">
+                <div class="action-buttons"> <button class="action-icon edit"><i class="fas fa-edit"></i></button>
+                  <button class="action-icon copy"><i class="fas fa-copy"></i></button> <button
+                    class="action-icon delete"><i class="fas fa-trash"></i></button>
+                </div>
+              </td>
+              <td>
+                <div class="charge-code-cell"> <span class="code">OFT</span> <span class="code-desc">Ocean
+                    Freight</span> </div>
+              </td>
+              <td>Ocean Freight Charges</td>
+              <td> <span class="type-badge type-prepaid">PREPAID</span> </td>
+              <td>Container</td>
+              <td>2.00</td>
+              <td>
+                <div class="currency-cell"> <span class="currency">USD</span> <button class="currency-remove"><i
+                      class="fas fa-times"></i></button> </div>
+              </td>
+              <td>850.00</td>
+              <td>1,700.00</td>
+              <td>2,312.50</td>
+              <td>
+                <div class="party-cell">
+                  <div class="party-indicator active"></div> <span>Customer ABC</span>
+                </div>
+              </td>
+              <td>850.00</td>
+              <td>1,700.00</td>
+              <td>850.00</td>
+              <td>1,700.00</td>
+              <td>1,700.00</td>
+            </tr>
+            <tr class="table-row">
+              <td class="actions-cell">
+                <div class="action-buttons"> <button class="action-icon edit"><i class="fas fa-edit"></i></button>
+                  <button class="action-icon copy"><i class="fas fa-copy"></i></button> <button
+                    class="action-icon delete"><i class="fas fa-trash"></i></button>
+                </div>
+              </td>
+              <td>
+                <div class="charge-code-cell"> <span class="code">BLF</span> <span class="code-desc">B/L
+                    Fee</span> </div>
+              </td>
+              <td>Bill of Lading Fee</td>
+              <td> <span class="type-badge type-collect">COLLECT</span> </td>
+              <td>B/L</td>
+              <td>1.00</td>
+              <td>
+                <div class="currency-cell"> <span class="currency">SGD</span> <button class="currency-remove"><i
+                      class="fas fa-times"></i></button> </div>
+              </td>
+              <td>75.00</td>
+              <td>75.00</td>
+              <td>102.15</td>
+              <td>
+                <div class="party-cell">
+                  <div class="party-indicator active"></div> <span>Customer ABC</span>
+                </div>
+              </td>
+              <td>850.00</td>
+              <td>1,700.00</td>
+              <td>850.00</td>
+              <td>1,700.00</td>
+              <td>1,700.00</td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
     </div>
-    } @else if(selectedTab === 'Profit') {
-    <div class="col-12">
-        <div class="alert alert-info text-center">No Records found.</div>
+
+    <!-- Profit Table -->
+    <div *ngIf="selectedTab === 'Profit'">
+      <div class="">
+
+        <div class="toolbar-right1">
+          <button class="table-action-btn export">
+            <i class="fas fa-download"></i> Export
+          </button>
+          <button class="table-action-btn print">
+            <i class="fas fa-print"></i> Print
+          </button>
+        </div>
+      </div>
+      <div class="modern-table-wrapper">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Charge</th>
+              <th>Sale Amt</th>
+              <th>Cost Amt</th>
+              <th>Profit</th>
+              <th>Profit %</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="table-row">
+
+              <td>850.00</td>
+              <td>1,700.00</td>
+              <td>2,312.50</td>
+              <td>1.00</td>
+              <td>10%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    }
+  </div>
+
 
 </div>
 
 
 <ng-template #rateModal let-modal>
-    <div class="modal-header p-2 bg-info">
-        <h5 class="modal-title text-white">{{selectedTab}}</h5>
-        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-    </div>
-    <div class="modal-body">
-        <div class="row compact-form" [formGroup]="rateForm">
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                        formControlName="SerialNumber" DecimalPrecision [DecimalPrecisionBefore]="3"
-                        [DecimalPrecisionAfter]="0">
-                    <label for="text-input" [ngClass]="{
-                        'input-label': true,
-                        'bg-transparent': !r['SerialNumber']?.getRawValue()
-                    }">Sno <span class="text-danger"></span></label>
-                    @if ((r['SerialNumber']?.touched || r['SerialNumber']?.dirty) &&
-                    r['SerialNumber']?.invalid) {
-                    <div class="error-message">
-                        @if (r['SerialNumber']?.errors?.['decimalPrecision']) {
-                        <small>Allowed: 3 Digits only</small>
-                        }
-                    </div>
-                    }
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
-                    <ng-select class="ng-select" [items]="chargeList" formControlName="ChargeMasterSid"
-                        bindValue="ChargeMasterSid" placeholder="Select Charge" bindLabel="chargeName"
-                        (change)="onChargeChange($event)">
-                    </ng-select>
-                    <label for="text-input" class="input-label">Charge <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="ChargeDescription" [textWithNumbers]="100">
-                    <label for="" class="input-label"> Charge Desc <span class="text-danger"></span></label>
-                    @if ((r['ChargeDescription']?.touched || r['ChargeDescription']?.dirty) &&
-                    r['ChargeDescription']?.invalid) {
-                    <div class="error-message">
-                        @if (r['ChargeDescription']?.errors?.['maxlength']) {
-                        <span>Max 100 Chars</span>
-                        }
-                    </div>
-                    }
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="ppcc" bindLabel="name" bindValue="name" formControlName="PrepaidCollect"
-                        placeholder="Select PP/CC">
-                    </ng-select>
-                    <label for="" class="input-label">PP/CC <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="uomList" bindLabel="UOMName" bindValue="UOMMasterSid"
-                        formControlName="ChargeUomSid" placeholder="Select Unit">
-                    </ng-select>
-                    <label for="" class="input-label">Unit<span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="NumberOfUnit" (input)="calculateLocalAmount() ; calculateAmount()"
-                        DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="3">
-                    <label for="text-input" class="input-label">No of Unit <span class="text-danger"></span></label>
-                    @if ((r['NumberOfUnit']?.touched || r['NumberOfUnit']?.dirty) &&
-                    r['NumberOfUnit']?.invalid) {
-                    <div class="error-message">
-                        @if (r['NumberOfUnit']?.errors?.['decimalPrecision']) {
-                        <span>Allowed: 4 Digits before and 3 digits after points</span>
-                        }
-                    </div>
-                    }
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="drcr" bindLabel="name" bindValue="value" formControlName="DrCr"
-                        class="ng-select" placeholder="Select Dr/Cr">
+  <div class="modal-header p-2 bg-info">
+    <h5 class="modal-title text-white">Add {{selectedTab}}</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close"
+      (click)="modal.dismiss('Cross click')"></button>
+  </div>
 
-                    </ng-select>
-                    <label for="" class="input-label">Dr/Cr<span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
-                        formControlName="CurrencyMasterSid" placeholder="Select Currency"
-                        (change)="onCurrencyChange($event)">
-
-                    </ng-select>
-                    <label for="" class="input-label">Curr<span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="Rate" (input)="calculateLocalAmount() ; calculateAmount()" DecimalPrecision
-                        [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3">
-                    <label for="text-input" class="input-label">Rate<span class="text-danger"></span></label>
-                    @if ((r['Rate']?.touched || r['Rate']?.dirty) &&
-                    r['Rate']?.invalid) {
-                    <div class="error-message">
-                        @if (r['Rate']?.errors?.['decimalPrecision']) {
-                        <span>Allowed: 12 Digits before and 3 digits after points</span>
-                        }
-                    </div>
-                    }
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                        formControlName="ExchangeRate" DecimalPrecision [DecimalPrecisionBefore]="12"
-                        [DecimalPrecisionAfter]="3">
-                    <label for="text-input" class="input-label" [ngClass]="{
-                        'input-label': true,
-                        'bg-transparent': !r['ExchangeRate']?.getRawValue()
-                    }">Ex Rate<span class="text-danger"></span></label>
-                    @if ((r['ExchangeRate']?.touched || r['ExchangeRate']?.dirty) &&
-                    r['ExchangeRate']?.invalid) {
-                    <div class="error-message">
-                        @if (r['ExchangeRate']?.errors?.['decimalPrecision']) {
-                        <span>Allowed: 12 Digits before and 3 digits after points</span>
-                        }
-                    </div>
-                    }
-                </div>
-            </aside>
-
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                        formControlName="Amount" DecimalPrecision [DecimalPrecisionBefore]="12"
-                        [DecimalPrecisionAfter]="3">
-                    <label for="text-input" [ngClass]="{
-                        'input-label': true,
-                        'bg-transparent': !r['Amount']?.getRawValue()
-                    }">Amt <span class="text-danger"></span></label>
-                    @if ((r['Amount']?.touched || r['Amount']?.dirty) &&
-                    r['Amount']?.invalid) {
-                    <div class="error-message">
-                        @if (r['Amount']?.errors?.['decimalPrecision']) {
-                        <span>Allowed: 12 Digits before and 3 digits after points</span>
-                        }
-                    </div>
-                    }
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                        formControlName="LocalAmount" DecimalPrecision [DecimalPrecisionBefore]="12"
-                        [DecimalPrecisionAfter]="3">
-                    <label for="text-input" [ngClass]="{
-                        'input-label': true,
-                        'bg-transparent': !r['LocalAmount']?.getRawValue()
-                    }">Local Amt <span class="text-danger"></span></label>
-                    @if ((r['LocalAmount']?.touched || r['LocalAmount']?.dirty) &&
-                    r['LocalAmount']?.invalid) {
-                    <div class="error-message">
-                        @if (r['LocalAmount']?.errors?.['decimalPrecision']) {
-                        <span>Allowed: 12 Digits before and 3 digits after points</span>
-                        }
-                    </div>
-                    }
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                        formControlName="CustomerMasterSid" placeholder="Select Billing Party">
-
-                    </ng-select>
-                    <label for="" class="input-label">Billing Party<span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="VoucherHeaderSid">
-                    <label for="" class="input-label">Voucher No<span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="docTypeList" bindLabel="DocumentTypeName" bindValue="DocumentTypeMasterSid"
-                        placeholder="Select Type" formControlName="VoucherTypeSid">
-
-                    </ng-select>
-                    <label for="" class="input-label">Type<span class="text-danger"></span></label>
-                </div>
-            </aside>
+  <div class="modal-body">
+    <div class="row">
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Charge <span class="text-danger"></span></label>
         </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Charge Desc <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">PP/CC <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Unit <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">No of Unit <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Dr/Cr <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Curr <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Ex Rate <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Rate <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Amt <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Local Amt <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Billing party <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Voucher No <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Type<span class="text-danger"></span></label>
+        </div>
+      </aside>
     </div>
+  </div>
+
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-        <button type="button" class="btn btn-info btn-sm" (click)="onRateSubmit()">Save</button>
-    </div>
-</ng-template>
-<ng-template #tariffDetailsModal let-modal>
-    <div class="modal-container">
-        <div class="modal-responsive-wrapper">
-            <div class="modal-content custom-modal">
-                <div class="modal-header">
-                    <h5 class="modal-title">Tariff Details</h5>
-                    <button type="button" class="btn-close" aria-label="Close" (click)="closeTariffModal()"></button>
-                </div>
-
-                <div class="modal-body d-flex justify-content-center align-items-center flex-column"
-                    style="min-height: 300px;">
-
-                    <!-- Loader -->
-                    <div *ngIf="tariffLoading" class="text-center py-4 w-100">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading tariff...</span>
-                        </div>
-                        <div class="mt-2">Loading tariff...</div>
-                    </div>
-
-                    <!-- Tariff Table -->
-                    <div *ngIf="!tariffLoading && tariffDetails?.length" class="table-responsive w-100">
-                        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 text-center">
-                            <thead>
-                                <tr class="bg-info text-white">
-                                    <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                                    <th class="bg-transparent text-light" scope="col">Sno</th>
-                                    <th class="bg-transparent text-light" scope="col">Charge</th>
-                                    <th class="bg-transparent text-light" scope="col">Charge Desc</th>
-                                    <th class="bg-transparent text-light" scope="col">PP/CC</th>
-                                    <th class="bg-transparent text-light" scope="col">Unit</th>
-                                    <th class="bg-transparent text-light" scope="col">No of Unit</th>
-                                    <th class="bg-transparent text-light" scope="col">Cost/Revenue</th>
-                                    <th class="bg-transparent text-light" scope="col">Dr/Cr</th>
-                                    <th class="bg-transparent text-light" scope="col">Curr</th>
-                                    <th class="bg-transparent text-light" scope="col">Ex Rate</th>
-                                    <th class="bg-transparent text-light" scope="col">Rate</th>
-                                    <th class="bg-transparent text-light" scope="col">Amt</th>
-                                    <th class="bg-transparent text-light" scope="col">Local Amt</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <ng-container *ngFor="let sc of tariffDetails; let i = index">
-
-                                    <!-- Cost Row -->
-                                    <tr>
-                                        <td rowspan="2">
-                                            <button class="btn btn-info btn-sm" (click)="applyTariff(sc)">Apply
-                                                Charge</button>
-                                        </td>
-                                        <td rowspan="2">{{ i + 1 }}</td>
-                                        <td rowspan="2">{{ getChargeCode(sc.ChargeMasterSid) }}</td>
-                                        <td rowspan="2">{{ sc.ChargeDescription }}</td>
-                                        <td rowspan="2">{{ sc.PrepaidCollect }}</td>
-                                        <td rowspan="2">{{ getUnitCode(sc.ChargeUomSid) }}</td>
-                                        <td rowspan="2">{{ sc.NumberOfUnit }}</td>
-                                        <td class="text-info fw-bold">Cost</td>
-                                        <td>{{ sc.Cost?.DrCr === 'D' ? 'Debit' : 'Credit' }}</td>
-                                        <td>{{ getCurrencyCode(sc.Cost?.CurrencyMasterSid) }}</td>
-                                        <td>{{ sc.Cost?.ExchangeRate }}</td>
-                                        <td>{{ sc.Cost?.Rate }}</td>
-                                        <td>{{ sc.Cost?.Amount }}</td>
-                                        <td>{{ sc.Cost?.LocalAmount }}</td>
-                                    </tr>
-
-                                    <!-- Revenue Row -->
-                                    <tr>
-                                        <td class="text-info fw-bold">Revenue</td>
-                                        <td>{{ sc.Revenue?.DrCr === 'D' ? 'Debit' : 'Credit' }}</td>
-                                        <td>{{ getCurrencyCode(sc.Revenue?.CurrencyMasterSid) }}</td>
-                                        <td>{{ sc.Revenue?.ExchangeRate }}</td>
-                                        <td>{{ sc.Revenue?.Rate }}</td>
-                                        <td>{{ sc.Revenue?.Amount }}</td>
-                                        <td>{{ sc.Revenue?.LocalAmount }}</td>
-                                    </tr>
-                                </ng-container>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Empty State -->
-                    <div *ngIf="!tariffLoading && !tariffDetails?.length" class="text-center text-muted py-3">
-                        No tariff details found.
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" (click)="closeTariffModal()">Close</button>
-                </div>
-            </div>
-        </div>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss('Cancel')">Cancel</button>
+      <button type="button" class=" btn btn-sm btn-info" (click)="modal.close('Save')">Save</button>
     </div>
 </ng-template>
