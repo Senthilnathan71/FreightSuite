@@ -5,18 +5,18 @@
             <div class="col-md-4 d-flex pb-2">
                 <h4 class="page-title mb-0">Container Activity</h4>
                 @if(isEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
-                         <i class="fas fs-6 fa-info-circle"></i>
-                    </a>
+                <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                    <i class="fas fs-6 fa-info-circle"></i>
+                </a>
                 }
             </div>
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                   <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                  (click)="openAuditLogs(auditLogModal)">
-            <i class="fas fa-history me-1"></i>Logs
-          </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        (click)="openAuditLogs(auditLogModal)">
+                        <i class="fas fa-history me-1"></i>Logs
+                    </button>
 
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="goBack()">
@@ -28,8 +28,9 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
-                         [disabled]="containerActivityForm.invalid || containerActivityForm.pristine" >
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+                        *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
+                        [disabled]="containerActivityForm.invalid || containerActivityForm.pristine">
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Update':'Save'}}
                     </button>
@@ -48,14 +49,15 @@
                                     class="custom-input-field sm" [textWithNumbers]="5">
                                 <label for="ActivityCode" class="input-label">Activity Code <span
                                         class="text-danger fw-bold">*</span></label>
-                                @if(containerActivityForm.get('ActivityCode')?.touched && containerActivityForm.get('ActivityCode')?.invalid){
-                                    <div class="error-message">
-                                        @if(containerActivityForm.get('ActivityCode')?.hasError('required')){
-                                            <span>Required</span>
-                                        } @else if(containerActivityForm.get('ActivityCode')?.hasError('maxlength')){
-                                            <span>Max 5 Chars</span>
-                                        }
-                                    </div>
+                                @if(containerActivityForm.get('ActivityCode')?.touched &&
+                                containerActivityForm.get('ActivityCode')?.invalid){
+                                <div class="error-message">
+                                    @if(containerActivityForm.get('ActivityCode')?.hasError('required')){
+                                    <span>Required</span>
+                                    } @else if(containerActivityForm.get('ActivityCode')?.hasError('maxlength')){
+                                    <span>Max 5 Chars</span>
+                                    }
+                                </div>
                                 }
                             </div>
                         </aside>
@@ -66,63 +68,68 @@
                                     class="custom-input-field sm" [textWithNumbers]="100">
                                 <label for="ActivityName" class="input-label">Activity Name <span
                                         class="text-danger fw-bold">*</span></label>
-                                @if(containerActivityForm.get('ActivityName')?.touched && containerActivityForm.get('ActivityName')?.invalid){
-                                    <div class="error-message">
-                                        @if(containerActivityForm.get('ActivityName')?.hasError('required')){
-                                            <span>Required</span>
-                                        } @else if(containerActivityForm.get('ActivityName')?.hasError('maxlength')){
-                                            <span>Max 100 Chars</span>
-                                        }
-                                    </div>
+                                @if(containerActivityForm.get('ActivityName')?.touched &&
+                                containerActivityForm.get('ActivityName')?.invalid){
+                                <div class="error-message">
+                                    @if(containerActivityForm.get('ActivityName')?.hasError('required')){
+                                    <span>Required</span>
+                                    } @else if(containerActivityForm.get('ActivityName')?.hasError('maxlength')){
+                                    <span>Max 100 Chars</span>
+                                    }
+                                </div>
                                 }
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="ContainerMoveStatus" [items]="containerMoveStatusList" 
+                                <ng-select formControlName="ContainerMoveStatus" [items]="containerMoveStatusList"
                                     bindLabel="name" bindValue="id"
                                     [class.is-invalid]="containerActivityForm.get('ContainerMoveStatus')?.invalid && containerActivityForm.get('ContainerMoveStatus')?.touched">
                                 </ng-select>
-                                <label class="input-label">Container Move Status <span class="text-danger fw-bold">*</span></label>
-                                @if(containerActivityForm.get('ContainerMoveStatus')?.touched && containerActivityForm.get('ContainerMoveStatus')?.invalid){
-                                    <div class="error-message">
-                                        <span>Required</span>
-                                    </div>
+                                <label class="input-label">Container Move Status <span
+                                        class="text-danger fw-bold">*</span></label>
+                                @if(containerActivityForm.get('ContainerMoveStatus')?.touched &&
+                                containerActivityForm.get('ContainerMoveStatus')?.invalid){
+                                <div class="error-message">
+                                    <span>Required</span>
+                                </div>
                                 }
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="MoveType" [items]="moveTypeList" 
-                                    bindLabel="name" bindValue="id"
+                                <ng-select formControlName="MoveType" [items]="moveTypeList" bindLabel="name"
+                                    bindValue="id"
                                     [class.is-invalid]="containerActivityForm.get('MoveType')?.invalid && containerActivityForm.get('MoveType')?.touched">
                                 </ng-select>
                                 <label class="input-label">Move Type <span class="text-danger fw-bold">*</span></label>
-                                @if(containerActivityForm.get('MoveType')?.touched && containerActivityForm.get('MoveType')?.invalid){
-                                    <div class="error-message">
-                                        <span>Required</span>
-                                    </div>
+                                @if(containerActivityForm.get('MoveType')?.touched &&
+                                containerActivityForm.get('MoveType')?.invalid){
+                                <div class="error-message">
+                                    <span>Required</span>
+                                </div>
                                 }
                             </div>
                         </aside>
 
-                       
+
                         <aside class="col-md-4 d-flex align-items-center">
-    <div class="form-check form-check-inline p-0">
-        <div class="form-check d-flex align-items-center">
-            <input type="checkbox" formControlName="IsDamageMove" id="IsDamageMove"
-                class="form-check-input sm" [value]="'N'">
-            <label for="IsDamageMove" class="form-check-label sm">Damage Move</label>
-            @if(containerActivityForm.get('IsDamageMove')?.touched && containerActivityForm.get('IsDamageMove')?.invalid){
-                <div class="error-message">
-                    <span>Required</span>
-                </div>
-            }
-        </div>
-    </div>
-</aside>
+                            <div class="form-check form-check-inline p-0">
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" formControlName="IsDamageMove" id="IsDamageMove"
+                                        class="form-check-input sm" [value]="'N'">
+                                    <label for="IsDamageMove" class="form-check-label sm">Damage Move</label>
+                                    @if(containerActivityForm.get('IsDamageMove')?.touched &&
+                                    containerActivityForm.get('IsDamageMove')?.invalid){
+                                    <div class="error-message">
+                                        <span>Required</span>
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                        </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -132,18 +139,18 @@
                             </div>
                         </aside>
 
-                        
+
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="Status" [items]="statusList" 
-                                    bindLabel="name" bindValue="id"
+                                <ng-select formControlName="Status" [items]="statusList" bindLabel="name" bindValue="id"
                                     [class.is-invalid]="containerActivityForm.get('Status')?.invalid && containerActivityForm.get('Status')?.touched">
                                 </ng-select>
                                 <label class="input-label">Status <span class="text-danger fw-bold">*</span></label>
-                                @if(containerActivityForm.get('Status')?.touched && containerActivityForm.get('Status')?.invalid){
-                                    <div class="error-message">
-                                        <span>Required</span>
-                                    </div>
+                                @if(containerActivityForm.get('Status')?.touched &&
+                                containerActivityForm.get('Status')?.invalid){
+                                <div class="error-message">
+                                    <span>Required</span>
+                                </div>
                                 }
                             </div>
                         </aside>
@@ -152,124 +159,178 @@
             </div>
         </div>
 
-        <!-- Activity Mapping Section -->
-<div class="col-md-12 mt-3">
-  <div class="card shadow-sm border-0">
-    <div class="card-header bg-info text-white">
-      <h6 class="mb-0 fw-bold">Activity Mapping</h6>
-    </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="bg-light">
-            <tr>
-              <th class="text-uppercase text-dark fw-bold" style="width: 45%;">Available Activity</th>
-              <th class="text-center" style="width: 10%;"></th>
-              <th class="text-uppercase text-dark fw-bold text-end" style="width: 45%;">Next Activity</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let activity of availableActivities">
-              <td><span class="badge bg-secondary p-2">{{ activity.ActivityCode }}</span></td>
-              <td class="fs-4 text-center text-success">
-                <i class="fas fa-arrow-right cursor-pointer" (click)="moveActivityToNext(activity)"></i>
-              </td>
-              <td class="text-end"><span class="text-muted">---</span></td>
-            </tr>
+        <div class="col-md-12 mt-3">
 
-            <tr *ngFor="let activity of nextActivities">
-              <td><span class="text-muted">---</span></td>
-              <td class="fs-4 text-center text-danger">
-                <i class="fas fa-arrow-left cursor-pointer" (click)="moveActivityToAvailable(activity)"></i>
-              </td>
-              <td class="text-end"><span class="badge bg-success p-2">{{ activity.ActivityCode }}</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
+            <h6 class="mb-3 fw-bold">Activity Mapping</h6>
 
+            <div class="row justify-content-center align-items-stretch">
 
+                <div class="col-md-5">
+                    <div class="card h-100 flex-fill">
+                        <div class="card-title text-center p-2 bg-info text-white">Available Activity</div>
+                        <div class="card-body p-0">
+                            <div class="p-2" style="max-height: 250px; overflow-y: auto;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="exp1">
+                                    <label class="form-check-label" for="exp1">EXP RAIL/ROAD IN</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="imp1">
+                                    <label class="form-check-label" for="imp1">IMP RAIL/ROAD IN</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="cfs1">
+                                    <label class="form-check-label" for="cfs1">CFS OUT POST STUFFING</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="mt1">
+                                    <label class="form-check-label" for="mt1">MT RETURN TO YARD</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="del1">
+                                    <label class="form-check-label" for="del1">DELIVERED TO CONSIGNEE</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="cfs2">
+                                    <label class="form-check-label" for="cfs2">CFS IN IMP FULL</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="dpd1">
+                                    <label class="form-check-label" for="dpd1">DPD TO CONSIGNEE</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="load1">
+                                    <label class="form-check-label" for="load1">LOAD TO ...</label>
+                                </div>
+                            </div>
 
+                        </div>
+                    </div>
+                </div>
 
-        @if(isEditMode){
-            <div class="col-12 mt-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-                                @if(hasPermission('Edoc')) {
-                                    <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
-                                        <i class="fas fa-file-alt me-1"></i> e-Doc
-                                    </button>
-                                }
-                                @if(hasPermission('Terms and Condition')) {
-                                    <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openTandC()">
-                                        <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                                    </button>
-                                }
-                                @if(hasPermission('Authority')) {
-                                    <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
-                                        <i class="fas fa-shield-alt me-1"></i> Authorize
-                                    </button>
-                                }
-                                @if(hasPermission('Email')) {
-                                    <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto" (click)="openEmail()">
-                                        <i class="fas fa-envelope me-1"></i> Email
-                                    </button>
-                                }
+                <div class="col-12 col-md-1 d-flex flex-column justify-content-center align-items-center my-3 my-md-0">
+                    <!-- Desktop arrows -->
+                    <button class="btn btn-info mb-2 d-none d-md-block">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="btn btn-info d-none d-md-block">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+
+                    <!-- Mobile arrows -->
+                    <button class="btn btn-info mb-2 d-block d-md-none">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <button class="btn btn-info d-block d-md-none">
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+                </div>
+
+                <div class="col-md-5 mt-md-0 mt-3">
+                    <div class="card  h-100 flex-fill">
+                        <div class="card-title text-center p-2 bg-info text-white">Next Activity</div>
+                        <div class="card-body p-0">
+                            <div class="p-2" style="max-height: 250px; overflow-y: auto;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="gate1">
+                                    <label class="form-check-label" for="exp1">GATE IN TERMINAL (EXP)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="back">
+                                    <label class="form-check-label" for="imp1">BACK TO TOWN</label>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        }          
+
+        </div>
+
+
+
+
+
+        @if(isEditMode){
+        <div class="col-12 mt-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
+                            @if(hasPermission('Edoc')) {
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info"
+                                (click)="openEDoc()">
+                                <i class="fas fa-file-alt me-1"></i> e-Doc
+                            </button>
+                            }
+                            @if(hasPermission('Terms and Condition')) {
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info"
+                                (click)="openTandC()">
+                                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                            </button>
+                            }
+                            @if(hasPermission('Authority')) {
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info"
+                                (click)="openAuthority()">
+                                <i class="fas fa-shield-alt me-1"></i> Authorize
+                            </button>
+                            }
+                            @if(hasPermission('Email')) {
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto"
+                                (click)="openEmail()">
+                                <i class="fas fa-envelope me-1"></i> Email
+                            </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
     </form>
 </div>
 
 <ng-template #auditLogModal let-modal>
-  <div class="modal-header bg-info text-white p-2">
-    <h5 class="modal-title mb-0">Audit Logs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body p-3">
-    <div class="table-responsive">
-      <table class="table align-middle no-wrap table-bordered table-sm mb-0">
-        <thead>
-          <tr>
-            <th>Changed At</th>
-            <th>Changed By</th>
-            <th>Operation</th>
-            <th class="text-center">Old Value</th>
-            <th class="text-center">New Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let log of auditLogs">
-            <td>{{ log.changedAt | date:'medium' }}</td>
-            <td>{{ log.changedBy || '-' }}</td>
-            <td>{{ log.operation }}</td>
-            <td class="bg-light-danger">
-              <ul>
-                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-              </ul>
-            </td>
-            <td class="bg-light-success">
-              <ul>
-                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-              </ul>
-            </td>
-          </tr>
-          <tr *ngIf="auditLogs.length === 0">
-            <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="modal-header bg-info text-white p-2">
+        <h5 class="modal-title mb-0">Audit Logs</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
-  </div>
+    <div class="modal-body p-3">
+        <div class="table-responsive">
+            <table class="table align-middle no-wrap table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Changed At</th>
+                        <th>Changed By</th>
+                        <th>Operation</th>
+                        <th class="text-center">Old Value</th>
+                        <th class="text-center">New Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let log of auditLogs">
+                        <td>{{ log.changedAt | date:'medium' }}</td>
+                        <td>{{ log.changedBy || '-' }}</td>
+                        <td>{{ log.operation }}</td>
+                        <td class="bg-light-danger">
+                            <ul>
+                                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                        <td class="bg-light-success">
+                            <ul>
+                                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr *ngIf="auditLogs.length === 0">
+                        <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+    </div>
 </ng-template>
