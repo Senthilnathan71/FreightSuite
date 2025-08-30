@@ -1124,5 +1124,17 @@ export const MasterRoutes: Routes = [
             urls: [{ title: 'Master', url: '/master' }, { title: 'Container Activity' }],
           },
         },
+         {
+    path: 'container-activity/entry/:id',
+    component: ContainerActivityEntryComponent,
+    data: {
+      title: 'Container Activity',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Container Activity' },
+      ]
+    }
+  },
+
 
 ];

@@ -3509,6 +3509,62 @@ searchChargeTds(payload: any) {
       })
     );
   }
+  // Container Activity Master Methods
+getAllContainerActivities() {
+  return this.http.get<{ data: any[] }>('container-activity-master').pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+getContainerActivityById(ContainerActivityMasterSid: number) {
+  return this.http.get<{ data: any }>(`container-activity-master/fetch/${ContainerActivityMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+createNewContainerActivity(payload: any) {
+  return this.http.post<{ data: any }>('container-activity-master/create', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+updateContainerActivityById(ContainerActivityMasterSid: number, payload: any) {
+  return this.http.patch<{ data: any }>(`container-activity-master/update/${ContainerActivityMasterSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+deleteContainerActivityById(ContainerActivityMasterSid: number) {
+  return this.http.delete<{ data: any }>(`container-activity-master/delete/${ContainerActivityMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+searchContainerActivities(payload: any) {
+  return this.http.post<{ data: any[] }>('container-activity-master/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+
 
 
 
