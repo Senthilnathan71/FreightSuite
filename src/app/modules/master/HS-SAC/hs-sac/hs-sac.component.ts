@@ -175,12 +175,17 @@ export class HSSACComponent {
 
   this.masterService.searchHssac(params).subscribe({
     next: (response) => {
-      if(response){
-        this.hssacList = response.items;
-        this.totalLengthOfCollection = response.totalCount;
+      if(response.status  ){
+        this.hssacList = response.data.items;
+        this.totalLengthOfCollection = response.data.totalCount;
         this.applySorting();
         this.searchPerformed = true;
+      }else {
+        this.appSettingService.showError(response.message);
       }
+
+
+
       this.loading = false;
     },
     error: (err) => {

@@ -170,13 +170,18 @@ export class DivisionComponent {
 
     this.masterService.searchDivisionList(params).subscribe({
       next: (response) => {
-        if (response.data) {
+        if (response.status) {
           this.divisionList = response.data.items;
           this.results = [...this.divisionList];
           this.totalLengthOfCollection = response.data.totalCount;
           this.applySorting();
           this.searched = true;
         }
+        else {
+        this.appSettingService.showError(response.message);
+      }
+
+
       },
       error: (err) => {
         console.error('Error fetching divisions:', err);

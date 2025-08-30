@@ -197,10 +197,12 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
                 this.masterService.updateProductById(this.ProductMasterSId,payload).subscribe(
                     (resp:any)=>{
                         if(resp.status){
-                            this.appSettingService.showSuccess('Product Updated Successfully');
+                            this.appSettingService.showSuccess(resp.message);
+
                             this.route.navigate(['master/product/list']);
                         } else {
-                            this.appSettingService.showWarning('Error Updating Product');
+                            this.appSettingService.showError(resp.message);
+
                         }
                     },
                     (error)=>{
@@ -211,10 +213,12 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
                 this.masterService.createNewProduct(payload).subscribe(
                     (resp:any)=>{
                         if(resp.status){
-                            this.appSettingService.showSuccess('Product Created Successfully');
+                            this.appSettingService.showSuccess(resp.message);
+
                             this.route.navigate(['master/product/list']);
                         } else {
-                            this.appSettingService.showWarning('Error Creating Product');
+                            this.appSettingService.showError(resp.message);
+
                         }
                     },
                     (error)=>{

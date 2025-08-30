@@ -96,7 +96,7 @@
             this.applySorting();
             this.searchPerformed = true;
           } else {
-            this.appSettingService.showError('Error searching Enquiry.');
+            this.appSettingService.showError(resp.message);
             console.error('Error searching Enquiry', resp.message)
             this.enquiryItems = [];
             this.totalLengthOfCollection = 0;

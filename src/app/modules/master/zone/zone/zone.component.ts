@@ -155,13 +155,16 @@ export class ZoneComponent {
 
     this.masterService.searchZonelList(params).subscribe({
       next: (response) => {
-        if(response.data) {
+        if(response.status) {
           this.zoneList = response.data.items;
           this.results = [...this.zoneList];
           this.totalLengthOfCollection = response.data.totalCount;
           this.applySorting();
           this.searched = true;
-        }
+        }else {
+        this.appSettingService.showError(response.message);
+      }
+
       },
       error: (err) => {
         console.error('Error fetching zones:', err);

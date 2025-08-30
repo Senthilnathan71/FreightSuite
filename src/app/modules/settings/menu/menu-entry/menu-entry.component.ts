@@ -404,7 +404,7 @@ export class MenuEntryComponent implements OnInit {
           this.isLoading = false;
 
           if (resp.status) {
-            this.appSettingService.showSuccess('Menu updated successfully.');
+            this.appSettingService.showSuccess(resp.message);
             const updatedMenu = resp.data?.updatedMenu || resp.data?.menu;
 
             // Update form with exact values from server
@@ -448,7 +448,7 @@ export class MenuEntryComponent implements OnInit {
           this.isLoading = false;
 
           if (resp.status) {
-            this.appSettingService.showSuccess('Menu created successfully.');
+            this.appSettingService.showSuccess(resp.message);
             const menuId = resp.data?.menu?.MenuMasterSid;
             if (menuId) {
               this.router.navigate(['settings/menu/entry', menuId]);

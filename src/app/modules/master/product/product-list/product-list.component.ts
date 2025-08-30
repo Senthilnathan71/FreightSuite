@@ -123,13 +123,16 @@ export class ProductListComponent {
 
         this.masterService.searchProductList(params).subscribe({
             next: (response) => {
-                if(response.data){
+                if(response.status){
                     this.productList = response.data.items;
                     this.totalAmountOfCollection = response.data.totalCount;
                     this.applySorting();
                     this.updatePaginationData();
                     this.searched = true;
-                }
+                }else {
+        this.appSettingService.showError(response.message);
+      }
+
             },
             error: (err) => {
                 console.error('Error fetching products:', err);

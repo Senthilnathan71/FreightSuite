@@ -81,14 +81,16 @@ export class ChartAccountListComponent {
 
     this.masterService.searchCoa(params).subscribe({
       next: (response) => {
-        if (response?.data) {
+        if (response?.status) {
           this.chartAccountList = response.data.items;
           console.log(this.chartAccountList,"Chart");
           
           this.totalLengthOfCollection = response.data.totalCount;
           this.applySorting();
           this.searched = true;
-        }
+        }else {
+        this.appSettingService.showError(response.message);
+      }
       },
       error: (err) => {
         console.error('Error fetching chart accounts:', err);

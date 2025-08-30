@@ -112,13 +112,16 @@ export class StateListComponent {
 
     this.masterService.searchStateList(params).subscribe({
       next: (response) => {
-        if(response.data) {
+        if(response.status) {
           this.stateList = response.data.items;
           this.allStates = [...this.stateList];
           this.totalLengthOfCollection = response.data.totalCount;
           this.applySorting();
           this.searched = true;
-        }
+        }else {
+        this.appSettingService.showError(response.message);
+      }
+
       },
       error: (err) => {
         console.error('Error fetching states:', err);

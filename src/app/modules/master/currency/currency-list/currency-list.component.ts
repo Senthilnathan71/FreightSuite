@@ -112,13 +112,16 @@ export class CurrencyListComponent {
 
   this.masterService.searchCurrencyList(params).subscribe({
     next: (response) => {
-      if(response){
-        this.currencyList = response.items;
-        this.allCurrencies = response.items; // Maintain both lists if needed
-        this.totalLengthOfCollection = response.totalCount;
+      if(response.status){
+        this.currencyList = response.data.items;
+        this.allCurrencies = response.data.items; // Maintain both lists if needed
+        this.totalLengthOfCollection = response.data.totalCount;
         this.applySorting();
         this.searchPerformed = true;
+      }else {
+        this.appSettingService.showError(response.message);
       }
+      
       this.loading = false;
     },
     error: (err) => {

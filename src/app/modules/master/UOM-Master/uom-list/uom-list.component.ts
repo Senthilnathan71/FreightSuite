@@ -105,11 +105,13 @@ loadUoms(): void {
   
   this.masterService.searchUomList(params).subscribe({
     next: (response) => {
-      if(response.data){
+      if(response.status){
         this.uomList = response.data.items;
         this.totalLengthOfCollection = response.data.totalCount;
         this.applySorting();
         this.searched = true;
+      }else {
+        this.appSettingService.showError(response.message);
       }
     },
     error: (err) => {

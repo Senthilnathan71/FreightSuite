@@ -172,7 +172,7 @@ auditLogs: any[] = []; // Stores audit logs
     this.masterServ.updateCoaById(this.chartMasterSid, payload).subscribe(
       (resp: any) => {
         if (resp.status) {
-          this.appSettingService.showSuccess('Chart Account Updated Successfully');
+          this.appSettingService.showSuccess("Chart Account Updated Successfully");
           this.route.navigate(['/accounts/chart-accounts/list']);
         } else {
           this.appSettingService.showError(resp.message);
@@ -186,7 +186,7 @@ auditLogs: any[] = []; // Stores audit logs
     this.masterServ.createNewCoa(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
-          this.appSettingService.showSuccess('Chart Account Created Successfully');
+          this.appSettingService.showSuccess(resp.message);
           this.route.navigate(['/accounts/chart-accounts/list']);
         } else {
           this.appSettingService.showError(resp.message);

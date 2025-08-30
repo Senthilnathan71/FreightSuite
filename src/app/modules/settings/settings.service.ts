@@ -72,7 +72,7 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
   searchMenuList(payload: any) {
   return this.http.post("menu/search-list", payload).pipe(
     map((res: any) => {
-      return res.data;
+      return res;
     })
   );
 }

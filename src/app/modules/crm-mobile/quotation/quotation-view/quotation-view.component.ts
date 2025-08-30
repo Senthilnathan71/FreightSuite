@@ -94,7 +94,7 @@ export class QuotationViewComponent {
           console.log(this.quoteItems);
           this.totalLengthOfCollection = resp.data?.totalCount || 0;
         } else {
-          this.appSettingService.showError('Error searching Quotation.');
+          this.appSettingService.showError(resp.message);
           console.error('Error searching Quotation', resp.message)
           this.quoteItems = [];
           this.totalLengthOfCollection1 = 0;

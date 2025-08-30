@@ -172,7 +172,7 @@ auditLogs: any[] = []; // Stores audit logs
 
     this.masterService.searchSubledgerMaster(params).subscribe({
       next: (response: any) => {
-        if (response.data) {
+        if (response.status) {
           this.results = response.data.items || [];
           this.applySorting();
           // this.updatePaginationData();
@@ -180,6 +180,7 @@ auditLogs: any[] = []; // Stores audit logs
           this.searched = true;
           this.totalLengthOfCollection = response.data.totalCount || 0;
         } else {
+          this.appSettingService.showError(response.message);
           this.results = [];
           this.ledgerMappingList = [];
           this.totalLengthOfCollection = 0;

@@ -331,12 +331,16 @@ onToggleChange(controlName: string, event: Event) {
 
   this.settingsService.searchMenuList(params).subscribe({
     next: (response) => {
-      if(response) {
-        this.menuList = response.items || response.data;
-        this.totalLengthOfCollection = response.totalCount || response.length;
+      if(response.status) {
+        this.menuList = response.data.items || response.data;
+        this.totalLengthOfCollection = response.data.totalCount || response.length;
         this.applySorting();
         this.searchPerformed = true;
+      }else {
+        this.appSettingService.showError(response.message);
       }
+
+
       this.loading = false;
     },
     error: (err) => {

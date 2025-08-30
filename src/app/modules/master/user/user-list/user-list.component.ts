@@ -123,13 +123,16 @@ export class UserListComponent {
 
     this.masterServ.searchFfUserList(params).subscribe({
       next: (response) => {
-        if(response.data){
+        if(response.status){
           this.userList = response.data.items;
           this.results = [...this.userList];
           this.totalNumberOfCollection = response.data.totalCount;
           this.applySorting();
           this.searched = true;
-        }
+        }else {
+        this.appSettingService.showError(response.message);
+      }
+
       },
       error: (err) => {
         console.error('Error fetching users:', err);

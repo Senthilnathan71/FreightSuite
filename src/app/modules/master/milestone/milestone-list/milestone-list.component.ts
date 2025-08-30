@@ -122,13 +122,17 @@ export class MilestoneListComponent {
 
   this.masterService.searchMilestoneList(params).subscribe({
     next: (response: any) => {
-      if (response) {
-        this.allMilestones = response.items || response;
-        this.totalLengthOfCollection = response.totalCount || response.length;
+      if (response.status) {
+        this.allMilestones = response.data.items || response;
+        this.totalLengthOfCollection = response.data.totalCount || response.length;
         this.applySorting();
         this.milestoneList = this.allMilestones; 
         this.searchPerformed = true;
       }
+      else {
+        this.appSettingService.showError(response.message);
+      }
+
       this.loading = false;
     },
     error: (err) => {

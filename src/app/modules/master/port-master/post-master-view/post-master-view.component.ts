@@ -293,7 +293,8 @@ export class PostMasterViewComponent {
 
             console.log(resp);
             if (resp.status) {
-              this.appSettingService.showSuccess("Port Updated Successfully");
+              this.appSettingService.showSuccess(resp.message);
+
               this.router.navigate(['master/port-master/list']);
 
             } else {
@@ -312,7 +313,8 @@ export class PostMasterViewComponent {
 
             console.log(resp);
             if (resp.status) {
-              this.appSettingService.showSuccess("Port Created Successfully");
+              this.appSettingService.showSuccess(resp.message);
+
               this.router.navigate(['master/port-master/list']);
 
             } else {

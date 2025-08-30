@@ -272,10 +272,10 @@ export class VendorTdsEntryComponent {
       this.accountService.updateSupplierTDSById(this.SupplierTdsMappingSid, payload).subscribe({
         next: (resp: any) => {
           if (resp.status) {
-            this.appSettingService.showSuccess('Supplier TDS mapping is successfully updated.');
+            this.appSettingService.showSuccess(resp.message)
             this.router.navigate(['/accounts/supplier-tds/list']);
           } else {
-            this.appSettingService.showError('Error updating supplier TDS mapping.');
+           this.appSettingService.showError(resp.message);
             console.error(resp.message);
           }
         },
@@ -284,11 +284,11 @@ export class VendorTdsEntryComponent {
       this.accountService.createSupplierTDS(payload).subscribe({
         next: (resp: any) => {
           if (resp.status) {
-            this.appSettingService.showSuccess('New supplier TDS mapping successfully created.');
+            this.appSettingService.showSuccess(resp.message);
             this.router.navigate(['/accounts/supplier-tds/list']);
             
           } else {
-            this.appSettingService.showError('Error creating supplier TDS mapping.');
+            this.appSettingService.showError(resp.message);
             console.error(resp.message);
           }
         },

@@ -119,11 +119,13 @@ export class ModuleComponent implements OnInit {
 
   this.settingsService.searchModule(params).subscribe({
     next: (response:any) => {
-      if(response.data) {
+      if(response.status) {
         this.moduleList = response.data.items || response.data;
         this.totalAmountOfCollection = response.data.totalCount || response.length;
         this.applySorting();
         this.searchPerformed = true;
+      }else {
+        this.appSettingService.showError(response.message);
       }
       this.loading = false;
     },
@@ -210,11 +212,11 @@ export class ModuleComponent implements OnInit {
     operation.subscribe({
       next: (resp: any) => {
         if (resp.status) {
-          this.appSettingService.showSuccess(resp.message || 'Operation successful');
+          this.appSettingService.showSuccess(resp.message );
           this.closeModal();
           
         } else {
-          this.appSettingService.showError(resp.message || 'Operation failed');
+          this.appSettingService.showError(resp.message);
         }
       },
       error: (error) => {

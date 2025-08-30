@@ -313,10 +313,12 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 			this.masterService.updateDocTypeById(this.DocumentTypeMasterSid, payload).subscribe(
 				(resp: any) => {
 					if (resp.status) {
-						this.appSettingService.showSuccess('Document Type Successfully Updated')
+						this.appSettingService.showSuccess(resp.message);
+
 						this.router.navigate(['master/doctype/list'])
 					} else {
-						this.appSettingService.showError('Error Updating Document Type');
+						this.appSettingService.showError(resp.message);
+
 					}
 				},
 				(error) => {
@@ -328,10 +330,11 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 			this.masterService.createNewDocType(payload).subscribe(
 				(resp: any) => {
 					if (resp.status) {
-						this.appSettingService.showSuccess('Document Type successfully Created');
+						this.appSettingService.showSuccess(resp.message);
 						this.router.navigate(['master/doctype/list'])
 					} else {
-						this.appSettingService.showError('Error Creating Document Type');
+						this.appSettingService.showError(resp.message);
+
 					}
 				},
 				(error) => {

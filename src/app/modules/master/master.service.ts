@@ -92,7 +92,7 @@ export class MasterService {
   searchOrganizationList(payload) {
     return this.http.post("customer/search-list", payload).pipe(
       map((res: any) => {
-        return res.data;
+        return res;
       })
     )
   }
@@ -417,7 +417,7 @@ export class MasterService {
   searchDepartmentList(payload) {
     return this.http.post("department/search-list", payload).pipe(
       map((res: any) => {
-        return res.data;
+        return res;
       })
     );
   }
@@ -777,7 +777,7 @@ export class MasterService {
   searchCityList(payload) {
     return this.http.post<{ data: City[] }>("city/search-list", payload).pipe(
       map((resp) => {
-        let response = resp.data
+        let response = resp
         return response;
       })
     )
@@ -1175,7 +1175,7 @@ export class MasterService {
   searchCompanyList(payload) {
     return this.http.post("company/search-list", payload).pipe(
       map((res: any) => {
-        return res.data;
+        return res;
       })
     )
   }
@@ -1271,7 +1271,7 @@ getFieldConfiguration() {
   searchCurrencyList(payload: any) {
     return this.http.post<{ data: any }>(`currency/search-list`, payload).pipe(
       map((res: any) => {
-        return res.data;
+        return res;
       })
     )
   }
@@ -1315,7 +1315,7 @@ getFieldConfiguration() {
   searchContainerType(payload: any) {
     return this.http.post<{ data: any }>(`container-type/search-list`, payload).pipe(
       map((res: any) => {
-        return res.data;
+        return res;
       })
     )
   }
@@ -1598,7 +1598,7 @@ getFieldConfiguration() {
   searchChargeList(payload) {
     return this.http.post("charge/search-list", payload).pipe(
       map((res: any) => {
-        return res.data;
+        return res;
       })
     );
   }
@@ -1790,7 +1790,7 @@ getFieldConfiguration() {
   searchHssac(payload) {
     return this.http.post("hssac/search-list", payload).pipe(
       map((res: any) => {
-        return res.data;
+        return res;
       })
     );
   }
@@ -2466,7 +2466,7 @@ getFieldConfiguration() {
   searchMilestoneList(payload: any) {
     return this.http.post<{ data: any[] }>('milestone/search-list', payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -2911,7 +2911,7 @@ getFieldConfiguration() {
   searchInco(payload) {
     return this.http.post("inco/search-list", payload).pipe(
       map((res: any) => {
-        return res.data;
+        return res;
       })
     );
   }
@@ -2968,7 +2968,7 @@ getFieldConfiguration() {
   searchCostCenter(payload) {
     return this.http.post("cost-center/search-list", payload).pipe(
       map((res: any) => {
-        return res.data;
+        return res;
       })
     );
   }
@@ -3101,7 +3101,7 @@ getFieldConfiguration() {
   searchTaxGroup(payload) {
     return this.http.post("tax/search-list", payload).pipe(
       map((res: any) => {
-        return res.data;
+        return res;
       })
     );
   }

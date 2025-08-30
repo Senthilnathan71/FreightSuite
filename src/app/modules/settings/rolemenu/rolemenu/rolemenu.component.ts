@@ -183,6 +183,7 @@ onRoleMenuSearch(){
 				console.log(this.totalAmountOfCollection);
 				this.applySorting();
 			} else {
+				this.appSettingService.showError(response.message);
 				this.roleMenuList = [];
 				this.totalAmountOfCollection = 0;
 			}
@@ -508,11 +509,13 @@ clearFilterValue(){
 			this.settingService.updateRoleMenuById(this.RoleMenuMasterSid,payload).subscribe(
 				(resp:any)=>{
 					if(resp.status){
-						this.appSettingService.showSuccess('Role Menu Updated Successfully');
+						this.appSettingService.showSuccess(resp.message);
+
 						this.closeModal();
 						this.onRoleMenuSearch();
 					} else {
-						this.appSettingService.showError('Error Updating Role Menu')
+						this.appSettingService.showError(resp.message);
+
 					}
 				},
 				(error)=>{
@@ -523,7 +526,7 @@ clearFilterValue(){
 			this.settingService.createNewRoleMenu(payload).subscribe(
 				(resp:any)=>{
 					if(resp.status){
-						this.appSettingService.showSuccess('Role Menu Created Successfully');
+						this.appSettingService.showSuccess(resp.message)
 						this.closeModal();
 						this.onRoleMenuSearch();
 					} else {

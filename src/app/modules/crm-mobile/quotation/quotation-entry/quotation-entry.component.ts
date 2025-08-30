@@ -574,10 +574,11 @@ openAuditLogs(modal: TemplateRef<any>) {
         (resp: any) => {
 
           if (resp.status) {
-            this.modalService.openSuccessModal("Quotation Updated Successfully")
+            this.appSettingService.showSuccess('Quotation is successfully updated');
             this.router.navigate(['crm/quotation/list'])
           } else {
-            this.modalService.openErrorModal("Quotation Update Failed");
+            this.appSettingService.showError(resp.message);
+
           }
         }
       )

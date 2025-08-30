@@ -118,12 +118,15 @@ export class SailingScheduleLsitComponent implements OnInit {
 
         this.masterService.searchSailingSchedule(params).subscribe({
             next: (response) => {
-                if(response.data) {
+                if(response.status) {
                     this.scheduleList = response.data.items;
                     this.totalAmountOfCollections = response.data.totalCount
                     this.applySorting();
                     this.searched = true;
-                }
+                }else {
+        this.appSettingService.showError(response.message);
+      }
+
             },
             error: (err) => {
                 console.error('Error fetching schedules:', err);

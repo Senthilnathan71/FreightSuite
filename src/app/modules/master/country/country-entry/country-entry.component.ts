@@ -202,18 +202,14 @@ export class CountryEntryComponent implements OnInit {
       : this.masterService.createCountry(payload);
   
     operation.subscribe({
-      next: (resp: any) => {
-        this.btnDisable = false;
-        const message = resp.message || 
-          (this.isEditMode ? 'Country updated successfully!' : 'Country created successfully!');
-        
-        if (resp.status) {
-          this.appSettingService.showSuccess(message);
-          this.router.navigate(['/master/country/list']);
-        } else {
-          this.appSettingService.showError(resp.message || 'Operation failed');
-        }
-      },
+    next: (resp: any) => {
+      this.btnDisable = false;
+      if (resp.status) {
+        this.appSettingService.showSuccess(resp.message);
+      } else {
+        this.appSettingService.showError(resp.message);
+      }
+    },
       error: (err) => {
         this.btnDisable = false;
         const errorMessage = err.error?.message || 

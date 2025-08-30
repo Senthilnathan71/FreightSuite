@@ -150,7 +150,7 @@ export class ChargeTaxComponent implements OnInit {
 
     this.masterService.searchChargeTax(params).subscribe({
       next: (response: any) => {
-        if (response.data) {
+        if (response.status) {
           this.results = response.data.items || [];
           this.applySorting();
           this.updatePaginationData();
@@ -161,6 +161,7 @@ export class ChargeTaxComponent implements OnInit {
           this.results = [];
           this.chargeTaxList = [];
           this.totalLengthOfCollection = 0;
+          this.appSettingService.showError(response.message);
         }
         this.searchPerformed = true;
         this.isLoading = false;

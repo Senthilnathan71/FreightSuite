@@ -202,7 +202,7 @@ applySorting() {
 
   this.masterService.searchBlclauselList(params).subscribe({
     next: (response) => {
-      if(response.data) {
+      if(response.status) {
         
         this.allClauses = response.data.items;
         this.applySorting();
@@ -214,6 +214,8 @@ applySorting() {
         this.allClauses = [];
         this.clauseList = []; 
         this.totalLengthOfCollection = 0;
+        this.appSettingService.showError(response.message);
+
       }
       
       this.searchPerformed = true;
@@ -266,51 +268,60 @@ updatePaginatedData(): void {
   }
 
   onSubmit(): void {
-    if (this.biclauseForm.get('status')?.disabled) {
-      this.biclauseForm.get('status')?.enable();
-    }
-    if (this.biclauseForm.invalid) {
-      this.appSettingService.showWarning('Please fill all required fields correctly.');
-      return;
-    }
-
-    this.btnDisable = true;
-    const formValue = this.biclauseForm.value;
-    const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
-    
-    const payload = {
-      ClauseDescription: formValue.ClauseDescription,
-      Keyword: formValue.Keyword,
-      Sortorder: formValue.Sortorder ? parseInt(formValue.Sortorder) : null,
-      DefaultClause: formValue.DefaultClause ? 'Y' : 'N',
-      status: formValue.status,
-      ...(this.isEditMode ? {updatedBy : userEmail} : {createdBy : userEmail})
-    };
-
-    const operation = this.isEditMode && this.currentClauseId
-      ? this.masterService.updateBlClauseById(this.currentClauseId, payload)
-      : this.masterService.createNewBlClause(payload);
-
-    operation.subscribe({
-      next: () => {
-        this.btnDisable = false;
-        const message = this.isEditMode 
-          ? 'BI Clause updated successfully!' 
-          : 'BI Clause created successfully!';
-        
-        this.appSettingService.showSuccess(message);
-        this.modalService.dismissAll();
-        this.loadAllClauses();
-      
-      },
-      error: (err) => {
-        this.btnDisable = false;
-        const errorMessage = err.error?.message || 
-          `Error ${this.isEditMode ? 'updating' : 'creating'} BI Clause`;
-        this.appSettingService.showError(errorMessage);
-      }
-    });
+  if (this.biclauseForm.get('status')?.disabled) {
+    this.biclauseForm.get('status')?.enable();
   }
+  if (this.biclauseForm.invalid) {
+    this.appSettingService.showWarning('Please fill all required fields correctly.');
+    return;
+  }
+
+  this.btnDisable = true;
+  const formValue = this.biclauseForm.value;
+  const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
+  
+  const payload = {
+    ClauseDescription: formValue.ClauseDescription,
+    Keyword: formValue.Keyword,
+    Sortorder: formValue.Sortorder ? parseInt(formValue.Sortorder) : null,
+    DefaultClause: formValue.DefaultClause ? 'Y' : 'N',
+    status: formValue.status,
+    ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail })
+  };
+
+  const operation = this.isEditMode && this.currentClauseId
+    ? this.masterService.updateBlClauseById(this.currentClauseId, payload)
+    : this.masterService.createNewBlClause(payload);
+
+  operation.subscribe({
+    next: (response: any) => {
+      this.btnDisable = false;
+
+      if (response.status) {
+        
+        this.appSettingService.showSuccess(response.message);
+      } 
+else {
+        this.appSettingService.showError(response.message);
+      }
+
+
+      this.modalService.dismissAll();
+      this.loadAllClauses();
+    },
+    error: (err) => {
+      this.btnDisable = false;
+      if (err.error?.message) {
+        this.appSettingService.showError(err.error.message);
+      } else {
+        this.appSettingService.showError(
+          `Error ${this.isEditMode ? 'updating' : 'creating'} BI Clause`
+        );
+      }
+    }
+  });
+}
+
 
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.blclauseData?.BLClauseMasterSid) return;

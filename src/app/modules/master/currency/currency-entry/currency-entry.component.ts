@@ -282,11 +282,14 @@ export class CurrencyEntryComponent implements OnInit {
       next: (resp) => {
         this.loading = false;
         this.btnDisable = false;
-        const message = this.isEditMode 
-          ? 'Currency updated successfully!' 
-          : 'Currency created successfully!';
+      if (resp.status) {
         
-        this.appSettingService.showSuccess(message);
+        this.appSettingService.showSuccess(resp.message);
+      } 
+else {
+        this.appSettingService.showError(resp.message);
+      }
+
         this.router.navigate(['/master/currency/list']);
       },
       error: (err) => {

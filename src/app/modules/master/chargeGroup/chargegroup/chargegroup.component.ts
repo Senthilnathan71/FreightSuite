@@ -156,7 +156,7 @@ export class ChargegroupComponent implements OnInit {
 
   this.masterService.searchChargeGroups(params).subscribe({
     next: (response: any) => {
-      if (response?.data) {
+      if (response?.status) {
         this.results = response.data.items || [];
         this.applySorting();
         this.updatePaginationData();
@@ -167,6 +167,8 @@ export class ChargegroupComponent implements OnInit {
         this.results = [];
         this.chargeGroupList = [];
         this.totalLengthOfCollection = 0;
+        this.appSettingService.showError(response.message);
+
       }
       this.searchPerformed = true;
     },

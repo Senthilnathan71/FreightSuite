@@ -140,9 +140,15 @@ export class CountryListComponent {
         this.applySorting();
         this.searchPerformed = true;
       }
+      else {
+        this.appSettingService.showError(response.message);
+      }
+
+
       this.loading = false;
     },
     error: (err) => {
+
       console.error('Error fetching countries:', err);
       this.countryList = [];
       this.totalLengthOfCollection = 0;

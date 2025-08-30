@@ -441,11 +441,14 @@ export class ChargeEntryComponent implements OnInit {
         next: (resp) => {
             this.loading = false;
             this.btnDisable = false;
-            const message = this.isEditMode 
-                ? 'Charge updated successfully!' 
-                : 'Charge created successfully!';
-            
-            this.appSettingService.showSuccess(message);
+            if (resp.status) {
+        
+        this.appSettingService.showSuccess(resp.message);
+      } 
+else {
+        this.appSettingService.showError(resp.message);
+      }
+
             
             if (!this.isEditMode && resp.data?.ChargeMasterSid) {
                 this.router.navigate(['/master/charge/entry', resp.data.ChargeMasterSid]);
