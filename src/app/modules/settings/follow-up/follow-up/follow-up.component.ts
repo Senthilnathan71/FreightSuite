@@ -40,6 +40,7 @@ export class FollowUpComponent implements OnInit {
   @Input() parentEmailCC?: string;
   @Input() parentSubject!: string;     // Subject
   @Input() parentMailbody!: string;
+  @Input() documentSid!: number;
   followupForm!: FormGroup;
   FollowupSid: number;
   isEditMode = false;
@@ -125,6 +126,7 @@ export class FollowUpComponent implements OnInit {
       Status: formValue.Status === 'A' ? 'A' : 'S',
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DocumentSid: this.documentSid
     };
     let pdfFile: File | null = null;
   if (formValue.Mailbody) {

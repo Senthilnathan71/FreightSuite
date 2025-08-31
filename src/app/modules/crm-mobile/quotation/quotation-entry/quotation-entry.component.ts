@@ -1021,10 +1021,10 @@ openAuditLogs(modal: TemplateRef<any>) {
   openFollowup() {
     if (!this.quotationData) return;
     const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.quotationData?.QuoteHeaderSid;
     modalRef.componentInstance.parentEmail = this.quotationData.Email;
     modalRef.componentInstance.parentSubject = `Quotation No.${this.quotationData.QuoteNumber} Date:${new Date(this.quotationData.QuoteDate).toLocaleDateString()}`;
-  
-  modalRef.componentInstance.parentMailbody = `
+    modalRef.componentInstance.parentMailbody = `
     <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
       <p>Dear Sir/Madam,</p>
       <p>Please find enclosed the quotation as requested.</p>
