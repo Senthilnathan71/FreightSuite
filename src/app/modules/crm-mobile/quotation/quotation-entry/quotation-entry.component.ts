@@ -29,6 +29,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 @Component({
   selector: 'app-quotation-entry',
   standalone: true,
@@ -1015,6 +1016,31 @@ openAuditLogs(modal: TemplateRef<any>) {
     modalRef.componentInstance.item = this.quotationData;
     modalRef.componentInstance.idLabel = 'Quotation Id';
     modalRef.componentInstance.idValue = this.quotationData?.QuoteHeaderSid;
+  }
+
+  openFollowup() {
+    if (!this.quotationData) return;
+    const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.parentEmail = this.quotationData.Email;
+    modalRef.componentInstance.parentSubject = `Quotation No.${this.quotationData.QuoteNumber} Date:${new Date(this.quotationData.QuoteDate).toLocaleDateString()}`;
+  
+  modalRef.componentInstance.parentMailbody = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+      <p>Dear Sir/Madam,</p>
+      <p>Please find enclosed the quotation as requested.</p>
+      <p>Kindly review the details at your convenience.</p>
+      <p>Looking forward to your feedback and the opportunity to work together.</p>
+      <p>
+        Approval Hyperlink: 
+        <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+      </p>
+      <p>Best Regards,</p>
+      <p>${this.userData['userEmail']}</p>
+    </div>
+  `;
+
+  // Optionally, pass the quotation HTML content ID for PDF generation
+  modalRef.componentInstance.pdfContentId = 'quotationContent';
   }
 
   openTandC() {
