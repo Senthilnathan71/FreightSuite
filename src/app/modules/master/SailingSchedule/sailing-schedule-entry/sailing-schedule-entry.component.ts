@@ -145,24 +145,24 @@ currentBranch: any
                 }
             }
         )
-        this.scheduleDetailForm.get('Sno').valueChanges.subscribe((value: number) => {
-    if (!value) {
-        this.isSnoDuplicate = false;
-        return;
-    }
+//         this.scheduleDetailForm.get('Sno').valueChanges.subscribe((value: number) => {
+//     if (!value) {
+//         this.isSnoDuplicate = false;
+//         return;
+//     }
 
-    const duplicate = this.scheduleDetailList.find(
-        item => item.Sno === value && item.VoyageMasterDetailSid !== this.VoyageMasterDetailSid
-    );
+//     const duplicate = this.scheduleDetailList.find(
+//         item => item.Sno === value && item.VoyageMasterDetailSid !== this.VoyageMasterDetailSid
+//     );
 
-    if (duplicate) {
-        this.formErrors.sno = `Duplicate SNO not allowed (SNO ${value} already exists)`;
-        this.isSnoDuplicate = true;
-    } else {
-        this.formErrors.sno = null;
-        this.isSnoDuplicate = false;
-    }
-});
+//     if (duplicate) {
+//         this.formErrors.sno = `Duplicate SNO not allowed (SNO ${value} already exists)`;
+//         this.isSnoDuplicate = true;
+//     } else {
+//         this.formErrors.sno = null;
+//         this.isSnoDuplicate = false;
+//     }
+// });
 
     }
     checkPermissions() {
@@ -229,6 +229,38 @@ currentBranch: any
         // this.scheduleDetailForm.get('POLSid')?.valueChanges.subscribe(() => {
         //     this.updatePODList();
         // });
+        this.scheduleDetailForm.get('Sno')?.valueChanges.subscribe((value: number) => {
+      if (!value) {
+        this.isSnoDuplicate = false;
+        this.snoChanged = false;
+        this.etaEtdMustChange = false;
+        return;
+      }
+
+      const duplicate = this.scheduleDetailList.find(
+        item => item.Sno === value && item.VoyageMasterDetailSid !== this.VoyageMasterDetailSid
+      );
+
+      if (duplicate) {
+        this.formErrors.sno = `Duplicate SNO not allowed (SNO ${value} already exists)`;
+        this.isSnoDuplicate = true;
+        this.snoChanged = false;
+        this.etaEtdMustChange = false;
+      } else {
+        this.formErrors.sno = null;
+        this.isSnoDuplicate = false;
+
+        if (this.originalSno !== null && value !== this.originalSno) {
+          this.etaEtdMustChange = true;
+          this.snoChanged = true;
+          this.formErrors.etaEtd = 'Since SNO changed, please update ETA and ETD.';
+        } else {
+          this.etaEtdMustChange = false;
+          this.snoChanged = false;
+          this.formErrors.etaEtd = null;
+        }
+      }
+    });
 
    
         this.scheduleDetailForm.get('ETD').valueChanges.subscribe((value:Date)=>{
@@ -454,6 +486,14 @@ currentBranch: any
     const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
     const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
     const formValue = this.scheduleDetailForm.getRawValue();
+    if (this.etaEtdMustChange) {
+      if (!formValue.ETA || !formValue.ETD) {
+        this.appSettingService.showError('Since SNO changed, please update ETA and ETD.');
+        return;
+      }
+      this.etaEtdMustChange = false;
+      this.formErrors.etaEtd = null;
+    }
     const newSno = parseInt(formValue.Sno);
 
     // --- DUPLICATE SNO VALIDATION ---
