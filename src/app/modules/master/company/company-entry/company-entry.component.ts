@@ -218,7 +218,8 @@ export class CompanyEntryComponent implements OnInit {
 
 	initBranchForm() {
 		this.branchForm = this.fb.group({
-			branchCompanyMasterSid: [''],
+			CompanyMasterSid: [''],
+			BranchMasterSid : [''],
 			branchName: ['', [Validators.required, Validators.maxLength(100)]],
 			branchCode: ['', [Validators.required, Validators.maxLength(10)]],
 			branchAddressLine1: ['', [Validators.required, Validators.maxLength(500)]],
@@ -270,6 +271,7 @@ export class CompanyEntryComponent implements OnInit {
 	createBranchFormGroup(branchData?: any): FormGroup {
 		const group = this.fb.group({
 			BranchMasterSid: [branchData?.BranchMasterSid || null],
+			CompanyMasterSid : [branchData?.CompanyMasterSid || null],
 			branchName: [branchData?.branchName || '', [Validators.required, Validators.maxLength(100)]],
 			branchCode: [branchData?.branchCode || '', [Validators.required, Validators.maxLength(10)]],
 			addressLine1: [branchData?.branchAddressLine1 || '', [Validators.required, Validators.maxLength(500)]],
@@ -354,6 +356,7 @@ export class CompanyEntryComponent implements OnInit {
 						// Create branch form group
 						const branchGroup = this.fb.group({
 							BranchMasterSid: branch?.BranchMasterSid,
+							CompanyMasterSid: branch?.CompanyMasterSid,
 							branchName: branch?.branchName,
 							branchCode: branch?.branchCode,
 							addressLine1: branch?.addressLine1,
@@ -373,21 +376,18 @@ export class CompanyEntryComponent implements OnInit {
 							reportLogo: branch?.reportLogo || null,
 							cityName: branch.cityMaster?.cityName,
 							consolePrefix: branch?.consolePrefix || '',
-                consoleNoLen: branch?.consoleNoLen || null,
-                shipmentPrefix: branch?.shipmentPrefix || '',
-                shipmentNoLen: branch?.shipmentNoLen || null,
-                enquiryPrefix: branch?.enquiryPrefix || '',
-                enquiryNoLen: branch?.enquiryNoLen || null,
-                quotationPrefix: branch?.quotationPrefix || '',
-                quotationNoLen: branch?.quotationNoLen || null,
-
-
+							consoleNoLen: branch?.consoleNoLen || null,
+							shipmentPrefix: branch?.shipmentPrefix || '',
+							shipmentNoLen: branch?.shipmentNoLen || null,
+							enquiryPrefix: branch?.enquiryPrefix || '',
+							enquiryNoLen: branch?.enquiryNoLen || null,
+							quotationPrefix: branch?.quotationPrefix || '',
+							quotationNoLen: branch?.quotationNoLen || null,
 							config: branch?.config,
 							branchBanks: this.fb.array([])
 						});
 						// const branchGroup = this.createBranchFormGroup(branch);
 						this.branches.push(branchGroup);
-
 						// Process branch banks if they exist
 						const branchBankData: any[] = branch.branchBank || [];
 						const branchBanksArray = branchGroup.get('branchBanks') as FormArray;
@@ -442,9 +442,8 @@ export class CompanyEntryComponent implements OnInit {
 			}
 		} else {
 			this.isModalEditMode = true;
-			this.currentBranchIndex = branchIndex;
-			this.branchData = this.branches.at(branchIndex).value;
-
+			this.currentBranchIndex = ((this.branchPage - 1)*this.branchPageSize) + branchIndex;
+			this.branchData = this.branches.at(this.currentBranchIndex).value;
 			let timeZoneValue = this.branchData?.timeZone;
 			if (timeZoneValue) {
 
@@ -458,6 +457,7 @@ export class CompanyEntryComponent implements OnInit {
 
 			this.initBranchForm();
 			this.branchForm.patchValue({
+				CompanyMasterSid : this.branchData?.CompanyMasterSid,
 				BranchMasterSid: this.branchData?.BranchMasterSid,
 				branchName: this.branchData?.branchName,
 				branchCode: this.branchData?.branchCode,
@@ -546,6 +546,8 @@ export class CompanyEntryComponent implements OnInit {
 		// 3. Prepare payload
 		const formValue = this.branchForm.value;
 		const payload = {
+			BranchMasterSid : formValue.BranchMasterSid,
+			CompanyMasterSid : formValue.CompanyMasterSid,
 			branchName: formValue.branchName,
 			branchCode: formValue.branchCode,
 			addressLine1: formValue.branchAddressLine1,
@@ -720,6 +722,8 @@ export class CompanyEntryComponent implements OnInit {
 			});
 
 			return {
+				BranchMasterSid: branchValue.BranchMasterSid,
+				CompanyMasterSid: branchValue.CompanyMasterSid,
 				branchName: branchValue.branchName,
 				branchCode: branchValue.branchCode,
 				addressLine1: branchValue.addressLine1,
@@ -768,7 +772,7 @@ export class CompanyEntryComponent implements OnInit {
 					if (resp.status) {
 						this.appSettingService.showSuccess(resp.message);
 
-						const companyId = resp.company?.CompanyMasterSid
+						const companyId = resp.data.company?.CompanyMasterSid
 						console.log(resp);
 						if (companyId) {
 							this.CompanyMasterSid = companyId

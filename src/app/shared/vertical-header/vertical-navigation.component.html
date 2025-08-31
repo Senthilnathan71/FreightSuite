@@ -204,8 +204,8 @@
   <li class="nav-item">
   <div class="d-flex gap-3">
     <div class="position-relative" ngbDropdown #menuSearchDropdown="ngbDropdown">
-      <input type="text" class="form-control ps-3 pe-5 border border-info" placeholder="Search Menu"
-        style="border-radius: 20px;" (click)="onSearchClick()" (input)="searchMenu($event)" (keydown)="onKeyDown($event)"
+      <input type="text"  #searchMenuInput class="form-control ps-3 pe-5 border border-info" placeholder="Search Menu"
+        style="border-radius: 20px;" (click)="onSearchClick()" (input)="searchMenu($event)" (blur)="resetMenuSearch($event)" (keydown)="onKeyDown($event)"
         ngbDropdownToggle />
       <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-info"></i>
 
