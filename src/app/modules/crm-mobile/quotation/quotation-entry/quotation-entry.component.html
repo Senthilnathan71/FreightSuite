@@ -719,15 +719,13 @@
           }
 
           @if(hasPermission('Email')) {
-          <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto" (click)="openEmail()">
+          <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEmail()">
             <i class="fas fa-envelope me-1"></i> Email
           </button>
           }
-
-          <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto" (click)="openFollowup()">
+          <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto " (click)="openFollowup()">
             <i class="fas fa-paperclip me-1"></i> Followup
           </button>
-
         </div>
       </div>
     </div>
