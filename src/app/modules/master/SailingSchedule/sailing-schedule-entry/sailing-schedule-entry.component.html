@@ -396,6 +396,7 @@
                 <thead>
                     <tr class="bg-info">
                         <th class="bg-transparent text-light" scope="col" width="8%">Action</th>
+                        <th class="bg-transparent text-light" scope="col">Sno</th>
                         <th class="bg-transparent text-light" scope="col">Port</th>
                         <!-- <th class="bg-transparent text-light" scope="col">POD</th> -->
                         <th class="bg-transparent text-light" scope="col">ETA</th>
@@ -411,8 +412,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @for (item of slicedScheduleDetailList; track $index) {
-                    <tr>
+                    
+                    <tr *ngFor="let item of slicedScheduleDetailList; let i = index; trackBy: trackBySno">
                         <td>
                             <div class="d-flex align-items-center">
                                 <a class="text-info mx-2 ps-3" (click)="openDetailEntryModal(DetailEntryTemplate,item)">
@@ -422,6 +423,9 @@
                                     <i-feather name="trash-2" class="feather-sm"></i-feather>
                                 </a>
                             </div>
+                        </td>
+                         <td>
+                            <div class="text-truncate">{{ item.Sno}}</div>
                         </td>
                         <td>
                             <div class="text-truncate">{{getFormattedPort(item.POLSid)}}</div>
@@ -461,7 +465,6 @@
                         </td>
 
                     </tr>
-                    }
                 </tbody>
             </table>
             <div>
@@ -487,6 +490,29 @@
         <div class="modal-body">
             <div class="col-12">
                 <div class="row compact-form">
+                      <aside class="col-md-6">
+                        <div class="custom-form-group">
+                            <input type="number" id="sno-input" placeholder="" class="form-control custom-input-field sm"
+                                formControlName="Sno" [class.is-invalid]="formErrors.sno || (scheduleDetailForm.get('Sno')?.touched && scheduleDetailForm.get('Sno')?.invalid)">
+                            <label for="sno-input" class="input-label">Sno <span class="text-danger">*</span></label>
+                             <div *ngIf="formErrors.sno" class="error-message">
+            <span>{{ formErrors.sno }}</span>
+        </div>
+                            @if(scheduleDetailForm.get('Sno')?.touched && scheduleDetailForm.get('Sno')?.invalid){
+                                <div class="error-message">
+                                    @if(scheduleDetailForm.get('Sno')?.hasError('required')){
+                                        <span>Required</span>
+                                    } @else if(scheduleDetailForm.get('Sno')?.hasError('pattern')){
+                                        <span>Must be a number</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </aside>
+                    
+                    <div class="col-md-12 mb-2" *ngIf="etaEtdMustChange" class="alert alert-warning p-2">
+            Since Sno has changed, please update ETA and ETD before saving.
+          </div>
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select formControlName="POLSid" [items]="filteredPOLList" bindLabel="PortCode" bindValue="PortMasterSid" placeholder="Select Port" >
@@ -628,6 +654,9 @@
                             </button>
                         </div>
                     </aside>
+                    <div class="col-md-12" *ngIf="formErrors?.etaOrder" class="error-message text-danger">
+            {{ formErrors.etaOrder }}
+          </div>
                     <ng-template #footerTemplateETD>
                         <hr class="my-0" />
                         <button class="btn btn-info btn-sm m-2 float-start" (click)="scheduleDetailForm.get('ETD').setValue(todayDate); d5.close()">
@@ -838,7 +867,9 @@
             </div>
         </div>
         <div class="modal-footer p-2">
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onModalSubmit()">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onModalSubmit()"
+            [disabled]="etaEtdMustChange && (!scheduleDetailForm.value.ETA || !scheduleDetailForm.value.ETD) || isSnoDuplicate 
+            || scheduleDetailForm.invalid">
                 <i class="fas fa-save me-1"></i>
                 {{isModalEditMode ? 'Update' : 'Save'}}
             </button>

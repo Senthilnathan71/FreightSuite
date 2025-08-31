@@ -2154,6 +2154,17 @@ getFieldConfiguration() {
     )
   }
 
+  getVoyageDetailByHeader(VoyageMasterHeaderSid: number) {
+  return this.http
+    .get<{ data: any[] }>(`voyage-detail/fetchByHeader/${VoyageMasterHeaderSid}`)
+    .pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+}
+
   createNewSailingScheduleDetail(payload) {
     return this.http.post<{ data: any }>('voyage-detail/create', payload).pipe(
       map((resp) => {
