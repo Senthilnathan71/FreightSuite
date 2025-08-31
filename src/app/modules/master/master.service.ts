@@ -3585,8 +3585,49 @@ getAuditLogsContainer(tableName: string, recordId?: string) {
 
 
 
+  getAllFollowups() {
+    return this.http.get<{ data: any[] }>('followup').pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+  createFollowup(payload) {
+    return this.http.post<{ data: any }>('followup/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
 
+  getFollowById(followupMasterSid) {
+    return this.http.get<{ data: any }>(`followup/fetch/${followupMasterSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
 
+  updateById(followupMasterSid, payload) {
+    return this.http.patch<{ data: any }>(`followup/update/${followupMasterSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deletefollowupById(id) {
+    return this.http.delete<{ data: any }>(`followup/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
 }
 
 
