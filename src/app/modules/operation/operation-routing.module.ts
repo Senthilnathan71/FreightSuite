@@ -11,6 +11,8 @@ import { InvoiceListComponent } from './Invoice/invoice-list/invoice-list.compon
 import { InvoiceEntryComponent } from './Invoice/invoice-entry/invoice-entry.component';
 import { CragoReceiptEntryComponent } from './cargo-receipt/crago-receipt-entry/crago-receipt-entry.component';
 import { CragoReceiptListComponent } from './cargo-receipt/crago-receipt-list/crago-receipt-list.component';
+import { LoadingPlanEntryComponent } from './loading-plan/loading-plan-entry/loading-plan-entry.component';
+import { SplitBookingEntryComponent } from './Split-Booking/split-booking-entry/split-booking-entry.component';
 
 export const OperationRoutes: Routes = [
   {
@@ -119,6 +121,22 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'Cargo Receipt',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Cargo Receipt' }],
+        },
+      },
+       {
+        path: 'loading-plan/entry',
+        component: LoadingPlanEntryComponent,
+        data: {
+          title: 'Loading Plan',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Loading Plan' }],
+        },
+      },
+       {
+        path: 'split-booking/entry',
+        component: SplitBookingEntryComponent,
+        data: {
+          title: 'Split Booking',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Split Booking' }],
         },
       },
     ],

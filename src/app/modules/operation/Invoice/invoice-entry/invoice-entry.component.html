@@ -176,8 +176,8 @@
     </div>
 
 
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto mt-2">
-        <div class="col-12 p-0">
+    <div class="mx-0">
+        <div class="col-12 p-2 bg-white py-2 rounded shadow-sm  mt-2">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
@@ -282,10 +282,8 @@
                 </table>
             </div>
         </div>
-    </div>
 
-
-    <div class="nav-pills-container mt-2">
+         <div class="nav-pills-container mt-2">
         <div class="nav-pills">
             <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
                 (click)="selectTab(tab.name)">
@@ -368,6 +366,10 @@
             </div>
         </div>
     </div>
+    </div>
+
+
+   
 </div>
 
 
