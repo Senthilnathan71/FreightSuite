@@ -200,7 +200,7 @@ getCountryName(countrySid: number): string {
       if (result === true) {
         this.masterService.deleteOrganizationById(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess("Deleted!");
-          this.router.navigate(['master/department/list'])
+          this.router.navigate(['master/organization/list'])
         });
       }
     });

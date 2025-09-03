@@ -114,36 +114,57 @@ export class OrganizationEntryComponent {
   ];
   selectedStatus: string[] = [];
 
+  // modeOfCustomerType = [
+  //   { id: '1', name: 'Forwarder' },
+  //   { id: '2', name: 'Airline' },
+  //   { id: '3', name: 'Airline Name' },
+  //   { id: '4', name: 'Shipper' },
+  //   { id: '5', name: 'Airline Agent' },
+  //   { id: '6', name: 'Sea CTO' },
+  //   { id: '7', name: 'Overseas Agent' },
+  //   { id: '8', name: 'Consignee' },
+  //   { id: '9', name: 'SCAC Code' },
+  //   { id: '10', name: 'Shipping Line' },
+  //   { id: '11', name: 'Broker' },
+  //   { id: '12', name: 'Unpack CFS' },
+  //   { id: '13', name: 'Shippingline Agent' },
+  //   { id: '14', name: 'Transport Client' },
+  //   { id: '15', name: 'Local Transporter' },
+  //   { id: '16', name: 'Co-Loader' },
+  //   { id: '17', name: 'Container Terminal' },
+  //   { id: '18', name: 'Own Group Company' },
+  //   { id: '19', name: 'NVOCC' },
+  //   { id: '20', name: 'Yard' },
+  //   { id: '21', name: 'Transporter' },
+  //   { id: '22', name: 'Air CTO' },
+  //   { id: '23', name: 'Pack CFS' },
+  //   { id: '24', name: 'Warehouse' },
+  //   { id: '25', name: 'Agent' },
+  //   { id: '26', name: 'Carrier' },
+  //   { id: '27', name: 'Vendor' },
+  //   { id: '28', name: 'Notify' },
+  // ];
   modeOfCustomerType = [
-    { id: '1', name: 'Forwarder' },
-    { id: '2', name: 'Airline' },
-    { id: '3', name: 'Airline Name' },
-    { id: '4', name: 'Shipper' },
-    { id: '5', name: 'Airline Agent' },
-    { id: '6', name: 'Sea CTO' },
-    { id: '7', name: 'Overseas Agent' },
-    { id: '8', name: 'Consignee' },
-    { id: '9', name: 'SCAC Code' },
-    { id: '10', name: 'Shipping Line' },
-    { id: '11', name: 'Broker' },
-    { id: '12', name: 'Unpack CFS' },
-    { id: '13', name: 'Shippingline Agent' },
-    { id: '14', name: 'Transport Client' },
-    { id: '15', name: 'Local Transporter' },
-    { id: '16', name: 'Co-Loader' },
-    { id: '17', name: 'Container Terminal' },
-    { id: '18', name: 'Own Group Company' },
-    { id: '19', name: 'NVOCC' },
-    { id: '20', name: 'Yard' },
-    { id: '21', name: 'Transporter' },
-    { id: '22', name: 'Air CTO' },
-    { id: '23', name: 'Pack CFS' },
-    { id: '24', name: 'Warehouse' },
-    { id: '25', name: 'Agent' },
-    { id: '26', name: 'Carrier' },
-    { id: '27', name: 'Vendor' },
-    { id: '28', name: 'Notify' },
-  ];
+  { id: 1, name: "Customer" },
+  { id: 2, name: "Vendor" },
+  { id: 3, name: "Agent" },
+  { id: 4, name: "CFS" },
+  { id: 5, name: "Yard" },
+  { id: 6, name: "Feeder" },
+  { id: 7, name: "NVOCC" },
+  { id: 8, name: "Transporter" },
+  { id: 9, name: "Shipper" },
+  { id: 10, name: "Consignee" },
+  { id: 11, name: "Air Line" },
+  { id: 12, name: "Carrier" },
+  { id: 13, name: "Overseas Agent" },
+  { id: 14, name: "Warehouse" },
+  { id: 15, name: "Shipping Line" },
+  { id: 16, name: "Forwarder" },
+  { id: 17 , name: 'Vendor' },
+  { id: 18, name: "Notify" }
+];
+
 
   // isSelected(item: any): boolean {
   //   return this.selectedStatus?.includes(item.name);
@@ -231,9 +252,15 @@ export class OrganizationEntryComponent {
   //   return this.selectedStatus.includes(item.name);
   // }
 
-  handleSelectedStatus(event){
+  handleSelectedStatus(event: any[]) {
     console.log(event);
     this.selectedStatus = [...event];
+    const allCustomerFields = ['Shipper', 'Consignee', 'Forwarder', 'Notify'];
+    allCustomerFields.forEach(field => {
+      if (this.selectedStatus.includes(field) && !this.selectedStatus.includes('Customer')) {
+        this.selectedStatus.push('Customer');
+      }
+    })
     this.updateCustomerType();
     console.log(this.customerForm.get('CustomerType').value);
   }
@@ -1003,7 +1030,7 @@ loadMenus() {
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate([`master/organization/entry/${resp.data.CustomerMasterSid}`]);
+              this.router.navigate([`master/organization/entry/${this.CustomerMasterSid}`]);
             } else {
               this.appSettingService.showError(resp.message);
             }

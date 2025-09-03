@@ -79,4 +79,45 @@ export class ExcelExportService {
     FileSaver.saveAs(blob, `${fileName}-${new Date().getTime()}.xlsx`);
   }
 
+  excelToJson(file: File): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+          // Get all data including headers
+          const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+          if (rawData.length === 0) {
+            resolve([]);
+            return;
+          }
+
+          // First row as headers (keys)
+          const headers = rawData[0] as string[];
+
+          // Convert remaining rows to objects using first row as keys
+          const jsonData = rawData.slice(1).map((row: any[]) => {
+            const obj: any = {};
+            headers.forEach((header, index) => {
+              obj[header] = row[index] || null;
+            });
+            return obj;
+          });
+
+          resolve(jsonData);
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+
 }

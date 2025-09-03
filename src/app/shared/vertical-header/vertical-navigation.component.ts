@@ -61,6 +61,7 @@ branchList: any[] = [];
   menuSearchResults: any[] = [];
   menusLoaded = false;
   @ViewChildren('menuItem') menuItems!: QueryList<ElementRef>;
+  @ViewChild('searchMenuInput') searchMenuInput!: ElementRef<HTMLInputElement>;
   @ViewChild('menuSearchDropdown') menuSearchDropdown!: NgbDropdown;
 
   docSearchResults: any[] = [];
@@ -363,27 +364,48 @@ ngOnInit(): void {
       const item = this.menuSearchResults[this.activeIndex];
       this.addToRecent(item);
       this.router.navigate([item.path]);
-      this.resetMenuSearch(event);
+      this.clearSearch();
     }
   }
 
   //  On click event
   onClickEvent(event,menu){
+    event.preventDefault();
+    event.stopPropagation();
     this.addToRecent(menu);
-    this.resetMenuSearch(event);
+    this.router.navigate([menu.path]);
+    this.clearSearch();
   }
   
 
-  resetMenuSearch(event) {
-    const element = (event.target) as HTMLInputElement
-    console.log(event);
-    console.log(element)
-    event.target.value = ''
-    element.blur();
+  resetMenuSearch(event: Event) {
+    if (event instanceof KeyboardEvent) {
+      return;
+    }
+    const element = (event.target) as HTMLInputElement;
+    element.value = '';
     this.menuSearchResults = [...this.allMenus];
     this.activeIndex = -1;
-    this.menuSearchDropdown.close()
+    this.menuSearchDropdown.close();
   }
+
+  clearSearch() {
+    if(this.searchMenuInput){
+      this.searchMenuInput.nativeElement.value = '';
+      this.searchMenuInput.nativeElement.blur();
+    }
+    this.menuSearchResults = [...this.allMenus];
+    this.activeIndex = -1;
+    this.menuSearchDropdown.close();
+  }
+
+  onInputBlur(event: Event) {
+    setTimeout(() => {
+        this.clearSearch();
+    }, 150);
+  }
+
+
   
   // auto scroll dropdown if arrow reaches end of menu list
   private scrollToActive() {

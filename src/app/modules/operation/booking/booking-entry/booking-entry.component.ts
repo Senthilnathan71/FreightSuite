@@ -28,6 +28,12 @@ import { CommonModule, NgComponentOutlet } from '@angular/common';
 import { ConnectionComponent } from '../../connection/connection/connection.component';
 import { ArApComponent } from '../../AR-AP/ar-ap/ar-ap.component';
 
+import { toggleFullScreen } from 'src/app/shared/fullscreenToggle';
+import { BookingData } from '../excel-parser.service';
+import { BookingUploadComponent } from '../booking-upload/booking-upload.component';
+import { th } from 'date-fns/locale';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
+
 @Component({
   selector: 'app-booking-entry',
   standalone: true,
@@ -48,15 +54,16 @@ import { ArApComponent } from '../../AR-AP/ar-ap/ar-ap.component';
     MilestoneComponent,
     CostEntryComponent,
     NgComponentOutlet,
-    ConnectionComponent,
     CostEntryComponent,
-    ArApComponent
+    ArApComponent,
+    BookingUploadComponent
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    CustomDatePipe
   ],
 })
 export class BookingEntryComponent implements OnInit {
@@ -68,12 +75,16 @@ export class BookingEntryComponent implements OnInit {
     |--------------------------------------------------
   */
 
+  @ViewChild('uploadModal') uploadModal!: BookingUploadComponent;
+  parsedBookings: BookingData[] = [];
+  showParsedData = false;
+  uploadResult: any = null;
+
   //Variable Declaration - Common 
   detailForm !: FormGroup;
   currentCompany : any;
   currentBranch : any;
   filterOption : any;
-  public connectionComponent =ConnectionComponent;
     public rateComponent = CostEntryComponent;
     public ArApcomponent = ArApComponent;
   selectTab(tab: string) {
@@ -90,7 +101,7 @@ export class BookingEntryComponent implements OnInit {
   currentMenuId: any;
   selectedDepartment: any;
   selectedDepartmentType: string;
-  selectedFCLLCL: string;
+  selectedFCLLCL: string = "LCL";
   isEditMode: boolean;
   bookingData: any;
   departmentList: any[] = [];
@@ -98,7 +109,9 @@ export class BookingEntryComponent implements OnInit {
   customerBranchList: any[] = [];
   salesmanList: any[] = [];
   shipperList: any[] = [];
+  filteredShipperList: any[] = [];
   consigneeList: any[] = [];
+  filteredConsigneeList: any[] = [];
   agentList: any[] = [];
   carrierList: any[] = [];
   notifyList: any[] = [];
@@ -132,6 +145,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   // Variable Declaration - Cargo Part
   containerTypeList: any[] = [];
+  selectedContainerType : any;
   cargoForm !: FormGroup;
   modeOfCargoType = [
     { id: 1, name: 'General' },
@@ -171,7 +185,8 @@ auditLogs: any[] = []; // Stores audit logs
   otherForm !: FormGroup;
 
   // Variable Declaration - Connection Part
-  PODandFPODsame : boolean;
+  PODandFPODsame : boolean = true;
+  minStartDate : any;
   resetTriggerConnection : boolean;
   bookingConnectionsArr : any[] = [];
   connectionResult : any[] =[];
@@ -234,7 +249,7 @@ auditLogs: any[] = []; // Stores audit logs
   tabs = [
     { name: 'Shipment', icon: 'fas fa-ship' },
     { name: 'Cargo', icon: 'fas fa-boxes' },
-    { name: 'Product', icon: 'fas fa-box' },
+    // { name: 'Product', icon: 'fas fa-box' },
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
     { name: 'Milestone', icon: 'fas fa-flag-checkered' },
@@ -255,7 +270,9 @@ auditLogs: any[] = []; // Stores audit logs
     private currentRoute: ActivatedRoute,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
-    private calendar : NgbCalendar
+    private calendar : NgbCalendar,
+    private exportExcelService: ExcelExportService,
+    private datePipe : CustomDatePipe
   ) {
     this.today = this.calendar.getToday();
    }
@@ -339,6 +356,7 @@ auditLogs: any[] = []; // Stores audit logs
       FPD: [null],
       MovementType: [null],
       DoValid: [{ value: '', disabled: true }],
+      FreightTerms : [null],
       Coload: [false],
       Nominated: [false],
       IncoTerms: [null, [Validators.required]],
@@ -368,6 +386,7 @@ auditLogs: any[] = []; // Stores audit logs
       ShipmentTerms: [null],
       MovementType: [null],
       FreightTerms: [null],
+      ModeOfTransport : [null],
       StuffingAt: ['Dock']
     })
     this.cargoForm.valueChanges.subscribe(() => {
@@ -491,7 +510,7 @@ auditLogs: any[] = []; // Stores audit logs
       Width : [data?.Width || ''],
       Height : [data?.Height || ''],
       UomMasterSid : [data?.UomMasterSid || null],
-      CargoRecDate : [data?.ProductDescription ? new Date(data?.ProductDescription) : null]
+      CargoRecDate : [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     })
     return productForm;
   }
@@ -523,7 +542,9 @@ auditLogs: any[] = []; // Stores audit logs
       this.customerList = customerMaster.customers;
       this.salesmanList = customerMaster.salesmans;
       this.shipperList = customerMaster.shippers;
+      this.filteredShipperList = customerMaster.shippers;
       this.consigneeList = customerMaster.consignees;
+      this.filteredConsigneeList = customerMaster.consignees;
       this.agentList = customerMaster.agents;
       this.carrierList = customerMaster.carriers;
       this.forwarderList = customerMaster.forwarder;
@@ -531,7 +552,7 @@ auditLogs: any[] = []; // Stores audit logs
       this.vesselList = allMasters.vessels;
       this.portList = allMasters.ports;
       this.incoList = allMasters.incos;
-      this.countryOfCompany = (allMasters?.country.countryMaster?.countryName).trim().toLowerCase();
+      this.countryOfCompany = (allMasters?.country?.countryMaster?.countryName).trim().toLowerCase();
     }))
   }
 
@@ -625,12 +646,12 @@ auditLogs: any[] = []; // Stores audit logs
       InternalNote: response.InternalNote,
       GeneralNote: response.GeneralNote,
       NominatedBy: response.NominatedBy,
-
+      FreightTerms : response.FreightTerms,
       ShipmentNo: response.ShipmentNo
     })
     this.b['DepartmentMasterSid']?.disable();
     this.b['CustomerMasterSid']?.disable();
-    this.PODandFPODsame = this.b['POD']?.value === this.b['FPD']?.value;
+    this.PODandFPODsame = response.POD === response.FPD;
 
     const cargoData = response.bookingCargo[0];
     this.cargoForm.patchValue({
@@ -646,6 +667,7 @@ auditLogs: any[] = []; // Stores audit logs
       ShipmentTerms: cargoData?.ShipmentTerms,
       MovementType: cargoData?.MovementType,
       FreightTerms: cargoData?.FreightTerms,
+      ModeOfTransport : cargoData?.ModeOfTransport,
       StuffingAt: cargoData?.StuffingAt
     })
     this.handleCFSOrYard();
@@ -654,15 +676,15 @@ auditLogs: any[] = []; // Stores audit logs
       BookingOthersSid: otherData?.BookingOthersSid,
       CustomerRefNo: otherData?.CustomerRefNo,
       YardCFS: otherData?.YardCFS,
-      ReleaseType : otherData?.ReleaseType,
-      HBLNo: otherData?.HBLNo,
-      Forwarder: otherData?.Forwarder,
+      ReleaseType : otherData?.ReleaseType || null,
+      HBLNo: otherData?.HBLNo || null,
+      Forwarder: otherData?.Forwarder || null,
       ForwarderAddress: otherData?.ForwarderAddress,
-      NotifyParty: otherData?.NotifyParty,
+      NotifyParty: otherData?.NotifyParty || null,
       NotifyPartyAddress: otherData?.NotifyPartyAddress,
-      Notify2 : otherData?.Notify2,
+      Notify2 : otherData?.Notify2 || null,
       NotifyAddress2 : otherData?.NotifyAddress2,
-      Coloader : otherData?.Coloader,
+      Coloader : otherData?.Coloader || null,
       PickupPlace: otherData?.PickupPlace,
       DeliveryPlace: otherData?.DeliveryPlace,
       DeliveryDate: new Date(otherData?.DeliveryDate),
@@ -703,6 +725,14 @@ auditLogs: any[] = []; // Stores audit logs
     this.bookingRateArr = response.bookingRates || [];
     this.rateResult = [...this.bookingRateArr];
 
+  }
+
+  onContainerTypeChange(containerType : any){
+    if(!containerType){
+      this.selectedContainerType = '';
+      return;
+    }
+    this.selectedContainerType = containerType;
   }
 
   openProductModal(content: TemplateRef<any>, productIndex?: number, data?: any) {
@@ -854,6 +884,7 @@ auditLogs: any[] = []; // Stores audit logs
       InternalNote: bookingFormValue.InternalNote || '',
       GeneralNote: bookingFormValue.GeneralNote || '',
       NominatedBy: bookingFormValue.NominatedBy || 'Self',
+      FreightTerms : bookingFormValue.FreightTerms || '',
       ShipmentNo: bookingFormValue.ShipmentNo || '',
       bookingCargo: {
         BookingCargoSid : cargoFormValue.BookingCargoSid || null,
@@ -868,6 +899,7 @@ auditLogs: any[] = []; // Stores audit logs
         ShipmentTerms: cargoFormValue.ShipmentTerms || null,
         MovementType: cargoFormValue.MovementType || null,
         FreightTerms: cargoFormValue.FreightTerms || null,
+        ModeOfTransport : cargoFormValue.ModeOfTransport || null,
         StuffingAt: cargoFormValue.StuffingAt || 'Dock',
       },
       bookingOther: {
@@ -978,6 +1010,8 @@ auditLogs: any[] = []; // Stores audit logs
       this.selectedDepartmentType = '';
       this.selectedFCLLCL = 'LCL';
       this.filteredPorts = [];
+      this.filteredPOL = [];
+      this.filteredPOD = [];
       this.b['POO'].setValue(null);
       this.b['POL'].setValue(null);
       this.b['POD'].setValue(null);
@@ -985,6 +1019,7 @@ auditLogs: any[] = []; // Stores audit logs
       this.b['ETA'].setValue('');
       this.b['ETD'].setValue('');
       this.b['MovementType'].setValue(null);
+      this.handleImportExport();
       return;
     }
     this.selectedDepartmentType = department.departmentType.toUpperCase();
@@ -995,10 +1030,11 @@ auditLogs: any[] = []; // Stores audit logs
     } else {
       this.cargoForm.get('StuffingAt')?.enable();
     }
-    this.selectedDepartmentType === "SEA" ? this.b['MovementType']?.setValue('Vessel') : null;
-    this.selectedDepartmentType === "AIR" ? this.b['MovementType']?.setValue('Flight') : null;
+    this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
+    this.selectedDepartmentType === "AIR" ? this.c['ModeOfTransport']?.setValue('Flight') : null;
     this.handleCFSOrYard()
     this.onRouteChange()
+    this.handleImportExport();
   }
 
   onRouteChange(): void {
@@ -1034,12 +1070,113 @@ auditLogs: any[] = []; // Stores audit logs
       this.b['CustomerName']?.setValue('');
       this.b['CustomerAddress']?.setValue(null);
       this.customerBranchList = [];
+      this.handleImportExport();
       return;
     }
     this.b['CustomerName']?.setValue(customer.CustomerName);
     this.b['CustomerAddress']?.setValue(null);
-    this.getCustomerBranchByCustomer(customer.CustomerMasterSid);;
+    this.getCustomerBranchByCustomer(customer.CustomerMasterSid);
+    this.handleImportExport();
   }
+
+  onShipperChange(shipper?: any) {
+    if (!shipper) {
+      this.filteredConsigneeList = [...this.consigneeList];
+      return;
+    }
+    this.filteredConsigneeList = this.consigneeList.filter(c => c.CustomerMasterSid !== shipper.CustomerMasterSid);
+  }
+
+  onConsigneeChange(consignee?: any) {
+    if (!consignee) {
+      this.filteredShipperList = [...this.shipperList];
+      return;
+    }
+    this.filteredShipperList = this.shipperList.filter(s => s.CustomerMasterSid !== consignee.CustomerMasterSid);
+  }
+
+  handleImportExport() {
+    // Early return if no department selected - clear both fields
+    if (!this.selectedDepartment) {
+      this.b['ShipperName']?.setValue(null);
+      this.b['ShipperAddress']?.setValue('');
+      this.b['ConsigneeName']?.setValue(null);
+      this.b['ConsigneeAddress']?.setValue('');
+      this.onShipperChange();
+      this.onConsigneeChange();
+      return;
+    }
+
+    const exportImportType = this.selectedDepartment.ExportImport;
+    console.log(exportImportType);
+    if (exportImportType === "Export") {
+      // Handle Export logic
+      const customerName = this.b['CustomerName']?.value;
+
+      if (!customerName) {
+        this.b['ShipperName']?.setValue(null);
+        this.b['ShipperAddress']?.setValue('');
+        this.onShipperChange();
+        return;
+      }
+
+      const shipperExist = this.shipperList.find(s => s.CustomerName === customerName);
+      const shipperExistInFiltered = this.filteredShipperList.find(s => s.CustomerName === customerName);
+
+      if(shipperExist && shipperExistInFiltered) {
+        this.b['ShipperName']?.setValue(shipperExistInFiltered.CustomerName);
+        this.b['ShipperAddress']?.setValue(shipperExistInFiltered.CustomerAddress1);
+        this.onShipperChange(shipperExistInFiltered);
+        this.onConsigneeChange();
+      } else if (shipperExist && !shipperExistInFiltered) {
+        this.b['ShipperName']?.setValue(customerName);
+        this.b['ShipperAddress']?.setValue(shipperExist.CustomerAddress1);
+        this.b['ConsigneeName']?.setValue(null);
+        this.b['ConsigneeAddress']?.setValue('');
+        this.onShipperChange(shipperExist);
+        this.onConsigneeChange();
+      } else {
+        this.b['ShipperName']?.setValue(null);
+        this.b['ShipperAddress']?.setValue('');
+        this.onShipperChange();
+      }
+      return;
+    }
+
+    if (exportImportType === "Import") {
+      // Handle Import logic
+      const customerName = this.b['CustomerName']?.value;
+
+      if (!customerName) {
+        this.b['ConsigneeName']?.setValue(null);
+        this.b['ConsigneeAddress']?.setValue('');
+        this.onConsigneeChange();
+        return;
+      }
+
+      const consigneeExist = this.consigneeList.find(c => c.CustomerName === customerName);
+      const consigneeExistInFiltered = this.filteredConsigneeList.find(c => c.CustomerName === customerName);
+
+      if (consigneeExist && consigneeExistInFiltered) {
+        this.b['ConsigneeName']?.setValue(consigneeExistInFiltered.CustomerName);
+        this.b['ConsigneeAddress']?.setValue(consigneeExistInFiltered.CustomerAddress1);
+        this.onConsigneeChange(consigneeExistInFiltered);
+        this.onShipperChange();
+      } else if(consigneeExist && !consigneeExistInFiltered) {
+        this.b['ConsigneeName']?.setValue(customerName);
+        this.b['ConsigneeAddress']?.setValue(consigneeExist.CustomerAddress1);
+        this.b['ShipperName']?.setValue(null);
+        this.b['ShipperAddress']?.setValue('');
+        this.onConsigneeChange(consigneeExist);
+        this.onShipperChange();
+      } else {
+        this.b['ConsigneeName']?.setValue(null);
+        this.b['ConsigneeAddress']?.setValue('');
+        this.onConsigneeChange();
+      }
+    }
+  }
+
 
   getCustomerBranchByCustomer(CustomerMasterSid: number) {
     this.operationService.getCustomerBranchByCustomer(CustomerMasterSid).subscribe((resp: any) => {
@@ -1066,12 +1203,12 @@ auditLogs: any[] = []; // Stores audit logs
   }
 
   handlePOLChange(selectedPort: any) {
+    this.b['VesselName']?.setValue(null);
+    this.b['VoyageNo']?.setValue(null);
+    this.b['ETA']?.setValue('');
+    this.b['ETD']?.setValue('');
     if (!selectedPort) {
       this.filteredPOD = [...this.filteredPorts];
-      this.b['VesselName']?.setValue(null);
-      this.b['VoyageNo']?.setValue(null);
-      this.b['ETA']?.setValue('');
-      this.b['ETD']?.setValue('');
       return;
     }
     this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
@@ -1080,18 +1217,17 @@ auditLogs: any[] = []; // Stores audit logs
   }
 
   handlePODChange(selectedPort: any) {
+    this.b['VesselName']?.setValue(null);
+    this.b['VoyageNo']?.setValue(null);
+    this.b['ETA']?.setValue('');
+    this.b['ETD']?.setValue('');
     if (!selectedPort) {
       this.filteredPOL = [...this.filteredPorts];
       this.b['FPD']?.setValue(null);
-      this.b['VesselName']?.setValue(null);
-      this.b['VoyageNo']?.setValue(null);
-      this.b['ETA']?.setValue('');
-      this.b['ETD']?.setValue('');
       this.PODandFPODsame = true;
       return;
     }
     this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
-    this.b['ETD']?.setValue(new Date(selectedPort.ETD));
     this.b['FPD']?.setValue(selectedPort.PortCode);
     this.PODandFPODsame = this.b['FPD']?.value === this.b['POD']?.value
     this.getVesselBasedOnPorts();
@@ -1131,28 +1267,27 @@ auditLogs: any[] = []; // Stores audit logs
     const details = voyage.Ports || [];
 
     const polDetail = details.find(d => d.POLSid === POLSid);
-    const polETD = polDetail?.ETD || null;
+    const polETA = polDetail?.ETD || null;
 
 
     const podDetail = details.find(d => d.POLSid === PODSid);
-    const podETD = podDetail?.ETD || null;
+    const podETD = podDetail?.ETA || null;
 
-    this.b['ETA'].setValue(new Date(polETD));
-    this.b['ETD'].setValue(new Date(podETD));
+    this.b['ETD'].setValue(new Date(polETA));
+    this.b['ETA'].setValue(new Date(podETD));
+    this.minStartDate = new Date(podETD);
   }
 
   getVesselBasedOnPorts() {
-    const POO = this.b['POO']?.value;
+    // const POO = this.b['POO']?.value;
     const POL = this.b['POL']?.value;
     const POD = this.b['POD']?.value;
-    const FPOD = this.b['FPD']?.value;
+    // const FPOD = this.b['FPD']?.value;
     const MovementType = this.selectedDepartment?.departmentType;
-    const POOSid = (this.portList.find(port => port.PortCode === POO)?.PortMasterSid);
     const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
     const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
-    const FPODSid = (this.portList.find(port => port.PortCode === FPOD)?.PortMasterSid);
     if (!POLSid || !PODSid) return;
-    const payload = { POO: POOSid, POL: POLSid, POD: PODSid, FPOD: FPODSid, MovementType: MovementType };
+    const payload = {  POL: POLSid, POD: PODSid, MovementType: MovementType };
     this.operationService.getVesselsBasedOnPorts(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -1174,20 +1309,34 @@ auditLogs: any[] = []; // Stores audit logs
     const POD = this.b['POD']?.value;
     const FPOD = this.b['FPD']?.value;
     const MovementType = this.selectedDepartment?.departmentType;
-    const POOSid = (this.portList.find(port => port.PortCode === POO)?.PortMasterSid);
+    // const POOSid = (this.portList.find(port => port.PortCode === POO)?.PortMasterSid);
     const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
     const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
-    const FPODSid = (this.portList.find(port => port.PortCode === FPOD)?.PortMasterSid);
+    // const FPODSid = (this.portList.find(port => port.PortCode === FPOD)?.PortMasterSid);
     const vessel = this.b['VesselName']?.value;
-    const vesselId = (this.vesselList.find(vsl => vsl.VesselName === vessel).VesselMasterSid);
+    const vesselId = (this.vesselList.find(vsl => vsl.VesselName === vessel)?.VesselMasterSid);
     if (!POL || !POD || !vesselId) {
       return;
     }
-    const payload = { VesselMasterSid: vesselId, POO: POOSid, POL: POLSid, POD: PODSid, FPOD: FPODSid, MovementType: MovementType }
+    const payload = { VesselMasterSid: vesselId,  POL: POLSid, POD: PODSid, MovementType: MovementType }
     this.operationService.getVoyagesBasedOnVesselAndPort(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
-          this.voyageList = resp.data;
+          this.voyageList = resp.data.map(voyage => {
+            const pol = voyage.Ports.find(p => p.POLSid === payload.POL);
+            const pod = voyage.Ports.find(p => p.POLSid === payload.POD || p.PODSid === payload.POD);
+            const polName = this.portList.find(p => p.PortMasterSid === payload.POL)?.PortName;
+            const podName = this.portList.find(p => p.PortMasterSid === payload.POD)?.PortName;
+            const polWithName = pol ? { ...pol, PortName: polName } : null;
+            const podWithName = pod ? { ...pod, PortName: podName } : null;
+
+            return {
+              ...voyage,
+              POL: polWithName,
+              POD: podWithName
+            };
+          });
+          console.log(this.voyageList);
         } else {
           this.appSettingService.showError("Error loading sailing schedules.")
         }
@@ -1328,6 +1477,8 @@ auditLogs: any[] = []; // Stores audit logs
   syncFormValueWithRateComponent(){
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const DepartmentMasterSid = this.b['DepartmentMasterSid']?.value;
+    const BookingNumber = this.b['BookingNo']?.value;
+    const departmentName = this.selectedDepartment?.departmentName;
     const selectedPOO = this.b['POO']?.value;
     const selectedPOL = this.b['POL']?.value;
     const selectedPOD = this.b['POD']?.value;
@@ -1346,6 +1497,8 @@ auditLogs: any[] = []; // Stores audit logs
     this.currentFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
+      BookingNumber,
+      departmentName,
       Segment : this.selectedFCLLCL,
       PORSid,
       POLSid,
@@ -1523,6 +1676,97 @@ resetForm() {
   });
 }
 
-  
-  
+  getContainerDisplay(): string {
+    const containerCount = this.c['NoofContainers']?.value;
+    const containerType = this.c['ContainerType']?.value;
+    const containerTypeSize = (this.containerTypeList.find(c => c.ContainerName === containerType)?.ContainerSize);
+    if (containerCount && containerTypeSize) {
+      return `${containerCount} x ${containerTypeSize}`;
+    }
+    return '-';
+  }
+
+  toggleMinimizeMaximize(){
+    toggleFullScreen();
+  }
+
+  openUploadModal() {
+    this.uploadModal.openModal(this.uploadModal.uploadModalTemplate);
+  }
+
+
+  onFileProcessed(result: any) {
+    console.log('File processed:', result);
+
+    // Check if we have multi-sheet booking data
+    if (result.type === 'excel' && result.isMultiSheetStructure && result.dataType === 'bookings') {
+      this.parsedBookings = result.data[0];
+      this.showParsedData = true;
+
+      console.log('Parsed multi-sheet booking data:', this.parsedBookings);
+      this.patchValues(this.parsedBookings);
+    } else {
+      this.appSettingService.showWarning('No booking structure found in file');
+    }
+  }
+
+  onUploadError(error: string) {
+    this.appSettingService.showError('Failed to process Excel file. Please check that all required sheets exist with correct column names.');
+  }
+
+  downloadParsedData() {
+    if (this.parsedBookings.length === 0) return;
+
+    const dataStr = JSON.stringify(this.parsedBookings, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `parsed-bookings-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  clearParsedData() {
+    this.parsedBookings = [];
+    this.showParsedData = false;
+    this.uploadResult = null;
+  }
+
+  reportProducts(): void {
+    const formattedData = this.slicedProductArr.map(product => ({
+      ProductName: product.value.ProductName || '',
+      ShippingBillNo: product.value.ShippingBillNo || '',
+      ShippingBillDate: this.datePipe.transform(product.value.ShippingBillDate) || '',
+      ExternalPkg: product.value.ExternaPkg || '',
+      ExternalQty: product.value.ExternlQty || '',
+      GrossWeight: product.value.GrossWeight || '',
+      NetWeight: product.value.NetWeight || '',
+      Volume: product.value.Volume || '',
+      CargoRecDate: this.datePipe.transform(product.value.CargoRecDate) || ''
+    }));
+
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    this.exportExcelService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'ProductName', label: 'Commodity' },
+        { key: 'ShippingBillNo', label: 'Shipping Bill No' },
+        { key: 'ShippingBillDate', label: 'Date' },
+        { key: 'ExternalPkg', label: 'Package Type' },
+        { key: 'ExternalQty', label: 'No of Pkg' },
+        { key: 'GrossWeight', label: 'Gross Weight' },
+        { key: 'NetWeight', label: 'Net Weight' },
+        { key: 'Volume', label: 'CBM' },
+        { key: 'CargoRecDate', label: 'Cargo Received Date' }
+      ],
+      fileName: 'Booking-Products-Report',
+      title: companyName
+    });
+  }
+
+
 }

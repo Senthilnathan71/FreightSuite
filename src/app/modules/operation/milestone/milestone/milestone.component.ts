@@ -9,6 +9,7 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OperationService } from '../../operation.service';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-milestone',
@@ -19,6 +20,7 @@ import { OperationService } from '../../operation.service';
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter},
+    CustomDatePipe
   ],
 })
 export class MilestoneComponent implements OnInit {
@@ -73,6 +75,8 @@ export class MilestoneComponent implements OnInit {
     private fb: FormBuilder,
     private appSettingService: AppSettingsService,
     private operationService: OperationService,
+    private excelExportService : ExcelExportService,
+    private datePipe : CustomDatePipe
   ) { }
 
   ngOnInit(): void {
@@ -173,6 +177,7 @@ export class MilestoneComponent implements OnInit {
         ShipmentMilestoneSid: data.ShipmentMilestoneSid,
         ShipmentNo: data.ShipmentNo,
         MilestoneMasterSid: data.MilestoneMasterSid,
+        MilestoneName : data.MilestoneName,
         MilestoneDate: data?.MilestoneDate ? new Date(data.MilestoneDate) : null,
         AutoCaptured: data.AutoCaptured,
         Remarks: data.Remarks,
@@ -270,4 +275,32 @@ export class MilestoneComponent implements OnInit {
     const end = start + this.pageSize1;
     this.slicedMilestoneFormArr = this.milestoneFormArray.getRawValue().slice(start, end);
   }
+
+  reportMilestones(): void {
+    const allMilestones = this.slicedMilestoneFormArr;
+    
+    const formattedData = allMilestones.map((milestone, index) => ({
+        SerialNo: index + 1,
+        MilestoneName: milestone.MilestoneName || '',
+        MilestoneDate: this.datePipe.transform(milestone.MilestoneDate) || '',
+        AutoCaptured: (milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y') ? 'Yes' : 'No',
+        Remarks: milestone.Remarks || ''
+    }));
+
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+    
+    this.excelExportService.exportAsExcel({
+        data: formattedData,
+        headers: [
+            { key: 'SerialNo', label: 'S.No' },
+            { key: 'MilestoneName', label: 'Milestone' },
+            { key: 'MilestoneDate', label: 'Date & Time' },
+            { key: 'AutoCaptured', label: 'Auto Captured' },
+            { key: 'Remarks', label: 'Remarks' }
+        ],
+        fileName: 'Booking-Milestone-Report',
+        title: companyName
+    });
+}
+
 }
