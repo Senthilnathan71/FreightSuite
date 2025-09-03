@@ -24,6 +24,15 @@
   (onResetClick)="resetPage()"
   (onSearchClick)="onSearch($event)">
     </app-listpage> -->
+    <ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
 <div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">

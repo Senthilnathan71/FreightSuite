@@ -13,6 +13,7 @@ import { NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-boo
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { PasswordValidators } from 'src/app/core/ValidationFn/password.validators';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-user-list',
@@ -25,7 +26,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     NgbPaginationModule,
     ListpageComponent,
     ReactiveFormsModule,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss'
@@ -71,7 +73,8 @@ export class UserListComponent {
     private userService: authService,
     private excelReportService: ExcelExportService,
     private fb:FormBuilder,
-    private modalService : NgbModal
+    private modalService : NgbModal,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -115,6 +118,7 @@ export class UserListComponent {
     return this.permissions.includes(permission);
   }
   loadUsers(): void {
+    this.spinner.show();
     const params = {
       search: this.filterValue?.trim() || '',
       page: this.page,
@@ -132,7 +136,7 @@ export class UserListComponent {
         }else {
         this.appSettingService.showError(response.message);
       }
-
+      this.spinner.hide();
       },
       error: (err) => {
         console.error('Error fetching users:', err);

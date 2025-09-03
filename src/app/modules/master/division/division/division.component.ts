@@ -33,6 +33,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-division',
@@ -52,6 +53,7 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     ListpageComponent,
     PreventMultiClickDirective,
     FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './division.component.html',
   styleUrl: './division.component.scss',
@@ -102,7 +104,8 @@ export class DivisionComponent {
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit(): void {
@@ -157,6 +160,7 @@ export class DivisionComponent {
   }
 
   loadDivisions(): void {
+    this.spinner.show();
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     
     const params = {
@@ -180,7 +184,7 @@ export class DivisionComponent {
         else {
         this.appSettingService.showError(response.message);
       }
-
+       this.spinner.hide();
 
       },
       error: (err) => {

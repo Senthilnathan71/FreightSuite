@@ -38,6 +38,7 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ParseFlags } from '@angular/compiler';
 import { CustomDatePipe } from "../../../../core/pipes/custom-date-format.pipe";
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-tax-group-list',
@@ -59,7 +60,8 @@ import { CustomDatePipe } from "../../../../core/pipes/custom-date-format.pipe";
     TermsAndConditionsComponent,
     AuthorityEntryComponent,
     DetailsComponent,
-    CustomDatePipe
+    CustomDatePipe,
+    NgxSpinnerModule
 ],
   templateUrl: './tax-group-list.component.html',
   styleUrl: './tax-group-list.component.scss',
@@ -107,7 +109,8 @@ export class TaxGroupListComponent {
     private userService: authService,
     private dialog: MatDialog,
     private excelReportService: ExcelExportService,
-    private calendar: NgbCalendar
+    private calendar: NgbCalendar,
+     private spinner: NgxSpinnerService
   ) { }
 
   modeofTaxType = [
@@ -124,6 +127,7 @@ export class TaxGroupListComponent {
   }
 
   loadTaxGroups(): void {
+    this.spinner.show();
     this.loading = true;
 
     const params = {
@@ -145,7 +149,7 @@ export class TaxGroupListComponent {
         }else {
         this.appSettingService.showError(response.message);
       }
-
+        this.spinner.hide();
         this.loading = false;
       },
       error: (err) => {

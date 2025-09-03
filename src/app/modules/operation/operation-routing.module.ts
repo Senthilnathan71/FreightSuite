@@ -13,6 +13,7 @@ import { CragoReceiptEntryComponent } from './cargo-receipt/crago-receipt-entry/
 import { CragoReceiptListComponent } from './cargo-receipt/crago-receipt-list/crago-receipt-list.component';
 import { LoadingPlanEntryComponent } from './loading-plan/loading-plan-entry/loading-plan-entry.component';
 import { SplitBookingEntryComponent } from './Split-Booking/split-booking-entry/split-booking-entry.component';
+import { MergeBookingComponent } from './merge-booking/merge-booking/merge-booking.component';
 
 export const OperationRoutes: Routes = [
   {
@@ -137,6 +138,14 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'Split Booking',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Split Booking' }],
+        },
+      },
+       {
+        path: 'merge-booking/entry',
+        component: MergeBookingComponent,
+        data: {
+          title: 'Merge Booking',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Merge Booking' }],
         },
       },
     ],

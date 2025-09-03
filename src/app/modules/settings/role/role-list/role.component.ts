@@ -19,6 +19,7 @@ import { EmailEntryComponent } from '../../email/email-entry/email-entry.compone
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from '../../edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-role',
@@ -34,7 +35,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     FormsModule,
     DatePipe,
     PreventMultiClickDirective,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './role.component.html',
   styleUrl: './role.component.scss',
@@ -82,7 +84,8 @@ export class RoleComponent implements OnInit {
     private dialog: MatDialog,
     private datePipe: DatePipe,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+     private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -111,6 +114,7 @@ export class RoleComponent implements OnInit {
     this.loadRoles();
   }
   loadRoles(): void {
+  this.spinner.show();
   this.isLoading = true;
   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
   const params = {
@@ -132,7 +136,7 @@ export class RoleComponent implements OnInit {
       }else {
         this.appSettingService.showError(response.message);
       }
-
+      this.spinner.hide();
       this.isLoading = false;
     },
     error: (err) => {

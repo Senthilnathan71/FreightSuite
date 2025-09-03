@@ -19,6 +19,7 @@ import { EmailEntryComponent } from '../../email/email-entry/email-entry.compone
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from '../../edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-menu-list',
@@ -33,7 +34,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     RouterModule,
     FormsModule,
     PreventMultiClickDirective,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './menu-list.component.html',
   styleUrl: './menu-list.component.scss',
@@ -99,7 +101,8 @@ modeOfPermissions = [
     private dialog: MatDialog,
     private datePipe: DatePipe,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+     private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -319,6 +322,7 @@ onToggleChange(controlName: string, event: Event) {
     }
   }
   loadMenus(): void {
+  this.spinner.show();
   this.loading = true;
   
   const params = {
@@ -340,6 +344,7 @@ onToggleChange(controlName: string, event: Event) {
         this.appSettingService.showError(response.message);
       }
 
+      this.spinner.hide();
 
       this.loading = false;
     },

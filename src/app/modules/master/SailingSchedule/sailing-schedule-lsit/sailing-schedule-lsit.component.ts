@@ -14,6 +14,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
     selector: 'app-sailing-schedule-lsit',
@@ -28,7 +29,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
         NgSelectModule,
         CustomDatePipe,
         ListpageComponent,
-        FavoriteStarComponent
+        FavoriteStarComponent,
+        NgxSpinnerModule
     ],
     templateUrl: './sailing-schedule-lsit.component.html',
     styleUrl: './sailing-schedule-lsit.component.scss'
@@ -46,8 +48,8 @@ export class SailingScheduleLsitComponent implements OnInit {
     portOfLoading :"" ;
     portOfDeparture :"";
     userData : any;
-     permissions: string[] = [];
-  currentMenuPermissions: any = {};
+    permissions: string[] = [];
+    currentMenuPermissions: any = {};
 
     page = 1;
     pageSize = 15;
@@ -66,7 +68,8 @@ export class SailingScheduleLsitComponent implements OnInit {
         private appSettingService : AppSettingsService,
         private dialog : MatDialog ,
         private userService : authService,
-        private excelReportService : ExcelExportService      
+        private excelReportService : ExcelExportService,
+        private spinner: NgxSpinnerService   
     ) { }
 
     ngOnInit(): void {
@@ -110,6 +113,7 @@ export class SailingScheduleLsitComponent implements OnInit {
   return this.permissions.includes(permission);
 }
     loadVoyages(): void {
+        this.spinner.show();
         const params = {
             search: this.filterValue?.trim() || '',
             page: this.page,
@@ -126,7 +130,7 @@ export class SailingScheduleLsitComponent implements OnInit {
                 }else {
         this.appSettingService.showError(response.message);
       }
-
+        this.spinner.hide();
             },
             error: (err) => {
                 console.error('Error fetching schedules:', err);

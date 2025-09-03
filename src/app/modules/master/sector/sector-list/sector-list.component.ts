@@ -20,6 +20,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 
 @Component({
@@ -36,7 +37,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     FormsModule,
     DatePipe,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './sector-list.component.html',
   styleUrl: './sector-list.component.scss',
@@ -88,7 +90,8 @@ export class SectorComponent implements OnInit {
     private dialog: MatDialog,
     private datePipe: DatePipe,
     private userService :authService,
-    private excelReportService : ExcelExportService
+    private excelReportService : ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -143,6 +146,7 @@ export class SectorComponent implements OnInit {
   }
 
   loadSectors(): void {
+  this.spinner.show();
   this.isLoading = true;
   const params = {
     search: this.filterValue ? this.filterValue.trim() : '',
@@ -162,7 +166,7 @@ export class SectorComponent implements OnInit {
       else {
         this.appSettingService.showError(response.message);
       }
-
+      this.spinner.hide();
       this.isLoading = false;
     },
     error: (err) => {

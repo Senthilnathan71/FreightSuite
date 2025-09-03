@@ -13,6 +13,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ToastrService } from 'ngx-toastr';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { firstValueFrom } from 'rxjs';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-quotation-view',
@@ -23,7 +24,8 @@ import { firstValueFrom } from 'rxjs';
     NgbPaginationModule,
     FormsModule,
     NgbNavModule,
-    CustomDatePipe
+    CustomDatePipe,
+    NgxSpinnerModule
   ],
   templateUrl: './quotation-view.component.html',
   styleUrl: './quotation-view.component.scss'
@@ -56,7 +58,7 @@ export class QuotationViewComponent {
   currentCompany: any;
   currentBranch: any;
 
-  constructor(private toastr: ToastrService,private excelReportService : ExcelExportService, private modalService: NgbModal, private leadService: LeadService, private route: Router, private appService: AppService,private appSettingService : AppSettingsService) { }
+  constructor(private toastr: ToastrService,private excelReportService : ExcelExportService, private modalService: NgbModal, private leadService: LeadService, private route: Router, private appService: AppService,private appSettingService : AppSettingsService, private spinner: NgxSpinnerService) { }
 
   ngOnInit(): void {
     const storedCompany = localStorage.getItem('selected-company');
@@ -78,6 +80,7 @@ export class QuotationViewComponent {
   }
 
   searchQuotation() {
+    this.spinner.show();
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     let BranchMasterSid = this.currentBranch?.BranchMasterSid;
     const params = {
@@ -99,6 +102,7 @@ export class QuotationViewComponent {
           this.quoteItems = [];
           this.totalLengthOfCollection1 = 0;
         }
+        this.spinner.hide();
       }, error: (error: any) => {
         console.error(error);
       }

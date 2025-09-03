@@ -12,6 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
     selector: 'app-tds-set-list',
@@ -23,7 +24,8 @@ import { SettingsService } from 'src/app/modules/settings/settings.service';
         FormsModule,
         FavoriteStarComponent,
         CustomDatePipe,
-        NgbPaginationModule
+        NgbPaginationModule,
+        NgxSpinnerModule
     ],
     templateUrl: './tds-set-list.component.html',
     styleUrl: './tds-set-list.component.scss'
@@ -53,7 +55,8 @@ export class TdsSetListComponent implements OnInit {
         private masterService: MasterService,
         private dialog: MatDialog,
         private excelReportService: ExcelExportService,
-        private settingService: SettingsService
+        private settingService: SettingsService,
+        private spinner: NgxSpinnerService
     ) { }
 
     ngOnInit(): void {
@@ -91,6 +94,7 @@ export class TdsSetListComponent implements OnInit {
     }
 
     loadTds() {
+        this.spinner.show();
         let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
         const payload = {
             search: this.filterValue,
@@ -110,6 +114,7 @@ export class TdsSetListComponent implements OnInit {
                 } else {
         this.appSettingService.showError(resp.message);
       }
+      this.spinner.hide();
             }
         )
     }

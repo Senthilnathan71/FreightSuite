@@ -8,6 +8,7 @@ import { AppService } from 'src/app/service/app.service';
 import { FormsModule } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { forkJoin } from 'rxjs';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-view',
@@ -16,7 +17,8 @@ import { forkJoin } from 'rxjs';
     CommonModule,
     FeatherModule,
     NgbPaginationModule,
-    FormsModule
+    FormsModule,
+    NgxSpinnerModule
   ],
   templateUrl: './view.component.html',
   styleUrl: './view.component.scss'
@@ -46,7 +48,8 @@ export class ViewComponent implements OnInit {
     private leadService: LeadService, 
     private route: Router, 
     private appService: AppService,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+     private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -58,6 +61,7 @@ export class ViewComponent implements OnInit {
 
   // Server-side search implementation
   searchLeads(): void {
+    this.spinner.show();
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     let BranchMasterSid = this.currentBranch?.BranchMasterSid;
     
@@ -83,6 +87,7 @@ export class ViewComponent implements OnInit {
           this.leads = [];
           this.totalLengthOfCollection = 0;
         }
+        this.spinner.hide();
       }, 
       error: (error: any) => {
         console.error(error);

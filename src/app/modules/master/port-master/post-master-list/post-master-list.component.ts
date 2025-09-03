@@ -13,6 +13,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-post-master-list',
@@ -25,7 +26,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     RouterModule,
     MatDialogModule,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './post-master-list.component.html',
   styleUrls: ['./post-master-list.component.scss']
@@ -68,7 +70,8 @@ export class PostMasterListComponent implements OnInit {
     private dialog: MatDialog,
     private appSettingService: AppSettingsService,
     private excelReportService: ExcelExportService, 
-    private userService: authService 
+    private userService: authService ,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -110,6 +113,7 @@ export class PostMasterListComponent implements OnInit {
   return this.permissions.includes(permission);
 }
   loadPorts(): void {
+    this.spinner.show();
     const params = {
       search: this.filterValue?.trim() || '',
       page: this.page,
@@ -127,7 +131,7 @@ export class PostMasterListComponent implements OnInit {
 else {
         this.appSettingService.showError(response.message);
       }
-
+      this.spinner.hide();
       },
       error: (err) => {
         console.error('Error fetching ports:', err);

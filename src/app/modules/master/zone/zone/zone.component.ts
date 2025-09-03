@@ -23,6 +23,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-zone',
@@ -41,7 +42,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     DatePipe,
     ListpageComponent,
     PreventMultiClickDirective,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './zone.component.html',
   styleUrl: './zone.component.scss'
@@ -89,7 +91,8 @@ export class ZoneComponent {
    private appSettingService: AppSettingsService,
    private dialog: MatDialog,
    private userService : authService,
-   private excelReportService : ExcelExportService
+   private excelReportService : ExcelExportService,
+   private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit(): void {
@@ -147,6 +150,7 @@ export class ZoneComponent {
   }
 
   loadZones(): void {
+    this.spinner.show();
     const params = {
       search: this.filterValue ? this.filterValue.trim() : '',
       page: this.page,
@@ -164,7 +168,7 @@ export class ZoneComponent {
         }else {
         this.appSettingService.showError(response.message);
       }
-
+       this.spinner.hide();
       },
       error: (err) => {
         console.error('Error fetching zones:', err);

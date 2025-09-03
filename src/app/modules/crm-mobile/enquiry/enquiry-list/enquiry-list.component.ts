@@ -14,6 +14,7 @@
   import { ExcelExportService } from 'src/app/shared/excel-report-service';
   import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
   import { forkJoin } from 'rxjs';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
   @Component({
     selector: 'app-enquiry-list',
@@ -26,7 +27,8 @@
       DateFormatPipe,
       FavoriteStarComponent,
       CustomDatePipe,
-      PreventMultiClickDirective
+      PreventMultiClickDirective,
+      NgxSpinnerModule
     ],
     providers : [CustomDatePipe],
     templateUrl: './enquiry-list.component.html',
@@ -62,7 +64,8 @@
       private appService: AppService,
       private appSettingService:AppSettingsService,
       private excelReportService : ExcelExportService,
-      private datePipe : CustomDatePipe
+      private datePipe : CustomDatePipe,
+       private spinner: NgxSpinnerService
     ) { }
 
     ngOnInit(): void {
@@ -79,6 +82,7 @@
 
     // Search
     searchEnquiry() {
+      this.spinner.show();
       let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
       let BranchMasterSid = this.currentBranch?.BranchMasterSid;
       const params = {
@@ -101,6 +105,7 @@
             this.enquiryItems = [];
             this.totalLengthOfCollection = 0;
           }
+          this.spinner.hide();
         }, error: (error: any) => {
           console.error(error);
         }

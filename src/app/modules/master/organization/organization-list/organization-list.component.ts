@@ -13,11 +13,12 @@ import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-organization-list',
   standalone: true,
-  imports: [FeatherModule, NgSelectModule, NgbPaginationModule, CommonModule, RouterModule, FormsModule, ReactiveFormsModule, ListpageComponent,FavoriteStarComponent],
+  imports: [FeatherModule, NgSelectModule, NgbPaginationModule, CommonModule, RouterModule, FormsModule, ReactiveFormsModule, ListpageComponent,FavoriteStarComponent,NgxSpinnerModule],
   templateUrl: './organization-list.component.html',
   styleUrl: './organization-list.component.scss'
 })
@@ -57,7 +58,8 @@ export class OrganizationListComponent implements OnInit {
   constructor(private masterService: MasterService, private router: Router,
     private dialog: MatDialog, private appSettingService: AppSettingsService,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
   ngOnInit() {
     // this.appSettingService.getUser().subscribe(
@@ -109,6 +111,7 @@ export class OrganizationListComponent implements OnInit {
   });
 }
   loadOrganizations(): void {
+    this.spinner.show();
     this.loading = true;
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const params = {
@@ -130,7 +133,7 @@ export class OrganizationListComponent implements OnInit {
         }else {
         this.appSettingService.showError(response.message);
       }
-
+        this.spinner.hide();
         this.loading = false;
       },
       error: (err) => {
