@@ -124,6 +124,14 @@ export const OperationRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Cargo Receipt' }],
         },
       },
+      {
+        path: 'cargo-receipt/entry/:BookingHeaderSid',
+        component: CragoReceiptEntryComponent,
+        data: {
+          title: 'Cargo Receipt',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Cargo Receipt' }],
+        },
+      },
        {
         path: 'loading-plan/entry',
         component: LoadingPlanEntryComponent,
