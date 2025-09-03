@@ -12,6 +12,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-authority-list',
@@ -23,7 +24,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     NgbPaginationModule,
     RouterModule,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './authority-list.component.html',
   styleUrl: './authority-list.component.scss'
@@ -58,7 +60,8 @@ export class AuthorityListComponent {
     private router: Router,
     private dialog: MatDialog,
     private appSettingService: AppSettingsService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit() {
@@ -97,6 +100,7 @@ export class AuthorityListComponent {
   }
 
   searchAuthority() {
+    this.spinner.show();
     const params = {
       search: this.filterValue.trim() || '',
       page: this.page,
@@ -124,6 +128,7 @@ export class AuthorityListComponent {
           this.authorityList = [];
           this.totalLengthOfCollection = 0;
         }
+        this.spinner.hide();
       }, error: (error: any) => {
         console.error(error);
       }

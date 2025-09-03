@@ -11,6 +11,7 @@ import { AccountsService } from '../../accounts.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-currency-exchange-list',
@@ -22,7 +23,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     RouterModule,
     NgbPaginationModule,
     CustomDatePipe,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './currency-exchange-list.component.html',
   styleUrl: './currency-exchange-list.component.scss'
@@ -57,7 +59,8 @@ export class CurrencyExchangeListComponent {
     private router: Router,
     private appSettingService: AppSettingsService, 
     private dialog: MatDialog,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+     private spinner: NgxSpinnerService
   ) { }
   ngOnInit(): void {
   //    this.appSettingService.getUser().subscribe(user => {
@@ -75,6 +78,7 @@ export class CurrencyExchangeListComponent {
 }
 
 loadCurrencyExchanges(): void {
+  this.spinner.show();
   this.loading = true;
   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
   let BranchMasterSid=this.currentBranch?.BranchMasterSid;
@@ -98,6 +102,7 @@ loadCurrencyExchanges(): void {
       }else {
         this.appSettingService.showError(response.message);
       }
+      this.spinner.hide();
       this.loading = false;
     },
     error: (err) => {

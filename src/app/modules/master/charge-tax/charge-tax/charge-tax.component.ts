@@ -20,6 +20,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-charge-tax',
@@ -36,7 +37,8 @@ import { SettingsService } from 'src/app/modules/settings/settings.service';
     DatePipe,
     ListpageComponent,
     PreventMultiClickDirective,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './charge-tax.component.html',
   styleUrl: './charge-tax.component.scss',
@@ -89,7 +91,8 @@ export class ChargeTaxComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
     private datePipe: DatePipe,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -139,6 +142,7 @@ export class ChargeTaxComponent implements OnInit {
   return this.permissions.includes(permission);
 }
   loadChargeTaxes(): void {
+    this.spinner.show();
     this.isLoading = true;
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const params = {
@@ -165,6 +169,7 @@ export class ChargeTaxComponent implements OnInit {
         }
         this.searchPerformed = true;
         this.isLoading = false;
+        this.spinner.hide();
       },
       error: (err) => {
         console.error('Error loading charge taxes:', err);

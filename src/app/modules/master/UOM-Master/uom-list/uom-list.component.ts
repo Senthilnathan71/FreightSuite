@@ -11,6 +11,7 @@ import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-uom-list',
@@ -22,7 +23,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     NgbPaginationModule,
     RouterModule,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './uom-list.component.html',
   styleUrl: './uom-list.component.scss'
@@ -54,7 +56,8 @@ export class UOMListComponent {
     private router: Router,
     private appSettingService: AppSettingsService, 
     private dialog: MatDialog,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit() { 
@@ -97,6 +100,7 @@ export class UOMListComponent {
     return this.permissions.includes(permission);
   }
 loadUoms(): void {
+  this.spinner.show();
   const params = {
     search: this.filterValue?.trim() || '',
     page: this.page,
@@ -113,6 +117,7 @@ loadUoms(): void {
       }else {
         this.appSettingService.showError(response.message);
       }
+      this.spinner.hide();
     },
     error: (err) => {
       console.error('Error fetching Uoms:', err);

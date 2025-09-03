@@ -11,6 +11,7 @@ import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-currency-list',
@@ -22,7 +23,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     NgbPaginationModule,
     RouterModule,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './currency-list.component.html',
   styleUrl: './currency-list.component.scss'
@@ -59,7 +61,8 @@ export class CurrencyListComponent {
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit() {
@@ -100,6 +103,7 @@ export class CurrencyListComponent {
   return this.permissions.includes(permission);
 }
   loadCurrencies(): void {
+    this.spinner.show();
   this.loading = true;
   
   const params = {
@@ -121,7 +125,7 @@ export class CurrencyListComponent {
       }else {
         this.appSettingService.showError(response.message);
       }
-      
+      this.spinner.hide();
       this.loading = false;
     },
     error: (err) => {

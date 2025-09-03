@@ -10,6 +10,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 
 @Component({
@@ -22,7 +23,8 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
     RouterModule,
     FeatherModule,
     FavoriteStarComponent,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgxSpinnerModule
   ],
   templateUrl: './chart-account-list.component.html',
   styleUrl: './chart-account-list.component.scss'
@@ -50,7 +52,8 @@ export class ChartAccountListComponent {
     private router: Router,
     private appSettingService: AppSettingsService,
     private excelReportService: ExcelExportService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit() {
@@ -69,6 +72,7 @@ export class ChartAccountListComponent {
   }
 
   loadChartAccounts(): void {
+  this.spinner.show();
   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const params = {
       search: this.filterValue?.trim() || '',
@@ -91,6 +95,7 @@ export class ChartAccountListComponent {
         }else {
         this.appSettingService.showError(response.message);
       }
+      this.spinner.hide();
       },
       error: (err) => {
         console.error('Error fetching chart accounts:', err);

@@ -12,6 +12,7 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-hawb-stock-list',
@@ -24,7 +25,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     RouterModule, 
     ListpageComponent,
     CustomDatePipe,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './hawb-stock-list.component.html',
   styleUrl: './hawb-stock-list.component.scss'
@@ -59,7 +61,8 @@ export class HawbStockListComponent {
     private router: Router,
     private appSettingService: AppSettingsService, 
     private dialog: MatDialog,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
   ngOnInit(){
   //  this.appSettingService.getUser().subscribe(user => {
@@ -99,6 +102,7 @@ export class HawbStockListComponent {
 }
 
   loadHawbStocks(): void {
+    this.spinner.show();
     this.loading = true;
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     let BranchMasterSid = this.currentBranch?.BranchMasterSid;
@@ -124,6 +128,7 @@ export class HawbStockListComponent {
          else {
         this.appSettingService.showError(response.message);
       }
+      this.spinner.hide();
         this.loading = false;
       },
       error: (err) => {

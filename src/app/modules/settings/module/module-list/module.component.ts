@@ -18,6 +18,7 @@ import { EmailEntryComponent } from '../../email/email-entry/email-entry.compone
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from '../../edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-module',
@@ -33,7 +34,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     NgSelectModule,
     DatePipe,
     PreventMultiClickDirective,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './module.component.html',
   styleUrls: ['./module.component.scss']
@@ -86,7 +88,8 @@ export class ModuleComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+     private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -107,6 +110,7 @@ export class ModuleComponent implements OnInit {
     this.loadModule();
   }
   loadModule() {
+    this.spinner.show();
   this.loading = true;
   
   const params = {
@@ -127,6 +131,7 @@ export class ModuleComponent implements OnInit {
       }else {
         this.appSettingService.showError(response.message);
       }
+      this.spinner.hide();
       this.loading = false;
     },
     error: (err) => {

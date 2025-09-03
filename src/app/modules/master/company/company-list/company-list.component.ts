@@ -13,10 +13,11 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 @Component({
   selector: 'app-company-list',
   standalone: true,
-  imports: [FeatherModule, FormsModule, CommonModule,RouterModule, ListpageComponent,NgbPaginationModule,FavoriteStarComponent],
+  imports: [FeatherModule, FormsModule, CommonModule,RouterModule, ListpageComponent,NgbPaginationModule,FavoriteStarComponent,NgxSpinnerModule],
   templateUrl: './company-list.component.html',
   styleUrl: './company-list.component.scss',
 })
@@ -50,7 +51,8 @@ export class CompanyListComponent implements OnInit {
   constructor(private masterService: MasterService, private router: Router,
     private appSettingService: AppSettingsService, private dialog: MatDialog,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
   ngOnInit() {
     this.loadCompanies();
@@ -93,6 +95,7 @@ export class CompanyListComponent implements OnInit {
   return this.permissions.includes(permission);
 }
    loadCompanies(): void {
+    this.spinner.show();
   const params = {
     search: this.filterValue?.trim() || '',
     page: this.page,
@@ -112,7 +115,7 @@ export class CompanyListComponent implements OnInit {
       } else {
         this.appSettingService.showError(response.message);
       }
-      
+       this.spinner.hide();
      
     },
     error: (err) => {

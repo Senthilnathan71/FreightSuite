@@ -1,3 +1,12 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
 <div class="row compact-form">
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
@@ -89,7 +98,7 @@
                               <i class="fas fa-sort ms-1"
                                     [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'AuthorizeStatus', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'AuthorizeStatus'}"></i>
                             </th>
-                             <th class="bg-transparent text-light" scope="col">
+                             <th class="bg-transparent text-light" scope="col" width="8%">
                                 Authorize
                               <i class="fas fa-sort ms-1"></i>
                             </th>
@@ -115,9 +124,12 @@
                                 <div class="text-truncate">{{item.AuthorizeStatus}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <a class="btn btn-link btn-sm text-info" (click)="goToApprovalLink(item.menuSid,item.authorizeLink)">
+                                <div class="d-flex justify-content-center">
+                                     <a class="btn btn-link btn-sm text-info" (click)="goToApprovalLink(item.menuSid,item.authorizeLink)">
                                     <i-feather name="external-link" class="feather-sm"></i-feather>
                                 </a>
+                                </div>
+                               
                             </td>
                         </tr>
                         }

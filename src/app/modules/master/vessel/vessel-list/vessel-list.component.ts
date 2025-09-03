@@ -11,6 +11,7 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-vessel-list',
@@ -23,7 +24,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     NgbPaginationModule,
     RouterModule,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './vessel-list.component.html',
   styleUrl: './vessel-list.component.scss'
@@ -55,7 +57,7 @@ export class VesselListComponent {
   currentBranch : any;
   constructor(private masterService: MasterService, private router: Router,
     private appSettingService: AppSettingsService, private dialog: MatDialog,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,private spinner: NgxSpinnerService
   ) { }
   ngOnInit() {
     // this.appSettingService.getUser().subscribe(user => {
@@ -98,6 +100,7 @@ export class VesselListComponent {
     return this.permissions.includes(permission);
   }
   loadVessels(): void {
+    this.spinner.show();
     const params = {
       search: this.filterValue ? this.filterValue.trim() : '',
       page: this.page,
@@ -115,7 +118,7 @@ export class VesselListComponent {
         else {
         this.appSettingService.showError(response.message);
       }
-
+      this.spinner.hide();
       },
       error: (err) => {
         console.error('Error fetching vessels:', err);

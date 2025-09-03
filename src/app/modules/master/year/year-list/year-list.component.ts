@@ -12,6 +12,7 @@ import { ListpageComponent } from 'src/app/component/listpage/listpage.component
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 
 @Component({
@@ -25,7 +26,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     RouterModule, 
     ListpageComponent,
     CustomDatePipe,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './year-list.component.html',
   styleUrl: './year-list.component.scss'
@@ -61,7 +63,8 @@ export class YearListComponent {
     private router: Router,
     private appSettingService: AppSettingsService, 
     private dialog: MatDialog,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit(){
@@ -102,6 +105,7 @@ export class YearListComponent {
   return this.permissions.includes(permission);
 }
   loadYears(): void {
+    this.spinner.show();
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const params = {
       search: this.filterValue?.trim() || '',
@@ -121,6 +125,7 @@ export class YearListComponent {
         else {
         this.appSettingService.showError(response.message);
       }
+      this.spinner.hide();
       },
       error: (err) => {
         console.error('Error fetching years:', err);

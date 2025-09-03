@@ -23,6 +23,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-cost-center',
@@ -40,7 +41,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     TextWithNumbersDirective,
     PreventMultiClickDirective,
     NgbModalModule,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './cost-center.component.html',
   styleUrl: './cost-center.component.scss'
@@ -92,7 +94,8 @@ export class CostCenterComponent {
     private dialog: MatDialog,
     private userService: authService,
     private excelReportService: ExcelExportService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -123,6 +126,7 @@ export class CostCenterComponent {
       this.loadCostCenters();
     }
     loadCostCenters(): void {
+      this.spinner.show();
   this.loading = true;
    this.errorMessage = ''; 
   
@@ -145,6 +149,7 @@ export class CostCenterComponent {
         this.appSettingService.showError(response.message);
       }
       this.loading = false;
+      this.spinner.hide();
     },
     error: (err) => {
       console.error('Error fetching cost centers:', err);

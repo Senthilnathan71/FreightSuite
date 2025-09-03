@@ -21,6 +21,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-chargegroup',
@@ -37,7 +38,8 @@ import { SettingsService } from 'src/app/modules/settings/settings.service';
     DatePipe,
     ListpageComponent,
     PreventMultiClickDirective,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './chargegroup.component.html',
   styleUrl: './chargegroup.component.scss',
@@ -91,7 +93,8 @@ export class ChargegroupComponent implements OnInit {
     private dialog: MatDialog,
     private datePipe: DatePipe,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -146,6 +149,7 @@ export class ChargegroupComponent implements OnInit {
 }
 
   loadChargeGroups(): void {
+    this.spinner.show();
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
   const params = {
     search: this.filterValue?.trim() || '',
@@ -171,6 +175,7 @@ export class ChargegroupComponent implements OnInit {
 
       }
       this.searchPerformed = true;
+      this.spinner.hide();
     },
     error: (err) => {
       console.error('Error loading charge groups:', err);

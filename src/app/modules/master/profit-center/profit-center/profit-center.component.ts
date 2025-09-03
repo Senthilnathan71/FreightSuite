@@ -23,6 +23,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { MasterService } from '../../master.service';
 import { ProfitCenter } from 'src/app/modules/crm-mobile/Interfaces/profit-center.interfaces';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-profit-center',
@@ -39,7 +40,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
       TextWithNumbersDirective,
       PreventMultiClickDirective,
       NgbModalModule,
-      FavoriteStarComponent
+      FavoriteStarComponent,
+      NgxSpinnerModule
     ],
   templateUrl: './profit-center.component.html',
   styleUrl: './profit-center.component.scss'
@@ -91,7 +93,8 @@ export class ProfitCenterComponent {
        private dialog: MatDialog,
        private userService: authService,
        private excelReportService: ExcelExportService,
-       private route: ActivatedRoute
+       private route: ActivatedRoute,
+       private spinner: NgxSpinnerService
      ) { }
    
      ngOnInit(): void {
@@ -144,6 +147,7 @@ export class ProfitCenterComponent {
 
      
        loadProfitCenters(): void {
+        this.spinner.show();
          const params = {
           search: this.filterValue ? this.filterValue.trim() : '',
           page: this.page,
@@ -162,6 +166,7 @@ export class ProfitCenterComponent {
             else {
         this.appSettingService.showError(response.message);
       }
+      this.spinner.hide();
           },
           error: (err) => {
             console.error('Error fetching profit-centers:', err);

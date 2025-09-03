@@ -1,3 +1,12 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
 <div class="row compact-form">
     <!-- #region Search Panel -->
     <div class="col-12">
@@ -176,7 +185,7 @@
                                             }
                                         </section>
                                     </td>
-                                    <td data-label="Company">
+                                    <td data-label="Company" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                         <div class="text-truncate">
                                             {{ enq.EnquiryNumber }}
                                         </div>

@@ -23,6 +23,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-city',
@@ -41,7 +42,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     DatePipe,
     ListpageComponent,
     PreventMultiClickDirective,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './city.component.html',
   styleUrl: './city.component.scss'
@@ -95,7 +97,8 @@ export class CityComponent {
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -157,6 +160,7 @@ export class CityComponent {
 }
 
   loadCities(): void {
+    this.spinner.show();
   const params = {
     search: this.filterValue?.trim() || '',
     page: this.page,
@@ -182,6 +186,7 @@ export class CityComponent {
 
       }
       this.searchPerformed = true;
+      this.spinner.hide();
     },
     error: (err) => {
       console.error('Error loading cities:', err);
