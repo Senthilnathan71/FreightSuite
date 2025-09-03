@@ -10,18 +10,18 @@
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
                             <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                aria-label="Search input">
-                            <button
+                                [(ngModel)]="filterValue" aria-label="Search input">
+                            <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip" data-bs-placement="top"
-                                data-bs-title="Clear search"
+                                (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
+                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
                                 onfocus="this.classList.replace('text-secondary','text-danger')"
                                 onblur="this.classList.replace('text-danger','text-secondary')">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
-                            <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <button type="submit" (click)="loadCargoReceipts()" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
                         </div>
@@ -32,16 +32,13 @@
             <div class="col-md-auto pb-2">
                 <div class="" data-bs-theme="light">
                     <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="TonavigateCreate()">
-                            <i class="fas fa-plus me-1"></i> Create
-                        </button>
+                        class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <app-favorite-star screenName="CargoReceipt" class="mt-1 me-1"></app-favorite-star>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                             <i class="fas fa-file-alt me-1"></i>
                             Report
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()" [disabled]="!searched">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
@@ -51,7 +48,7 @@
 
         </div>
     </div>
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="searched && totalLengthOfCollection > 0">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -62,62 +59,70 @@
                             <th class="bg-transparent text-light" scope="col">Booking No</th>
                             <th class="bg-transparent text-light" scope="col">Booking Date</th>
                             <th class="bg-transparent text-light" scope="col">Customer Name</th>
-                             <th class="bg-transparent text-light" scope="col">POO</th>
+                            <th class="bg-transparent text-light" scope="col">POO</th>
                             <th class="bg-transparent text-light" scope="col">POL</th>
                             <th class="bg-transparent text-light" scope="col">POD</th>
                             <th class="bg-transparent text-light" scope="col">FPD</th>
-                            <th class="bg-transparent text-light" scope="col">Booking Status</th>
                             <th class="bg-transparent text-light" scope="col">Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @for (item of [0,1,2]; track $index) {
-                        <tr>
+                       
+                        <tr *ngFor="let item of cargoList; let i = index; trackBy: trackByIndex">
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2" class="link mx-2 ">
-                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
-                                    </a>
+                                    <a class="text-info mx-2" class="link mx-2 ps-3" [routerLink]="['/operation/cargo-receipt/entry', item.BookingHeaderSid]">
+                    <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                  </a>
                                     <a class="text-danger mx-2 ps-3 border-start">
                                         <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
                                     </a>
                                 </div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.departmentMaster?.departmentName}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.BookingNo}}</div>
                             </td>
                               <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.BookingDateTime | date:'dd-MMM-yyyy'}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.CustomerName}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.POO}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.POL}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.POD}}</div>
                             </td>
                              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.FPD}}</div>
                             </td>
                              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <span
-                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
-                                    <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Active</span>
-                            </td>
+  <span
+    class="px-2 rounded-pill d-inline-flex align-items-center gap-1"
+    [ngClass]="{
+      'bg-light-success': item.status === 'A',
+      'bg-light-danger': item.status !== 'A'
+    }">
+    <span
+      class="dofi-w-4 dofi-h-4 d-inline-block rounded"
+      [ngClass]="{
+        'bg-success': item.status === 'A',
+        'bg-danger': item.status !== 'A'
+      }">
+    </span>
+    {{ item.status === 'A' ? 'Active' : 'Inactive' }}
+  </span>
+</td>
+
                         </tr>
-                        }
+                        
                     </tbody>
                 </table>
             </div>
