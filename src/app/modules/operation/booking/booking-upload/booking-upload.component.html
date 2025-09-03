@@ -1,0 +1,355 @@
+<ng-template #uploadModalTemplate let-modal>
+  <div class="modal-header bg-info text-white">
+    <div class="d-flex align-items-center">
+      <i class="fas fa-upload me-2"></i>
+      <h5 class="modal-title mb-0">
+        {{ showBookingSelection ? 'Select Booking' : 'Upload Excel File' }}
+      </h5>
+    </div>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body p-4">
+    <div class="container-fluid">
+
+      <!-- Booking Selection Section -->
+      <div *ngIf="showBookingSelection" class="booking-selection-section">
+        <div class="alert alert-info mb-4">
+          <i class="fas fa-info-circle me-2"></i>
+          Multiple bookings found ({{ parsedBookings.length }}). Please select one booking to import.
+        </div>
+
+        <!-- Using directive-based accordion -->
+        <div ngbAccordion [closeOthers]="true">
+          <div ngbAccordionItem *ngFor="let booking of parsedBookings; let i = index" [id]="'booking-' + i"
+            class="mb-2">
+
+            <h2 ngbAccordionHeader>
+              <button ngbAccordionButton type="button" class="d-flex align-items-center w-100"
+                [class.selected-booking]="selectedBookingIndex === i">
+
+                <div class="accordion-header-content d-flex justify-content-between align-items-center w-100">
+                  <div class="booking-summary">
+                    <span class="badge bg-info me-2">{{ i + 1 }}</span>
+                    <strong>{{ booking?.CustomerName || 'N/A' }}</strong>
+                    <span class="text-muted mx-2">•</span>
+                    <span>{{ booking?.POL || 'N/A' }} → {{ getPODDisplay(booking) }}</span>
+                  </div>
+                </div>
+              </button>
+            </h2>
+
+            <div ngbAccordionCollapse>
+              <div ngbAccordionBody>
+                <ng-template>
+                  <div class="booking-details">
+
+                    <!-- Basic Information -->
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <h6 class="text-info">Booking Details</h6>
+                        <table class="table table-sm">
+                          <tr>
+                            <td><strong>Customer:</strong></td>
+                            <td>{{ booking?.CustomerName || 'N/A' }}</td>
+                          </tr>
+                          <tr>
+                            <td><strong>Department:</strong></td>
+                            <td>{{ getDepartmentName(booking?.DepartmentMasterSid) || 'N/A' }}</td>
+                          </tr>
+                          <tr>
+                            <td><strong>Shipper:</strong></td>
+                            <td>{{ booking?.ShipperName || 'N/A' }}</td>
+                          </tr>
+                          <tr>
+                            <td><strong>Consignee:</strong></td>
+                            <td>{{ booking?.ConsigneeName || 'N/A' }}</td>
+                          </tr>
+                          <tr>
+                            <td><strong>Vessel:</strong></td>
+                            <td>{{ booking?.VesselName || 'N/A' }}</td>
+                          </tr>
+                          <tr>
+                            <td><strong>Voyage No:</strong></td>
+                            <td>{{ booking?.VoyageNo || 'N/A' }}</td>
+                          </tr>
+                          
+                        </table>
+                      </div>
+
+                      <div class="col-md-6">
+                        <h6 class="text-info">Route & Cargo</h6>
+                        <table class="table table-sm">
+                          <tr>
+                            <td><strong>POL:</strong></td>
+                            <td>{{ booking?.POL || 'N/A' }}</td>
+                          </tr>
+                          <tr>
+                            <td><strong>POD:</strong></td>
+                            <td>{{ booking?.POD || 'N/A' }}</td>
+                          </tr>
+                          <tr
+                            *ngIf="booking?.FPD && booking?.FPD !== booking?.POD">
+                            <td><strong>FPOD:</strong></td>
+                            <td>{{ booking?.FPD || 'N/A' }}</td>
+                          </tr>
+                          <tr>
+                            <td><strong>Cargo Type:</strong></td>
+                            <td>{{ booking.bookingCargo[0]?.CargoType || 'N/A' }}</td>
+                          </tr>
+                          <tr>
+                            <td><strong>Gross Weight:</strong></td>
+                            <td>{{ booking.bookingCargo[0]?.GrossWeight || 'N/A' }} </td>
+                          </tr>
+                          @if(getSegment(booking.DepartmentMasterSid) === "FCL"){
+                          <tr>
+                            <td><strong>Container Type:</strong></td>
+                            <td>{{ booking.bookingCargo[0]?.ContainerType || 'N/A' }}</td>
+                          </tr>
+                          <tr>
+                            <td><strong>No of Containers:</strong></td>
+                            <td>{{ booking.bookingCargo[0]?.NoofContainers || 'N/A' }} </td>
+                          </tr>
+                          } @else if(getSegment(booking.DepartmentMasterSid) === "LCL"){
+                          <tr>
+                            <td><strong>Net Weight:</strong></td>
+                            <td>{{ booking.bookingCargo[0]?.NetWeight || 'N/A' }} </td>
+                          </tr>
+                          } @else if(getSegment(booking.DepartmentMasterSid) === "AIR"){
+                          <tr>
+                            <td><strong>Chargeable Weight:</strong></td>
+                            <td>{{ booking.bookingCargo[0]?.ChargeableWeight || 'N/A' }} </td>
+                          </tr>
+                          }
+                        </table>
+                      </div>
+                    </div>
+
+                    <!--
+                    <div class="row mb-3" *ngIf="booking.bookingProduct?.length > 0">
+                      <div class="col-12">
+                        <h6 class="text-primary">Products ({{ booking.bookingProduct.length }})</h6>
+                        <div class="table-responsive">
+                          <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                              <tr>
+                                <th>Product Name</th>
+                                <th>Description</th>
+                                <th>Gross Weight</th>
+                                <th>Shipping Bill No</th>
+                                <th>Date</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let product of booking.bookingProduct">
+                                <td>{{ product.ProductName || 'N/A' }}</td>
+                                <td>{{ product.ProductDescription || 'N/A' }}</td>
+                                <td>{{ product.GrossWeight || 'N/A' }}</td>
+                                <td>{{ product.ShippingBillNo || 'N/A' }}</td>
+                                <td>{{ product.ShippingBillDate || 'N/A' }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+
+                    =
+                    <div class="row mb-3" *ngIf="booking.bookingConnection?.length > 0">
+                      <div class="col-12">
+                        <h6 class="text-primary">Connections ({{ booking.bookingConnection.length }})</h6>
+                        <div class="table-responsive">
+                          <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                              <tr>
+                                <th>POL</th>
+                                <th>POD</th>
+                                <th>Vessel</th>
+                                <th>Voyage</th>
+                                <th>ETD</th>
+                                <th>ETA</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let connection of booking.bookingConnection">
+                                <td>{{ connection.POL || 'N/A' }}</td>
+                                <td>{{ connection.POD || 'N/A' }}</td>
+                                <td>{{ connection.VesselName || 'N/A' }}</td>
+                                <td>{{ connection.VoyageNo || 'N/A' }}</td>
+                                <td>{{ connection.ETD || 'N/A' }}</td>
+                                <td>{{ connection.ETA || 'N/A' }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+
+                    
+                    <div class="row mb-3" *ngIf="booking.bookingRates?.length > 0">
+                      <div class="col-12">
+                        <h6 class="text-primary">Charges ({{ booking.bookingRates.length }})</h6>
+                        <div class="table-responsive">
+                          <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                              <tr>
+                                <th>Description</th>
+                                <th>Rate</th>
+                                <th>Amount</th>
+                                <th>Type</th>
+                                <th>Prepaid/Collect</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let charge of booking.bookingRates">
+                                <td>{{ charge.ChargeDescription || 'N/A' }}</td>
+                                <td>{{ charge.Rate || 'N/A' }}</td>
+                                <td>{{ charge.Amount || 'N/A' }}</td>
+                                <td>{{ charge.CostRevenue || 'N/A' }}</td>
+                                <td>{{ charge.PrepaidCollect || 'N/A' }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div> -->
+
+
+                    <!-- Selection Button -->
+                    <div class="text-center">
+                      <button class="btn" [class.btn-info]="selectedBookingIndex === i"
+                        [class.btn-outline-info]="selectedBookingIndex !== i" (click)="selectBooking(i)">
+                        <i class="fas fa-check me-1" *ngIf="selectedBookingIndex === i"></i>
+                        <i class="far fa-circle me-1" *ngIf="selectedBookingIndex !== i"></i>
+                        {{ selectedBookingIndex === i ? 'Selected' : 'Select This Booking' }}
+                      </button>
+                    </div>
+
+                  </div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selection Actions -->
+        <div class="d-flex justify-content-between mt-4">
+          <button class="btn btn-outline-secondary" (click)="cancelBookingSelection()">
+            <i class="fas fa-arrow-left me-1"></i>
+            Back to Upload
+          </button>
+
+          <button class="btn btn-info" [disabled]="selectedBookingIndex === null"
+            (click)="confirmBookingSelection()">
+            <i class="fas fa-check me-1"></i>
+            Confirm Selection
+          </button>
+        </div>
+
+        <!-- Error Message for Selection -->
+        <div *ngIf="errorMessage && showBookingSelection" class="alert alert-danger mt-3">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          {{ errorMessage }}
+        </div>
+      </div>
+
+      <!-- Original Upload Section (hidden when selecting booking) -->
+      <div *ngIf="!showBookingSelection">
+        <!-- Upload Area -->
+        <div class="upload-section mb-4" *ngIf="!hasFile">
+          <div class="upload-area" (click)="fileInput.click()" (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" [class.drag-over]="isDragOver">
+
+            <input #fileInput type="file" class="d-none" [accept]="acceptedFormats" (change)="onFileChange($event)">
+
+            <div class="upload-content text-center">
+              <div class="upload-icon mb-3">
+                <i class="fas fa-cloud-upload-alt fa-3x text-info"></i>
+              </div>
+              <h6 class="mb-2">Drag & drop your Excel file here</h6>
+              <p class="text-muted mb-2">or <span class="text-info fw-bold">click to browse</span></p>
+              <small class="text-muted">Supported: {{ acceptedFormats }}</small>
+              <div class="mt-2">
+                <small class="badge bg-light text-dark">Max file size: {{ getFileSize(maxFileSize) }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected File Display -->
+        <div *ngIf="hasFile && selectedFile" class="selected-file-section">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Selected File</h6>
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeFile()" title="Remove file">
+              <i class="fas fa-trash me-1"></i>Remove
+            </button>
+          </div>
+
+          <div class="card border-success">
+            <div class="card-body p-3">
+              <div class="row align-items-center">
+                <div class="col-auto">
+                  <i class="fas fa-file-excel text-success fa-2x"></i>
+                </div>
+                <div class="col">
+                  <h6 class="mb-1">{{ selectedFile.name }}</h6>
+                  <small class="text-muted">{{ getFileSize(selectedFile.size) }}</small>
+                </div>
+                <div class="col-auto">
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeFile()"
+                    title="Remove file">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Progress -->
+        <div *ngIf="isUploading" class="upload-progress mt-3">
+          <div class="d-flex align-items-center mb-2">
+            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+            <span class="text-muted">Processing file...</span>
+          </div>
+          <div class="progress" style="height: 6px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%">
+            </div>
+          </div>
+        </div>
+
+        <!-- Success Message -->
+        <div *ngIf="uploadSuccess && !showBookingSelection" class="alert alert-success mt-3 d-flex align-items-center">
+          <i class="fas fa-check-circle me-2"></i>
+          <span>File processed successfully!</span>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage && !showBookingSelection" class="alert alert-danger mt-3 d-flex align-items-center">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="modal-footer border-top" *ngIf="!showBookingSelection">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12 col-md-6 mb-2 mb-md-0">
+          <button type="button" class="btn btn-outline-secondary w-100" (click)="modal.dismiss()">
+            <i class="fas fa-times me-1"></i>Close
+          </button>
+        </div>
+        <div class="col-12 col-md-6">
+          <button type="button" class="btn btn-info w-100" [disabled]="!hasFile || isUploading" (click)="uploadFile()">
+            <i class="fas fa-upload me-1" *ngIf="!isUploading"></i>
+            <div class="spinner-border spinner-border-sm me-1" role="status" *ngIf="isUploading"></div>
+            {{ isUploading ? 'Processing...' : 'Process File' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>

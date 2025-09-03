@@ -10,6 +10,8 @@ import { FeatherModule } from 'angular-feather';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-cost-entry',
@@ -26,7 +28,10 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
     TextWithNumbersDirective
   ],
   templateUrl: './cost-entry.component.html',
-  styleUrls: ['./cost-entry.component.scss']
+  styleUrls: ['./cost-entry.component.scss'],
+  providers : [
+    CustomDatePipe
+  ]
 })
 export class CostEntryComponent implements OnInit {
 
@@ -128,7 +133,7 @@ export class CostEntryComponent implements OnInit {
     return this._dataItems;
   }
 
-  private parentFormValue : any = {};
+  parentFormValue : any = {};
   @Input() 
   set formData(value:any){
     if(value){
@@ -148,7 +153,9 @@ export class CostEntryComponent implements OnInit {
     private modalService: NgbModal,
     private fb: FormBuilder,
     private operationService: OperationService,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private excelExportService : ExcelExportService,
+    private datePipe : CustomDatePipe
   ) {
     this.costFormArray = this.fb.array([]);
     this.revenueFormArray = this.fb.array([]);
@@ -215,6 +222,8 @@ export class CostEntryComponent implements OnInit {
         this.revenueFormArray.push(formGroup);
       }
     }
+    console.log(this.costFormArray.value);
+    console.log(this.revenueFormArray.value);
     this.costDataLength = this.costFormArray.length;
     this.revenueDataLength = this.revenueFormArray.length;
     this.costFormArray.updateValueAndValidity();
@@ -282,6 +291,7 @@ export class CostEntryComponent implements OnInit {
     } else {
       this.rateForm.patchValue({
         CostRevenue: this.selectedTab,
+        DrCr : this.selectedTab === "Cost" ? "D" : "C",
         SerialNumber: this.selectedTab === "Cost" ? this.costFormArray.length + 1 : this.revenueFormArray.length + 1
       })
     }
@@ -329,7 +339,7 @@ export class CostEntryComponent implements OnInit {
       this.rateForm.get('ChargeDescription')?.setValue('');
       return;
     }
-    this.rateForm.get('ChargeDescription')?.setValue(charge.chargeTaxMaster[0]?.description);
+    this.rateForm.get('ChargeDescription')?.setValue(charge.chargeName);
     this.rateForm.get('ChargeUomSid')?.setValue(charge.UOM);
     this.rateForm.get('CurrencyMasterSid')?.setValue(charge.CurrencyMasterSid);
     this.calculateAmount();
@@ -549,12 +559,37 @@ export class CostEntryComponent implements OnInit {
 
   }
 
+  calculateTotal(field: string): number {
+    return this.profitSummary.reduce((sum, item) => sum + parseFloat(item[field] || 0), 0);
+  }
+
+  calculateTotalProfitPercent(): number {
+    const totalSales = this.calculateTotal('totalSales');
+    const totalCost = this.calculateTotal('totalCost');
+    const totalProfit = this.calculateTotal('profit');
+    if(totalSales !== 0 && totalSales > totalCost){
+      return totalProfit / totalSales * 100;
+    }
+    return totalSales !== 0 ? (totalProfit / totalCost) * 100 : 0;
+  }
+
+  getTotalProfitPercent(): string {
+    return this.calculateTotalProfitPercent().toFixed(2);
+  }
+
 
   getChargeCode(ChargeMasterSid) {
     if (!ChargeMasterSid || this.chargeList.length === 0) {
       return '';
     }
     return (this.chargeList.find(charge => charge.ChargeMasterSid === ChargeMasterSid)?.chargeCode);
+  }
+
+  getChargeName(ChargeMasterSid) {
+    if (!ChargeMasterSid || this.chargeList.length === 0) {
+      return '';
+    }
+    return (this.chargeList.find(charge => charge.ChargeMasterSid === ChargeMasterSid)?.chargeName);
   }
 
   getUnitCode(ChargeUomSid) {
@@ -717,5 +752,136 @@ export class CostEntryComponent implements OnInit {
       centered: true,
     });
   }
+
+  reportCostRates(): void {
+    const allCostRates = this.slicedCostFormArray;
+
+    const formattedData = allCostRates.map(rate => ({
+      ChargeCode: this.getChargeCode(rate.ChargeMasterSid),
+      ChargeName: this.getChargeName(rate.ChargeMasterSid),
+      ChargeDescription: rate.ChargeDescription || '',
+      PrepaidCollect: rate.PrepaidCollect || '',
+      UnitCode: this.getUnitCode(rate.ChargeUomSid),
+      NumberOfUnit: rate.NumberOfUnit || 0,
+      DebitCredit: rate.DrCr === 'D' ? 'Debit' : 'Credit',
+      Currency: this.getCurrencyCode(rate.CurrencyMasterSid),
+      ExchangeRate: rate.ExchangeRate || 0,
+      Rate: rate.Rate || 0,
+      Amount: rate.Amount || 0,
+      LocalAmount: rate.LocalAmount || 0,
+      Customer: this.getCustomerName(rate.CustomerMasterSid) || '',
+      VoucherHeaderSid: rate.VoucherHeaderSid || '',
+      DocumentType: this.getDocTypeName(rate.VoucherTypeSid)
+    }));
+
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    this.excelExportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'ChargeCode', label: 'Charge Code' },
+        { key: 'ChargeName', label: 'Charge Name' },
+        { key: 'ChargeDescription', label: 'Charge Description' },
+        { key: 'PrepaidCollect', label: 'Prepaid/Collect' },
+        { key: 'UnitCode', label: 'Unit Code' },
+        { key: 'NumberOfUnit', label: 'Number Of Unit' },
+        { key: 'DebitCredit', label: 'Debit/Credit' },
+        { key: 'Currency', label: 'Currency' },
+        { key: 'ExchangeRate', label: 'Exchange Rate' },
+        { key: 'Rate', label: 'Rate' },
+        { key: 'Amount', label: 'Amount' },
+        { key: 'LocalAmount', label: 'Local Amount' },
+        { key: 'Customer', label: 'Customer' },
+        { key: 'VoucherHeaderSid', label: 'Voucher Header Sid' },
+        { key: 'DocumentType', label: 'Document Type' }
+      ],
+      fileName: 'Cost-Rates-Report',
+      title: companyName
+    });
+  }
+
+  reportRevenueRates(): void {
+    const allCostRates = this.slicedRevenueFormArray;
+
+    const formattedData = allCostRates.map(rate => ({
+      ChargeCode: this.getChargeCode(rate.ChargeMasterSid),
+      ChargeName: this.getChargeName(rate.ChargeMasterSid),
+      ChargeDescription: rate.ChargeDescription || '',
+      PrepaidCollect: rate.PrepaidCollect || '',
+      UnitCode: this.getUnitCode(rate.ChargeUomSid),
+      NumberOfUnit: rate.NumberOfUnit || 0,
+      DebitCredit: rate.DrCr === 'D' ? 'Debit' : 'Credit',
+      Currency: this.getCurrencyCode(rate.CurrencyMasterSid),
+      ExchangeRate: rate.ExchangeRate || 0,
+      Rate: rate.Rate || 0,
+      Amount: rate.Amount || 0,
+      LocalAmount: rate.LocalAmount || 0,
+      Customer: this.getCustomerName(rate.CustomerMasterSid) || '',
+      VoucherHeaderSid: rate.VoucherHeaderSid || '',
+      DocumentType: this.getDocTypeName(rate.VoucherTypeSid)
+    }));
+
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    this.excelExportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'ChargeCode', label: 'Charge Code' },
+        { key: 'ChargeName', label: 'Charge Name' },
+        { key: 'ChargeDescription', label: 'Charge Description' },
+        { key: 'PrepaidCollect', label: 'Prepaid/Collect' },
+        { key: 'UnitCode', label: 'Unit Code' },
+        { key: 'NumberOfUnit', label: 'Number Of Unit' },
+        { key: 'DebitCredit', label: 'Debit/Credit' },
+        { key: 'Currency', label: 'Currency' },
+        { key: 'ExchangeRate', label: 'Exchange Rate' },
+        { key: 'Rate', label: 'Rate' },
+        { key: 'Amount', label: 'Amount' },
+        { key: 'LocalAmount', label: 'Local Amount' },
+        { key: 'Customer', label: 'Customer' },
+        { key: 'VoucherHeaderSid', label: 'Voucher Header Sid' },
+        { key: 'DocumentType', label: 'Document Type' }
+      ],
+      fileName: 'Revenue-Rates-Report',
+      title: companyName
+    });
+  }
+
+  reportProfitSummary(): void {
+    const formattedData = this.profitSummary.map(row => ({
+      ChargeName: row.chargeName || '',
+      TotalSales: parseFloat(row.totalSales) || 0,
+      TotalCost: parseFloat(row.totalCost) || 0,
+      Profit: parseFloat(row.profit) || 0,
+      ProfitPercent: row.profitPercent || '0%'
+    }));
+
+    const totalRow = {
+      ChargeName: 'Total',
+      TotalSales: this.calculateTotal('totalSales'),
+      TotalCost: this.calculateTotal('totalCost'),
+      Profit: this.calculateTotal('profit'),
+      ProfitPercent: `${this.calculateTotalProfitPercent().toFixed(2)}%`
+    };
+
+    formattedData.push(totalRow);
+
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+    this.excelExportService.exportAsExcel({
+      data: formattedData,
+      headers: [
+        { key: 'ChargeName', label: 'Charge Name' },
+        { key: 'TotalSales', label: 'Total Sales' },
+        { key: 'TotalCost', label: 'Total Cost' },
+        { key: 'Profit', label: 'Profit' },
+        { key: 'ProfitPercent', label: 'Profit %' }
+      ],
+      fileName: 'Profit-Summary-Report',
+      title: companyName
+    });
+  }
+
+
 
 }
