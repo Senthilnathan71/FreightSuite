@@ -101,7 +101,7 @@
             <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
                     <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortName"
-                        placeholder="Select POL" (change)="handlePOLChange($event)">
+                        placeholder="Select POL" formControlName="POL" (change)="handlePOLChange($event)">
                     </ng-select>
                     <label for="" class="input-label"> POL <span class="text-danger"></span></label>
                 </div>
@@ -124,7 +124,7 @@
             </aside>
             <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
+                    <ng-select [items]="voyageList" formControlName="VoyageNo" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
                          placeholder="Select Voyage No" (change)="onVoyageChange($event)">
                     </ng-select>
                     <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
