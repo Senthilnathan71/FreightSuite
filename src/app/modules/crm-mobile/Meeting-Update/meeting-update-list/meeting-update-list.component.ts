@@ -13,6 +13,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -23,7 +24,8 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
     NgbPaginationModule,
     FormsModule,
     ReactiveFormsModule,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    NgxSpinnerModule
   ],
   templateUrl: './meeting-update-list.component.html',
   styleUrls: ['./meeting-update-list.component.scss']
@@ -57,6 +59,7 @@ export class MeetingUpdateListComponent implements OnInit {
     private modalService: NgbModal,
     private fb: FormBuilder,
     private commonModalService: ModalService,
+     private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -203,6 +206,7 @@ export class MeetingUpdateListComponent implements OnInit {
   }
 
   loadMeetingData(meetingId: number) {
+    this.spinner.show();
     this.leadService.getPreCustomerMeeting(meetingId).subscribe(
       (meeting: any) => {
         this.selectedMeeting = meeting;
@@ -241,6 +245,7 @@ export class MeetingUpdateListComponent implements OnInit {
         if (meeting.meetingStatus === 'confirmed') {
           this.meetingForm.controls['meetingStatus'].disable();
         }
+        this.spinner.hide();
       }
     );
   }

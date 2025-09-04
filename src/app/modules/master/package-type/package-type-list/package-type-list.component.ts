@@ -253,6 +253,7 @@ export class PackageTypeListComponent {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.search();
+               this.loadPackageTypes();
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -269,6 +270,7 @@ export class PackageTypeListComponent {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.search();
+               this.loadPackageTypes();
             } else {
               this.appSettingService.showError(resp.message);
             }

@@ -4,7 +4,14 @@
     <i-feather class="feather-sm" name="plus"></i-feather>
 </div> -->
 
-
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
 <ul ngbNav #nav="ngbNav" [(activeId)]="active" (activeIdChange)="clearFilters()" class="nav-tabs tab-custom">
     <!-- <li [ngbNavItem]="1">
         <button ngbNavLink class="mb-0">All</button>

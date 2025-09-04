@@ -14,6 +14,7 @@ import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-container-activity-list',
@@ -26,7 +27,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     NgbPaginationModule,
     ListpageComponent,
     FavoriteStarComponent,
-    MatDialogModule
+    MatDialogModule,
+    NgxSpinnerModule
   ],
   templateUrl: './container-activity-list.component.html',
   styleUrl: './container-activity-list.component.scss'
@@ -65,7 +67,8 @@ export class ContainerActivityListComponent {
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+     private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit() {
@@ -103,6 +106,7 @@ export class ContainerActivityListComponent {
   }
 
   loadContainerActivities(): void {
+    this.spinner.show();
     this.loading = true;
 
     const params = {
@@ -125,7 +129,7 @@ export class ContainerActivityListComponent {
 else {
         this.appSettingService.showError(response.message);
       }
-
+         this.spinner.hide();
         this.loading = false;
       },
       error: (err) => {

@@ -8,6 +8,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { OperationService } from '../../operation.service';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
     selector: 'app-booking-list',
@@ -19,6 +20,7 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
         RouterModule,
         NgbPaginationModule,
         FavoriteStarComponent,
+        NgxSpinnerModule
     ],
     templateUrl: './booking-list.component.html',
     styleUrl: './booking-list.component.scss'
@@ -42,7 +44,8 @@ export class BookingListComponent implements OnInit {
         private operationService: OperationService,
         private router: Router,
         private appSettingService: AppSettingsService,
-        private excelReportService: ExcelExportService
+        private excelReportService: ExcelExportService,
+         private spinner: NgxSpinnerService
     ) {}
 
     ngOnInit(): void {
@@ -77,6 +80,7 @@ export class BookingListComponent implements OnInit {
     }
 
     searchBookings() {
+        this.spinner.show();
         const params = {
             search: this.filterValue.trim(),
             page: this.page,
@@ -103,6 +107,7 @@ export class BookingListComponent implements OnInit {
                     this.allBookings = [];
                     this.totalLengthOfCollection = 0;
                 }
+                this.spinner.hide();
             },
             error: (error: any) => {
                 this.appSettingService.showError('Error searching bookings.');

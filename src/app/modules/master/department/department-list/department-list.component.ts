@@ -12,11 +12,12 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-department-list',
   standalone: true,
-  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule, ListpageComponent,FavoriteStarComponent],
+  imports: [CommonModule, FeatherModule, FormsModule, NgbPaginationModule, RouterModule, ListpageComponent,FavoriteStarComponent,NgxSpinnerModule],
   templateUrl: './department-list.component.html',
   styleUrl: './department-list.component.scss'
 })
@@ -42,7 +43,7 @@ export class DepartmentListComponent {
   currentCompany : any;
   currentBranch : any;
   constructor(private userService: authService,private masterService: MasterService, private excelReportService:ExcelExportService, private router: Router,
-    private appSettingService: AppSettingsService, private dialog: MatDialog
+    private appSettingService: AppSettingsService, private dialog: MatDialog, private spinner: NgxSpinnerService
   ) { }
   ngOnInit() {
 // this.appSettingService.getUser().subscribe(user => {
@@ -144,6 +145,7 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
     });
   }
   loadDepartments(): void {
+    this.spinner.show();
     this.loading = true;
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const params = {
@@ -166,7 +168,7 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
         else {
         this.appSettingService.showError(response.message);
       }
-
+        this.spinner.hide();
         this.loading = false;
       },
       error: (err) => {

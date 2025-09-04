@@ -194,7 +194,7 @@ applySorting() {
             this.masterService.deleteDocTypeById(id).subscribe((resp: any) => {
                this.appSettingService.showSuccess("Deleted!");
                this.router.navigate(['master/doctype/list'])
-              
+               this.loadDocTypes();
             });
          }
       });

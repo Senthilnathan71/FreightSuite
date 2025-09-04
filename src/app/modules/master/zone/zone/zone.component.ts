@@ -300,6 +300,7 @@ export class ZoneComponent {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
+               this.loadZones();
               this.router.navigate(['master/zone']);
             } else {
               this.appSettingService.showError(resp.message);
@@ -318,6 +319,7 @@ export class ZoneComponent {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
+               this.loadZones();
               this.router.navigate(['master/zone']);
             } else {
               this.appSettingService.showError(resp.message);

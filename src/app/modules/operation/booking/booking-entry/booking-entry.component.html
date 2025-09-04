@@ -426,8 +426,8 @@
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="MBLDate"
                           ngbDatepicker #d2="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d2.open()"
-                          (click)="d2.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
+                          (click)="d2.toggle()"container="body" />
+                        <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
                       <label for="shipmentDateExpected" class="input-label">{{selectedFCLLCL === 'AIR' ? 'MAWBL Date' : 'MBL Date' }} <span class="text-danger"></span>
@@ -597,9 +597,9 @@
                     <div class=" custom-form-group custom-form-group-select">
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETD"
-                          appendTo="body" [minDate]="b['ETA']?.value" ngbDatepicker #d5="ngbDatepicker"
-                          (keydown.arrowDown)="d5.open()" (click)="d5.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d5.toggle()" type="button">
+                          container="body" [minDate]="b['ETA']?.value" ngbDatepicker #d5="ngbDatepicker"
+                          (keydown.arrowDown)="d5.open()" (click)="d5.toggle()"/>
+                        <button class="btn  bi bi-calendar3 " (click)="d5.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
                       <label for="shipmentDateExpected" class="input-label">ETD <span class="text-danger"></span>
@@ -611,9 +611,9 @@
                     <div class=" custom-form-group custom-form-group-select">
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETA"
-                          appendTo="body" ngbDatepicker #d4="ngbDatepicker" [minDate]="minDate"
+                          container="body" ngbDatepicker #d4="ngbDatepicker" [minDate]="minDate"
                           (keydown.arrowDown)="d4.open()" (click)="d4.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d4.toggle()" type="button">
+                        <button class="btn bi bi-calendar3 " (click)="d4.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
                       <label for="shipmentDateExpected" class="input-label">ETA <span class="text-danger"></span>
@@ -646,8 +646,8 @@
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="DoValid"
                           [minDate]="minDate" ngbDatepicker #d6="ngbDatepicker" (keydown.arrowDown)="d6.open()"
-                          appendTo="body" (click)="d6.toggle()" />
-                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d6.toggle()" type="button">
+                         container="body" (click)="d6.toggle()" />
+                        <button class="btn  bi bi-calendar3 " (click)="d6.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
                       <label for="shipmentDateExpected" class="input-label">Do Validity <span
@@ -1242,8 +1242,8 @@
               <div class="input-group">
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="DeliveryDate" [minDate]="minDate" #d3="ngbDatepicker" (keydown.arrowDown)="d3.open()"
-                  (click)="d3.toggle()" appendTo="body">
-                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d3.toggle()" type="button"> <i-feather
+                  (click)="d3.toggle()" container="body">
+                <button class="btn  bi bi-calendar3" (click)="d3.toggle()" type="button"> <i-feather
                     name="calendar" class="feather-sm"></i-feather></button>
               </div>
               <label for="shipmentDateExpected" class="input-label">Delivery Date <span class="text-danger"></span>
@@ -1331,8 +1331,8 @@
               <div class="input-group">
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="ROValidity" [minDate]="minDate" #d7="ngbDatepicker" (keydown.arrowDown)="d7.open()"
-                  (click)="d7.toggle()" />
-                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d7.toggle()" type="button"> <i-feather
+                  (click)="d7.toggle()" container="body"/>
+                <button class="btn  bi bi-calendar3" (click)="d7.toggle()" type="button"> <i-feather
                     name="calendar" class="feather-sm"></i-feather></button>
               </div>
               <label for="shipmentDacteExpected" class="input-label">Ro Validity <span class="text-danger"></span>
@@ -1539,8 +1539,8 @@
         <div class=" custom-form-group custom-form-group-select">
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
-              [minDate]="minDate" (keydown.arrowDown)="d2.open()" (click)="d2.toggle()" formControlName="ShippingBillDate" />
-            <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
+              [minDate]="minDate" (keydown.arrowDown)="d2.open()" (click)="d2.toggle()" formControlName="ShippingBillDate" container="body"/>
+            <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
               <i-feather name="calendar" class="feather-sm"></i-feather></button>
           </div>
           <label for="shipmentDateExpected" class="input-label"> Date <span class="text-danger">{{countryOfCompany === "india"
@@ -1647,8 +1647,8 @@
         <div class=" custom-form-group custom-form-group-select">
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker formControlName="CargoRecDate"
-              #d8="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d8.open()" (click)="d8.toggle()" />
-            <button class="btn btn-info bi bi-calendar3 text-white" (click)="d8.toggle()" type="button"> <i-feather
+              #d8="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d8.open()" (click)="d8.toggle()" container="body"/>
+            <button class="btn bi bi-calendar3 " (click)="d8.toggle()" type="button"> <i-feather
                 name="calendar" class="feather-sm"></i-feather></button>
           </div>
           <label for="shipmentDateExpected" class="input-label">Cargo Received Date <span class="text-danger"></span>
@@ -1783,7 +1783,7 @@
         <div class=" custom-form-group custom-form-group-select">
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d6="ngbDatepicker"
-              (click)="d6.toggle()" />
+              (click)="d6.toggle()" container="body"/>
             <button class="btn  bi bi-calendar3 " (click)="d6.toggle()" type="button">
               <i-feather name="calendar" class="feather-sm"></i-feather></button>
           </div>

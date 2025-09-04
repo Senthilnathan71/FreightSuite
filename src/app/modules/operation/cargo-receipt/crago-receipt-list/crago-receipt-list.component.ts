@@ -9,6 +9,7 @@ import { take } from 'rxjs';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OperationService } from '../../operation.service';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-crago-receipt-list',
@@ -23,6 +24,7 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     ReactiveFormsModule,
     FormsModule,
     FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './crago-receipt-list.component.html',
   styleUrl: './crago-receipt-list.component.scss'
@@ -47,6 +49,7 @@ export class CragoReceiptListComponent {
     private router: Router,
     private appSettingService: AppSettingsService,
     private operationService: OperationService,
+     private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit(): void {
@@ -65,6 +68,7 @@ export class CragoReceiptListComponent {
   }
 
   loadCargoReceipts(): void {
+    this.spinner.show();
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 
     const params = {
@@ -87,6 +91,7 @@ export class CragoReceiptListComponent {
         } else {
           this.appSettingService.showError(response.message);
         }
+        this.spinner.hide();
       },
       error: (err) => {
         console.error('Error fetching cargo receipts:', err);

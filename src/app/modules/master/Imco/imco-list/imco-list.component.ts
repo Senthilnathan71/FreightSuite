@@ -190,7 +190,7 @@ applySorting() {
 						(resp: any) => {
 							if (resp.status) {
 								this.appSettingService.showSuccess('IMCO Deleted');
-								
+                 this.loadImcos();
 							} else {
 								this.appSettingService.showError('Error Deleting IMCO');
 							}

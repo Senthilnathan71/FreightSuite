@@ -5,6 +5,7 @@ import { Component, OnInit } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { AppService } from 'src/app/service/app.service';import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 
 @Component({
@@ -12,7 +13,8 @@ import { AppService } from 'src/app/service/app.service';import { AppSettingsSer
   standalone: true,
   imports: [
     CommonModule,
-    FeatherModule
+    FeatherModule,
+    NgxSpinnerModule
   ],
   templateUrl: './pending.component.html',
   styleUrl: './pending.component.scss'
@@ -24,7 +26,7 @@ export class PendingComponent implements OnInit {
   currentBranch:any;
 
 
-  constructor(private leadService: LeadService, private router: Router, private appService: AppService, private appSettingService: AppSettingsService) { }
+  constructor(private leadService: LeadService, private router: Router, private appService: AppService, private appSettingService: AppSettingsService, private spinner: NgxSpinnerService) { }
 
   pendingSchedule: any[] = []
 
@@ -36,14 +38,17 @@ export class PendingComponent implements OnInit {
   }
 
   getAllLeadPendingMeetings() {
+    this.spinner.show();
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     this.leadService.getAllPendingMeetings(CompanyMasterSid,BranchMasterSid).subscribe(
       (resp: any[]) => {
         console.log(resp)
         this.pendingSchedule = resp['data'];  // On success, store the leads data in the component
+        this.spinner.hide();
       }
     );
+    
   }
 
 

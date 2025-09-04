@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-master-job-list',
@@ -22,7 +23,7 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
     FormsModule,
     CustomDatePipe,
     NgbPaginationModule,
-
+    NgxSpinnerModule
   ],
   templateUrl: './master-job-list.component.html',
   styleUrl: './master-job-list.component.scss',
@@ -48,7 +49,8 @@ export class MasterJobListComponent {
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+     private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit(): void {
@@ -85,6 +87,7 @@ export class MasterJobListComponent {
   }
 
   searchMasterJob() {
+    this.spinner.show();
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const params = {
       search: this.filterValue.trim() || '',
@@ -105,6 +108,7 @@ export class MasterJobListComponent {
           this.searchPerformed = true;
           this.appSettingService.showError('Error fetching Master Job data');
         }
+        this.spinner.hide();
       },
       error: (error) => {
         console.error('Error fetching Master Job data:', error);

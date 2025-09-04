@@ -129,7 +129,7 @@ softDeleteTaxGroup(id: number): void {
     if (result === true) {
       this.masterService.deleteCOA(id).subscribe((resp: any) => {
         this.appSettingService.showSuccess('Deleted!');
-       
+        this.loadChartAccounts();
       });
     }
   });

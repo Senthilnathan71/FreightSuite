@@ -6,6 +6,7 @@ import { NgbDropdownModule, NgbNavModule, NgbTooltip, ModalDismissReasons, NgbDa
 import { FeatherModule } from 'angular-feather';
 import { AppService } from 'src/app/service/app.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 @Component({
   selector: 'app-todo',
   standalone: true,
@@ -15,7 +16,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
     CommonModule,
     FeatherModule,
     FormsModule,
-    NgbTooltip
+    NgbTooltip,
+    NgxSpinnerModule
   ],
   templateUrl: './todo.component.html',
   styleUrl: './todo.component.scss',
@@ -51,7 +53,7 @@ export class TodoComponent implements OnInit {
     this.modalService.open(content, { scrollable: true, size: 'lg', centered: true, windowClass: 'todo-modal' }).result.then();
   }
 
-  constructor(private appService: AppService, private leadService: LeadService, private datePipe: DatePipe, private appSettingService: AppSettingsService) { }
+  constructor(private appService: AppService, private leadService: LeadService, private datePipe: DatePipe, private appSettingService: AppSettingsService, private spinner: NgxSpinnerService) { }
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -82,6 +84,7 @@ export class TodoComponent implements OnInit {
   todoNeverMet: any
   todoInActive: any
   getAllTodo() {
+    this.spinner.show();
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     this.leadService.getAllTodo(CompanyMasterSid,BranchMasterSid).subscribe(
@@ -95,6 +98,7 @@ export class TodoComponent implements OnInit {
           ...meeting,
           createdOn: this.datePipe.transform(meeting.createdOn, 'yyyy-MM-dd')
         }));
+        this.spinner.hide();
         console.log(this.todoNotMet)
       }
     );
