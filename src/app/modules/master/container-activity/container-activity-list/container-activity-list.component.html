@@ -1,6 +1,7 @@
-<div class="row">
+<!-- container-activity-list.component.html -->
+<div class="row compact-form">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
                 <h4 class="page-title mb-0">Container Activity</h4>
             </div>
@@ -10,111 +11,149 @@
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
                             <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                aria-label="Search input">
-                            <button
+                                [(ngModel)]="filterValue" aria-label="Search input">
+                            <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip" data-bs-placement="top"
-                                data-bs-title="Clear search"
+                                (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
+                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
                                 onfocus="this.classList.replace('text-secondary','text-danger')"
                                 onblur="this.classList.replace('text-danger','text-secondary')">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
-                            <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <button type="submit" (click)="loadContainerActivities()"
+                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
                         </div>
+
                     </div>
                 </form>
             </div>
 
             <div class="col-md-auto pb-2">
-                <div class="" data-bs-theme="light">
-                    <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="navigateToCreate()">
-                            <i class="fas fa-plus me-1"></i> Create
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-file-alt me-1"></i>
-                            Report
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-sync-alt me-1"></i>
-                            Reset
-                        </button>
-                    </form>
-                </div>
-            </div>
+                <form
+                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <app-favorite-star screenName="container-activity" class="mt-1 me-1"></app-favorite-star>
+                    @if(hasPermission('Add')) {
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="navigateToAddNewContainerActivity()">
+                        <i class="fas fa-plus me-1"></i> Create
+                    </button>
+                    }
 
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
+                        [disabled]="!searchPerformed">
+                        <i class="fas fa-file-alt me-1"></i> Report
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
+                        [disabled]="!searchPerformed">
+                        <i class="fas fa-sync-alt me-1"></i> Reset
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0 && !loading">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">
+                            <th class="bg-transparent text-light" scope="col" width="10%">Actions</th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('ActivityCode')">
                                 Activity Code
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ActivityCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ActivityCode'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('ActivityName')">
                                 Activity Name
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ActivityName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ActivityName'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col" width="15%">
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('ContainerMoveStatus')">
                                 Container Move Status
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'ContainerMoveStatus', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'ContainerMoveStatus'}"></i>
                             </th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">
-                                Status
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('MoveType')">
+                                Move Type
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'MoveType', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'MoveType'}"></i>
                             </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('IsDamageMove')">
+                                Damage Move
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'IsDamageMove', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'IsDamageMove'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                         </tr>
                     </thead>
-
                     <tbody>
-                        @for (item of [0,1,2,3,4,5,6,7,8]; track $index) {
-                        <tr>
+                        <tr *ngFor="let item of containerActivityList; let i = index; trackBy: trackByIndex">
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info" class="link  pe-3 " style="cursor: pointer;">
+                                    @if(hasPermission('View')) {
+                                    <a class="text-info mx-2" class="link mx-2 ps-3"
+                                        [routerLink]="['/master/container-activity/entry/', item.ContainerActivityMasterSid]">
                                         <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </a>
-                                    <a class="text-danger ps-3 border-start" style="cursor: pointer;">
+                                    }
+                                    @if(hasPermission('Delete')) {
+                                    <a class="text-danger mx-2 ps-3 border-start cursor-pointer"
+                                        (click)="deleteContainerActivity(item.ContainerActivityMasterSid)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
+                                    }
                                 </div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-
-
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">RO</div>
+                                <div class="text-truncate">{{item.ActivityCode}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">Rial</div>
+                                <div class="text-truncate">{{item.ActivityName}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <span
-                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                <div class="text-truncate">{{item.ContainerMoveStatus || 'N/A'}}</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{item.MoveType || 'N/A'}}</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{item.IsDamageMove === 'Y' ? 'Yes' : 'No'}}</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                @if(item.Status === "A"){
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Active</span>
+                                    Active
+                                </div>
+                                } @else {
+                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Suspended
+                                </div>
+                                }
                             </td>
                         </tr>
-                        }
                     </tbody>
                 </table>
-                <!-- <div class="d-flex justify-content-end mt-2">
-                    <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
-                         [maxSize]="10" [rotate]="true" [ellipses]="false">
-                    </ngb-pagination>
-                </div> -->
+            </div>
+            <div>
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [maxSize]="10" [rotate]="true" [ellipses]="false">
+                </ngb-pagination>
             </div>
         </div>
     </div>
 
+   
+
+    <!-- No records found -->
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed && !loading">
+        <div class="alert alert-info mt-3">No records found</div>
+    </div>
 </div>

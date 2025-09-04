@@ -9,6 +9,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { FormsModule } from '@angular/forms';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
     selector: 'app-document-authorization',
@@ -20,7 +21,8 @@ import { FormsModule } from '@angular/forms';
         NgbPaginationModule,
         CustomDatePipe,
         FormsModule,
-        RouterModule
+        RouterModule,
+        NgxSpinnerModule
     ],
     providers : [CustomDatePipe],
     templateUrl: './document-authorization.component.html',
@@ -53,7 +55,8 @@ export class DocumentAuthorizationComponent {
         private router: Router,
         private appSettingService: AppSettingsService,
         private excelReportService: ExcelExportService,
-        private datePipe : CustomDatePipe
+        private datePipe : CustomDatePipe,
+        private spinner: NgxSpinnerService
     ) { }
 
     ngOnInit():void {
@@ -67,6 +70,7 @@ export class DocumentAuthorizationComponent {
     }
 
     searchPendingApprovals() {
+        this.spinner.show();
         const params = {
             search: this.filterValue.trim() || '',
             page: this.page,
@@ -86,6 +90,7 @@ export class DocumentAuthorizationComponent {
                     this.allPendingApprovals = [];
                     this.totalLengthOfCollection = 0;
                 }
+                this.spinner.hide();
             }, error : (error: any) => {
                 console.error(error);
             }

@@ -37,6 +37,7 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { TemplateRef } from '@angular/core';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-ledger-mapping',
@@ -55,10 +56,11 @@ import { TemplateRef } from '@angular/core';
     FavoriteStarComponent,
     EmailEntryComponent,
     EdocComponent,
-    TermsAndConditionsComponent,
+    TermsAndConditionsComponent, 
     AuthorityEntryComponent,
     DetailsComponent,
     CustomDatePipe,
+    NgxSpinnerModule
   ],
   templateUrl: './ledger-mapping.component.html',
   styleUrl: './ledger-mapping.component.scss',
@@ -99,10 +101,8 @@ export class LedgerMappingComponent {
   chargeList: any[] = [];
 
   
-auditLogs: any[] = []; // Stores audit logs
+  auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
-
-
 
   // Company
   currentCompany : any;
@@ -115,7 +115,8 @@ auditLogs: any[] = []; // Stores audit logs
     private route: ActivatedRoute,
     private userService: authService,
     private dialog: MatDialog,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+     private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit(): void {
@@ -163,6 +164,7 @@ auditLogs: any[] = []; // Stores audit logs
   }
 
   loadLedgerMappings(): void {
+    this.spinner.show();
     this.isLoading = true;
     const params = {
       search: this.filterValue?.trim() || '',
@@ -186,7 +188,7 @@ auditLogs: any[] = []; // Stores audit logs
           this.totalLengthOfCollection = 0;
         }
         this.searchPerformed = true;
-
+        this.spinner.hide();
         this.isLoading = false;
       },
       error: (err) => {

@@ -11,6 +11,7 @@ import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-charge-list',
@@ -23,7 +24,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     NgbPaginationModule,
     RouterModule,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './charge-list.component.html',
   styleUrls: ['./charge-list.component.scss']
@@ -57,7 +59,8 @@ export class ChargeListComponent {
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit() {
@@ -102,6 +105,7 @@ export class ChargeListComponent {
   }
 
   loadCharges(): void {
+ this.spinner.show();
   this.loading = true;
   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
   this.masterService.searchChargeList({
@@ -129,6 +133,7 @@ export class ChargeListComponent {
         this.appSettingService.showError(res.message);
       }
       this.loading = false;
+      this.spinner.hide();
     },
     error: () => {
       this.chargeList = [];

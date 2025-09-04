@@ -11,6 +11,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-milestone-list',
@@ -22,7 +23,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     NgbPaginationModule,
     RouterModule,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './milestone-list.component.html',
   styleUrl: './milestone-list.component.scss'
@@ -64,7 +66,8 @@ export class MilestoneListComponent {
     private router: Router,
     private dialog: MatDialog,
     private appSettingService: AppSettingsService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit() {
@@ -107,6 +110,7 @@ export class MilestoneListComponent {
 }
 
   loadMilestones(): void {
+  this.spinner.show();
   this.loading = true;
   let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
   let BranchMasterSid = this.currentBranch?.BranchMasterSid;
@@ -132,7 +136,7 @@ export class MilestoneListComponent {
       else {
         this.appSettingService.showError(response.message);
       }
-
+      this.spinner.hide();
       this.loading = false;
     },
     error: (err) => {

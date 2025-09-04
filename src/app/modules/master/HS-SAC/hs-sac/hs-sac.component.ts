@@ -26,6 +26,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-hs-sac',
@@ -46,7 +47,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     DatePipe,
     ListpageComponent,
     PreventMultiClickDirective,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './hs-sac.component.html',
   styleUrl: './hs-sac.component.scss',
@@ -110,7 +112,8 @@ export class HSSACComponent {
     private dialog: MatDialog,
     private userService: authService,
     private excelReportService: ExcelExportService,
-    private calendar : NgbCalendar
+    private calendar : NgbCalendar,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -163,6 +166,7 @@ export class HSSACComponent {
 }
 
   loadHssacs(): void {
+  this.spinner.show();
   this.loading = true; 
   
   const params = {
@@ -183,9 +187,7 @@ export class HSSACComponent {
       }else {
         this.appSettingService.showError(response.message);
       }
-
-
-
+      this.spinner.hide();
       this.loading = false;
     },
     error: (err) => {
@@ -341,6 +343,7 @@ editHssac(id: number, content: any) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.router.navigate(['master/hs-sac']);
+               this.loadHssacs()
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -360,6 +363,7 @@ editHssac(id: number, content: any) {
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.router.navigate(['master/hs-sac']);
+                this.loadHssacs()
             } else {
               this.appSettingService.showError(resp.message);
             }

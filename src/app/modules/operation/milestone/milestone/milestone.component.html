@@ -1,57 +1,72 @@
-<div class="text-end mb-1">
-    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openMilestoneModal(milestoneModal)"><i
-            class="fas fa-plus me-1"></i> Add</button>
-</div>
-@if(milestoneDataLength > 0){
-<div class="col-12 p-0">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-            <thead>
-                <tr class="bg-info">
-                    <th class="bg-transparent text-light" width="10%">Action</th>
-                    <th class="bg-transparent text-light">SNO</th>
-                    <th class="bg-transparent text-light">Milestone</th>
-                    <th class="bg-transparent text-light">Date & Time</th>
-                    <th class="bg-transparent text-light" width="10%">Auto Captured</th>
-                    <th class="bg-transparent text-light">Remarks</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let milestone of slicedMilestoneFormArr; let i = index">
-            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                        <div class="d-flex align-items-center justify-content-center">
-                            <a class="text-info mx-2" class="link mx-2 ps-3"
-                                (click)="openMilestoneModal(milestoneModal,milestone,i)">
-                                <i-feather class="feather-sm text-info" name="eye"></i-feather>
-                            </a>
-                        </div>
-            </td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ (page1 - 1) * pageSize1 + i + 1 }}</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ milestone.MilestoneName }}</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ milestone.MilestoneDate | date:'dd-MM-yyyy' }}</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                        <div class="form-check form-check-inline p-0 ps-2">
-                            <div class="form-check d-flex align-items-center justify-content-center">
-                                <input type="checkbox" id="" class="form-check-input sm" [checked]="milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y'" disabled>
+<div class="modern-table-container">
+    <div>
+        <div class="table-toolbar">
+            <div class="toolbar-left">
+                <button class="table-action-btn primary" (click)="openMilestoneModal(milestoneModal)">
+                    <i class="fas fa-plus"></i> Add Milestone
+                </button>
+            </div>
+            <div class="toolbar-right">
+                <button class="table-action-btn export" (click)="reportMilestones()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <!-- <button class="table-action-btn print">
+                    <i class="fas fa-print"></i> Print
+                </button> -->
+            </div>
+        </div>
+        @if(milestoneDataLength > 0){
+        <div class="modern-table-wrapper">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th width="10%">Action</th>
+                        <th>Sno</th>
+                        <th>Milestone</th>
+                        <th>Date & Time</th>
+                        <th>Auto Captured</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="table-row" *ngFor="let milestone of slicedMilestoneFormArr; let i = index">
+                        <td class="actions-cell">
+                            <div class="action-buttons"> 
+                                <button class="action-icon edit" (click)="openMilestoneModal(milestoneModal,milestone,i)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> <button
+                                    class="action-icon delete"><i class="fas fa-trash"></i></button> -->
                             </div>
+                        </td>
+                        <td>{{ (page1 - 1) * pageSize1 + i + 1 }}</td>
+                        <td>{{ milestone.MilestoneName }}</td>
+                        <td>{{ milestone.MilestoneDate | formatDate }}</td>
+                        <td>
+                            <div class="form-check form-check-inline p-0 ps-2">
+                                <div class="form-check d-flex align-items-center justify-content-center">
+                                    <input type="checkbox" id="" class="form-check-input sm"
+                                        [checked]="milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y'" disabled>
+                                </div>
                         </div>
-                    </td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">{{ milestone.Remarks }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-} @else {
-    <div class="col-12">
-    <div class="alert alert-info text-center">No Milestone added yet.</div>
-</div>
-}
-    <div class="d-flex justify-content-end">
-                <ngb-pagination [collectionSize]="milestoneDataLength" [(page)]="page1" [pageSize]="pageSize1"
+                        </td>
+                        <td>{{ milestone.Remarks }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="mt-2">
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="milestoneDataLength" [(page)]="page1" [pageSize]="pageSize1"
                     (pageChange)="updateMilestonePagination()" [maxSize]="10" [rotate]="true" [ellipses]="false">
                 </ngb-pagination>
             </div>
+        </div>
+        }@else {
+        <div class="col-12">
+            <div class="alert alert-info text-center">No Milestone added yet.</div>
+        </div>
+        }
+    </div>
+</div>
 
 
 <ng-template #milestoneModal let-modal>
@@ -61,51 +76,50 @@
     </div>
     <div class="modal-body">
         <form [formGroup]="milestoneForm">
-        <div class="row compact-form">
-            <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="allMilestones" bindLabel="MilestoneName" bindValue="MilestoneMasterSid"
-                                class="ng-select" formControlName="MilestoneMasterSid" placeholder="Select Milestone"
-                                (change)="onMilestoneChange($event)">
-                            </ng-select>
-                            <label for="text-input" class="input-label">Milestone <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-            <div class="col-md-4">
-                <div class=" custom-form-group custom-form-group-select">
-                    <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
-                           formControlName="MilestoneDate" (click)="d1.toggle()" />
-                        <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
-                            <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                    </div>
-                    <label class="input-label"> Date & Time<span class="text-danger"></span>
-                    </label>
-
-                </div>
-            </div>
-            <aside class="col-md-4 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="" class="form-check-input sm" formControlName="AutoCaptured">
-                                <label for="AutoCaptured" class="form-check-label sm">Auto Captured  <span class="text-danger"></span></label>
-                            </div>
-                        </div>
-                    </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Remarks">
-                    <label for="text-input" class="input-label">Remarks<span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
+            <div class="row compact-form">
+                <aside class="col-md-4">
                     <div class="custom-form-group custom-form-group-select">
-                      <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="id" formControlName="Status"
-                        id="status"></ng-select>
-                      <label class="input-label">Status <span class="text-danger">*</span></label>
+                        <ng-select [items]="allMilestones" bindLabel="MilestoneName" bindValue="MilestoneMasterSid" class="ng-select"
+                            formControlName="MilestoneMasterSid" placeholder="Select Milestone" (change)="onMilestoneChange($event)">
+                        </ng-select>
+                        <label for="text-input" class="input-label">Milestone <span class="text-danger"></span></label>
                     </div>
-                  </aside>
-        </div>
+                </aside>
+                <div class="col-md-4">
+                    <div class=" custom-form-group custom-form-group-select">
+                        <div class="input-group">
+                            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
+                                formControlName="MilestoneDate" (click)="d1.toggle()" />
+                            <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()" type="button">
+                                <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                        </div>
+                        <label class="input-label"> Date & Time<span class="text-danger"></span>
+                        </label>
+                    </div>
+                </div>
+                <aside class="col-md-4 d-flex align-items-center">
+                    <div class="form-check form-check-inline p-0">
+                        <div class="form-check d-flex align-items-center">
+                            <input type="checkbox" id="" class="form-check-input sm" formControlName="AutoCaptured">
+                            <label for="AutoCaptured" class="form-check-label sm">Auto Captured <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </div>
+                </aside>
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Remarks">
+                        <label for="text-input" class="input-label">Remarks<span class="text-danger"></span></label>
+                    </div>
+                </aside>
+                <aside class="col-md-4">
+                    <div class="custom-form-group custom-form-group-select">
+                        <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="id" formControlName="Status"
+                            id="status"></ng-select>
+                        <label class="input-label">Status <span class="text-danger">*</span></label>
+                    </div>
+                </aside>
+            </div>
         </form>
     </div>
     <div class="modal-footer">

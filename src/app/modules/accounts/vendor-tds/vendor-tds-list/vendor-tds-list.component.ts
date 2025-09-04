@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { FormsModule } from '@angular/forms';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
     selector: 'app-vendor-tds-list',
@@ -20,7 +21,8 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
         CommonModule,
         FormsModule,
         RouterModule,
-        NgbPaginationModule
+        NgbPaginationModule,
+        NgxSpinnerModule
     ],
     templateUrl: './vendor-tds-list.component.html',
     styleUrl: './vendor-tds-list.component.scss'
@@ -54,7 +56,8 @@ export class VendorTdsListComponent implements OnInit {
         private router: Router,
         private appSettingService: AppSettingsService,
         private dialog: MatDialog,
-        private excelReportService: ExcelExportService
+        private excelReportService: ExcelExportService,
+         private spinner: NgxSpinnerService
     ) { }
 
     ngOnInit(): void {
@@ -95,6 +98,7 @@ export class VendorTdsListComponent implements OnInit {
 
     // Search
     searchSupplierTDS() {
+        this.spinner.show();
         let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
         const params = {
             search: this.filterValue.trim() || '',
@@ -125,6 +129,7 @@ export class VendorTdsListComponent implements OnInit {
                     this.allSupplierTDS = [];
                     this.totalLengthOfCollection = 0;
                 }
+                this.spinner.hide();
             }, error : (error: any) => {
                 console.error(error);
             }

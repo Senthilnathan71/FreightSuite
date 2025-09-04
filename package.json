@@ -41,6 +41,7 @@
     "jquery": "^3.7.1",
     "ngx-device-detector": "^7.0.0",
     "ngx-scrollbar": "^11.0.0",
+    "ngx-spinner": "^19.0.0",
     "ngx-toastr": "^19.0.0",
     "rxjs": "~7.8.0",
     "rxjs-compat": "^6.6.7",

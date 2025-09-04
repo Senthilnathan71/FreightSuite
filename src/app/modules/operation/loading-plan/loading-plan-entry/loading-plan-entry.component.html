@@ -1,0 +1,480 @@
+<div class="row compact-form" [formGroup]="loadingPlanForm">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-2">
+                <h4 class="page-title mb-0">Loading Plan</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        (click)="openAuditLogs(auditLogModal)">
+                        <i class="fas fa-history me-1"></i>Logs
+                    </button> -->
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onReset()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"   [disabled]="loadingPlanForm.invalid">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-md-12">
+        <div class="card h-100 mb-0">
+            <div class="card-body pb-0">
+                <div class="row">
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name" formControlName="dept">
+
+                            </ng-select>
+                            <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
+                            <div class="error-message"
+                                *ngIf="loadingPlanForm.get('dept')?.touched && loadingPlanForm.get('dept')?.invalid">
+                                Required
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="[]" bindLabel="name" bindValue="name" formControlName="pol"></ng-select>
+                            <label class="input-label">POL <span class="text-danger">*</span></label>
+                            <div class="error-message"
+                                *ngIf="loadingPlanForm.get('pol')?.touched && loadingPlanForm.get('pol')?.invalid">
+                                Required
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="[]" bindLabel="name" bindValue="name" formControlName="pod"></ng-select>
+                            <label class="input-label">POD <span class="text-danger">*</span></label>
+                            <div class="error-message"
+                                *ngIf="loadingPlanForm.get('pod')?.touched && loadingPlanForm.get('pod')?.invalid">
+                                Required
+                            </div>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" placeholder="" class="custom-input-field sm"
+                                formControlName="vesselVoyage" />
+                            <label class="input-label">Vessel/Voyage <span class="text-danger">*</span></label>
+                            <div class="error-message"
+                                *ngIf="loadingPlanForm.get('vesselVoyage')?.touched && loadingPlanForm.get('vesselVoyage')?.invalid">
+                             Required
+                            </div>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Carrier <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+
+                    <aside class="col-md-3 d-flex align-items-center  mt-md-3 mt-0">
+                        <div class="form-check form-check-inline p-0 mt-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" id="loadCheckbox" class="focus-ring form-check-input sm p-0"
+                                    (change)="toggleLoad($event)" formControlName="load"/>
+                                <label for="loadCheckbox" class="form-check-label sm">Load</label>
+                            </div>
+                        </div>
+
+                    </aside>
+
+                </div>
+            </div>
+            <div class="d-flex justify-content-end me-2 mb-2">
+                <button class="btn btn-sm btn-info"><i class="fas fa-calendar-check me-1"></i>
+                    Get Booking</button>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-md-12 mt-2">
+        <div class="card h-100 mb-0">
+            <div class="card-body pb-0">
+                <div class="row">
+
+                    <aside class="col-md-3" *ngIf="isLoadChecked">
+                        <div class="custom-form-group">
+                            <input type="text" placeholder="" class="custom-input-field sm" formControlName="pkg" />
+                            <label class="input-label">Pkg <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3" *ngIf="isLoadChecked">
+                        <div class="custom-form-group">
+                            <input type="text" placeholder="" class="custom-input-field sm" formControlName="weight" />
+                            <label class="input-label">Weight <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3" *ngIf="isLoadChecked">
+                        <div class="custom-form-group">
+                            <input type="text" placeholder="" class="custom-input-field sm" formControlName="cbm" />
+                            <label class="input-label">CBM <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Total Pkg <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Total Gross Weight <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Total Net Weight <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Total Revenue <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">Total Cost <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">GP <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                            <label for="text-input" class="input-label">GP% <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                </div>
+            </div>
+            <div class="d-flex justify-content-end me-2 mb-2">
+                <button class="btn btn-sm btn-info"><i class="fas fa-briefcase me-1"></i> Generate Job
+
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+
+
+    <div class="mx-0">
+        <div class="col-12 p-2 bg-white py-2 rounded shadow-sm mt-2">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                            <th class="bg-transparent text-light" scope="col">Booking No</th>
+                            <th class="bg-transparent text-light" scope="col">Sales Person</th>
+                            <th class="bg-transparent text-light" scope="col">Customer</th>
+                            <th class="bg-transparent text-light" scope="col">Shipper</th>
+                            <th class="bg-transparent text-light" scope="col">Consignee</th>
+                            <th class="bg-transparent text-light" scope="col">POO</th>
+                            <th class="bg-transparent text-light" scope="col">POL</th>
+                            <th class="bg-transparent text-light" scope="col">POD</th>
+                            <th class="bg-transparent text-light" scope="col">FPD</th>
+                            <th class="bg-transparent text-light" scope="col">No of Pkg</th>
+                            <th class="bg-transparent text-light" scope="col">Gr Wieght</th>
+                            <th class="bg-transparent text-light" scope="col">Volume</th>
+                            <th class="bg-transparent text-light" scope="col" width="5%">Tick</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0]; track $index) {
+                        <tr>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <a class="text-info mx-2" class="link mx-2 ">
+                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
+                                    </a>
+                                    <a class="text-danger mx-2 ps-3 border-start">
+                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
+                                    </a>
+                                </div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;padding-left: 20px;">
+
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox" id="" class="focus-ring form-check-input sm p-0">
+                                </div>
+
+
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="nav-pills-container mt-2">
+            <div class="nav-pills">
+                <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+                    (click)="selectTab(tab.name)">
+                    <div class="pill-icon">
+                        <i [class]="tab.icon"></i>
+                    </div>
+                    <span class="pill-label">{{ tab.name }}</span>
+                    <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-workspace">
+            <div class="workspace-content" *ngIf="selectedTab === 'Container'">
+
+                <div class="d-flex justify-content-end mb-1">
+                    <button class="btn btn-sm btn-info " (click)="openContainerModal(containerModal)">
+                        <i class="fas fa-plus me-1"></i> Add Container
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                        <thead>
+                            <tr class="bg-info">
+
+                                <th class="bg-transparent text-light" scope="col">SNo</th>
+                                <th class="bg-transparent text-light" scope="col">Container Type</th>
+                                <th class="bg-transparent text-light" scope="col">Container No</th>
+                                <th class="bg-transparent text-light" scope="col">Line Seal</th>
+                                <th class="bg-transparent text-light" scope="col">Customs Seal</th>
+                                <th class="bg-transparent text-light" scope="col">HS Code</th>
+                                <th class="bg-transparent text-light" scope="col">Commodity Description</th>
+                                <th class="bg-transparent text-light" scope="col">Pkg Type</th>
+                                <th class="bg-transparent text-light" scope="col">No of Pkg</th>
+                                <th class="bg-transparent text-light" scope="col">Gross Weight</th>
+                                <th class="bg-transparent text-light" scope="col">Vol(CBM)</th>
+                                <th class="bg-transparent text-light" scope="col">Net Weight</th>
+                                <th class="bg-transparent text-light" scope="col">SOC</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr>
+
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">OMR</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">OMR</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">OMR</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">OMR</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">OMR</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">OMR</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">OMR</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">OMR</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">OMR</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">OMR</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">OMR</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">OMR</div>
+                                </td>
+
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">OMR</div>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<ng-template #containerModal let-modal>
+    <div class="modal-header p-2 bg-info text-white">
+        <h5 class="modal-title">Add Container</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="row compact-form">
+
+            <aside class="col-md-4">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                    </ng-select>
+                    <label for="" class="input-label">Container Type <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Container No <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Line Seal <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Customs Seal <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">HS Code <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Commodity Description <span
+                            class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Pkg Type <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">No of Pkg <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Gross Weight <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Vol(CBM) <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4">
+                <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">Net Weight <span class="text-danger"></span></label>
+                </div>
+            </aside>
+            <aside class="col-md-4 d-flex align-items-center  mt-md-3 mt-0">
+                <div class="form-check form-check-inline p-0 mt-0">
+                    <div class="form-check d-flex align-items-center">
+                        <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" />
+                        <label for="" class="form-check-label sm">SOC</label>
+                    </div>
+                </div>
+
+            </aside>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-sm btn-secondary" (click)="modal.dismiss()">Cancel</button>
+        <button class="btn btn-sm btn-info">Save</button>
+    </div>
+</ng-template>

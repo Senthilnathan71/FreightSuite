@@ -204,24 +204,22 @@
   <li class="nav-item">
   <div class="d-flex gap-3">
     <div class="position-relative" ngbDropdown #menuSearchDropdown="ngbDropdown">
-      <input type="text" class="form-control ps-3 pe-5 border border-info" placeholder="Search Menu"
-        style="border-radius: 20px;" (click)="onSearchClick()" (input)="searchMenu($event)" (keydown)="onKeyDown($event)"
+      <input type="text"  #searchMenuInput class="form-control ps-3 pe-5 border border-info" placeholder="Search Menu"
+        style="border-radius: 20px;" (click)="onSearchClick()" (input)="searchMenu($event)" (blur)="onInputBlur($event)" (keydown)="onKeyDown($event)"
         ngbDropdownToggle />
       <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-info"></i>
 
       <div class="dropdown-menu w-100" style="max-height: 230px; overflow-y: auto;" ngbDropdownMenu>
         <ng-container *ngIf="menuSearchResults.length > 0; else noMenuResults">
-          <a
+          <button
             *ngFor="let result of menuSearchResults; let i = index"
             class="dropdown-item"
-            href="#"
-            [routerLink]="result.path"
             [class.active]="i === activeIndex"
-            (click)="onClickEvent($event,result)"
+            (mousedown)="onClickEvent($event,result)"
             #menuItem
           >
             {{ result.MenuName }}
-          </a>
+        </button>
         </ng-container>
         <ng-template #noMenuResults>
           <div class="dropdown-item text-muted">No results found</div>

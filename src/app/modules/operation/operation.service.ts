@@ -235,6 +235,32 @@ getShipmentMilestones(payload: any) {
     );
   }
 
+  //cargo-receipt
   
+  getLCLExportBookingById(BookingHeaderSid: number) {
+    return this.http.get<{ data: any }>(`cargoreceipt/fetch/${BookingHeaderSid}`).pipe(
+      map((resp)=> {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  updateBookingProductsById(BookingHeaderSid: number, payload: any) {
+    return this.http.patch<{ data: any}>(`cargoreceipt/update/${BookingHeaderSid}`,payload).pipe(
+      map((resp)=> {
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  search(params) {
+    return this.http.post("cargoreceipt/search-list", params).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    )
+  }
 
 }

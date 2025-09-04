@@ -34,14 +34,15 @@
         <div class="card h-100 mb-0">
             <div class="card-body pb-0">
                 <div class="row">
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="">
-                            <label for="text-input" class="input-label">Invoice No <span class="text-danger"></span></label>
+                            <label for="text-input" class="input-label">Invoice No <span
+                                    class="text-danger"></span></label>
                         </div>
                     </aside>
-                    <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class=" custom-form-group custom-form-group-select">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
@@ -49,27 +50,314 @@
                                 <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
-                            <label class="input-label">Invoice Date <span class="text-danger">*</span>
+                            <label class="input-label">Invoice Date <span class="text-danger"></span>
                             </label>
 
                         </div>
                     </aside>
-                     <aside class="col-md-4">
+                    <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                 formControlName="">
-                            <label for="text-input" class="input-label">Customer Name <span class="text-danger"></span></label>
+                            <label for="text-input" class="input-label">Customer Name <span
+                                    class="text-danger"></span></label>
                         </div>
                     </aside>
-                     <aside class="col-md-4">
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Customer Address <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Ref No <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">IRN No <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Job No <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">HBL No <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Curr <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Ex Rate <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">GST No <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Invoice Type <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Remarks <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Invoice Type <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">IRN Status <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">MBL No <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="ModeofStatus" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Status <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- <div class="mx-0">
+        <div class="col-12 p-2 bg-white py-2 rounded shadow-sm  mt-2">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                            <th class="bg-transparent text-light" scope="col">SNo No</th>
+                            <th class="bg-transparent text-light" scope="col">Charge</th>
+                            <th class="bg-transparent text-light" scope="col">Charge Desc</th>
+                            <th class="bg-transparent text-light" scope="col">SAC Code</th>
+                            <th class="bg-transparent text-light" scope="col">Unit</th>
+                            <th class="bg-transparent text-light" scope="col"> No of Unit</th>
+                            <th class="bg-transparent text-light" scope="col">Dr/Cr</th>
+                            <th class="bg-transparent text-light" scope="col">Curr</th>
+                            <th class="bg-transparent text-light" scope="col">EX Rate</th>
+                            <th class="bg-transparent text-light" scope="col">Rate</th>
+                            <th class="bg-transparent text-light" scope="col">Amount</th>
+                            <th class="bg-transparent text-light" scope="col">Taxable Amt</th>
+                            <th class="bg-transparent text-light" scope="col">CGST%</th>
+                            <th class="bg-transparent text-light" scope="col">CGST</th>
+                            <th class="bg-transparent text-light" scope="col">SGST%</th>
+                            <th class="bg-transparent text-light" scope="col">SGST</th>
+                            <th class="bg-transparent text-light" scope="col">Local Amount</th>
+                            <th class="bg-transparent text-light" scope="col">Job No</th>
+                            <th class="bg-transparent text-light" scope="col">House No</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2]; track $index) {
+                        <tr>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <a class="text-info mx-2" class="link mx-2 ">
+                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
+                                    </a>
+                                    <a class="text-danger mx-2 ps-3 border-start">
+                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
+                                    </a>
+                                </div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">RO</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+         <div class="nav-pills-container mt-2">
+        <div class="nav-pills">
+            <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+                (click)="selectTab(tab.name)">
+                <div class="pill-icon">
+                    <i [class]="tab.icon"></i>
+                </div>
+                <span class="pill-label">{{ tab.name }}</span>
+                <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <div class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80 me-2" (click)="openDubaiModal(dubaiModal)">
+                Dubai
+            </div>
+            <div class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80 " (click)="openIGSTModal(IGSTModal)">
+                IGST
+            </div>
+        </div>
+    </div>
+
+    <div class="content-workspace">
+        <div class="workspace-content" *ngIf="selectedTab === 'Others'">
+
+            <div>
+                <div class="row">
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Invoice Footer <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Invoice Note <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Reverse Credit Note <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Container No <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Invoice Footer <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
                         <div class=" custom-form-group custom-form-group-select">
                             <div class="input-group">
                                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d2="ngbDatepicker" formControlName="" (click)="d2.toggle()" />
+                                    #d2="ngbDatepicker" formControlName="" (click)="d2.toggle()" container="body" />
                                 <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather></button>
                             </div>
-                            <label class="input-label">To Job Date <span class="text-danger">*</span>
+                            <label class="input-label">Due Date <span class="text-danger"></span>
                             </label>
 
                         </div>
@@ -78,4 +366,240 @@
             </div>
         </div>
     </div>
+    </div> -->
+
+
+    <div class="mx-0">
+        <div class="col-12 p-2 bg-white py-2 rounded shadow-sm  mt-2">
+
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 text-center">
+                    <thead>
+                        <tr class="bg-info text-light align-middle">
+                            <th rowspan="2" class="bg-transparent text-light text-center">Description</th>
+                            <th rowspan="2" class="bg-transparent text-light text-center">HSN/SAC</th>
+                            <th rowspan="2" class="bg-transparent text-light text-center">Qty</th>
+                            <th rowspan="2" class="bg-transparent text-light text-center">Total <br>Amount</th>
+                            <th rowspan="2" class="bg-transparent text-light text-center">Taxable <br>Amount</th>
+                            <th colspan="2" class="bg-transparent text-light text-center">CGST</th>
+                            <th colspan="2" class="bg-transparent text-light text-center">SGST</th>
+                            <th colspan="2" class="bg-transparent text-light text-center">IGST</th>
+                            <th rowspan="2" class="bg-transparent text-light text-center">Total Amount <br> (incl.tax)</th>
+                        </tr>
+                        <tr class="bg-info text-light align-middle">
+                            <th class="bg-transparent text-light text-center">Rate</th>
+                            <th class="bg-transparent text-light text-center">Amount</th>
+                            <th class="bg-transparent text-light text-center">Rate</th>
+                            <th class="bg-transparent text-light text-center">Amount</th>
+                            <th class="bg-transparent text-light text-center">Rate</th>
+                            <th class="bg-transparent text-light text-center">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">Home Painting Final</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">995473</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">1.0</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">8444.61</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">8444.61</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">9%</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">760.01</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">9%</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">760.01</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">0%</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">0.00</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">9964.63</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">Home Painting Token</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">995473</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">1.0</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">10548.31</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">10548.31</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">9%</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">949.35</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">9%</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">949.35</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">0%</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">0.00</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">12447.01</td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td class="fw-bold" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">Grand Total</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"></td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"></td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"></td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">18992.92</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"></td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">1709.36</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"></td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">1709.36</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"></td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">0.00</td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">22411.64</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+        </div>
+
+        <div class="nav-pills-container mt-2">
+            <div class="nav-pills">
+                <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+                    (click)="selectTab(tab.name)">
+                    <div class="pill-icon">
+                        <i [class]="tab.icon"></i>
+                    </div>
+                    <span class="pill-label">{{ tab.name }}</span>
+                    <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <div class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80 me-2" (click)="openDubaiModal(dubaiModal)">
+                    Dubai
+                </div>
+                <div class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80 " (click)="openIGSTModal(IGSTModal)">
+                    IGST
+                </div>
+            </div>
+        </div>
+
+        <div class="content-workspace">
+            <div class="workspace-content" *ngIf="selectedTab === 'Others'">
+
+                <div>
+                    <div class="row">
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Invoice Footer <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Invoice Note <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Reverse Credit Note <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Container No <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="">
+                                <label for="text-input" class="input-label">Invoice Footer <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-3">
+                            <div class=" custom-form-group custom-form-group-select">
+                                <div class="input-group">
+                                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                        #d2="ngbDatepicker" formControlName="" (click)="d2.toggle()" container="body" />
+                                    <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
+                                        <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                                </div>
+                                <label class="input-label">Due Date <span class="text-danger"></span>
+                                </label>
+
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+
+<ng-template #dubaiModal let-modal>
+    <div class="modal-header p-2 bg-info text-white">
+        <h5 class="modal-title">Dubai</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">VAT %</th>
+                        <th class="bg-transparent text-light" scope="col">VAT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (item of [0,1,2]; track $index) {
+                    <tr>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                            <div class="text-truncate">RO</div>
+                        </td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                            <div class="text-truncate">OMR</div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-sm btn-secondary" (click)="modal.dismiss()">Cancel</button>
+        <button class="btn btn-sm btn-info">Save</button>
+    </div>
+</ng-template>
+
+<ng-template #IGSTModal let-modal>
+    <div class="modal-header p-2 bg-info text-white">
+        <h5 class="modal-title">IGST</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col">IGST %</th>
+                        <th class="bg-transparent text-light" scope="col">IGST</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (item of [0,1,2]; track $index) {
+                    <tr>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                            <div class="text-truncate">RO</div>
+                        </td>
+                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                            <div class="text-truncate">OMR</div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-sm btn-secondary" (click)="modal.dismiss()">Cancel</button>
+        <button class="btn btn-sm btn-info">Save</button>
+    </div>
+</ng-template>

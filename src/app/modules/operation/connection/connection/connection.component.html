@@ -2,19 +2,20 @@
     <div>
         <div class="table-toolbar">
             <div class="toolbar-left">
-                <button class="table-action-btn primary" (click)="openConnectionModal(connectionModal)">
+                <button class="table-action-btn primary" (click)="openConnectionModal(connectionModal)" [disabled]="disableAddBtn">
                     <i class="fas fa-plus"></i> Add Connection
                 </button>
             </div>
             <div class="toolbar-right">
-                <button class="table-action-btn export">
+                <button class="table-action-btn export" (click)="reportConnections()">
                     <i class="fas fa-download"></i> Export
                 </button>
-                <button class="table-action-btn print">
+                <!-- <button class="table-action-btn print">
                     <i class="fas fa-print"></i> Print
-                </button>
+                </button> -->
             </div>
         </div>
+        @if(connectionDataLength > 0){
         <div class="modern-table-wrapper">
             <table class="modern-table">
                 <thead>
@@ -27,30 +28,55 @@
                         <th>POD</th>
                         <th>ETD</th>
                         <th>ETA</th>
+                        <th *ngIf="screenName !== 'Booking'">ATD</th>
+                        <th *ngIf="screenName !== 'Booking'">ATA</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
+                    @for(connection of slicedConnectionFormArr ; track connection ; let connectionIndex = $index){
                     <tr class="table-row">
                         <td class="actions-cell">
-                            <div class="action-buttons"> <button class="action-icon edit"><i
-                                        class="fas fa-edit"></i></button>
-                                <button class="action-icon copy"><i class="fas fa-copy"></i></button> <button
-                                    class="action-icon delete"><i class="fas fa-trash"></i></button>
-                            </div>
+                            <div class="d-flex align-items-center justify-content-center">
+                            <a class="text-info mx-2" class="link mx-2 ps-3"
+                                (click)="openConnectionModal(connectionModal,connection,connectionIndex)">
+                                <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                            </a>
+
+                            <a class="text-danger mx-2 ps-3 border-start"
+                                (click)="deleteBookingConnection(connectionIndex,connection.BookingConnectionSid)">
+                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                            </a>
+
+                        </div>
                         </td>
-                        <td>dgd</td>
-                        <td>dgd</td>
-                        <td>dgd</td>
-                        <td>dgd</td>
-                        <td>dgd</td>
-                        <td>dgd</td>
-                        <td>dgd</td>
-                        <td>dgd</td>
+                        <td>{{connection.Mode || ''}}</td>
+                        <td>{{connection.VesselName}}</td>
+                        <td>{{connection.VoyageNo}}</td>
+                        <td>{{connection.POL}}</td>
+                        <td>{{connection.POD}}</td>
+                        <td>{{connection.ETD |
+                        formatDate}}</td>
+                        <td>{{connection.ETA |
+                        formatDate}}</td>
+                        <td *ngIf="screenName !== 'Booking'">{{connection.ATD | formatDate}}</td>
+                        <td *ngIf="screenName !== 'Booking'">{{connection.ATA | formatDate}}</td>
+                        <td>{{connection.status}}</td>
                     </tr>
+                    }
                 </tbody>
             </table>
+            <div class="mt-2">
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="connectionDataLength" [pageSize]="pageSize1"
+                    [(page)]="page1" (pageChange)="updateConnectionPagination()" [rotate]="true" [ellipses]="false" [maxSize]="10">
+                </ngb-pagination>
+            </div>
         </div>
+        } @else {
+        <div class="col-12">
+            <div class="alert alert-info text-center">No Connection added yet.</div>
+        </div>
+        }
     </div>
 </div>
 
@@ -63,47 +89,37 @@
     </div>
 
     <div class="modal-body">
-        <div class="row">
+        <div class="row compact-form" [formGroup]="connectionForm">
             <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="" bindLabel="name" bindValue="name">
-
+                    <ng-select formControlName="Mode" [items]="typeofmodes" bindLabel="name" bindValue="name"
+                        placeholder="Select Mode" (change)="onModeChange($event)">
                     </ng-select>
-                    <label for="" class="input-label">Mode <span class="text-danger"></span></label>
+                    <label for="" class="input-label"> Mode <span class="text-danger"></span></label>
                 </div>
             </aside>
-            <!-- <aside class="col-md-4">
+            <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
                     <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortName"
                         placeholder="Select POL" (change)="handlePOLChange($event)">
                     </ng-select>
                     <label for="" class="input-label"> POL <span class="text-danger"></span></label>
                 </div>
-            </aside> -->
-            <!-- <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
-                </div>
-            </aside> -->
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">POL <span class="text-danger"></span></label>
-                </div>
             </aside>
             <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">POD <span class="text-danger"></span></label>
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="POD" [items]="filteredPOD" bindLabel="PortName" bindValue="PortName"
+                        placeholder="Select POD" (change)="handlePODChange($event)">
+                    </ng-select>
+                    <label for="" class="input-label"> POD <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="filteredVesselList" bindLabel="VesselName" bindValue="VesselName"
-                        class="ng-select" placeholder="Select Vessel"
-                        (change)="onVesselChange($event)">
+                    <ng-select [items]="filteredVesselList" bindLabel="VesselName" bindValue="VesselName" class="ng-select"
+                        formControlName="VesselName" placeholder="Select Vessel" (change)="onVesselChange($event)">
                     </ng-select>
+                    <label for="text-input" class="input-label">Vsl <span class="text-danger"></span></label>
                 </div>
             </aside>
             <aside class="col-md-4">
@@ -115,34 +131,58 @@
                 </div>
             </aside>
             <div class="col-md-4">
+                <div class="custom-form-group custom-form-group-select">
+                    <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                            [minDate]="toNgbDateStruct(minStartDate)" formControlName="ETD" (click)="d2.toggle()"
+                            (dateSelect)="c['ETD'].markAsTouched()" />
+                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                        </button>
+                    </div>
+                    <label for="" class="input-label"> ETD <span class="text-danger">*</span></label>
+            
+                </div>
+                <div *ngIf="c['ETD']?.touched && c['ETD']?.errors" class="error-message">
+                    <span *ngIf="c['ETD']?.hasError('minDate')">
+                        ETD must be after {{minStartDate | formatDate}}
+                    </span>
+                </div>
+            </div>
+
+
+            <div class="col-md-4">
                 <div class=" custom-form-group custom-form-group-select">
                     <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d6="ngbDatepicker"
-                            (click)="d6.toggle()" />
-                        <button class="btn  bi bi-calendar3 " (click)="d6.toggle()" type="button">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker" [minDate]="toNgbDateStruct(connectionForm.get('ETD')?.value)"
+                            formControlName="ETA" (click)="d1.toggle()" />
+                        <button class="btn btn-info bi bi-calendar3 text-white" (click)="d1.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>
                     <label for="" class="input-label"> ETA <span class="text-danger"></span>
                     </label>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class=" custom-form-group custom-form-group-select">
-                    <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
-                             (click)="d2.toggle()" />
-                        <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
-                            <i-feather name="calendar" class="feather-sm"></i-feather>
-                        </button>
-                    </div>
-                    <label for="" class="input-label"> ETD <span class="text-danger"></span>
-                    </label>
+            
+
+            <aside class="col-md-4" *ngIf="screenName !== 'Booking'">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">ATD <span class="text-danger"></span></label>
                 </div>
-            </div>
+            </aside>
+            <aside class="col-md-4" *ngIf="screenName !== 'Booking'">
+                <div class="custom-form-group">
+                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label">ATA <span class="text-danger"></span></label>
+                </div>
+            </aside>
             <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
-                    @if(currentConnectIndex){
-                    <ng-select [items]="" bindLabel="name" bindValue="name">
+                    @if(c['BookingConnectionSid']?.value){
+                    <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
+                        <ng-option value="Active">Active</ng-option>
+                        <ng-option value="Suspended">Suspended</ng-option>
                     </ng-select>
                     } @else {
                     <input type="text" name="status" class="form-control custom-input-field sm" value="Active"
@@ -155,13 +195,11 @@
 
                 </div>
             </aside>
-
-
         </div>
     </div>
 
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss('Cancel')">Cancel</button>
-        <button type="button" class=" btn btn-sm btn-info" (click)="modal.close('Save')">Save</button>
+        <button type="button" class=" btn btn-sm btn-info" (click)="onConnectionSubmit()">Save</button>
     </div>
 </ng-template>

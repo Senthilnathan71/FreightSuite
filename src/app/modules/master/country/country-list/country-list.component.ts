@@ -13,6 +13,7 @@ import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-country-list',
@@ -26,7 +27,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     MatDialogModule,
     MatButtonModule,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './country-list.component.html',
   styleUrl: './country-list.component.scss'
@@ -63,7 +65,8 @@ export class CountryListComponent {
     private appService: AppService,
     private dialog: MatDialog,
     private appSettingService: AppSettingsService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -105,6 +108,7 @@ export class CountryListComponent {
   return this.permissions.includes(permission);
 }
   loadCountries(): void {
+    this.spinner.show();
   this.loading = true;
   
   const params = {
@@ -144,7 +148,7 @@ export class CountryListComponent {
         this.appSettingService.showError(response.message);
       }
 
-
+      this.spinner.hide();
       this.loading = false;
     },
     error: (err) => {

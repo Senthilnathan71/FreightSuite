@@ -20,6 +20,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-package-type-list',
@@ -36,7 +37,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     DatePipe,
     ListpageComponent,
     PreventMultiClickDirective,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './package-type-list.component.html',
   styleUrl: './package-type-list.component.scss',
@@ -85,7 +87,8 @@ export class PackageTypeListComponent {
     private dialog: MatDialog,
     private datePipe: DatePipe,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -130,6 +133,7 @@ export class PackageTypeListComponent {
 }
 
   loadPackageTypes(): void {
+    this.spinner.show();
     let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const params = {
       search: this.filterValue ? this.filterValue.trim() : '',
@@ -150,6 +154,7 @@ export class PackageTypeListComponent {
         else {
         this.appSettingService.showError(response.message);
       }
+      this.spinner.hide();
 
       },
       error: (err) => {

@@ -11,6 +11,7 @@ import { MasterService } from '../../master.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-unit-list',
@@ -23,7 +24,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     RouterModule,
     MatDialogModule,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './unit-list.component.html',
   styleUrl: './unit-list.component.scss'
@@ -60,7 +62,8 @@ export class UnitListComponent {
     private router: Router,
     private dialog: MatDialog,
     private appSettingService: AppSettingsService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit() { 
@@ -102,6 +105,7 @@ export class UnitListComponent {
 }
 
   loadUnits(): void {
+    this.spinner.show();
     const params = {
       search: this.filterValue?.trim() || '',
       page: this.page,
@@ -118,7 +122,7 @@ export class UnitListComponent {
         }else {
         this.appSettingService.showError(response.message);
       }
-
+      this.spinner.hide();
       },
       error: (err) => {
         console.error('Error fetching units:', err);

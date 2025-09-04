@@ -1,0 +1,278 @@
+<div class="row compact-form">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-2">
+                <h4 class="page-title mb-0">Merge Booking</h4>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        (click)="openAuditLogs(auditLogModal)">
+                        <i class="fas fa-history me-1"></i>Logs
+                    </button> -->
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-6">
+
+                <div class="card h-100 mb-0">
+                    <div class="card-body pb-0">
+                        <h5 class="page-title mb-0">From :</h5>
+                        <div class="row">
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="">
+                                    <label for="text-input" class="input-label">Booking No <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="">
+                                    <label for="text-input" class="input-label">Customer <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="">
+                                    <label for="text-input" class="input-label">Sales Person <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="">
+                                    <label for="text-input" class="input-label">Shipper <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="">
+                                    <label for="text-input" class="input-label">Consignee <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                                    </ng-select>
+                                    <label for="" class="input-label">POL <span class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                                    </ng-select>
+                                    <label for="" class="input-label">POD <span class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                                    </ng-select>
+                                    <label for="" class="input-label">FPD <span class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                        </div>
+                        <div class="col-md-12 p-2">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th class="bg-transparent text-light" scope="col">Commodity</th>
+                                            <th class="bg-transparent text-light" scope="col">Shipping Bill No</th>
+                                            <th class="bg-transparent text-light" scope="col">No of Pkg</th>
+                                            <th class="bg-transparent text-light" scope="col">Gross Weight</th>
+
+                                            <th class="bg-transparent text-light" scope="col">Volume(CBM)</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (item of [0,1,2]; track $index) {
+                                        <tr>
+
+
+
+
+                                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                <div class="text-truncate">OMR</div>
+                                            </td>
+                                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                <div class="text-truncate">OMR</div>
+                                            </td>
+                                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                <div class="text-truncate">OMR</div>
+                                            </td>
+                                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                <div class="text-truncate">OMR</div>
+                                            </td>
+                                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                <div class="text-truncate">OMR</div>
+                                            </td>
+
+
+
+                                        </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 mb-0">
+                    <div class="card-body pb-0">
+                        <h5 class="page-title mb-0">To :</h5>
+                        <div class="row">
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="">
+                                    <label for="text-input" class="input-label">Booking No <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="">
+                                    <label for="text-input" class="input-label">Customer <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="">
+                                    <label for="text-input" class="input-label">Sales Person <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="">
+                                    <label for="text-input" class="input-label">Shipper <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                        formControlName="">
+                                    <label for="text-input" class="input-label">Consignee <span
+                                            class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                                    </ng-select>
+                                    <label for="" class="input-label">POL <span class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                                    </ng-select>
+                                    <label for="" class="input-label">POD <span class="text-danger"></span></label>
+                                </div>
+                            </aside>
+                            <aside class="col-md-4">
+                                <div class="custom-form-group custom-form-group-select">
+                                    <ng-select [items]="" bindLabel="name" bindValue="name">
+
+                                    </ng-select>
+                                    <label for="" class="input-label">FPD <span class="text-danger">*</span></label>
+                                </div>
+                            </aside>
+                        </div>
+                        <div class="col-md-12 p-2">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th class="bg-transparent text-light" scope="col">Commodity</th>
+                                            <th class="bg-transparent text-light" scope="col">Shipping Bill No</th>
+                                            <th class="bg-transparent text-light" scope="col">No of Pkg</th>
+                                            <th class="bg-transparent text-light" scope="col">Gross Weight</th>
+
+                                            <th class="bg-transparent text-light" scope="col">Volume(CBM)</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (item of [0,1,2]; track $index) {
+                                        <tr>
+
+
+                                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                <div class="text-truncate">OMR</div>
+                                            </td>
+                                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                <div class="text-truncate">OMR</div>
+                                            </td>
+                                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                <div class="text-truncate">OMR</div>
+                                            </td>
+                                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                <div class="text-truncate">OMR</div>
+                                            </td>
+                                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                                <div class="text-truncate">OMR</div>
+                                            </td>
+                                        </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end mt-2">
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                <i class="fas fa-code-branch me-1"></i> Merge
+            </button>
+        </div>
+
+    </div>
+</div>

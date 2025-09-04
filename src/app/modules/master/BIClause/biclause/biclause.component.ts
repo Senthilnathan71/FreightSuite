@@ -20,6 +20,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 
 @Component({
@@ -36,7 +37,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     DatePipe,
     ListpageComponent,
     PreventMultiClickDirective,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './biclause.component.html',
   styleUrls: ['./biclause.component.scss']
@@ -89,7 +91,8 @@ export class BIclauseComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) {
     this.biclauseForm = this.fb.group({
       ClauseDescription: ['', [Validators.required, Validators.maxLength(500)]],
@@ -193,6 +196,7 @@ applySorting() {
   });
 }
   loadAllClauses(): void {
+    this.spinner.show();
   this.loading = true;
   const params = {
     search: this.filterValue?.trim() || '',
@@ -220,6 +224,7 @@ applySorting() {
       
       this.searchPerformed = true;
       this.loading = false;
+     this.spinner.hide(); 
     },
     error: (err) => {
       console.error('Error loading clauses:', err);

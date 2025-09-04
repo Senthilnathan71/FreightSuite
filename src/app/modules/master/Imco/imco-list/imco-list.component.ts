@@ -12,11 +12,12 @@ import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
 	selector: 'app-imco-list',
 	standalone: true,
-	imports: [FeatherModule, RouterModule, FormsModule, CommonModule, NgbPaginationModule, ListpageComponent,FavoriteStarComponent],
+	imports: [FeatherModule, RouterModule, FormsModule, CommonModule, NgbPaginationModule, ListpageComponent,FavoriteStarComponent,NgxSpinnerModule],
 	templateUrl: './imco-list.component.html',
 	styleUrl: './imco-list.component.scss'
 })
@@ -52,7 +53,8 @@ export class ImcoListComponent implements OnInit{
 		private matdial: MatDialog,
 		private route: Router,
 		private userService : authService,
-        private excelReportService : ExcelExportService
+        private excelReportService : ExcelExportService,
+        private spinner: NgxSpinnerService
 	) { }
 
 	ngOnInit(): void {
@@ -97,6 +99,7 @@ export class ImcoListComponent implements OnInit{
 
 
 	loadImcos(): void {
+    this.spinner.show();
     this.loading = true;
     
     const params = {
@@ -117,7 +120,7 @@ export class ImcoListComponent implements OnInit{
         }else {
         this.appSettingService.showError(response.message);
       }
-
+        this.spinner.hide();
         this.loading = false;
       },
       error: (err) => {

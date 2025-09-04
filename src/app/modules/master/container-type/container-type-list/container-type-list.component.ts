@@ -13,6 +13,7 @@ import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-container-type-list',
@@ -24,7 +25,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     FeatherModule,
     NgbPaginationModule,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './container-type-list.component.html',
   styleUrl: './container-type-list.component.scss'
@@ -61,7 +63,8 @@ export class ContainerTypeListComponent {
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit() {
@@ -105,6 +108,7 @@ export class ContainerTypeListComponent {
   return this.permissions.includes(permission);
 }
   loadContainerTypes(): void {
+    this.spinner.show();
     this.loading = true;
 
     const params = {
@@ -129,7 +133,7 @@ export class ContainerTypeListComponent {
         this.appSettingService.showError(response.message);
       }
 
-
+         this.spinner.hide();
         this.loading = false;
       },
       error: (err) => {

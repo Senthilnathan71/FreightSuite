@@ -13,6 +13,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-product-list',
@@ -24,7 +25,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     CommonModule,
     NgbPaginationModule,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
 ],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss'
@@ -67,7 +69,8 @@ export class ProductListComponent {
         private appSettingService: AppSettingsService,
         private dialog: MatDialog,
         private userService : authService,
-        private excelReportService : ExcelExportService
+        private excelReportService : ExcelExportService,
+        private spinner: NgxSpinnerService
     ) { }
 
     ngOnInit(): void {
@@ -113,6 +116,7 @@ export class ProductListComponent {
 
 
     loadProducts(): void {
+        this.spinner.show();
           let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
         const params = {
             search: this.filterValue?.trim() || '',
@@ -132,7 +136,7 @@ export class ProductListComponent {
                 }else {
         this.appSettingService.showError(response.message);
       }
-
+         this.spinner.hide();
             },
             error: (err) => {
                 console.error('Error fetching products:', err);

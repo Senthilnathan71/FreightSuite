@@ -18,6 +18,7 @@ import { EmailEntryComponent } from '../../email/email-entry/email-entry.compone
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from '../../edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-rolemenu',
@@ -31,7 +32,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
 	TextWithNumbersDirective,
 	NgbPaginationModule,
 	TogglerComponent,
-	FavoriteStarComponent
+	FavoriteStarComponent,
+	NgxSpinnerModule
 ],
   templateUrl: './rolemenu.component.html',
   styleUrl: './rolemenu.component.scss'
@@ -93,6 +95,7 @@ export class RolemenuComponent implements OnInit {
     	private modalService: NgbModal,
 		private excelReportService : ExcelExportService,
 		private fb:FormBuilder,
+		 private spinner: NgxSpinnerService
     ) {}
 
 	ngOnInit(): void {
@@ -162,6 +165,7 @@ private getNestedProperty(obj: any, path: string): any {
 }
 
 onRoleMenuSearch(){
+	this.spinner.show();
 	const params = {
 		search : this.filterValue?.trim() || '',
 		page : this.page,
@@ -187,6 +191,7 @@ onRoleMenuSearch(){
 				this.roleMenuList = [];
 				this.totalAmountOfCollection = 0;
 			}
+			this.spinner.hide();
 			this.searchPerformed = true;
 		},
 		error :(err)=>{

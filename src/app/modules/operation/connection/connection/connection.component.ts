@@ -1,6 +1,6 @@
 import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -9,6 +9,7 @@ import { OperationService } from '../../operation.service';
 import { CommonModule } from '@angular/common';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-connection',
@@ -27,6 +28,7 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    CustomDatePipe
   ],
 })
 export class ConnectionComponent implements OnInit {
@@ -45,7 +47,10 @@ export class ConnectionComponent implements OnInit {
   _vesselList: any[] = []; // to store data from parent
   filteredVesselList : any[] = []; // to store data which is shown on select
   voyageList: any[] = [];
+  minDatesForConnections: Date[] = [];
   connectionForm !: FormGroup;
+  currentCompany : any;
+  currentBranch : any;
 
   typeofmodes = [
     { id: 1, name: 'Sea' },
@@ -65,7 +70,9 @@ export class ConnectionComponent implements OnInit {
   set dataItems(value: any[]) {
     if (value && value.length > 0) {
       this._dataItems = value;
-      this.patchValues(this._dataItems);
+      if(!this.disableAddBtn){
+        this.patchValues(this._dataItems);
+      }
     } else {
       this._dataItems = [];
       this.connectionFormArray?.clear();
@@ -106,7 +113,7 @@ export class ConnectionComponent implements OnInit {
   set resetTrigger(value: boolean) {
     if (value !== this.prevValue) {
       this.prevValue = value;
-      this.connectionFormArray.clear();
+      this.connectionFormArray?.clear();
       this.connectionDataLength = 0;
       this.slicedConnectionFormArr = [];
     }
@@ -115,8 +122,21 @@ export class ConnectionComponent implements OnInit {
   disableAddBtn : boolean;
   @Input()
   set disableAdd(value:boolean){
-    console.log(value);
     this.disableAddBtn = value;
+    if(value){
+      this.connectionFormArray?.clear();
+      this.connectionDataLength = 0;
+      this.slicedConnectionFormArr = [];
+    } else {
+      this.patchValues(this._dataItems);
+    }
+  }
+
+  minStartDate : any;
+  @Input()
+  set minDate(value:any){
+    this.minStartDate = value;
+    console.log(this.minStartDate);
   }
 
 
@@ -127,11 +147,13 @@ export class ConnectionComponent implements OnInit {
     private fb: FormBuilder,
     private appSettingService: AppSettingsService,
     private operationService: OperationService,
+    private excelExportService : ExcelExportService,
+    private datePipe : CustomDatePipe
   ) { }
 
   ngOnInit(): void {
-    console.log("This is the screen", this.screenName)
-    console.log("This is the data", this.dataItems)
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.connectionFormArray = this.fb.array([]);
     if (this.dataItems.length !== 0) {
       this.patchValues(this.dataItems);
@@ -166,6 +188,7 @@ export class ConnectionComponent implements OnInit {
     this.connectionDataLength = items.length;
     this.connectionFormArray.updateValueAndValidity();
     this.updateConnectionPagination();
+    this.validateMinStartDate();
   }
 
   createBookingConnectionGroup(data?: any): FormGroup {
@@ -215,7 +238,7 @@ export class ConnectionComponent implements OnInit {
     } else {
       this.currentConnectIndex = -1;
     }
-
+    this.setMinDateForCurrentConnection();
     this.modalService.open(content, {
       size: 'lg',
       backdrop: 'static',
@@ -223,8 +246,25 @@ export class ConnectionComponent implements OnInit {
     });
   }
 
+  setMinDateForCurrentConnection() {
+    if (this.currentConnectIndex === 0 || this.currentConnectIndex === -1) {
+      this.minStartDate = this.minStartDate;
+    } else {
+      const connections = this.connectionFormArray.getRawValue();
+      const previousConnection = connections[this.currentConnectIndex - 1];
+      this.minStartDate = previousConnection?.ETA ? new Date(previousConnection.ETA) : this.minStartDate;
+    }
+
+    setTimeout(() => {
+      this.validateDisabledFields();
+    }, 100);
+  }
+
   onConnectionSubmit() {
-    if(this.connectionForm.invalid){
+    this.validateDisabledFields();
+    const hasETDError = this.c['ETD'].errors !== null;
+
+    if(this.connectionForm.invalid || hasETDError){
       this.connectionForm.markAllAsTouched();
       this.connectionForm.updateValueAndValidity();
       this.appSettingService.showWarning("Please fill all the required fields correctly.")
@@ -242,6 +282,7 @@ export class ConnectionComponent implements OnInit {
     this.connectionDataLength = this.connectionFormArray.length;
     this.connectionFormArray.updateValueAndValidity();
     this.updateConnectionPagination();
+    this.validateMinStartDate(); 
     this.syncDataWithParentComponent();
     this.modalService.dismissAll();
   }
@@ -379,6 +420,7 @@ export class ConnectionComponent implements OnInit {
     )
   }
 
+
   onVoyageChange(voyage: any) {
     if (!voyage) {
       this.c['ETA'].setValue('');
@@ -392,16 +434,37 @@ export class ConnectionComponent implements OnInit {
     const details = voyage.Ports || [];
 
     const polDetail = details.find(d => d.POLSid === POLSid);
-    const polETD = polDetail?.ETD || null;
-
+    const polETA = polDetail?.ETD || null;
 
     const podDetail = details.find(d => d.POLSid === PODSid);
-    const podETD = podDetail?.ETD || null;
+    const podETD = podDetail?.ETA || null;
 
-    this.c['ETA'].setValue(new Date(polETD));
-    this.c['ETD'].setValue(new Date(podETD));
+
+    this.c['ETD'].setValue(new Date(polETA));
+    this.c['ETA'].setValue(new Date(podETD));
+    this.validateDisabledFields();
   }
 
+  validateDisabledFields() {
+    const etdControl = this.c['ETD'];
+    const etdValue = etdControl.value;
+
+    if (etdValue && this.minStartDate) {
+      const etdDate = new Date(etdValue);
+      const minDate = new Date(this.minStartDate);
+
+      etdDate.setHours(0, 0, 0, 0);
+      minDate.setHours(0, 0, 0, 0);
+
+      if (etdDate < minDate) {
+        etdControl.setErrors({ minDate: true });
+      } else {
+        etdControl.setErrors(null);
+      }
+    }
+
+    etdControl.markAsTouched();
+  }
 
 
   deleteBookingConnection(connectionIndex: number, BookingConnectionSid?: number) {
@@ -446,5 +509,78 @@ export class ConnectionComponent implements OnInit {
     const end = start + this.pageSize1;
     this.slicedConnectionFormArr = this.connectionFormArray.getRawValue().slice(start, end);
   }
+
+
+
+  validateMinStartDate() {
+    this.minDatesForConnections = [];
+    const connections = this.connectionFormArray.getRawValue();
+
+    for (let i = 0; i < connections.length; i++) {
+      if (i === 0) {
+        this.minDatesForConnections.push(this.minStartDate);
+      } else {
+        const previousETA = connections[i - 1].ETA;
+        this.minDatesForConnections.push(previousETA ? new Date(previousETA) : this.minStartDate);
+      }
+    }
+  }
+
+  toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+    if (!date) return null;
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate()
+    };
+  }
+
+  reportConnections(): void {
+    const allConnections = this.slicedConnectionFormArr;
+
+    const formattedData = allConnections.map(connection => ({
+      Mode: connection.Mode || '',
+      VesselName: connection.VesselName || '',
+      VoyageNo: connection.VoyageNo || '',
+      POL: connection.POL || '',
+      POD: connection.POD || '',
+      ETD: this.datePipe.transform(connection.ETD) || '',
+      ETA: this.datePipe.transform(connection.ETA) || '',
+      ATD: this.datePipe.transform(connection.ATD) || '',
+      ATA: this.datePipe.transform(connection.ATA) || '',
+      Status: connection.status || ''
+    }));
+
+    const companyName = this.currentCompany?.companyName ?? 'Company';
+
+
+    const headers = [
+      { key: 'Mode', label: 'Mode' },
+      { key: 'VesselName', label: 'Vessel' },
+      { key: 'VoyageNo', label: 'Voyage' },
+      { key: 'POL', label: 'POL' },
+      { key: 'POD', label: 'POD' },
+      { key: 'ETD', label: 'ETD' },
+      { key: 'ETA', label: 'ETA' }
+    ];
+
+
+    if (this.screenName !== 'Booking') {
+      headers.push(
+        { key: 'ATD', label: 'ATD' },
+        { key: 'ATA', label: 'ATA' }
+      );
+    }
+
+    headers.push({ key: 'Status', label: 'Status' });
+
+    this.excelExportService.exportAsExcel({
+      data: formattedData,
+      headers: headers,
+      fileName: 'Booking-Connections-Report',
+      title: companyName
+    });
+  }
+
 
 }

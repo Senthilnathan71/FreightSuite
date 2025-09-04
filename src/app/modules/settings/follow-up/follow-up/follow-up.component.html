@@ -4,16 +4,12 @@
             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
                 <div class="col-md-4 pb-2">
                     <h4 class="page-title mb-0">Follow Up</h4>
-                    <!-- <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button> -->
+                    
                 </div>
                 <div class="col-md-8 pb-2">
 
                     <div
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-chevron-left me-1"></i>
-                            Back
-                        </button>
 
                         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="resetform()">
@@ -25,6 +21,7 @@
                             <i class="fas fa-save me-1"></i>
                             Save
                         </button>
+                        <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
                     </div>
                 </div>
             </div>
@@ -40,8 +37,8 @@
                             <div class="form-check form-check-inline p-0">
                                 <div class="form-check d-flex align-items-center">
                                     <input type="checkbox" id="Nominated" class="form-check-input sm"
-                                        formControlName="followuprequired">
-                                    <label for="followuprequired" class="form-check-label sm">Followup Required <span
+                                        formControlName="FollowupRequire">
+                                    <label for="FollowupRequire" class="form-check-label sm">Followup Required <span
                                             class="text-danger"></span></label>
                                 </div>
                             </div>
@@ -50,7 +47,7 @@
                             <div class=" custom-form-group custom-form-group-select">
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        #d15="ngbDatepicker" (click)="d15.toggle()" formControlName="FollowUpDate" />
+                                        #d15="ngbDatepicker" (click)="d15.toggle()" formControlName="FollowupDate" />
                                     <button class="btn bi bi-calendar3" (click)="d15.toggle()"
                                         type="button"> <i-feather name="calendar"
                                             class="feather-sm"></i-feather></button>
@@ -97,8 +94,8 @@
                         <aside class="col-md-4 d-flex align-items-center">
                             <div class="form-check form-check-inline p-0">
                                 <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" id="Nominated" class="form-check-input sm">
-                                    <label for="Nominated" class="form-check-label sm">Public <span
+                                    <input type="checkbox" id="Nominated" class="form-check-input sm" formControlName="Public">
+                                    <label for="Public" class="form-check-label sm">Public <span
                                             class="text-danger"></span></label>
                                 </div>
                             </div>
@@ -106,8 +103,8 @@
                         <aside class="col-md-4 d-flex align-items-center">
                             <div class="form-check form-check-inline p-0">
                                 <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" id="Nominated" class="form-check-input sm">
-                                    <label for="Nominated" class="form-check-label sm">Sent Email Signature <span
+                                    <input type="checkbox" id="Nominated" class="form-check-input sm" formControlName="sentEmail">
+                                    <label for="sentEmail" class="form-check-label sm">Sent Email Signature <span
                                             class="text-danger"></span></label>
                                 </div>
                             </div>

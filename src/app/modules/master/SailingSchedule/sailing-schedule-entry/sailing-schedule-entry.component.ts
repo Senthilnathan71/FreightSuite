@@ -1,5 +1,6 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+
+import { ChangeDetectorRef, Component, OnInit, TemplateRef } from '@angular/core';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -39,7 +40,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
         OnlyTextDirective,
         TextWithNumbersDirective,
         CustomDatePipe,
-        DatePipe
+        DatePipe,
+        RouterModule
     ],
     templateUrl: './sailing-schedule-entry.component.html',
     styleUrl: './sailing-schedule-entry.component.scss',
@@ -77,6 +79,12 @@ export class SailingScheduleEntryComponent implements OnInit {
     permissions: string[] = [];
   currentMenuPermissions: any = {};
   userData:any;
+  etaEtdMustChange = false;
+  snoChanged = false;
+previousSnoEtd: Date | null = null;
+formErrors: any = {}; 
+originalSno: number | null = null;
+isSnoDuplicate: boolean = false;
 
 
     modeOfStatus = [
@@ -106,7 +114,8 @@ currentBranch: any
         private modalService : NgbModal,
         private dialog : MatDialog,
         private fb : FormBuilder,
-        private calendar: NgbCalendar,   
+        private calendar: NgbCalendar,  
+        private cdr: ChangeDetectorRef 
     ){}
 
     ngOnInit(): void {
@@ -136,6 +145,25 @@ currentBranch: any
                 }
             }
         )
+//         this.scheduleDetailForm.get('Sno').valueChanges.subscribe((value: number) => {
+//     if (!value) {
+//         this.isSnoDuplicate = false;
+//         return;
+//     }
+
+//     const duplicate = this.scheduleDetailList.find(
+//         item => item.Sno === value && item.VoyageMasterDetailSid !== this.VoyageMasterDetailSid
+//     );
+
+//     if (duplicate) {
+//         this.formErrors.sno = `Duplicate SNO not allowed (SNO ${value} already exists)`;
+//         this.isSnoDuplicate = true;
+//     } else {
+//         this.formErrors.sno = null;
+//         this.isSnoDuplicate = false;
+//     }
+// });
+
     }
     checkPermissions() {
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
@@ -178,6 +206,7 @@ currentBranch: any
 
     initScheduleDetailForm(){
         this.scheduleDetailForm = this.fb.group({
+            Sno: [null, [Validators.required, Validators.pattern(/^[0-9]+$/)]],
             POLSid : [,[Validators.required]],
             // PODSid : [,[Validators.required]],
             ETA : [,[Validators.required]],
@@ -200,6 +229,40 @@ currentBranch: any
         // this.scheduleDetailForm.get('POLSid')?.valueChanges.subscribe(() => {
         //     this.updatePODList();
         // });
+        this.scheduleDetailForm.get('Sno')?.valueChanges.subscribe((value: number) => {
+      if (!value) {
+        this.isSnoDuplicate = false;
+        this.snoChanged = false;
+        this.etaEtdMustChange = false;
+        return;
+      }
+
+      const duplicate = this.scheduleDetailList.find(
+        item => item.Sno === value && item.VoyageMasterDetailSid !== this.VoyageMasterDetailSid
+      );
+
+      if (duplicate) {
+        this.formErrors.sno = `Duplicate SNO not allowed (SNO ${value} already exists)`;
+        this.isSnoDuplicate = true;
+        this.snoChanged = false;
+        this.etaEtdMustChange = false;
+      } else {
+        this.formErrors.sno = null;
+        this.isSnoDuplicate = false;
+
+        if (this.originalSno !== null && value !== this.originalSno) {
+          this.etaEtdMustChange = true;
+          this.snoChanged = true;
+          this.formErrors.etaEtd = 'Since SNO changed, please update ETA and ETD.';
+        } else {
+          this.etaEtdMustChange = false;
+          this.snoChanged = false;
+          this.formErrors.etaEtd = null;
+        }
+      }
+    });
+
+   
         this.scheduleDetailForm.get('ETD').valueChanges.subscribe((value:Date)=>{
             if(!value){
                 return;
@@ -253,11 +316,10 @@ currentBranch: any
     }
 
     loadScheduleDetails(){
-        this.masterService.getAllSailingScheduleDetail().subscribe(
+        this.masterService.getVoyageDetailByHeader(this.VoyageMasterHeaderSid).subscribe(
             (resp:any)=>{
                 if(resp.status){
-                    const allScheduleDetails = resp.data;
-                    this.scheduleDetailList = allScheduleDetails.filter(scheduleDetail => scheduleDetail.VoyageMasterHeaderSid === this.VoyageMasterHeaderSid);
+                     this.scheduleDetailList = resp.data.sort((a, b) => a.Sno - b.Sno);
                     this.totalAmountOfCollections = this.scheduleDetailList.length;
                     this.updatePaginationData();
                 }
@@ -289,6 +351,7 @@ currentBranch: any
     }
 
     onSubmit(){
+        this.formErrors = {};
         if(this.scheduleForm.invalid){
             this.scheduleForm.markAllAsTouched();
             this.scheduleForm.updateValueAndValidity();
@@ -299,6 +362,31 @@ currentBranch: any
         const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
         const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
         const formValue = this.scheduleForm.value;
+
+        if (this.etaEtdMustChange) {
+    if (!formValue.ETA || !formValue.ETD) {
+      this.appSettingService.showError(
+        'Please update ETA and ETD before saving.'
+      );
+      return;
+    }
+  }
+
+  // 🆕 Validate ETA > previous ETD and ETA < ETD
+  const eta = new Date(formValue.ETA);
+  const etd = new Date(formValue.ETD);
+
+  if (this.previousSnoEtd && eta <= this.previousSnoEtd) {
+    this.appSettingService.showError(
+      'ETA must be greater than the previous Sno ETD.'
+    );
+    return;
+  }
+
+  if (eta >= etd) {
+    this.appSettingService.showError('ETA must be less than ETD.');
+    return;
+  }
 
         const payload = {
             ...formValue,
@@ -343,16 +431,20 @@ currentBranch: any
                 }
             )
         }
-
+        this.etaEtdMustChange = false;
+        this.sortScheduleDetails();
     }
 
-    openDetailEntryModal(content : TemplateRef<any>,data ?: any){
+    openDetailEntryModal(content : TemplateRef<any>,data ?: any, uiSno?: number){
         this.initScheduleDetailForm();
         // this.loadAllDetailFields();
         if(data){
             this.sailDetailData = data;
             this.isModalEditMode = true;
+            this.VoyageMasterDetailSid = data.VoyageMasterDetailSid;
+            this.originalSno = data.Sno;
             this.scheduleDetailForm.patchValue({
+                Sno: uiSno ?? data.Sno,
                 POLSid: data.POLSid || '',
                 // PODSid: data.PODSid || '',
                 ETA: new Date(data.ETA) || '',
@@ -371,136 +463,136 @@ currentBranch: any
             this.VoyageMasterDetailSid = data.VoyageMasterDetailSid;
             this.filterPortList(data.POLSid);
         } else {
+            const validSnos = this.slicedScheduleDetailList.map((d, i) => i + 1);
+    const nextSno = validSnos.length > 0 ? Math.max(...validSnos) + 1 : 1;
+    this.scheduleDetailForm.patchValue({ Sno: nextSno });
+    this.originalSno = null;
             this.calculateMinETA();
             this.filterPortList();
         }
         this.modalRef = this.modalService.open(content, { size: 'lg',centered:true , backdrop : 'static' });
     }
 
-    onModalSubmit(){
-        if(this.scheduleDetailForm.invalid){
-            this.scheduleDetailForm.markAllAsTouched();
-            this.scheduleDetailForm.updateValueAndValidity();
-            this.appSettingService.showWarning('Please fill all the required fields');
-            return;
-        } 
+    onModalSubmit() {
+    this.formErrors = {};
 
-        const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
-        const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
-        const formValue = this.scheduleDetailForm.getRawValue();
-
-        const payload = {
-            POLSid: parseInt(formValue.POLSid),
-            // PODSid: parseInt(formValue.PODSid),
-            ETA: formValue.ETA,
-            ETD: formValue.ETD,
-            PortCutoff: formValue.PortCutoff,
-            TransitDays: parseInt(formValue.TransitDays),
-            RotationNo: formValue.RotationNo,
-            RotationDate: formValue.RotationDate,
-            IGMNo: formValue.IGMNo,
-            IGMDate: formValue.IGMDate,
-            EGMNo: formValue.EGMNo,
-            EGMDate: formValue.EGMDate,
-            status: formValue.detailstatus === 'Active' ? 'A' : 'S',
-            VoyageMasterHeaderSid : this.VoyageMasterHeaderSid ,
-            ...(this.isModalEditMode ? { updatedBy: updatedBy} : { createdBy: createdBy })
-        }
-        console.log(payload);
-        if(this.isModalEditMode){
-            this.masterService.updateSailingScheduleDetailById(this.VoyageMasterDetailSid,payload).subscribe(
-                (resp:any)=>{
-                    if(resp.status){
-                        this.closeDetailForm();
-                        this.appSettingService.showSuccess('Sailing Schedule Detail Updated Successfully');
-                        this.loadScheduleDetails();
-                    } else {
-                        this.appSettingService.showError('Error Updating Sailing Schedule Detail');
-                    }
-                },
-                (error)=>{
-                    console.error('Error Updating Sailing Schedule Detail',error);
-                }
-            )
-        } else {
-            this.masterService.createNewSailingScheduleDetail(payload).subscribe(
-                (resp:any)=>{
-                    if(resp.status){
-                        this.closeDetailForm();
-                        this.appSettingService.showSuccess('Sailing Schedule Detail Created Successfully');
-                        this.loadScheduleDetails();
-                    } else {
-                        this.appSettingService.showError('Error Creating Sailing Schedule Details');
-                    }
-                },
-                (error)=>{
-                    console.error('Error Creating Sailing Schedule Details',error);
-                }
-            )
-        }
-
+    if (this.scheduleDetailForm.invalid) {
+        this.scheduleDetailForm.markAllAsTouched();
+        this.scheduleDetailForm.updateValueAndValidity();
+        this.appSettingService.showWarning('Please fill all the required fields');
+        return;
     }
 
-    // loadAllDetailFields(){
-    //     this.masterService.getAllPorts().subscribe(
-    //         (resp:any)=>{
-    //             if(resp.status){
-    //                 this.portList = resp.data;
-    //                 this.filteredPOLList = this.portList;
-    //                 this.filteredPODList = this.portList;
-    //             } else {
-    //                 this.appSettingService.showError('Error Loading All Ports')
-    //             }
-    //         },
-    //         (error)=>{
-    //             console.error('Error Loading All Ports',error);
-    //         }
-    //     )
-    // }
+    const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
+    const formValue = this.scheduleDetailForm.getRawValue();
+    if (this.etaEtdMustChange) {
+      if (!formValue.ETA || !formValue.ETD) {
+        this.appSettingService.showError('Since SNO changed, please update ETA and ETD.');
+        return;
+      }
+      this.etaEtdMustChange = false;
+      this.formErrors.etaEtd = null;
+    }
+    const newSno = parseInt(formValue.Sno);
 
-    // toNgbDate(isoDateString: string): NgbDate | null {
-    //     if (!isoDateString) return null;
+    // --- DUPLICATE SNO VALIDATION ---
+    const duplicate = this.scheduleDetailList.find(
+        item => item.Sno === newSno && item.VoyageMasterDetailSid !== this.VoyageMasterDetailSid
+    );
+    if (duplicate) {
+        this.formErrors.sno = `Duplicate SNO not allowed (SNO ${newSno} already exists)`;
+        return;
+    }
 
-    //     const date = new Date(isoDateString);
+    // --- ETA/ETD VALIDATION ---
+    const eta = new Date(formValue.ETA);
+    const etd = new Date(formValue.ETD);
 
-    //     if (isNaN(date.getTime())) return null;
+    const prev = this.scheduleDetailList.find(
+        r => r.Sno === newSno - 1 && r.VoyageMasterDetailSid !== this.VoyageMasterDetailSid
+    );
+    const next = this.scheduleDetailList.find(
+        r => r.Sno === newSno + 1 && r.VoyageMasterDetailSid !== this.VoyageMasterDetailSid
+    );
 
-    //     return NgbDate.from({
-    //         year: date.getFullYear(),
-    //         month: date.getMonth() + 1,
-    //         day: date.getDate()
-    //     });
-    // }
+    if (prev && eta <= new Date(prev.ETD)) {
+        this.formErrors.etaOrder = `ETA must be after ETD of Sno ${prev.Sno}`;
+        return;
+    }
 
-    // toIsoDateString(ngbDate: NgbDate | null): string | null {
-    //     if (!ngbDate) return null;
+    if (next && etd >= new Date(next.ETA)) {
+        this.formErrors.etaOrder = `ETD must be before ETA of Sno ${next.Sno}`;
+        return;
+    }
 
-    //     // Create a JS Date (Note: month - 1 because JS months are 0-based)
-    //     const jsDate = new Date(ngbDate.year, ngbDate.month - 1, ngbDate.day,12,0,0);
-    //     return jsDate.toISOString();
-    // }
+    if (eta >= etd) {
+        this.formErrors.etaOrder = 'ETA must be less than ETD.';
+        return;
+    }
+
+    // --- PREPARE PAYLOAD ---
+    const payload = {
+        Sno: newSno,
+        POLSid: parseInt(formValue.POLSid),
+        ETA: formValue.ETA,
+        ETD: formValue.ETD,
+        PortCutoff: formValue.PortCutoff,
+        TransitDays: parseInt(formValue.TransitDays),
+        RotationNo: formValue.RotationNo,
+        RotationDate: formValue.RotationDate,
+        IGMNo: formValue.IGMNo,
+        IGMDate: formValue.IGMDate,
+        EGMNo: formValue.EGMNo,
+        EGMDate: formValue.EGMDate,
+        status: formValue.detailstatus === 'Active' ? 'A' : 'S',
+        VoyageMasterHeaderSid: this.VoyageMasterHeaderSid,
+        ...(this.isModalEditMode ? { updatedBy: updatedBy } : { createdBy: createdBy })
+    };
+
+    const request$ = this.isModalEditMode
+        ? this.masterService.updateSailingScheduleDetailById(this.VoyageMasterDetailSid, payload)
+        : this.masterService.createNewSailingScheduleDetail(payload);
+
+    request$.subscribe(
+        (resp: any) => {
+            if (resp.status) {
+                this.closeDetailForm();
+                this.appSettingService.showSuccess(
+                    this.isModalEditMode
+                        ? 'Sailing Schedule Detail Updated Successfully'
+                        : 'Sailing Schedule Detail Created Successfully'
+                );
+                this.loadScheduleDetails(); // reload to sync with backend
+            } else {
+                this.appSettingService.showError(resp.message || 'Error saving Sailing Schedule Detail');
+            }
+        },
+        (error) => {
+            console.error('Error in Sailing Schedule Detail API', error);
+        }
+    );
+
+    // Re-sort list locally
+    this.scheduleDetailList.sort((a, b) => a.Sno - b.Sno);
+    this.updatePaginationData();
+}
 
 
-    // updatePOLList() {
-    //     if(!this.portList) return;
-    //     const selectedPOD = this.scheduleDetailForm.get('PODSid')?.value;
-    //     if (selectedPOD) {
-    //         this.filteredPOLList = this.portList.filter(
-    //             port => port.PortMasterSid !== selectedPOD
-    //         );
-    //     }
-    // }
 
-    // updatePODList() {
-    //     if(!this.portList) return;
-    //     const selectedPOL = this.scheduleDetailForm.get('POLSid')?.value;
-    //     if (selectedPOL) {
-    //         this.filteredPODList = this.portList.filter(
-    //             port => port.PortMasterSid !== selectedPOL
-    //         );
-    //     }
-    // }
 
+    sortScheduleDetails() {
+    // Sort the schedule detail list after Sno change
+    if (this.scheduleDetailList && this.scheduleDetailList.length > 0) {
+        this.scheduleDetailList.sort((a, b) => a.Sno - b.Sno);
+        this.updatePaginationData();
+    }
+    this.cdr.detectChanges(); // Trigger change detection manually
+}
+
+trackBySno(index: number, item: any): any {
+    return item.Sno;  // Track by Sno to optimize rendering
+  }
 
 
 openAuditLogs(modal: TemplateRef<any>) {
@@ -530,6 +622,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     error: err => console.error('Error fetching audit logs:', err)
   });
 }
+
 
     updatePaginationData(){
         let start = (this.page - 1)*this.pageSize;

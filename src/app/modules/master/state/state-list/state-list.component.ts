@@ -12,6 +12,7 @@ import { forkJoin } from 'rxjs';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-state-list',
@@ -23,7 +24,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     NgbPaginationModule,
     RouterModule,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './state-list.component.html',
   styleUrl: './state-list.component.scss'
@@ -57,7 +59,8 @@ export class StateListComponent {
     private router: Router,
     private dialog: MatDialog,
     private appSettingService: AppSettingsService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit() {
@@ -104,6 +107,7 @@ export class StateListComponent {
   }
 
   loadStates(): void {
+    this.spinner.show();
     const params = {
       search: this.filterValue ? this.filterValue.trim() : '',
       page: this.page,
@@ -121,7 +125,7 @@ export class StateListComponent {
         }else {
         this.appSettingService.showError(response.message);
       }
-
+       this.spinner.hide();
       },
       error: (err) => {
         console.error('Error fetching states:', err);

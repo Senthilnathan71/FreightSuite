@@ -48,6 +48,12 @@
   }
 }
 
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 .toolbar-right {
   display: flex;
   align-items: center;
@@ -68,7 +74,14 @@
 .table-action-btn.export:hover {
   background-color: #218838;
 }
+.table-action-btn.currency {
+  background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
+  color: white;
+}
 
+.table-action-btn.currency:hover {
+  background-color: #ca8a04;
+}
 .table-action-btn.print {
   background-color: #056a9c;
   color: #fff;

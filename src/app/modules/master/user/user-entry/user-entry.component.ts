@@ -93,13 +93,6 @@ export class UserEntryComponent implements OnInit {
 		this.userForm.statusChanges.subscribe(status => {
 			this.btnDisable = status !== 'VALID';
 		});
-		this.currentRoute.paramMap.subscribe((param) => {
-			this.UserMasterSid = +param.get('id');
-			if (this.UserMasterSid) {
-				this.isEditMode = true;
-				this.loadUserData(this.UserMasterSid);
-			}
-		});
 		// this.appSettingService.getUser().subscribe((user) => {
 		// 	if (user) {
 		// 		this.userData = user;
@@ -110,9 +103,6 @@ export class UserEntryComponent implements OnInit {
 		if(userProfile){
 			this.userData = userProfile;
       this.checkPermissions();
-		}
-		if(!this.isEditMode){
-			this.userForm.get('userPassword')?.setValidators([Validators.required,PasswordValidators.validate()])
 		}
 	}
 
@@ -337,6 +327,16 @@ export class UserEntryComponent implements OnInit {
 			this.roleList = roles.data;
 			this.countryList = countries.data;
 			this.menuList = menus;
+
+			this.currentRoute.paramMap.subscribe((param) => {
+				this.UserMasterSid = +param.get('id');
+				if (this.UserMasterSid) {
+					this.isEditMode = true;
+					this.loadUserData(this.UserMasterSid);
+				} else {
+					this.userForm.get('userPassword')?.setValidators([Validators.required,PasswordValidators.validate()])
+				}
+			});
 		})
 	}
 
@@ -376,6 +376,7 @@ export class UserEntryComponent implements OnInit {
 	}
 
 	onSubmit() {
+		console.log(this.userForm.value);
 		if (this.userForm.invalid) {
 			this.userForm.markAllAsTouched();
 			this.userForm.updateValueAndValidity();
@@ -476,33 +477,48 @@ export class UserEntryComponent implements OnInit {
 		this.userForm.get('companies').setValue([...allCompanyIds]);
 		this.selectedCompanies = [...allCompanyIds];
 		userCompanyList.map(userCompanyMaster => {
+			const companyFromList = this.companyList.find(
+				company => company.CompanyMasterSid === userCompanyMaster.CompanyMasterSid
+			);
+			if (!companyFromList) return;
 			const companyData = {
 				UserCompanyMasterSid: userCompanyMaster?.UserCompanyMasterSid,
 				CompanyMasterSid: userCompanyMaster?.CompanyMasterSid,
-				companyName: userCompanyMaster?.companyMaster?.companyName,
+				companyName: companyFromList?.companyName || userCompanyMaster?.companyMaster?.companyName,
 				GiveAccess: userCompanyMaster?.GiveAccess,
 			}
 			this.userCompanies.push(this.createNewUserCompany(companyData));
 			const lastCompanyIndex = this.userCompanies.length - 1;
 
-			const userBranchList : any[] = userCompanyMaster?.companyMaster?.userBranchMaster;
-			userBranchList.map(userBranchMaster => {
-				if(userBranchMaster.IsDefault === 'Y'){
+
+			const allBranchesFromCompanyList = companyFromList.branchMaster || [];
+			const existingUserBranches = userCompanyMaster?.companyMaster?.userBranchMaster || [];
+
+			const userBranchMap = new Map();
+			existingUserBranches.forEach(userBranch => {
+				userBranchMap.set(userBranch.BranchMasterSid, userBranch);
+			});
+
+			allBranchesFromCompanyList.forEach(branch => {
+				const existingUserBranch = userBranchMap.get(branch.BranchMasterSid);
+
+				if (existingUserBranch && existingUserBranch.IsDefault === 'Y') {
 					this.defaultItems = {};
-					this.defaultItems[`${userBranchMaster?.CompanyMasterSid}`] = userBranchMaster?.BranchMasterSid;
+					this.defaultItems[`${existingUserBranch.CompanyMasterSid}`] = existingUserBranch.BranchMasterSid;
 					this.userForm.get('userCompanies').setValidators([this.atLeastOneDefaultValidator(this.defaultItems)]);
 					this.userForm.get('userCompanies').updateValueAndValidity();
 				}
 				const branchData = {
-					UserBranchMasterSid: userBranchMaster?.UserBranchMasterSid,
-					CompanyMasterSid: userBranchMaster?.CompanyMasterSid,
-					BranchMasterSid: userBranchMaster?.BranchMasterSid,
-					branchName: userBranchMaster?.branchMaster?.branchName,
-					GiveAccess: userBranchMaster?.GiveAccess,
-				}
+					UserBranchMasterSid: existingUserBranch?.UserBranchMasterSid || null,
+					CompanyMasterSid: branch.CompanyMasterSid,
+					BranchMasterSid: branch.BranchMasterSid,
+					branchName: branch.branchName,
+					GiveAccess: existingUserBranch?.GiveAccess || 'N',
+				};
+
 				this.userBranches(lastCompanyIndex).push(this.createNewUserBranches(branchData));
-			})
-		})
+			});
+		});
 	}
 
 	atLeastOneBranchAccessValidator(companyName: string): ValidatorFn {

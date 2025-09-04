@@ -1,3 +1,12 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
 <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
     <li [ngbNavItem]="1">
         <button ngbNavLink>Pending Rate Request</button>
@@ -70,13 +79,14 @@
                             </div>
                          
                     </div>
-                </div>
-                <!-- #endregion -->
+                      <!-- #endregion -->
                 <div class="col-12">
                     <div *ngIf="isMobile; else desktopTemplate">
                         <ng-container *ngTemplateOutlet="mobileTemplate"></ng-container>
                     </div>
                 </div>
+                </div>
+              
             </div>
         </ng-template>
     </li>
@@ -127,7 +137,7 @@
                 </div>
             </div>
         </div>
-        <div class="card-body">
+        <div class="">
             <!-- #region Pagination -->
             <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
                 [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true"
@@ -263,7 +273,7 @@
                     </div>
                     <!-- #endregion -->
 
-                    <div class="card-body">
+                    <div class="">
                         <!-- #region Pagination -->
                         <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
                             [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [rotate]="true"
@@ -327,7 +337,7 @@
                 </div>
             </div>
         </div>
-        <div class="card-body">
+        <div class="">
             <!-- #region Pagination -->
 
             <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection1"
@@ -355,7 +365,7 @@
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
                                 <tr class="bg-info">
-                                    <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                                    <th class="bg-transparent text-light" scope="col" width="5%">Action</th>
                                     <th class="bg-transparent text-light" scope="col">Rate Request No</th>
                                     <th class="bg-transparent text-light" scope="col">Customer</th>
 
@@ -407,7 +417,7 @@
                     </div>
                     <!-- #endregion -->
 
-                    <div class="card-body">
+                    <div class="">
                         <!-- #region Pagination -->
 
                         <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection1"

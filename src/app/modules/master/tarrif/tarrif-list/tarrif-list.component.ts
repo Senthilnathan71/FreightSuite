@@ -14,6 +14,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-tarrif-list',
@@ -26,7 +27,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     NgbPaginationModule,
     CustomDatePipe,
     ListpageComponent,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './tarrif-list.component.html',
   styleUrl: './tarrif-list.component.scss'
@@ -63,7 +65,8 @@ export class TarrifListComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private router: Router,
     private userService: authService,
-    private excelReportService: ExcelExportService
+    private excelReportService: ExcelExportService,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit() {
@@ -108,6 +111,7 @@ export class TarrifListComponent implements OnInit {
     return this.permissions.includes(permission);
   }
   loadTariffs(): void {
+    this.spinner.show();
      let CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const params = {
       search: this.filterValue ? this.filterValue.trim() : '',
@@ -127,7 +131,7 @@ export class TarrifListComponent implements OnInit {
         }else {
         this.appSettingService.showError(response.message);
       }
-
+      this.spinner.hide();
       },
       error: (err) => {
         console.error('Error fetching tariffs:', err);

@@ -23,6 +23,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 @Component({
   selector: 'app-inco',
   standalone: true,
@@ -39,7 +40,8 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     TextWithNumbersDirective,
     PreventMultiClickDirective,
     NgbModalModule,
-    FavoriteStarComponent
+    FavoriteStarComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './inco.component.html',
   styleUrl: './inco.component.scss'
@@ -101,6 +103,7 @@ export class IncoComponent{
     private userService: authService,
     private excelReportService: ExcelExportService,
     private route: ActivatedRoute,
+    private spinner: NgxSpinnerService
   ) {  }
 
   ngOnInit(): void {
@@ -153,6 +156,7 @@ export class IncoComponent{
 }
 
   loadIncos(): void {
+  this.spinner.show();
   this.loading = true;
   
   const params = {
@@ -173,7 +177,7 @@ export class IncoComponent{
       }else {
         this.appSettingService.showError(response.message);
       }
-
+      this.spinner.hide();
       this.loading = false;
     },
     error: (err) => {
