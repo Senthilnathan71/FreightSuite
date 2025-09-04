@@ -5,7 +5,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { catchError, forkJoin, of, tap } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, of, tap } from 'rxjs';
 import { OperationService } from '../../operation.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
@@ -31,8 +31,8 @@ import { ArApComponent } from '../../AR-AP/ar-ap/ar-ap.component';
 import { toggleFullScreen } from 'src/app/shared/fullscreenToggle';
 import { BookingData } from '../excel-parser.service';
 import { BookingUploadComponent } from '../booking-upload/booking-upload.component';
-import { th } from 'date-fns/locale';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import * as html2pdf from 'html2pdf.js';
 
 @Component({
   selector: 'app-booking-entry',
@@ -82,6 +82,8 @@ export class BookingEntryComponent implements OnInit {
 
   //Variable Declaration - Common 
   detailForm !: FormGroup;
+  userData : any;
+  isPrintLoading : boolean;
   currentCompany : any;
   currentBranch : any;
   filterOption : any;
@@ -104,6 +106,7 @@ export class BookingEntryComponent implements OnInit {
   selectedFCLLCL: string = "LCL";
   isEditMode: boolean;
   bookingData: any;
+  quotationNumber : any ='';
   departmentList: any[] = [];
   customerList: any[] = [];
   customerBranchList: any[] = [];
@@ -204,6 +207,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   today : any;
   minDate : any;
+  currentDate = new Date();
 
   modeOfShippmentTerms = [
     { id: 1, name: 'LCL' },
@@ -283,6 +287,7 @@ auditLogs: any[] = []; // Stores audit logs
     |--------------------------------------------------
     */
   ngOnInit(): void {
+    this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.filterOption = {
@@ -651,6 +656,7 @@ auditLogs: any[] = []; // Stores audit logs
     })
     this.b['DepartmentMasterSid']?.disable();
     this.b['CustomerMasterSid']?.disable();
+    this.quotationNumber = response?.quotationHeader?.QuoteNumber;
     this.PODandFPODsame = response.POD === response.FPD;
 
     const cargoData = response.bookingCargo[0];
@@ -1768,5 +1774,114 @@ resetForm() {
     });
   }
 
+
+  getFormattedPort(code:string){
+    if(!code) return '';
+    const ourPort = this.portList.find(p => p.PortCode === code)?.PortName;
+    return `${ourPort.PortName} (${ourPort.PortCode})`
+  }
+
+  reportAndEmailModel(content:TemplateRef<any>){
+    this.modalService.open(content, {
+      size: 'xl',
+      scrollable: false,
+      windowClass: 'custom-wide-modal'
+    });
+  }
+
+  downloadPDF(): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const element = document.getElementById('pdfContent');
+
+      const opt = {
+        margin: 0.5,
+        filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      if (!element) return reject('No element found');
+
+      html2pdf().from(element).set(opt).outputPdf('blob')
+        .then((blob: Blob) => resolve(blob))
+        .catch((err: any) => reject(err));
+    });
+  }
+
+
+
+  async sendEmail() {
+    try {
+      this.isPrintLoading = true;
+      const pdfBlob = await this.downloadPDF();
+
+      const formData = new FormData();
+      const toEmailSet = new Set<string>();
+
+      if (this.bookingHeader?.Email) {
+        toEmailSet.add(this.bookingHeader.Email);
+      }
+      if (toEmailSet.size === 0 && this.bookingHeader?.CustomerBranchSid) {
+        const resp: any = await firstValueFrom(
+          this.operationService.getCustomerBranchEmail(this.bookingHeader.CustomerBranchSid)
+        );
+
+        if (resp?.status && resp.data?.Email) {
+          toEmailSet.add(resp.data.Email);
+        }
+      }
+
+      if (toEmailSet.size === 0) {
+        this.appSettingService.showError('To Email is missing.')
+        this.isPrintLoading = false;
+        return;
+      }
+
+      const toEmail = Array.from(toEmailSet);
+      toEmail.forEach(email => {
+        if (email) {
+          formData.append("EmailTo[]", email);
+        }
+      });
+
+      const ccEmailSet = new Set<string>([this.userData['userEmail']]);
+      const ccEmail = Array.from(ccEmailSet);
+
+      ccEmail.forEach(email => {
+        if (email) {
+          formData.append("EmailCC[]", email);
+        }
+      });
+      const POD = this.bookingHeader?.POD;
+      const FPD = this.bookingHeader?.FPD;
+      formData.append('Subject', `Booking No.${this.bookingHeader.BookingNo} Date:${new Date(this.bookingHeader?.BookingDateTime)} ${this.getFormattedPort(this.bookingHeader.POL)} - ${this.getFormattedPort(this.bookingHeader?.POD)}${POD !== FPD ? ' - ' + this.getFormattedPort(FPD) : ''} confirmation`);
+      formData.append('Mailbody', `
+      <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+        <p>Dear Sir/Madam,</p>
+        <p>Please find enclosed the booking details as requested.</p>
+        <p>Kindly review the details at your convenience.</p>
+        <p>Looking forward to confirm cargo readyness.</p>
+        <p>Best Regards,</p>
+        <p>${this.userData['userEmail']}</p>
+      </div>
+    `);
+    formData.append('file', pdfBlob, (this.bookingHeader?.bookingNumber || 'booking') + '.pdf');
+    console.log(formData)
+    this.operationService.quotationReport(formData).subscribe((resp: any) => {
+      this.isPrintLoading = false;
+      if (resp?.data) {
+        this.appSettingService.showSuccess('Report Email Sent successfully!');
+      }
+    }, error => {
+      this.isPrintLoading = false;
+      this.appSettingService.showError('Failed to send email.');
+    });
+    } catch (error) {
+      this.isPrintLoading = false;
+      console.error('PDF generation error:', error);
+      this.appSettingService.showError('Error generating PDF.');
+    }
+  }
 
 }
