@@ -63,7 +63,6 @@ export class MasterJobEntryComponent {
   tabs1 = [
     { name: 'Product', icon: 'fas fa-box' } ,
     { name: 'Connection', icon: 'fas fa-plug' },
-    { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
     { name: 'AR/AP', icon: 'fas fa-balance-scale' },
     { name: 'Follow Up', icon: 'fas fa-tasks' },

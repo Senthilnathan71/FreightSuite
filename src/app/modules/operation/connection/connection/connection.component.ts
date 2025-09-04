@@ -259,7 +259,6 @@ export class ConnectionComponent implements OnInit {
       this.validateDisabledFields();
     }, 100);
   }
-  
 
   onConnectionSubmit() {
     this.validateDisabledFields();

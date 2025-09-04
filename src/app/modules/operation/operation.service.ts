@@ -262,5 +262,22 @@ getShipmentMilestones(payload: any) {
       })
     )
   }
+  getCustomerBranchEmail(CustomerBranchSid) {
+    return this.http.get<{ data: any }>(`ff-quotation/customer-branch-email/${CustomerBranchSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  quotationReport(payload: any) {
+    return this.http.post<{ data: any[] }>('ff-booking/send/email', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
 
 }

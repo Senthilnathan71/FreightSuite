@@ -16,6 +16,15 @@
     </div>
 
     <div class="header-actions">
+      <div class="action-group" *ngIf="isEditMode">
+        <!-- <button class="action-btn action-secondary" (click)="openAuditLogs(auditLogModal)">
+          <i class="fas fa-history fs-2"></i>
+          <span>Report</span>
+        </button> -->
+        <button class="table-action-btn print" (click)="reportAndEmailModel(reportModel)">
+          <i class="fas fa-print"></i> Print
+        </button>
+      </div>
       <div class="action-group" *ngIf="!isEditMode">
         <button class="action-btn action-secondary" (click)="openUploadModal()">
           <i class="fas fa-upload fs-2"></i>
@@ -55,7 +64,8 @@
     <div class="quick-form-grid " [class.expanded]="isQuickFormExpanded">
       <div class="smart-field-group">
         <div class="custom-form-group" style="margin-top: 9px;">
-          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm" formControlName="BookingNo">
+          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+            formControlName="BookingNo">
           <label for="text-input" [ngClass]="{
           'input-label': true,
           'bg-transparent': !b['BookingNo']?.getRawValue()
@@ -241,7 +251,8 @@
                     <div class="custom-form-group custom-form-group-select">
                       <ng-select [items]="filteredShipperList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="ShipperName" placeholder="Select Shipper"
-                        (change)="setAddress('ShipperAddress',$event) ; onShipperChange($event)" (clear)="onShipperChange()" appendTo="body">
+                        (change)="setAddress('ShipperAddress',$event) ; onShipperChange($event)"
+                        (clear)="onShipperChange()" appendTo="body">
                         <ng-template ng-option-tmp let-item="item">
                           <div>
                             <strong>{{ item.CustomerName }}</strong><br>
@@ -282,7 +293,8 @@
                     <div class="custom-form-group custom-form-group-select">
                       <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" bindValue="CustomerName"
                         class="ng-select" formControlName="ConsigneeName" placeholder="Select Consignee"
-                        (change)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)" (clear)="onShipperChange()" appendTo="body">
+                        (change)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)"
+                        (clear)="onShipperChange()" appendTo="body">
                         <ng-template ng-option-tmp let-item="item">
                           <div>
                             <strong>{{ item.CustomerName }}</strong><br>
@@ -402,7 +414,7 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                        formControlName="QuotationHeaderSid">
+                        [value]="quotationNumber" disabled>
                       <label for="text-input" [ngClass]="{
                         'input-label': true,
                          'bg-transparent': !b['QuotationHeaderSid']?.getRawValue()
@@ -418,7 +430,8 @@
                       <label for="text-input" [ngClass]="{
                         'input-label': true,
                         'bg-transparent': !b['MBLNo']?.getRawValue()
-                      }">{{ selectedFCLLCL === 'AIR' ? 'MAWBL No' : 'MBL No' }}<span class="text-danger"></span></label>
+                      }">{{ selectedFCLLCL === 'AIR' ? 'MAWBL No' : 'MBL No' }}<span
+                          class="text-danger"></span></label>
                     </div>
                   </aside>
                   <div class="col-md-6">
@@ -430,7 +443,8 @@
                         <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
-                      <label for="shipmentDateExpected" class="input-label">{{selectedFCLLCL === 'AIR' ? 'MAWBL Date' : 'MBL Date' }} <span class="text-danger"></span>
+                      <label for="shipmentDateExpected" class="input-label">{{selectedFCLLCL === 'AIR' ? 'MAWBL Date' :
+                        'MBL Date' }} <span class="text-danger"></span>
                       </label>
 
                     </div>
@@ -496,8 +510,8 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select">
                       <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode" class="ng-select"
-                        formControlName="POD" appendTo="body" (change)="handlePODChange($event) ; onVesselChange($event)"
-                        placeholder="Select POD">
+                        formControlName="POD" appendTo="body"
+                        (change)="handlePODChange($event) ; onVesselChange($event)" placeholder="Select POD">
                       </ng-select>
                       <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
                       @if(bookingForm.get('POD')?.touched && bookingForm.get('POD')?.invalid){
@@ -547,34 +561,35 @@
                   </aside>
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select">
-                      <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select" appendTo="body"
-                        formControlName="VoyageNo" placeholder="Select Voyage No" (change)="onVoyageChange($event)">
+                      <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
+                        appendTo="body" formControlName="VoyageNo" placeholder="Select Voyage No"
+                        (change)="onVoyageChange($event)">
                         <ng-template ng-option-tmp let-item="item">
-                            <!-- Voyage Number -->
-                            <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
-                              {{ item.VoyageNo }}
+                          <!-- Voyage Number -->
+                          <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
+                            {{ item.VoyageNo }}
+                          </div>
+
+                          <!-- Ports Row -->
+                          <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; ">
+
+                            <!-- POL Section -->
+                            <div style="flex: 1; text-align: left;">
+                              <!-- <div style="font-weight: 800; margin-bottom: 2px;">POL: {{ item.POL?.PortName || 'N/A' }}</div> -->
+                              <div>ETA: {{ item.POL?.ETD | formatDate }}</div>
+                              <!-- <div>ETD: {{ item.POL?.ETD | date:'dd-MMM-yyyy' }}</div> -->
                             </div>
-                      
-                            <!-- Ports Row -->
-                            <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; ">
-                      
-                              <!-- POL Section -->
-                              <div style="flex: 1; text-align: left;">
-                                <!-- <div style="font-weight: 800; margin-bottom: 2px;">POL: {{ item.POL?.PortName || 'N/A' }}</div> -->
-                                <div>ETA: {{ item.POL?.ETD | formatDate }}</div>
-                                <!-- <div>ETD: {{ item.POL?.ETD | date:'dd-MMM-yyyy' }}</div> -->
-                              </div>
-                      
-                              <!-- POD Section -->
-                              <div style="flex: 1; text-align: right;">
-                                <!-- <div style="font-weight: 800; margin-bottom: 2px;">POD: {{ item.POD?.PortName || 'N/A' }}</div> -->
-                                <!-- <div>ETA: {{ item.POD?.ETA | date:'dd-MMM-yyyy' }}</div> -->
-                                <div>ETD: {{ item.POD?.ETA | formatDate }}</div>
-                              </div>
-                      
+
+                            <!-- POD Section -->
+                            <div style="flex: 1; text-align: right;">
+                              <!-- <div style="font-weight: 800; margin-bottom: 2px;">POD: {{ item.POD?.PortName || 'N/A' }}</div> -->
+                              <!-- <div>ETA: {{ item.POD?.ETA | date:'dd-MMM-yyyy' }}</div> -->
+                              <div>ETD: {{ item.POD?.ETA | formatDate }}</div>
                             </div>
+
+                          </div>
                         </ng-template>
-                      
+
                       </ng-select>
                       <!-- <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageMasterHeaderSid" class="ng-select"
                         appendTo="body" formControlName="VoyageNo" placeholder="Select Voyage No" (change)="onVoyageChange($event)">
@@ -606,7 +621,7 @@
                       </label>
                     </div>
                   </div>
-                  
+
                   <div class="col-md-6">
                     <div class=" custom-form-group custom-form-group-select">
                       <div class="input-group">
@@ -849,8 +864,7 @@
             <div class="custom-form-group custom-form-group-select">
               <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerName"
                 class="ng-select" formControlName="ContainerType" placeholder="Select ContainerType" appendTo="body"
-                (change)="onContainerTypeChange($event)"
-                >
+                (change)="onContainerTypeChange($event)">
               </ng-select>
               <label for="text-input" class="input-label">Container Type<span class="text-danger"></span></label>
             </div>
@@ -1003,80 +1017,80 @@
         </div>
       </div>
       <div>
-          <div class="table-toolbar">
-            <div class="toolbar-left">
-              <button class="table-action-btn primary" (click)="openProductModal(productModal)">
-                <i class="fas fa-plus"></i> Add Product
-              </button>
-            </div>
+        <div class="table-toolbar">
+          <div class="toolbar-left">
+            <button class="table-action-btn primary" (click)="openProductModal(productModal)">
+              <i class="fas fa-plus"></i> Add Product
+            </button>
+          </div>
 
-            <div class="toolbar-right">
-              <button class="table-action-btn export" (click)="reportProducts()">
-                <i class="fas fa-download fs-2"></i>
-                Export
-              </button>
-              <!-- <button class="table-action-btn print">
+          <div class="toolbar-right">
+            <button class="table-action-btn export" (click)="reportProducts()">
+              <i class="fas fa-download fs-2"></i>
+              Export
+            </button>
+            <!-- <button class="table-action-btn print">
                 <i class="fas fa-print"></i> Print
               </button> -->
-            </div>
           </div>
-          @if(productDataLength > 0) {
-          <div class="modern-table-wrapper">
-            <table class="modern-table">
-              <thead>
-                <tr>
-                  <th width="10%">Action</th>
-                  <th>Commodity</th>
-                  <th>Shipping Bill No</th>
-                  <th>Date</th>
-                  <th>External Pkg</th>
-                  <th>No of Pkg</th>
-                  <th>Gross Weight</th>
-                  <th>Net Wt</th>
-                  <th>CBM</th>
-                  <th>Cargo Received Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for(product of slicedProductArr ; track product ; let productIndex = $index){
-                <tr class="table-row">
-                  <td>
-                    <div class="d-flex align-items-center justify-content-center">
-                      <a class="text-info mx-2" class="link mx-2 ps-3"
-                        (click)="openProductModal(productModal,productIndex,product.value)">
-                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
-                      </a>
-                      <a class="text-danger mx-2 ps-3 border-start"
-                        (click)="deleteBookingProduct(productIndex,product.value.BookingProductSid)">
-                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                      </a>
-                    </div>
-                  </td>
-                  <td>{{product.value.ProductName}}</td>
-                  <td>{{product.value.ShippingBillNo}}</td>
-                  <td>{{product.value.ShippingBillDate | formatDate}}</td>
-                  <td>{{product.value.ExternaPkg}}</td>
-                  <td>{{product.value.ExternlQty}}</td>
-                  <td>{{product.value.GrossWeight}}</td>
-                  <td>{{product.value.NetWeight}}</td>
-                  <td>{{product.value.Volume}}</td>
-                  <td>{{product.value.CargoRecDate | formatDate}}</td>
-                </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-          <div class="mt-2">
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="productDataLength"
-              [pageSize]="pageSize" [(page)]="page" (pageChange)="updateProductPagination()">
-            </ngb-pagination>
-          </div>
-          }@else {
-          <div class="col-12">
-            <div class="alert alert-info text-center">No Product added yet.</div>
-          </div>
-          }
         </div>
+        @if(productDataLength > 0) {
+        <div class="modern-table-wrapper">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th width="10%">Action</th>
+                <th>Commodity</th>
+                <th>Shipping Bill No</th>
+                <th>Date</th>
+                <th>External Pkg</th>
+                <th>No of Pkg</th>
+                <th>Gross Weight</th>
+                <th>Net Wt</th>
+                <th>CBM</th>
+                <th>Cargo Received Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for(product of slicedProductArr ; track product ; let productIndex = $index){
+              <tr class="table-row">
+                <td>
+                  <div class="d-flex align-items-center justify-content-center">
+                    <a class="text-info mx-2" class="link mx-2 ps-3"
+                      (click)="openProductModal(productModal,productIndex,product.value)">
+                      <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                    </a>
+                    <a class="text-danger mx-2 ps-3 border-start"
+                      (click)="deleteBookingProduct(productIndex,product.value.BookingProductSid)">
+                      <i-feather name="trash-2" class="feather-sm"></i-feather>
+                    </a>
+                  </div>
+                </td>
+                <td>{{product.value.ProductName}}</td>
+                <td>{{product.value.ShippingBillNo}}</td>
+                <td>{{product.value.ShippingBillDate | formatDate}}</td>
+                <td>{{product.value.ExternaPkg}}</td>
+                <td>{{product.value.ExternlQty}}</td>
+                <td>{{product.value.GrossWeight}}</td>
+                <td>{{product.value.NetWeight}}</td>
+                <td>{{product.value.Volume}}</td>
+                <td>{{product.value.CargoRecDate | formatDate}}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-2">
+          <ngb-pagination class="d-flex justify-content-end" [collectionSize]="productDataLength" [pageSize]="pageSize"
+            [(page)]="page" (pageChange)="updateProductPagination()">
+          </ngb-pagination>
+        </div>
+        }@else {
+        <div class="col-12">
+          <div class="alert alert-info text-center">No Product added yet.</div>
+        </div>
+        }
+      </div>
     </div>
 
 
@@ -1135,7 +1149,8 @@
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="HBLNo"
                 [textWithNumbers]="20">
-              <label for="text-input" class="input-label">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger"></span></label>
+              <label for="text-input" class="input-label">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span
+                  class="text-danger"></span></label>
             </div>
           </aside>
           <aside class="col-md-3">
@@ -1345,7 +1360,8 @@
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select">
               <ng-select class="ng-select" [items]="agentList" bindLabel="CustomerName" bindValue="CustomerName"
-                placeholder="Select BL Agent" formControlName="SwitchBLAgent" appendTo="body" (change)="setAddressOthers('AgentAddress',$event)">
+                placeholder="Select BL Agent" formControlName="SwitchBLAgent" appendTo="body"
+                (change)="setAddressOthers('AgentAddress',$event)">
                 <ng-template ng-option-tmp let-item="item">
                   <div>
                     <strong>{{ item.CustomerName }}</strong><br>
@@ -1398,8 +1414,8 @@
 
 
     <div class="workspace-content" [hidden]="selectedTab !== 'Connection'">
-      <app-connection screenName="Booking" [dataItems]="bookingConnectionsArr" [resetTrigger]="resetTriggerConnection" [minDate]="minStartDate"
-        [portList]="portList" [disableAdd]="PODandFPODsame" [vesselList]="vesselList"
+      <app-connection screenName="Booking" [dataItems]="bookingConnectionsArr" [resetTrigger]="resetTriggerConnection"
+        [minDate]="minStartDate" [portList]="portList" [disableAdd]="PODandFPODsame" [vesselList]="vesselList"
         (dataEmitter)="handleConnectionChange($event)">
       </app-connection>
       <!-- <ng-container *ngComponentOutlet="connectionComponent"></ng-container> -->
@@ -1407,8 +1423,8 @@
 
 
     <div class="workspace-content" [hidden]="selectedTab !== 'Milestone'">
-      <app-milestone screenName="Booking" [resetTrigger]="resetTriggerMilestone" [shipmentNo]="bookingHeader?.ShipmentNo"
-        (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
+      <app-milestone screenName="Booking" [resetTrigger]="resetTriggerMilestone"
+        [shipmentNo]="bookingHeader?.ShipmentNo" (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
     </div>
     <div class="workspace-content" *ngIf="selectedTab === 'AR/AP'">
       <ng-container *ngComponentOutlet="ArApcomponent"></ng-container>
@@ -1522,8 +1538,8 @@
       </aside>
       <aside class="col-md-4">
         <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ShippingBillNo"
-            [textWithNumbers]="100">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+            formControlName="ShippingBillNo" [textWithNumbers]="100">
           <label for="text-input" class="input-label">Shipping Bill No <span class="text-danger">{{countryOfCompany ===
               "india" ? '*' : ''}}</span></label>
           @if(productForm.get('ShippingBillNo')?.touched && productForm.get('ShippingBillNo')?.invalid){
@@ -1539,11 +1555,13 @@
         <div class=" custom-form-group custom-form-group-select">
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
-              [minDate]="minDate" (keydown.arrowDown)="d2.open()" (click)="d2.toggle()" formControlName="ShippingBillDate" container="body"/>
-            <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
+              [minDate]="minDate" (keydown.arrowDown)="d2.open()" (click)="d2.toggle()"
+              formControlName="ShippingBillDate" />
+            <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
               <i-feather name="calendar" class="feather-sm"></i-feather></button>
           </div>
-          <label for="shipmentDateExpected" class="input-label"> Date <span class="text-danger">{{countryOfCompany === "india"
+          <label for="shipmentDateExpected" class="input-label"> Date <span class="text-danger">{{countryOfCompany ===
+              "india"
               ? '*' : ''}}</span>
           </label>
           @if(productForm.get('ShippingBillDate')?.touched && productForm.get('ShippingBillDate')?.invalid){
@@ -1629,7 +1647,8 @@
             DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
           <label for="text-input" class="input-label">CBM <span class="text-danger">*</span></label>
           <!-- Validation Messages -->
-          @if ((productForm.get('Volume')?.touched || productForm.get('Volume')?.dirty) && productForm.get('Volume')?.invalid)
+          @if ((productForm.get('Volume')?.touched || productForm.get('Volume')?.dirty) &&
+          productForm.get('Volume')?.invalid)
           {
           <div class="error-message">
             @if (productForm.get('Volume')?.errors?.['required']) {
@@ -1670,7 +1689,7 @@
           <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
             placeholder="Select IMCO">
           </ng-select>
-      
+
           <label for="text-input" class="input-label">Imco Class <span class="text-danger"></span></label>
         </div>
       </aside>
@@ -1813,7 +1832,8 @@
     <button type="button" class=" btn btn-sm btn-info" (click)="modal.close('Save')">Save</button>
   </div>
 </ng-template>
-<app-booking-upload #uploadModal [acceptedFormats]="'.xlsx,.xls'" [departmentList]="departmentList" [maxFileSize]="2 * 1024 * 1024" (fileProcessed)="onFileProcessed($event)" (uploadError)="onUploadError($event)">
+<app-booking-upload #uploadModal [acceptedFormats]="'.xlsx,.xls'" [departmentList]="departmentList"
+  [maxFileSize]="2 * 1024 * 1024" (fileProcessed)="onFileProcessed($event)" (uploadError)="onUploadError($event)">
 </app-booking-upload>
 <ng-template #auditLogModal let-modal>
   <div class="modal-header bg-info text-white p-2">
@@ -1857,5 +1877,364 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+  </div>
+</ng-template>
+<ng-template #reportModel let-modal>
+
+  <div class="modal-header d-flex justify-content-between align-items-center p-2 bg-info" style="height : 50px;">
+    <h5 class="modal-title text-white mb-0">Booking Print</h5>
+    <div class="d-flex gap-2 align-items-center">
+
+      <div class="spinner-overlay">
+        <div class="spinner"></div>
+      </div>
+      <button type="button" class="btn btn-light-secondary btn-sm" (click)="downloadPDF()">
+        <i class="fas fa-download me-1"></i> Download
+      </button>
+      <button type="button" class="btn btn-light-secondary btn-sm email-btn" (click)="sendEmail()">
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+      <div class="ms-3">
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-body">
+   <div style="margin: auto; border: 2px solid black;">
+
+  <!-- Company Info -->
+  <div
+    class="d-flex flex-column flex-md-row justify-content-between align-items-center pb-3 mb-4 text-center text-md-start p-3">
+
+    <div class="d-flex align-items-center gap-4 mb-3 mb-md-0">
+     <img src="assets/logo/dofi-logo.svg" width="100" height="100" class="img-fluid" alt="">
+      <h4 class="mb-0 fw-bold d-none d-md-block">{{currentCompany.companyName}}</h4>
+    </div>
+
+    <div class="text-center text-md-end mb-2">
+      <h5 class="fw-bold mb-1">{{currentCompany.companyName}}</h5>
+      <div>{{currentCompany.addressLine1}}</div>
+    </div>
+  </div>
+
+  <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+  <h5 class="text-center fw-bold m-0">Booking Confirmation - {{selectedDepartment?.departmentName}}</h5>
+
+ <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+  <!-- Customer & Booking Info -->
+  <div class="row px-3">
+    <div class="col-12 col-lg-6">
+      <div class="mb-1">
+        <div class="fw-bold me-2">Customer :</div>
+        <div class="fs-6 text-break">{{bookingHeader?.CustomerName}}</div>
+        <div class="text-break">{{bookingHeader?.CustomerAddress}}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Booking No</div>
+        <div class="text-break">: {{bookingHeader?.BookingNo}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Date</div>
+        <div class="text-break">: {{bookingHeader?.BookingDateTime | formatDate }}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Cut Off Date</div>
+        <div class="text-break">: {{bookingHeader?.voyageDetails?.POLCutOffDate | formatDate }}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap" *ngIf="bookingHeader?.quotationHeader?.QuoteNumber">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Quotation No</div>
+        <div class="text-break">: {{bookingHeader?.quotationHeader?.QuoteNumber}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+  <!-- Booking Details -->
+  <div class="row px-3">
+    <p class="fw-bold">We are pleased to confirm your booking as below :</p>
+
+    <div class="col-12 col-lg-6">
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Vessel/Voyage</div>
+        <div class="text-break">: {{bookingHeader?.VesselName && bookingHeader?.VoyageNo ? bookingHeader?.VesselName + ' / ' + bookingHeader?.VoyageNo : ''}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETA</div>
+        <div class="text-break">: {{bookingHeader?.voyageDetails?.POLETA | formatDate}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POD ETA</div>
+        <div class="text-break">: {{bookingHeader?.voyageDetails?.PODETD | formatDate }}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Final Destination</div>
+        <div class="text-break">: {{bookingHeader?.FPD}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
+        <div class="text-break">: {{bookingHeader?.voyageDetails?.POLETD | formatDate }}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier</div>
+        <div class="text-break">: {{bookingHeader?.CarrierName}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier Booking</div>
+        <div class="text-break">: FCL EXPORT</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Inco Terms</div>
+        <div class="text-break">: {{bookingHeader?.IncoTerms}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Hand Over To</div>
+        <div class="text-break">: {{bookingHeader?.bookingOthers[0]?.YardCFS }}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Remarks</div>
+        <div class="text-break">:</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">HBL No</div>
+        <div class="text-break">: {{bookingHeader?.HBLNo || 'N/A'}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
+        <div class="text-break">: {{(bookingHeader?.voyageDetails?.POLETD | formatDate) || '-'}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">FPD ETA</div>
+        <div class="text-break">: Mukesh Tiwari / 9786541234</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Pkg</div>
+        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoOfPackage}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Gross Weight</div>
+        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.GrossWeight}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Volume(CBM)</div>
+        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.Volume}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Commodity</div>
+        <div class="text-break">: {{bookingHeader?.bookingProduct[0]?.ProductName }}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Freight</div>
+        <div class="text-break">: {{ bookingHeader?.FreightTerms }}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Destination Agent</div>
+        <div class="text-break">: {{ bookingHeader?.AgentName }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="margin-top: 1.5rem; margin-bottom: 2rem;" class="px-3">
+    <div>
+      <p style="font-weight: bold;" class="m-0">Your's Sincerely</p>
+    </div>
+    <div class="d-flex">
+      <div class="text-break">{{userData?.userName || 'N/A'}}</div>
+    </div>
+    <p class="mt-3 text-center">IF YOU REQUIRE ANY FURTHER INFORMATION, PLEASE DO NOT
+      HESITATE TO <br>CONTACT US. THANK YOU FOR SHIPPING WITH US</p>
+  </div>
+
+  <div class="d-flex justify-content-between px-3 flex-wrap mb-1">
+    <div class="d-flex gap-2">
+      <div>Print On :</div>
+      <div>{{ currentDate | formatDate}}</div>
+    </div>
+    <div class="d-flex gap-2">
+      <div>Printed By :</div>
+      <div>{{userData?.userName || 'N/A'}}</div>
+    </div>
+  </div>
+</div>
+    <!-- <div style=" margin: auto; border: 1px solid black; ">
+
+    
+      <div
+        class="d-flex flex-column flex-md-row justify-content-between align-items-center  pb-3 mb-4 text-center text-md-start p-3">
+
+        <div class="d-flex align-items-center gap-4 mb-3 mb-md-0">
+          <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" width="90" height="90"
+            class="img-fluid" alt="Company Logo">
+          <h4 class=" mb-0 fw-bold d-none d-md-block"> {{currentCompany.companyName}}</h4>
+        </div>
+
+
+
+        <div class="text-center text-md-end mb-2">
+          <h5 class="fw-bold mb-1">{{currentCompany.companyName}}</h5>
+         
+          <div>{{currentCompany.addressLine1}}</div>
+        </div>
+      </div>
+
+
+      <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+
+      <h5 class="text-center fw-bold" style="margin: 0;">Booking Confirmation - {{selectedDepartment?.departmentName}}</h5>
+
+
+      <div style="height: 1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+
+      <div class="row px-3">
+        <div class="col-12 col-md-6">
+          <div class=" mb-1">
+            <div style="width: 230px; white-space: nowrap;"><strong>Customer :</strong></div>
+            <div class="fs-6" style="width: 300px;"> {{bookingHeader?.CustomerName}}
+            </div>
+            <div>{{bookingHeader?.CustomerAddress}}</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Booking No</strong></div>
+            <div>: {{bookingHeader?.BookingNo}}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong> Date</strong></div>
+            <div>: {{bookingHeader?.BookingDateTime | formatDate }}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Cut Off Date</strong></div>
+            <div>: {{bookingHeader?.voyageDetails?.POLCutOffDate | formatDate }}</div>
+          </div>
+          <div class="d-flex mb-1" *ngIf="bookingHeader?.quotationHeader?.QuoteNumber">
+            <div style="width: 150px; white-space: nowrap;"><strong>Quotation No</strong></div>
+            <div>: {{bookingHeader?.quotationHeader?.QuoteNumber}}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height: 1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+
+      <div class="row px-3">
+        <p class="fw-bold">We are pleased to confirm your booking as below :</p>
+        <div class="col-12 col-md-6">
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Vessel/Voyage</strong></div>
+            <div>: {{bookingHeader?.VesselName && bookingHeader?.VoyageNo ? bookingHeader?.VesselName + ' / ' + bookingHeader?.VoyageNo : ''}}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>POL ETA</strong></div>
+            <div>: {{bookingHeader?.voyageDetails?.POLETA | formatDate}}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>POD ETA</strong></div>
+            <div>: {{bookingHeader?.voyageDetails?.PODETD | formatDate }}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Final Destination</strong></div>
+           
+            <div>: {{bookingHeader?.FPD}}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>POL ETD</strong></div>
+            <div>: {{bookingHeader?.voyageDetails?.POLETD | formatDate }}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Carrier</strong></div>
+            <div>: {{bookingHeader?.CarrierName}}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Carrier Booking</strong></div>
+            <div>: FCL EXPORT</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Inco Terms</strong></div>
+            <div>: {{bookingHeader?.IncoTerms}}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Hand Over To</strong></div>
+            <div>: {{bookingHeader?.bookingOthers[0]?.YardCFS }}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Remarks </strong></div>
+            <div>: </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>HBL No</strong></div>
+            <div>: {{bookingHeader?.HBLNo || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>POL ETD</strong></div>
+            <div>: {{(bookingHeader?.voyageDetails?.POLETD | formatDate) || '-'}}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>FPD ETA</strong></div>
+            <div>: Mukesh Tiwari / 9786541234</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>No of Pkg</strong></div>
+            <div>: {{bookingHeader?.bookingCargo[0]?.NoOfPackage}}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Gross Weight</strong></div>
+            <div>: {{bookingHeader?.bookingCargo[0]?.GrossWeight}}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Volume(CBM)</strong></div>
+            <div>: {{bookingHeader?.bookingCargo[0]?.Volume}}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Commodity</strong></div>
+            <div>: {{bookingHeader?.bookingProduct[0]?.ProductName }}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Freight</strong></div>
+            <div>: {{ bookingHeader?.FreightTerms }}</div>
+          </div>
+          <div class="d-flex mb-1">
+            <div style="width: 150px; white-space: nowrap;"><strong>Destination Agent</strong></div>
+            <div>: {{ bookingHeader?.AgentName }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; margin-bottom: 2rem;" class="px-3">
+        <div>
+          <p style="font-weight: bold;" class="m-0">Your's Sincerely</p>
+        </div>
+        <div class="d-flex mt-2">
+          <div style="width: 150px; white-space: nowrap;">{{userData?.userName || 'N/A'}}</div>
+        </div>
+        <p class="mt-3 text-center">IF YOU REQUIRE ANY FURTHER INFORMATION, PLEASE DO NOT
+          HESITATE TO <br>CONTACT US. THANK YOU FOR SHIPPING WITH US</p>
+      </div>
+      <div class="d-flex justify-content-between px-3">
+        <div class="d-flex gap-2">
+          <div style=" white-space: nowrap;">Print On :</div>
+          <div> {{ currentDate | formatDate}}</div>
+        </div>
+        <div class="d-flex gap-2">
+          <div style=" white-space: nowrap;">Printed By :</div>
+          <div> {{userData?.userName || 'N/A'}}</div>
+        </div>
+      </div>
+    </div> -->
   </div>
 </ng-template>
