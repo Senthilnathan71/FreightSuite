@@ -23,6 +23,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
     selector: 'app-tds-set-entry',
@@ -606,14 +607,17 @@ export class TdsSetEntryComponent implements OnInit {
         });
     }
 
-    openAuthority() {
-        if (!this.tdsData) return;
-        const modalRef = this.modalService.open(AuthorityEntryComponent, {
-            size: 'lg',
-            centered: true,
-            backdrop: 'static'
-        });
-    }
+     openAuthority() {
+       const MenuMasterSid = localStorage.getItem('currentMenuId');
+       if (!MenuMasterSid) return;
+      const modalRef = this.modalService.open(AuthorityLogComponent, { 
+       size: 'lg', 
+       centered: true, 
+       backdrop: 'static' 
+     });
+       modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+       modalRef.componentInstance.documentSid = this.TDSSetHeaderSid;
+     }
 
     openEDoc() {
         if (!this.tdsData) return;

@@ -1,15 +1,15 @@
-<div class="container">
-  <div class="modal-header">
-    <h4 class="modal-title">Authorize</h4>
-    <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+<div class="">
+  <div class="modal-header p-2 bg-info ">
+    <h4 class="modal-title text-white">Authorize</h4>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeModal()"></button>
   </div>
 
-  <div class="modal-body d-flex flex-row align-items-center" style="min-height: 300px;">
+  <div class="modal-body d-flex flex-row align-items-center">
 
-    <div class="table-responsive w-100">
+    <div class="table-responsive w-100" style="max-height: 300px; overflow-y: auto;">
       <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-        <thead>
-          <tr class="bg-info">
+        <thead class="bg-info sticky-top">
+          <tr>
             <th class="bg-transparent text-light" scope="col" width="25%">Approved By</th>
             <th class="bg-transparent text-light" scope="col" width="25%">Approved Status</th>
             <th class="bg-transparent text-light" scope="col" width="25%">Approved On</th>
@@ -20,36 +20,36 @@
           <tr *ngFor="let log of approvalLogs; let i = index">
             <td>{{ log.approvedBy }}</td>
             <td>
-                @if(log.approvalStatus === "Approved"){
-                    <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                        <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                        Approved
-                    </div>
-                }@else if(log.approvalStatus === "Rejected"){
-                    <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                        <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                        Rejected
-                    </div>
-                }@else if(log.approvalStatus === "Pending"){
-                    <div class="bg-light-info px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                        <span class="dofi-w-4 dofi-h-4 bg-info d-inline-block rounded"></span>
-                        Waiting for approval
-                    </div>
-                }
+              @if(log.approvalStatus === "Approved"){
+              <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                Approved
+              </div>
+              }@else if(log.approvalStatus === "Rejected"){
+              <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                Rejected
+              </div>
+              }@else if(log.approvalStatus === "Pending"){
+              <div class="bg-light-info px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                <span class="dofi-w-4 dofi-h-4 bg-info d-inline-block rounded"></span>
+                Waiting for approval
+              </div>
+              }
             </td>
-            <td>{{ (log.approvalDate | formatDate) || 'N/A'}}</td>
-            <td>{{ log.Remarks  || 'N/A'}}</td>
+            <td>{{ (log.approvalDate | formatDate) || 'N/A' }}</td>
+            <td>{{ log.Remarks || 'N/A' }}</td>
+          </tr>
+          <tr *ngIf="approvalLogs.length === 0">
+            <td colspan="4" class="text-center text-muted">No approval records found</td>
           </tr>
         </tbody>
       </table>
-
-      <div *ngIf="approvalLogs.length === 0" class="text-center text-muted mt-3">
-        No approval records found.
-      </div>
     </div>
+
   </div>
 
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Close</button>
+    <button type="button" class="btn btn-secondary btn-sm" (click)="closeModal()">Close</button>
   </div>
 </div>

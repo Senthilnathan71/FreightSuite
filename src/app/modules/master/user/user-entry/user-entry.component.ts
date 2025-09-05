@@ -22,6 +22,7 @@ import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/mul
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 import { PasswordValidators } from 'src/app/core/ValidationFn/password.validators';
 import { TogglerComponent } from 'src/app/component/simple-toggler/toggle.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
 	selector: 'app-user-entry',
@@ -640,17 +641,17 @@ export class UserEntryComponent implements OnInit {
 		});
 	}
 
-	openAuthority() {
-		if (!this.userData) return;
-		const modalRef = this.modalService.open(AuthorityEntryComponent, {
-			size: 'lg',
-			centered: true,
-			backdrop: 'static'
-		});
-		modalRef.componentInstance.item = this.userData;
-		modalRef.componentInstance.idLabel = 'User Id';
-		modalRef.componentInstance.idValue = this.userData?.UserMasterSid;
-	}
+	  openAuthority() {
+		const MenuMasterSid = localStorage.getItem('currentMenuId');
+		if (!MenuMasterSid) return;
+	   const modalRef = this.modalService.open(AuthorityLogComponent, { 
+		size: 'lg', 
+		centered: true, 
+		backdrop: 'static' 
+	  });
+		modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+		modalRef.componentInstance.documentSid = this.UserMasterSid;
+	  }
 
 	openEDoc() {
 		if (!this.userData) return;

@@ -22,6 +22,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { Port } from 'src/app/modules/crm-mobile/Interfaces/port.interface';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 
 
@@ -384,17 +385,17 @@ export class PostMasterViewComponent {
     });
   }
 
-openAuthority() {
-  if (!this.portData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+  openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
     size: 'lg', 
     centered: true, 
     backdrop: 'static' 
   });
-  modalRef.componentInstance.item = this.portData;
-  modalRef.componentInstance.idLabel = 'Port Id';
-  modalRef.componentInstance.idValue = this.portData?.PortMasterSid;
-}
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.idParam;
+  }
 
 openEDoc() {
   if (!this.portData) return;

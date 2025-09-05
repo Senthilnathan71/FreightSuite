@@ -50,6 +50,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 import { PasswordValidators } from 'src/app/core/ValidationFn/password.validators';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-organization-entry',
@@ -2066,17 +2067,17 @@ getCityName(citySid: number): string {
   modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
 }
 
-openAuthority() {
-  if (!this.customerData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+  openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
     size: 'lg', 
     centered: true, 
     backdrop: 'static' 
   });
-  modalRef.componentInstance.item = this.customerData;
-  modalRef.componentInstance.idLabel = 'Customer Id';
-  modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
-}
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.CustomerMasterSid;
+  }
 
 openEDoc() {
   if (!this.customerData) return;

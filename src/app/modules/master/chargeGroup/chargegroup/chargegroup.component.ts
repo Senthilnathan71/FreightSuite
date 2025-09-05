@@ -22,6 +22,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-chargegroup',
@@ -487,18 +488,29 @@ export class ChargegroupComponent implements OnInit {
     });
   }
 
-  openAuthority() {
-    if (!this.chargeGroupData) return;
-    const modalRef = this.modalService.open(AuthorityEntryComponent, {
-      size: 'lg',
-      centered: true,
-      backdrop: 'static'
-    });
-    modalRef.componentInstance.item = this.chargeGroupData;
-    modalRef.componentInstance.idLabel = 'Charge Group Id';
-    modalRef.componentInstance.idValue = this.chargeGroupData?.ChargeGroupSid;
+  // openAuthority() {
+  //   if (!this.chargeGroupData) return;
+  //   const modalRef = this.modalService.open(AuthorityEntryComponent, {
+  //     size: 'lg',
+  //     centered: true,
+  //     backdrop: 'static'
+  //   });
+  //   modalRef.componentInstance.item = this.chargeGroupData;
+  //   modalRef.componentInstance.idLabel = 'Charge Group Id';
+  //   modalRef.componentInstance.idValue = this.chargeGroupData?.ChargeGroupSid;
+  // }
+ openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
+    size: 'lg', 
+    centered: true, 
+    backdrop: 'static' 
+  });
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.ChargeGroupSid;
   }
-
+ 
   openEDoc() {
     if (!this.chargeGroupData) return;
     const modalRef = this.modalService.open(EdocComponent, {

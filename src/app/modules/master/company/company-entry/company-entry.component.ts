@@ -25,6 +25,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 import { ConfigComponent } from '../config/config.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 @Component({
 	selector: 'app-company-entry',
 	standalone: true,
@@ -1068,17 +1069,17 @@ export class CompanyEntryComponent implements OnInit {
 		});
 	}
 
-	openAuthority() {
-		if (!this.companyData) return;
-		const modalRef = this.modalService.open(AuthorityEntryComponent, {
-			size: 'lg',
-			centered: true,
-			backdrop: 'static'
-		});
-		modalRef.componentInstance.item = this.companyData;
-		modalRef.componentInstance.idLabel = 'Company Id';
-		modalRef.componentInstance.idValue = this.companyData?.CompanyMasterSid;
-	}
+  openAuthority() {
+	const MenuMasterSid = localStorage.getItem('currentMenuId');
+	if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
+	size: 'lg', 
+	centered: true, 
+	backdrop: 'static' 
+  });
+	modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+	modalRef.componentInstance.documentSid = this.CompanyMasterSid;
+  }
 
 	openEDoc() {
 		if (!this.companyData) return;

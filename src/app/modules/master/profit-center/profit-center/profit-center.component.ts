@@ -24,6 +24,7 @@ import { MasterService } from '../../master.service';
 import { ProfitCenter } from 'src/app/modules/crm-mobile/Interfaces/profit-center.interfaces';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-profit-center',
@@ -524,15 +525,15 @@ export class ProfitCenterComponent {
      }
      
      openAuthority() {
-       if (!this.profitCenterData) return;
-       const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-         size: 'lg', 
-         centered: true, 
-         backdrop: 'static' 
-       });
-       modalRef.componentInstance.item = this.profitCenterData;
-       modalRef.componentInstance.idLabel = 'Profit-Center Id';
-       modalRef.componentInstance.idValue = this.profitCenterData?.ProfitCenterMasterSid;
+       const MenuMasterSid = localStorage.getItem('currentMenuId');
+       if (!MenuMasterSid) return;
+      const modalRef = this.modalService.open(AuthorityLogComponent, { 
+       size: 'lg', 
+       centered: true, 
+       backdrop: 'static' 
+     });
+       modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+       modalRef.componentInstance.documentSid = this.ProfitCenterMasterSid;
      }
      
      openEDoc() {

@@ -26,6 +26,7 @@ import { Charge } from 'src/app/modules/crm-mobile/Interfaces/charge.interface';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
 	selector: 'app-tarrif-entry',
@@ -688,14 +689,17 @@ openAuditLogs(modal: TemplateRef<any>) {
 		});
 	}
 
-	openAuthority() {
-		if (!this.tariffData) return;
-		const modalRef = this.modalService.open(AuthorityEntryComponent, {
-			size: 'lg',
-			centered: true,
-			backdrop: 'static'
-		});
-	}
+	  openAuthority() {
+		const MenuMasterSid = localStorage.getItem('currentMenuId');
+		if (!MenuMasterSid) return;
+	   const modalRef = this.modalService.open(AuthorityLogComponent, { 
+		size: 'lg', 
+		centered: true, 
+		backdrop: 'static' 
+	  });
+		modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+		modalRef.componentInstance.documentSid = this.TariffHeaderSid;
+	  }
 
 	openEDoc() {
 		if (!this.tariffData) return;

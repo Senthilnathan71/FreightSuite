@@ -16,6 +16,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 
 @Component({
@@ -284,17 +285,17 @@ export class UnitEntryComponent {
     });
   }
 
-openAuthority() {
-  if (!this.unitData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+  openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
     size: 'lg', 
     centered: true, 
     backdrop: 'static' 
   });
-  modalRef.componentInstance.item = this.unitData;
-  modalRef.componentInstance.idLabel = 'Unit Id';
-  modalRef.componentInstance.idValue = this.unitData?.UnitMasterSid;
-}
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.idParam;
+  }
 
 openEDoc() {
   if (!this.unitData) return;

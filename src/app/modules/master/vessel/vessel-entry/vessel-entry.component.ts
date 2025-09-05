@@ -16,6 +16,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
     selector: 'app-vessel-entry',
@@ -261,17 +262,17 @@ export class VesselEntryComponent implements OnInit {
         });
     }
 
-openAuthority() {
-  if (!this.vesselData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+  openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
     size: 'lg', 
     centered: true, 
     backdrop: 'static' 
   });
-  modalRef.componentInstance.item = this.vesselData;
-  modalRef.componentInstance.idLabel = 'Vessel Id';
-  modalRef.componentInstance.idValue = this.vesselData?.VesselMasterSid;
-}
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.VesselMasterSid;
+  }
 
 openEDoc() {
   if (!this.vesselData) return;

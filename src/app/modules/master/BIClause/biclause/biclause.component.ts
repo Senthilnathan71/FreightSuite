@@ -21,6 +21,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 
 @Component({
@@ -465,17 +466,30 @@ else {
     });
   }
 
-openAuthority() {
-  if (!this.blclauseData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+// openAuthority() {
+//   if (!this.blclauseData) return;
+//   const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+//     size: 'lg', 
+//     centered: true, 
+//     backdrop: 'static' 
+//   });
+//   modalRef.componentInstance.item = this.blclauseData;
+//   modalRef.componentInstance.idLabel = 'BLClause Id';
+//   modalRef.componentInstance.idValue = this.blclauseData?.BLClauseMasterSid;
+// }
+
+  openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
     size: 'lg', 
     centered: true, 
     backdrop: 'static' 
   });
-  modalRef.componentInstance.item = this.blclauseData;
-  modalRef.componentInstance.idLabel = 'BLClause Id';
-  modalRef.componentInstance.idValue = this.blclauseData?.BLClauseMasterSid;
-}
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.currentClauseId;
+  }
+ 
 
 openEDoc() {
   if (!this.blclauseData) return;

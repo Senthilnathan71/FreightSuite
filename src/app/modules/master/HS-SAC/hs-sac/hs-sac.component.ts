@@ -27,6 +27,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-hs-sac',
@@ -539,17 +540,17 @@ applySorting() {
     });
   }
 
-openAuthority() {
-  if (!this.hssacData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+  openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
     size: 'lg', 
     centered: true, 
     backdrop: 'static' 
   });
-  modalRef.componentInstance.item = this.hssacData;
-  modalRef.componentInstance.idLabel = 'HSSAC Id';
-  modalRef.componentInstance.idValue = this.hssacData?.HSSACMasterSid;
-}
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.HSSACMasterSid;
+  }
 
 openEDoc() {
   if (!this.hssacData) return;

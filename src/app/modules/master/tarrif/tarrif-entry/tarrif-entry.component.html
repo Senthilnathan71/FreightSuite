@@ -700,12 +700,13 @@
                 }
             </tbody>
         </table>
-        <div>
+        
+    </div>
+    <div>
             <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalNumberOfCollection" [pageSize]="pageSize"
                 [(page)]="page" (pageChange)="updatePaginationData()" [rotate]="true" [ellipses]="false" [maxSize]="5">
             </ngb-pagination>
         </div>
-    </div>
 </ng-template>
 
 <ng-template #tariffDetailEntryTemplate let-modal>

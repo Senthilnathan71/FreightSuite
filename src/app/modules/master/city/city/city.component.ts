@@ -24,6 +24,7 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-city',
@@ -597,17 +598,17 @@ applySorting() {
   modalRef.componentInstance.idValue = this.cityData?.CityMasterSid;
 }
 
-openAuthority() {
-  if (!this.cityData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+  openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
     size: 'lg', 
     centered: true, 
     backdrop: 'static' 
   });
-  modalRef.componentInstance.item = this.cityData;
-  modalRef.componentInstance.idLabel = 'City Id';
-  modalRef.componentInstance.idValue = this.cityData?.CityMasterSid;
-}
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.CityMasterSid;
+  }
 
 openEDoc() {
   if (!this.cityData) return;

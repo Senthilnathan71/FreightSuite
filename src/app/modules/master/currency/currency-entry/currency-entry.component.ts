@@ -13,6 +13,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-currency-entry',
@@ -380,17 +381,17 @@ else {
     });
   }
 
-openAuthority() {
-  if (!this.currencyData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+  openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
     size: 'lg', 
     centered: true, 
     backdrop: 'static' 
   });
-  modalRef.componentInstance.item = this.currencyData;
-  modalRef.componentInstance.idLabel = 'Currency Id';
-  modalRef.componentInstance.idValue = this.currencyData?.CurrencyMasterSid;
-}
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.currencyID;
+  }
 
 openEDoc() {
   if (!this.currencyData) return;

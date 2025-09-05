@@ -16,6 +16,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { forkJoin } from 'rxjs';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-charge-entry',
@@ -615,18 +616,30 @@ clearFormArrays() {
     });
   }
 
-  openAuthority() {
-    if (!this.chargeData) return;
-    const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+  // openAuthority() {
+  //   if (!this.chargeData) return;
+  //   const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+  //     size: 'lg', 
+  //     centered: true, 
+  //     backdrop: 'static' 
+  //   });
+  //   modalRef.componentInstance.item = this.chargeData;
+  //   modalRef.componentInstance.idLabel = 'Charge Id';
+  //   modalRef.componentInstance.idValue = this.chargeData?.ChargeMasterSid;
+  // }
+
+   openAuthority() {
+      const MenuMasterSid = localStorage.getItem('currentMenuId');
+      if (!MenuMasterSid) return;
+     const modalRef = this.modalService.open(AuthorityLogComponent, { 
       size: 'lg', 
       centered: true, 
       backdrop: 'static' 
     });
-    modalRef.componentInstance.item = this.chargeData;
-    modalRef.componentInstance.idLabel = 'Charge Id';
-    modalRef.componentInstance.idValue = this.chargeData?.ChargeMasterSid;
-  }
-
+      modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+      modalRef.componentInstance.documentSid = this.chargeID;
+    }
+   
   openEDoc() {
     if (!this.chargeData) return;
     const modalRef = this.modalService.open(EdocComponent, { 

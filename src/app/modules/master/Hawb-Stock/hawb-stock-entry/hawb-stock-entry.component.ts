@@ -14,6 +14,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
    selector: 'app-hawb-stock-entry',
@@ -348,17 +349,17 @@ generateAWB(): void {
     });
   }
 
-openAuthority() {
-  if (!this.hawstockData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+  openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
     size: 'lg', 
     centered: true, 
     backdrop: 'static' 
   });
-  modalRef.componentInstance.item = this.hawstockData;
-  modalRef.componentInstance.idLabel = 'HAWB Stock Id';
-  modalRef.componentInstance.idValue = this.hawstockData?.HawbStockSid;
-}
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.HawbStockSid;
+  }
 
 openEDoc() {
   if (!this.hawstockData) return;

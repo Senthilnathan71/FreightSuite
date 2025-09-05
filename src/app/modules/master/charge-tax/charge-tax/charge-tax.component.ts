@@ -21,6 +21,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-charge-tax',
@@ -502,17 +503,17 @@ onPageChange(newPage: number) {
     });
   }
 
-openAuthority() {
-  if (!this.chargeTaxData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
+  openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+   const modalRef = this.modalService.open(AuthorityLogComponent, { 
     size: 'lg', 
     centered: true, 
     backdrop: 'static' 
   });
-  modalRef.componentInstance.item = this.chargeTaxData;
-  modalRef.componentInstance.idLabel = 'ChargeTax Id';
-  modalRef.componentInstance.idValue = this.chargeTaxData?.ChargeTaxMasterSid;
-}
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.ChargeTaxMasterSid;
+  }
 
 openEDoc() {
   if (!this.chargeTaxData) return;
