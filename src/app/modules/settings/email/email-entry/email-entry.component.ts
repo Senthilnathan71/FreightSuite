@@ -24,10 +24,29 @@ export class EmailEntryComponent implements OnInit {
   @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement>;
   selectedFiles: File[] = [];
   userData: any;
+   // Company
+  currentCompany : any;
+  currentBranch : any;
+  private headerTemplate = `
+  <div style="background:#fff;padding:1rem;border-bottom:1px solid #eee">
+    <a href="#" style="display:inline-flex;align-items:center;text-decoration:none;color:#05608D;font-weight:600;font-size:1.25rem">
+      <img src="assets/logo/dofi-logo.svg" alt="Dofi Infosys" style="width:40px;height:40px;margin-right:8px">
+      Dofi Infosys
+    </a>
+  </div>
+`;
 
-  private headerTemplate = `<div style="background:white;padding:1.5rem;text-align:center;border-bottom:1px solid #eee;display:grid;place-items:center"><a href="#" style="display:flex;align-items:center;gap:1rem;text-decoration:none"><img src="https://dofiinfosys.com/wp-content/uploads/2024/04/cropped-Untitled-1.png" style="width:50px;height:50px;padding-right:10px"><span style="font-size:1.5rem;font-weight:600;color:#05608D">Dofi Infosys</span></a></div>`;
-
-  private footerTemplate = `<div style="color:white;border-top:1px solid #dee2e6;text-align:center;background:#05608D;padding:1rem"><div style="display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:0.5rem 1rem;margin:0 auto 0.5rem;width:fit-content"><a href="#" style="color:white;text-decoration:none">Terms</a><span style="color:white">|</span><a href="#" style="color:white;text-decoration:none">Privacy</a><span style="color:white">|</span><a href="#" style="color:white;text-decoration:none">Contact</a><span style="color:white">|</span><a href="#" style="color:white;text-decoration:none">Unsubscribe</a></div><p style="margin:0;color:white">© ${new Date().getFullYear()} Dofi Infosys</p></div>`;
+private footerTemplate = `
+  <div style="background:#05608D;color:#fff;text-align:center;padding:0.75rem;font-size:0.875rem">
+    <div style="margin-bottom:0.5rem">
+      <a href="#" style="color:#fff;text-decoration:none;margin:0 6px">Terms</a>|
+      <a href="#" style="color:#fff;text-decoration:none;margin:0 6px">Privacy</a>|
+      <a href="#" style="color:#fff;text-decoration:none;margin:0 6px">Contact</a>|
+      <a href="#" style="color:#fff;text-decoration:none;margin:0 6px">Unsubscribe</a>
+    </div>
+    <p style="margin:0">© ${new Date().getFullYear()} Dofi Infosys</p>
+  </div>
+`;
 
   constructor(
     private fb: FormBuilder,
@@ -44,20 +63,64 @@ export class EmailEntryComponent implements OnInit {
     //     this.userData = resp;
     //   }
     // )
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
 		}
   }
 
+  // initMailForm() {
+  //   this.emailForm = this.fb.group({
+  //     EmailTo: ['', [Validators.required, EmailValidators.multipleEmails()]],
+  //     EmailCC: ['', [EmailValidators.multipleEmails()]],
+  //     Subject: ['',[Validators.maxLength(500)]],
+  //     Mailbody: ['',[Validators.maxLength(2000)]]
+  //   });
+  // }
+
   initMailForm() {
-    this.emailForm = this.fb.group({
-      EmailTo: ['', [Validators.required, EmailValidators.multipleEmails()]],
-      EmailCC: ['', [EmailValidators.multipleEmails()]],
-      Subject: ['',[Validators.maxLength(500)]],
-      Mailbody: ['',[Validators.maxLength(2000)]]
-    });
-  }
+  this.emailForm = this.fb.group({
+    EmailTo: [
+      '',
+      [
+        Validators.required,
+        EmailValidators.multipleEmails(),
+        Validators.maxLength(200)   // length limit
+      ]
+    ],
+    EmailCC: [
+      '',
+      [
+        EmailValidators.multipleEmails(),
+        Validators.maxLength(200)
+      ]
+    ],
+    EmailBCC: [
+      '',
+      [
+        EmailValidators.multipleEmails(),
+        Validators.maxLength(200)
+      ]
+    ],
+    Subject: [
+      '',
+      [
+        Validators.required,
+        Validators.maxLength(500)
+      ]
+    ],
+    Mailbody: [
+      '',
+      [
+        Validators.required,
+        Validators.maxLength(2000)
+      ]
+    ]
+  });
+}
+
 
   closeModal() {
     console.log('Modal closed');
@@ -78,8 +141,12 @@ export class EmailEntryComponent implements OnInit {
     }
   }
 
-  removeFile(file: File) {
-    this.selectedFiles = this.selectedFiles.filter(f => f !== file);
+  // removeFile(file: File) {
+  //   this.selectedFiles = this.selectedFiles.filter(f => f !== file);
+  // }
+
+    removeFile(index: number) {
+    this.selectedFiles.splice(index, 1);
   }
 
   saveForm() {
@@ -90,8 +157,8 @@ export class EmailEntryComponent implements OnInit {
       return;
     }
     this.emailSending = true;
-    const CompanyMasterSid = this.userData.userBranchMaster[0]?.CompanyMasterSid;
-    const BranchMasterSid = this.userData.userBranchMaster[0]?.BranchMasterSid;
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     const userEmail = this.userData.userEmail;
 
     const formValue = this.emailForm.value;
@@ -132,5 +199,42 @@ export class EmailEntryComponent implements OnInit {
 
       return emailPattern.test(email) ? null : { emailInvalid: true };
     };
+  }
+
+
+    clearFiles() {
+    this.selectedFiles = [];
+  }
+
+   downloadFile(file: File) {
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+   sendMail() {
+    if (this.emailForm.valid) {
+      console.log("Mail Sent ✅", this.emailForm.value, this.selectedFiles);
+      this.emailForm.reset();
+      this.selectedFiles = [];
+      this.closeModal();
+    }
+  }
+
+  
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    if (event.dataTransfer?.files) {
+      for (let file of Array.from(event.dataTransfer.files)) {
+        this.selectedFiles.push(file);
+      }
+    }
+  }
+
+   onDragOver(event: DragEvent) {
+    event.preventDefault();
   }
 }

@@ -1,4 +1,4 @@
-<div class="row">
+<!-- <div class="row">
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
       <div class="col-md-4 pb-2">
@@ -122,6 +122,145 @@
               </ul>
             </div>
           </div>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<div class="m-2" [formGroup]="emailForm">
+  <div class="border">
+    <div class="d-flex align-items-center bg-info text-white justify-content-between p-1">
+      <h5 class="mb-0">
+        <i class="fas fa-envelope me-2" style="color:white; padding-left: 5px;"></i> Send Mail
+      </h5>
+      <button class="btn btn-sm" (click)="closeModal()">
+        <i class="fas fa-times fs-3 text-white"></i>
+      </button>
+    </div>
+
+    <div class="p-3">
+      <div class="row g-4">
+        <!-- Left Column -->
+        <div class="col-lg-4 col-md-5">
+          <!-- To -->
+          <div class="mb-2">
+            <label class="form-label fw-semibold">To</label>
+            <input type="text" class="form-control shadow-sm" formControlName="EmailTo">
+
+            <div class="text-danger small text-end fs-1"
+              *ngIf="emailForm.get('EmailTo')?.touched && emailForm.get('EmailTo')?.hasError('required')">
+              To is required
+            </div>
+            <div class="text-danger small text-end fs-1"
+              *ngIf="emailForm.get('EmailTo')?.touched && emailForm.get('EmailTo')?.hasError('invalidEmails')">
+              Invalid email format
+            </div>
+            <div class="text-danger small text-end fs-1"
+              *ngIf="emailForm.get('EmailTo')?.touched && emailForm.get('EmailTo')?.hasError('duplicateEmails')">
+              Duplicate emails not allowed
+            </div>
+          </div>
+
+
+          <!-- CC -->
+          <div class="mb-2">
+            <label class="form-label fw-semibold">CC</label>
+            <input type="text" class="form-control shadow-sm" formControlName="EmailCC">
+
+            <div class="text-danger small text-end fs-1"
+              *ngIf="emailForm.get('EmailCC')?.touched && emailForm.get('EmailCC')?.hasError('invalidEmails')">
+              Invalid email format
+            </div>
+          </div>
+
+
+          <!-- BCC -->
+          <div class="mb-2">
+            <label class="form-label fw-semibold">BCC</label>
+            <input type="text" class="form-control shadow-sm" formControlName="EmailBCC">
+          </div>
+
+          <!-- Attachments Section -->
+          <div class="mb-2">
+            <h6 class="fw-semibold mb-0">Attachments</h6>
+          </div>
+
+          <div class="text-end">
+            <i class="fas fa-plus fs-2 me-2 text-success" style="cursor:pointer;" (click)="fileInput.click()"></i>
+            <i class="fas fa-trash text-danger fs-3" style="cursor:pointer;" (click)="clearFiles()"></i>
+          </div>
+
+          <!-- File Table -->
+          <div class="table-responsive mb-3" *ngIf="selectedFiles.length > 0">
+            <table class="table table-bordered align-middle table-sm mb-0">
+              <thead>
+                <tr class="bg-info">
+                  <th class="bg-transparent text-light">Document Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let file of selectedFiles; let i = index">
+                  <td class="d-flex gap-2">
+                    {{file.name}}
+                    <div>
+                      <button class="btn btn-sm btn-light-secondary me-2" (click)="downloadFile(file)">
+                        <i class="fas fa-download text-dark"></i>
+                      </button>
+                      <button class="btn btn-sm btn-danger" (click)="removeFile(i)">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Drag and Drop -->
+          <div class="border rounded-3 p-4 text-center mb-3 bg-light" style="border-style: dashed;"
+            (drop)="onDrop($event)" (dragover)="onDragOver($event)">
+            <p class="mb-2 text-muted">Drop files or click to upload</p>
+            <button type="button" class="btn btn-light-secondary btn-sm" (click)="fileInput.click()">
+              <i class="fas fa-upload me-1"></i> Browse
+            </button>
+            <input type="file" class="d-none" multiple #fileInput (change)="onFileChange($event)">
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-8 col-md-7">
+          <!-- Subject -->
+          <div class="mb-2">
+            <label class="form-label fw-semibold">Subject</label>
+            <input type="text" class="form-control shadow-sm" formControlName="Subject">
+
+            <div class="text-danger small text-end fs-1"
+              *ngIf="emailForm.get('Subject')?.touched && emailForm.get('Subject')?.hasError('required')">
+              Subject is required
+            </div>
+          </div>
+
+
+          <!-- Message -->
+          <div>
+            <label class="form-label fw-semibold">Message</label>
+            <textarea class="form-control shadow-sm" rows="18" style="resize:none;"
+              formControlName="Mailbody"></textarea>
+
+            <div class="text-danger small text-end fs-1"
+              *ngIf="emailForm.get('Mailbody')?.touched && emailForm.get('Mailbody')?.hasError('required')">
+              Message is required
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Send Button -->
+        <div class="text-end mt-1">
+          <button class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80" (click)="saveForm()">
+            <i class="fas fa-paper-plane me-1"></i> Send
+          </button>
+        </div>
       </div>
     </div>
   </div>
