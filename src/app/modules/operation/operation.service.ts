@@ -271,7 +271,7 @@ getShipmentMilestones(payload: any) {
     );
   }
 
-  quotationReport(payload: any) {
+  bookingPrint(payload: any) {
     return this.http.post<{ data: any[] }>('ff-booking/send/email', payload).pipe(
       map((resp) => {
         let response = resp;

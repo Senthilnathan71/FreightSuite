@@ -195,7 +195,7 @@
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <button class="text-danger mx-2 ps-1 btn btn-link" [disabled]="authDetails.length === 1"
-                                                    (click)="removeAuthDetail(detailIndex)">
+                                                    (click)="removeAuthDetail(detailIndex,detail.value.AuthorityDetailSid)">
                                                     <i-feather name="trash-2" class="feather-sm"></i-feather>
                                             </button>
                                             </div>

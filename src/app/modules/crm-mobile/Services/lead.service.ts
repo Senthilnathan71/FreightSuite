@@ -640,8 +640,8 @@ export class LeadService {
     );
   }
 
-  isUserAuthorizer(UserMasterSid: number, MenuMasterSid: number, DocumentSid: number) {
-    return this.http.get<{ data: any }>(`authority/check-authorizer/${MenuMasterSid}/${DocumentSid}/${UserMasterSid}`).pipe(
+  isUserAuthorizer(payload:any) {
+    return this.http.post<{ data: any }>(`authority/check-authorizer`,payload).pipe(
       map((resp) => {
         let response = resp;
         return response;

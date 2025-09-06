@@ -346,6 +346,15 @@ export class CostEntryComponent implements OnInit {
     this.getExchangeRate();
   }
 
+  copyRate(content: TemplateRef<any>,data ?:any) {
+    this.openModalBasedOnTab(content);
+    const selectedTabLen = this.selectedTab === 'Cost' ? this.costFormArray.length : this.revenueFormArray.length;
+    this.rateForm.patchValue({
+      ...data,
+      SerialNumber: selectedTabLen + 1,
+    });
+  }
+
   syncDataWithParentComponent() {
     const costFormValue: any[] = this.costFormArray.getRawValue() || [];
     const revenueFormValue: any[] = this.revenueFormArray.getRawValue() || [];

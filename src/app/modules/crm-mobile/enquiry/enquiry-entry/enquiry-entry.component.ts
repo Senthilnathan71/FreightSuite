@@ -221,7 +221,14 @@ export class EnquiryEntryComponent implements OnInit {
     if (!UserMasterSid || !this.currentMenuId) {
       return;
     }
-    this.leadService.isUserAuthorizer(UserMasterSid, this.currentMenuId, QuoteHeaderSid).subscribe(
+    const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MenuMasterSid: this.currentMenuId,
+      UserMasterSid: UserMasterSid,
+      DocumentSid: this.EnquiryHeaderSid
+    }
+    this.leadService.isUserAuthorizer(payload).subscribe(
       (resp: any) => {
         this.isAuthorizedUser = resp.data?.canAuthorize
         this.isApproved = resp.data?.alreadyApproved

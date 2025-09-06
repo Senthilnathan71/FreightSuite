@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { LeadComponent } from './lead/lead.component';
 import { ViewComponent } from './lead/view/view.component';
-import { QuotationComponent } from './quotation/quotation.component';
 import { QuotationViewComponent } from './quotation/quotation-view/quotation-view.component';
 import { FullcalendarComponent } from './fullcalendar/fullcalendar.component';
 import { TodoComponent } from './todo/todo.component';
@@ -79,7 +78,7 @@ export const CrmMobileRoutes: Routes = [
                 },
             },
             {
-                path: 'enquiry',
+                path: 'enquiry/entry',
                 component: EnquiryEntryComponent,
                 data: {
                     title: 'Enquiry',
@@ -92,7 +91,7 @@ export const CrmMobileRoutes: Routes = [
                     // ],
                 },
             }, {
-                path: 'enquiry/:id',
+                path: 'enquiry/entry/:id',
                 component: EnquiryEntryComponent,
                 data: {
                     title: 'Enquiry',
@@ -122,20 +121,7 @@ export const CrmMobileRoutes: Routes = [
             },
 
 
-            {
-                path: 'quotation',
-                component: QuotationComponent,
-                data: {
-                    title: 'Quotation',
-                    backOption: [
-                        { title: 'Back', url: '/crm/quotation/list' },
-                    ],
-                    // urls: [
-                    //     { title: 'CRM', url: '/crm' },
-                    //     { title: 'Quotation' },
-                    // ],
-                },
-            },
+            
              {
                 path: 'quotation/entry',
                 component: QuotationEntryComponent,
@@ -153,20 +139,6 @@ export const CrmMobileRoutes: Routes = [
              {
                 path: 'quotation/entry/:id',
                 component: QuotationEntryComponent,
-                data: {
-                    title: 'Quotation',
-                    backOption: [
-                        { title: 'Back', url: '/crm/quotation/list' },
-                    ],
-                    // urls: [
-                    //     { title: 'CRM', url: '/crm' },
-                    //     { title: 'Quotation' },
-                    // ],
-                },
-            },
-            {
-                path: 'quotation/:id',
-                component: QuotationComponent,
                 data: {
                     title: 'Quotation',
                     backOption: [

@@ -1,4 +1,4 @@
-import { Component, ViewChild, TemplateRef, OnInit } from '@angular/core';
+import { Component, ViewChild, TemplateRef, OnInit, Input } from '@angular/core';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -33,6 +33,8 @@ import { BookingData } from '../excel-parser.service';
 import { BookingUploadComponent } from '../booking-upload/booking-upload.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import * as html2pdf from 'html2pdf.js';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 
 @Component({
   selector: 'app-booking-entry',
@@ -56,7 +58,8 @@ import * as html2pdf from 'html2pdf.js';
     NgComponentOutlet,
     CostEntryComponent,
     ArApComponent,
-    BookingUploadComponent
+    BookingUploadComponent,
+    NgxSpinnerModule
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],
@@ -74,6 +77,7 @@ export class BookingEntryComponent implements OnInit {
     |   Section-1 Variable Declaration
     |--------------------------------------------------
   */
+
 
   @ViewChild('uploadModal') uploadModal!: BookingUploadComponent;
   parsedBookings: BookingData[] = [];
@@ -128,6 +132,7 @@ export class BookingEntryComponent implements OnInit {
   incoList: any[] = [];
   TandCList: any[]=[];
   bookingHeader: any;
+  selectedCustomerBranch : any;
   
 auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
@@ -189,7 +194,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   // Variable Declaration - Connection Part
   PODandFPODsame : boolean = true;
-  minStartDate : any;
+  minStartDate : Date = new Date();
   resetTriggerConnection : boolean;
   bookingConnectionsArr : any[] = [];
   connectionResult : any[] =[];
@@ -261,6 +266,9 @@ auditLogs: any[] = []; // Stores audit logs
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
   ];
 
+  // Mail content
+
+
   /**
     |--------------------------------------------------
     |   Section-2 : Constructor Part
@@ -276,7 +284,8 @@ auditLogs: any[] = []; // Stores audit logs
     private masterService: MasterService,
     private calendar : NgbCalendar,
     private exportExcelService: ExcelExportService,
-    private datePipe : CustomDatePipe
+    private datePipe : CustomDatePipe,
+    private spinner: NgxSpinnerService
   ) {
     this.today = this.calendar.getToday();
    }
@@ -430,7 +439,7 @@ auditLogs: any[] = []; // Stores audit logs
       CustomerRefNo: [''],
       YardCFS: [''],
       ReleaseType: [null],
-      HBLNo: [''],
+      HBLNo: [{value :'', disabled: true}],
       Forwarder: [null],
       ForwarderAddress: [''],
       NotifyParty: [null],
@@ -454,7 +463,9 @@ auditLogs: any[] = []; // Stores audit logs
       AgentAddress: [''],
       SwitchBLShipper: [null],
       SwitchBLConsignee: [null],
-      SwitchLocation: ['']
+      SwitchLocation: [''],
+      CarrierBookingRef : [''],
+      CarrierBookingDate : ['']
     })
   }
 
@@ -610,7 +621,7 @@ auditLogs: any[] = []; // Stores audit logs
     this.onCustomerChange(selectedCustomer);
     this.bookingForm.patchValue({
       BookingNo: response.BookingNo,
-      BookingDateTime: new Date(response.BookingDateTime),
+      BookingDateTime:response.BookingDateTime ? new Date(response.BookingDateTime) : null,
       DepartmentMasterSid: response.DepartmentMasterSid,
       CustomerMasterSid: response.CustomerMasterSid,
       CustomerBranchSid: response.CustomerBranchSid,
@@ -635,8 +646,8 @@ auditLogs: any[] = []; // Stores audit logs
       VesselName: response.VesselName,
       VoyageMasterSid: response.VoyageMasterSid,
       VoyageNo: response.VoyageNo,
-      ETA: new Date(response.ETA),
-      ETD: new Date(response.ETD),
+      ETA: response.ETA ? new Date(response.ETA) : null,
+      ETD: response.ETD ? new Date(response.ETD) : null,
       POO: response.POO,
       POL: response.POL,
       POD: response.POD,
@@ -656,8 +667,9 @@ auditLogs: any[] = []; // Stores audit logs
     })
     this.b['DepartmentMasterSid']?.disable();
     this.b['CustomerMasterSid']?.disable();
-    this.quotationNumber = response?.quotationHeader?.QuoteNumber;
+    this.quotationNumber = response?.quotationHeader?.QuoteNumber || '';
     this.PODandFPODsame = response.POD === response.FPD;
+    this.minStartDate = response.ETA;
 
     const cargoData = response.bookingCargo[0];
     this.cargoForm.patchValue({
@@ -693,7 +705,7 @@ auditLogs: any[] = []; // Stores audit logs
       Coloader : otherData?.Coloader || null,
       PickupPlace: otherData?.PickupPlace,
       DeliveryPlace: otherData?.DeliveryPlace,
-      DeliveryDate: new Date(otherData?.DeliveryDate),
+      DeliveryDate:otherData?.DeliveryDate ? new Date(otherData?.DeliveryDate) : null,
       CHAName: otherData?.CHAName,
       PickupAddress: otherData?.PickupAddress,
       DeliveryAddress: otherData?.DeliveryAddress,
@@ -702,12 +714,14 @@ auditLogs: any[] = []; // Stores audit logs
       SwitchBL: otherData?.SwitchBL === "Y" ? true : false,
       BacktoBack: otherData?.BacktoBack === "Y" ? true : false,
       Depo: otherData?.Depo,
-      ROValidity: new Date(otherData?.ROValidity),
+      ROValidity:otherData?.ROValidity ? new Date(otherData?.ROValidity) : null,
       SwitchBLAgent : otherData?.SwitchBLAgent,
       AgentAddress : otherData?.AgentAddress,
       SwitchBLShipper : otherData?.SwitchBLShipper,
       SwitchBLConsignee : otherData?.SwitchBLConsignee,
-      SwitchLocation  : otherData?.SwitchLocation
+      SwitchLocation  : otherData?.SwitchLocation,
+      CarrierBookingRef : otherData?.CarrierBookingRef,
+      CarrierBookingDate :otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null
     })
 
     this.bookingProducts.clear();
@@ -937,7 +951,9 @@ auditLogs: any[] = []; // Stores audit logs
         AgentAddress: otherFormValue?.AgentAddress,
         SwitchBLShipper: otherFormValue?.SwitchBLShipper,
         SwitchBLConsignee: otherFormValue?.SwitchBLConsignee,
-        SwitchLocation: otherFormValue?.SwitchLocation
+        SwitchLocation: otherFormValue?.SwitchLocation,
+        CarrierBookingRef : otherFormValue?.CarrierBookingRef,
+        CarrierBookingDate : otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null
       },
       bookingProducts: detailFormValue.bookingProducts.map((product: any) => ({
         BookingProductSid : product.BookingProductSid || null,
@@ -972,7 +988,8 @@ auditLogs: any[] = []; // Stores audit logs
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess('Booking successfully updated.');
-            this.router.navigate(['operation/booking/list']);
+            // this.router.navigate(['operation/booking/list']);
+            this.loadBookingById(this.BookingHeaderSid);
           } else {
             this.appSettingService.showError('Error updating booking.');
             console.error(resp.message);
@@ -988,7 +1005,8 @@ auditLogs: any[] = []; // Stores audit logs
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess('Booking successfully created.');
-            this.router.navigate(['operation/booking/list']);
+            const bookingId = resp.data?.newBooking?.BookingHeaderSid;
+            this.router.navigate(['operation/booking/entry', bookingId]);
           } else {
             this.appSettingService.showError('Error creating booking.');
             console.error(resp.message);
@@ -1188,6 +1206,9 @@ auditLogs: any[] = []; // Stores audit logs
     this.operationService.getCustomerBranchByCustomer(CustomerMasterSid).subscribe((resp: any) => {
       if (resp.status) {
         this.customerBranchList = resp.data;
+        if(this.isEditMode){
+          this.selectedCustomerBranch = this.customerBranchList.find(c => c.CustomerBranchSid === this.bookingHeader?.CustomerBranchSid);
+        }
       } else {
         this.appSettingService.showError("Error loading customer's branch.")
       }
@@ -1198,10 +1219,12 @@ auditLogs: any[] = []; // Stores audit logs
     if (!customerBranch) {
       this.b['CustomerAddress']?.setValue(null);
       this.b['CustomerBranchSid']?.setValue(null);
+      this.selectedCustomerBranch = null;
       return;
     }
     this.b['CustomerAddress']?.setValue(customerBranch.Address);
     this.b['CustomerBranchSid']?.setValue(customerBranch.CustomerBranchSid);
+    this.selectedCustomerBranch = customerBranch;
   }
 
   setAddress(controlName: string, item: any) {
@@ -1599,14 +1622,66 @@ resetForm() {
           }
         );
       }
-    openEmail() {
-      if (!this.bookingData) return;
+  async openEmail() {
+    if (!this.bookingData) return;
+
+    try {
+      this.spinner.show();
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Generate PDF blob automatically
+      const pdfBlob = await this.generatePDFBlob();
+      const pdfFileName = (this.bookingHeader?.BookingNo || 'booking') + '.pdf';
+      const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
+
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       const modalRef = this.modalService.open(EmailEntryComponent, {
         size: 'lg',
         centered: true,
         backdrop: 'static'
       });
+
+      const toEmailSet = new Set<string>();
+      toEmailSet.add(this.selectedCustomerBranch?.Email);
+
+      const toEmail = Array.from(toEmailSet);
+      const ccEmail = [this.userData['userEmail']];
+
+      const POL = this.bookingHeader?.POL;
+      const POD = this.bookingHeader?.POD;
+      const FPD = this.bookingHeader?.FPD;
+      const formattedPOL = this.getFormattedPort(POL);
+      const formattedPOD = this.getFormattedPort(POD);
+      const formattedFPD = this.getFormattedPort(FPD);
+
+      const subject = `Booking No.${this.bookingHeader.BookingNo} Date:${this.datePipe.transform(this.bookingHeader?.BookingDateTime)} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`;
+
+      const mailBody = `Dear Sir/Madam,
+Please find here enclosed the booking details as requested.
+Kindly review the details at your convenience.
+Looking forward to confirm cargo readyness.
+Best Regards,
+${this.userData['userName']}`;
+
+      this.spinner.hide();
+      
+      modalRef.componentInstance.setContent = {
+        EmailTo: toEmail,
+        EmailCC: ccEmail,
+        EmailBCC: [],
+        Subject: subject,
+        Mailbody: mailBody,
+        attachments: [pdfFile]
+      };
+
+    } catch (error) {
+      this.spinner.hide();
+      console.error('PDF generation error:', error);
+      this.appSettingService.showError('Error generating PDF for email attachment.');
     }
+  }
   
   openAuthority() {
     if (!this.bookingData) return;
@@ -1637,6 +1712,38 @@ resetForm() {
       centered: true, 
       backdrop: 'static' 
     })
+  }
+
+  async openFollowup() {
+    if (!this.bookingHeader) return;
+    const POL = this.bookingHeader?.POL;
+    const POD = this.bookingHeader?.POD;
+    const FPD = this.bookingHeader?.FPD;
+    const formattedPOL = this.getFormattedPort(POL);
+    const formattedPOD = this.getFormattedPort(POD);
+    const formattedFPD = this.getFormattedPort(FPD);
+    const resp: any = await firstValueFrom(
+      this.operationService.getCustomerBranchEmail(this.bookingHeader.CustomerBranchSid)
+    );
+    const toEmail = resp?.data?.Email;
+    if (!toEmail) {
+      this.appSettingService.showError('To Email is missing.')
+      return;
+    }
+    const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = this.bookingHeader?.BookingHeaderSid;
+    modalRef.componentInstance.parentEmail = toEmail;
+    modalRef.componentInstance.parentSubject = `Booking No.${this.bookingHeader.BookingNo} Date:${this.datePipe.transform(this.bookingHeader?.BookingDateTime)} ${ formattedPOL } - ${ formattedPOD }${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`;
+    modalRef.componentInstance.parentMailbody = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
+        <p>Dear Sir/Madam,</p>
+        <p>Please find here enclosed the booking details as requested.</p>
+        <p>Kindly review the details at your convenience.</p>
+        <p>Looking forward to confirm cargo readyness.</p>
+        <p>Best Regards,</p>
+        <p>${this.userData['userName']}</p>
+      </div>
+    `;
   }
 
   openConnectionModal(content: any) {
@@ -1776,9 +1883,26 @@ resetForm() {
 
 
   getFormattedPort(code:string){
+    console.log(code);
     if(!code) return '';
-    const ourPort = this.portList.find(p => p.PortCode === code)?.PortName;
-    return `${ourPort.PortName} (${ourPort.PortCode})`
+    const ourPort = (this.portList.find(p => p.PortCode === code))?.PortName;
+    console.log(ourPort);
+    return `${ourPort} (${code})`
+  }
+
+  getFPDETA(){
+    const POD = this.bookingHeader?.POD;
+    const FPD = this.bookingHeader?.FPD;
+    const connections : any[] = this.bookingHeader?.bookingConnection || [];
+    if(POD === FPD){
+      return this.datePipe.transform(this.bookingHeader?.ETA);
+    } else {
+      if(connections){
+        return this.datePipe.transform(connections[connections.length - 1]?.ETA);
+      } else {
+        return 'N/A'
+      }
+    }
   }
 
   reportAndEmailModel(content:TemplateRef<any>){
@@ -1789,7 +1913,7 @@ resetForm() {
     });
   }
 
-  downloadPDF(): Promise<Blob> {
+  generatePDFBlob(): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const element = document.getElementById('pdfContent');
 
@@ -1803,18 +1927,41 @@ resetForm() {
 
       if (!element) return reject('No element found');
 
-      html2pdf().from(element).set(opt).outputPdf('blob')
+      html2pdf()
+        .from(element)
+        .set(opt)
+        .outputPdf('blob')
         .then((blob: Blob) => resolve(blob))
         .catch((err: any) => reject(err));
     });
   }
 
+  downloadPDF(): void {
+    this.spinner.show();
+    const element = document.getElementById('pdfContent');
+
+    const opt = {
+      margin: 0.5,
+      filename: (this.bookingHeader?.BookingNo || 'booking') + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    if (!element) {
+      console.error('No element found');
+      return;
+    }
+
+    html2pdf().from(element).set(opt).save();
+    this.spinner.hide();
+  }
 
 
   async sendEmail() {
     try {
-      this.isPrintLoading = true;
-      const pdfBlob = await this.downloadPDF();
+      this.spinner.show();
+      const pdfBlob = await this.generatePDFBlob();
 
       const formData = new FormData();
       const toEmailSet = new Set<string>();
@@ -1834,7 +1981,7 @@ resetForm() {
 
       if (toEmailSet.size === 0) {
         this.appSettingService.showError('To Email is missing.')
-        this.isPrintLoading = false;
+        this.spinner.hide();
         return;
       }
 
@@ -1844,8 +1991,7 @@ resetForm() {
           formData.append("EmailTo[]", email);
         }
       });
-
-      const ccEmailSet = new Set<string>([this.userData['userEmail']]);
+      const ccEmailSet = new Set<string>([this.userData['userName']]);
       const ccEmail = Array.from(ccEmailSet);
 
       ccEmail.forEach(email => {
@@ -1853,32 +1999,36 @@ resetForm() {
           formData.append("EmailCC[]", email);
         }
       });
+      const POL = this.bookingHeader?.POL;
       const POD = this.bookingHeader?.POD;
       const FPD = this.bookingHeader?.FPD;
-      formData.append('Subject', `Booking No.${this.bookingHeader.BookingNo} Date:${new Date(this.bookingHeader?.BookingDateTime)} ${this.getFormattedPort(this.bookingHeader.POL)} - ${this.getFormattedPort(this.bookingHeader?.POD)}${POD !== FPD ? ' - ' + this.getFormattedPort(FPD) : ''} confirmation`);
+      const formattedPOL = this.getFormattedPort(POL);
+      const formattedPOD = this.getFormattedPort(POD);
+      const formattedFPD = this.getFormattedPort(FPD);
+      formData.append('Subject', `Booking No.${this.bookingHeader.BookingNo} Date:${this.datePipe.transform(this.bookingHeader?.BookingDateTime)} ${ formattedPOL } - ${ formattedPOD }${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`);
       formData.append('Mailbody', `
       <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
         <p>Dear Sir/Madam,</p>
-        <p>Please find enclosed the booking details as requested.</p>
+        <p>Please find here enclosed the booking details as requested.</p>
         <p>Kindly review the details at your convenience.</p>
         <p>Looking forward to confirm cargo readyness.</p>
         <p>Best Regards,</p>
-        <p>${this.userData['userEmail']}</p>
+        <p>${this.userData['userName']}</p>
       </div>
     `);
     formData.append('file', pdfBlob, (this.bookingHeader?.bookingNumber || 'booking') + '.pdf');
     console.log(formData)
-    this.operationService.quotationReport(formData).subscribe((resp: any) => {
-      this.isPrintLoading = false;
+    this.operationService.bookingPrint(formData).subscribe((resp: any) => {
+      this.spinner.hide();
       if (resp?.data) {
-        this.appSettingService.showSuccess('Report Email Sent successfully!');
+        this.appSettingService.showSuccess('Booking Print Sent successfully!');
       }
     }, error => {
-      this.isPrintLoading = false;
+      this.spinner.hide();
       this.appSettingService.showError('Failed to send email.');
     });
     } catch (error) {
-      this.isPrintLoading = false;
+      this.spinner.hide();
       console.error('PDF generation error:', error);
       this.appSettingService.showError('Error generating PDF.');
     }

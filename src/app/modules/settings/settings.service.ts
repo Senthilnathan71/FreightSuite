@@ -301,7 +301,7 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
 
   // Email log
   createNewEmailLog(payload){
-    return this.http.post<{data : any[]}>('emailLog/create',payload).pipe(
+    return this.http.post<{data : any[]}>('emailLog/createWithAttachment',payload).pipe(
       map((resp)=>{
         let response = resp;
         return response;
