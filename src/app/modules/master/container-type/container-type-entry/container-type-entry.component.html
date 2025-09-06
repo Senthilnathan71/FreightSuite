@@ -4,18 +4,18 @@
             <div class="col-md-4 d-flex pb-2">
                 <h4 class="page-title mb-0">Container Type</h4>
                 @if(isEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
-                         <i class="fas fs-6 fa-info-circle"></i>
-                    </a>
+                <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                    <i class="fas fs-6 fa-info-circle"></i>
+                </a>
                 }
             </div>
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                   <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                  (click)="openAuditLogs(auditLogModal)">
-            <i class="fas fa-history me-1"></i>Logs
-          </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        (click)="openAuditLogs(auditLogModal)">
+                        <i class="fas fa-history me-1"></i>Logs
+                    </button>
 
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="goBack()">
@@ -27,8 +27,9 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
-                         [disabled]="containertypeForm.invalid || containertypeForm.pristine" >
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+                        *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
+                        [disabled]="containertypeForm.invalid || containertypeForm.pristine">
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Update':'Save'}}
                     </button>
@@ -47,20 +48,25 @@
                                     class="custom-input-field sm" [textWithNumbers]="100">
                                 <label for="text-input" class="input-label">Container Name <span
                                         class="text-danger fw-bold">*</span></label>
-                                         <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
-              (click)="startVoiceRecognitionFor('ContainerName')">🎤</button>
-                            </div>
-                            @if(containertypeForm.get('ContainerName')?.touched && containertypeForm.get('ContainerName')?.invalid){
+                                @if(containertypeForm.get('ContainerName')?.touched &&
+                                containertypeForm.get('ContainerName')?.invalid){
                                 <div class="error-message">
                                     @if(containertypeForm.get('ContainerName')?.hasError('required')){
-                                        <span>Required</span>
+                                    <span>Required</span>
                                     } @else if(containertypeForm.get('ContainerName')?.hasError('maxlength')){
-                                        <span>Max 100 Chars</span>
+                                    <span>Max 100 Chars</span>
                                     } @else if(containertypeForm.get('ContainerName')?.hasError('numberNotAllowed')){
-                                        <span>Only Alphabets are allowed</span>
+                                    <span>Only Alphabets are allowed</span>
                                     }
                                 </div>
-                            }
+                                }
+                                <button type="button" class=" mic-btn"
+                                    (click)="startVoiceRecognitionFor('ContainerName')"> <i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'ContainerName' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i>
+                                </button>
+                            </div>
+
                         </aside>
 
                         <aside class="col-md-4">
@@ -69,17 +75,20 @@
                                     class="custom-input-field sm" [textWithNumbers]="4">
                                 <label for="text-input" class="input-label">Container Code <span
                                         class="text-danger fw-bold">*</span></label>
-                                        @if(containertypeForm.get('ContainerCode')?.touched && containertypeForm.get('ContainerCode')?.invalid){
-                                            <div class="error-message">
-                                                @if(containertypeForm.get('ContainerCode')?.hasError('required')){
-                                                    <span>Required</span>
-                                                } @else if(containertypeForm.get('ContainerCode')?.hasError('maxlength')){
-                                                    <span>Max 4 Chars</span>
-                                                }
-                                            </div>
-                                        }
-                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
-              (click)="startVoiceRecognitionFor('ContainerCode')">🎤</button>
+                                @if(containertypeForm.get('ContainerCode')?.touched &&
+                                containertypeForm.get('ContainerCode')?.invalid){
+                                <div class="error-message">
+                                    @if(containertypeForm.get('ContainerCode')?.hasError('required')){
+                                    <span>Required</span>
+                                    } @else if(containertypeForm.get('ContainerCode')?.hasError('maxlength')){
+                                    <span>Max 4 Chars</span>
+                                    }
+                                </div>
+                                }
+                                <button type="button" class=" ms-2 mic-btn"
+                                    (click)="startVoiceRecognitionFor('ContainerCode')"> <i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'ContainerCode' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i></button>
                             </div>
                         </aside>
 
@@ -109,39 +118,45 @@
                                     class="custom-input-field sm" [textWithNumbers]="4">
                                 <label for="text-input" class="input-label"> ISO Code <span
                                         class="text-danger fw-bold">*</span></label>
-                                        @if(containertypeForm.get('ContainerIsoCode')?.touched && containertypeForm.get('ContainerIsoCode')?.invalid){
-                                            <div class="error-message">
-                                                @if(containertypeForm.get('ContainerIsoCode')?.hasError('required')){
-                                                    <span>Required</span>
-                                                } @else if(containertypeForm.get('ContainerIsoCode')?.hasError('maxlength')){
-                                                    <span>Max 4 Chars</span>
-                                                }
-                                            </div>
-                                        }
-                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
-              (click)="startVoiceRecognitionFor('ContainerIsoCode')">🎤</button>
+                                @if(containertypeForm.get('ContainerIsoCode')?.touched &&
+                                containertypeForm.get('ContainerIsoCode')?.invalid){
+                                <div class="error-message">
+                                    @if(containertypeForm.get('ContainerIsoCode')?.hasError('required')){
+                                    <span>Required</span>
+                                    } @else if(containertypeForm.get('ContainerIsoCode')?.hasError('maxlength')){
+                                    <span>Max 4 Chars</span>
+                                    }
+                                </div>
+                                }
+                                <button type="button" class=" ms-2 mic-btn"
+                                    (click)="startVoiceRecognitionFor('ContainerIsoCode')"><i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'ContainerIsoCode' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i></button>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
-    <div class="custom-form-group">
-        <input type="text" formControlName="ContainerSize" id="text-input" placeholder=""
-            class="custom-input-field sm">
-        <label for="text-input" class="input-label">Container Size <span
-                class="text-danger fw-bold">*</span></label>
-        @if(containertypeForm.get('ContainerSize')?.touched && containertypeForm.get('ContainerSize')?.invalid){
-            <div class="error-message">
-                @if(containertypeForm.get('ContainerSize')?.hasError('required')){
-                    <span>Required</span>
-                } @else if(containertypeForm.get('ContainerSize')?.hasError('maxlength')){
-                    <span>Max 10 Chars allowed</span>
-                }
-            </div>
-        }
-        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
-              (click)="startVoiceRecognitionFor('ContainerSize')">🎤</button>
-    </div>
-</aside>
+                            <div class="custom-form-group">
+                                <input type="text" formControlName="ContainerSize" id="text-input" placeholder=""
+                                    class="custom-input-field sm">
+                                <label for="text-input" class="input-label">Container Size <span
+                                        class="text-danger fw-bold">*</span></label>
+                                @if(containertypeForm.get('ContainerSize')?.touched &&
+                                containertypeForm.get('ContainerSize')?.invalid){
+                                <div class="error-message">
+                                    @if(containertypeForm.get('ContainerSize')?.hasError('required')){
+                                    <span>Required</span>
+                                    } @else if(containertypeForm.get('ContainerSize')?.hasError('maxlength')){
+                                    <span>Max 10 Chars allowed</span>
+                                    }
+                                </div>
+                                }
+                                <button type="button" class="t ms-2 mic-btn"
+                                    (click)="startVoiceRecognitionFor('ContainerSize')"><i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'ContainerSize' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i></button>
+                            </div>
+                        </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
@@ -149,51 +164,60 @@
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label">Container Category <span
                                         class="text-danger fw-bold">*</span></label>
-                                           @if(containertypeForm.get('ContainerCategory')?.touched && containertypeForm.get('ContainerCategory')?.invalid){
-                                            <div class="error-message">
-                                                @if(containertypeForm.get('ContainerCategory')?.hasError('required')){
-                                                    <span>Required</span>
-                                                } 
-                                            </div>
-                                        }
-                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
-              (click)="startVoiceRecognitionFor('ContainerCategory')">🎤</button>
+                                @if(containertypeForm.get('ContainerCategory')?.touched &&
+                                containertypeForm.get('ContainerCategory')?.invalid){
+                                <div class="error-message">
+                                    @if(containertypeForm.get('ContainerCategory')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                                <button type="button" class=" ms-2 mic-btn"
+                                    (click)="startVoiceRecognitionFor('ContainerCategory')"><i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'ContainerCategory' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i></button>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="GrossWeight" type="number"  placeholder=""
+                                <input formControlName="GrossWeight" type="number" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="" class="input-label">Gross Weight <span
                                         class="text-danger fw-bold">*</span></label>
-                                         @if(containertypeForm.get('GrossWeight')?.touched && containertypeForm.get('GrossWeight')?.invalid){
-                                            <div class="error-message">
-                                                @if(containertypeForm.get('GrossWeight')?.hasError('required')){
-                                                    <span>Required</span>
-                                                } 
-                                            </div>
-                                        }
-                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
-              (click)="startVoiceRecognitionFor('GrossWeight')">🎤</button>
+                                @if(containertypeForm.get('GrossWeight')?.touched &&
+                                containertypeForm.get('GrossWeight')?.invalid){
+                                <div class="error-message">
+                                    @if(containertypeForm.get('GrossWeight')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                                <button type="button" class=" ms-2 mic-btn"
+                                    (click)="startVoiceRecognitionFor('GrossWeight')"><i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'GrossWeight' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i></button>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="TareWeight" type="number"  placeholder=""
+                                <input formControlName="TareWeight" type="number" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="" class="input-label">Tare Weight <span
                                         class="text-danger fw-bold">*</span></label>
-                                          @if(containertypeForm.get('TareWeight')?.touched && containertypeForm.get('TareWeight')?.invalid){
-                                            <div class="error-message">
-                                                @if(containertypeForm.get('TareWeight')?.hasError('required')){
-                                                    <span>Required</span>
-                                                } 
-                                            </div>
-                                        }
-                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
-              (click)="startVoiceRecognitionFor('TareWeight')">🎤</button>
+                                @if(containertypeForm.get('TareWeight')?.touched &&
+                                containertypeForm.get('TareWeight')?.invalid){
+                                <div class="error-message">
+                                    @if(containertypeForm.get('TareWeight')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                                <button type="button" class=" ms-2 mic-btn"
+                                    (click)="startVoiceRecognitionFor('TareWeight')"><i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'TareWeight' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i></button>
                             </div>
                         </aside>
 
@@ -203,127 +227,142 @@
                                     class="custom-input-field sm">
                                 <label for="" class="input-label"> Max Volume <span
                                         class="text-danger fw-bold">*</span></label>
-                                         @if(containertypeForm.get('MaxVolume')?.touched && containertypeForm.get('MaxVolume')?.invalid){
-                                            <div class="error-message">
-                                                @if(containertypeForm.get('MaxVolume')?.hasError('required')){
-                                                    <span>Required</span>
-                                                } 
-                                            </div>
-                                        }
-                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
-              (click)="startVoiceRecognitionFor('MaxVolume')">🎤</button>
+                                @if(containertypeForm.get('MaxVolume')?.touched &&
+                                containertypeForm.get('MaxVolume')?.invalid){
+                                <div class="error-message">
+                                    @if(containertypeForm.get('MaxVolume')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                                <button type="button" class=" ms-2 mic-btn"
+                                    (click)="startVoiceRecognitionFor('MaxVolume')"><i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'MaxVolume' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i></button>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
-    <div class="custom-form-group">
-        <input formControlName="Length" type="number" placeholder=""
-            class="custom-input-field sm">
-        <label for="" class="input-label"> Length <span
-                class="text-danger fw-bold">*</span></label>
-        @if(containertypeForm.get('Length')?.touched && containertypeForm.get('Length')?.invalid){
-            <div class="error-message">
-                @if(containertypeForm.get('Length')?.hasError('required')){
-                    <span>Required</span>
-                } @else if(containertypeForm.get('Length')?.hasError('min')){
-                    <span>Must be positive number</span>
-                } @else if(containertypeForm.get('Length')?.hasError('pattern')){
-                    <span>Must be a whole number</span>
-                }
-            </div>
-        }
-        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
-              (click)="startVoiceRecognitionFor('Length')">🎤</button>
-    </div>
-</aside>
+                            <div class="custom-form-group">
+                                <input formControlName="Length" type="number" placeholder=""
+                                    class="custom-input-field sm">
+                                <label for="" class="input-label"> Length <span
+                                        class="text-danger fw-bold">*</span></label>
+                                @if(containertypeForm.get('Length')?.touched &&
+                                containertypeForm.get('Length')?.invalid){
+                                <div class="error-message">
+                                    @if(containertypeForm.get('Length')?.hasError('required')){
+                                    <span>Required</span>
+                                    } @else if(containertypeForm.get('Length')?.hasError('min')){
+                                    <span>Must be positive number</span>
+                                    } @else if(containertypeForm.get('Length')?.hasError('pattern')){
+                                    <span>Must be a whole number</span>
+                                    }
+                                </div>
+                                }
+                                <button type="button" class=" ms-2 mic-btn"
+                                    (click)="startVoiceRecognitionFor('Length')"><i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'Length' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i></button>
+                            </div>
+                        </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="Width" type="number" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="" class="input-label"> Width <span
                                         class="text-danger fw-bold">*</span></label>
-                                         @if(containertypeForm.get('Width')?.touched && containertypeForm.get('Width')?.invalid){
-                                            <div class="error-message">
-                                                @if(containertypeForm.get('Width')?.hasError('required')){
-                                                    <span>Required</span>
-                                                } 
-                                            </div>
-                                        }
-                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
-              (click)="startVoiceRecognitionFor('Width')">🎤</button>
+                                @if(containertypeForm.get('Width')?.touched && containertypeForm.get('Width')?.invalid){
+                                <div class="error-message">
+                                    @if(containertypeForm.get('Width')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                                <button type="button" class=" ms-2 mic-btn"
+                                    (click)="startVoiceRecognitionFor('Width')"><i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'Width' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i></button>
                             </div>
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="Height" type="number"  placeholder=""
+                                <input formControlName="Height" type="number" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="" class="input-label"> Height <span
                                         class="text-danger fw-bold">*</span></label>
-                                        @if(containertypeForm.get('Height')?.touched && containertypeForm.get('Height')?.invalid){
-                                            <div class="error-message">
-                                                @if(containertypeForm.get('Height')?.hasError('required')){
-                                                    <span>Required</span>
-                                                } 
-                                            </div>
-                                        }
-                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
-              (click)="startVoiceRecognitionFor('Height')">🎤</button>
+                                @if(containertypeForm.get('Height')?.touched &&
+                                containertypeForm.get('Height')?.invalid){
+                                <div class="error-message">
+                                    @if(containertypeForm.get('Height')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                                <button type="button" class=" ms-2 mic-btn"
+                                    (click)="startVoiceRecognitionFor('Height')"><i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'Height' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i></button>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
-                                <input formControlName="NoOfTeu" type="number"  placeholder=""
+                                <input formControlName="NoOfTeu" type="number" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="" class="input-label"> No of TEU <span
                                         class="text-danger fw-bold">*</span></label>
-                                         @if(containertypeForm.get('NoOfTeu')?.touched && containertypeForm.get('NoOfTeu')?.invalid){
-                                            <div class="error-message">
-                                                @if(containertypeForm.get('NoOfTeu')?.hasError('required')){
-                                                    <span>Required</span>
-                                                } 
-                                            </div>
-                                        }
-                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
-              (click)="startVoiceRecognitionFor('NoOfTeu')">🎤</button>
+                                @if(containertypeForm.get('NoOfTeu')?.touched &&
+                                containertypeForm.get('NoOfTeu')?.invalid){
+                                <div class="error-message">
+                                    @if(containertypeForm.get('NoOfTeu')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                                <button type="button" class=" ms-2 mic-btn"
+                                    (click)="startVoiceRecognitionFor('NoOfTeu')"><i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'NoOfTeu' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i></button>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="textarea" formControlName="Remarks" id="text-input" placeholder=""
-                                class="custom-input-field sm">
-                                <label for="text-input" class="input-label">Remarks <span class="text-danger fw-bold">*</span></label>
-                                  @if(containertypeForm.get('Remarks')?.touched && containertypeForm.get('Remarks')?.invalid){
-                                            <div class="error-message">
-                                                @if(containertypeForm.get('Remarks')?.hasError('required')){
-                                                    <span>Required</span>
-                                                } 
-                                            </div>
-                                        }
-                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
-              (click)="startVoiceRecognitionFor('Remarks')">🎤</button>
+                                    class="custom-input-field sm">
+                                <label for="text-input" class="input-label">Remarks <span
+                                        class="text-danger fw-bold">*</span></label>
+                                @if(containertypeForm.get('Remarks')?.touched &&
+                                containertypeForm.get('Remarks')?.invalid){
+                                <div class="error-message">
+                                    @if(containertypeForm.get('Remarks')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                                <button type="button" class=" ms-2 mic-btn"
+                                    (click)="startVoiceRecognitionFor('Remarks')"><i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'Remarks' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i></button>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
-  <div class="custom-form-group custom-form-group-select">
-    <ng-select
-      [items]="statusList"
-      bindLabel="name"
-      bindValue="id"
-      formControlName="status"
-      [class.is-invalid]="containertypeForm.get('status')?.invalid && containertypeForm.get('status')?.touched"
-      [disabled]="containertypeForm.get('status')?.disabled">
-    </ng-select>
-    <label class="input-label">Status <span class="text-danger">*</span></label>
-    @if(containertypeForm.get('status')?.touched && containertypeForm.get('status')?.invalid){
-    <div class="error-message">
-      <span>Required</span>
-    </div>
-    }
-  </div>
-</aside>
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"
+                                    [class.is-invalid]="containertypeForm.get('status')?.invalid && containertypeForm.get('status')?.touched"
+                                    [disabled]="containertypeForm.get('status')?.disabled">
+                                </ng-select>
+                                <label class="input-label">Status <span class="text-danger">*</span></label>
+                                @if(containertypeForm.get('status')?.touched &&
+                                containertypeForm.get('status')?.invalid){
+                                <div class="error-message">
+                                    <span>Required</span>
+                                </div>
+                                }
+                            </div>
+                        </aside>
 
 
 
@@ -331,84 +370,88 @@
                 </div>
             </div>
         </div>
-         @if(isEditMode){
-    <div class="col-12 mt-3">
-    <div class="card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-                       @if(hasPermission('Edoc')) {
-      <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
-        <i class="fas fa-file-alt me-1"></i> e-Doc
-      </button>
-    }
-               @if(hasPermission('Terms and Condition')) {
-      <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openTandC()">
-        <i class="fas fa-clipboard me-1"></i> Terms & Condition
-      </button>
-    }
-                 @if(hasPermission('Authority')) {
-      <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
-        <i class="fas fa-shield-alt me-1"></i> Authorize
-      </button>
-    }
-                
-      @if(hasPermission('Email')) {
-      <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto"(click)="openEmail()">
-        <i class="fas fa-envelope me-1"></i> Email
-      </button>
-    }
-                
+        @if(isEditMode){
+        <div class="col-12 mt-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
+                            @if(hasPermission('Edoc')) {
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info"
+                                (click)="openEDoc()">
+                                <i class="fas fa-file-alt me-1"></i> e-Doc
+                            </button>
+                            }
+                            @if(hasPermission('Terms and Condition')) {
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info"
+                                (click)="openTandC()">
+                                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                            </button>
+                            }
+                            @if(hasPermission('Authority')) {
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info"
+                                (click)="openAuthority()">
+                                <i class="fas fa-shield-alt me-1"></i> Authorize
+                            </button>
+                            }
+
+                            @if(hasPermission('Email')) {
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto"
+                                (click)="openEmail()">
+                                <i class="fas fa-envelope me-1"></i> Email
+                            </button>
+                            }
+
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-     }          
+        }
     </form>
 </div>
 
 <ng-template #auditLogModal let-modal>
-  <div class="modal-header bg-info text-white p-2">
-    <h5 class="modal-title mb-0">Audit Logs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body p-3">
-  <div class="table-responsive">
-    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-      <thead>
-        <tr>
-          <th>Changed At</th>
-          <th>Changed By</th>
-          <th>Operation</th>
-          <th class="text-center">Old Value</th>
-          <th class="text-center">New Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let log of auditLogs">
-          <td>{{ log.changedAt | date:'medium' }}</td>
-          <td>{{ log.changedBy || '-' }}</td>
-          <td>{{ log.operation }}</td>
-          <td class="bg-light-danger">
-        <ul>
-          <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-      <td class="bg-light-success">
-        <ul>
-          <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-        </tr>
-        <tr *ngIf="auditLogs.length === 0">
-          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
-  </div>
+    <div class="modal-header bg-info text-white p-2">
+        <h5 class="modal-title mb-0">Audit Logs</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body p-3">
+        <div class="table-responsive">
+            <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Changed At</th>
+                        <th>Changed By</th>
+                        <th>Operation</th>
+                        <th class="text-center">Old Value</th>
+                        <th class="text-center">New Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let log of auditLogs">
+                        <td>{{ log.changedAt | date:'medium' }}</td>
+                        <td>{{ log.changedBy || '-' }}</td>
+                        <td>{{ log.operation }}</td>
+                        <td class="bg-light-danger">
+                            <ul>
+                                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                        <td class="bg-light-success">
+                            <ul>
+                                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr *ngIf="auditLogs.length === 0">
+                        <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+    </div>
 </ng-template>
