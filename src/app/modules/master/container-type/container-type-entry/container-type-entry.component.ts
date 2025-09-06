@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, NgZone, OnInit, TemplateRef } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -17,6 +17,9 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 
+interface IWindow extends Window {
+  webkitSpeechRecognition: any;
+}
 @Component({
   selector: 'app-container-type-entry',
   standalone: true,
@@ -56,7 +59,9 @@ export class ContainerTypeEntryComponent {
   TandCList: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
-
+  recognition: any;
+  isListening = false;
+  activeControl: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -64,8 +69,50 @@ export class ContainerTypeEntryComponent {
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
     private router: Router,
-    private modalService : NgbModal
-  ) { }
+    private modalService : NgbModal,
+    private ngZone: NgZone
+  ) {
+    const { webkitSpeechRecognition }: IWindow = window as any;
+    this.recognition = new webkitSpeechRecognition() || new (window as any).SpeechRecognition();
+    this.recognition.lang = 'en-IN'; // Language
+    this.recognition.interimResults = false;
+    this.recognition.maxAlternatives = 1;
+ 
+    // Event when recognition result comes
+    this.recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+ 
+      this.ngZone.run(() => {
+        console.log('🎤 Recognized Speech:', transcript);
+        if (this.activeControl) {
+          console.log(this.activeControl)
+          this.containertypeForm.get(this.activeControl)?.setValue(transcript);
+        }
+      });
+    };
+ 
+    this.recognition.onerror = (event: any) => {
+      console.error('Voice recognition error:', event);
+    };
+ 
+    this.recognition.onend = () => {
+      console.log('🛑 Voice recognition stopped');
+      this.ngZone.run(() => (this.isListening = false));
+    };
+   }
+
+   startVoiceRecognitionFor(controlName: string) {
+    if (this.isListening) {
+      this.recognition.stop();
+      this.isListening = false;
+    } else {
+      this.activeControl = controlName; // e.g., CustomerName
+      this.recognition.start();
+      this.isListening = true;
+            console.log('🎙️ Listening...');
+ 
+    }
+  }
 
   ngOnInit(): void {
     this.getAllCompanies()

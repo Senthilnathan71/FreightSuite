@@ -47,6 +47,9 @@
                                     class="custom-input-field sm" [textWithNumbers]="100">
                                 <label for="text-input" class="input-label">Container Name <span
                                         class="text-danger fw-bold">*</span></label>
+                                         <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
+              (click)="startVoiceRecognitionFor('ContainerName')">🎤</button>
+                            </div>
                             @if(containertypeForm.get('ContainerName')?.touched && containertypeForm.get('ContainerName')?.invalid){
                                 <div class="error-message">
                                     @if(containertypeForm.get('ContainerName')?.hasError('required')){
@@ -58,7 +61,6 @@
                                     }
                                 </div>
                             }
-                            </div>
                         </aside>
 
                         <aside class="col-md-4">
@@ -76,6 +78,8 @@
                                                 }
                                             </div>
                                         }
+                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
+              (click)="startVoiceRecognitionFor('ContainerCode')">🎤</button>
                             </div>
                         </aside>
 
@@ -114,6 +118,8 @@
                                                 }
                                             </div>
                                         }
+                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
+              (click)="startVoiceRecognitionFor('ContainerIsoCode')">🎤</button>
                             </div>
                         </aside>
 
@@ -132,6 +138,8 @@
                 }
             </div>
         }
+        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
+              (click)="startVoiceRecognitionFor('ContainerSize')">🎤</button>
     </div>
 </aside>
 
@@ -148,6 +156,8 @@
                                                 } 
                                             </div>
                                         }
+                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
+              (click)="startVoiceRecognitionFor('ContainerCategory')">🎤</button>
                             </div>
                         </aside>
 
@@ -164,6 +174,8 @@
                                                 } 
                                             </div>
                                         }
+                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
+              (click)="startVoiceRecognitionFor('GrossWeight')">🎤</button>
                             </div>
                         </aside>
 
@@ -180,6 +192,8 @@
                                                 } 
                                             </div>
                                         }
+                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
+              (click)="startVoiceRecognitionFor('TareWeight')">🎤</button>
                             </div>
                         </aside>
 
@@ -196,6 +210,8 @@
                                                 } 
                                             </div>
                                         }
+                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
+              (click)="startVoiceRecognitionFor('MaxVolume')">🎤</button>
                             </div>
                         </aside>
 
@@ -216,6 +232,8 @@
                 }
             </div>
         }
+        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
+              (click)="startVoiceRecognitionFor('Length')">🎤</button>
     </div>
 </aside>
                         <aside class="col-md-4">
@@ -231,6 +249,8 @@
                                                 } 
                                             </div>
                                         }
+                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
+              (click)="startVoiceRecognitionFor('Width')">🎤</button>
                             </div>
                         </aside>
                         <aside class="col-md-4">
@@ -246,6 +266,8 @@
                                                 } 
                                             </div>
                                         }
+                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
+              (click)="startVoiceRecognitionFor('Height')">🎤</button>
                             </div>
                         </aside>
 
@@ -262,6 +284,8 @@
                                                 } 
                                             </div>
                                         }
+                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
+              (click)="startVoiceRecognitionFor('NoOfTeu')">🎤</button>
                             </div>
                         </aside>
 
@@ -277,6 +301,8 @@
                                                 } 
                                             </div>
                                         }
+                                        <button type="button" class="btn btn-sm btn-light ms-2 mic-btn"
+              (click)="startVoiceRecognitionFor('Remarks')">🎤</button>
                             </div>
                         </aside>
 
