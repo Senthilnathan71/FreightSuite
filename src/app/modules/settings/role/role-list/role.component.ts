@@ -20,6 +20,7 @@ import { AuthorityEntryComponent } from 'src/app/modules/master/authority/author
 import { EdocComponent } from '../../edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-role',
@@ -461,17 +462,18 @@ applySorting() {
   modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
 }
 
-openAuthority() {
-  if (!this.roleData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.roleData;
-  modalRef.componentInstance.idLabel = 'Role Id';
-  modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
-}
+
+    openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.RoleMasterSid;
+  }
 
 openEDoc() {
   if (!this.roleData) return;

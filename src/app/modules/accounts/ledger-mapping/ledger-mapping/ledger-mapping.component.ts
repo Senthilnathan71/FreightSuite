@@ -38,6 +38,7 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { TemplateRef } from '@angular/core';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-ledger-mapping',
@@ -549,16 +550,18 @@ report(): void {
     modalRef.componentInstance.item = this.ledgerMappingData;
   }
 
-  openAuthority(): void {
-    if (!this.ledgerMappingData) return;
-    const modalRef = this.modalService.open(AuthorityEntryComponent, {
+
+    openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',
       centered: true,
-      backdrop: 'static',
+      backdrop: 'static'
     });
-    modalRef.componentInstance.item = this.ledgerMappingData;
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.LedgerMappingId;
   }
-
   openEDoc(): void {
     if (!this.ledgerMappingData) return;
     const modalRef = this.modalService.open(EdocComponent, {
