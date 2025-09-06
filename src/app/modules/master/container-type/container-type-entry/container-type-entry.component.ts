@@ -102,17 +102,58 @@ export class ContainerTypeEntryComponent {
    }
 
    startVoiceRecognitionFor(controlName: string) {
-    if (this.isListening) {
+  if (this.isListening) {
+    this.recognition.stop();
+    this.isListening = false;
+  } else {
+    this.activeControl = controlName;
+    this.isListening = true;
+    console.log(`🎙️ Listening for ${controlName}...`);
+    this.recognition.start();
+
+    this.recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript.trim();
+      console.log(`✅ Recognized for ${controlName}: ${transcript}`);
+
+      let value: any = transcript;
+
+      // 🔑 Define numeric fields (from your Prisma model)
+      const numericFields = [
+        'Length',
+        'Width',
+        'Height',
+        'MaxVolume',
+        'TareWeight',
+        'GrossWeight',
+        'NoOfTeu'
+      ];
+
+      // Convert to number if field is numeric
+      if (numericFields.includes(controlName)) {
+        const parsed = parseFloat(transcript.replace(/[^0-9.]/g, ''));
+        value = isNaN(parsed) ? null : parsed;
+      }
+
+      // Patch value into form
+      this.containertypeForm.get(controlName)?.setValue(value);
+      this.containertypeForm.get(controlName)?.markAsDirty();
+
+      // Stop listening after first result
       this.recognition.stop();
       this.isListening = false;
-    } else {
-      this.activeControl = controlName; // e.g., CustomerName
-      this.recognition.start();
-      this.isListening = true;
-            console.log('🎙️ Listening...');
- 
-    }
+    };
+
+    this.recognition.onerror = (event: any) => {
+      console.error('❌ Voice recognition error:', event.error);
+      this.isListening = false;
+    };
+
+    this.recognition.onend = () => {
+      this.isListening = false;
+    };
   }
+}
+
 
   ngOnInit(): void {
     this.getAllCompanies()
