@@ -245,7 +245,14 @@ auditLogs: any[] = []; // Stores audit logs
     if (!UserMasterSid || !currentMenuId) {
       return;
     }
-    this.leadService.isUserAuthorizer(UserMasterSid, currentMenuId, QuoteHeaderSid).subscribe(
+    const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MenuMasterSid: currentMenuId,
+      UserMasterSid: UserMasterSid,
+      DocumentSid: QuoteHeaderSid
+    }
+    this.leadService.isUserAuthorizer(payload).subscribe(
       (resp: any) => {
         this.isAuthorizedUser = resp.data?.canAuthorize
       }

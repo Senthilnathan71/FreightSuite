@@ -75,6 +75,8 @@ export class DocumentAuthorizationComponent {
             search: this.filterValue.trim() || '',
             page: this.page,
             pageSize: this.pageSize,
+            activeCompanyId : this.currentCompany?.CompanyMasterSid,
+            activeBranchId : this.currentBranch?.BranchMasterSid,
         }
         this.masterService.searchPendingApproval(params,this.userData?.UserMasterSid).subscribe({
             next : (resp: any) => {

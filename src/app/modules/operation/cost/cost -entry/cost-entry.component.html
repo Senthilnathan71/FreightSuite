@@ -113,7 +113,7 @@
                 <button class="action-icon edit" (click)="openModalBasedOnTab(rateModal,rate,rateIndex)">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="action-icon copy">
+                <button class="action-icon copy" (click)="copyRate(rateModal,rate)">
                   <i class="fas fa-copy"></i>
                 </button>
                 <button class="action-icon delete" (click)="deleteRate(rateIndex,'Cost',rate.BookingRatesSid)">
@@ -229,7 +229,7 @@
                 <button class="action-icon edit" (click)="openModalBasedOnTab(rateModal,rate,rateIndex)">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="action-icon copy">
+                <button class="action-icon copy" (click)="copyRate(rateModal,rate)">
                   <i class="fas fa-copy"></i>
                 </button>
                 <button class="action-icon delete" (click)="deleteRate(rateIndex,'Revenue',rate.BookingRatesSid)">

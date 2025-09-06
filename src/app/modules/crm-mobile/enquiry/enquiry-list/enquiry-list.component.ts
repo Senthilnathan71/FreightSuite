@@ -189,11 +189,11 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 
     createNew() {
-      this.route.navigate(['crm/enquiry'])
+      this.route.navigate(['crm/enquiry/entry'])
     }
 
     editEnquiry(id) {
-      this.route.navigate(['crm/enquiry', id])
+      this.route.navigate(['crm/enquiry/entry', id])
     }
 
     goForQuotationCreation(EnquiryHeaderSid) {

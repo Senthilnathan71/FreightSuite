@@ -132,9 +132,9 @@ export class ConnectionComponent implements OnInit {
     }
   }
 
-  minStartDate : any;
+  minStartDate : any = new Date();
   @Input()
-  set minDate(value:any){
+  set minDate(value:Date){
     this.minStartDate = value;
     console.log(this.minStartDate);
   }
@@ -168,10 +168,10 @@ export class ConnectionComponent implements OnInit {
       VoyageNo: [null],
       POL: [null],
       POD: [null],
-      ETD: [{ value: '', disabled: true }],
-      ETA: [{ value: '', disabled: true }],
-      ATD: [''],
-      ATA: [''],
+      ETD: [{ value: null, disabled: true }],
+      ETA: [{ value: null, disabled: true }],
+      ATD: [null],
+      ATA: [null],
       status: ['Active']
     })
   }
@@ -200,10 +200,10 @@ export class ConnectionComponent implements OnInit {
       VoyageNo: [data?.VoyageNo || null],
       POL: [data?.POL || null],
       POD: [data?.POD || null],
-      ETD: [data?.ETD ? new Date(data.ETD) : ''],
-      ETA: [data?.ETA ? new Date(data.ETA) : ''],
-      ATD: [data?.ATD ? new Date(data.ATD) : ''],
-      ATA: [data?.ATA ? new Date(data.ATA) : ''],
+      ETD: [data?.ETD ? new Date(data.ETD) : null],
+      ETA: [data?.ETA ? new Date(data.ETA) : null],
+      ATD: [data?.ATD ? new Date(data.ATD) : null],
+      ATA: [data?.ATA ? new Date(data.ATA) : null],
       status: [data.status ? (data.status === "A" ? "Active" : "Suspended") : "Active"]
     })
     return connectionForm;
@@ -248,7 +248,7 @@ export class ConnectionComponent implements OnInit {
 
   setMinDateForCurrentConnection() {
     if (this.currentConnectIndex === 0 || this.currentConnectIndex === -1) {
-      this.minStartDate = this.minStartDate;
+      this.minStartDate = new Date(this.minStartDate);
     } else {
       const connections = this.connectionFormArray.getRawValue();
       const previousConnection = connections[this.currentConnectIndex - 1];
@@ -528,11 +528,12 @@ export class ConnectionComponent implements OnInit {
 
   toNgbDateStruct(date: Date | null): NgbDateStruct | null {
     if (!date) return null;
-    return {
+    const ngbDate = {
       year: date.getFullYear(),
       month: date.getMonth() + 1,
       day: date.getDate()
     };
+    return ngbDate;
   }
 
   reportConnections(): void {

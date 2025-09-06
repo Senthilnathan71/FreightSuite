@@ -201,9 +201,24 @@ auditLogs: any[] = []; // Stores audit logs
     return this.authorityForm.get('authDetails') as FormArray
   }
 
-  removeAuthDetail(detailIndex: number) {
-    this.authDetails.removeAt(detailIndex)
-    this.updateFilteredAuthorisers();
+  removeAuthDetail(detailIndex: number,AuthorityDetailSid : number) {
+    if(AuthorityDetailSid){
+      this.masterService.deleteAuthorityDetailById(AuthorityDetailSid).subscribe(
+        (resp:any)=>{
+          if(resp.status){
+            this.appSettingService.showSuccess('Authority Detail deleted successfully');
+            this.authDetails.removeAt(detailIndex);
+            this.updateFilteredAuthorisers();
+          } else {
+            this.appSettingService.showError('Error deleting Authority Detail');
+          }
+        }
+      )
+    } else {
+      this.appSettingService.showSuccess('Authority Detail deleted successfully');
+      this.authDetails.removeAt(detailIndex)
+      this.updateFilteredAuthorisers();
+    }
   }
 
 
