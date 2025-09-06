@@ -17,6 +17,7 @@ import { EmailEntryComponent } from '../../email/email-entry/email-entry.compone
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from '../../edoc/edoc/edoc.component';
 import { take } from 'rxjs';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-menu-entry',
@@ -572,18 +573,19 @@ export class MenuEntryComponent implements OnInit {
     });
   }
 
-  openAuthority() {
-    if (!this.menuData) return;
-    const modalRef = this.modalService.open(AuthorityEntryComponent, {
+ 
+
+    openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',
       centered: true,
       backdrop: 'static'
     });
-    modalRef.componentInstance.item = this.menuData;
-    modalRef.componentInstance.idLabel = 'Menu Id';
-    modalRef.componentInstance.idValue = this.menuData?.MenuMasterSid;
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.MenuMasterSid;
   }
-
   openEDoc() {
     if (!this.menuData) return;
     const modalRef = this.modalService.open(EdocComponent, {

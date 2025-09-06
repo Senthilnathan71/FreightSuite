@@ -18,6 +18,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-vendor-tds-entry',
@@ -468,13 +469,17 @@ openAuditLogs(modal: TemplateRef<any>) {
       });
     }
   
-    openAuthority() {
-      if (!this.supplierTDSdata) return;
-      const modalRef = this.modalService.open(AuthorityEntryComponent, {
+  
+      openAuthority() {
+      const MenuMasterSid = localStorage.getItem('currentMenuId');
+      if (!MenuMasterSid) return;
+      const modalRef = this.modalService.open(AuthorityLogComponent, {
         size: 'lg',
         centered: true,
         backdrop: 'static'
       });
+      modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+      modalRef.componentInstance.documentSid = this.SupplierTdsMappingSid;
     }
   
     openEDoc() {

@@ -10,12 +10,14 @@ import { Router ,ActivatedRoute } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalRef,NgbDateStruct, NgbCalendar } from '@ng-bootstrap/ng-bootstrap';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { AccountsService } from '../../accounts.service';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 @Component({
   selector: 'app-chart-account-entry',
   standalone: true,
@@ -33,7 +35,12 @@ export class ChartAccountEntryComponent {
   isEditMode: boolean = false;
   currencyList: any[] = [];
   currentCompany:any;
-
+  userData: any;
+  today = this.calendar.getToday();
+  todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
+  minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
+  permissions : string[] = [];
+  currentMenuPermissions: any = {};
   modeOfCategory = [
     { id: 1, name: 'Category 1' },
     { id: 1, name: 'Category 2' },
@@ -50,7 +57,7 @@ export class ChartAccountEntryComponent {
 
   
 auditLogs: any[] = []; // Stores audit logs
-  auditLogModalRef!: NgbModalRef;
+ auditLogModalRef!: NgbModalRef;
 
 
   constructor(
@@ -59,7 +66,9 @@ auditLogs: any[] = []; // Stores audit logs
     private route: Router,
      private activatedRoute: ActivatedRoute,
     private appSettingService: AppSettingsService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+     private calendar: NgbCalendar,
+      private accountService: AccountsService,
   ) {}
 
    ngOnInit(): void {
@@ -74,6 +83,14 @@ auditLogs: any[] = []; // Stores audit logs
         this.loadChartAccount();
       }
     });
+      const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if(userProfile){
+			this.userData = userProfile;
+      this.checkPermissions();
+		}
+    if (!this.isEditMode) {
+      this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
+    }
   }
 
  getCurrencies(): void {
@@ -88,8 +105,38 @@ auditLogs: any[] = []; // Stores audit logs
     }
   });
 }
+  checkPermissions() {
+    const currentMenuId = Number(localStorage.getItem('currentMenuId'));
+    const userRole = this.userData?.userRoleMaster[0]?.RoleMasterSid;
+    console.log(currentMenuId);
+    console.log(userRole);
+    if (currentMenuId && userRole) {
+      this.accountService
+        .getRoleMenuPermissions(currentMenuId, userRole)
+        .subscribe({
+          next: (response) => {
+            this.currentMenuPermissions = response.data.MenuPermissions || {};
+            this.permissions = Object.keys(this.currentMenuPermissions).filter(
+              (key) => this.currentMenuPermissions[key] === 'isTrue'
+            );
+            console.log(this.permissions);
+          },
+        });
+    }
+  }
 
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
+  }
 
+ toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+    if (!date) return null;
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+    };
+  }
 
   initForm() {
     this.chartForm = this.fb.group({
@@ -302,16 +349,17 @@ openAuditLogs(modal: TemplateRef<any>) {
     });
   }
 
-  openAuthority() {
-    if (!this.chartData) return;
-    const modalRef = this.modalService.open(AuthorityEntryComponent, {
+
+    openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',
       centered: true,
-      backdrop: 'static',
+      backdrop: 'static'
     });
-    modalRef.componentInstance.item = this.chartData;
-    modalRef.componentInstance.idLabel = 'Vessel Id';
-    modalRef.componentInstance.idValue = this.chartData?.VesselMasterSid;
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.chartMasterSid;
   }
 
   openEDoc() {

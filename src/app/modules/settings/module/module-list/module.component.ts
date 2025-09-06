@@ -19,6 +19,7 @@ import { AuthorityEntryComponent } from 'src/app/modules/master/authority/author
 import { EdocComponent } from '../../edoc/edoc/edoc.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 @Component({
   selector: 'app-module',
@@ -381,17 +382,18 @@ applySorting() {
   });
 }
 
-openAuthority() {
-  if (!this.moduleData) return;
-  const modalRef = this.modalService.open(AuthorityEntryComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
-  });
-  modalRef.componentInstance.item = this.moduleData;
-  modalRef.componentInstance.idLabel = 'Module Id';
-  modalRef.componentInstance.idValue = this.moduleData?.ModuleMasterSid;
-}
+
+    openAuthority() {
+    const MenuMasterSid = localStorage.getItem('currentMenuId');
+    if (!MenuMasterSid) return;
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
+    modalRef.componentInstance.documentSid = this.ModuleMasterSid;
+  }
 
 openEDoc() {
   if (!this.moduleData) return;
