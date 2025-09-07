@@ -73,6 +73,11 @@
                                     }
                                     }
                                 </div>
+                                <button type="button" class=" mic-btn"
+                                    (click)="startVoiceRecognitionFor('departmentName')"> <i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'departmentName' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i>
+                                </button>
                             </div>
 
                         </aside>
@@ -96,6 +101,11 @@
                                     }
                                     }
                                 </div>
+                                <button type="button" class=" mic-btn"
+                                    (click)="startVoiceRecognitionFor('departmentCode')"> <i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'departmentCode' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i>
+                                </button>
                             </div>
                         </aside>
 
@@ -142,6 +152,11 @@
                                     }
                                     }
                                 </div>
+                                <button type="button" class=" mic-btn"
+                                    (click)="startVoiceRecognitionFor('ExportImport')"> <i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'ExportImport' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i>
+                                </button>
                             </div>
                         </aside>
                         <aside class="col-md-4">
@@ -162,6 +177,11 @@
                                     }
                                     }
                                 </div>
+                                <button type="button" class=" mic-btn"
+                                    (click)="startVoiceRecognitionFor('FCLLCL')"> <i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'FCLLCL' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i>
+                                </button>
                             </div>
                         </aside>
                         <aside class="col-md-4">
@@ -182,6 +202,11 @@
                                     }
                                     }
                                 </div>
+                                <button type="button" class=" mic-btn"
+                                    (click)="startVoiceRecognitionFor('Division')"> <i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'Division' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i>
+                                </button>
                             </div>
                         </aside>
                         <aside class="col-md-4">
@@ -198,6 +223,11 @@
                                     }
                                     }
                                 </div>
+                                <button type="button" class=" mic-btn"
+                                    (click)="startVoiceRecognitionFor('Remarks')"> <i class="fas fa-microphone"
+                                        [ngStyle]="{'color': activeControl === 'Remarks' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
+                                    </i>
+                                </button>
                             </div>
                         </aside>
 <aside class="col-md-4">

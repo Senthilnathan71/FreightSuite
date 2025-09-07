@@ -127,33 +127,48 @@ export class DepartmentEntryComponent {
         value = isNaN(parsed) ? null : parsed;
       }
 
-      if (controlName === 'departmentType' && this.departmentTypeOptions) {
-      const spoken = transcript.toLowerCase();
-      const synonyms: Record<string, string> = {
-          sea: "Sea",
-          ocean: "Sea",
-          air: "Air",
-          flight: "Air",
-          sky: "Air",
-          road: "Road",
-          land: "Road",
-          transport: "Transport"
-        };
+      const dropdownOptions: Record<string, string[]> = {
+        departmentType: this.departmentTypeOptions || [],
+        ExportImport: ["Export", "Import"],
+        FCLLCL: ["FCL", "LCL"],
+        Division: this.divisionList?.map((d: any) => d.DivisionName) || []
+      };
 
-        // Check synonyms first
+      // Synonyms (extend as needed)
+      const synonyms: Record<string, string> = {
+        sea: "Sea",
+        seaway: "Sea",
+        ocean: "Sea",
+        air: "Air",
+        flight: "Air",
+        sky: "Air",
+        road: "Road",
+        land: "Road",
+        export: "Export",
+        import: "Import",
+        fcl: "FCL",
+        full: "FCL",
+        lcl: "LCL",
+        less: "LCL"
+      };
+
+        if (dropdownOptions[controlName]) {
+        const spoken = transcript.toLowerCase();
         let matchedOption: string | null = null;
+
+        // ✅ Check synonyms first
         for (const [key, val] of Object.entries(synonyms)) {
           if (spoken.includes(key.toLowerCase())) {
-            matchedOption = this.departmentTypeOptions.find(
+            matchedOption = dropdownOptions[controlName].find(
               opt => opt.toLowerCase() === val.toLowerCase()
             ) || null;
             break;
           }
         }
 
-        // If no synonym match, try partial match with options
+        // ✅ Fuzzy match with actual dropdown options
         if (!matchedOption) {
-          matchedOption = this.departmentTypeOptions.find(
+          matchedOption = dropdownOptions[controlName].find(
             opt =>
               opt.toLowerCase() === spoken ||
               opt.toLowerCase().includes(spoken) ||
@@ -163,9 +178,9 @@ export class DepartmentEntryComponent {
 
         if (matchedOption) {
           value = matchedOption;
-          console.log(`🎯 Matched Department Type: ${matchedOption}`);
+          console.log(`🎯 Matched ${controlName}: ${matchedOption}`);
         } else {
-          console.warn(`⚠️ No matching option found for "${spoken}"`);
+          console.warn(`⚠️ No matching option found for "${spoken}" in ${controlName}`);
           value = null;
         }
       }
