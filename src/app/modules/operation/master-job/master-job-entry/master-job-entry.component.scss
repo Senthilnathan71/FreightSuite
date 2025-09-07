@@ -1318,3 +1318,48 @@
   color: white !important;
   filter: brightness(0) invert(1);
 }
+.audit-log-modal {
+  .modal-dialog {
+    max-width: 90%;
+  }
+  
+  .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  ul {
+    padding-left: 1rem;
+    margin-bottom: 0;
+    
+    li {
+      font-size: 0.875rem;
+      word-break: break-word;
+    }
+  }
+}
+
+.recent-changes {
+  margin-top: 1rem;
+  
+  .change-item {
+    padding: 0.5rem;
+    border-left: 3px solid #007bff;
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+    
+    .change-operation {
+      font-weight: bold;
+      text-transform: capitalize;
+    }
+    
+    .change-user {
+      color: #495057;
+    }
+    
+    .change-date {
+      color: #6c757d;
+      font-size: 0.875rem;
+    }
+  }
+}

@@ -604,6 +604,7 @@ auditLogs: any[] = []; // Stores audit logs
     this.operationService.getBookingById(BookingHeaderSid).subscribe(
       (resp: any) => {
         if (resp.status) {
+          // this.resetForm();
           this.patchValues(resp.data);
           this.bookingData = resp.data;
           this.minDate = undefined;
@@ -734,13 +735,13 @@ auditLogs: any[] = []; // Stores audit logs
     this.updateProductPagination();
     this.handleProductRelatedCalculation();
 
-    this.bookingConnectionsArr = response.bookingConnection || []; // for child component
-    this.connectionResult = this.bookingConnectionsArr.map(connection => {
+    this.bookingConnectionsArr = (response.bookingConnection || []).map(connection => {
       return {
         ...connection,
-        status : connection.status === "A" ? "Active" : "Suspended"
+        TransactionSid : connection.BookingConnectionSid,
       }
-    })
+    }); // for child component
+    this.connectionResult = [...this.bookingConnectionsArr]
 
     this.bookingRateArr = response.bookingRates || [];
     this.rateResult = [...this.bookingRateArr];

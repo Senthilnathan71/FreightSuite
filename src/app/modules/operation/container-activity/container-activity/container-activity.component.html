@@ -1,28 +1,182 @@
-<div class="col-12 p-0">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-            <thead>
-                <tr class="bg-info">
-                    <th class="bg-transparent text-light">Container No</th>
-                    <th class="bg-transparent text-light">Cont Type</th>
-                    <th class="bg-transparent text-light">Activity Name</th>
-                    <th class="bg-transparent text-light">Date & Time</th>
-                    <th class="bg-transparent text-light">From</th>
-                    <th class="bg-transparent text-light">To</th>
-                    <th class="bg-transparent text-light">Remarks</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                </tr>
-            </tbody>
-        </table>
+<div class="modern-table-container">
+    <div>
+        <div class="table-toolbar">
+            <div class="toolbar-left">
+                <button class="table-action-btn primary" (click)="openActivityModal()" [disabled]="disableAddBtn">
+                    <i class="fas fa-plus"></i> Add Activity
+                </button>
+            </div>
+            <div class="toolbar-right">
+                <button class="table-action-btn export" (click)="reportActivities()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+        
+        @if(activityDataLength > 0){
+        <div class="modern-table-wrapper">  
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th width="10%">Actions</th>
+                        <th>Container No</th>
+                        <th>Container Type</th>
+                        <th>Activity Name</th>
+                        <th>Date & Time</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for(activity of slicedActivityFormArr ; track activity ; let activityIndex = $index){
+                    <tr class="table-row">
+                        <td class="actions-cell">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <a class="text-info mx-2" (click)="openActivityModal(activity, activityIndex)">
+                                    <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                </a>
+                                <a class="text-danger mx-2 ps-3 border-start" 
+                                   (click)="deleteActivity(activityIndex, activity.ContainerActivitySid)">
+                                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                </a>
+                            </div>
+                        </td>
+                        <td>{{ activity.ContainerNumber || '' }}</td>
+                        <td>{{ getContainerTypeName(activity.ContainerType) }}</td>
+                        <td>{{ activity.ActivityName || '' }}</td>
+                        <td>{{ activity.ActivityDate | formatDate }}</td>
+                        <td>{{ activity.ActivityFrom || '' }}</td>
+                        <td>{{ activity.ActivityTo || '' }}</td>
+                        <td>{{ activity.Remarks || '' }}</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="mt-2">
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="activityDataLength" [pageSize]="pageSize"
+                    [(page)]="page" (pageChange)="updateActivityPagination()" [rotate]="true" [ellipses]="false" [maxSize]="10">
+                </ngb-pagination>
+            </div>
+        </div>
+        } @else {
+        <div class="col-12">
+            <div class="alert alert-info text-center">No activities added yet.</div>
+        </div>
+        }
     </div>
 </div>
+
+<ng-template #activityModal let-modal>
+    <div class="modal-header p-2 bg-info">
+        <h5 class="modal-title text-white">{{currentActivityIndex === -1 ? 'Add' : 'Edit'}} Container Activity</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close"
+            (click)="modal.dismiss('Cross click')"></button>
+    </div>
+
+    <div class="modal-body">
+        <div class="row compact-form" [formGroup]="activityForm">
+            <aside class="col-md-4">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="ContainerNumber"
+                           [items]="filteredContainerList"
+                           bindLabel="ContainerNumber"
+                           bindValue="ContainerNumber"
+                           placeholder="Select Container"
+                           (change)="onContainerChange($event)"
+                           (search)="filterContainers($event.term)">
+                        <ng-template ng-option-tmp let-item="item">
+                            <div>
+                                <strong>{{ item.ContainerNumber }}</strong>
+                                <span *ngIf="item.ContainerType"> - {{ item.ContainerName }}</span>
+                            </div>
+                        </ng-template>
+                    </ng-select>
+                    <label class="input-label">Container No <span class="text-danger">*</span></label>
+                    @if(c['ContainerNumber']?.touched && c['ContainerNumber']?.errors?.['required']){
+                    <div class="error-message">Container Number is required</div>
+                    }
+                </div>
+            </aside>
+
+            <aside class="col-md-4">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="ContainerType"
+                           [items]="containerTypeList"
+                           bindLabel="ContainerName"
+                           bindValue="ContainerTypeMasterSid"
+                           placeholder="Select Container Type"
+                           [readonly]="!!activityForm.get('ContainerNumber')?.value">
+                    </ng-select>
+                    <label class="input-label">Container Type</label>
+                </div>
+            </aside>
+
+            <aside class="col-md-4">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="ActivityCode" 
+                              [items]="activityMasterList" 
+                              bindLabel="ActivityName" 
+                              bindValue="ActivityCode"
+                              placeholder="Select Activity"
+                              (change)="onActivityChange($event)">
+                    </ng-select>
+                    <label class="input-label">Activity Name <span class="text-danger">*</span></label>
+                    @if(c['ActivityCode']?.touched && c['ActivityCode']?.errors?.['required']){
+                    <div class="error-message">Activity is required</div>
+                    }
+                </div>
+            </aside>
+
+            <aside class="col-md-4">
+                <div class="custom-form-group custom-form-group-select">
+                    <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d="ngbDatepicker"
+                            formControlName="ActivityDate" (click)="d.toggle()" />
+                        <button class="btn bi bi-calendar3" (click)="d.toggle()" type="button">
+                            <i-feather name="calendar" class="feather-sm"></i-feather>
+                        </button>
+                    </div>
+                    <label class="input-label">Date & Time <span class="text-danger">*</span></label>
+                    @if(c['ActivityDate']?.touched && c['ActivityDate']?.errors?.['required']){
+                    <div class="error-message">Date is required</div>
+                    }
+                </div>
+            </aside>
+
+            <aside class="col-md-4">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="ActivityFrom"
+                               [items]="fromOptions"
+                               placeholder="Select From"
+                               (change)="onFromChange($event)">
+                    </ng-select>
+                    <label class="input-label">From</label>
+                </div>
+            </aside>
+
+            <aside class="col-md-4">
+                <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="ActivityTo"
+                               [items]="toOptions"
+                               placeholder="Select To"
+                               (change)="onToChange($event)">
+                    </ng-select>
+                    <label class="input-label">To</label>
+                </div>
+            </aside>
+
+            <aside class="col-md-12">
+                <div class="custom-form-group">
+                    <textarea formControlName="Remarks" class="custom-input-field sm" rows="3" placeholder=""></textarea>
+                    <label class="input-label">Remarks</label>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss('Cancel')">Cancel</button>
+        <button type="button" class="btn btn-sm btn-info" (click)="onActivitySubmit()">Save</button>
+    </div>
+</ng-template>

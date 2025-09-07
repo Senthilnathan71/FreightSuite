@@ -121,11 +121,12 @@
                         <tr>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
-                                    @if(hasPermission('View')) {
-                                    <button class="btn btn-sm btn-link text-info p-0 mx-2" title="Edit">
-                                        <i-feather class="feather-sm" name="eye"></i-feather>
-                                    </button>
-                                    }
+                                   @if(hasPermission('View')) {
+<button class="btn btn-sm btn-link text-info p-0 mx-2" title="Edit"
+        (click)="navigateToEdit(item.MasterJobSid)">
+    <i-feather class="feather-sm" name="eye"></i-feather>
+</button>
+}
                                     <!-- @if(hasPermission('Delete')) {
                                     <button class="btn btn-sm btn-link text-danger p-0 border-start ps-3"
                                         title="Delete">

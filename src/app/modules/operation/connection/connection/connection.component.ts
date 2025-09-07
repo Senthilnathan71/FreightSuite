@@ -68,9 +68,13 @@ export class ConnectionComponent implements OnInit {
   public _portList: any[] = [];
   @Input()
   set dataItems(value: any[]) {
+    console.log(value);
     if (value && value.length > 0) {
       this._dataItems = value;
       if(!this.disableAddBtn){
+        this.connectionFormArray?.clear();
+        this.connectionDataLength = 0;
+        this.slicedConnectionFormArr = [];
         this.patchValues(this._dataItems);
       }
     } else {
@@ -162,7 +166,8 @@ export class ConnectionComponent implements OnInit {
 
   initConnectionForm() {
     this.connectionForm = this.fb.group({
-      BookingConnectionSid: [null],
+      // BookingConnectionSid: [null],
+      TransactionSid: [null],
       Mode: [null],
       VesselName: [null],
       VoyageNo: [null],
@@ -194,7 +199,8 @@ export class ConnectionComponent implements OnInit {
   createBookingConnectionGroup(data?: any): FormGroup {
     console.log(data);
     const connectionForm = this.fb.group({
-      BookingConnectionSid: [data?.BookingConnectionSid || null],
+      // BookingConnectionSid: [data?.BookingConnectionSid || null],
+     TransactionSid: [data?.TransactionSid || null],
       Mode : [data?.Mode || null],
       VesselName: [data?.VesselName || null],
       VoyageNo: [data?.VoyageNo || null],
@@ -221,7 +227,8 @@ export class ConnectionComponent implements OnInit {
       this.currentConnectIndex = connectionIndex;
       this.selectedMode = data.Mode;
       this.connectionForm.patchValue({
-        BookingConnectionSid: data.BookingConnectionSid,
+        // BookingConnectionSid: data.BookingConnectionSid,
+        TransactionSid: data?.TransactionSid ?? null,
         Mode : data.Mode,
         VesselName: data.VesselName,
         VoyageNo: data.VoyageNo,
@@ -387,6 +394,7 @@ export class ConnectionComponent implements OnInit {
   }
 
   onVesselChange(vessel: any) {
+    console.log(vessel);
     if (!vessel) {
       this.voyageList = [];
       this.c['VoyageNo']?.setValue(null);
@@ -405,6 +413,7 @@ export class ConnectionComponent implements OnInit {
     const PODSid = (this.portList.find(port => port.PortName === POD)?.PortMasterSid);
     const vessel = this.c['VesselName']?.value;
     const vesselId = (this.vesselList.find(vsl => vsl.VesselName === vessel)?.VesselMasterSid);
+    console.log(POL,POD,vesselId);
     if (!POL || !POD || !vesselId) {
       return;
     }
@@ -467,10 +476,10 @@ export class ConnectionComponent implements OnInit {
   }
 
 
-  deleteBookingConnection(connectionIndex: number, BookingConnectionSid?: number) {
+  deleteBookingConnection(connectionIndex: number, TransactionSid?: number) {
     const realIndex = ((this.page1 - 1 ) * this.pageSize1) + connectionIndex;
-    if (BookingConnectionSid) {
-      this.operationService.deleteBookingConnection(BookingConnectionSid).subscribe(
+    if (TransactionSid) {
+      this.operationService.deleteBookingConnection(TransactionSid).subscribe(
         (resp: any) => {
           if (resp.status) {
             this.connectionFormArray.removeAt(realIndex);

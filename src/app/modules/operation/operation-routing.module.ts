@@ -59,6 +59,14 @@ export const OperationRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Master Job' }],
         },
       },
+       {
+        path: 'master-job/entry/:id',
+        component: MasterJobEntryComponent,
+        data: {
+          title: 'Master Job',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Master Job' }],
+        },
+      },
       
       {
         path: 'report/list',
@@ -158,4 +166,5 @@ export const OperationRoutes: Routes = [
       },
     ],
   },
+  
 ];

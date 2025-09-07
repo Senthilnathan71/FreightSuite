@@ -185,6 +185,9 @@ export class MasterJobListComponent {
   navigateToMasterJob() {
     this.router.navigate(['operation/master-job/entry']);
   }
+  navigateToEdit(masterJobSid: number) {
+    this.router.navigate(['operation/master-job/entry', masterJobSid]);
+}
 
   resetPage() {
     this.page = 1;

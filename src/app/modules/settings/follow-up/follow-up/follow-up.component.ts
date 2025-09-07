@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -31,6 +31,7 @@ import html2canvas from 'html2canvas';
   templateUrl: './follow-up.component.html',
   styleUrl: './follow-up.component.scss',
    providers: [
+          { provide: NgbActiveModal, useValue: {} } ,
           { provide: NgbDateAdapter, useClass: CustomDateAdapter },
           { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
       ],
@@ -38,9 +39,15 @@ import html2canvas from 'html2canvas';
 export class FollowUpComponent implements OnInit {
   @Input() parentEmail: string;      
   @Input() parentEmailCC?: string;
-  @Input() parentSubject!: string;     // Subject
+  @Input() parentSubject!: string;    
   @Input() parentMailbody!: string;
   @Input() documentSid!: number;
+  @Input() screenName!: string;
+@Input() dataItems: any[] = [];
+@Input() resetTrigger: boolean = false;
+@Input() formData: any;
+@Output() dataEmitter = new EventEmitter<any>();
+
   followupForm!: FormGroup;
   FollowupSid: number;
   isEditMode = false;
@@ -115,6 +122,10 @@ export class FollowUpComponent implements OnInit {
     let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
     let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
     const formValue = this.followupForm.value;
+    this.dataEmitter.emit({
+  dataItems: this.followupForm.value,  
+  formData: this.followupForm.value
+});
 
     const followupCreate = {
       FollowupRequire: formValue.FollowupRequire,

@@ -44,7 +44,7 @@
                             </a>
 
                             <a class="text-danger mx-2 ps-3 border-start"
-                                (click)="deleteBookingConnection(connectionIndex,connection.BookingConnectionSid)">
+                                (click)="deleteBookingConnection(connectionIndex,connection.TransactionSid)">
                                 <i-feather name="trash-2" class="feather-sm"></i-feather>
                             </a>
 
@@ -179,7 +179,7 @@
             </aside>
             <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select">
-                    @if(c['BookingConnectionSid']?.value){
+                    @if(c['TransactionSid']?.value){
                     <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
                         <ng-option value="Active">Active</ng-option>
                         <ng-option value="Suspended">Suspended</ng-option>

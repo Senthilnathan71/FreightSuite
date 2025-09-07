@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -23,6 +23,9 @@ export class EmailEntryComponent implements OnInit {
   // @Input('DocumentSid') DocumentSid : number;
   parentMailContent: any;
   pendingPatchData: any = null;
+  @Input() dataItems: any[] = [];
+  @Input() resetTrigger: any;
+  @Input() formData: any;
   @Input()
   set setContent(value: any) {
     this.parentMailContent = value;
@@ -34,6 +37,8 @@ export class EmailEntryComponent implements OnInit {
       }
     }
   }
+  @Output() dataChange = new EventEmitter<any>();
+
 
 
 
@@ -86,6 +91,7 @@ private footerTemplate = `
 			this.userData = userProfile;
 		}
   }
+  
 
   patchFormData(value: any) {
     this.emailForm.patchValue({
@@ -169,6 +175,15 @@ private footerTemplate = `
     removeFile(index: number) {
     this.selectedFiles.splice(index, 1);
   }
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['formData'] && changes['formData'].currentValue) {
+      this.patchFormData(changes['formData'].currentValue);
+    }
+    
+    if (changes['resetTrigger'] && changes['resetTrigger'].currentValue) {
+      this.resetForm();
+    }
+  }
   saveForm() {
     if (this.emailForm.invalid) {
       this.emailForm.markAllAsTouched();
@@ -207,6 +222,10 @@ private footerTemplate = `
           this.emailSending = false;
           this.appSettingService.showSuccess('Email Log created successfully.')
           this.spinner.hide();
+          this.dataChange.emit({
+            dataItems: this.dataItems,
+            formData: this.emailForm.value
+          });
           this.closeModal()
         } else {
           this.emailSending = false;

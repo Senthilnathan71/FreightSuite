@@ -2,6 +2,8 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { map } from "rxjs";
 import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.metadata";
+import { Vessel } from "../crm-mobile/Interfaces/vessel.interface";
+import { Uom } from "../crm-mobile/Interfaces/uom.interface";
 
 @Injectable({
   providedIn: 'root',
@@ -218,7 +220,7 @@ getShipmentMilestones(payload: any) {
       })
     );
   }
-
+// Master Job Operations
   searchMasterJobs(payload:any){
     return this.http.post<{ data: any[] }>('master-job/search-list', payload).pipe(
       map((resp) => {
@@ -280,4 +282,125 @@ getShipmentMilestones(payload: any) {
     )
   }
 
+  createMasterJob(payload: any) {
+    return this.http.post<{ data: any }>('master-job/create', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getAllMasterJobs(payload: any) {
+    return this.http.post<{ data: any[] }>('master-job', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  getMasterJobById(MasterJobSid: number) {
+    return this.http.get<{ data: any }>(`master-job/fetch/${MasterJobSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  updateMasterJob(payload: any) {
+    return this.http.patch<{ data: any }>('master-job/update', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+ 
+getAllContainerActivities() {
+  return this.http.get<{ data: any[] }>('container-activity-master').pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+  softDeleteMasterJobConnection(MasterJobConnectionSid: number) {
+    return this.http.delete<{ data: any }>(`master-job/connection/delete/${MasterJobConnectionSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  softDeleteMasterJobContainer(MasterJobContainerSid: number) {
+    return this.http.delete<{ data: any }>(`master-job/container/delete/${MasterJobContainerSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  softDeleteContainerActivity(ContainerActivitySid: number) {
+    return this.http.delete<{ data: any }>(`master-job/container-activity/delete/${ContainerActivitySid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+  getAuditLogsmasterjob(tableName: string, recordId?: string) {
+    let url = `master-job/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
+   getAllDepartments(CompanyMasterSid: number) {
+  return this.http.post('department', { CompanyMasterSid }).pipe(
+    map((resp: any) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+getAllPorts() {
+    return this.http.get('port').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  getAllVessels() {
+    return this.http.get<{ data: Vessel }>('vessel').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response
+      })
+    )
+  }
+   getAllCarriers(CompanyMasterSid: number) {
+    return this.http.post('customer/carrier',{CompanyMasterSid}).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+  getAllAgents(CompanyMasterSid: number) {
+    return this.http.post('customer/agent',{CompanyMasterSid}).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getPackageTypeUOM() {
+  return this.http.get('uom/package-type-uom').pipe(
+    map((resp: any) => {
+      return resp;
+    })
+  );
+}
 }

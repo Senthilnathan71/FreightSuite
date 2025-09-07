@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Optional, Output, SimpleChanges } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -17,12 +17,24 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
   styleUrl: './edoc.component.scss',
 })
 export class EdocComponent {
+  @Input() dataItems: any[] = [];
+  @Input() resetTrigger: boolean = false;
+  @Input() formData: any = null;
+  @Output() dataEmitter = new EventEmitter<any>();
   edocform: FormGroup;
 
-  constructor(private fb: FormBuilder,private appSettingService: AppSettingsService,private activeModal : NgbActiveModal) {
+  constructor(private fb: FormBuilder,private appSettingService: AppSettingsService,@Optional() public activeModal: NgbActiveModal ) {
     this.initYearForm();
   }
-
+   ngOnChanges(changes: SimpleChanges) {
+    if (changes['resetTrigger'] && this.resetTrigger) {
+      this.resetForm();
+    }
+    
+    if (changes['dataItems'] && this.dataItems && this.dataItems.length > 0) {
+      // If you need to handle pre-loaded data
+    }
+  }
   initYearForm() {
     this.edocform = this.fb.group({
       DocuNo: ['', Validators.required],
@@ -45,6 +57,12 @@ export class EdocComponent {
       this.appSettingService.showWarning('Please fill all the required fields');
       return;
     }
+    const formData = this.edocform.value;
+    
+    this.dataEmitter.emit({
+      dataItems: [formData], 
+      formData: this.formData
+    });
     console.log(this.edocform.value);
   }
 
