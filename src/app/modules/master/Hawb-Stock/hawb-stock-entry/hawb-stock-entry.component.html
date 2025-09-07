@@ -2,12 +2,18 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                <h4 class="page-title mb-0">{{isEditMode ? 'Edit HAWB Stock' : 'HAWB Stock'}}</h4>
+              <div class="d-flex align-items-center gap-2">
+                <div class="brand-icon">
+                       <i class="fas fa-file-alt"></i>
+                    </div>
+                <h5 class="page-title text-info mb-0">{{isEditMode ? 'Edit HAWB Stock' : 'HAWB Stock'}}</h5>
                 @if(isEditMode){
                     <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
                          <i class="fas fs-6 fa-info-circle"></i>
                     </a>
                 }
+              </div>
+              
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -38,8 +44,12 @@
     <form [formGroup]="hawbForm">
         <div class="col-12">
             <div class="card">
-                <div class="card-body">
-                    <div class="row">
+                <div class="card-body py-3 px-4">
+                    <div class="row pb-3 rounded shadow-sm">
+                      <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                         <i class="fas fa-file-alt fs-4"></i>
+                        <h6 class="card-titlename mb-0">Hawb Stock Information</h6>
+                    </div>
                        <!-- <aside class="col-md-4">
   <div class="custom-form-group custom-form-group-select">
     <select class="form-select" formControlName="AirwayBillType">
@@ -247,9 +257,9 @@
 </div>
 
 <!-- Update the AWB table to show generated numbers -->
-<div class="row mt-3">
+<div class="mt-3">
   <h5 class="card-title">AirWay Bill</h5>
-  <div class="row py-2 rounded shadow-sm mx-auto">
+  <div class="row mx-auto">
     <div class="col-12 p-0">
       <div class="table-responsive">
         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">

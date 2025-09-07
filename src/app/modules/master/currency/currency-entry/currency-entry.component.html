@@ -2,12 +2,19 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                <h4 class="page-title mb-0">{{ isEditMode ? 'Edit' : '' }} Currency</h4>
+                <div class="d-flex align-items-center gap-2">
+                      <div class="brand-icon">
+                     <i class="fas fa-dollar-sign"></i>
+
+                    </div>
+                <h5 class="page-title text-info mb-0">{{ isEditMode ? 'Edit' : '' }} Currency</h5>
                 @if(isEditMode){
                     <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
                          <i class="fas fs-6 fa-info-circle"></i>
                     </a>
                 }
+                </div>
+               
             </div>
             <div class="col-md-8 pb-2">
                 <div class="d-flex justify-content-end gap-2">
@@ -34,9 +41,14 @@
 
     <div class="col-12">
         <div class="card">
-            <div class="card-body">
+            <div class="card-body py-3 px-4">
                 <form [formGroup]="currencyForm">
-                    <div class="row">
+                    <div class="row  pb-3 rounded shadow-sm">
+                         <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                       <i class="fas fa-dollar-sign fs-4"></i>
+
+                        <h6 class="card-titlename mb-0">Currency Information</h6>
+                    </div>
                         <!-- Currency Name -->
                         <!-- <div class="col-md-4">
                             <label class="form-label">Currency Name <span class="text-danger">*</span></label>

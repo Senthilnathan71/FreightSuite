@@ -57,3 +57,38 @@
     max-width: 1300px;
   }
 }
+
+
+// New Ui changes Card hearder Part
+.card-header-title {
+  background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
+  padding: 8px 12px;
+  color: white;
+  border-radius: 5px 5px 0px 0px;
+}
+
+.card-titlename {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  i {
+    opacity: 0.9;
+    font-size: 10px;
+  }
+}
+
+.brand-icon {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+}
