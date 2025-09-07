@@ -1,4 +1,4 @@
-import { Component, TemplateRef } from '@angular/core';
+import { Component, NgZone, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
@@ -17,7 +17,9 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
-
+interface IWindow extends Window {
+  webkitSpeechRecognition: any;
+}
 @Component({
   selector: 'app-department-entry',
   standalone: true,
@@ -56,6 +58,9 @@ export class DepartmentEntryComponent {
   auditLogModalRef!: NgbModalRef;
   currentCompany: any;
   currentBranch: any;
+  recognition: any;
+  isListening = false;
+  activeControl: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -63,8 +68,142 @@ export class DepartmentEntryComponent {
     private appSettingService: AppSettingsService,
     private route: ActivatedRoute,
     private router: Router,
-    private modalService : NgbModal
-  ) { }
+    private modalService : NgbModal,
+    private ngZone: NgZone
+  ) { 
+    const { webkitSpeechRecognition }: IWindow = window as any;
+    this.recognition = new webkitSpeechRecognition() || new (window as any).SpeechRecognition();
+    this.recognition.lang = 'en-IN'; // Language
+    this.recognition.interimResults = false;
+    this.recognition.maxAlternatives = 1;
+ 
+    // Event when recognition result comes
+    this.recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+ 
+      this.ngZone.run(() => {
+        console.log('🎤 Recognized Speech:', transcript);
+        if (this.activeControl) {
+          console.log(this.activeControl)
+          this.departmentForm.get(this.activeControl)?.setValue(transcript);
+        }
+      });
+    };
+ 
+    this.recognition.onerror = (event: any) => {
+      console.error('Voice recognition error:', event);
+    };
+ 
+    this.recognition.onend = () => {
+      console.log('🛑 Voice recognition stopped');
+      this.ngZone.run(() => (this.isListening = false));
+    };
+  }
+
+  startVoiceRecognitionFor(controlName: string) {
+  if (this.isListening) {
+    this.recognition.stop();
+    this.isListening = false;
+  } else {
+    this.activeControl = controlName;
+    this.isListening = true;
+    console.log(`🎙️ Listening for ${controlName}...`);
+    this.recognition.start();
+
+    this.recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript.trim();
+      console.log(`✅ Recognized for ${controlName}: ${transcript}`);
+
+      let value: any = transcript;
+
+      // 🔑 Define numeric fields (from your Prisma model)
+      const numericFields = [
+        
+      ];
+
+      // Convert to number if field is numeric
+      if (numericFields.includes(controlName)) {
+        const parsed = parseFloat(transcript.replace(/[^0-9.]/g, ''));
+        value = isNaN(parsed) ? null : parsed;
+      }
+
+      const dropdownOptions: Record<string, string[]> = {
+        departmentType: this.departmentTypeOptions || [],
+        ExportImport: ["Export", "Import"],
+        FCLLCL: ["FCL", "LCL"],
+        Division: this.divisionList?.map((d: any) => d.DivisionName) || []
+      };
+
+      // Synonyms (extend as needed)
+      const synonyms: Record<string, string> = {
+        sea: "Sea",
+        seaway: "Sea",
+        ocean: "Sea",
+        air: "Air",
+        flight: "Air",
+        sky: "Air",
+        road: "Road",
+        land: "Road",
+        export: "Export",
+        import: "Import",
+        fcl: "FCL",
+        full: "FCL",
+        lcl: "LCL",
+        less: "LCL"
+      };
+
+        if (dropdownOptions[controlName]) {
+        const spoken = transcript.toLowerCase();
+        let matchedOption: string | null = null;
+
+        // ✅ Check synonyms first
+        for (const [key, val] of Object.entries(synonyms)) {
+          if (spoken.includes(key.toLowerCase())) {
+            matchedOption = dropdownOptions[controlName].find(
+              opt => opt.toLowerCase() === val.toLowerCase()
+            ) || null;
+            break;
+          }
+        }
+
+        // ✅ Fuzzy match with actual dropdown options
+        if (!matchedOption) {
+          matchedOption = dropdownOptions[controlName].find(
+            opt =>
+              opt.toLowerCase() === spoken ||
+              opt.toLowerCase().includes(spoken) ||
+              spoken.includes(opt.toLowerCase())
+          ) || null;
+        }
+
+        if (matchedOption) {
+          value = matchedOption;
+          console.log(`🎯 Matched ${controlName}: ${matchedOption}`);
+        } else {
+          console.warn(`⚠️ No matching option found for "${spoken}" in ${controlName}`);
+          value = null;
+        }
+      }
+
+      // Patch value into form
+      this.departmentForm.get(controlName)?.setValue(value);
+      this.departmentForm.get(controlName)?.markAsDirty();
+
+      // Stop listening after first result
+      this.recognition.stop();
+      this.isListening = false;
+    };
+
+    this.recognition.onerror = (event: any) => {
+      console.error('❌ Voice recognition error:', event.error);
+      this.isListening = false;
+    };
+
+    this.recognition.onend = () => {
+      this.isListening = false;
+    };
+  }
+}
 
   ngOnInit(): void {
      this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
