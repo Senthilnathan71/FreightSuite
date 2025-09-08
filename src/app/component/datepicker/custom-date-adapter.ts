@@ -14,6 +14,6 @@ export class CustomDateAdapter extends NgbDateAdapter<Date> {
 
   toModel(date: NgbDateStruct | null): Date | null {
     if (!date) return null;
-    return new Date(date.year, date.month - 1, date.day,5,30);
+    return new Date(date.year, date.month - 1, date.day);
   }
 }

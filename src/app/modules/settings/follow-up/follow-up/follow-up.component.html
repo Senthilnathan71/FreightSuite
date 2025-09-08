@@ -47,7 +47,7 @@
                             <div class=" custom-form-group custom-form-group-select">
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        #d15="ngbDatepicker" (click)="d15.toggle()" formControlName="FollowupDate" />
+                                        #d15="ngbDatepicker" [minDate]="todayDate" (click)="d15.toggle()" formControlName="FollowupDate" />
                                     <button class="btn bi bi-calendar3" (click)="d15.toggle()"
                                         type="button"> <i-feather name="calendar"
                                             class="feather-sm"></i-feather></button>
@@ -111,7 +111,7 @@
                         </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="" [items]="modeOfStatus" bindLabel="name" bindValue="name"appendTo="body">
+                                <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name" bindValue="name" appendTo="body">
 
                                 </ng-select>
                                 <label for="" class="input-label">Status <span class="text-danger"></span></label>

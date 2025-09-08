@@ -657,4 +657,12 @@ export class LeadService {
     );
   }
 
+  getTodayFollowup(payload) {
+    return this.http.post<{ data: any[] }>('followup/checkForFollowup', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    )
+  }
+
 }

@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { NgbActiveModal, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -31,7 +31,6 @@ import html2canvas from 'html2canvas';
   templateUrl: './follow-up.component.html',
   styleUrl: './follow-up.component.scss',
    providers: [
-          { provide: NgbActiveModal, useValue: {} } ,
           { provide: NgbDateAdapter, useClass: CustomDateAdapter },
           { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
       ],
@@ -47,6 +46,8 @@ export class FollowUpComponent implements OnInit {
 @Input() resetTrigger: boolean = false;
 @Input() formData: any;
 @Output() dataEmitter = new EventEmitter<any>();
+  today = new Date();
+  todayDate = this.toNgbDateStruct(this.today);
 
   followupForm!: FormGroup;
   FollowupSid: number;
@@ -89,7 +90,7 @@ export class FollowUpComponent implements OnInit {
       Remarks: [''], 
       Public: [''], 
       sentEmail: [''], 
-      Status: ['A', Validators.required], 
+      Status: ['Active', Validators.required], 
     });
     if (this.FollowupSid) {
       this.isEditMode = true;
@@ -134,7 +135,7 @@ export class FollowUpComponent implements OnInit {
       Remarks: formValue.Remarks,
       Public: formValue.Public,
       sentEmail: formValue.sentEmail,
-      Status: formValue.Status === 'A' ? 'A' : 'S',
+      Status: formValue.Status === 'Active' ? 'A' : 'S',
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       DocumentSid: this.documentSid
@@ -229,6 +230,15 @@ private async generatePdfFromHtml(html: string): Promise<File> {
       sentEmail: '',
       Status: 'Active'
     });
+  }
+
+  toNgbDateStruct(date: Date | null): NgbDateStruct | null {
+    if (!date) return null;
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate()
+    };
   }
 
   closeModal(): void {

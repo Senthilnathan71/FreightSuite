@@ -3,6 +3,10 @@ import { Component, OnInit } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { RouterModule } from '@angular/router';
 import { AppService } from 'src/app/service/app.service';
+import { DashboardService } from '../../dashboard/dashboard.service';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { LeadService } from '../Services/lead.service';
+import { ToastService } from 'src/app/component/toast/toast.service';
 
 
 @Component({
@@ -50,11 +54,36 @@ export class DashboardComponent implements OnInit {
     // { name: 'Lead Schedule Pending', badge: null, link: '', category: 'nav-lead-schedule' },
   ];
   i: any;
+  currentCompany: any;
+  currentBranch: any;
 
-  constructor(private appService: AppService) { }
+  constructor(
+    private appService: AppService,
+    private leadService: LeadService,
+    private appSettingService: AppSettingsService,
+    private toastService: ToastService
+  ) { }
 
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice()
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.getTodayFollowup();
+  }
+
+  getTodayFollowup() {
+    const filterOption = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    }
+    this.leadService.getTodayFollowup(filterOption).subscribe((resp: any) => {
+      if (resp.status) {
+        const allFollowup = resp.data || [];
+        allFollowup.forEach(followup => {
+          this.appSettingService.showInfo(followup.FollowupAction);
+        });
+      }
+    });
   }
 
 statCards = [
