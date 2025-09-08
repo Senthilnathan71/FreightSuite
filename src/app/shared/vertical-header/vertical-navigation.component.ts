@@ -124,21 +124,28 @@ ngOnInit(): void {
 
       if (!storedCompany || !storedBranch) {
         try {
-          const encryptedCompany = this.appSettingsService.encrypt(companyToUse.companyMaster);
-          const encryptedBranch = this.appSettingsService.encrypt(branchToUse.branchMaster);
-          localStorage.setItem('selected-company', encryptedCompany);
-          localStorage.setItem('selected-branch', encryptedBranch);
+          const companyToStore = {
+            CompanyMasterSid: companyToUse.CompanyMasterSid,
+            companyName: companyToUse.companyMaster.companyName
+          };
+
+          const branchToStore = {
+            UserBranchMasterSid: branchToUse.UserBranchMasterSid,
+            BranchMasterSid: branchToUse.branchMaster.BranchMasterSid,
+            branchName: branchToUse.branchMaster.branchName
+          };
+
+          localStorage.setItem('selected-company', this.appSettingsService.encrypt(companyToStore));
+          localStorage.setItem('selected-branch', this.appSettingsService.encrypt(branchToStore));
         } catch (e) {
           console.error('Error encrypting default company/branch:', e);
         }
       }
     }
   } else {
-    console.warn('No user company data found in local storage');
+    console.warn('No user company data found in user profile');
   }
 }
-
-
 
 
 
@@ -215,10 +222,20 @@ ngOnInit(): void {
   // ✅ Step 2: Store to localStorage (encrypted)
   this.appSettingsService.storeUserProfile(updatedUserData);
   try {
-    const encryptedCompany = this.appSettingsService.encrypt(updatedBranchCompany.companyMaster);
-    const encryptedBranch = this.appSettingsService.encrypt(updatedBranchCompany.branchMaster);
-    localStorage.setItem('selected-company', encryptedCompany);
-    localStorage.setItem('selected-branch', encryptedBranch);
+    const companyToStore = {
+      CompanyMasterSid: updatedBranchCompany.companyMaster.CompanyMasterSid,
+      companyName: updatedBranchCompany.companyMaster.companyName
+    };
+
+    const branchToStore = {
+      UserBranchMasterSid: selectedBranch.UserBranchMasterSid,
+      BranchMasterSid: updatedBranchCompany.branchMaster.BranchMasterSid,
+      branchName: updatedBranchCompany.branchMaster.branchName
+    };
+
+    localStorage.setItem('selected-company', this.appSettingsService.encrypt(companyToStore));
+    localStorage.setItem('selected-branch', this.appSettingsService.encrypt(branchToStore));
+
     this.selectedBranchCompany = updatedBranchCompany;
   } catch (e) {
     console.error('Error encrypting selected company/branch:', e);
