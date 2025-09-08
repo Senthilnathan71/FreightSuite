@@ -3,12 +3,17 @@
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-2">
-        <h4 class="page-title mb-0">{{isEditMode ? 'Edit Company' :' Company'}}</h4>
+         <div class="d-flex align-items-center gap-2">
+                         <div class="brand-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+        <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit Company' :' Company'}}</h5>
         @if(isEditMode){
         <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showCompanyInfo()">
           <i class="fas fs-6 fa-info-circle"></i>
         </a>
         }
+          </div>
       </div>
       <div class="col-md-8 pb-2">
         <div
@@ -39,9 +44,19 @@
     </div>
   </div>
 
-  <div class="col-12">
+  <div class="mx-0">
+     <div class="card">
+    <div class="card-body">
+      <div class="row">
+         <div class="col-12">
     <ng-container *ngTemplateOutlet="companyTemplate"></ng-container>
   </div>
+      </div>
+    </div>
+  </div>
+  </div>
+ 
+ 
   <div class="col-12">
     <!-- <div class="card">
         <div class="card-body"> -->
@@ -57,12 +72,14 @@
 <ng-template #companyTemplate>
   <div class="row">
     <div class="col-md-6">
-      <div class="card border">
-        <div class="card-body py-2">
-          <div class="row" [formGroup]="companyForm">
-            <aside class="col-md-12">
-              <h5 class="card-title m-1 text-center text-info">Company</h5>
-            </aside>
+      <div class="card">
+        <div class="card-body px-3">
+          <div class="row  pb-3 rounded shadow-sm" [formGroup]="companyForm">
+
+                <div class="card-header-title d-flex align-items-center gap-2">
+                         <i class="fas fa-building fs-4"></i>
+                        <h6 class="card-titlename mb-0">Company Information</h6>
+                    </div>
 
             <!-- COMPANY NAME -->
             <aside class="col-md-6" >
@@ -205,12 +222,13 @@
       </div>
     </div>
     <div class="col-md-6">
-      <div class="card border">
-        <div class="card-body py-2">
-          <aside class="col-md-12">
-            <h5 class="card-title m-1 text-center text-info">Contact</h5>
-          </aside>
-          <div class="row" [formGroup]="companyForm">
+      <div class="card">
+        <div class="card-body px-3">
+          <div class="row pb-3 rounded shadow-sm" [formGroup]="companyForm">
+            <div class="card-header-title d-flex align-items-center gap-2">
+                         <i class="fas fa-address-book fs-4"></i>
+                        <h6 class="card-titlename mb-0">Contact Information</h6>
+                    </div>
             <aside class="col-md-6" >
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="email">
@@ -559,14 +577,13 @@
           <div class="modal-body">
             <div class="row compact-form">
               <div class="col-md-6">
-                <div class="card border">
-                  <div class="card-body py-1">
-                    <div class="row">
-                      <aside class="col-12">
-                        <h5 class="card-title m-1 text-info text-center">
-                          Branch
-                        </h5>
-                      </aside>
+                <div class="card ">
+                  <div class="card-body pt-0">
+                    <div class="row rounded" style=" box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;">
+                          <div class="card-header-title d-flex align-items-center gap-2">
+                        <i class="fas fa-code-branch fs-4"></i>
+                        <h6 class="card-titlename mb-0">Branch</h6>
+                    </div>
                       <aside class="col-md-12" >
                         <div class="custom-form-group">
                           <input type="text" id="branchName" placeholder="" class="custom-input-field sm"
@@ -605,7 +622,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-12">
+                      <aside class="col-md-12 pb-1">
                         <div class="custom-form-group">
                           <input type="text" id="branchTaxRegistrationNo" placeholder="" class="custom-input-field sm"
                             formControlName="branchTaxRegistrationNo" [textWithNumbers]="50">
@@ -628,14 +645,14 @@
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="card border">
-                  <div class="card-body py-1">
-                    <div class="row">
-                      <aside class="col-12">
-                        <h5 class="card-title m-1 text-info text-center">
-                          Address
-                        </h5>
-                      </aside>
+                <div class="card ">
+                  <div class="card-body pt-0">
+                    <div class="row  rounded" style=" box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;">
+                          <div class="card-header-title d-flex align-items-center gap-2">
+                         <i class="fas fa-location-arrow fs-4"></i>
+                        <h6 class="card-titlename mb-0">Address</h6>
+                    </div>
+                     
                       <aside class="col-md-6" >
                         <div class="custom-form-group">
                           <input type="text" id="branchAddressLine1" placeholder="" class="custom-input-field sm"
@@ -715,7 +732,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-6">
+                      <aside class="col-md-6 pb-1">
                         <div class="custom-form-group custom-form-group-select">
                           <ng-select id="branchStateMasterSid" class="ng-select" placeholder="Select State"
                             formControlName="branchStateMasterSid" (change)="getCitiesByState($event)">
@@ -737,7 +754,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-6">
+                      <aside class="col-md-6 pb-1">
                         <div class="custom-form-group custom-form-group-select">
                           <ng-select id="branchCityMasterSid" class="ng-select" placeholder="Select City"
                             formControlName="branchCityMasterSid">
@@ -764,14 +781,13 @@
               </div>
 
               <div class="col-md-6">
-                <div class="card border">
-                  <div class="card-body py-1">
-                    <div class="row">
-                      <aside class="col-12">
-                        <h5 class="card-title m-1 text-info text-center">
-                          Contact & Other
-                        </h5>
-                      </aside>
+                <div class="card">
+                  <div class="card-body pt-0">
+                    <div class="row rounded" style=" box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;">
+                          <div class="card-header-title d-flex align-items-center gap-2">
+                         <i class="fas fa-mobile-alt fs-4"></i>
+                        <h6 class="card-titlename mb-0"> Contact & Other</h6>
+                    </div>
                       <aside class="col-md-6" >
                         <div class="custom-form-group">
                           <input type="text" id="branchWebSite" placeholder="" class="custom-input-field sm"
@@ -853,7 +869,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-6" >
+                      <aside class="col-md-6 pb-1" >
                         <div class="custom-form-group">
                           <input type="text" id="branchRemarks" placeholder="" class="custom-input-field sm"
                             formControlName="branchRemarks" [textWithNumbers]="500">
@@ -868,7 +884,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-6">
+                      <aside class="col-md-6 pb-1">
                         <div class="custom-form-group custom-form-group-select">
                           @if(isModalEditMode){
                           <ng-select id="branchStatus" class="ng-select" formControlName="branchStatus">
@@ -888,15 +904,14 @@
               </div>
              
               <div class="col-md-6">
-                <div class="card border">
-                  <div class="card-body pt-2 pb-4">
-                    <div class="row h-100">
-                      <aside class="col-12">
-                        <h5 class="card-title text-info m-1 text-center">
-                          Logos
-                        </h5>
-                      </aside>
-                      <aside class="col-md-12 mt-2">
+                <div class="card">
+                  <div class="card-body pt-0">
+                    <div class="row rounded" style=" box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;">
+                        <div class="card-header-title d-flex align-items-center gap-2">
+                        <i class="fas fa-image fs-4"></i>
+                        <h6 class="card-titlename mb-0"> Logos</h6>
+                    </div>
+                      <aside class="col-md-12 my-2">
                         <div class="custom-form-group h-100">
                           <input type="file" id="branchCompanyLogo" class="custom-input-field sm"
                             formControlName="branchCompanyLogo">
@@ -904,7 +919,7 @@
                         </div>
                       </aside>
 
-                      <aside class="col-md-12 mt-2">
+                      <aside class="col-md-12 my-2 pb-2">
                         <div class="custom-form-group h-100">
                           <input type="file" id="branchReportLogo" class="custom-input-field sm"
                             formControlName="branchReportLogo">
@@ -916,14 +931,14 @@
                 </div>
               </div>
                <div class="col-md-6">
-                <div class="card border">
-                  <div class="card-body py-1">
-                    <div class="row">
-                      <aside class="col-12">
-                        <h5 class="card-title m-1 text-info text-center">
-                          Number Format
-                        </h5>
-                      </aside>
+                <div class="card">
+                  <div class="card-body pt-0">
+                    <div class="row  rounded" style=" box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;">
+                         <div class="card-header-title d-flex align-items-center gap-2">
+                       <i class="fas fa-hashtag fs-4"></i>
+                        <h6 class="card-titlename mb-0">  Number Format</h6>
+                    </div>
+                      
                       <aside class="col-md-6">
                     <div class="custom-form-group">
                         <input type="text" id="consolePrefix" placeholder="" 
@@ -1014,7 +1029,7 @@
                 </aside>
                 
                 <!-- Quotation Settings -->
-                <aside class="col-md-6">
+                <aside class="col-md-6 pb-1">
                     <div class="custom-form-group">
                         <input type="text" id="quotationPrefix" placeholder="" 
                             class="custom-input-field sm" formControlName="quotationPrefix" maxlength="20">
@@ -1028,7 +1043,7 @@
                         }
                     </div>
                 </aside>
-                <aside class="col-md-6">
+                <aside class="col-md-6 pb-1">
                     <div class="custom-form-group">
                         <input type="number" id="quotationNoLen" placeholder="" 
                             class="custom-input-field sm" formControlName="quotationNoLen" min="1" max="20">
@@ -1047,7 +1062,7 @@
                 </div>
               </div>
 
-              <div class="modal-footer p-2">
+              <div class="d-flex justify-content-end mb-2">
                 <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                   (click)="submitBranchForm()" [disabled]="branchForm.invalid">
                   <i class="fas fa-save me-1"></i>

@@ -5,12 +5,17 @@
         <div class="col-12">
             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
                 <div class="col-md-4 d-flex pb-2">
-                    <h4 class="page-title mb-0"> Unit</h4>
+                      <div class="d-flex align-items-center gap-2">
+                         <div class="brand-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <h5 class="page-title mb-0 text-info"> Unit</h5>
                     @if(isEditMode){
                     <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
                         <i class="fas fs-6 fa-info-circle"></i>
                     </a>
                     }
+                    </div>
                 </div>
                 <div class="col-md-8 pb-2">
                     <div
@@ -66,11 +71,17 @@
     </div>
  
     <ng-template #unitform>
-        <div class="row">
+        <div class="card">
+            <div class="card-body">
+                 <div class="row">
             <div class="col-md-6">
                 <div class="card h-100 mb-0">
-                    <div class="card-body">
-                        <div class="row compact-form">
+                   <div class="card-body py-3 px-3">
+                        <div class="row compact-form pb-3 rounded shadow-sm">
+                             <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                         <i class="fas fa-box fs-4"></i>
+                        <h6 class="card-titlename mb-0">Unit Information</h6>
+                    </div>
                             <aside class="col-md-12">
                                 <div class="custom-form-group">
                                     <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -156,12 +167,17 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 mt-md-0 mt-3">
+            <div class="col-md-6 mt-md-0">
                 <div class="card h-100 mb-0">
-                     <div class="card-body">
-                    <div class="row">
+                    <div class="card-body py-3 px-3">
+                        <div class="row compact-form pb-3 rounded shadow-sm">
+                             <div class="card-header-title d-flex align-items-center gap-2">
+    <i class="fas fa-chart-bar fs-4"></i>
+    <h6 class="card-titlename mb-0">Unit Classification</h6>
+</div>
+
                         <div class="col-12   border-bottom">
-                            <label class="form-check-label ms-2 my-3">Job Type <span
+                            <label class="form-check-label ms-2 my-2">Job Type <span
                                     class="text-danger">*</span></label>
                             <div class="col-md-12 d-flex flex-wrap gap-3 mb-3 align-items-center ms-4">
                                 <label *ngFor="let option of jobType">
@@ -207,6 +223,9 @@
                 </div>
                
             </div>
+            </div>
+            </div>
+           
         </div>
  
     </ng-template>
