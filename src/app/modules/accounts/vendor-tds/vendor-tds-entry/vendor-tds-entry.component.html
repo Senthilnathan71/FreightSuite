@@ -2,12 +2,17 @@
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-2">
-        <h4 class="page-title mb-0">Supplier TDS Mapping</h4>
+         <div class="d-flex align-items-center gap-2">
+                         <div class="brand-icon">
+                       <i class="fas fa-balance-scale"></i>
+                    </div>
+        <h5 class="page-title mb-0 text-info">Supplier TDS Mapping</h5>
         @if(isEditMode){
         <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
           <i class="fas fs-6 fa-info-circle"></i>
         </a>
         }
+        </div>
       </div>
       <div class="col-md-8 pb-2">
         <div
@@ -40,9 +45,12 @@
   </div>
   <div class="col-12" [formGroup]="supplierTDSForm">
     <div class="card">
-      <div class="card-body">
-        <div class="row">
-
+      <div class="card-body py-2 px-3">
+        <div class="row pb-2 rounded border border-top-0">
+             <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                         <i class="fas fa-balance-scale fs-4"></i>
+                        <h6 class="card-titlename mb-0">Supplier TDS Mapping Information</h6>
+                    </div>
 
           <aside class="col-md-4">
             <div class="custom-form-group custom-form-group-select">
@@ -131,23 +139,23 @@
   </div>
 
 </div>
-<div class="col-12 mt-2">
+<div class="col-12">
   <div class="card">
     <div class="card-body">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="card-title mb-0">TDS Details</h6>
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="card-title mb-0 text-info">TDS Details</h5>
         <div>
           <!-- <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80 me-2" (click)="toggleDelete()">
             <i-feather name="trash-2" class="feather-sm"></i-feather>
             Delete
           </button> -->
           <button class="btn btn-info text-white btn-sm" (click)="addTDSDetail()">
-            <i-feather name="plus" class="feather-sm me-1"></i-feather> Add
+            <i class="fas fa-plus me-1"></i>Add
           </button>
         </div>
       </div>
 
-      <div class="table-responsive" style="max-height: 70vh;">
+      <div class="table-responsive" style="max-height: 35vh;">
         <table class="table table-hover align-middle no-wrap table-bordered" [formGroup]="supplierTDSForm" (click)="preventTableTouch($event)">
           <thead>
             <tr class="bg-info">
@@ -170,7 +178,7 @@
             <tr [formGroupName]="i">
               <td class="p-2" *ngIf="tdsDetailArray.length > 1">
                 <a class="text-danger mx-2" title="Delete" (click)="removeTDSDetail(i)">
-                  <i-feather name="trash-2" class="feather-sm"></i-feather>
+                  <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
                 </a>
               </td>
               <td class="p-2">
