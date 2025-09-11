@@ -3,12 +3,17 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                <h4 class="page-title mb-0">Container Activity</h4>
+                 <div class="d-flex align-items-center gap-2">
+                     <div class="brand-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                <h5 class="page-title mb-0 text-info">Container Activity</h5>
                 @if(isEditMode){
                 <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
                     <i class="fas fs-6 fa-info-circle"></i>
                 </a>
                 }
+                </div>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -41,8 +46,12 @@
     <form [formGroup]="containerActivityForm">
         <div class="col-12">
             <div class="card">
-                <div class="card-body">
-                    <div class="row">
+                 <div class="card-body py-2 px-3">
+                <div class="row pb-2 rounded border border-top-0">
+                      <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                         <i class="fas fa-truck fs-4"></i>
+                        <h6 class="card-titlename mb-0">Container Actvity Information</h6>
+                    </div>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="ActivityCode" type="text" id="ActivityCode" placeholder=""
@@ -209,7 +218,7 @@
                     <div class="card h-100 flex-fill">
                         <div class="card-title text-center p-2 bg-info text-white">Next Activity</div>
                         <div class="card-body p-0"  style="max-height: 200px; overflow-y: auto;">
-                            <div class="p-2">
+                            <div class="p-2">      
                                 <div class="form-check" *ngFor="let activity of nextActivities">
                                     <input class="form-check-input" type="checkbox" 
                                         [id]="'next_' + activity.ActivityCode"
@@ -221,7 +230,7 @@
                                 </div>
                                 <div *ngIf="nextActivities.length === 0" class="text-center text-muted py-3">
                                     No next activities
-                                </div>
+                                </div>                        
                             </div>
                         </div>
                     </div>

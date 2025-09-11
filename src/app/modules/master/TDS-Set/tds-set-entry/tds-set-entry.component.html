@@ -2,12 +2,19 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                <h4 class="page-title mb-0"> TDS Set</h4>
+                <div class="d-flex align-items-center gap-2">
+                      <div class="brand-icon">
+                        <i class="fas fa-calculator"></i>
+
+                    </div>
+                <h5 class="page-title mb-0 text-info"> TDS Set</h5>
                 @if(isEditMode){
                 <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
                     <i class="fas fs-6 fa-info-circle"></i>
                 </a>
                 }
+                </div>
+              
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -41,8 +48,13 @@
 
     <div class="col-md-12">
         <div class="card">
-            <div class="card-body pb-2">
-                <div class="row" [formGroup]="tdsForm">
+            <div class="card-body py-2 px-3">
+                <div class="row pb-2 rounded border border-top-0" [formGroup]="tdsForm">
+                     <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                        <i class="fas fa-calculator fs-4"></i>
+
+                        <h6 class="card-titlename mb-0">Tds Set Information</h6>
+                    </div>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"

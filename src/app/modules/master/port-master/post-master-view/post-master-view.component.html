@@ -3,18 +3,23 @@
         <div class="col-12">
             <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
                 <div class="col-md-4 d-flex pb-2">
-                    <h4 class="page-title mb-0">{{isEditMode ? 'Edit Port Master' : ' Port Master'}}</h4>
-                    @if(isEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
-                        <i class="fas fs-6 fa-info-circle"></i>
-                    </a>
-                    }
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="brand-icon">
+                            <i class="fas fa-anchor"></i>
+                        </div>
+                        <h5 class="page-title mb-0  text-info">{{isEditMode ? 'Edit Port Master' : ' Port Master'}}</h5>
+                        @if(isEditMode){
+                        <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                            <i class="fas fs-6 fa-info-circle"></i>
+                        </a>
+                        }
+                    </div>
                 </div>
                 <div class="col-md-8 pb-2">
                     <div
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                                (click)="openAuditLogs(auditLogModal)">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                            (click)="openAuditLogs(auditLogModal)">
                             <i class="fas fa-history me-1"></i>Logs
                         </button>
                         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
@@ -38,322 +43,363 @@
             </div>
         </div>
 
-        <div class="col-12 col-md-7">
-            <div class="card h-100 mb-0">
+        <div class="mx-0">
+            <div class="card">
                 <div class="card-body">
                     <div class="row">
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
-                                    formControlName="PortName" [textWithNumbers]="50" />
-                                <label for="text-input" class="input-label">Name <span
-                                        class="text-danger fw-semibold">*</span></label>
-                                @if(portForm.get('PortName').touched && portForm.get('PortName').invalid){
-                                <div class="error-message">
-                                    @if(portForm.get('PortName').hasError('required')){
-                                    <span>Required</span>
-                                    } @else if(portForm.get('PortName').hasError('maxlength')){
-                                    <span>Max 50 Chars</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" class="custom-input-field sm "
-                                    formControlName="PortCode" placeholder="" [textWithNumbers]="3" />
-                                <label for="text-input" class="input-label">Code <span
-                                        class="text-danger fw-semibold">*</span></label>
-                                @if(portForm.get('PortCode').touched && portForm.get('PortCode').invalid){
-                                <div class="error-message">
-                                    @if(portForm.get('PortCode').hasError('required')){
-                                    <span>Required</span>
-                                    } @else if(portForm.get('PortCode').hasError('maxlength')){
-                                    <span>Max 3 Chars</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select class="ng-select" [items]="countryList" bindLabel="countryName" bindValue="CountryMasterSid"
-                                    formControlName="CountryMasterSid" placeholder="Select Country" (change)="filterStateByCountry($event)">
-                                </ng-select>
-                                <label for="text-input" class="input-label">Country <span
-                                        class="text-danger fw-semibold">*</span></label>
-                                <div
-                                    *ngIf="portForm.get('CountryMasterSid')?.touched && portForm.get('CountryMasterSid')?.invalid">
-                                    <p *ngIf="portForm.get('CountryMasterSid')?.errors?.['required']"
-                                        class="error-message">
-                                        Required.
-                                    </p>
-                                </div>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select class="ng-select" [items]="filteredStateList" bindLabel="stateName" bindValue="StateMasterSid"
-                                    formControlName="StateMasterSid" placeholder="Select State">
-                                </ng-select>
+                        <div class="col-md-6">
+                            <div class="card h-100 mb-0">
+                                <div class="card-body py-2">
+                                    <div class="row pb-2 rounded border border-top-0">
+                                        <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                                            <i class="fas fa-box fs-4"></i>
+                                            <h6 class="card-titlename mb-0">Port Information</h6>
+                                        </div>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" class="custom-input-field sm"
+                                                    placeholder=" " formControlName="PortName" [textWithNumbers]="50" />
+                                                <label for="text-input" class="input-label">Name <span
+                                                        class="text-danger fw-semibold">*</span></label>
+                                                @if(portForm.get('PortName').touched &&
+                                                portForm.get('PortName').invalid){
+                                                <div class="error-message">
+                                                    @if(portForm.get('PortName').hasError('required')){
+                                                    <span>Required</span>
+                                                    } @else if(portForm.get('PortName').hasError('maxlength')){
+                                                    <span>Max 50 Chars</span>
+                                                    }
+                                                </div>
+                                                }
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" class="custom-input-field sm "
+                                                    formControlName="PortCode" placeholder="" [textWithNumbers]="3" />
+                                                <label for="text-input" class="input-label">Code <span
+                                                        class="text-danger fw-semibold">*</span></label>
+                                                @if(portForm.get('PortCode').touched &&
+                                                portForm.get('PortCode').invalid){
+                                                <div class="error-message">
+                                                    @if(portForm.get('PortCode').hasError('required')){
+                                                    <span>Required</span>
+                                                    } @else if(portForm.get('PortCode').hasError('maxlength')){
+                                                    <span>Max 3 Chars</span>
+                                                    }
+                                                </div>
+                                                }
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group custom-form-group-select">
+                                                <ng-select class="ng-select" [items]="countryList"
+                                                    bindLabel="countryName" bindValue="CountryMasterSid"
+                                                    formControlName="CountryMasterSid" placeholder="Select Country"
+                                                    (change)="filterStateByCountry($event)">
+                                                </ng-select>
+                                                <label for="text-input" class="input-label">Country <span
+                                                        class="text-danger fw-semibold">*</span></label>
+                                                <div
+                                                    *ngIf="portForm.get('CountryMasterSid')?.touched && portForm.get('CountryMasterSid')?.invalid">
+                                                    <p *ngIf="portForm.get('CountryMasterSid')?.errors?.['required']"
+                                                        class="error-message">
+                                                        Required.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group custom-form-group-select">
+                                                <ng-select class="ng-select" [items]="filteredStateList"
+                                                    bindLabel="stateName" bindValue="StateMasterSid"
+                                                    formControlName="StateMasterSid" placeholder="Select State">
+                                                </ng-select>
 
-                                <label for="text-input" class="input-label">State</label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
-                                <!-- <ng-select class="ng-select" formControlName="ZoneMasterSid">
+                                                <label for="text-input" class="input-label">State</label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group custom-form-group-select">
+                                                <!-- <ng-select class="ng-select" formControlName="ZoneMasterSid">
                                     <ng-option value="">Select Region</ng-option>
                                     @for (region of regionList; track region) {
                                     <ng-option [value]="region.ZoneMasterSid">{{ region.ZoneName }}</ng-option>
                                     }
                                 </ng-select> -->
-                                <ng-select formControlName="ZoneMasterSid" [items]="regionList" bindLabel="ZoneName"
-                                    bindValue="ZoneMasterSid" class="ng-select">
+                                                <ng-select formControlName="ZoneMasterSid" [items]="regionList"
+                                                    bindLabel="ZoneName" bindValue="ZoneMasterSid" class="ng-select">
 
-                                </ng-select>
-                                <label for="text-input" class="input-label">Region</label>
-                                <div
-                                    *ngIf="portForm.get('ZoneMasterSid')?.touched && portForm.get('ZoneMasterSid')?.invalid">
-                                    <p *ngIf="portForm.get('ZoneMasterSid')?.errors?.['required']"
-                                        class="error-message">Required
-                                    </p>
-                                </div>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="time" id="text-input" formControlName="TimeZone"
-                                    class="custom-input-field sm" placeholder=" " />
-                                <label for="text-input" class="input-label">Time Zome</label>
+                                                </ng-select>
+                                                <label for="text-input" class="input-label">Region</label>
+                                                <div
+                                                    *ngIf="portForm.get('ZoneMasterSid')?.touched && portForm.get('ZoneMasterSid')?.invalid">
+                                                    <p *ngIf="portForm.get('ZoneMasterSid')?.errors?.['required']"
+                                                        class="error-message">Required
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group">
+                                                <input type="time" id="text-input" formControlName="TimeZone"
+                                                    class="custom-input-field sm" placeholder=" " />
+                                                <label for="text-input" class="input-label">Time Zome</label>
 
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
-                                    formControlName="TerminalCode" [textWithNumbers]="10"/>
-                                <label for="text-input" class="input-label">Terminal</label>
-                                <div
-                                    *ngIf="portForm.get('TerminalCode')?.touched && portForm.get('TerminalCode')?.invalid">
-                                    <p *ngIf="portForm.get('TerminalCode')?.errors?.['maxlength']"
-                                        class="error-message">Max 10 Chars
-                                    </p>
-                                </div>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
-                                    formControlName="EdiPortCode" [textWithNumbers]="10"/>
-                                <label for="text-input" class="input-label">Edi Port</label>
-                                <div
-                                    *ngIf="portForm.get('EdiPortCode')?.touched && portForm.get('EdiPortCode')?.invalid">
-                                    <p *ngIf="portForm.get('EdiPortCode')?.errors?.['maxlength']" class="error-message">
-                                        Max 10 Chars
-                                    </p>
-                                </div>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" class="custom-input-field sm" placeholder=" "
-                                    formControlName="SCMTPortCode" [textWithNumbers]="10"/>
-                                <label for="text-input" class="input-label">SCMT Port</label>
-                                <div
-                                    *ngIf="portForm.get('SCMTPortCode')?.touched && portForm.get('SCMTPortCode')?.invalid">
-                                    <p *ngIf="portForm.get('SCMTPortCode')?.errors?.['maxlength']"
-                                        class="error-message">Max 10 Chars</p>
-                                </div>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
-                                @if(isEditMode){
-                                <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name"
-                                    bindValue="value" placeholder="Select status" class="ng-select">
-                                </ng-select>
-                                } @else {
-                                <input type="text" name="status" class="custom-input-field sm" formControlName="status"
-                                    id="text-input" readonly>
-                                }
-                                <label for="text-input" class="input-label">Status<span
-                                        class="text-danger">*</span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group mt-3">
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" class="custom-input-field sm"
+                                                    placeholder=" " formControlName="TerminalCode"
+                                                    [textWithNumbers]="10" />
+                                                <label for="text-input" class="input-label">Terminal</label>
+                                                <div
+                                                    *ngIf="portForm.get('TerminalCode')?.touched && portForm.get('TerminalCode')?.invalid">
+                                                    <p *ngIf="portForm.get('TerminalCode')?.errors?.['maxlength']"
+                                                        class="error-message">Max 10 Chars
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" class="custom-input-field sm"
+                                                    placeholder=" " formControlName="EdiPortCode"
+                                                    [textWithNumbers]="10" />
+                                                <label for="text-input" class="input-label">Edi Port</label>
+                                                <div
+                                                    *ngIf="portForm.get('EdiPortCode')?.touched && portForm.get('EdiPortCode')?.invalid">
+                                                    <p *ngIf="portForm.get('EdiPortCode')?.errors?.['maxlength']"
+                                                        class="error-message">
+                                                        Max 10 Chars
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group mt-3">
 
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" formControlName="CBMRequire">
-                                    <label class="form-check-label">
-                                        CBM Require
-                                    </label>
-                                </div>
-                            </div>
-                        </aside>
-                    </div>
-                </div>
-            </div>
-            <!-- <ng-container *ngTemplateOutlet="portform"></ng-container> -->
-        </div>
-        <div class="col-12 col-md-5">
-            <div class="card h-100 mb-0">
-                <div class="pt-0  pt-md-3 card-body">
-                    <div class="row input-group">
-                        <div class="row">
-                            <label for="text-label">Mode of Transport <span class="text-danger">*</span></label>
-                            <aside class="col-md-4 col-6">
-                                <div class="custom-form-group">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input"
+                                                        formControlName="CBMRequire">
+                                                    <label class="form-check-label">
+                                                        CBM Require
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" class="custom-input-field sm"
+                                                    placeholder=" " formControlName="SCMTPortCode"
+                                                    [textWithNumbers]="10" />
+                                                <label for="text-input" class="input-label">SCMT Port</label>
+                                                <div
+                                                    *ngIf="portForm.get('SCMTPortCode')?.touched && portForm.get('SCMTPortCode')?.invalid">
+                                                    <p *ngIf="portForm.get('SCMTPortCode')?.errors?.['maxlength']"
+                                                        class="error-message">Max 10 Chars</p>
+                                                </div>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-4">
+                                            <div class="custom-form-group custom-form-group-select">
+                                                @if(isEditMode){
+                                                <ng-select formControlName="status" [items]="modeOfStatus"
+                                                    bindLabel="name" bindValue="value" placeholder="Select status"
+                                                    class="ng-select">
+                                                </ng-select>
+                                                } @else {
+                                                <input type="text" name="status" class="custom-input-field sm"
+                                                    formControlName="status" id="text-input" readonly>
+                                                }
+                                                <label for="text-input" class="input-label">Status<span
+                                                        class="text-danger">*</span></label>
+                                            </div>
+                                        </aside>
 
-                                    <div class="form-check">
-                                        <input type="radio" class="form-check-input" formControlName="PortType"
-                                            value="Sea">
-                                        <label class="form-check-label">
-                                            Sea
-                                        </label>
                                     </div>
                                 </div>
-                            </aside>
-                            <aside class="col-md-4 col-6">
-                                <div class="custom-form-group">
-
-                                    <div class="form-check">
-                                        <input type="radio" class="form-check-input" formControlName="PortType"
-                                            value="Air">
-                                        <label class="form-check-label">
-                                            Air
-                                        </label>
-                                    </div>
-                                </div>
-                            </aside>
-                            <aside class="col-md-4 col-6">
-                                <div class="custom-form-group">
-
-                                    <div class="form-check">
-                                        <input type="radio" class="form-check-input" formControlName="PortType"
-                                            value="ICD">
-                                        <label class="form-check-label">
-                                            ICD
-                                        </label>
-                                    </div>
-                                </div>
-                            </aside>
-                            <aside class="col-md-4 col-6">
-                                <div class="custom-form-group">
-
-                                    <div class="form-check">
-                                        <input type="radio" class="form-check-input" formControlName="PortType" value="Terminal">
-                                        <label class="form-check-label" value="Terminal">
-                                            Terminal
-                                        </label>
-                                    </div>
-                                </div>
-                            </aside>
-                            <aside class="col-md-4 col-6">
-                                <div class="custom-form-group">
-
-                                    <div class="form-check">
-                                        <input type="radio" class="form-check-input" formControlName="PortType"
-                                            value="Road">
-                                        <label class="form-check-label">
-                                            Road
-                                        </label>
-                                    </div>
-                                </div>
-                            </aside>
-                            <aside class="col-md-4 col-6">
-                                <div class="custom-form-group">
-
-                                    <div class="form-check">
-                                        <input type="radio" class="form-check-input" formControlName="PortType"
-                                            value="Rail">
-                                        <label class="form-check-label">
-                                            Rail
-                                        </label>
-                                    </div>
-                                </div>
-                            </aside>
+                            </div>
+                            <!-- <ng-container *ngTemplateOutlet="portform"></ng-container> -->
                         </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 mb-0">
+                                <div class="card-body py-2">
+                                    <div class="row pb-2 rounded border border-top-0">
+                                        <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                                            <i class="fas fa-ship fs-4"></i>
+                                            <h6 class="card-titlename mb-0">Shipment Port Settings</h6>
+                                        </div>
 
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <textarea id="textarea-input" class="custom-input-field" placeholder="" rows="1"
-                                    formControlName="ExportRestriction" [textWithNumbers]="100"></textarea>
-                                <label for="text-input" class="input-label">Export Restriction</label>
-                                <div
-                                    *ngIf="portForm.get('ExportRestriction')?.touched && portForm.get('ExportRestriction')?.invalid">
-                                    <p *ngIf="portForm.get('ExportRestriction')?.errors?.['maxlength']"
-                                        class="error-message">
-                                        Max 100 Chars</p>
+
+                                        <div class="row">
+                                            <label for="text-label">Mode of Transport <span
+                                                    class="text-danger">*</span></label>
+                                            <aside class="col-md-4 col-6">
+                                                <div class="custom-form-group">
+
+                                                    <div class="form-check">
+                                                        <input type="radio" class="form-check-input"
+                                                            formControlName="PortType" value="Sea">
+                                                        <label class="form-check-label">
+                                                            Sea
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4 col-6">
+                                                <div class="custom-form-group">
+
+                                                    <div class="form-check">
+                                                        <input type="radio" class="form-check-input"
+                                                            formControlName="PortType" value="Air">
+                                                        <label class="form-check-label">
+                                                            Air
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4 col-6">
+                                                <div class="custom-form-group">
+
+                                                    <div class="form-check">
+                                                        <input type="radio" class="form-check-input"
+                                                            formControlName="PortType" value="ICD">
+                                                        <label class="form-check-label">
+                                                            ICD
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4 col-6">
+                                                <div class="custom-form-group">
+
+                                                    <div class="form-check">
+                                                        <input type="radio" class="form-check-input"
+                                                            formControlName="PortType" value="Terminal">
+                                                        <label class="form-check-label" value="Terminal">
+                                                            Terminal
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4 col-6">
+                                                <div class="custom-form-group">
+
+                                                    <div class="form-check">
+                                                        <input type="radio" class="form-check-input"
+                                                            formControlName="PortType" value="Road">
+                                                        <label class="form-check-label">
+                                                            Road
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </aside>
+                                            <aside class="col-md-4 col-6">
+                                                <div class="custom-form-group">
+
+                                                    <div class="form-check">
+                                                        <input type="radio" class="form-check-input"
+                                                            formControlName="PortType" value="Rail">
+                                                        <label class="form-check-label">
+                                                            Rail
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </aside>
+                                        </div>
+
+                                        <aside class="col-md-12">
+                                            <div class="custom-form-group ">
+                                                <textarea id="textarea-input" class="custom-input-field" placeholder=""
+                                                    rows="1" formControlName="ExportRestriction"
+                                                    [textWithNumbers]="100"></textarea>
+                                                <label for="text-input" class="input-label">Export Restriction</label>
+                                                <div
+                                                    *ngIf="portForm.get('ExportRestriction')?.touched && portForm.get('ExportRestriction')?.invalid">
+                                                    <p *ngIf="portForm.get('ExportRestriction')?.errors?.['maxlength']"
+                                                        class="error-message">
+                                                        Max 100 Chars</p>
+                                                </div>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-12">
+                                            <div class="custom-form-group mt-0">
+                                                <textarea id="textarea-input" class="custom-input-field" placeholder=""
+                                                    rows="1" formControlName="ImportRestriction"
+                                                    [textWithNumbers]="100"></textarea>
+                                                <label for="text-input" class="input-label">Import Restriction</label>
+                                                <div
+                                                    *ngIf="portForm.get('ImportRestriction')?.touched && portForm.get('ImportRestriction')?.invalid">
+                                                    <p *ngIf="portForm.get('ImportRestriction')?.errors?.['maxlength']"
+                                                        class="error-message">
+                                                        Max 100 Chars</p>
+                                                </div>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-12">
+                                            <div class="custom-form-group mt-0">
+                                                <textarea id="textarea-input" class="custom-input-field" placeholder=""
+                                                    rows="1" formControlName="Remarks"
+                                                    [textWithNumbers]="100"></textarea>
+                                                <label for="text-input" class="input-label">Remarks</label>
+                                                <div
+                                                    *ngIf="portForm.get('Remarks')?.touched && portForm.get('Remarks')?.invalid">
+                                                    <p *ngIf="portForm.get('Remarks')?.errors?.['maxlength']"
+                                                        class="error-message">
+                                                        Max 100 Chars</p>
+                                                </div>
+                                            </div>
+                                        </aside>
+                                    </div>
                                 </div>
                             </div>
-                        </aside>
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <textarea id="textarea-input" class="custom-input-field" placeholder="" rows="1"
-                                    formControlName="ImportRestriction" [textWithNumbers]="100"></textarea>
-                                <label for="text-input" class="input-label">Import Restriction</label>
-                                <div
-                                    *ngIf="portForm.get('ImportRestriction')?.touched && portForm.get('ImportRestriction')?.invalid">
-                                    <p *ngIf="portForm.get('ImportRestriction')?.errors?.['maxlength']"
-                                        class="error-message">
-                                        Max 100 Chars</p>
-                                </div>
-                            </div>
-                        </aside>
-                        <aside class="col-md-12">
-                            <div class="custom-form-group">
-                                <textarea id="textarea-input" class="custom-input-field" placeholder="" rows="1"
-                                    formControlName="Remarks" [textWithNumbers]="100"></textarea>
-                                <label for="text-input" class="input-label">Remarks</label>
-                                <div *ngIf="portForm.get('Remarks')?.touched && portForm.get('Remarks')?.invalid">
-                                    <p *ngIf="portForm.get('Remarks')?.errors?.['maxlength']" class="error-message">
-                                        Max 100 Chars</p>
-                                </div>
-                            </div>
-                        </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    @if(isEditMode){
+    <div class="col-12 mt-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
+                        <!-- eDoc Button -->
+                        @if(hasPermission('Edoc')) {
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
+                            <i class="fas fa-file-alt me-1"></i> e-Doc
+                        </button>
+                        }
+                        @if(hasPermission('Terms and Condition')) {
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openTandC()">
+                            <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                        </button>
+                        }
+                        @if(hasPermission('Authority')) {
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info"
+                            (click)="openAuthority()">
+                            <i class="fas fa-shield-alt me-1"></i> Authorize
+                        </button>
+                        }
+
+                        @if(hasPermission('Email')) {
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto"
+                            (click)="openEmail()">
+                            <i class="fas fa-envelope me-1"></i> Email
+                        </button>
+                        }
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
-     @if(isEditMode){
-    <div class="col-12 mt-3">
-    <div class="card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-                    <!-- eDoc Button -->
-                        @if(hasPermission('Edoc')) {
-      <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
-        <i class="fas fa-file-alt me-1"></i> e-Doc
-      </button>
     }
-               @if(hasPermission('Terms and Condition')) {
-      <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openTandC()">
-        <i class="fas fa-clipboard me-1"></i> Terms & Condition
-      </button>
-    }
-                 @if(hasPermission('Authority')) {
-      <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
-        <i class="fas fa-shield-alt me-1"></i> Authorize
-      </button>
-    }
-                
-      @if(hasPermission('Email')) {
-      <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto"(click)="openEmail()">
-        <i class="fas fa-envelope me-1"></i> Email
-      </button>
-    }
-                
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-     }          
 
 
 
@@ -611,47 +657,48 @@
 
 
     <ng-template #auditLogModal let-modal>
-  <div class="modal-header bg-info text-white p-2">
-    <h5 class="modal-title mb-0">Audit Logs</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body p-3">
-  <div class="table-responsive">
-    <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-      <thead>
-        <tr>
-          <th>Changed At</th>
-          <th>Changed By</th>
-          <th>Operation</th>
-          <th class="text-center">Old Value</th>
-          <th class="text-center">New Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let log of auditLogs">
-          <td>{{ log.changedAt | date:'medium' }}</td>
-          <td>{{ log.changedBy || '-' }}</td>
-          <td>{{ log.operation }}</td>
-          <td class="bg-light-danger">
-        <ul>
-          <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-      <td class="bg-light-success">
-        <ul>
-          <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-        </ul>
-      </td>
-        </tr>
-        <tr *ngIf="auditLogs.length === 0">
-          <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
-  </div>
-</ng-template>
+        <div class="modal-header bg-info text-white p-2">
+            <h5 class="modal-title mb-0">Audit Logs</h5>
+            <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body p-3">
+            <div class="table-responsive">
+                <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Changed At</th>
+                            <th>Changed By</th>
+                            <th>Operation</th>
+                            <th class="text-center">Old Value</th>
+                            <th class="text-center">New Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let log of auditLogs">
+                            <td>{{ log.changedAt | date:'medium' }}</td>
+                            <td>{{ log.changedBy || '-' }}</td>
+                            <td>{{ log.operation }}</td>
+                            <td class="bg-light-danger">
+                                <ul>
+                                    <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+                                </ul>
+                            </td>
+                            <td class="bg-light-success">
+                                <ul>
+                                    <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr *ngIf="auditLogs.length === 0">
+                            <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+        </div>
+    </ng-template>
 </form>

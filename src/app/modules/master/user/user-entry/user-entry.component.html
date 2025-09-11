@@ -2,12 +2,18 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                <h4 class="page-title mb-0">{{isEditMode ? 'Edit User' : 'User'}}</h4>
+                <div class="d-flex align-items-center gap-2">
+                     <div class="brand-icon">
+                        <i class="fas fa-user"></i>
+
+                    </div>
+                <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit User' : 'User'}}</h5>
                 @if(isEditMode){
                 <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
                     <i class="fas fs-6 fa-info-circle"></i>
                 </a>
                 }
+             </div>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -40,9 +46,12 @@
     </div>
     <div class="col-md-12" [formGroup]="userForm">
         <div class="card mb-0">
-            <div class="card-body">
-                <div class="row">
-
+             <div class="card-body py-2 px-3">
+                <div class="row pb-3 rounded border border-top-0">
+                      <div class="card-header-title d-flex align-items-center gap-2 ">
+                        <i class="fas fa-user fs-4"></i>
+                        <h6 class="card-titlename mb-0">User Information</h6>
+                    </div>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" id="text-input" placeholder="" class="custom-input-field sm"

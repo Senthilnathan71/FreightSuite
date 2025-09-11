@@ -2,12 +2,17 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Tariff' : ' Tariff'}}</h4>
-                @if(isEditMode){
+                 <div class="d-flex align-items-center gap-2">
+                     <div class="brand-icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit Tariff' : ' Tariff'}}</h5>
+                @if(isEditMode){ 
                     <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showHeaderInfo()">
                          <i class="fas fs-6 fa-info-circle"></i>
                     </a>
                 }
+                </div>
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -40,10 +45,19 @@
         </div>
     </div>
 
-    <div class="col-12 col-md-6" [formGroup]="tariffHeaderForm">
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
+
+    <div class="mx-0">
+         <div class="card mb-2">
+        <div class="card-body">
+            <div class="row">
+                     <div class="col-md-6" [formGroup]="tariffHeaderForm">
+        <div class="card mb-1">
+             <div class="card-body  pb-0">
+                        <div class="row compact-form  rounded border border-top-0">
+                             <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                         <i class="fas fa-balance-scale fs-4"></i>
+                        <h6 class="card-titlename mb-0">Tarrif Information</h6>
+                    </div>
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="DepartmentMasterSid" placeholder="Select Department">
@@ -284,9 +298,14 @@
         </div>
     </div>
     <div class="col-12 col-md-6 mt-md-0" [formGroup]="tariffHeaderForm">
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
+        <div class="card mb-0">
+              <div class="card-body  pb-0">
+                        <div class="row compact-form  rounded border border-top-0">
+                           <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+    <i class="fas fa-dollar-sign fs-4"></i>
+    <h6 class="card-titlename mb-0">Freight Ledger</h6>
+</div>
+
                     <!-- <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" formControlName="CargoType">
@@ -568,6 +587,12 @@
             </div>
         </div>
     </div>
+            </div>
+        </div>
+    </div>
+    </div>
+   
+   
     <div class="col-12">
         <div class="card">
             <div class="card-body">

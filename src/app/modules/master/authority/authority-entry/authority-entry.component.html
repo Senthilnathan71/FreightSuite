@@ -2,12 +2,19 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                <h4 class="page-title mb-0">{{isEditMode ? 'Edit Authorization' : 'Authorization'}}</h4>
+                <div class="d-flex align-items-center gap-2">
+                       <div class="brand-icon">
+                        <i class="fas fa-lock"></i>
+
+                    </div>
+                <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit Authorization' : 'Authorization'}}</h5>
                 @if(isEditMode){
                 <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showAuthorityInfo()">
                     <i class="fas fs-6 fa-info-circle"></i>
                 </a>
                 }
+                </div>
+               
             </div>
             <div class="col-md-8 pb-2">
                 <div
@@ -40,8 +47,13 @@
 
     <div class="col-12">
         <div class="card">
-            <div class="card-body" [formGroup]="authorityForm">
-                <div class="row">
+            <div class="card-body py-2 px-3" [formGroup]="authorityForm">
+                <div class="row pb-2 rounded border border-top-0">
+                      <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                        <i class="fas fa-lock fs-4"></i>
+
+                        <h6 class="card-titlename mb-0">Authorization Information</h6>
+                    </div>
                     <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" [items]="menuResults" bindLabel="MenuName"
@@ -176,7 +188,7 @@
             </div>
             <div class="card-body pt-0" *ngIf="authDetails.length > 0">
                 <div class="row" [formGroup]="authorityForm">
-                    <div class="table-responsive">
+                    <div class="table-responsive" style="max-height: 35vh;">
                         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                             <thead>
                                 <tr class="bg-info">
@@ -186,11 +198,11 @@
                                     <th class="bg-transparent text-light" scope="col" width="10%">Approval Level</th>
                                     <th class="bg-transparent text-light" scope="col" width="30%">Authorizer</th>
                                     <th class="bg-transparent text-light" scope="col" width="10%">Final Level</th>
-                                    <th class="bg-transparent text-light" scope="col" width="25%">Status</th>
+                                    <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
                                 </tr>
                             </thead>
                             <tbody formArrayName="authDetails">
-                                <ng-container *ngFor="let detail of authDetails.controls ; let detailIndex = index ;let last=last">
+                                <ng-container *ngFor="let detail of authDetails.controls ; let detailIndex = index ;let last=last" >
                                     <tr [formGroupName]="detailIndex">
                                         <td>
                                             <div class="d-flex align-items-center">

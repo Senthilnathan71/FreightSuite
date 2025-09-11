@@ -6,12 +6,19 @@
       <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
           <div class="col-md-4 d-flex pb-2">
-            <h4 class="page-title mb-0">{{isEditMode ? 'Edit Country' : 'Country'}}</h4>
+           <div class="d-flex align-items-center gap-2">
+               <div class="brand-icon">
+                    <i class="fas fa-globe"></i>
+
+                    </div>
+            <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit Country' : 'Country'}}</h5>
             @if(isEditMode){
             <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
               <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
+            </div>
+            
           </div>
           <div class="col-md-8 pb-2">
             <div
@@ -46,9 +53,13 @@
       <!-- Left card section -->
       <div class="col-md-12">
         <div class="card h-100 mb-0">
-          <div class="card-body">
-            <div class="row">
+             <div class="card-body py-2 px-3">
+                <div class="row pb-3 rounded border border-top-0">
+               <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                       <i class="fas fa-globe fs-4"></i>
 
+                        <h6 class="card-titlename mb-0">Country Information</h6>
+                    </div>
 
               <!-- <aside class="col-md-12">
                 <div class="custom-form-group">
