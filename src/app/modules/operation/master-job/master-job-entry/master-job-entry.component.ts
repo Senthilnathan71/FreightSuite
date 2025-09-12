@@ -70,8 +70,9 @@ import { LoadingPlanEntryComponent } from '../../loading-plan/loading-plan-entry
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
-    NgbActiveModal
-  ]
+    NgbActiveModal,
+    CustomDatePipe
+  ],
 })
 export class MasterJobEntryComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -242,7 +243,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     private operationService: OperationService,
     private toastr: ToastrService,
     private appSettingsService: AppSettingsService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private datepipe : CustomDatePipe
   ) {
     this.initForm();
     this.initContainerForm();
@@ -1591,6 +1593,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   createShipmentGroup(data?: any): FormGroup {
     const shipmentForm = this.fb.group({
       HouseJobSid : [data?.HouseJobSid || null],
+      BookingHeaderSid : [data?.BookingHeaderSid || ''],
       BookingNo : [data?.BookingNo || '', Validators.required],
       BookingDateTime : [data?.BookingDateTime ? new Date(data?.BookingDateTime) : null],
       DepartmentMasterSid : [data?.DepartmentMasterSid || null],
@@ -1644,10 +1647,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   detachBooking(shipmentIndex: number, booking: any) {
     const realIndex = ((this.page - 1) * this.pageSize) + shipmentIndex;
     console.log(booking);
-    const BookingHeaderSid = booking.BookingHeaderSid;
-    const MasterJobSid = booking.MasterJobSid;
-    if (MasterJobSid) {
-      this.operationService.detachBooking(BookingHeaderSid).subscribe({
+    const HouseJobSid = booking.HouseJobSid;
+    console.log(HouseJobSid);
+    if (HouseJobSid) {
+      this.operationService.detachBooking(HouseJobSid).subscribe({
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingsService.showSuccess('Booking detached successfully');
@@ -1685,16 +1688,19 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       }
     });
     modalRef.componentInstance.onSubmit.subscribe((data:any[]) => {
-      console.log(data);
       data.forEach(booking => {
         const formGroup = this.createShipmentGroup(booking);
-        console.log(formGroup);
         this.attachedBookings.push(formGroup);
       });
       this.totalLengthOfAttachedBookings = this.attachedBookings.length;
       this.updateAttachedBookingsPagination();
       this.modalService.dismissAll();
     });
+  }
+
+  getMBLDate(){
+    const date = this.masterJobForm.get('MBLDate')?.value;
+    return date ? this.datepipe.transform(date) : 'N/A'
   }
 
 }

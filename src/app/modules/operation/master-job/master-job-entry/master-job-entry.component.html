@@ -711,7 +711,7 @@
                             <tr>
                                 <th width="10%">Actions</th>
                                 <th>Booking No</th>
-                                <th>Booking Date</th>
+                                <!-- <th>Booking Date</th> -->
                                 <th>Dept</th>
                                 <th>HBL No</th>
                                 <th>Customer</th>
@@ -735,8 +735,7 @@
                                 <td class="actions-cell">
                                     <div class="action-buttons">
 
-                                        <a class="action-icon edit" target="_blank"
-                                            [routerLink]="['/operation/booking/entry',shipment.BookingHeaderSid]">
+                                        <a class="action-icon edit" target="_blank">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> -->
@@ -745,8 +744,8 @@
                                                 class="fas fa-unlink"></i></button>
                                     </div>
                                 </td>
-                                <td>{{shipment.BookingNo}}</td>
-                                <td>{{shipment.BookingDateTime | formatDate}}</td>
+                                <td><a class="fw-bold" [routerLink]="['/operation/booking/entry',shipment.BookingHeaderSid]">{{shipment.BookingNo}}</a></td>
+                                <!-- <td>{{shipment.BookingDateTime | formatDate}}</td> -->
                                 <td>{{getDepartmentName(shipment.DepartmentMasterSid)}}</td>
                                 <td>{{shipment.HBLNo || 'N/A'}}</td>
                                 <td>{{shipment.CustomerName}}</td>
@@ -756,7 +755,7 @@
                                 <td>{{shipment.ConsigneeName}}</td>
                                 <td>{{shipment.ConsigneeAddress}}</td>
                                 <td>{{getAgentName(shipment.DestinationAgent)}}</td>
-                                <td>{{ (shipment.MBLDate | formatDate) || 'N/A'}}</td>
+                                <td>{{ (masterJobForm.get('MBLDate')?.value | formatDate) || 'N/A'}}</td>
                                 <td>{{shipment.POL}}</td>
                                 <td>{{shipment.POD}}</td>
                                 <td>
