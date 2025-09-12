@@ -13,7 +13,19 @@ export class OperationService {
   constructor(private http: HttpClient) { }
 
   // Booking Operations
+  private loadingPlanData : any;
 
+  setLoadingPlanData(data : any){
+    this.loadingPlanData = data;
+  }
+
+  getLoadingPlanData(){
+    return this.loadingPlanData;
+  }
+
+  clearLoadingPlanData(){
+    this.loadingPlanData = null;
+  }
   
   getAuditLogsBooking(tableName: string, recordId?: string) {
     let url = `ff-booking/audit-logs?tableName=${tableName}`;
@@ -282,6 +294,25 @@ getShipmentMilestones(payload: any) {
     )
   }
 
+
+  getVesselVoyageBasedOnPorts(payload:any){
+    return this.http.post<{ data: any[] }>('loading-plan/vesselWithVoyage',payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getBookingForLoadingPlan(payload:any){
+    return this.http.post<{ data: any[] }>('loading-plan/get-matching-bookings',payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   createMasterJob(payload: any) {
     return this.http.post<{ data: any }>('master-job/create', payload).pipe(
       map((resp) => {
@@ -308,6 +339,14 @@ getShipmentMilestones(payload: any) {
 
   updateMasterJob(payload: any) {
     return this.http.patch<{ data: any }>('master-job/update', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+  
+  detachBooking(BookingHeaderSid:number){
+    return this.http.delete<{ data: any }>(`master-job/detach/${BookingHeaderSid}`).pipe(
       map((resp) => {
         return resp;
       })

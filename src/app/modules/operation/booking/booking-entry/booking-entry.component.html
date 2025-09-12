@@ -361,8 +361,8 @@
 
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select">
-                      <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
-                        formControlName="AgentName" placeholder="Select Agent"
+                      <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid" class="ng-select"
+                        formControlName="DestinationAgent" placeholder="Select Agent"
                         (change)="setAddress('AgentAddress',$event)" appendTo="body">
 
                         <ng-template ng-option-tmp let-item="item">
@@ -452,7 +452,7 @@
 
                     </div>
                   </div>
-                  <aside class="col-md-6" *ngIf="b['Nominated']?.value">
+                  <aside class="col-md-6" *ngIf="b['ShipmentType']?.value">
                     <div class="custom-form-group custom-form-group-select">
                       <ng-select [items]="nominationList" bindLabel="name" bindValue="name" class="ng-select" appendTo="body"
                         formControlName="NominatedBy" placeholder="Select NominatedBy">
@@ -695,7 +695,7 @@
                   <aside class="col-md-3 d-flex align-items-center mx-0">
                     <div class="form-check form-check-inline p-0">
                       <div class="form-check d-flex align-items-center">
-                        <input type="checkbox" id="" class="focus-ring form-check-input sm" formControlName="Nominated"
+                        <input type="checkbox" id="" class="focus-ring form-check-input sm" formControlName="ShipmentType"
                           (keydown.enter)="toggleHeaderCheckboxes($event,'Nominated')">
                         <label for="" class="form-check-label sm">Nominated <span class="text-danger"></span></label>
                       </div>

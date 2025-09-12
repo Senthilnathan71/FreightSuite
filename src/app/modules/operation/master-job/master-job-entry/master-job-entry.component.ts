@@ -1,4 +1,4 @@
-import { Component, ViewChild, TemplateRef, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, TemplateRef, OnInit, OnDestroy, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
 import {
   NgbAccordionModule,
   NgbDatepickerModule,
@@ -7,8 +7,9 @@ import {
   NgbDateAdapter,
   NgbDateParserFormatter,
   NgbActiveModal,
+  NgbPaginationModule,
 } from '@ng-bootstrap/ng-bootstrap';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule, NgComponentOutlet } from '@angular/common';
@@ -34,6 +35,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
+import { LoadingPlanEntryComponent } from '../../loading-plan/loading-plan-entry/loading-plan-entry.component';
 
 @Component({
   selector: 'app-master-job-entry',
@@ -60,6 +62,8 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
     OnlyNumbersDirective,
     OnlyTextDirective,
     TextWithNumbersDirective,
+    RouterModule,
+    NgbPaginationModule
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrls: ['./master-job-entry.component.scss'],
@@ -67,7 +71,7 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
     NgbActiveModal
-  ],
+  ]
 })
 export class MasterJobEntryComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -144,6 +148,15 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   containerActivityData: any[] = [];
   containerActivityResetTrigger = false;
   currentContainerActivityFormValue: any = null;
+
+  // Shipment related variable declarations
+  attachedBookings : FormArray;
+  slicedAttachedBookings : any[] = [];
+  page = 1;
+  pageSize = 5;
+  totalLengthOfAttachedBookings : number = 0;
+  
+
   
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
@@ -233,6 +246,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   ) {
     this.initForm();
     this.initContainerForm();
+    this.attachedBookings = this.fb.array([]);
   }
 
   ngOnInit(): void {
@@ -248,6 +262,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.setupVesselSearchDebouncing();
 
     this.loadInitialData().subscribe(() => {
+      const loadingPlanData = this.operationService.getLoadingPlanData();
+      if(loadingPlanData){
+        this.patchLoadingPlanData(loadingPlanData);
+      }
       this.route.paramMap.subscribe((param) => {
         const idParam = param.get('id');
         this.masterJobSid = idParam ? +idParam : null;
@@ -280,12 +298,59 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  patchLoadingPlanData(data : any){
+    console.log(data);
+    const selectedDepartment = this.departments.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
+    selectedDepartment ? this.onDeptChange(selectedDepartment) : null;
+    const selectedPOL = this.portList.find(port => port.PortCode === data.POL);
+    selectedPOL ? this.handlePOLChange(selectedPOL) : null;
+    const selectedPOD = this.portList.find(port => port.PortCode === data.POD);
+    selectedPOD ? this.handlePODChange(selectedPOD) : null;
+    
+    this.masterJobForm.patchValue({
+      DepartmentMasterSid : data.DepartmentMasterSid,
+      POL : selectedPOL.PortMasterSid,
+      POD : selectedPOD.PortMasterSid,
+      VoyageMasterSid : data.VoyageMasterSid,
+      VesselName : data.VesselName,
+      VoyageNo : data.VoyageNo,
+      CarrierName : data.CarrierName,
+      CutOffDate : data.CutOffDate ? new Date(data.CutOffDate) : null,
+      ETD : data.ETD ? new Date(data.ETD) : null,
+      ETA : data.ETA ? new Date(data.ETA) : null,
+      Haz : data.Haz === 'Y',
+      NoOfPkg : data.NoofPkg,
+      GrossWeight : data.GrossWeight,
+      NetWeight : data.NetWeight,
+      Volume : data.Volume,
+    });
+
+    this.handlePOLChange(selectedPOL);
+    this.handlePODChange(selectedPOD);
+    this.onVesselChange({VesselName : data.VesselName});
+    this.getVoyageForPortsAndVessels();
+
+    const allContainers = data.masterJobContainers || [];
+    this.masterJobContainers.clear();
+    allContainers.forEach(container => {
+      this.addContainer(container);
+    });
+
+    const allShipments = data.bookingList || [];
+    this.attachedBookings.clear();
+    allShipments.forEach(shipment => {
+      this.attachedBookings.push(this.createShipmentGroup(shipment));
+    });
+    this.totalLengthOfAttachedBookings = this.attachedBookings.length;
+    this.updateAttachedBookingsPagination();
+  }
+
   initForm() {
     this.masterJobForm = this.fb.group({
       // Master Job fields
       DepartmentMasterSid: ['', Validators.required],
-      MasterJobNumber: ['', Validators.required],
-      MasterJobDate: [null, Validators.required],
+      MasterJobNumber: [{ value :'' , disabled : true}],
+      MasterJobDate: [{value : null, disabled : true}],
       FreightPPCC: ['Prepaid', Validators.required],
       DestinationAgent: [''],
       DestinationAgentAddress: [''],
@@ -648,6 +713,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.filteredDestinationAgents = this.agentList.filter(agent => 
       agent.CustomerName !== originAgent
     );
+  }
+
+  const allShipments = data.allShipments || [];
+
+  if(data.allShipments.length > 0) {
+    this.patchShipments(allShipments);
   }
 }
 
@@ -1082,6 +1153,11 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.formatArrayDates(formData.masterJobConnection, ['ETD', 'ETA', 'ATD', 'ATA']);
     this.formatArrayDates(formData.containerActivities, ['ActivityDate']);
 
+    const allShipments = (this.attachedBookings.getRawValue() || [])
+      .filter(ship => !ship.MasterJobSid)
+      .map(shipment => shipment.BookingHeaderSid);
+    formData['shipmentList'] = [...allShipments];
+
     // Debug logs
     console.log('Container activity data to be saved:', formData.containerActivities);
     console.log('All form data:', formData);
@@ -1509,4 +1585,116 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   get f(): { [key: string]: AbstractControl<any, any> } {
     return this.masterJobForm.controls || {};
   }
+
+  // Shipment Related Works
+  
+  createShipmentGroup(data?: any): FormGroup {
+    const shipmentForm = this.fb.group({
+      HouseJobSid : [data?.HouseJobSid || null],
+      BookingNo : [data?.BookingNo || '', Validators.required],
+      BookingDateTime : [data?.BookingDateTime ? new Date(data?.BookingDateTime) : null],
+      DepartmentMasterSid : [data?.DepartmentMasterSid || null],
+      HBLNo : [data?.HBLNo || null],
+      CustomerMasterSid : [data?.CustomerMasterSid || null],
+      CustomerName : [data?.CustomerName || ''],
+      CustomerAddress : [data?.CustomerAddress || ''],
+      ShipperName : [data?.ShipperName || ''],
+      ShipperAddress : [data?.ShipperAddress || ''],
+      ConsigneeName : [data?.ConsigneeName || ''],
+      ConsigneeAddress : [data?.ConsigneeAddress || ''],
+      DestinationAgent : [data?.DestinationAgent || ''],
+      MBLDate : [data?.MBLDate || null],
+      MasterJobSid : [data?.MasterJobSid || null],
+      POL : [data?.POL || null],
+      POD : [data?.POD || null],
+      FreightTerms : [data?.FreightTerms || ''],
+    })
+    return shipmentForm;
+  }
+
+  updateAttachedBookingsPagination(){
+    const start = (this.page - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.slicedAttachedBookings = this.attachedBookings.getRawValue().slice(start, end);
+  }
+
+  getDepartmentName(DepartmentMasterSid : number){
+    if(!DepartmentMasterSid || this.departments.length === 0) return '';
+    const department = this.departments.find(dep => dep.DepartmentMasterSid === DepartmentMasterSid);
+    return department ? department.departmentName : '';
+  }
+
+  getAgentName(AgentSid : number){
+    if(!AgentSid || this.agentList.length === 0) return '';
+    const agent = this.agentList.find(agent => agent.CustomerMasterSid === AgentSid);
+    return agent ? agent.CustomerName : '';
+  }
+
+  patchShipments(shipments: any[]) {
+    this.attachedBookings.clear();
+    shipments.forEach(shipment => {
+      const formGrp = this.createShipmentGroup(shipment)
+      console.log(formGrp);
+      this.attachedBookings.push(formGrp);
+    });
+    this.totalLengthOfAttachedBookings = this.attachedBookings.length;
+    this.updateAttachedBookingsPagination();
+  }
+
+  detachBooking(shipmentIndex: number, booking: any) {
+    const realIndex = ((this.page - 1) * this.pageSize) + shipmentIndex;
+    console.log(booking);
+    const BookingHeaderSid = booking.BookingHeaderSid;
+    const MasterJobSid = booking.MasterJobSid;
+    if (MasterJobSid) {
+      this.operationService.detachBooking(BookingHeaderSid).subscribe({
+        next: (resp: any) => {
+          if (resp.status) {
+            this.appSettingsService.showSuccess('Booking detached successfully');
+            this.attachedBookings.removeAt(realIndex);
+            this.totalLengthOfAttachedBookings = this.attachedBookings.length;
+            this.updateAttachedBookingsPagination();
+          } else {
+            this.appSettingsService.showError('Failed to detach booking');
+          }
+        },
+        error: (error) => {
+          this.toastr.error('Failed to detach booking');
+          console.error('Error detaching booking:', error);
+        }
+      });
+    } else {
+      this.appSettingsService.showSuccess('Booking detached successfully');
+      this.attachedBookings.removeAt(realIndex);
+      this.totalLengthOfAttachedBookings = this.attachedBookings.length;
+      this.updateAttachedBookingsPagination();
+    }
+  }
+
+  openAttachModal(){
+    const modalRef = this.modalService.open(LoadingPlanEntryComponent,{
+      size : 'xl',
+      backdrop: 'static',
+      centered: true,
+      windowClass : 'audit-log-modal',
+    });
+    modalRef.componentInstance.screenName = 'Master Job';
+    modalRef.componentInstance.closeModal.subscribe((data:boolean) => {
+      if(data){
+        this.modalService.dismissAll();
+      }
+    });
+    modalRef.componentInstance.onSubmit.subscribe((data:any[]) => {
+      console.log(data);
+      data.forEach(booking => {
+        const formGroup = this.createShipmentGroup(booking);
+        console.log(formGroup);
+        this.attachedBookings.push(formGroup);
+      });
+      this.totalLengthOfAttachedBookings = this.attachedBookings.length;
+      this.updateAttachedBookingsPagination();
+      this.modalService.dismissAll();
+    });
+  }
+
 }
