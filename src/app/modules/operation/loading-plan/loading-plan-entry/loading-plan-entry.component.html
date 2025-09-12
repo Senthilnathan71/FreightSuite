@@ -31,10 +31,13 @@
         </div>
     </div>
     } @else {
-    <div class="modal-header p-2 bg-info">
+        <div class="ml-2">
+             <div class="modal-header p-2 bg-info">
         <h5 class="modal-title text-white">Attach Booking</h5>
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeTemplate()"></button>
     </div>
+        </div>
+   
     }
 
 
@@ -47,7 +50,7 @@
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select [items]="filteredDepartments" bindLabel="departmentName"
                                 bindValue="DepartmentMasterSid" formControlName="dept" (change)="onDeptChange($event)"
-                                container="body" placeholder="Select Dept">
+                               [appendTo]="'body'"  placeholder="Select Dept">
 
                             </ng-select>
                             <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
@@ -61,7 +64,7 @@
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode" 
                                 formControlName="pol" (change)="handlePOLChange($event)"
-                                placeholder="Select POL"></ng-select>
+                                placeholder="Select POL" [appendTo]="'body'"></ng-select>
                             <label class="input-label">POL <span class="text-danger">*</span></label>
                             <div class="error-message"
                                 *ngIf="loadingPlanForm.get('pol')?.touched && loadingPlanForm.get('pol')?.invalid">
@@ -73,7 +76,7 @@
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode"
                                 formControlName="pod" placeholder="Select POD"
-                                (change)="handlePODChange($event)"></ng-select>
+                                (change)="handlePODChange($event)" [appendTo]="'body'"></ng-select>
                             <label class="input-label">POD <span class="text-danger">*</span></label>
                             <div class="error-message"
                                 *ngIf="loadingPlanForm.get('pod')?.touched && loadingPlanForm.get('pod')?.invalid">
@@ -86,7 +89,7 @@
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select class="ng-select" [items]="filteredVesselsVoyage" bindLabel="VesselName"
                                 bindValue="VoyageNo" (change)="onVesselVoyageChange($event)"
-                                formControlName="vesselVoyage" placeholder="Select Vessel">
+                                formControlName="vesselVoyage" placeholder="Select Vessel" [appendTo]="'body'">
                                 <ng-template ng-option-tmp let-item="item">
                                     <!-- Voyage Number -->
                                     <div
@@ -122,7 +125,7 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
                             <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
-                                formControlName="carrier" placeholder="Select Carrier">
+                                formControlName="carrier" placeholder="Select Carrier" [appendTo]="'body'">
 
                             </ng-select>
                             <label for="" class="input-label">Carrier <span class="text-danger"></span></label>
