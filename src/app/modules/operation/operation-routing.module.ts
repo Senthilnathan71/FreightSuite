@@ -14,6 +14,7 @@ import { CragoReceiptListComponent } from './cargo-receipt/crago-receipt-list/cr
 import { LoadingPlanEntryComponent } from './loading-plan/loading-plan-entry/loading-plan-entry.component';
 import { SplitBookingEntryComponent } from './Split-Booking/split-booking-entry/split-booking-entry.component';
 import { MergeBookingComponent } from './merge-booking/merge-booking/merge-booking.component';
+import { ShipmentInstructionComponent } from './shipment-instruction/shipment-instruction/shipment-instruction.component';
 
 export const OperationRoutes: Routes = [
   {
@@ -162,6 +163,14 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'Merge Booking',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Merge Booking' }],
+        },
+      },
+       {
+        path: 'shipment-instruction',
+        component: ShipmentInstructionComponent,
+        data: {
+          title: 'Shipment Instruction',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Shipment Instruction' }],
         },
       },
     ],
