@@ -2,7 +2,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, ElementRef, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { NgbDropdown, NgbModal, NgbModalModule, NgbModalRef, NgbModule, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdown, NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbModule, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
@@ -33,7 +33,8 @@ import { iconsData } from 'src/assets/icons';
     RouterModule,
     FormsModule,
     PreventMultiClickDirective,
-    NgbModule
+    NgbModule,
+    NgbDropdownModule
   ],
   templateUrl: './menu-entry.component.html',
   styleUrl: './menu-entry.component.scss'

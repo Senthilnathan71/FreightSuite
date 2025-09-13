@@ -8,7 +8,7 @@
                     </div>
                     <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit Menu' : 'Menu'}}</h5>
                     @if(isEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2">
+                    <a class="text-info d-flex align-items-center">
                         <i class="fas fa-info-circle"></i>
                     </a>
                     }
@@ -16,7 +16,7 @@
             </div>
             <div class="col-md-8 pb-2">
                 <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
 
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateBack()">
@@ -33,6 +33,17 @@
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Update' : 'Save'}}
                     </button>
+                    <div ngbDropdown class="d-inline-block">
+                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -228,11 +239,14 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-sm dofi-max-w-200 mb-0">
+                    <table class="table table-bordered table-sm dofi-max-w-350 mb-0">
                         <thead>
                             <tr class="">
-                                <td class="bg-info text-white px-2">Edoc</td>
-                                <td class="bg-info text-white px-2">T&C</td>
+                                <td class="bg-info text-white px-2 text-center">Edoc</td>
+                                <td class="bg-info text-white px-2 text-center">T&C</td>
+                                <td class="bg-info text-white px-2 text-center">Authority</td>
+                                <td class="bg-info text-white px-2 text-center">Email</td>
+                                <td class="bg-info text-white px-2 text-center">follow up</td>
                             </tr>
                         </thead>
                         <tbody>
@@ -245,8 +259,30 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" id="termsAndCondition1" value="option1" class="form-check-input">
+                                        <input type="checkbox" id="termsAndCondition1" value="option1"
+                                            class="form-check-input">
                                         <!-- <label for="termsAndCondition1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="authority1" value="option1"
+                                            class="form-check-input">
+                                        <!-- <label for="authority1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="eMail1" value="option1"
+                                            class="form-check-input">
+                                        <!-- <label for="eMail1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="followUp" value="option1"
+                                            class="form-check-input">
+                                        <!-- <label for="followUp" class="form-check-label">&nbsp;</label> -->
                                     </div>
                                 </td>
                             </tr>
@@ -257,7 +293,7 @@
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-12">
         <div class="card">
             <div class="card-header-title d-flex align-items-center gap-2">
                 <i class="fas fa-lock fs-4"></i>
