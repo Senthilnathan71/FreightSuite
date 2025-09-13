@@ -10,6 +10,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OperationService } from '../../operation.service';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { ExcelExportService } from 'src/app/shared/excel-report-service';
 
 @Component({
   selector: 'app-crago-receipt-list',
@@ -49,7 +50,8 @@ export class CragoReceiptListComponent {
     private router: Router,
     private appSettingService: AppSettingsService,
     private operationService: OperationService,
-     private spinner: NgxSpinnerService
+     private spinner: NgxSpinnerService,
+     private excelReportService: ExcelExportService,
   ) {}
 
   ngOnInit(): void {
@@ -143,6 +145,32 @@ export class CragoReceiptListComponent {
     this.sortDirection = 'desc';
     this.loadCargoReceipts();
   }
+
+  report(): void {
+      const formattedData = this.cargoList.map(item => ({
+        ...item,
+        departmentName: item.departmentMaster?.departmentName,
+        status: item.status === 'A' ? 'Active' : 'Suspended'
+      }));
+      //  const companyName = this.userData?.userBranchMaster?.[0]?.companyMaster?.companyName ?? 'Company';
+        const companyName = this.currentCompany?.companyName ?? 'Company';
+       this.excelReportService.exportAsExcel({
+        data: formattedData,
+        headers: [
+          { key: 'departmentName', label: 'Department Name' },
+          { key: 'BookingNo', label: 'Booking No' },
+          { key: 'BookingDateTime', label: 'Booking Date' },
+          { key: 'CustomerName', label: 'Customer Name' },
+          { key: 'POO', label: 'POO' },
+          { key: 'POL', label: 'POL' },
+          { key: 'POD', label: 'POD' },
+          { key: 'FPD', label: 'FPD' },
+          { key: 'status', label: 'Status' },
+        ],
+        fileName: 'Cargo-Receipt-Report',
+        title: companyName
+       });
+    }
 
   TonavigateCreate() {
           this.router.navigate(['operation/cargo-receipt/entry']);

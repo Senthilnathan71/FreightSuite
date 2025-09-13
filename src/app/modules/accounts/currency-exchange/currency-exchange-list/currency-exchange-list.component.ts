@@ -212,6 +212,7 @@ loadCurrencyExchanges(): void {
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'EffectiveFrom';
     this.sortDirection = 'desc';
+    this.loadCurrencyExchanges();
   }
 
   getStatusClass(status: string): string {

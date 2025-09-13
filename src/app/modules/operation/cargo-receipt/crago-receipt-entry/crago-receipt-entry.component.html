@@ -169,8 +169,11 @@
       <input type="number" class="form-control form-control-sm" formControlName="Volume"/>
     </td>
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
-      <input type="date" class="form-control form-control-sm" formControlName="CargoRecDate"/>
-    </td>
+  <input type="date" class="form-control form-control-sm" formControlName="CargoRecDate"
+    [min]="today.year + '-' + (today.month < 10 ? '0' + today.month : today.month) + '-' + (today.day < 10 ? '0' + today.day : today.day)" />
+</td>
+
+
 
     <td style="padding-top:2px; padding-bottom:2px; line-height:1.5;">
       <div class="text-truncate">{{ prod.value.CFS }}</div>

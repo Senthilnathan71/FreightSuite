@@ -445,6 +445,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.sortDirection = 'asc';
     this.searched = false;
     this.filterValue = '';
+    this.loadLedgerMappings();
   }
 
   closeModal(): void {

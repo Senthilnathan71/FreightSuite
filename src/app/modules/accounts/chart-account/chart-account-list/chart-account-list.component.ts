@@ -143,6 +143,7 @@ softDeleteTaxGroup(id: number): void {
     this.sortDirection = 'asc';
     this.searched = false;
     this.filterValue = '';
+    this.loadChartAccounts();
   }
 
   sort(column: string): void {

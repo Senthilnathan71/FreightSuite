@@ -220,6 +220,7 @@ export class VendorTdsListComponent implements OnInit {
         this.totalLengthOfCollection = 0;
         this.sortColumn = 'CustomerName';
         this.sortDirection = 'desc';
+        this.searchSupplierTDS();
     }
 
     report():void {
