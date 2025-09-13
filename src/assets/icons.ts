@@ -1,6 +1,6 @@
-export const iconsData: Record<string, { name: string; icon: string }[]> = {
+export const iconsData: Record<string, { name: string; icon: string;size?: string  }[]> = {
   Setting: [
-    { name: "Menu", icon: "fas fa-bars" },
+    { name: "Menu", icon: "fas fa-bars",size: "10px" },
     { name: "Module", icon: "fas fa-th-large" },
     { name: "Role", icon: "fas fa-user-shield" },
     { name: "Role Menu", icon: "fas fa-users-cog" }
@@ -45,25 +45,25 @@ export const iconsData: Record<string, { name: string; icon: string }[]> = {
   { name: "Tariff", icon: "fas fa-file-invoice" },
   { name: "Unit", icon: "fas fa-cube" },
   { name: "UOM", icon: "fas fa-ruler-combined" },
-  { name: "Vessel", icon: "fas fa-ship" },
+{ name: "Vessel", icon: "fas fa-route" },
   { name: "Zone", icon: "fas fa-map" },
    { name: "Authorization", icon: "fas fa-user-shield" },
   { name: "City", icon: "fas fa-city" },
-  { name: "Country", icon: "fas fa-flag" },
+  { name: "Country", icon: "fas fa-globe" },
   { name: "Document Authorization", icon: "fas fa-file-signature" },
   { name: "Document Number Generation", icon: "fas fa-hashtag" },
   { name: "IMCO", icon: "fas fa-exclamation-triangle" },
-  { name: "INCO", icon: "fas fa-globe" },
-  { name: "State", icon: "fas fa-map" },
+  { name: "INCO", icon: "fas fa-file-contract" },
+ { name: "State", icon: "fas fa-map-marked-alt" },
   { name: "Time Zone", icon: "fas fa-clock" },
   { name: "User", icon: "fas fa-user" }
   ],
   Operation: [
-    { name: "Booking", icon: "fas fa-book" },
+    { name: "Booking", icon: "fas fa-anchor" },
     { name: "Cargo Receipt", icon: "fas fa-receipt" },
     { name: "Invoice", icon: "fas fa-file-invoice" },
     { name: "Loading Plan", icon: "fas fa-truck-loading" },
-    { name: "Master Job", icon: "fas fa-briefcase" },
+    { name: "Master Job", icon: "fas fa-shipping-fast" },
     { name: "Merge Booking", icon: "fas fa-object-group" },
     { name: "Operation Reports", icon: "fas fa-chart-line" },
     { name: "Shipment Instruction", icon: "fas fa-clipboard-list" },
