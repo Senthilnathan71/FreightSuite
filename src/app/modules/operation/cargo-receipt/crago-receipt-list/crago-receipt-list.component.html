@@ -42,7 +42,7 @@
                     <form
                         class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                         <app-favorite-star screenName="CargoReceipt" class="mt-1 me-1"></app-favorite-star>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()">
                             <i class="fas fa-file-alt me-1"></i>
                             Report
                         </button>
@@ -82,9 +82,6 @@
                                     <a class="text-info mx-2" class="link mx-2 ps-3" [routerLink]="['/operation/cargo-receipt/entry', item.BookingHeaderSid]">
                     <i-feather class="feather-sm text-info" name="eye"></i-feather>
                   </a>
-                                    <a class="text-danger mx-2 ps-3 border-start">
-                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
-                                    </a>
                                 </div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">

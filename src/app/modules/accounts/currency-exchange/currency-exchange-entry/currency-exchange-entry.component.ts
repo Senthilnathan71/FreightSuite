@@ -42,6 +42,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
   branches: any[] = [];
   loading = false;
 	today = this.calendar.getToday();
+  minDate = this.today;
 	todayDate = new Date(this.today.year,this.today.month,this.today.day);
   currencyExchangeData : any;
   currentMenuId: number;

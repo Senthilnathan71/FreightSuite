@@ -93,6 +93,7 @@ export class TaxGroupListComponent {
   TandCList: any;
   currentMenuId: number;
   today = this.calendar.getToday();
+  minDate = this.today;
   todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
   searched = false;
   loading = true;
@@ -388,6 +389,7 @@ export class TaxGroupListComponent {
     this.page = 1;
     this.sortColumn = 'TaxName';
     this.sortDirection = 'asc';
+    this.loadTaxGroups();
   }
 
   report(): void {

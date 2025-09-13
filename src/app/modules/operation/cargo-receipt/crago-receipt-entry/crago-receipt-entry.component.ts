@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -39,13 +39,17 @@ export class CragoReceiptEntryComponent implements OnInit{
   bookingData: any;
   isEditMode = false;
   modalRef: NgbModalRef;
+  today = this.calendar.getToday();
+  minDate = this.today;
+	todayDate = new Date(this.today.year,this.today.month,this.today.day);
   
   constructor(
     private router: Router,
     private fb : FormBuilder,
     private route: ActivatedRoute,
     private operationService: OperationService,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private calendar : NgbCalendar,
   ) {}
 
   ngOnInit(): void {

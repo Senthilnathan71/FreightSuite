@@ -84,7 +84,9 @@ export class BookingListComponent implements OnInit {
         const params = {
             search: this.filterValue.trim(),
             page: this.page,
-            pageSize: this.pageSize
+            pageSize: this.pageSize,
+            activeCompanyId: this.currentCompany?.CompanyMasterSid,
+            activeBranchId: this.currentBranch?.BranchMasterSid,
         };
         this.operationService.searchBooking(params).subscribe({
             next: (resp: any) => {

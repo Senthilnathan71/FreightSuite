@@ -14,12 +14,7 @@
     <!-- Branch and Company info - aligned horizontally -->
  <li class="nav-item d-flex flex-wrap align-items-center">
   <span *ngIf="selectedBranchCompany" class="fw-bold text-info me-lg-3">
-    <strong class="text-dark">Branch :</strong>
-    {{ selectedBranchCompany.branchMaster.branchName }}
-  </span>
-  <span *ngIf="selectedBranchCompany" class="fw-bold text-info">
-    <strong class="text-dark">Company :</strong>
-    {{ selectedBranchCompany.companyMaster.companyName }}
+    {{ selectedBranchCompany.companyMaster.companyName }} - {{ selectedBranchCompany.branchMaster.branchName }}
   </span>
 
   <!-- Fallback to show default branch if nothing selected -->

@@ -47,8 +47,8 @@
                       <div class="col-md-6" [formGroup]="documentForm">
             <div class="card h-100 mb-0">
                   <div class="card-body py-2 ">
-                        <div class="row compact-form pb-2 rounded border border-top-0">
-                             <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                        <div class="row compact-form pb-1 rounded border border-top-0">
+                             <div class="card-header-title d-flex align-items-center gap-2">
                          <i class="fas fa-file fs-4"></i>
                         <h6 class="card-titlename mb-0">Document Type Information</h6>
                     </div>
@@ -164,7 +164,8 @@
                   bindLabel="LedgerName"
                   bindValue="COAMasterSid" 
                   placeholder="Select COA Ledger"
-                  (change)="onCOASelected($event)">
+                  (change)="onCOASelected($event)"
+                  >
         </ng-select>
         <label for="text-input" class="input-label">COA Ledger <span class="text-danger">*</span></label>
         @if(documentForm.get('COALedger').touched && documentForm.get('COALedger').invalid){
@@ -187,14 +188,8 @@
                   placeholder="Select Subledger"
                   [disabled]="!documentForm.get('COALedger').value">
         </ng-select>
-        <label for="text-input" class="input-label">Subledger <span class="text-danger">*</span></label>
-        @if(documentForm.get('Subledger').touched && documentForm.get('Subledger').invalid){
-            <div class="error-message">
-                @if(documentForm.get('Subledger').hasError('required')){
-                    <span>Required</span>
-                }
-            </div>
-        }
+        <label for="text-input" class="input-label">Subledger <span class="text-danger"></span></label>
+       
     </div>
 </aside>
                         <aside class="col-md-6">
@@ -215,96 +210,7 @@
 
                             </div>
                         </aside>
-
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="DocumentStartingNo" [onlyNumbers]="5">
-                                <label for="text-input" class="input-label">Starting No <span
-                                        class="text-danger">*</span></label>
-                                @if(documentForm.get('DocumentStartingNo').touched && documentForm.get('DocumentStartingNo').invalid){
-                                    <div class="error-message">
-                                        @if(documentForm.get('DocumentStartingNo').hasError('required')){
-                                            <span>Required</span>
-                                        } @else if(documentForm.get('DocumentStartingNo').hasError('onlyNumbers')){
-                                            <span>Only Digits are allowed</span>
-                                        } @else if(documentForm.get('DocumentStartingNo').hasError('maxlength')){
-                                            <span>Max 5 Digits</span>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="DocumentSeparator" [items]="documentSeparators" bindLabel="separator"
-                                    bindValue="value" placeholder="Select Separator">
-                                </ng-select>
-                                <label for="" class="input-label">Separator <span class="text-danger"></span></label>
-                                @if(documentForm.get('DocumentSeparator').touched && documentForm.get('DocumentSeparator').invalid){
-                                    <div class="error-message">
-                                        @if(documentForm.get('DocumentSeparator').hasError('required')){
-                                            <span>Required</span>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        </aside>
-
-
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6" [formGroup]="documentForm">
-            <div class="card h-100 mb-0">
-                 <div class="card-body py-2">
-                        <div class="row compact-form pb-2 rounded border border-top-0">
-                           <div class="card-header-title d-flex align-items-center gap-2 mb-1">
-    <i class="fas fa-flag fs-4"></i>
-    <h6 class="card-titlename mb-0">Document Configuration & Flags</h6>
-</div>
-
-                        <aside class="col-md-6">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="DocumentSLNoLength" [onlyNumbers]>
-                                <label for="" class="input-label">Serial No Len <span
-                                        class="text-danger"></span></label>
-                                @if(documentForm.get('DocumentSLNoLength').touched && documentForm.get('DocumentSLNoLength').invalid){
-                                    <div class="error-message">
-                                        @if(documentForm.get('DocumentSLNoLength').hasError('required')){
-                                            <span>Required</span>
-                                        } @else if(documentForm.get('DocumentSLNoLength').hasError('onlyNumbers')){
-                                            <span>Only Digits are allowed</span>
-                                        } @else if(documentForm.get('DocumentSLNoLength').hasError('maxlength')){
-                                            <span>Max 2 Digits</span>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        </aside>
-                        <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
-                                <ng-select formControlName="ResetValue" [items]="resetValues" bindLabel="value"
-                                    bindValue="value"  placeholder="Select Reset Value">
-                                </ng-select>
-                                <label for="" class="input-label">Reset Value <span class="text-danger">*</span></label>
-                                @if(documentForm.get('ResetValue').touched && documentForm.get('ResetValue').invalid){
-                                    <div class="error-message">
-                                        @if(documentForm.get('ResetValue').hasError('required')){
-                                            <span>Required</span>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        </aside>
-
-
-
-
-
-                        <aside class="col-md-6">
+                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <textarea id="Remarks" class="custom-input-field sm" placeholder="" rows="1"
                                     formControlName="Remarks" maxlength="500" [textWithNumbers]="500"></textarea>
@@ -341,7 +247,92 @@
                                 }
                             </div>
                         </aside>
+                       
 
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6" [formGroup]="documentForm">
+            <div class="card h-100 mb-0">
+                 <div class="card-body py-2">
+                        <div class="row compact-form pb-2 rounded border border-top-0">
+                           <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+    <i class="fas fa-flag fs-4"></i>
+    <h6 class="card-titlename mb-0">Document Configuration & Flags</h6>
+</div>
+
+                         <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="DocumentStartingNo" [onlyNumbers]="5">
+                                <label for="text-input" class="input-label">Starting No <span
+                                        class="text-danger">*</span></label>
+                                @if(documentForm.get('DocumentStartingNo').touched && documentForm.get('DocumentStartingNo').invalid){
+                                    <div class="error-message">
+                                        @if(documentForm.get('DocumentStartingNo').hasError('required')){
+                                            <span>Required</span>
+                                        } @else if(documentForm.get('DocumentStartingNo').hasError('onlyNumbers')){
+                                            <span>Only Digits are allowed</span>
+                                        } @else if(documentForm.get('DocumentStartingNo').hasError('maxlength')){
+                                            <span>Max 5 Digits</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="DocumentSeparator" [items]="documentSeparators" bindLabel="separator"
+                                    bindValue="value" placeholder="Select Separator">
+                                </ng-select>
+                                <label for="" class="input-label">Separator <span class="text-danger"></span></label>
+                                @if(documentForm.get('DocumentSeparator').touched && documentForm.get('DocumentSeparator').invalid){
+                                    <div class="error-message">
+                                        @if(documentForm.get('DocumentSeparator').hasError('required')){
+                                            <span>Required</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-6">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="DocumentSLNoLength" [onlyNumbers]>
+                                <label for="" class="input-label">Serial No Length <span
+                                        class="text-danger"></span></label>
+                                @if(documentForm.get('DocumentSLNoLength').touched && documentForm.get('DocumentSLNoLength').invalid){
+                                    <div class="error-message">
+                                        @if(documentForm.get('DocumentSLNoLength').hasError('required')){
+                                            <span>Required</span>
+                                        } @else if(documentForm.get('DocumentSLNoLength').hasError('onlyNumbers')){
+                                            <span>Only Digits are allowed</span>
+                                        } @else if(documentForm.get('DocumentSLNoLength').hasError('maxlength')){
+                                            <span>Max 2 Digits</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select formControlName="ResetValue" [items]="resetValues" bindLabel="value"
+                                    bindValue="value"  placeholder="Select Reset Value">
+                                </ng-select>
+                                <label for="" class="input-label">Reset Value <span class="text-danger">*</span></label>
+                                @if(documentForm.get('ResetValue').touched && documentForm.get('ResetValue').invalid){
+                                    <div class="error-message">
+                                        @if(documentForm.get('ResetValue').hasError('required')){
+                                            <span>Required</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </aside>
+                        
 
                         <aside class="col-md-6 mt-3">
                             <div class=" form-check">
@@ -440,7 +431,7 @@
 
                             </div>
                         </aside>
-                        <div class="d-flex justify-content-end mt-4 mb-1">
+                        <div class="d-flex justify-content-end mt-4 mb-2">
                             <button type="button" class="btn btn-info btn-sm dofi-min-w-full dofi-max-w-full" (click)="openSampleModal(sampleTemplate)">
                                 Sample Voucher Number
                             </button>
