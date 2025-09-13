@@ -2,31 +2,34 @@
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
-                 <div class="d-flex align-items-center gap-2">
-                         <div class="brand-icon">
-                      <i class="fas fa-bars"></i>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="brand-icon">
+                        <i class="fas fa-bars"></i>
                     </div>
-                <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit Menu' : 'Menu'}}</h5>
-                @if(isEditMode){
-                <a class="text-info ps-2 d-flex align-items-center w-2 h-2">
-                    <i class="fas fa-info-circle"></i>
-                </a>
-                }
-                 </div>
+                    <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit Menu' : 'Menu'}}</h5>
+                    @if(isEditMode){
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2">
+                        <i class="fas fa-info-circle"></i>
+                    </a>
+                    }
+                </div>
             </div>
             <div class="col-md-8 pb-2">
                 <div
                     class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                   
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
+
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="navigateBack()">
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" appPreventMultiClick (click)="onSubmit()"   [disabled]="menuForm.invalid">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" appPreventMultiClick
+                        (click)="onSubmit()" [disabled]="menuForm.invalid">
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Update' : 'Save'}}
                     </button>
@@ -39,7 +42,7 @@
         <div class="card">
             <div class="card-body py-2 px-3">
                 <div class="row pb-2 rounded border border-top-0" [formGroup]="menuForm">
-                        <div class="card-header-title d-flex align-items-center gap-2">
+                    <div class="card-header-title d-flex align-items-center gap-2">
                         <i class="fas fa-bars fs-4"></i>
                         <h6 class="card-titlename mb-0">Menu Information</h6>
                     </div>
@@ -64,34 +67,30 @@
                         </div>
                     </aside>
                     <aside class="col-md-4 mt-md-4 mt-2">
-  <div class="form-check ">
-    <input class="form-check-input" type="checkbox" id="isSubMenu" 
-           [checked]="isSubMenuChecked"
-           (change)="onParentMenuChange($any($event.target).checked)">
-    <label class="form-check-label" for="isSubMenu">Is Sub Menu</label>
-  </div>
-</aside>
+                        <div class="form-check ">
+                            <input class="form-check-input" type="checkbox" id="isSubMenu" [checked]="isSubMenuChecked"
+                                (change)="onParentMenuChange($any($event.target).checked)">
+                            <label class="form-check-label" for="isSubMenu">Is Sub Menu</label>
+                        </div>
+                    </aside>
 
-<aside class="col-md-4" *ngIf="isSubMenu && mainMenus.length > 0">
-  <div class="custom-form-group custom-form-group-select">
-    <ng-select [items]="mainMenus" 
-               bindLabel="MenuName" 
-               bindValue="MenuMasterSid"
-               formControlName="parentId" 
-               placeholder="Select Parent Menu"
-               [class.is-invalid]="menuForm.get('parentId')?.invalid && menuForm.get('parentId')?.touched">
-      <ng-template ng-option-tmp let-item="item">
-        {{item.MenuName}}
-      </ng-template>
-    </ng-select>
-    <label class="input-label">Parent Menu <span class="text-danger">*</span></label>
-    @if(menuForm.get('parentId')?.touched && menuForm.get('parentId')?.invalid){
-    <div class="error-message">
-      <span>Required</span>
-    </div>
-    }
-  </div>
-</aside>
+                    <aside class="col-md-4" *ngIf="isSubMenu && mainMenus.length > 0">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="mainMenus" bindLabel="MenuName" bindValue="MenuMasterSid"
+                                formControlName="parentId" placeholder="Select Parent Menu"
+                                [class.is-invalid]="menuForm.get('parentId')?.invalid && menuForm.get('parentId')?.touched">
+                                <ng-template ng-option-tmp let-item="item">
+                                    {{item.MenuName}}
+                                </ng-template>
+                            </ng-select>
+                            <label class="input-label">Parent Menu <span class="text-danger">*</span></label>
+                            @if(menuForm.get('parentId')?.touched && menuForm.get('parentId')?.invalid){
+                            <div class="error-message">
+                                <span>Required</span>
+                            </div>
+                            }
+                        </div>
+                    </aside>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" formControlName="MenuCode" id="MenuCode" placeholder=""
@@ -152,12 +151,12 @@
                             <ng-select [items]="iconOptions" bindLabel="label" bindValue="value" formControlName="icon"
                                 placeholder="Select an icon">
                                 <ng-template ng-label-tmp let-item="item">
-                                    <i-feather class="feather-sm me-2" [name]="item.value"></i-feather>
-                                    {{item.label}}
+                                    <i class="{{ item.value }} me-2"></i> <!-- FontAwesome -->
+                                    {{ item.label }}
                                 </ng-template>
                                 <ng-template ng-option-tmp let-item="item">
-                                    <i-feather class="feather-sm me-2" [name]="item.value"></i-feather>
-                                    {{item.label}}
+                                    <i class="{{ item.value }} me-2"></i>
+                                    {{ item.label }}
                                 </ng-template>
                             </ng-select>
                             <label class="input-label">Icon</label>
@@ -181,8 +180,8 @@
         <div class="card">
             <div class="card-body pt-0">
                 <div class="row">
-                     <div class="card-header-title d-flex align-items-center gap-2">
-                       <i class="fas fa-lock fs-4"></i>
+                    <div class="card-header-title d-flex align-items-center gap-2">
+                        <i class="fas fa-lock fs-4"></i>
                         <h6 class="card-titlename mb-0">Menu Permission</h6>
                     </div>
                     <aside [formGroup]="menuForm" class="col-md-12 col-12 mt-2">
@@ -192,11 +191,13 @@
                                     <tr class="bg-info text-white rounded-top">
                                         <th class="bg-transparent text-light" scope="col" width="5%">S.No</th>
                                         <th class="bg-transparent text-light" scope="col" width="85%">Permission</th>
-                                        <th class="bg-transparent text-light text-center" scope="col" width="10%">Actions</th>
+                                        <th class="bg-transparent text-light text-center" scope="col" width="10%">
+                                            Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody formArrayName="permissions">
-                                    @for (permission of permissions.controls; track permission.value?.permissionName || i;
+                                    @for (permission of permissions.controls; track permission.value?.permissionName ||
+                                    i;
                                     let i = $index; let last =
                                     $last) {
                                     <tr [formGroupName]="i">
@@ -206,7 +207,8 @@
                                                 <div class="col-md-12 py-2">
                                                     <div class="custom-form-group">
                                                         <input type="text" formControlName="permissionName"
-                                                            class="custom-input-field sm" placeholder="Permission Name" [class.is-invalid]="permission.get('permissionName')?.invalid && 
+                                                            class="custom-input-field sm" placeholder="Permission Name"
+                                                            [class.is-invalid]="permission.get('permissionName')?.invalid && 
                                       (permission.get('permissionName')?.dirty || 
                                        permission.get('permissionName')?.touched)">
                                                         @if(permission.get('permissionName')?.hasError('required') &&
@@ -223,40 +225,45 @@
                                                             Maximum 100 characters allowed
                                                         </div>
                                                         }
-                                                        @if(permission.get('permissionName')?.hasError('duplicatePermission') &&
+                                                        @if(permission.get('permissionName')?.hasError('duplicatePermission')
+                                                        &&
                                                         (permission.get('permissionName')?.dirty ||
                                                         permission.get('permissionName')?.touched)) {
                                                         <div class="error-message">
                                                             Permission name already exists
                                                         </div>
                                                         }
-                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="d-flex pe-2 position-relative z-3">
                                             @if(!last){
-                                                <div class="mt-2">
-                                                     <button type="button" class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
-                                                (click)="clearPermission(i)" title="Add Permission">
-                                                
-                                                <i class="fas fa-plus"></i> Custom
-                                            </button>
-                                                </div>
-                                               
-                                            }
-                                        @if(last) {
                                             <div class="mt-2">
-                                                 <button type="button" class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
-                                                (click)="addPermission()" title="Add Permission">
-                                                
-                                                <i class="fas fa-plus"></i> Custom
-                                            </button>
+                                                <button type="button"
+                                                    class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
+                                                    (click)="clearPermission(i)" title="Add Permission">
+
+                                                    <i class="fas fa-plus"></i> Custom
+                                                </button>
                                             </div>
-                                           
-                                           
-                                            <div ngbDropdown placement="top-end" class="d-inline-block mt-2" (openChange)="filterPermissionList($event)">
-                                                <button type="button" class="btn btn-sm btn-secondary me-2 dofi-min-w-100 dofi-max-w-100"
+
+                                            }
+                                            @if(last) {
+                                            <div class="mt-2">
+                                                <button type="button"
+                                                    class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
+                                                    (click)="addPermission()" title="Add Permission">
+
+                                                    <i class="fas fa-plus"></i> Custom
+                                                </button>
+                                            </div>
+
+
+                                            <div ngbDropdown placement="top-end" class="d-inline-block mt-2"
+                                                (openChange)="filterPermissionList($event)">
+                                                <button type="button"
+                                                    class="btn btn-sm btn-secondary me-2 dofi-min-w-100 dofi-max-w-100"
                                                     id="dropdown1" ngbDropdownToggle> <i class="fas fa-plus"></i>
                                                     Prebuilt </button>
                                                 <div ngbDropdownMenu aria-labelledby="dropdown1" class="z-2 border">
@@ -264,21 +271,22 @@
                                                     <button ngbDropdownItem class="fw-bold text-info"
                                                         (click)="createPermissionWithOption(option)"><i
                                                             class="fas fa-{{getOptionIcon(option)}} text-info me-2"></i>{{option}}</button>
-                                                        <div class="dropdown-divider my-1" *ngIf="!last"></div>
+                                                    <div class="dropdown-divider my-1" *ngIf="!last"></div>
                                                     } @empty {
-                                                        <button ngbDropdownItem class="fw-bold py-2" disabled>No items found</button>
+                                                    <button ngbDropdownItem class="fw-bold py-2" disabled>No items
+                                                        found</button>
                                                     }
                                                 </div>
                                             </div>
                                             }
                                             @if(permissions.length > 1) {
-                                                <div class="mt-2">
-                                                      <button type="button" class="btn btn-sm btn-outline-danger me-2"
-                                                (click)="removePermission(i)" title="Remove Permission">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                                </div>
-                                          
+                                            <div class="mt-2">
+                                                <button type="button" class="btn btn-sm btn-outline-danger me-2"
+                                                    (click)="removePermission(i)" title="Remove Permission">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </div>
+
                                             }
                                         </td>
                                     </tr>
@@ -291,32 +299,34 @@
             </div>
         </div>
     </div>
-    
-@if(isEditMode){
+
+    @if(isEditMode){
     <div class="col-12 mt-3">
-    <div class="card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-                    <!-- eDoc Button -->
-                     
-                    <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
-        <i class="fas fa-file-alt me-1"></i> e-Doc
-      </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
-                    <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
-        <i  class="fas fa-shield-alt me-1"></i> Authorize
-      </button>
-                
-      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
-        <i class="fas fa-envelope me-1"></i> Email
-      </button>
-                
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
+                        <!-- eDoc Button -->
+
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+                            <i class="fas fa-file-alt me-1"></i> e-Doc
+                        </button>
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
+                            <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                        </button>
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info"
+                            (click)="openAuthority()">
+                            <i class="fas fa-shield-alt me-1"></i> Authorize
+                        </button>
+
+                        <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "
+                            (click)="openEmail()">
+                            <i class="fas fa-envelope me-1"></i> Email
+                        </button>
+
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-     } 
+    }
