@@ -151,8 +151,10 @@ export class FullcalendarComponent implements OnInit {
   constructor(private modalService: ModalService, private cdr: ChangeDetectorRef, private appSettingService: AppSettingsService, private fb: FormBuilder, private leadService: LeadService, private modal: NgbModal, private appService: AppService,private ngbModal: NgbModal) { }
 
   ngOnInit(): void {
-    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+   const storedCompany = localStorage.getItem('selected-company');
+this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
+const storedBranch = localStorage.getItem('selected-branch');
+this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     this.isMobile = this.appService.getDevice()
     this.loadCustomers()
     this.loadSalesPersons()
@@ -394,27 +396,43 @@ private meetingNoteValidator(control: AbstractControl) {
 
 
   onAddMeeting() {
-
-    console.log(this.meetingForm.value)
-    this.leadService.createPreCustomerMeeting(this.meetingForm.value).subscribe(
-      resp => {
-        if (resp.data && resp.status) {
-          // this.appSettingService.showSuccess(resp.message);
-          this.modalService.openSuccessModal(resp.message);
-          this.btnDisable = false;
-          this.meetingForm.patchValue(resp.data);
-          this.modalAddFormRef.close();
-
-          this.refreshComponent();
-        } else {
-          this.btnDisable = false;
-          // this.appSettingService.showError(resp.message);
-          this.modalService.openErrorModal(resp.message);
-        }
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+  const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
+  
+  console.log('Current Company:', this.currentCompany);
+  console.log('Current Branch:', this.currentBranch);
+  console.log('Form Values:', this.meetingForm.value);
+  
+  const payload = {
+    ...this.meetingForm.value,
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    userEmail: userEmail
+  };
+  
+  console.log('Final Payload:', payload);
+  
+  
+  this.leadService.createPreCustomerMeeting(payload).subscribe(
+    resp => {
+      if (resp.data && resp.status) {
+        this.modalService.openSuccessModal(resp.message);
+        this.btnDisable = false;
+        this.meetingForm.patchValue(resp.data);
+        this.modalAddFormRef.close();
+        this.refreshComponent();
+      } else {
+        this.btnDisable = false;
+        this.modalService.openErrorModal(resp.message);
       }
-    )
-  }
-
+    },
+    error => {
+      this.btnDisable = false;
+      this.modalService.openErrorModal('Error creating meeting: ' + error.message);
+    }
+  );
+}
   // Handle Form Submission
   onEditMeeting() {
   // Check if meeting status is "on hold" and note is empty
@@ -437,10 +455,13 @@ private meetingNoteValidator(control: AbstractControl) {
     this.appSettingService.showError("Meeting status is already confirmed and cannot be edited.");
     return;
   }
-
-  const payload = {
+    const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
+   const payload = {
     PreCustomerMeetingSid: this.PreCustomerMeetingSid,
     ...this.meetingForm.getRawValue(),
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    userEmail: userEmail 
   };
 
   // If followUp is false, remove followUpNote and followUpDate from the payload
@@ -461,6 +482,10 @@ private meetingNoteValidator(control: AbstractControl) {
         this.btnDisable = false;
         this.modalService.openErrorModal(resp.message);
       }
+    },
+    error => {
+      this.btnDisable = false;
+      this.modalService.openErrorModal('Error updating meeting: ' + error.message);
     }
   );
   this.btnDisable = false;

@@ -261,6 +261,7 @@ applySorting() {
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'MilestoneName'; 
   this.sortDirection = 'asc';
+  this.loadMilestones();
   }
 
   getStatusClass(status: string): string {

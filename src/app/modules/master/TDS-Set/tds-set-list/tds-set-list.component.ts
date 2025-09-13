@@ -213,6 +213,7 @@ export class TdsSetListComponent implements OnInit {
         this.totalLengthOfCollection = 0;
         this.sortColumn = 'TDSSetName';
         this.sortDirection = 'asc';
+        this.loadTds()
     }
 
 }

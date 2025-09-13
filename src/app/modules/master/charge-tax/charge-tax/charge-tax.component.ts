@@ -430,6 +430,7 @@ onPageChange(newPage: number) {
     this.searchType = 'HSNCode';
     this.sortColumn = 'HSNCode';
     this.sortDirection = 'asc';
+    this.loadChargeTaxes();
   }
 
   report(): void {

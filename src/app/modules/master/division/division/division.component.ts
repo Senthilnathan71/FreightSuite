@@ -214,6 +214,7 @@ export class DivisionComponent {
     this.divisionForm.reset({
       status: 'Active',
     });
+    
   }
 
   openModal(content: any): void {
@@ -515,6 +516,7 @@ export class DivisionComponent {
     this.searched = false;
     this.sortColumn = 'DivisionName';
     this.sortDirection = 'asc';
+    this.loadDivisions();
   }
 
   report(): void {

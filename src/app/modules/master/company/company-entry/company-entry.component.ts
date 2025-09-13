@@ -1004,8 +1004,49 @@ export class CompanyEntryComponent implements OnInit {
 	
 
 	resetCompanyForm() {
-		this.companyForm.reset();
-	}
+  // If editing an existing company, re-load the company from server so we restore original values
+  if (this.isEditMode && this.CompanyMasterSid) {
+    this.loadCompanyData();
+    return;
+  }
+
+  // Preserve existing branch FormArray controls (don't remove branches)
+  const preservedBranchControls = this.branches ? this.branches.controls.slice() : [];
+
+  // Reset company-level controls only (leave branches untouched)
+  this.companyForm.reset({
+    companyName: '',
+    companyCode: '',
+    CountryMasterSid: null,
+    CurrencyMasterSid: null,
+    addressLine1: '',
+    webSite: '',
+    email: '',
+    phoneNumber: '',
+    Pan: '',
+    isHo: false,
+    status: 'Active',
+    remarks: '',
+    config: {}
+    // note: branches excluded on purpose
+  });
+
+  // Re-attach preserved branches back to the form so we don't lose them
+  this.companyForm.setControl('branches', this.fb.array(preservedBranchControls));
+
+  // In create mode, status control should be disabled (mirror ChargeEntry logic)
+  if (!this.isEditMode) {
+    this.companyForm.get('status')?.disable();
+  } else {
+    this.companyForm.get('status')?.enable();
+  }
+
+  // Ensure change detection if needed (useful when called from modals/async flows)
+  if (this.cdRef) {
+    this.cdRef.detectChanges();
+  }
+}
+
 
 	closeBranchBankForm() {
 		this.branchBankForm.reset();

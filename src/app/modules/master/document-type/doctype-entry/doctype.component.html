@@ -107,7 +107,7 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="DocumentTypeCode" [textWithNumbers]="5">
+                                    formControlName="DocumentTypeCode" [textWithNumbers]="5"  style="text-transform: uppercase;">
                                 <label for="text-input" class="input-label">Code <span
                                         class="text-danger">*</span></label>
                                  @if(documentForm.get('DocumentTypeCode').touched && documentForm.get('DocumentTypeCode').invalid){
@@ -144,7 +144,7 @@
                                     bindValue="currencyCode" class="ng-select" placeholder="Select Currency" [textWithNumbers]="3">
                                 </ng-select>
                                 <label for="text-input" class="input-label">Currency <span
-                                        class="text-danger"></span></label>
+                                        class="text-danger">*</span></label>
                                 @if(documentForm.get('CurrencyCode').touched && documentForm.get('CurrencyCode').invalid){
                                     <div class="error-message">
                                         @if(documentForm.get('CurrencyCode').hasError('required')){
@@ -287,7 +287,7 @@
                                 <ng-select formControlName="DocumentSeparator" [items]="documentSeparators" bindLabel="separator"
                                     bindValue="value" placeholder="Select Separator">
                                 </ng-select>
-                                <label for="" class="input-label">Separator <span class="text-danger"></span></label>
+                                <label for="" class="input-label">Separator <span class="text-danger">*</span></label>
                                 @if(documentForm.get('DocumentSeparator').touched && documentForm.get('DocumentSeparator').invalid){
                                     <div class="error-message">
                                         @if(documentForm.get('DocumentSeparator').hasError('required')){
@@ -301,9 +301,9 @@
                         <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="DocumentSLNoLength" [onlyNumbers]>
+                                    formControlName="DocumentSLNoLength" [onlyNumbers]="2">
                                 <label for="" class="input-label">Serial No Length <span
-                                        class="text-danger"></span></label>
+                                        class="text-danger">*</span></label>
                                 @if(documentForm.get('DocumentSLNoLength').touched && documentForm.get('DocumentSLNoLength').invalid){
                                     <div class="error-message">
                                         @if(documentForm.get('DocumentSLNoLength').hasError('required')){

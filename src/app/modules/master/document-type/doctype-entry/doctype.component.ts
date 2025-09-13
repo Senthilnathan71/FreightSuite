@@ -349,10 +349,46 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 
 
 	resetForm() {
-		this.documentForm.reset({
-			status: 'Active'
-		})
-	}
+  // If editing an existing document type, reload it from server to restore original values
+  if (this.isEditMode && this.DocumentTypeMasterSid) {
+    this.loadDocumentType(this.DocumentTypeMasterSid);
+    return;
+  }
+
+  // Reset the form to defaults for create mode
+  this.documentForm.reset({
+    DocumentTypeName: '',
+    DocumentTypeCode: '',
+    Type: '',
+    CurrencyCode: null,
+    COALedger: '',
+    Subledger: '',
+    ReportTitle: '',
+    ReportFooter: '',
+    DocumentStartingNo: '',
+    DocumentSeparator: null,
+    DocumentSLNoLength: '',
+    ResetValue: null,
+    CompanyFlag: false,
+    CompanyValue: '',
+    BranchFlag: false,
+    BranchValue: '',
+    DocumentFlag: false,
+    DocumentValue: '',
+    MonthFlag: false,
+    YearFlag: false,
+    status: 'Active',
+    Remarks: ''
+  });
+
+  // Ensure dependent value controls are disabled (they are enabled only when the corresponding flag is true)
+  this.documentForm.get('CompanyValue')?.disable();
+  this.documentForm.get('BranchValue')?.disable();
+  this.documentForm.get('DocumentValue')?.disable();
+
+  // If you want to keep any other UI state (like loaded COA/subledger lists), leave them untouched.
+}
+
 
 	navigateBack() {
 		history.back()

@@ -401,8 +401,38 @@ export class DepartmentEntryComponent {
 
 
   reset() {
-    this.departmentForm.reset();
+  // If we're editing, reload original record from server to restore original values
+  if (this.isEditMode && this.DepartmentMasterSid) {
+    this.loadDepartmentData(this.DepartmentMasterSid);
+    return;
   }
+
+  // Create-mode: reset to sensible defaults
+  this.departmentForm.reset({
+    departmentName: '',
+    departmentCode: '',
+    departmentType: '',
+    ExportImport: '',
+    FCLLCL: '',
+    Division: '',
+    Remarks: '',
+    Status: 'Active'
+  });
+
+  // Mirror init behaviour: if status should be disabled in create mode, disable it
+  const statusCtrl = this.departmentForm.get('Status');
+  if (statusCtrl) {
+    statusCtrl.disable();
+  }
+
+  // Clear local state
+  this.departmentData = null;
+  this.DepartmentMasterSid = null;
+
+  // Reset any UI button state you track
+  this.btnDisable = false;
+}
+
   goBack() {
     history.back()
   }

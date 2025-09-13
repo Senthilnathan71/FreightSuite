@@ -419,8 +419,41 @@ resetForm(): void {
   }
 
   reset() {
-    this.containertypeForm.reset();
+  // If editing an existing record, reload it from server to restore original values
+  if (this.isEditMode && this.ContainerTypeMasterSid) {
+    this.loadContainerData(this.ContainerTypeMasterSid);
+    return;
   }
+
+  // Create-mode: reset form to sensible defaults
+  this.containertypeForm.reset({
+    ContainerCode: '',
+    ContainerSize: '',
+    ContainerIsoCode: '',
+    ContainerName: '',
+    ContainerCategory: '',
+    Length: '',
+    Width: '',
+    Height: '',
+    MaxVolume: '',
+    TareWeight: '',
+    GrossWeight: '',
+    NoOfTeu: '',
+    Remarks: '',
+    status: 'A'
+  });
+
+  // Mirror init behaviour: disable status control in create mode
+  this.containertypeForm.get('status')?.disable();
+
+  // Clear local state
+  this.containerData = null;
+  this.ContainerTypeMasterSid = null;
+
+  // reset button state if you use it
+  this.btnDisable = false;
+}
+
 
   goBack() {
     this.router.navigate(['master/container-type/list']);

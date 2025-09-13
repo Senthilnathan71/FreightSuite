@@ -1108,10 +1108,47 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.router.navigate(['crm/quotation/list']);
   }
   resetForm() {
-    this.quotationForm.reset({
-      status: "Active",
-    })
-    this.quoteRoutes.clear();
-    this.addQuoteRoute();
+  // If editing an existing quotation, reload it from the server to restore original values
+  if (this.isEditMode && this.QuoteHeaderSid) {
+    this.loadEnquiry(this.QuoteHeaderSid);
+    return;
   }
+
+  // Reset header-level fields only
+  this.quotationForm.reset({
+    CustomerMasterSid: null,
+    CustomerRef: '',
+    Email: '',
+    status: 'Active',
+    SalesmanSid: null,
+    CustomerName: '',
+    CustomerAddress: '',
+    QuoteNumber: '',
+    QuoteDate: null,
+    EnquirySid: ''
+  });
+
+  // Clear any cached or derived UI state related to routes/charges
+  this.quoteRoutes.clear();
+  this.filteredUnits = [];
+  this.filteredPOLPorts = [];
+  this.filteredPODPorts = [];
+  this.tariffDetails = [];
+  this.enquiryNumber = '';
+
+  // Re-create a single empty route (same as component init)
+  this.addQuoteRoute();
+
+  // Ensure the same controls are disabled as on init
+  this.quotationForm.get('EnquirySid')?.disable();
+  this.f['status']?.disable();
+
+  // If you had flags that disable edits after approval, reset them
+  this.disableAllModification = false;
+  this.authStateCache = 'Pending';
+
+  // run change detection if needed (optional)
+  try { (this as any).cdRef?.detectChanges(); } catch (e) { /* ignore if cdRef not available */ }
+}
+
 }
