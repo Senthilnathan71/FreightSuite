@@ -417,6 +417,7 @@ export class MenuEntryComponent implements OnInit {
 
             // Force UI update if using change detection strategy OnPush
             this.cdr.detectChanges();
+            this.router.navigate(['settings/menu/list']);
           } else {
             this.appSettingService.showError(resp.message || 'Error updating menu.');
           }
