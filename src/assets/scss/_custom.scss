@@ -194,7 +194,9 @@
 }
 
 .form-check-input {
-    --bs-form-check-bg: #D3D9E4;
+    --bs-form-check-bg: #FFF;
+    border:2px solid currentColor;
+    transform: scale(0.8);
 }
 
 // custom tab
@@ -270,7 +272,7 @@
 // table-sm start
 
 .table.table-sm  > :not(caption) > * > * {
-    padding:7px;
+    padding:2px;
     font-size:15px;
 }
 // table-sm end

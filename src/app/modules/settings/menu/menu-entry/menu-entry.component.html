@@ -44,7 +44,7 @@
                 <div class="row pb-2 rounded border border-top-0" [formGroup]="menuForm">
                     <div class="card-header-title d-flex align-items-center gap-2">
                         <i class="fas fa-bars fs-4"></i>
-                        <h6 class="card-titlename mb-0">Menu Information</h6>
+                        <h5 class="card-titlename mb-0">Menu Information</h5>
                     </div>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
@@ -176,12 +176,94 @@
         </div>
     </div>
 
+    <div class="col-md-auto">
+        <div class="card">
+            <div class="card-header-title d-flex align-items-center gap-2">
+                <i class="fas fa-lock fs-4"></i>
+                <h5 class="card-titlename mb-0">Menu Permission</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm dofi-max-w-200 mb-0">
+                        <thead>
+                            <tr class="">
+                                <td class="bg-info text-white px-2">Add</td>
+                                <td class="bg-info text-white px-2">Modify</td>
+                                <td class="bg-info text-white px-2">Delete</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="add1" value="option1" class="form-check-input">
+                                        <!-- <label for="add1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="modify1" value="option1" class="form-check-input">
+                                        <!-- <label for="modify1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="delete1" value="option1" class="form-check-input">
+                                        <!-- <label for="delete1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-auto">
+        <div class="card">
+            <div class="card-header-title d-flex align-items-center gap-2">
+                <i class="fas fa-lock fs-4"></i>
+                <h5 class="card-titlename mb-0">Other Permission</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm dofi-max-w-200 mb-0">
+                        <thead>
+                            <tr class="">
+                                <td class="bg-info text-white px-2">Edoc</td>
+                                <td class="bg-info text-white px-2">T&C</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="eDoc1" value="option1" class="form-check-input">
+                                        <!-- <label for="eDoc1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="termsAndCondition1" value="option1" class="form-check-input">
+                                        <!-- <label for="termsAndCondition1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="col-md-6">
         <div class="card">
             <div class="card-header-title d-flex align-items-center gap-2">
                 <i class="fas fa-lock fs-4"></i>
-                <h6 class="card-titlename mb-0">Menu Permission</h6>
+                <h5 class="card-titlename mb-0">Menu Permission</h5>
             </div>
+
             <div class="card-body pt-0">
                 <div class="row">
                     <aside [formGroup]="menuForm" class="col-md-12 col-12 mt-2">
@@ -244,23 +326,23 @@
                                                     <button type="button"
                                                         class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
                                                         (click)="clearPermission(i)" title="Add Permission">
-    
+
                                                         <i class="fas fa-plus"></i> Custom
                                                     </button>
                                                 </div>
-    
+
                                                 }
                                                 @if(last) {
                                                 <div class="mt-2">
                                                     <button type="button"
                                                         class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
                                                         (click)="addPermission()" title="Add Permission">
-    
+
                                                         <i class="fas fa-plus"></i> Custom
                                                     </button>
                                                 </div>
-    
-    
+
+
                                                 <div ngbDropdown placement="top-end" class="d-inline-block mt-2"
                                                     (openChange)="filterPermissionList($event)">
                                                     <button type="button"
@@ -287,7 +369,7 @@
                                                         <i class="fas fa-trash-alt"></i>
                                                     </button>
                                                 </div>
-    
+
                                                 }
                                             </div>
                                         </td>
