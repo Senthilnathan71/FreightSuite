@@ -4,10 +4,11 @@ import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { OperationRoutes } from './operation-routing.module';
 import { OperationService } from './operation.service';
+import { MasterDocumentUploadComponent } from './master-document-upload/master-document-upload.component';
 
 
 @NgModule({
-  declarations: [],
+  declarations: [MasterDocumentUploadComponent],
   imports: [
     CommonModule,
     FormsModule,

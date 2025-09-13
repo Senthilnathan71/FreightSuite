@@ -28,6 +28,13 @@
                     <span>{{isEditMode ? 'Update' : 'Save'}}</span>
                 </button>
             </div>
+
+            <div class="action-group primary">
+                <button class="action-btn action-success" (click)="uploadPDF()" [disabled]="isLoading">
+                    <i class="fas fa-save fs-2"></i>
+                    <span>Upload</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -2251,3 +2258,7 @@
         </div>
     </ng-template>
 </div>
+
+<ng-template #pdfContent let-modal>
+    
+</ng-template>
