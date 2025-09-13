@@ -198,14 +198,14 @@
             <aside class="col-md-6">
               <div class="custom-form-group">
                 <input type="text" formControlName="IncoCode" id="text-input" placeholder=""
-                  class="custom-input-field sm" [textWithNumbers]="9">
+                  class="custom-input-field sm" [textWithNumbers]="3">
                 <label for="text-input" class="input-label">Inco Code <span class="text-danger fw-bold">*</span></label>
                 @if(incoForm.get('IncoCode')?.touched && incoForm.get('IncoCode')?.invalid){
                 <div class="error-message">
                   @if(incoForm.get('IncoCode')?.hasError('required')){
                   <span>Required</span>
                   } @else if(incoForm.get('IncoCode')?.hasError('maxlength')){
-                  <span>Max 9 Chars</span>
+                  <span>Max 3 Chars</span>
                   }
                 </div>
                 }

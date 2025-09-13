@@ -290,6 +290,7 @@ export class StateListComponent {
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'stateName';
     this.sortDirection = 'asc';
+    this.loadStates();
   }
 
   getStatusClass(status: string): string {

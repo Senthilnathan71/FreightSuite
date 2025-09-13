@@ -217,7 +217,8 @@ applySorting() {
 		this.searchType = 'ImcoClass';
 		this.page = 1;
 		this.sortColumn = 'ImcoClass';
-        this.sortDirection = 'asc';
+    this.sortDirection = 'asc';
+    this.loadImcos();
 	}
 
 	report(): void {

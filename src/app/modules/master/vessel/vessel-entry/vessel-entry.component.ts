@@ -286,10 +286,40 @@ openEDoc() {
   modalRef.componentInstance.idValue = this.vesselData?.VesselMasterSid;
 }
 
+// reset() {
+//   this.vesselForm.reset({
+//     status: 'Active' 
+//   });
+// }
+
 reset() {
+  // If editing an existing vessel, reload it (restore original state)
+  if (this.isEditMode && this.VesselMasterSid) {
+    this.loadVessel();
+    return;
+  }
+
+  // Create-mode: reset form to sensible defaults
   this.vesselForm.reset({
-    status: 'Active' 
+    VesselName: '',
+    VesselShortCode: '',
+    IMOCode: '',
+    CallSignIn: '',
+    YearofBuilt: null,    // Use null for numeric fields
+    MMSINo: null,         // Use null for numeric fields
+    GRT: null,            // Use null for numeric fields
+    NRT: null,            // Use null for numeric fields
+    VesselType: '',
+    VesselOperator: '',
+    LengthinMtr: null,    // Use null for numeric fields
+    BreadthinMtr: null,   // Use null for numeric fields
+    Remarks: '',
+    status: 'Active'
   });
+
+
+  // Reset any additional state variables if needed
+  this.vesselData = null;
 }
  openAuditLogs(modal: TemplateRef<any>) {
   if (!this.VesselMasterSid) return;

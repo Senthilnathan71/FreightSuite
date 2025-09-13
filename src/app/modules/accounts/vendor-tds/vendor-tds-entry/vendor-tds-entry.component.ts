@@ -491,11 +491,46 @@ openAuditLogs(modal: TemplateRef<any>) {
       });
     }
 
+  // onReset() {
+  //   this.supplierTDSForm.reset({
+  //     Status: 'Active',
+  //   });
+  //   this.tdsDetailArray.clear();
+  //   this.addTDSDetail();
+  // }
   onReset() {
-    this.supplierTDSForm.reset({
-      Status: 'Active',
-    });
-    this.tdsDetailArray.clear();
-    this.addTDSDetail();
+  // If editing an existing supplier TDS, reload it (restore original state)
+  if (this.isEditMode && this.SupplierTdsMappingSid) {
+    this.loadSupplierTDS();
+    return;
   }
+
+  // Create-mode: reset main form to sensible defaults
+  this.supplierTDSForm.reset({
+    CustomerMasterSid: null,
+    Status: 'Active',
+    CompanyType: '',
+    VendorName: '',
+    PanNO: '',
+    CountryName: ''
+  });
+
+  // Clear and reset TDS detail array
+  this.tdsDetailArray.clear();
+  this.addTDSDetail();
+
+  // Reset supplier and branch data
+  this.cusBranchList = [];
+  
+  // Reset min date to today for new entries
+  this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
+
+  // Clear form validation states
+  this.supplierTDSForm.markAsUntouched();
+  this.supplierTDSForm.updateValueAndValidity();
+
+  // Reset delete toggler if active
+  this.deleteToggler = false;
+}
+  
 }

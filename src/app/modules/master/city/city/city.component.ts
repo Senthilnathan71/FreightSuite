@@ -529,6 +529,7 @@ applySorting() {
     this.searchPerformed = false;
     this.sortColumn = 'cityName';
     this.sortDirection = 'asc';
+    this.loadCities();
   }
 
   report(): void {

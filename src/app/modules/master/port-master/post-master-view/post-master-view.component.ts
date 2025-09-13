@@ -249,9 +249,46 @@ export class PostMasterViewComponent {
   }
 
 
-  reset() {
-    this.portForm.reset();
+  // reset() {
+  //   this.portForm.reset();
+  // }
+
+  reset(): void {
+  // If editing an existing port, reload it (restore original state)
+  if (this.isEditMode && this.idParam) {
+    this.loadPort(this.idParam);
+    return;
   }
+
+  // Create-mode: reset form to sensible defaults
+  this.portForm.reset({
+    PortName: '',
+    PortCode: '',
+    CountryMasterSid: '',
+    StateMasterSid: '',
+    TimeZone: '',
+    ZoneMasterSid: '',
+    TerminalCode: '',
+    PortType: 'Sea',
+    ExportRestriction: '',
+    ImportRestriction: '',
+    SCMTPortCode: '',
+    CBMRequire: false,
+    status: 'Active',
+    EdiPortCode: '',
+    Remarks: ''
+  });
+
+  // Clear filtered state list
+  this.filteredStateList = [];
+
+  // Reset form validation state
+  this.portForm.markAsUntouched();
+  this.portForm.markAsPristine();
+
+  // Clear port data reference
+  this.portData = null;
+}
 
   goBack() {
     history.back()

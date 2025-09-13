@@ -176,9 +176,39 @@ statusOptions = [
   );
 }
 
+  // reset() {
+  //   this.uomForm.reset();
+  // }
+
   reset() {
-    this.uomForm.reset();
+  // If editing an existing UOM, reload it (restore original state)
+  if (this.isEditMode && this.idParam) {
+    this.loadUom(this.idParam);
+    return;
   }
+
+  // Create-mode: reset form to sensible defaults
+  this.uomForm.reset({
+    UOMName: '',
+    UOMCode: '',
+    UOMType: '',
+    DimensionReq: false,  // Changed from '' to false
+    WeightReq: false,     // Changed from null to false
+    VolumeReq: false,     // Changed from '' to false
+    ShipmentType: null,
+    status: 'A',
+    Remarks: ''
+  });
+
+  // Disable status field for new records
+  this.uomForm.get('status')?.disable();
+
+  // Clear error message
+  this.errorMessage = '';
+
+  // Reset any additional state variables if needed
+  this.uomData = null;
+}
 
   goBack() {
     history.back()

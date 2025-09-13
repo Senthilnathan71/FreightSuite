@@ -639,11 +639,64 @@ openAuditLogs(modal: TemplateRef<any>) {
         this.isModalEditMode = false;
     }
     
-    resetForm(){
-        this.scheduleForm.reset({
-            status : 'Active'
-        })
-    }
+    // resetForm(){
+    //     this.scheduleForm.reset({
+    //         status : 'Active'
+    //     })
+    // }
+
+    resetForm() {
+  // If editing an existing sailing schedule, reload it (restore original state)
+  if (this.isEditMode && this.VoyageMasterHeaderSid) {
+    this.loadScheduleData();
+    this.loadScheduleDetails();
+    return;
+  }
+
+  // Create-mode: reset header form to sensible defaults
+  this.scheduleForm.reset({
+    VesselMasterSid: '',
+    VoyageNo: '',
+    RotationNumber: '',
+    ShipIRN: '',
+    CrewIRN: '',
+    SCMETA: null,
+    SCMETD: null,
+    SCMTCargoDescription: '',
+    Remarks: '',
+    status: 'Active',
+    CoLoad: false,
+    VoyageType: null,
+    Carrier: null
+  });
+
+  // Reset detail list and pagination
+  this.scheduleDetailList = [];
+  this.slicedScheduleDetailList = [];
+  this.totalAmountOfCollections = 0;
+  this.page = 1;
+
+  // Clear any validation states
+  this.scheduleForm.markAsUntouched();
+  this.scheduleForm.markAsPristine();
+  this.scheduleForm.updateValueAndValidity();
+
+  // Reset additional component state
+  this.sailHeadData = null;
+  this.sailDetailData = null;
+  this.VoyageMasterHeaderSid = null;
+  this.VoyageMasterDetailSid = null;
+  this.isModalEditMode = false;
+  this.formErrors = {};
+  this.etaEtdMustChange = false;
+  this.snoChanged = false;
+  this.previousSnoEtd = null;
+  this.originalSno = null;
+  this.isSnoDuplicate = false;
+
+  // Reset min date to today for new entries
+  this.minETADate = this.toNgbDateStruct(this.todayDate);
+}
 
     navigateBack() {
         history.back();

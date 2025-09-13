@@ -264,6 +264,7 @@ export class UnitListComponent {
     this.unitList = [];
     this.allUnits = [];
     this.totalLengthOfCollection = 0;
+    this.loadUnits();
   }
 
   getStatusText(status: string): string {

@@ -210,6 +210,7 @@ export class ProductListComponent {
         this.page = 1;
         this.sortColumn = 'ProductName';
         this.sortDirection = 'asc';
+        this.loadProducts();
         
     }
 

@@ -220,6 +220,7 @@ export class AuthorityListComponent {
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'DepartmentMaster';
     this.sortDirection = 'asc';
+    this.searchAuthority();
   }
 
   report(): void {

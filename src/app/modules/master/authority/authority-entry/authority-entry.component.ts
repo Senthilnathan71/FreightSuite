@@ -444,12 +444,48 @@ openAuditLogs(modal: TemplateRef<any>) {
   }
 
 
+  // resetAuthorityForm() {
+  //   this.authorityForm.reset({
+  //     status: 'Active'
+  //   });
+  //   this.authDetails.clear();
+  // }
+
   resetAuthorityForm() {
-    this.authorityForm.reset({
-      status: 'Active'
-    });
-    this.authDetails.clear();
+  if (this.isEditMode && this.AuthorityMasterSid) {
+    this.loadAuthorityData();
+    return;
   }
+
+  this.authorityForm.reset({
+    BranchMasterSid: null,
+    DepartmentMaster: [],
+    MenuMaster: null,
+    status: 'Active',
+    Remarks: ''
+  });
+
+  // Use patchValue to set authDetails to empty array
+  this.authorityForm.patchValue({
+    authDetails: []
+  });
+  
+  // Clear the form array
+  while (this.authDetails.length > 0) {
+    this.authDetails.removeAt(0);
+  }
+  
+  // Reset other properties
+  this.authorityDetailsList = [];
+  this.authorityDetailsLength = 0;
+  this.filteredAuthorisers = [];
+  this.AuthorityMasterSid = null;
+  this.AuthorityDetailSid = null;
+  this.isModalEditMode = false;
+  
+  this.addAuthDetail();
+  this.updateFilteredAuthorisers();
+}
 
   showAuthorityInfo() {
     if (!this.authorityData) return;

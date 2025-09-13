@@ -572,9 +572,69 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.filteredTariffDetail = this.TariffDetailsList.slice(start, end)
   }
 
+	// resetForm() {
+	// 	this.tariffHeaderForm.reset();
+	// }
+
 	resetForm() {
-		this.tariffHeaderForm.reset();
-	}
+  // If editing an existing tariff, reload it (restore original state)
+  if (this.isEditMode && this.TariffHeaderSid) {
+    this.loadTariff(this.TariffHeaderSid);
+    this.loadTariffDetails();
+    return;
+  }
+
+  // Create-mode: reset header form to sensible defaults
+  this.tariffHeaderForm.reset({
+    DepartmentMasterSid: null,
+    POOSid: '',
+    POLSid: '',
+    PODSid: '',
+    FDCSid: '',
+    ViaPortSid: '',
+    POLTerminal: '',
+    PODTerminal: '',
+    Carrier: null,
+    MovementType: null,
+    AgentSid: null,
+    IncoTerms: null,
+    StuffingAt: null,
+    EffectiveDate: '',
+    status: 'Active',
+    Remarks: ''
+  });
+
+  // Reset detail list and pagination
+  this.TariffDetailsList = [];
+  this.filteredTariffDetail = [];
+  this.totalNumberOfCollection = 0;
+  this.page = 1;
+
+  // Clear any validation states
+  this.tariffHeaderForm.markAsUntouched();
+  this.tariffHeaderForm.markAsPristine();
+  this.tariffHeaderForm.updateValueAndValidity();
+
+  // Reset additional component state
+  this.tariffData = null;
+  this.tariffDetailData = null;
+  this.TariffHeaderSid = null;
+  this.TariffDetailSid = null;
+  this.isModalEditMode = false;
+  this.btnDisable = true;
+
+  // Reset port lists to full lists
+  this.polList = [...this.portList];
+  this.podList = [...this.portList];
+
+  // Reset min date to today for new entries
+  this.minEffectiveDate = this.toNgbDateStruct(this.todayDate);
+  this.minEffectiveFrom = null;
+
+  // Re-enable form controls that were disabled
+  this.tariffHeaderForm.get('POLTerminal').disable();
+  this.tariffHeaderForm.get('PODTerminal').disable();
+}
 
 	setPOLTerminal(event) {
 		if (event) {
