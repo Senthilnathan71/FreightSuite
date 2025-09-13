@@ -12,6 +12,7 @@ import { VendorTdsListComponent } from './vendor-tds/vendor-tds-list/vendor-tds-
 import { VendorTdsEntryComponent } from './vendor-tds/vendor-tds-entry/vendor-tds-entry.component';
 import { LedgerMappingComponent } from './ledger-mapping/ledger-mapping/ledger-mapping.component';
 import { Dashboard1Component } from './dashboard1/dashboard1/dashboard1.component';
+import { ReceiptEntryComponent } from './receipt/receipt-entry/receipt-entry.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -184,6 +185,17 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Dashboard1" },
+          ],
+        },
+      },
+       {
+        path: "receipt",
+        component: ReceiptEntryComponent,
+        data: {
+          title: "Receipt",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Receipt" },
           ],
         },
       },
