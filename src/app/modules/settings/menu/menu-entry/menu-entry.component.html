@@ -178,12 +178,12 @@
 
     <div class="col-md-6">
         <div class="card">
+            <div class="card-header-title d-flex align-items-center gap-2">
+                <i class="fas fa-lock fs-4"></i>
+                <h6 class="card-titlename mb-0">Menu Permission</h6>
+            </div>
             <div class="card-body pt-0">
                 <div class="row">
-                    <div class="card-header-title d-flex align-items-center gap-2">
-                        <i class="fas fa-lock fs-4"></i>
-                        <h6 class="card-titlename mb-0">Menu Permission</h6>
-                    </div>
                     <aside [formGroup]="menuForm" class="col-md-12 col-12 mt-2">
                         <div class="table-responsive overflow-visible">
                             <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -237,57 +237,59 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="d-flex pe-2 position-relative z-3">
-                                            @if(!last){
-                                            <div class="mt-2">
-                                                <button type="button"
-                                                    class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
-                                                    (click)="clearPermission(i)" title="Add Permission">
-
-                                                    <i class="fas fa-plus"></i> Custom
-                                                </button>
-                                            </div>
-
-                                            }
-                                            @if(last) {
-                                            <div class="mt-2">
-                                                <button type="button"
-                                                    class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
-                                                    (click)="addPermission()" title="Add Permission">
-
-                                                    <i class="fas fa-plus"></i> Custom
-                                                </button>
-                                            </div>
-
-
-                                            <div ngbDropdown placement="top-end" class="d-inline-block mt-2"
-                                                (openChange)="filterPermissionList($event)">
-                                                <button type="button"
-                                                    class="btn btn-sm btn-secondary me-2 dofi-min-w-100 dofi-max-w-100"
-                                                    id="dropdown1" ngbDropdownToggle> <i class="fas fa-plus"></i>
-                                                    Prebuilt </button>
-                                                <div ngbDropdownMenu aria-labelledby="dropdown1" class="z-2 border">
-                                                    @for(option of filteredPermissions;track option;let last=$last){
-                                                    <button ngbDropdownItem class="fw-bold text-info"
-                                                        (click)="createPermissionWithOption(option)"><i
-                                                            class="fas fa-{{getOptionIcon(option)}} text-info me-2"></i>{{option}}</button>
-                                                    <div class="dropdown-divider my-1" *ngIf="!last"></div>
-                                                    } @empty {
-                                                    <button ngbDropdownItem class="fw-bold py-2" disabled>No items
-                                                        found</button>
-                                                    }
+                                        <td class="">
+                                            <div class="d-flex pe-2 position-relative z-3 test">
+                                                @if(!last){
+                                                <div class="mt-2">
+                                                    <button type="button"
+                                                        class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
+                                                        (click)="clearPermission(i)" title="Add Permission">
+    
+                                                        <i class="fas fa-plus"></i> Custom
+                                                    </button>
                                                 </div>
+    
+                                                }
+                                                @if(last) {
+                                                <div class="mt-2">
+                                                    <button type="button"
+                                                        class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
+                                                        (click)="addPermission()" title="Add Permission">
+    
+                                                        <i class="fas fa-plus"></i> Custom
+                                                    </button>
+                                                </div>
+    
+    
+                                                <div ngbDropdown placement="top-end" class="d-inline-block mt-2"
+                                                    (openChange)="filterPermissionList($event)">
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-secondary me-2 dofi-min-w-100 dofi-max-w-100"
+                                                        id="dropdown1" ngbDropdownToggle> <i class="fas fa-plus"></i>
+                                                        Prebuilt </button>
+                                                    <div ngbDropdownMenu aria-labelledby="dropdown1" class="z-2 border">
+                                                        @for(option of filteredPermissions;track option;let last=$last){
+                                                        <button ngbDropdownItem class="fw-bold text-info"
+                                                            (click)="createPermissionWithOption(option)"><i
+                                                                class="fas fa-{{getOptionIcon(option)}} text-info me-2"></i>{{option}}</button>
+                                                        <div class="dropdown-divider my-1" *ngIf="!last"></div>
+                                                        } @empty {
+                                                        <button ngbDropdownItem class="fw-bold py-2" disabled>No items
+                                                            found</button>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                }
+                                                @if(permissions.length > 1) {
+                                                <div class="mt-2">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger me-2"
+                                                        (click)="removePermission(i)" title="Remove Permission">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </div>
+    
+                                                }
                                             </div>
-                                            }
-                                            @if(permissions.length > 1) {
-                                            <div class="mt-2">
-                                                <button type="button" class="btn btn-sm btn-outline-danger me-2"
-                                                    (click)="removePermission(i)" title="Remove Permission">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-                                            </div>
-
-                                            }
                                         </td>
                                     </tr>
                                     }
