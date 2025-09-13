@@ -92,3 +92,7 @@
   color: white;
   font-size: 12px;
 }
+
+.ng-dropdown-panel {
+    z-index: 9999 !important;
+}

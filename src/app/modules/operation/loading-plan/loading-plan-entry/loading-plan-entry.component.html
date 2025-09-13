@@ -1,4 +1,5 @@
-<div class="row compact-form" [formGroup]="loadingPlanForm">
+<div class="row compact-form">
+    @if(screenName === 'Loading Plan'){
     <div class="col-12">
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
@@ -15,29 +16,41 @@
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onReset()">
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="onReset()">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"   [disabled]="loadingPlanForm.invalid">
+                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"   [disabled]="loadingPlanForm.invalid">
                         <i class="fas fa-save me-1"></i>
                         Save
-                    </button>
+                    </button> -->
 
                 </div>
             </div>
         </div>
     </div>
+    } @else {
+        <div class="ml-2">
+             <div class="modal-header p-2 bg-info">
+        <h5 class="modal-title text-white">Attach Booking</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeTemplate()"></button>
+    </div>
+        </div>
+   
+    }
 
 
-    <div class="col-md-12">
+    <div class="col-md-12" [ngClass]="{'modal-body': screenName !== 'Loading Plan'}">
         <div class="card h-100 mb-0">
             <div class="card-body pb-0">
-                <div class="row">
+                <div class="row" [formGroup]="loadingPlanForm">
 
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name" formControlName="dept">
+                            <ng-select [items]="filteredDepartments" bindLabel="departmentName"
+                                bindValue="DepartmentMasterSid" formControlName="dept" (change)="onDeptChange($event)"
+                               [appendTo]="'body'"  placeholder="Select Dept">
 
                             </ng-select>
                             <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
@@ -49,7 +62,9 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="[]" bindLabel="name" bindValue="name" formControlName="pol"></ng-select>
+                            <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode" 
+                                formControlName="pol" (change)="handlePOLChange($event)"
+                                placeholder="Select POL" [appendTo]="'body'"></ng-select>
                             <label class="input-label">POL <span class="text-danger">*</span></label>
                             <div class="error-message"
                                 *ngIf="loadingPlanForm.get('pol')?.touched && loadingPlanForm.get('pol')?.invalid">
@@ -59,7 +74,9 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="[]" bindLabel="name" bindValue="name" formControlName="pod"></ng-select>
+                            <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode"
+                                formControlName="pod" placeholder="Select POD"
+                                (change)="handlePODChange($event)" [appendTo]="'body'"></ng-select>
                             <label class="input-label">POD <span class="text-danger">*</span></label>
                             <div class="error-message"
                                 *ngIf="loadingPlanForm.get('pod')?.touched && loadingPlanForm.get('pod')?.invalid">
@@ -69,20 +86,46 @@
                     </aside>
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" placeholder="" class="custom-input-field sm"
-                                formControlName="vesselVoyage" />
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" [items]="filteredVesselsVoyage" bindLabel="VesselName"
+                                bindValue="VoyageNo" (change)="onVesselVoyageChange($event)"
+                                formControlName="vesselVoyage" placeholder="Select Vessel" [appendTo]="'body'">
+                                <ng-template ng-option-tmp let-item="item">
+                                    <!-- Voyage Number -->
+                                    <div
+                                        style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
+                                        {{item.VesselName}} / {{ item.VoyageNo }}
+                                    </div>
+
+                                    <!-- Ports Row -->
+                                    <div
+                                        style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; ">
+
+                                        <!-- POL Section -->
+                                        <div style="flex: 1; text-align: left;">
+                                            <div>ETA: {{ item.ETD | formatDate }}</div>
+                                        </div>
+
+                                        <!-- POD Section -->
+                                        <div style="flex: 1; text-align: right;">
+                                            <div>ETD: {{ item.ETA | formatDate }}</div>
+                                        </div>
+
+                                    </div>
+                                </ng-template>
+                            </ng-select>
                             <label class="input-label">Vessel/Voyage <span class="text-danger">*</span></label>
                             <div class="error-message"
                                 *ngIf="loadingPlanForm.get('vesselVoyage')?.touched && loadingPlanForm.get('vesselVoyage')?.invalid">
-                             Required
+                                Required
                             </div>
                         </div>
                     </aside>
 
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
+                            <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
+                                formControlName="carrier" placeholder="Select Carrier" [appendTo]="'body'">
 
                             </ng-select>
                             <label for="" class="input-label">Carrier <span class="text-danger"></span></label>
@@ -90,7 +133,7 @@
                     </aside>
 
 
-                    <aside class="col-md-3 d-flex align-items-center  mt-md-3 mt-0">
+                    <!-- <aside class="col-md-3 d-flex align-items-center  mt-md-3 mt-0">
                         <div class="form-check form-check-inline p-0 mt-0">
                             <div class="form-check d-flex align-items-center">
                                 <input type="checkbox" id="loadCheckbox" class="focus-ring form-check-input sm p-0"
@@ -99,12 +142,12 @@
                             </div>
                         </div>
 
-                    </aside>
+                    </aside> -->
 
                 </div>
             </div>
             <div class="d-flex justify-content-end me-2 mb-2">
-                <button class="btn btn-sm btn-info"><i class="fas fa-calendar-check me-1"></i>
+                <button class="btn btn-sm btn-info" (click)="getBookings()"><i class="fas fa-calendar-check me-1"></i>
                     Get Booking</button>
             </div>
 
@@ -116,7 +159,7 @@
             <div class="card-body pb-0">
                 <div class="row">
 
-                    <aside class="col-md-3" *ngIf="isLoadChecked">
+                    <!-- <aside class="col-md-3" *ngIf="isLoadChecked">
                         <div class="custom-form-group">
                             <input type="text" placeholder="" class="custom-input-field sm" formControlName="pkg" />
                             <label class="input-label">Pkg <span class="text-danger"></span></label>
@@ -135,64 +178,95 @@
                             <input type="text" placeholder="" class="custom-input-field sm" formControlName="cbm" />
                             <label class="input-label">CBM <span class="text-danger"></span></label>
                         </div>
-                    </aside>
+                    </aside> -->
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Total Pkg <span
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                [value]="totalPkg" disabled>
+                            <label for="text-input" [ngClass]="{'input-label': true, 'bg-transparent': !totalPkg}">Total
+                                Pkg <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                [value]="totalGrossWeight" disabled>
+                            <label for="text-input"
+                                [ngClass]="{'input-label': true, 'bg-transparent': !totalGrossWeight}">Total Gross
+                                Weight <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                [value]="totalNetWeight" disabled>
+                            <label for="text-input"
+                                [ngClass]="{'input-label': true, 'bg-transparent': !totalNetWeight}">Total Net Weight
+                                <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                [value]="totalVolume" disabled>
+                            <label for="text-input"
+                                [ngClass]="{'input-label': true, 'bg-transparent': !totalVolume}">Total Volume <span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
 
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Total Gross Weight <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Total Net Weight <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Total Revenue <span
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                [value]="totalRevenue" disabled>
+                            <label for="text-input"
+                                [ngClass]="{'input-label': true, 'bg-transparent': !totalRevenue}">Total Revenue <span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">Total Cost <span
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                [value]="totalCost" disabled>
+                            <label for="text-input"
+                                [ngClass]="{'input-label': true, 'bg-transparent': !totalCost}">Total Cost <span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">GP <span class="text-danger"></span></label>
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                [value]="totalGrossProfit" disabled>
+                            <label for="text-input"
+                                [ngClass]="{'input-label': true, 'bg-transparent': !totalGrossProfit}">GP <span
+                                    class="text-danger"></span></label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                            <label for="text-input" class="input-label">GP% <span class="text-danger"></span></label>
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                                [value]="totalGrossProfitPercentage" disabled>
+                            <label for="text-input"
+                                [ngClass]="{'input-label': true, 'bg-transparent': !totalGrossProfitPercentage}">GP%
+                                <span class="text-danger"></span></label>
                         </div>
                     </aside>
 
                 </div>
             </div>
             <div class="d-flex justify-content-end me-2 mb-2">
-                <button class="btn btn-sm btn-info"><i class="fas fa-briefcase me-1"></i> Generate Job
-
-                </button>
+                @if(screenName === "Loading Plan"){
+                    <button class="btn btn-sm btn-info" (click)="onClickGenerateJob()"><i class="fas fa-briefcase me-1"></i>
+                        Generate Job
+                    </button>
+                } @else {
+                    <button class="btn btn-sm btn-info" (click)="attachToMasterJob()"><i class="fas fa-briefcase me-1"></i>
+                        Attach to Master Job
+                    </button>
+                }
             </div>
 
         </div>
@@ -202,6 +276,7 @@
 
     <div class="mx-0">
         <div class="col-12 p-2 bg-white py-2 rounded shadow-sm mt-2">
+            @if(availableBookings.length > 0){
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
@@ -217,65 +292,65 @@
                             <th class="bg-transparent text-light" scope="col">POD</th>
                             <th class="bg-transparent text-light" scope="col">FPD</th>
                             <th class="bg-transparent text-light" scope="col">No of Pkg</th>
-                            <th class="bg-transparent text-light" scope="col">Gr Wieght</th>
+                            <th class="bg-transparent text-light" scope="col">Gr Weight</th>
                             <th class="bg-transparent text-light" scope="col">Volume</th>
                             <th class="bg-transparent text-light" scope="col" width="5%">Tick</th>
 
                         </tr>
                     </thead>
                     <tbody>
-                        @for (item of [0]; track $index) {
+                        @for (item of slicedAvailableBookings; track $index) {
                         <tr>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2" class="link mx-2 ">
+                                    <a class="text-info mx-2" target="_blank" class="link mx-2 "
+                                        [routerLink]="['/operation/booking/entry',item.BookingHeaderSid]">
                                         <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
-                                    </a>
-                                    <a class="text-danger mx-2 ps-3 border-start">
-                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
                                     </a>
                                 </div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.BookingNo}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.SalesmanName}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.CustomerName}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.ShipperName}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.ConsigneeName}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.POO}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.POL}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.POD}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.FPD}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.NoOfPackage}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.GrossWeight}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.Volume}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;padding-left: 20px;">
 
                                 <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" id="" class="focus-ring form-check-input sm p-0">
+                                    <input type="checkbox" id="" class="focus-ring form-check-input sm p-0"
+                                        (keydown.enter)="toggleBooking($event,item)"
+                                        (click)="toggleBooking($event,item)">
                                 </div>
 
 
@@ -284,9 +359,21 @@
                         }
                     </tbody>
                 </table>
+                <div class="mt-2">
+                    <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfAvailableBookings"
+                        [pageSize]="bPageSize" [(page)]="bPage" (pageChange)="updateBookingList()" [rotate]="true"
+                        [ellipses]="false" [maxSize]="10">
+                    </ngb-pagination>
+                </div>
             </div>
+            }@else {
+            <div class="col-12">
+                <div class="alert alert-info text-center">Click 'Get Booking' to get booking details.</div>
+            </div>
+            }
         </div>
 
+        @if(screenName === 'Loading Plan'){
         <div class="nav-pills-container mt-2">
             <div class="nav-pills">
                 <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
@@ -308,12 +395,13 @@
                         <i class="fas fa-plus me-1"></i> Add Container
                     </button>
                 </div>
-
+                @if(totalLengthOfCollection > 0){
                 <div class="table-responsive">
                     <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                         <thead>
                             <tr class="bg-info">
 
+                                <th class="bg-transparent text-light" scope="col">Action</th>
                                 <th class="bg-transparent text-light" scope="col">SNo</th>
                                 <th class="bg-transparent text-light" scope="col">Container Type</th>
                                 <th class="bg-transparent text-light" scope="col">Container No</th>
@@ -331,150 +419,227 @@
                             </tr>
                         </thead>
                         <tbody>
-
+                            @for(container of slicedContainerArr ; let containerIndex = $index ; track containerIndex){
                             <tr>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <a class="text-info mx-2" class="link mx-2 ps-3"
+                                            (click)="openContainerModal(containerModal,container,containerIndex)">
+                                            <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                                        </a>
+
+                                        <a class="text-danger mx-2 ps-3 border-start"
+                                            (click)="deleteContainer(containerIndex)">
+                                            <i-feather name="trash-2" class="feather-sm"></i-feather>
+                                        </a>
+
+                                    </div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{((page - 1)*pageSize) + containerIndex + 1}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{getContainerTypeName(container.ContainerType)}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{container.ContainerNumber}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{container.LineSeal}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{container.CustomsSeal}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{container.HsCode}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{container.CommodityDescription}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{getPackageTypeName(container.PkgType)}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{container.NoOfPkg}}</div>
+                                </td>
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{container.GrossWeight}}</div>
+                                </td>
 
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">OMR</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">OMR</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">OMR</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">OMR</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">OMR</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">OMR</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">OMR</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">OMR</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">OMR</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">OMR</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">OMR</div>
-                                </td>
-                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">OMR</div>
+                                    <div class="text-truncate">{{container.Volume}}</div>
                                 </td>
 
                                 <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                    <div class="text-truncate">OMR</div>
+                                    <div class="text-truncate">{{container.NetWeight}}</div>
+                                </td>
+
+                                <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                            <div class="text-truncate">{{container.ChargeableWeight}}</div>
+                                        </td> -->
+                                <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <div class="text-truncate">{{container.IsSoc === 'Y' ? 'Yes' : 'No'}}</div>
                                 </td>
                             </tr>
-
+                            }
                         </tbody>
                     </table>
+                    <div class="mt-2">
+                        <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                            [pageSize]="pageSize" [(page)]="page" (pageChange)="updateContainerPagination()"
+                            [rotate]="true" [ellipses]="false" [maxSize]="10">
+                        </ngb-pagination>
+                    </div>
                 </div>
+                } @else {
+                <div class="col-12">
+                    <div class="alert alert-info text-center">No Containers added yet.</div>
+                </div>
+                }
             </div>
         </div>
+        }
     </div>
 </div>
 
 
 <ng-template #containerModal let-modal>
-    <div class="modal-header p-2 bg-info text-white">
-        <h5 class="modal-title">Add Container</h5>
-        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    <div class="modal-header p-2 bg-info">
+        <h5 class="modal-title text-white">{{currentContainerIndex !== -1 ? 'Add' : 'Edit'}} Container</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss(); "></button>
     </div>
     <div class="modal-body">
-        <div class="row compact-form">
+        <form [formGroup]="containerForm">
+            <div class="row compact-form">
+                <aside class="col-md-4">
+                    <div class="custom-form-group custom-form-group-select">
+                        <ng-select [items]="containerTypeList" bindLabel="ContainerName"
+                            bindValue="ContainerTypeMasterSid" formControlName="ContainerType"
+                            placeholder="Select Container Type">
+                        </ng-select>
+                        <label class="input-label">Container Type <span class="text-danger">*</span></label>
 
-            <aside class="col-md-4">
-                <div class="custom-form-group custom-form-group-select">
-                    <ng-select [items]="" bindLabel="name" bindValue="name">
+                        <div *ngIf="containerForm.get('ContainerType')?.touched && containerForm.get('ContainerType')?.invalid"
+                            class="error-message">
+                            <span>Container Type is required</span>
+                        </div>
 
-                    </ng-select>
-                    <label for="" class="input-label">Container Type <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="number" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">Container No <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">Line Seal <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">Customs Seal <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">HS Code <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">Commodity Description <span
-                            class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">Pkg Type <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">No of Pkg <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">Gross Weight <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">Vol(CBM) <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4">
-                <div class="custom-form-group">
-                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
-                    <label for="text-input" class="input-label">Net Weight <span class="text-danger"></span></label>
-                </div>
-            </aside>
-            <aside class="col-md-4 d-flex align-items-center  mt-md-3 mt-0">
-                <div class="form-check form-check-inline p-0 mt-0">
-                    <div class="form-check d-flex align-items-center">
-                        <input type="checkbox" id="" class="focus-ring form-check-input sm p-0" />
-                        <label for="" class="form-check-label sm">SOC</label>
                     </div>
-                </div>
+                </aside>
 
-            </aside>
-        </div>
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="text" formControlName="ContainerNumber" class="custom-input-field sm"
+                            placeholder="" maxlength="11" [textWithNumbers]="11">
+                        <label class="input-label">Container No <span class="text-danger">*</span></label>
+
+                        <div *ngIf="containerForm.get('ContainerNumber')?.touched && containerForm.get('ContainerNumber')?.invalid"
+                            class="error-message">
+                            <span *ngIf="containerForm.get('ContainerNumber')?.hasError('required')">Container
+                                Number is required</span>
+                            <span *ngIf="containerForm.get('ContainerNumber')?.hasError('maxlength')">Container
+                                Number cannot exceed 11 characters</span>
+                        </div>
+
+                    </div>
+                </aside>
+
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="text" formControlName="LineSeal" class="custom-input-field sm" placeholder=""
+                            maxlength="10" [textWithNumbers]="10">
+                        <label class="input-label">Line Seal</label>
+                    </div>
+                </aside>
+
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="text" formControlName="CustomsSeal" class="custom-input-field sm" placeholder=""
+                            maxlength="10" [textWithNumbers]="10">
+                        <label class="input-label">Customs Seal</label>
+                    </div>
+                </aside>
+
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="text" formControlName="HsCode" class="custom-input-field sm" placeholder=""
+                            maxlength="10" [textWithNumbers]="10">
+                        <label class="input-label">HS Code</label>
+                    </div>
+                </aside>
+
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <textarea formControlName="CommodityDescription" class="custom-input-field sm" placeholder=""
+                            rows="1" maxlength="500" [textWithNumbers]="500"></textarea>
+                        <label class="input-label">Commodity Description</label>
+                    </div>
+                </aside>
+
+                <aside class="col-md-4">
+                    <div class="custom-form-group custom-form-group-select">
+                        <ng-select [items]="packageTypeList" bindLabel="UOMName" placeholder="" bindValue="UOMMasterSid"
+                            formControlName="PkgType" placeholder="Select Package Type">
+                        </ng-select>
+                        <label class="input-label">Package Type</label>
+                    </div>
+                </aside>
+
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="number" placeholder="" formControlName="NoOfPkg" class="custom-input-field sm"
+                            min="0">
+                        <label class="input-label">No of Pkg</label>
+                    </div>
+                </aside>
+
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="number" placeholder="" formControlName="GrossWeight" class="custom-input-field sm"
+                            step="0.001" min="0">
+                        <label class="input-label">Gross Weight</label>
+                    </div>
+                </aside>
+
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="number" placeholder="" formControlName="NetWeight" class="custom-input-field sm"
+                            step="0.001" min="0">
+                        <label class="input-label">Net Weight</label>
+                    </div>
+                </aside>
+
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="number" placeholder="" formControlName="ChargeableWeight"
+                            class="custom-input-field sm" step="0.001" min="0">
+                        <label class="input-label">Chargeable Weight</label>
+                    </div>
+                </aside>
+
+                <aside class="col-md-4">
+                    <div class="custom-form-group">
+                        <input type="number" placeholder="" formControlName="Volume" class="custom-input-field sm"
+                            step="0.001" min="0">
+                        <label class="input-label">Volume (CBM)</label>
+                    </div>
+                </aside>
+
+                <aside class="col-md-4 d-flex align-items-center">
+                    <div class="form-check form-check-inline p-0">
+                        <div class="form-check d-flex align-items-center">
+                            <input type="checkbox" id="IsSoc" formControlName="IsSoc"
+                                (keydown.enter)="toggleSOC($event)" (click)="toggleSOC($event)"
+                                class="focus-ring form-check-input sm p-0">
+                            <label for="IsSoc" class="form-check-label sm">SOC Container</label>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </form>
     </div>
     <div class="modal-footer">
-        <button class="btn btn-sm btn-secondary" (click)="modal.dismiss()">Cancel</button>
-        <button class="btn btn-sm btn-info">Save</button>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss(); ">Cancel</button>
+        <button type="button" class="btn btn-info btn-sm" (click)="onContainerSubmit()">Save</button>
     </div>
 </ng-template>
