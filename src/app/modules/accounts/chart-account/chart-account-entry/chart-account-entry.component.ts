@@ -374,24 +374,58 @@ openAuditLogs(modal: TemplateRef<any>) {
     modalRef.componentInstance.idValue = this.chartData?.VesselMasterSid;
   }
 
-  onReset(): void {
-    this.chartForm.reset({
-      Name: '',
-      code: '',
-      subGroup: '',
-      CurrencyCode: '',
-      Group: '',
-      Category: '',
-      reportType: '',
-      PortType: '',
-      Remarks: '',
-      AccountType: '',
-      IsSubledgerRequired: false,
-    });
+  // onReset(): void {
+  //   this.chartForm.reset({
+  //     Name: '',
+  //     code: '',
+  //     subGroup: '',
+  //     CurrencyCode: '',
+  //     Group: '',
+  //     Category: '',
+  //     reportType: '',
+  //     PortType: '',
+  //     Remarks: '',
+  //     AccountType: '',
+  //     IsSubledgerRequired: false,
+  //   });
 
-    this.chartForm.markAsPristine();
-    this.chartForm.markAsUntouched();
+  //   this.chartForm.markAsPristine();
+  //   this.chartForm.markAsUntouched();
+  // }
+  onReset() {
+  // If editing an existing chart account, reload it (restore original state)
+  if (this.isEditMode && this.chartMasterSid) {
+    this.loadChartAccount();
+    return;
   }
+
+  // Create-mode: reset form to initial state with proper defaults
+  this.chartForm.reset({
+    LedgerName: '',
+    LedgerCode: '',
+    SubGroupName: '',
+    LedgerCurrency: '',
+    GroupName: '',
+    Category: '',
+    LedgerType: '',
+    Remarks: '',
+    Status: 'Active',
+    SubledgerName: ''
+  });
+
+  // Reset additional state variables
+  this.chartData = null;
+  this.isSubledgerRequired = false;
+  
+  // Reset validation for LedgerName
+  const ledgerControl = this.chartForm.get('LedgerName');
+  ledgerControl?.clearValidators();
+  ledgerControl?.setValidators([Validators.required, Validators.maxLength(100)]);
+  ledgerControl?.updateValueAndValidity();
+
+  // Reset min date to today for new entries
+  this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
+}
 
   nagivateback() {
     this.route.navigate(['accounts/chart-accounts/list']);

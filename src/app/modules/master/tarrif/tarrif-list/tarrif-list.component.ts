@@ -265,6 +265,7 @@ applySorting() {
     this.totalNumberOfCollection = 0;
     this.sortColumn = 'POLTerminal';
     this.sortDirection = 'asc';
+    this.loadTariffs();
   }
   clearFilterValue(){
       this.filterValue = '';

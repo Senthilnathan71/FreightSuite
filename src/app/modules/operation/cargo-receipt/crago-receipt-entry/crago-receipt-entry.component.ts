@@ -194,6 +194,35 @@ export class CragoReceiptEntryComponent implements OnInit{
     this.router.navigate(['operation/cargo-receipt/list']);
   }
 
+  resetForm() {
+  // If editing an existing booking, reload it (restore original state)
+  if (this.isEditMode && this.BookingHeaderSid) {
+    this.loadBooking(this.BookingHeaderSid);
+    return;
+  }
+
+  // Create-mode: reset form to initial state
+  this.cargoForm.reset({
+    BookingNo: '',
+    BookingDateTime: '',
+    departmentName: '',
+    CustomerName: '',
+    HBLNo: '',
+    VesselName: '',
+    VoyageNo: '',
+    POO: '',
+    POD: '',
+    POL: '',
+    FPD: ''
+  });
+
+  // Clear the booking products array
+  this.bookingProductsArray.clear();
+
+  // Reset any additional state variables if needed
+  this.bookingData = null;
+  this.BookingProductSid = null;
+}
   
 
  

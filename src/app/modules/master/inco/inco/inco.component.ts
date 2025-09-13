@@ -321,6 +321,7 @@ export class IncoComponent{
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.router.navigate(['master/inco']);
+              this.loadIncos();
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -338,8 +339,9 @@ export class IncoComponent{
               this.appSettingService.showSuccess(resp.message);
               this.closeModal();
               this.router.navigate(['master/inco']);
+              this.loadIncos();
             } else {
-              this.appSettingService.showSuccess(resp.message);
+              this.appSettingService.showError(resp.message);
             }
           },
           (error) => {
@@ -426,6 +428,7 @@ updatePaginationData(): void {
         this.masterService.softDeleteInco(id).subscribe((resp: any) => {
           this.appSettingService.showSuccess('Deleted!');
           this.router.navigate(['master/inco']);
+          this.loadIncos();
           
         });
       }
@@ -442,6 +445,7 @@ updatePaginationData(): void {
     this.incos = [];
     this.sortColumn = 'IncoName';
     this.sortDirection = 'asc';
+    this.loadIncos();
   }
 
   report(): void {

@@ -230,11 +230,46 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
         }
     }
 
-    resetForm(){
-        this.productForm.reset({
-            status : 'Active'
-        });
-    }
+    // resetForm(){
+    //     this.productForm.reset({
+    //         status : 'Active'
+    //     });
+    // }
+
+    resetForm() {
+  // If editing an existing product, reload it (restore original state)
+  if (this.isEditMode && this.ProductMasterSId) {
+    this.loadProductData();
+    return;
+  }
+
+  // Create-mode: reset form to sensible defaults
+  this.productForm.reset({
+    ProductName: '',
+    ProductCode: '',
+    Product_LL: '',
+    UOMCode: '',
+    ProductId: '',
+    PackingGroup: '',
+    Description: '',
+    ProductType: '',
+    UNNo: '',
+    UNPackingCode: '',
+    IMOClass: '',
+    IMOSubClass: '',
+    FlashPoint: '',
+    HSNCode: '',
+    status: 'Active'
+  });
+
+  // Clear any validation errors
+  this.productForm.markAsUntouched();
+  this.productForm.markAsPristine();
+  this.productForm.updateValueAndValidity();
+
+  // Reset any additional component state if needed
+  this.productData = null;
+}
 
 
     navigateBack() {

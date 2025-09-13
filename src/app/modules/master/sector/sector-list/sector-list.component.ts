@@ -430,6 +430,7 @@ applySorting() {
     this.searchType = 'sectorName';
     this.sortColumn = 'sectorName';
     this.sortDirection = 'asc';
+    this.loadSectors();
   }
 
   report(): void {

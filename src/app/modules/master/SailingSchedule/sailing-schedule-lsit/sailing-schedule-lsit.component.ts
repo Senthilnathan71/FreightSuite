@@ -360,8 +360,7 @@ getSortValue(item: any): any {
         this.page = 1;
         this.sortColumn = 'VoyageNo';
         this.sortDirection = 'asc';
-
-        
+        this.loadVoyages();
     }
 
     getFormattedPort(PortMasterSid) {

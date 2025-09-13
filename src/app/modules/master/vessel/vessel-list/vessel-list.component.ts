@@ -227,11 +227,14 @@ export class VesselListComponent {
   }
 
   resetPage() {
-    this.vesselList = []
-    this.totalLengthOfCollection = 0
-    this.sortColumn = 'vesselName';
+    this.vesselList = [];
+    this.page = 1;
+    this.totalLengthOfCollection = 0;
+    this.sortColumn = 'VesselName';
     this.sortDirection = 'asc';
+    this.filterValue = '';
     this.searched = false;
+    this.loadVessels();
   }
 
   report(): void {

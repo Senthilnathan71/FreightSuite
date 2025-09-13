@@ -1776,9 +1776,56 @@ getCityName(citySid: number): string {
     this.modalRef1.close();
   }
 
+  // reset() {
+  //   this.customerForm.reset();
+  // }
+
   reset() {
-    this.customerForm.reset();
+  // If editing an existing customer, reload it (restore original state)
+  if (this.isEditMode && this.CustomerMasterSid) {
+    this.loadCustomerData(this.CustomerMasterSid);
+    return;
   }
+
+  // Create-mode: reset customer form to sensible defaults
+  this.customerForm.reset({
+    CustomerName: '',
+    CustomerShortCode: { value: '', disabled: true },
+    CustomerAliasName: '',
+    CustomerAddress1: '',
+    CustomerAddress2: '',
+    CountryMasterSid: '',
+    CompanyType: { value: '', disabled: true },
+    PanAvailable: false,
+    PanType: { value: '', disabled: true },
+    PanName: { value: '', disabled: true },
+    GroupName: '',
+    Website: '',
+    paymentType: '',
+    IsMSME: '',
+    KYCSpecified: false,
+    RegistrationNo: { value: '', disabled: true },
+    Remarks: '',
+    status: { value: 'Active', disabled: !this.isEditMode },
+    CustomerType: {},
+    Network: ''
+  });
+
+  // Reset selected statuses and customer types
+  this.selectedStatus = [];
+  this.displayedCustomerTypes = [];
+  this.extraCustomerTypesCount = 0;
+
+  // Reset form validation state
+  this.customerForm.markAsUntouched();
+  this.customerForm.markAsPristine();
+
+  // Enable/disable fields based on initial conditions
+  this.updateShortCodeFieldState();
+  
+  // Reset customer name reference
+  this.customerName = '';
+}
 
   goBack() {
     history.back();
