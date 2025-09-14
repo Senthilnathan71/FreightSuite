@@ -1,227 +1,384 @@
 <div class="row compact-form">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-2">
-                  <div class="d-flex align-items-center gap-2">
-                         <div class="brand-icon">
-                       <i class="fas fa-truck"></i>
-                    </div>
-                <h5 class="page-title mb-0 text-info">Shipment Instruction</h5>
-                </div>
-            </div>
-            <div class="col-md-8 pb-2">
-                <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-save me-1"></i>
-                        Save
-                    </button>
-
-                </div>
-            </div>
+  <!-- Header Section -->
+  <div class="col-12">
+    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+      <div class="col-md-4 d-flex pb-2">
+        <div class="d-flex align-items-center gap-2">
+          <div class="brand-icon">
+            <i class="fas fa-file-contract"></i>
+          </div>
+          <h5 class="page-title mb-0 text-info">Shipment Instruction (BL Format)</h5>
         </div>
-    </div>
-
-    <div class="col-md-12">
-        <div class="card h-100 mb-0">
-            <div class="card-body py-2 px-3">
-                        <div class="row compact-form pb-2 rounded border border-top-0">
-                             <div class="card-header-title d-flex align-items-center gap-2">
-                        <i class="fas fa-truck fs-4"></i>
-                        <h5 class="card-titlename mb-0">Shipment Instruction Information</h5>
-                    </div>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">BL/NO <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Shipper <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Consignee <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Notify Address <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Delivery Agent <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                       <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Place of Receipt <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-
-                       <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Port of Loading <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                       <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Port of Discharge <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Place of Final Delivery <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Intended Vessel <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Terms of Shipment <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Number of Original MTDs <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Freight Payable at <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Container No <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Marks and Numbers <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label"> Numbers of Packages <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label"> Gross Weight <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label"> Measurement <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label"> Frsight Details <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">Place and Date of Issue <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label">As Carrier <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                >
-                            <label for="text-input" class="input-label"> By as Agent <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                </div>
-            </div>
+      </div>
+      <div class="col-md-8 pb-2">
+        <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+            <i class="fas fa-chevron-left me-1"></i>
+            Back
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+            <i class="fas fa-sync-alt me-1"></i>
+            Reset
+          </button>
+          <button *ngIf="showShipmentInstruction && !isEditMode" type="button"
+                  class="btn btn-warning btn-sm dofi-min-w-80 dofi-max-w-80" (click)="toggleEditMode()">
+            <i class="fas fa-edit me-1"></i>
+            Edit
+          </button>
+          <button *ngIf="showShipmentInstruction && isEditMode" type="button"
+                  class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="saveShipmentInstruction()">
+            <i class="fas fa-save me-1"></i>
+            Save
+          </button>
         </div>
+      </div>
     </div>
+  </div>
 
+  <!-- Search Section -->
+  <div class="col-12" *ngIf="!showShipmentInstruction">
+    <div class="card h-100 mb-3">
+      <div class="card-body py-3 px-3">
+        <div class="row">
+          <div class="col-md-6 mx-auto">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <i class="fas fa-search fs-4"></i>
+              <h5 class="card-title mb-0">Search HBL</h5>
+            </div>
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="Enter HBL Number"
+                     [(ngModel)]="searchHbl" (keyup.enter)="searchShipment()">
+              <button class="btn btn-info" type="button" (click)="searchShipment()">
+                <i class="fas fa-search me-1"></i>
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- Bill of Lading Format Section -->
+  <div class="col-12" *ngIf="showShipmentInstruction">
+    <div class="card h-100 mb-0">
+      <div class="card-body p-0">
+        <!-- BL Header -->
+        <div class="bl-container border" [ngClass]="{'edit-mode': isEditMode, 'view-mode': !isEditMode}">
+          <!-- Top Section -->
+          <div class="row g-0">
+            <!-- Left Column -->
+            <div class="col-md-6 border-end">
+              <!-- Shipper/Exporter -->
+              <div class="bl-section border-bottom p-2" style="min-height: 120px;">
+                <label class="bl-label fw-bold mb-1">Shipper/Exporter(Complete Name and Address)</label>
+                <div class="editable-field-group">
+                  <input type="text"
+                         class="form-control border-0 bg-transparent fw-bold mb-1 editable-field"
+                         [(ngModel)]="shipmentData.shipper.name"
+                         [readonly]="!isEditMode"
+                         placeholder="Company Name">
+                  <textarea class="form-control border-0 bg-transparent editable-field"
+                           [(ngModel)]="shipmentData.shipper.address"
+                           [readonly]="!isEditMode"
+                           rows="3"
+                           placeholder="Complete Address"
+                           style="resize: none;"></textarea>
+                </div>
+              </div>
 
+              <!-- Consignee -->
+              <div class="bl-section border-bottom p-2" style="min-height: 100px;">
+                <label class="bl-label fw-bold mb-1">Consignee(Name and Address) Not Negotiable Unless Consigned To Order</label>
+                <div class="editable-field-group">
+                  <input type="text"
+                         class="form-control border-0 bg-transparent fw-bold mb-1 editable-field"
+                         [(ngModel)]="shipmentData.consignee.name"
+                         [readonly]="!isEditMode"
+                         placeholder="Consignee Name">
+                  <textarea class="form-control border-0 bg-transparent editable-field"
+                           [(ngModel)]="shipmentData.consignee.address"
+                           [readonly]="!isEditMode"
+                           rows="3"
+                           placeholder="Consignee Address"
+                           style="resize: none;"></textarea>
+                </div>
+              </div>
+
+              <!-- Notify Party -->
+              <div class="bl-section p-2" style="min-height: 100px;">
+                <label class="bl-label fw-bold mb-1">Notify Party(Name and Address)</label>
+                <div class="editable-field-group">
+                  <input type="text"
+                         class="form-control border-0 bg-transparent fw-bold mb-1 editable-field"
+                         [(ngModel)]="shipmentData.notifyParty.name"
+                         [readonly]="!isEditMode"
+                         placeholder="Notify Party Name">
+                  <textarea class="form-control border-0 bg-transparent editable-field"
+                           [(ngModel)]="shipmentData.notifyParty.address"
+                           [readonly]="!isEditMode"
+                           rows="3"
+                           placeholder="Notify Party Address"
+                           style="resize: none;"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-md-6">
+              <!-- Bill of Lading No -->
+              <div class="bl-section border-bottom p-2">
+                <label class="bl-label fw-bold mb-1">Bill Of Lading No</label>
+                <input type="text" class="form-control border-0 bg-transparent fw-bold editable-field"
+                       [(ngModel)]="shipmentData.billOfLadingNo"
+                       [readonly]="!isEditMode"
+                       placeholder="Enter BL Number">
+
+                <label class="bl-label fw-bold mb-1 mt-2">Export Reference</label>
+                <input type="text" class="form-control border-0 bg-transparent editable-field"
+                       [(ngModel)]="shipmentData.exportReference"
+                       [readonly]="!isEditMode"
+                       placeholder="Export Reference">
+              </div>
+
+              <!-- BL Title and Description -->
+              <div class="bl-section border-bottom p-2">
+                <h6 class="text-center fw-bold text-primary mb-2">BILL OF LADING(FOR COMBINED TRANSPORT OR PORT TO PORT SHIPMENT)</h6>
+                <p class="small mb-1">
+                  <strong>RECEIVED</strong> by the carrier the Goods as specified below in apparent good order and condition unless otherwise stated, to be transported to such place as agreed, authorised or permitted herein and subject to all the terms and conditions appearing on the front and reverse of this Bill of Lading, any local privileges and customs notwithstanding.
+                </p>
+                <p class="small mb-2">
+                  The Particulars given above as stated by the shipper and the weight, measure, quantity, condition, contents and value of the Goods are unknown to the carrier.
+                </p>
+                <label class="bl-label fw-bold">Delivery Agent</label>
+                <input type="text" class="form-control border-0 bg-transparent editable-field"
+                       [(ngModel)]="shipmentData.deliveryAgent"
+                       [readonly]="!isEditMode"
+                       placeholder="Delivery Agent">
+              </div>
+
+              <!-- Notify2 -->
+              <div class="bl-section p-2">
+                <label class="bl-label fw-bold mb-1">Notify2</label>
+                <div class="editable-field-group">
+                  <input type="text" class="form-control border-0 bg-transparent fw-bold mb-1 editable-field"
+                         placeholder="ENTER NOTIFY PARTY NAME"
+                         [(ngModel)]="shipmentData.notifyParty2.name"
+                         [readonly]="!isEditMode">
+                  <textarea class="form-control border-0 bg-transparent editable-field"
+                           placeholder="NOTIFY PARTY ADDRESS"
+                           [(ngModel)]="shipmentData.notifyParty2.address"
+                           [readonly]="!isEditMode"
+                           rows="2"
+                           style="resize: none;"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Middle Section - Transport Details -->
+          <div class="row g-0 border-top">
+            <div class="col-3 border-end p-2">
+              <label class="bl-label fw-bold small">Vessel/Voy No</label>
+              <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                     [(ngModel)]="shipmentData.vesselVoyNo"
+                     [readonly]="!isEditMode"
+                     placeholder="Vessel/Voyage No">
+            </div>
+            <div class="col-3 border-end p-2">
+              <label class="bl-label fw-bold small">Place of Receipt</label>
+              <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                     [(ngModel)]="shipmentData.placeOfReceipt"
+                     [readonly]="!isEditMode"
+                     placeholder="Place of Receipt">
+            </div>
+            <div class="col-3 border-end p-2">
+              <label class="bl-label fw-bold small">Port of Discharge</label>
+              <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                     [(ngModel)]="shipmentData.portOfDischarge"
+                     [readonly]="!isEditMode"
+                     placeholder="Port of Discharge">
+            </div>
+            <div class="col-3 p-2">
+              <label class="bl-label fw-bold small">Place of Delivery</label>
+              <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                     [(ngModel)]="shipmentData.placeOfDelivery"
+                     [readonly]="!isEditMode"
+                     placeholder="Place of Delivery">
+            </div>
+          </div>
+
+          <!-- Bottom Section - BL Details -->
+          <div class="row g-0 border-top">
+            <div class="col-3 border-end p-2">
+              <label class="bl-label fw-bold small">Number of Original BL</label>
+              <div class="d-flex gap-2">
+                <select class="form-control border-0 bg-transparent small editable-field"
+                        [(ngModel)]="shipmentData.releaseType"
+                        [disabled]="!isEditMode">
+                  <option>Draft</option>
+                  <option>Original</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-3 border-end p-2">
+              <label class="bl-label fw-bold small">Port of Loading</label>
+              <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                     [(ngModel)]="shipmentData.portOfLoading"
+                     [readonly]="!isEditMode"
+                     placeholder="Port of Loading">
+            </div>
+            <div class="col-6 p-2">
+              <label class="bl-label fw-bold small">Place of Delivery</label>
+              <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                     [(ngModel)]="shipmentData.placeOfDelivery"
+                     [readonly]="!isEditMode"
+                     placeholder="Place of Delivery">
+            </div>
+          </div>
+
+          <!-- Container Details Table -->
+          <div class="border-top">
+            <h6 class="text-center fw-bold py-2 mb-0 bg-light">Particulars Furnished By Shipper</h6>
+            <div class="table-responsive">
+              <table class="table table-bordered mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th class="small">Container/S.No</th>
+                    <th class="small">Marks and Nos</th>
+                    <th class="small">Description of Goods</th>
+                    <th class="small">Pack Count / Pack Type</th>
+                    <th class="small">Gross Weight</th>
+                    <th class="small">Volume</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let container of shipmentData.containers; let i = index">
+                    <td>
+                      <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                             [(ngModel)]="container.containerNo"
+                             [readonly]="!isEditMode"
+                             placeholder="Container No">
+                    </td>
+                    <td>
+                      <textarea class="form-control border-0 bg-transparent small editable-field"
+                               [(ngModel)]="container.marksAndNos"
+                               [readonly]="!isEditMode"
+                               rows="2" style="resize: none;"
+                               placeholder="Marks and Nos"></textarea>
+                    </td>
+                    <td>
+                      <textarea class="form-control border-0 bg-transparent small editable-field"
+                               [(ngModel)]="container.descriptionOfGoods"
+                               [readonly]="!isEditMode"
+                               rows="2" style="resize: none;"
+                               placeholder="Description"></textarea>
+                    </td>
+                    <td>
+                      <div class="d-flex gap-1">
+                        <input type="number" class="form-control border-0 bg-transparent small editable-field"
+                               [(ngModel)]="container.packCount"
+                               [readonly]="!isEditMode"
+                               style="width: 50px;"
+                               placeholder="1">
+                        <select class="form-control border-0 bg-transparent small editable-field"
+                                [(ngModel)]="container.packType"
+                                [disabled]="!isEditMode">
+                          <option value="Carton">Carton</option>
+                          <option value="PACK">PACK</option>
+                          <option value="Box">Box</option>
+                        </select>
+                      </div>
+                    </td>
+                    <td>
+                      <input type="number" class="form-control border-0 bg-transparent small text-end editable-field"
+                             [(ngModel)]="container.grossWeight"
+                             [readonly]="!isEditMode"
+                             step="0.001"
+                             placeholder="0.000">
+                    </td>
+                    <td>
+                      <input type="number" class="form-control border-0 bg-transparent small text-end editable-field"
+                             [(ngModel)]="container.volume"
+                             [readonly]="!isEditMode"
+                             step="0.001"
+                             placeholder="0.000">
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Bottom Details -->
+          <div class="row g-0 border-top">
+            <div class="col-6 border-end">
+              <div class="p-2 border-bottom">
+                <label class="bl-label fw-bold small">Freight Payable at</label>
+                <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                       [(ngModel)]="shipmentData.freightPayableAt"
+                       [readonly]="!isEditMode"
+                       placeholder="Freight Payable at">
+              </div>
+              <div class="p-2">
+                <label class="bl-label fw-bold small">Type of Service</label>
+                <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                       [(ngModel)]="shipmentData.typeOfService"
+                       [readonly]="!isEditMode"
+                       placeholder="Type of Service">
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2 border-bottom">
+                <label class="bl-label fw-bold small">Shipped On Board</label>
+                <textarea class="form-control border-0 bg-transparent small editable-field"
+                         [(ngModel)]="shipmentData.shippedOnBoard"
+                         [readonly]="!isEditMode"
+                         rows="1" style="resize: none;"
+                         placeholder="Shipped On Board"></textarea>
+              </div>
+              <div class="p-2">
+                <label class="bl-label fw-bold small">Place and Date of Issue</label>
+                <textarea class="form-control border-0 bg-transparent small editable-field"
+                         [(ngModel)]="shipmentData.placeAndDateOfIssue"
+                         [readonly]="!isEditMode"
+                         rows="1" style="resize: none;"
+                         placeholder="Place and Date of Issue"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Witness Statement -->
+          <div class="border-top p-2">
+            <p class="small text-justify mb-0">
+              In WITNESS of the contract herein contained the number of originals state above have been issued one of the being accomplished the other(s) to be void.
+            </p>
+          </div>
+
+          <!-- Rider BL Section -->
+          <div class="border-top">
+            <h6 class="text-center fw-bold py-2 mb-0 bg-light">Rider BL</h6>
+            <div class="row g-0">
+              <div class="col-6 border-end p-2">
+                <label class="bl-label fw-bold small">Rider Marks No</label>
+                <textarea class="form-control border-0 bg-transparent small editable-field"
+                         [(ngModel)]="shipmentData.riderMarksNo"
+                         [readonly]="!isEditMode"
+                         rows="3" style="resize: none;"
+                         placeholder="Rider Marks No"></textarea>
+              </div>
+              <div class="col-6 p-2">
+                <label class="bl-label fw-bold small">Rider Desc</label>
+                <textarea class="form-control border-0 bg-transparent small editable-field"
+                         [(ngModel)]="shipmentData.riderDesc"
+                         [readonly]="!isEditMode"
+                         rows="3" style="resize: none;"
+                         placeholder="Rider Description"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
