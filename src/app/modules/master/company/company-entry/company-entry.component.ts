@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, TemplateRef } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { NgbAccordionModule, NgbAlertModule, NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbAlertModule, NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
@@ -45,7 +45,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 		PreventMultiClickDirective,
 		NgbPaginationModule,
 		ConfigComponent,
-		NgbAccordionModule
+		NgbAccordionModule,
+		NgbDropdownModule
 	],
 	templateUrl: './company-entry.component.html',
 	styleUrl: './company-entry.component.scss'
