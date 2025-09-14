@@ -86,6 +86,7 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
   }
 
   getMenuPermissions(MenuMasterSid){
+    
     return this.http.get<{data:any[]}>(`menu/fetch/menu-permissions/${MenuMasterSid}`).pipe(
       map((res:any)=>{
         return res.data;

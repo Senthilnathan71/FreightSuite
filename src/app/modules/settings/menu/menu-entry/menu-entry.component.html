@@ -203,23 +203,23 @@
                                 <td class="bg-info text-white px-2">Delete</td>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody [formGroup]="menuPermissionsGroup">
                             <tr>
                                 <td class="text-center">
                                     <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" id="add1" value="option1" class="form-check-input">
+                                        <input type="checkbox" formControlName="add" class="form-check-input">
                                         <!-- <label for="add1" class="form-check-label">&nbsp;</label> -->
                                     </div>
                                 </td>
                                 <td class="text-center">
                                     <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" id="modify1" value="option1" class="form-check-input">
+                                        <input type="checkbox" formControlName="edit" class="form-check-input">
                                         <!-- <label for="modify1" class="form-check-label">&nbsp;</label> -->
                                     </div>
                                 </td>
                                 <td class="text-center">
                                     <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" id="delete1" value="option1" class="form-check-input">
+                                        <input type="checkbox" formControlName="delete" class="form-check-input">
                                         <!-- <label for="delete1" class="form-check-label">&nbsp;</label> -->
                                     </div>
                                 </td>
@@ -249,38 +249,38 @@
                                 <td class="bg-info text-white px-2 text-center">follow up</td>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody [formGroup]="otherPermissionsGroup">
                             <tr>
                                 <td class="text-center">
                                     <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" id="eDoc1" value="option1" class="form-check-input">
+                                        <input type="checkbox" formControlName="edoc" class="form-check-input">
                                         <!-- <label for="eDoc1" class="form-check-label">&nbsp;</label> -->
                                     </div>
                                 </td>
                                 <td class="text-center">
                                     <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" id="termsAndCondition1" value="option1"
+                                        <input type="checkbox" formControlName="terms_and_condition"
                                             class="form-check-input">
                                         <!-- <label for="termsAndCondition1" class="form-check-label">&nbsp;</label> -->
                                     </div>
                                 </td>
                                 <td class="text-center">
                                     <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" id="authority1" value="option1"
+                                        <input type="checkbox" formControlName="authority"
                                             class="form-check-input">
                                         <!-- <label for="authority1" class="form-check-label">&nbsp;</label> -->
                                     </div>
                                 </td>
                                 <td class="text-center">
                                     <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" id="eMail1" value="option1"
+                                        <input type="checkbox" formControlName="email"
                                             class="form-check-input">
                                         <!-- <label for="eMail1" class="form-check-label">&nbsp;</label> -->
                                     </div>
                                 </td>
                                 <td class="text-center">
                                     <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" id="followUp" value="option1"
+                                        <input type="checkbox" formControlName="followUp"
                                             class="form-check-input">
                                         <!-- <label for="followUp" class="form-check-label">&nbsp;</label> -->
                                     </div>
@@ -293,7 +293,7 @@
         </div>
     </div>
 
-    <div class="col-md-12">
+    <!-- <div class="col-md-12">
         <div class="card">
             <div class="card-header-title d-flex align-items-center gap-2">
                 <i class="fas fa-lock fs-4"></i>
@@ -418,16 +418,14 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
-    @if(isEditMode){
+    <!-- @if(isEditMode){
     <div class="col-12 mt-3">
         <div class="card">
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-                        <!-- eDoc Button -->
-
                         <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
                             <i class="fas fa-file-alt me-1"></i> e-Doc
                         </button>
@@ -449,4 +447,4 @@
             </div>
         </div>
     </div>
-    }
+    } -->

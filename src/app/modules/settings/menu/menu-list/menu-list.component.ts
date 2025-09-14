@@ -62,7 +62,7 @@ export class MenuListComponent implements OnInit {
   userData: any;
   menuData : any;
   sortColumn: string = 'ModuleName'; 
-  sortDirection: string = 'asc';
+  sortDirection: string = 'desc';
   loading = false;
   // Company
   currentCompany : any;

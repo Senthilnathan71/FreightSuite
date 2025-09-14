@@ -87,19 +87,19 @@ export class MenuEntryComponent implements OnInit {
     'Email'
   ];
 
-  getOptionIcon(option: string): string {
-    const icons: { [key: string]: string } = {
-      'Add': 'plus',
-      'View': 'eye',
-      'Edit': 'edit',
-      'Delete': 'trash-alt',
-      'Edoc': 'file-alt',
-      'Terms and Condition': 'clipboard',
-      'Authority': 'shield-alt',
-      'Email': 'envelope'
-    };
-    return icons[option] || 'plus-circle';
-  }
+  // getOptionIcon(option: string): string {
+  //   const icons: { [key: string]: string } = {
+  //     'Add': 'plus',
+  //     'View': 'eye',
+  //     'Edit': 'edit',
+  //     'Delete': 'trash-alt',
+  //     'Edoc': 'file-alt',
+  //     'Terms and Condition': 'clipboard',
+  //     'Authority': 'shield-alt',
+  //     'Email': 'envelope'
+  //   };
+  //   return icons[option] || 'plus-circle';
+  // }
 
   filteredPermissions = [...this.specialOptions];
   currentMenuId: number;
@@ -120,13 +120,6 @@ export class MenuEntryComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // this.appSettingService.getUser().subscribe(
-    //   user => {
-    //     if (user) {
-    //       this.userData = user;
-    //     }
-    //   }
-    // );
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
@@ -144,12 +137,11 @@ export class MenuEntryComponent implements OnInit {
     this.route.paramMap.subscribe(
       (param: any) => {
         this.MenuMasterSid = +param.get('id');
+        console.log(this.MenuMasterSid, 'MenuMasterSid')
         if (this.MenuMasterSid) {
           this.isEditMode = true;
           this.loadMenuData(this.MenuMasterSid);
           this.loadMenuPermissions(this.MenuMasterSid);
-        } else {
-          this.addPermission();
         }
       }
     );
@@ -209,7 +201,18 @@ export class MenuEntryComponent implements OnInit {
       path: ['', [Validators.required, this.pathValidator()]],
       icon: [''],
       status: [{ value: 'Active', disabled: false }, Validators.required],
-      permissions: this.fb.array([])
+      menuPermissions: this.fb.group({
+        add: [false],
+        edit: [false],
+        delete: [false]
+      }),
+      otherPermissions: this.fb.group({
+        edoc: [false],
+        terms_and_condition: [false],
+        authority: [false],
+        email: [false],
+        followUp: [false]
+      })
     });
     this.menuForm.get('isSubMenu')?.valueChanges.subscribe(isSubMenu => {
       const parentIdControl = this.menuForm.get('parentId');
@@ -223,56 +226,12 @@ export class MenuEntryComponent implements OnInit {
     });
   }
 
-  createPermissionGroup(): FormGroup {
-    return this.fb.group({
-      permissionName: ['', [Validators.required, Validators.maxLength(100), this.duplicatePermissionValidator()]],
-    });
-  }
 
-  get permissions(): FormArray {
-    return this.menuForm.get('permissions') as FormArray;
+  get menuPermissionsGroup(): FormGroup {
+    return this.menuForm.get('menuPermissions') as FormGroup;
   }
-
-  addPermission(): void {
-    this.permissions.push(this.createPermissionGroup());
-  }
-
-  removePermission(index: number): void {
-    if (this.permissions.length > 1) {
-      this.permissions.removeAt(index);
-      this.permissions.controls.forEach(control => {
-        control.get('permissionName').updateValueAndValidity();
-      });
-      this.permissions.updateValueAndValidity();
-      this.menuForm.updateValueAndValidity();
-    }
-  }
-
-  clearPermission(index: number) {
-    console.log(index);
-    if (index !== undefined) {
-      console.log(this.permissions);
-      this.permissions.at(index).get('permissionName')?.setValue('');
-    }
-  }
-
-  createPermissionWithOption(event: string) {
-    if (this.permissions.value[this.permissions.length - 1].permissionName === '') {
-      this.permissions.at(this.permissions.length - 1).setValue({ permissionName: event });
-      return;
-    }
-    const formWithPermission = this.fb.group({
-      permissionName: [event, [Validators.required, Validators.maxLength(100), this.duplicatePermissionValidator()]],
-    })
-    this.permissions.push(formWithPermission);
-  }
-
-  filterPermissionList(state) {
-    if (state) {
-      let existingPermissions = this.permissions.value;
-      existingPermissions = existingPermissions.map(p => p.permissionName.toLowerCase());
-      this.filteredPermissions = this.specialOptions.filter(perm => !existingPermissions.includes(perm.toLowerCase()));
-    }
+  get otherPermissionsGroup(): FormGroup {
+    return this.menuForm.get('otherPermissions') as FormGroup;
   }
 
   get isSubMenuChecked(): boolean {
@@ -334,30 +293,21 @@ export class MenuEntryComponent implements OnInit {
     parentIdControl?.updateValueAndValidity();
   }
 
-  loadMenuPermissions(MenuMasterSid) {
-    this.settingsService.getMenuPermissions(MenuMasterSid).subscribe(
-      (resp: any) => {
-        if (resp) {
-          const menuPermissions = resp;
-          if (menuPermissions.length > 0) {
-            this.patchPermissions(menuPermissions);
-          } else {
-            this.addPermission();
-          }
-        }
-      }
-    )
+  loadMenuPermissions(menuMasterSid: number) {
+    this.settingsService.getMenuPermissions(menuMasterSid).subscribe((resp: any) => {
+      if (!resp) { return; }
+      const map: Record<string, boolean> = {};
+      resp.forEach((item: any) => {
+        map[item.permissionCode.toLowerCase()] = item.status === 'A';
+      });
+
+      this.menuForm.patchValue({
+        menuPermissions: map,
+        otherPermissions: map
+      });
+    });
   }
 
-  patchPermissions(menuPermissions: any[]) {
-    menuPermissions.map(m => {
-      const permissionGroup = this.createPermissionGroup();
-      permissionGroup.patchValue({
-        permissionName: m.permissionName
-      })
-      this.permissions.push(permissionGroup);
-    })
-  }
 
   onSubmit() {
     if (this.menuForm.invalid) {
@@ -444,7 +394,7 @@ export class MenuEntryComponent implements OnInit {
             this.appSettingService.showSuccess(resp.message);
             const menuId = resp.data?.menu?.MenuMasterSid;
             if (menuId) {
-              this.router.navigate(['settings/menu/entry', menuId]);
+              this.router.navigate(['settings/menu/list', menuId]);
             }
           } else {
             this.appSettingService.showError(resp.message || 'Error creating menu.');
@@ -461,32 +411,33 @@ export class MenuEntryComponent implements OnInit {
     }
   }
 
-  private preparePermissionsPayload(): any[] {
-    const permissionNames = this.permissions.controls.map(permissionGroup => ({
-      permissionName: permissionGroup.get('permissionName')?.value,
-    }));
-    return permissionNames
-  }
+  private readonly permissionNameMap: Record<string, string> = {
+  add: 'Add',
+  edit: 'Edit',
+  delete: 'Delete',
+  edoc: 'Edoc',
+  terms_and_condition: 'Terms and Condition',
+  authority: 'Authority',
+  email: 'Email',
+  followUp: 'Follow Up'
+};
 
-  // Add this method to your component
-  duplicatePermissionValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-      if (!control.value || !this.permissions) {
-        return null;
-      }
 
-      const currentPermissionName = control.value.trim().toLowerCase();
-      const duplicateIndex = this.permissions.controls.findIndex((permission, index) => {
-        // Skip current control being validated
-        if (control.parent && control.parent === permission) {
-          return false;
-        }
-        return permission.get('permissionName')?.value?.trim().toLowerCase() === currentPermissionName;
-      });
+private preparePermissionsPayload() {
+  const build = (group: any) =>
+    Object.keys(group)
+      .filter(key => group[key])               // only checked boxes
+      .map(key => ({
+        permissionName: this.permissionNameMap[key] || key
+      }));
 
-      return duplicateIndex >= 0 ? { duplicatePermission: true } : null;
-    };
-  }
+  const menuPerms  = build(this.menuForm.value.menuPermissions);
+  const otherPerms = build(this.menuForm.value.otherPermissions);
+
+  return [...menuPerms, ...otherPerms];
+}
+
+
 
 
   trackByIndex(index: number, item: any): number {
