@@ -222,38 +222,41 @@
 
 
 <div class="row compact-form" [formGroup]="leadForm">
+    <!-- Enhanced Header Section -->
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-2">
-                <h4 class="page-title mb-0"> {{isEditMode ? 'Update Lead' : 'Lead'}} </h4>
-                @if(isEditMode){
-                <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
-                    <i class="fas fs-6 fa-info-circle"></i>
-                </a>
-                }
-            </div>
-            <div class="col-md-8 pb-2">
-                <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    
- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                  (click)="openAuditLogs(auditLogModal)">
-            <i class="fas fa-history me-1"></i>Logs
-          </button>
-
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="goBack()">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1" (click)="reset()"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="leadForm.invalid">
-                        <i class="fas fa-save me-1"></i>
-                        {{isEditMode ? 'Update' : 'Save' }} 
-                    </button>
+        <div class="lead-header-card bg-gradient-primary text-white rounded shadow mb-3 py-2 px-3">
+            <div class="row align-items-center">
+                <div class="col-md-6 d-flex align-items-center">
+                    <div class="header-icon me-2">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div>
+                        <h5 class="page-title mb-0 fw-bold">{{isEditMode ? 'Update Lead' : 'Create New Lead'}}</h5>
+                        <small class="opacity-75">{{isEditMode ? 'Modify existing lead information' : 'Capture new potential customer details'}}</small>
+                    </div>
+                    @if(isEditMode){
+                    <a class="text-white ms-2 d-flex align-items-center" (click)="showInfo()" style="cursor: pointer;">
+                        <i class="fas fa-info-circle"></i>
+                    </a>
+                    }
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex flex-wrap justify-content-md-end gap-1">
+                        <button type="button" class="btn btn-outline-light btn-sm px-2 py-1" *ngIf="isEditMode"
+                              (click)="openAuditLogs(auditLogModal)">
+                            <i class="fas fa-history me-1"></i>Logs
+                        </button>
+                        <button type="button" class="btn btn-outline-light btn-sm px-2 py-1"
+                            (click)="goBack()">
+                            <i class="fas fa-chevron-left me-1"></i>Back
+                        </button>
+                        <button type="button" class="btn btn-outline-light btn-sm px-2 py-1" (click)="reset()">
+                            <i class="fas fa-sync-alt me-1"></i>Reset
+                        </button>
+                        <button type="button" class="btn btn-light btn-sm px-3 py-1 fw-semibold" (click)="onSubmit()" [disabled]="leadForm.invalid">
+                            <i class="fas fa-save me-1"></i>{{isEditMode ? 'Update' : 'Save'}}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -530,10 +533,18 @@
 
 
             <div ngbAccordion #acc="ngbAccordion" activeIds="first" [closeOthers]="true">
-                <div ngbAccordionItem id="first">
-                    <h2 ngbAccordionHeader>
-                        <button ngbAccordionButton>
-                            <h5 class="card-title mb-0">First Information</h5>
+                <div ngbAccordionItem id="first" class="accordion-item-enhanced">
+                    <h2 ngbAccordionHeader class="accordion-header-enhanced">
+                        <button ngbAccordionButton class="accordion-button-enhanced">
+                            <div class="accordion-header-content">
+                                <div class="header-icon me-3">
+                                    <i class="fas fa-user-circle text-primary"></i>
+                                </div>
+                                <div class="header-text">
+                                    <h5 class="card-title mb-0">Basic Information</h5>
+                                    <small class="text-muted">Customer details and lead source</small>
+                                </div>
+                            </div>
                         </button>
                     </h2>
                     <div ngbAccordionCollapse>
@@ -628,10 +639,18 @@
                 </div>
 
 
-                <div ngbAccordionItem id="second">
-                    <h2 ngbAccordionHeader>
-                        <button ngbAccordionButton>
-                            <h5 class="card-title mb-0">Contact Information</h5>
+                <div ngbAccordionItem id="second" class="accordion-item-enhanced">
+                    <h2 ngbAccordionHeader class="accordion-header-enhanced">
+                        <button ngbAccordionButton class="accordion-button-enhanced">
+                            <div class="accordion-header-content">
+                                <div class="header-icon me-3">
+                                    <i class="fas fa-address-book text-success"></i>
+                                </div>
+                                <div class="header-text">
+                                    <h5 class="card-title mb-0">Contact Information</h5>
+                                    <small class="text-muted">Address, phone, email and preferences</small>
+                                </div>
+                            </div>
                         </button>
                     </h2>
                     <div ngbAccordionCollapse>
@@ -840,10 +859,18 @@
                 </div>
 
 
-                <div ngbAccordionItem id="three">
-                    <h2 ngbAccordionHeader>
-                        <button ngbAccordionButton>
-                            <h5 class="card-title mb-0">Lead Details</h5>
+                <div ngbAccordionItem id="three" class="accordion-item-enhanced">
+                    <h2 ngbAccordionHeader class="accordion-header-enhanced">
+                        <button ngbAccordionButton class="accordion-button-enhanced">
+                            <div class="accordion-header-content">
+                                <div class="header-icon me-3">
+                                    <i class="fas fa-bullseye text-warning"></i>
+                                </div>
+                                <div class="header-text">
+                                    <h5 class="card-title mb-0">Lead Details</h5>
+                                    <small class="text-muted">Service interest and requirements</small>
+                                </div>
+                            </div>
                         </button>
                     </h2>
                     <div ngbAccordionCollapse>
@@ -913,10 +940,18 @@
                 </div>
 
 
-                <div ngbAccordionItem id="fourth">
-                    <h2 ngbAccordionHeader>
-                        <button ngbAccordionButton>
-                            <h5 class="card-title mb-0">Additional Information</h5>
+                <div ngbAccordionItem id="fourth" class="accordion-item-enhanced">
+                    <h2 ngbAccordionHeader class="accordion-header-enhanced">
+                        <button ngbAccordionButton class="accordion-button-enhanced">
+                            <div class="accordion-header-content">
+                                <div class="header-icon me-3">
+                                    <i class="fas fa-plus-circle text-info"></i>
+                                </div>
+                                <div class="header-text">
+                                    <h5 class="card-title mb-0">Additional Information</h5>
+                                    <small class="text-muted">Industry, company size and notes</small>
+                                </div>
+                            </div>
                         </button>
                     </h2>
                     <div ngbAccordionCollapse>
@@ -1006,32 +1041,53 @@
 
 @if(isEditMode){
     <div class="col-12 mt-3">
-    <div class="card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-                    <!-- eDoc Button -->
-                     
-                    <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
-        <i class="fas fa-file-alt me-1"></i> e-Doc
-      </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
-                    <i class="fas fa-clipboard me-1"></i> Terms & Condition
-                </button>
-                <button type="button" appPreventMultiClick class="btn btn-outline-info"(click)="openAuthority()">
-        <i  class="fas fa-shield-alt me-1"></i> Authorize
-      </button>
-                
-      <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
-        <i class="fas fa-envelope me-1"></i> Email
-      </button>
-                
+        <div class="action-buttons-section">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="action-icon me-2">
+                                    <i class="fas fa-tools text-primary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="card-title mb-0">Quick Actions</h6>
+                                    <small class="text-muted">Manage documents and communications</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-6 col-lg-3">
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info w-100 action-btn-compact" (click)="openEDoc()">
+                                <i class="fas fa-file-alt me-1"></i>
+                                <span>e-Doc</span>
+                            </button>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info w-100 action-btn-compact" (click)="openTandC()">
+                                <i class="fas fa-clipboard me-1"></i>
+                                <span>Terms & Condition</span>
+                            </button>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info w-100 action-btn-compact" (click)="openAuthority()">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                <span>Authorize</span>
+                            </button>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <button type="button" appPreventMultiClick class="btn btn-outline-info w-100 action-btn-compact" (click)="openEmail()">
+                                <i class="fas fa-envelope me-1"></i>
+                                <span>Email</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-     } 
+} 
 
      
 <ng-template #auditLogModal let-modal>
