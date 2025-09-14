@@ -8,6 +8,8 @@ import {
   NgbDateParserFormatter,
   NgbActiveModal,
   NgbPaginationModule,
+  NgbDropdownModule,
+  
 } from '@ng-bootstrap/ng-bootstrap';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -64,7 +66,8 @@ import { MasterDocumentUploadComponent } from '../../master-document-upload/mast
     OnlyTextDirective,
     TextWithNumbersDirective,
     RouterModule,
-    NgbPaginationModule
+    NgbPaginationModule,
+    NgbDropdownModule
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrls: ['./master-job-entry.component.scss'],

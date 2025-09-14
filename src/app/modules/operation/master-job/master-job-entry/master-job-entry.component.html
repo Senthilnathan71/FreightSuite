@@ -22,19 +22,29 @@
                     <span>Reset</span>
                 </button>
             </div>
+            
+            <div class="action-group">
+                <div ngbDropdown container="body" class="d-inline-block">
+                    <button type="button" class="btn btn-outline-info btn-sm" id="dropdownUpload" ngbDropdownToggle>
+                        Upload
+                    </button>
+                    <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
+                        <button class="text-dark" ngbDropdownItem (click)="uploadPDF()" [disabled]="isLoading">HBL</button>
+                        <button class="text-dark" ngbDropdownItem>Manifest</button>
+                    </div>
+                </div>
+            </div>
+        
             <div class="action-group">
                 <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="isLoading">
-                    <i class="fas fa-save fs-2"></i>
+                    <i class="fas fa-save me-1"></i>
                     <span>{{isEditMode ? 'Update' : 'Save'}}</span>
                 </button>
             </div>
 
-            <div class="action-group">
-                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="uploadPDF()" [disabled]="isLoading">
-                    <i class="fas fa-save me-1"></i>
-                    <span>Upload</span>
-                </button>
-            </div>
+            
+
+            
         </div>
     </div>
 
