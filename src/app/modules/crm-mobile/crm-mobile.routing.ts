@@ -7,8 +7,6 @@ import { TodoComponent } from './todo/todo.component';
 import { MeetingComponent } from './lead-schedule/meeting/meeting.component';
 import { PendingComponent } from './lead-schedule/pending/pending.component';
 import { MeetingUpdateListComponent } from './Meeting-Update/meeting-update-list/meeting-update-list.component';
-import { BookingListComponent } from './booking/booking-list/booking-list.component';
-import { BookingEntryComponent } from './booking/booking-entry/booking-entry.component';
 import { EnquiryEntryComponent } from './enquiry/enquiry-entry/enquiry-entry.component';
 import { EnquiryListComponent } from './enquiry/enquiry-list/enquiry-list.component';
 import { QuotationEntryComponent } from './quotation/quotation-entry/quotation-entry.component';
@@ -220,35 +218,6 @@ export const CrmMobileRoutes: Routes = [
                     // urls: [
                     //     { title: "CRM", url: "/crm" },
                     //     { title: "Lead Schedule (pending)" },
-                    // ],
-                },
-            },
-             {
-                path: 'booking/list',
-                component: BookingListComponent,
-                data: {
-                    title: 'Booking',
-                    backOption: [
-                        { title: 'Back', url: '/crm' },
-                    ],
-                    // urls: [
-                    //     { title: 'CRM', url: '/crm' },
-                    //     { title: 'Lead', url: 'crm/lead' },
-                    //     { title: 'List' }
-                    // ],
-                },
-            },
-            {
-                path: 'booking/entry',
-                component: BookingEntryComponent,
-                data: {
-                    title: 'Booking',
-                    backOption: [
-                        { title: 'Back', url: '/crm/lead/list' },
-                    ],
-                    // urls: [
-                    //     { title: 'CRM', url: 'crm' },
-                    //     { title: 'Leads' },
                     // ],
                 },
             },

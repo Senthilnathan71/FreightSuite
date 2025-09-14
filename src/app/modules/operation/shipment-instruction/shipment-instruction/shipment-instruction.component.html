@@ -311,7 +311,7 @@
                 </thead>
                 <tbody>
                   <tr *ngFor="let container of shipmentData.containers; let i = index">
-                    <td>1</td>
+                    <td>{{i+1}}</td>
                     <td>
                       <input type="text" class="form-control border-0 bg-transparent small editable-field"
                         [(ngModel)]="container.containerNo" [readonly]="!isEditMode" placeholder="Container No">

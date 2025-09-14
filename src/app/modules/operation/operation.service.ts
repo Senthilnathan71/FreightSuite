@@ -93,7 +93,7 @@ export class OperationService {
   }
 
   deleteBookingConnection(id: number) {
-    return this.http.delete<{ data: any }>(`ff-booking/connection/${id}`).pipe(
+    return this.http.delete<{ data: any }>(`ff-bookingff-booking/connection/${id}`).pipe(
       map((resp) => {
         return resp;
       })
@@ -108,6 +108,14 @@ export class OperationService {
     );
   }
 
+  getBookingByBookingNumber(BookingNumber: string) {
+    return this.http.get<{ data: any }>(`ff-booking/shiping_Ins/fetch/${BookingNumber}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
   // Permissions
   getRoleMenuPermissions(menuId: number, roleId: number) {
     return this.http.get<{ data: any }>(`role-menu/permissions/${menuId}/${roleId}`).pipe(
