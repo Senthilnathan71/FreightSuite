@@ -8,7 +8,7 @@
                     </div>
                     <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit Menu' : 'Menu'}}</h5>
                     @if(isEditMode){
-                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2">
+                    <a class="text-info d-flex align-items-center">
                         <i class="fas fa-info-circle"></i>
                     </a>
                     }
@@ -16,7 +16,7 @@
             </div>
             <div class="col-md-8 pb-2">
                 <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
 
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="navigateBack()">
@@ -33,6 +33,17 @@
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Update' : 'Save'}}
                     </button>
+                    <div ngbDropdown class="d-inline-block">
+                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -44,7 +55,7 @@
                 <div class="row pb-2 rounded border border-top-0" [formGroup]="menuForm">
                     <div class="card-header-title d-flex align-items-center gap-2">
                         <i class="fas fa-bars fs-4"></i>
-                        <h6 class="card-titlename mb-0">Menu Information</h6>
+                        <h5 class="card-titlename mb-0">Menu Information</h5>
                     </div>
                     <aside class="col-md-4">
                         <div class="custom-form-group">
@@ -176,14 +187,121 @@
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-auto">
         <div class="card">
+            <div class="card-header-title d-flex align-items-center gap-2">
+                <i class="fas fa-lock fs-4"></i>
+                <h5 class="card-titlename mb-0">Menu Permission</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm dofi-max-w-200 mb-0">
+                        <thead>
+                            <tr class="">
+                                <td class="bg-info text-white px-2">Add</td>
+                                <td class="bg-info text-white px-2">Modify</td>
+                                <td class="bg-info text-white px-2">Delete</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="add1" value="option1" class="form-check-input">
+                                        <!-- <label for="add1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="modify1" value="option1" class="form-check-input">
+                                        <!-- <label for="modify1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="delete1" value="option1" class="form-check-input">
+                                        <!-- <label for="delete1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-auto">
+        <div class="card">
+            <div class="card-header-title d-flex align-items-center gap-2">
+                <i class="fas fa-lock fs-4"></i>
+                <h5 class="card-titlename mb-0">Other Permission</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm dofi-max-w-350 mb-0">
+                        <thead>
+                            <tr class="">
+                                <td class="bg-info text-white px-2 text-center">Edoc</td>
+                                <td class="bg-info text-white px-2 text-center">T&C</td>
+                                <td class="bg-info text-white px-2 text-center">Authority</td>
+                                <td class="bg-info text-white px-2 text-center">Email</td>
+                                <td class="bg-info text-white px-2 text-center">follow up</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="eDoc1" value="option1" class="form-check-input">
+                                        <!-- <label for="eDoc1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="termsAndCondition1" value="option1"
+                                            class="form-check-input">
+                                        <!-- <label for="termsAndCondition1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="authority1" value="option1"
+                                            class="form-check-input">
+                                        <!-- <label for="authority1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="eMail1" value="option1"
+                                            class="form-check-input">
+                                        <!-- <label for="eMail1" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-inline me-0 ms-2">
+                                        <input type="checkbox" id="followUp" value="option1"
+                                            class="form-check-input">
+                                        <!-- <label for="followUp" class="form-check-label">&nbsp;</label> -->
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header-title d-flex align-items-center gap-2">
+                <i class="fas fa-lock fs-4"></i>
+                <h5 class="card-titlename mb-0">Menu Permission</h5>
+            </div>
+
             <div class="card-body pt-0">
                 <div class="row">
-                    <div class="card-header-title d-flex align-items-center gap-2">
-                        <i class="fas fa-lock fs-4"></i>
-                        <h6 class="card-titlename mb-0">Menu Permission</h6>
-                    </div>
                     <aside [formGroup]="menuForm" class="col-md-12 col-12 mt-2">
                         <div class="table-responsive overflow-visible">
                             <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -237,57 +355,59 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="d-flex pe-2 position-relative z-3">
-                                            @if(!last){
-                                            <div class="mt-2">
-                                                <button type="button"
-                                                    class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
-                                                    (click)="clearPermission(i)" title="Add Permission">
+                                        <td class="">
+                                            <div class="d-flex pe-2 position-relative z-3">
+                                                @if(!last){
+                                                <div class="mt-2">
+                                                    <button type="button"
+                                                        class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
+                                                        (click)="clearPermission(i)" title="Add Permission">
 
-                                                    <i class="fas fa-plus"></i> Custom
-                                                </button>
-                                            </div>
-
-                                            }
-                                            @if(last) {
-                                            <div class="mt-2">
-                                                <button type="button"
-                                                    class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
-                                                    (click)="addPermission()" title="Add Permission">
-
-                                                    <i class="fas fa-plus"></i> Custom
-                                                </button>
-                                            </div>
-
-
-                                            <div ngbDropdown placement="top-end" class="d-inline-block mt-2"
-                                                (openChange)="filterPermissionList($event)">
-                                                <button type="button"
-                                                    class="btn btn-sm btn-secondary me-2 dofi-min-w-100 dofi-max-w-100"
-                                                    id="dropdown1" ngbDropdownToggle> <i class="fas fa-plus"></i>
-                                                    Prebuilt </button>
-                                                <div ngbDropdownMenu aria-labelledby="dropdown1" class="z-2 border">
-                                                    @for(option of filteredPermissions;track option;let last=$last){
-                                                    <button ngbDropdownItem class="fw-bold text-info"
-                                                        (click)="createPermissionWithOption(option)"><i
-                                                            class="fas fa-{{getOptionIcon(option)}} text-info me-2"></i>{{option}}</button>
-                                                    <div class="dropdown-divider my-1" *ngIf="!last"></div>
-                                                    } @empty {
-                                                    <button ngbDropdownItem class="fw-bold py-2" disabled>No items
-                                                        found</button>
-                                                    }
+                                                        <i class="fas fa-plus"></i> Custom
+                                                    </button>
                                                 </div>
-                                            </div>
-                                            }
-                                            @if(permissions.length > 1) {
-                                            <div class="mt-2">
-                                                <button type="button" class="btn btn-sm btn-outline-danger me-2"
-                                                    (click)="removePermission(i)" title="Remove Permission">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-                                            </div>
 
-                                            }
+                                                }
+                                                @if(last) {
+                                                <div class="mt-2">
+                                                    <button type="button"
+                                                        class="btn ms-auto btn-sm btn-outline-info me-2 dofi-min-w-80 dofi-max-w-80"
+                                                        (click)="addPermission()" title="Add Permission">
+
+                                                        <i class="fas fa-plus"></i> Custom
+                                                    </button>
+                                                </div>
+
+
+                                                <div ngbDropdown placement="top-end" class="d-inline-block mt-2"
+                                                    (openChange)="filterPermissionList($event)">
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-secondary me-2 dofi-min-w-100 dofi-max-w-100"
+                                                        id="dropdown1" ngbDropdownToggle> <i class="fas fa-plus"></i>
+                                                        Prebuilt </button>
+                                                    <div ngbDropdownMenu aria-labelledby="dropdown1" class="z-2 border">
+                                                        @for(option of filteredPermissions;track option;let last=$last){
+                                                        <button ngbDropdownItem class="fw-bold text-info"
+                                                            (click)="createPermissionWithOption(option)"><i
+                                                                class="fas fa-{{getOptionIcon(option)}} text-info me-2"></i>{{option}}</button>
+                                                        <div class="dropdown-divider my-1" *ngIf="!last"></div>
+                                                        } @empty {
+                                                        <button ngbDropdownItem class="fw-bold py-2" disabled>No items
+                                                            found</button>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                }
+                                                @if(permissions.length > 1) {
+                                                <div class="mt-2">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger me-2"
+                                                        (click)="removePermission(i)" title="Remove Permission">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </div>
+
+                                                }
+                                            </div>
                                         </td>
                                     </tr>
                                     }
