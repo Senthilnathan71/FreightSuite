@@ -1,7 +1,7 @@
 <div class="row">
   <!-- Header Section -->
   <div class="col-12">
-    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+    <div class="row bg-white mb-1 align-items-center pt-2 rounded shadow-sm mx-0">
       <div class="col-md d-flex gap-3 pb-2">
         <div class="d-flex align-items-center gap-2">
           <div class="brand-icon">
@@ -151,7 +151,7 @@
             <!-- Left Column -->
             <div class="col-md-6 border-end">
               <!-- Shipper/Exporter -->
-              <div class="bl-section border-bottom p-2">
+              <div class="bl-section border-bottom p-1">
                 <label class="bl-label fw-bold mb-1">Shipper/Exporter(Complete Name and Address)</label>
                 <div class="editable-field-group">
                   <input type="text" class="form-control border-0 bg-transparent fw-bold mb-1 editable-field"
@@ -163,7 +163,7 @@
               </div>
 
               <!-- Consignee -->
-              <div class="bl-section border-bottom p-2">
+              <div class="bl-section border-bottom p-1">
                 <label class="bl-label fw-bold mb-1">Consignee(Name and Address) Not Negotiable Unless Consigned To
                   Order</label>
                 <div class="editable-field-group">
@@ -176,7 +176,7 @@
               </div>
 
               <!-- Notify Party -->
-              <div class="bl-section p-2">
+              <div class="bl-section p-1">
                 <label class="bl-label fw-bold mb-1">Notify Party(Name and Address)</label>
                 <div class="editable-field-group">
                   <input type="text" class="form-control border-0 bg-transparent fw-bold mb-1 editable-field"
@@ -192,7 +192,7 @@
             <!-- Right Column -->
             <div class="col-md-6">
               <!-- Bill of Lading No -->
-              <div class="bl-section border-bottom p-2">
+              <div class="bl-section border-bottom p-1">
                 <div class="row">
                   <div class="col-md-6">
                     <label class="bl-label fw-bold mb-1">Bill Of Lading No</label>
@@ -212,7 +212,7 @@
               </div>
 
               <!-- BL Title and Description -->
-              <div class="bl-section border-bottom p-2">
+              <div class="bl-section border-bottom p-1">
                 <h6 class="text-start fw-bold text-primary mb-2">BILL OF LADING(FOR COMBINED TRANSPORT OR PORT TO PORT
                   SHIPMENT)</h6>
                 <p class="small mb-1">
@@ -231,7 +231,7 @@
               </div>
 
               <!-- Notify2 -->
-              <div class="bl-section p-2">
+              <div class="bl-section p-1">
                 <label class="bl-label fw-bold mb-1">Notify2</label>
                 <div class="editable-field-group">
                   <input type="text" class="form-control border-0 bg-transparent fw-bold mb-1 editable-field"
@@ -247,22 +247,22 @@
 
           <!-- Middle Section - Transport Details -->
           <div class="row g-0 border-top">
-            <div class="col-3 border-end p-2">
+            <div class="col-3 border-end p-1">
               <label class="bl-label fw-bold small">Vessel/Voy No</label>
               <input type="text" class="form-control border-0 bg-transparent small editable-field"
                 [(ngModel)]="shipmentData.vesselVoyNo" [readonly]="!isEditMode" placeholder="Vessel/Voyage No">
             </div>
-            <div class="col-3 border-end p-2">
+            <div class="col-3 border-end p-1">
               <label class="bl-label fw-bold small">Place of Receipt</label>
               <input type="text" class="form-control border-0 bg-transparent small editable-field"
                 [(ngModel)]="shipmentData.placeOfReceipt" [readonly]="!isEditMode" placeholder="Place of Receipt">
             </div>
-            <div class="col-3 border-end p-2">
+            <div class="col-3 border-end p-1">
               <label class="bl-label fw-bold small">Port of Discharge</label>
               <input type="text" class="form-control border-0 bg-transparent small editable-field"
                 [(ngModel)]="shipmentData.portOfDischarge" [readonly]="!isEditMode" placeholder="Port of Discharge">
             </div>
-            <div class="col-3 p-2">
+            <div class="col-3 p-1">
               <label class="bl-label fw-bold small">Place of Delivery</label>
               <input type="text" class="form-control border-0 bg-transparent small editable-field"
                 [(ngModel)]="shipmentData.placeOfDelivery" [readonly]="!isEditMode" placeholder="Place of Delivery">
@@ -271,7 +271,7 @@
 
           <!-- Bottom Section - BL Details -->
           <div class="row g-0 border-top">
-            <div class="col-3 border-end p-2">
+            <div class="col-3 border-end p-1">
               <label class="bl-label fw-bold small">Number of Original BL</label>
               <div class="d-flex gap-2">
                 <select class="form-control border-0 bg-transparent small editable-field"
@@ -281,12 +281,12 @@
                 </select>
               </div>
             </div>
-            <div class="col-3 border-end p-2">
+            <div class="col-3 border-end p-1">
               <label class="bl-label fw-bold small">Port of Loading</label>
               <input type="text" class="form-control border-0 bg-transparent small editable-field"
                 [(ngModel)]="shipmentData.portOfLoading" [readonly]="!isEditMode" placeholder="Port of Loading">
             </div>
-            <div class="col-6 p-2">
+            <div class="col-6 p-1">
               <label class="bl-label fw-bold small">Place of Delivery</label>
               <input type="text" class="form-control border-0 bg-transparent small editable-field"
                 [(ngModel)]="shipmentData.placeOfDelivery" [readonly]="!isEditMode" placeholder="Place of Delivery">
@@ -300,8 +300,9 @@
               <table class="table table-bordered mb-0">
                 <thead class="table-light">
                   <tr>
-                    <th class="small">Container/S.No</th>
-                    <th class="small">Marks and Nos</th>
+                    <th class="small">S.No</th>
+                    <th class="small">Container</th>
+                    <th class="small">Marks and Numbers</th>
                     <th class="small">Description of Goods</th>
                     <th class="small">Pack Count / Pack Type</th>
                     <th class="small">Gross Weight</th>
@@ -310,19 +311,20 @@
                 </thead>
                 <tbody>
                   <tr *ngFor="let container of shipmentData.containers; let i = index">
+                    <td>1</td>
                     <td>
                       <input type="text" class="form-control border-0 bg-transparent small editable-field"
                         [(ngModel)]="container.containerNo" [readonly]="!isEditMode" placeholder="Container No">
                     </td>
                     <td>
-                      <textarea class="form-control border-0 bg-transparent small editable-field"
+                      <input class="form-control border-0 bg-transparent small editable-field"
                         [(ngModel)]="container.marksAndNos" [readonly]="!isEditMode" rows="2" style="resize: none;"
-                        placeholder="Marks and Nos"></textarea>
+                        placeholder="Marks and Nos" />
                     </td>
                     <td>
-                      <textarea class="form-control border-0 bg-transparent small editable-field"
+                      <input class="form-control border-0 bg-transparent small editable-field"
                         [(ngModel)]="container.descriptionOfGoods" [readonly]="!isEditMode" rows="2"
-                        style="resize: none;" placeholder="Description"></textarea>
+                        style="resize: none;" placeholder="Description" />
                     </td>
                     <td>
                       <div class="d-flex gap-1">
@@ -356,7 +358,7 @@
             <div class="col-6 border-end">
               <div class="row">
                 <div class="col-md-6">
-                  <div class="p-2">
+                  <div class="p-1">
                     <label class="bl-label fw-bold small">Freight Payable at</label>
                     <input type="text" class="form-control border-0 bg-transparent small editable-field"
                       [(ngModel)]="shipmentData.freightPayableAt" [readonly]="!isEditMode"
@@ -364,7 +366,7 @@
                   </div>
                 </div>
                 <div class="col-md-6">
-                  <div class="p-2">
+                  <div class="p-1">
                     <label class="bl-label fw-bold small">Type of Service</label>
                     <input type="text" class="form-control border-0 bg-transparent small editable-field"
                       [(ngModel)]="shipmentData.typeOfService" [readonly]="!isEditMode" placeholder="Type of Service">
@@ -377,19 +379,19 @@
             <div class="col-6">
               <div class="row">
                 <div class="col-md-6">
-                  <div class="p-2">
+                  <div class="p-1">
                     <label class="bl-label fw-bold small">Shipped On Board</label>
-                    <textarea class="form-control border-0 bg-transparent small editable-field"
+                    <input class="form-control border-0 bg-transparent small editable-field"
                       [(ngModel)]="shipmentData.shippedOnBoard" [readonly]="!isEditMode" rows="1" style="resize: none;"
-                      placeholder="Shipped On Board"></textarea>
+                      placeholder="Shipped On Board" />
                   </div>
                 </div>
                 <div class="col-md-6">
-                  <div class="p-2">
+                  <div class="p-1">
                     <label class="bl-label fw-bold small">Place and Date of Issue</label>
-                    <textarea class="form-control border-0 bg-transparent small editable-field"
+                    <input class="form-control border-0 bg-transparent small editable-field"
                       [(ngModel)]="shipmentData.placeAndDateOfIssue" [readonly]="!isEditMode" rows="1"
-                      style="resize: none;" placeholder="Place and Date of Issue"></textarea>
+                      style="resize: none;" placeholder="Place and Date of Issue" />
                   </div>
                 </div>
               </div>
@@ -399,7 +401,7 @@
           </div>
 
           <!-- Witness Statement -->
-          <div class="border-top p-2">
+          <div class="border-top p-1">
             <p class="small text-justify mb-0">
               In WITNESS of the contract herein contained the number of originals state above have been issued one of
               the being accomplished the other(s) to be void.
@@ -410,17 +412,17 @@
           <div class="border-top">
             <h6 class="text-center fw-bold py-2 mb-0 bg-light">Rider BL</h6>
             <div class="row g-0">
-              <div class="col-6 border-end p-2">
+              <div class="col-6 border-end p-1">
                 <label class="bl-label fw-bold small">Rider Marks No</label>
-                <textarea class="form-control border-0 bg-transparent small editable-field"
+                <input class="form-control border-0 bg-transparent small editable-field"
                   [(ngModel)]="shipmentData.riderMarksNo" [readonly]="!isEditMode" rows="3" style="resize: none;"
-                  placeholder="Rider Marks No"></textarea>
+                  placeholder="Rider Marks No" />
               </div>
-              <div class="col-6 p-2">
+              <div class="col-6 p-1">
                 <label class="bl-label fw-bold small">Rider Desc</label>
-                <textarea class="form-control border-0 bg-transparent small editable-field"
+                <input class="form-control border-0 bg-transparent small editable-field"
                   [(ngModel)]="shipmentData.riderDesc" [readonly]="!isEditMode" rows="3" style="resize: none;"
-                  placeholder="Rider Description"></textarea>
+                  placeholder="Rider Description" />
               </div>
             </div>
           </div>
