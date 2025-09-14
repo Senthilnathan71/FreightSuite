@@ -1,0 +1,498 @@
+<!-- src/app/components/document-upload/document-upload.component.html -->
+<div class="document-upload-container">
+  <div class="header mb-3 d-flex align-items-start gap-3">
+    <div class="">
+      <h4 class="text-start">Bill of Lading Document Processing</h4>
+      <p class="subtitle">Upload a PDF Bill of Lading to automatically extract and populate form data</p>
+    </div>
+    <div class="ms-auto">
+      <div class="p-2" style="cursor:pointer">
+        <i class="fas fa-times"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Upload Section -->
+  <div class="upload-section">
+    <div class="upload-card">
+
+      <div class="d-flex flex-wrap gap-3">
+        <div class="file-upload-wrapper col">
+          <input type="file" id="pdfFile" accept=".pdf" (change)="onFileSelected($event)" [disabled]="isUploading"
+            #fileInput>
+          <label for="pdfFile" class="file-label" [class.disabled]="isUploading">
+            <span class="file-text">
+              {{ selectedFile?.name || 'Choose PDF file...' }}
+            </span>
+            <span class="file-size" *ngIf="selectedFile">
+              ({{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB)
+            </span>
+          </label>
+        </div>
+  
+        <button type="button" class="btn btn-info btn-sm process-btn" [disabled]="!selectedFile || isUploading" (click)="uploadAndProcess()">
+          <span *ngIf="!isUploading">
+            Process Document
+          </span>
+          <span *ngIf="isUploading">
+            <i class="spinner"></i>
+            {{ uploadProgress.message }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-section" *ngIf="isUploading || uploadProgress.stage === 'complete'">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="uploadProgress.percentage" [class]="uploadProgress.stage"></div>
+        </div>
+        <div class="progress-text">
+          {{ uploadProgress.message }} ({{ uploadProgress.percentage }}%)
+        </div>
+      </div>
+
+      <!-- Status Messages -->
+      <div class="status-messages">
+        <div *ngIf="uploadError" class="error-message">
+          <i class="error-icon">⚠️</i>
+          {{ uploadError }}
+        </div>
+
+        <div *ngIf="extractedData && !uploadError" class="success-message">
+          <i class="success-icon">✅</i>
+          Document processed successfully!
+          <span class="confidence-score">
+            Confidence: {{ getRoundedConfidence(extractedData.confidence * 100) }}%
+          </span>
+          <button type="button" class="link-btn" (click)="showExtractedDataModal()">
+            View extracted data
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Section -->
+  <div class="form-section">
+    <form [formGroup]="billOfLadingForm" (ngSubmit)="onSubmit()" class="bol-form">
+
+      <div class="form-header">
+        <h3>Bill of Lading Information</h3>
+      </div>
+
+      <!-- Basic Information Section -->
+      <div class="form-section-header">
+        <h4>Document Information</h4>
+      </div>
+      <div class="form-grid compact-form">
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="blNumber" formControlName="blNumber" placeholder=""
+              [class.invalid]="isFieldInvalid('blNumber')" class="form-control custom-input-field sm">
+            <label for="blNumber" class="input-label">B/L Number</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('blNumber')">
+            {{ getFieldError('blNumber') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="date" id="dateOfIssue" formControlName="dateOfIssue"
+              [class.invalid]="isFieldInvalid('dateOfIssue')" class="form-control custom-input-field sm">
+            <label for="dateOfIssue" class="input-label">Date of Issue</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('dateOfIssue')">
+            {{ getFieldError('dateOfIssue') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="placeOfIssue" formControlName="placeOfIssue" placeholder=""
+              [class.invalid]="isFieldInvalid('placeOfIssue')" class="form-control custom-input-field sm">
+            <label for="placeOfIssue" class="input-label">Place of Issue</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('placeOfIssue')">
+            {{ getFieldError('placeOfIssue') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="freightTerms" formControlName="freightTerms" placeholder=""
+              [class.invalid]="isFieldInvalid('freightTerms')" class="form-control custom-input-field sm">
+            <label for="freightTerms" class="input-label">Freight Terms</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('freightTerms')">
+            {{ getFieldError('freightTerms') }}
+          </div>
+        </aside>
+      </div>
+
+      <!-- Parties Section -->
+      <div class="form-section-header">
+        <h4>Parties Information</h4>
+      </div>
+      <div class="form-grid compact-form">
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="shipper" formControlName="shipper" placeholder=""
+              [class.invalid]="isFieldInvalid('shipper')" class="form-control custom-input-field sm">
+            <label for="shipper" class="input-label">Shipper *</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('shipper')">
+            {{ getFieldError('shipper') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <textarea id="shipperAddress" formControlName="shipperAddress" placeholder="" rows="1"
+              [class.invalid]="isFieldInvalid('shipperAddress')" class="form-control custom-input-field sm dofi-h-38"></textarea>
+            <label for="shipperAddress" class="input-label">Shipper Address</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('shipperAddress')">
+            {{ getFieldError('shipperAddress') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="consignee" formControlName="consignee" placeholder=""
+              [class.invalid]="isFieldInvalid('consignee')" class="form-control custom-input-field sm">
+            <label for="consignee" class="input-label">Consignee *</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('consignee')">
+            {{ getFieldError('consignee') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <textarea id="consigneeAddress" formControlName="consigneeAddress" placeholder="" rows="2"
+              [class.invalid]="isFieldInvalid('consigneeAddress')" class="form-control custom-input-field sm dofi-h-38"></textarea>
+            <label for="consigneeAddress" class="input-label">Consignee Address</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('consigneeAddress')">
+            {{ getFieldError('consigneeAddress') }}
+          </div>
+        </aside>
+      </div>
+
+      <aside class="full-width compact-form">
+        <div class="custom-form-group">
+          <input type="text" id="notifyParty" formControlName="notifyParty" placeholder=""
+            [class.invalid]="isFieldInvalid('notifyParty')" class="form-control custom-input-field sm">
+          <label for="notifyParty" class="input-label">Notify Party</label>
+        </div>
+        <div class="error-text" *ngIf="isFieldInvalid('notifyParty')">
+          {{ getFieldError('notifyParty') }}
+        </div>
+      </aside>
+
+      <!-- Ports & Places Section -->
+      <div class="form-section-header">
+        <h4>Ports & Places</h4>
+      </div>
+      <div class="form-grid compact-form">
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="portOfLoading" formControlName="portOfLoading" placeholder=""
+              [class.invalid]="isFieldInvalid('portOfLoading')" class="form-control custom-input-field sm">
+            <label for="portOfLoading" class="input-label">Port of Loading *</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('portOfLoading')">
+            {{ getFieldError('portOfLoading') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="portOfDischarge" formControlName="portOfDischarge"
+              placeholder="" [class.invalid]="isFieldInvalid('portOfDischarge')"
+              class="form-control custom-input-field sm">
+            <label for="portOfDischarge" class="input-label">Port of Discharge *</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('portOfDischarge')">
+            {{ getFieldError('portOfDischarge') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="placeOfReceipt" formControlName="placeOfReceipt" placeholder=""
+              [class.invalid]="isFieldInvalid('placeOfReceipt')" class="form-control custom-input-field sm">
+            <label for="placeOfReceipt" class="input-label">Place of Receipt</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('placeOfReceipt')">
+            {{ getFieldError('placeOfReceipt') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="placeOfDelivery" formControlName="placeOfDelivery" placeholder=""
+              [class.invalid]="isFieldInvalid('placeOfDelivery')" class="form-control custom-input-field sm">
+            <label for="placeOfDelivery" class="input-label">Place of Delivery</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('placeOfDelivery')">
+            {{ getFieldError('placeOfDelivery') }}
+          </div>
+        </aside>
+      </div>
+
+      <!-- Vessel Information -->
+      <div class="form-section-header">
+        <h4>Vessel Information</h4>
+      </div>
+      <aside class="full-width compact-form">
+        <div class="custom-form-group">
+          <input type="text" id="vesselVoyage" formControlName="vesselVoyage" placeholder=""
+            [class.invalid]="isFieldInvalid('vesselVoyage')" class="form-control custom-input-field sm">
+          <label for="vesselVoyage" class="input-label">Vessel/Voyage *</label>
+        </div>
+        <div class="error-text" *ngIf="isFieldInvalid('vesselVoyage')">
+          {{ getFieldError('vesselVoyage') }}
+        </div>
+      </aside>
+
+      <!-- Cargo Information -->
+      <div class="form-section-header">
+        <h4>Cargo Information</h4>
+      </div>
+      <div class="form-grid compact-form">
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="cargoDetails" formControlName="cargoDetails" placeholder=""
+              [class.invalid]="isFieldInvalid('cargoDetails')" class="form-control custom-input-field sm">
+            <label for="cargoDetails" class="input-label">Cargo Details *</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('cargoDetails')">
+            {{ getFieldError('cargoDetails') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="cargoDescription" formControlName="cargoDescription" placeholder=""
+              [class.invalid]="isFieldInvalid('cargoDescription')" class="form-control custom-input-field sm">
+            <label for="cargoDescription" class="input-label">Cargo Description</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('cargoDescription')">
+            {{ getFieldError('cargoDescription') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="numberOfPackages" formControlName="numberOfPackages" placeholder=""
+              [class.invalid]="isFieldInvalid('numberOfPackages')" class="form-control custom-input-field sm">
+            <label for="numberOfPackages" class="input-label">Number of Packages</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('numberOfPackages')">
+            {{ getFieldError('numberOfPackages') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="packageType" formControlName="packageType" placeholder=""
+              [class.invalid]="isFieldInvalid('packageType')" class="form-control custom-input-field sm">
+            <label for="packageType" class="input-label">Package Type</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('packageType')">
+            {{ getFieldError('packageType') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="grossWeight" formControlName="grossWeight" placeholder=""
+              [class.invalid]="isFieldInvalid('grossWeight')" class="form-control custom-input-field sm">
+            <label for="grossWeight" class="input-label">Gross Weight</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('grossWeight')">
+            {{ getFieldError('grossWeight') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="measurement" formControlName="measurement" placeholder=""
+              [class.invalid]="isFieldInvalid('measurement')" class="form-control custom-input-field sm">
+            <label for="measurement" class="input-label">Measurement</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('measurement')">
+            {{ getFieldError('measurement') }}
+          </div>
+        </aside>
+      </div>
+
+      <!-- Container Information -->
+      <div class="form-section-header">
+        <h4>Container Information</h4>
+      </div>
+      <div class="form-grid compact-form">
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="containerDetails" formControlName="containerDetails" placeholder=""
+              [class.invalid]="isFieldInvalid('containerDetails')" class="form-control custom-input-field sm">
+            <label for="containerDetails" class="input-label">Container Details *</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('containerDetails')">
+            {{ getFieldError('containerDetails') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="consolNumber" class="form-control custom-input-field sm"
+              formControlName="consolNumber" placeholder="" [class.invalid]="isFieldInvalid('consolNumber')">
+            <label for="consolNumber" class="input-label">Consol Number</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('consolNumber')">
+            {{ getFieldError('consolNumber') }}
+          </div>
+        </aside>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-light btn-sm " (click)="clearForm()">
+          Clear Form
+        </button>
+        <button type="submit" class="btn btn-info btn-sm" [disabled]="billOfLadingForm.invalid">
+          Save Bill of Lading
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Extracted Data Modal -->
+  <div id="extractedDataModal" class="modal" *ngIf="extractedData">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>Extracted Data Details</h4>
+        <span class="close" (click)="closeExtractedDataModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="confidence-display">
+          <div class="confidence-item">
+            <strong>Processing Confidence:</strong>
+            <span class="confidence-badge" [class]="extractedData.confidence > 0.7 ? 'high' : 'low'">
+              {{ getRoundedConfidence(extractedData.confidence * 100) }}%
+            </span>
+          </div>
+        </div>
+
+        <div class="structured-data">
+          <h5>Structured Extracted Data:</h5>
+          <div class="data-sections">
+
+            <!-- Basic Information -->
+            <div class="data-section"
+              *ngIf="extractedData.blNumber || extractedData.dateOfIssue || extractedData.placeOfIssue">
+              <h6>Document Information</h6>
+              <div class="data-item" *ngIf="extractedData.blNumber">
+                <strong>B/L Number:</strong> {{ extractedData.blNumber }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.dateOfIssue">
+                <strong>Date of Issue:</strong> {{ extractedData.dateOfIssue }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.placeOfIssue">
+                <strong>Place of Issue:</strong> {{ extractedData.placeOfIssue }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.freightTerms">
+                <strong>Freight Terms:</strong> {{ extractedData.freightTerms }}
+              </div>
+            </div>
+
+            <!-- Parties -->
+            <div class="data-section">
+              <h6>Parties</h6>
+              <div class="data-item" *ngIf="extractedData.shipper">
+                <strong>Shipper:</strong> {{ extractedData.shipper }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.shipperAddress">
+                <strong>Shipper Address:</strong> {{ extractedData.shipperAddress }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.consigneeAddress">
+                <strong>Consignee Address:</strong> {{ extractedData.consigneeAddress }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.notifyParty">
+                <strong>Notify Party:</strong> {{ extractedData.notifyParty }}
+              </div>
+            </div>
+
+            <!-- Ports and Places -->
+            <div class="data-section">
+              <h6>Ports & Places</h6>
+              <div class="data-item" *ngIf="extractedData.portOfLoading">
+                <strong>Port of Loading:</strong> {{ extractedData.portOfLoading }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.portOfDischarge">
+                <strong>Port of Discharge:</strong> {{ extractedData.portOfDischarge }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.placeOfReceipt">
+                <strong>Place of Receipt:</strong> {{ extractedData.placeOfReceipt }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.placeOfDelivery">
+                <strong>Place of Delivery:</strong> {{ extractedData.placeOfDelivery }}
+              </div>
+            </div>
+
+            <!-- Vessel -->
+            <div class="data-section" *ngIf="extractedData.vesselVoyage">
+              <h6>Vessel Information</h6>
+              <div class="data-item">
+                <strong>Vessel/Voyage:</strong> {{ extractedData.vesselVoyage }}
+              </div>
+            </div>
+
+            <!-- Cargo -->
+            <div class="data-section">
+              <h6>Cargo Information</h6>
+              <div class="data-item" *ngIf="extractedData.cargoDetails">
+                <strong>Cargo Details:</strong> {{ extractedData.cargoDetails }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.cargoDescription">
+                <strong>Cargo Description:</strong> {{ extractedData.cargoDescription }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.numberOfPackages">
+                <strong>Number of Packages:</strong> {{ extractedData.numberOfPackages }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.packageType">
+                <strong>Package Type:</strong> {{ extractedData.packageType }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.grossWeight">
+                <strong>Gross Weight:</strong> {{ extractedData.grossWeight }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.measurement">
+                <strong>Measurement:</strong> {{ extractedData.measurement }}
+              </div>
+            </div>
+
+            <!-- Container -->
+            <div class="data-section">
+              <h6>Container Information</h6>
+              <div class="data-item" *ngIf="extractedData.containerDetails">
+                <strong>Container Details:</strong> {{ extractedData.containerDetails }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.consolNumber">
+                <strong>Consol Number:</strong> {{ extractedData.consolNumber }}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="extracted-text" *ngIf="extractedData.extractedText">
+          <h5>Raw Extracted Text (Preview):</h5>
+          <pre class="text-preview">{{ extractedData.extractedText }}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -8,6 +8,8 @@ import {
   NgbDateParserFormatter,
   NgbActiveModal,
   NgbPaginationModule,
+  NgbDropdownModule,
+  
 } from '@ng-bootstrap/ng-bootstrap';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -36,6 +38,7 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { LoadingPlanEntryComponent } from '../../loading-plan/loading-plan-entry/loading-plan-entry.component';
+import { MasterDocumentUploadComponent } from '../../master-document-upload/master-document-upload.component';
 
 @Component({
   selector: 'app-master-job-entry',
@@ -63,7 +66,8 @@ import { LoadingPlanEntryComponent } from '../../loading-plan/loading-plan-entry
     OnlyTextDirective,
     TextWithNumbersDirective,
     RouterModule,
-    NgbPaginationModule
+    NgbPaginationModule,
+    NgbDropdownModule
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrls: ['./master-job-entry.component.scss'],
@@ -75,6 +79,7 @@ import { LoadingPlanEntryComponent } from '../../loading-plan/loading-plan-entry
   ],
 })
 export class MasterJobEntryComponent implements OnInit, OnDestroy {
+
   private destroy$ = new Subject<void>();
   private vesselSearchSubject = new Subject<{POL: string | number, POD: string | number, MovementType: string}>();
   private isLoadingVessels = false;
@@ -149,15 +154,13 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
   containerActivityData: any[] = [];
   containerActivityResetTrigger = false;
   currentContainerActivityFormValue: any = null;
-
+  pdfModel:any
   // Shipment related variable declarations
   attachedBookings : FormArray;
   slicedAttachedBookings : any[] = [];
   page = 1;
   pageSize = 5;
   totalLengthOfAttachedBookings : number = 0;
-  
-
   
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
@@ -231,7 +234,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
 
   @ViewChild('containerModal') containerModal!: TemplateRef<any>;
   @ViewChild('productModal') productModal!: TemplateRef<any>;
-  
+  @ViewChild('masterDocumentUploadComponent') MasterDocumentUploadComponent!: TemplateRef<any>;
   selectedTab = 'Master';
   selectedTab1 = 'Product';
 
@@ -346,7 +349,13 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
     this.totalLengthOfAttachedBookings = this.attachedBookings.length;
     this.updateAttachedBookingsPagination();
   }
-
+  uploadPDF() {
+    this.modalService.open(MasterDocumentUploadComponent,{
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
+  }
   initForm() {
     this.masterJobForm = this.fb.group({
       // Master Job fields
