@@ -259,6 +259,13 @@ auditLogs: any[] = []; // Stores audit logs
     { id: 8, name: 'CY-FO' },
   ];
 
+  modeoftransport=[
+    {id:1,name:"Railway"},
+    {id:2,name:"Flight"},
+    {id:3,name:"Road"},
+    {id:4,name:"Vessel"}
+  ]
+ 
   modeOfReleaseType = [
     { id: 1, name: 'Original' },
     { id: 2, name: 'Sea Way BL' },
@@ -269,6 +276,7 @@ auditLogs: any[] = []; // Stores audit logs
   tabs = [
     { name: 'Shipment', icon: 'fas fa-ship' },
     { name: 'Product', icon: 'fas fa-box' },
+    { name: 'Cargo', icon: 'fas fa-boxes' },
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
@@ -277,7 +285,6 @@ auditLogs: any[] = []; // Stores audit logs
     { name: 'Mail', icon: 'fas fa-envelope' },
     { name: 'Milestone', icon: 'fas fa-flag-checkered' },
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
-    // { name: 'Cargo', icon: 'fas fa-boxes' },
   ];
 
   // Mail content
