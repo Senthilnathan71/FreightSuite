@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { NgbActiveModal, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -26,7 +26,7 @@ import html2canvas from 'html2canvas';
     FeatherModule,
     FormsModule,
     PreventMultiClickDirective,
-    ReactiveFormsModule,
+    ReactiveFormsModule
   ],
   templateUrl: './follow-up.component.html',
   styleUrl: './follow-up.component.scss',
@@ -65,7 +65,7 @@ export class FollowUpComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private activeModal: NgbActiveModal,
+    // private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
     private masterService: MasterService
   ) {}
@@ -164,7 +164,7 @@ export class FollowUpComponent implements OnInit {
         (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
-            this.activeModal.close(resp);
+            // this.activeModal.close(resp);
           } else {
             this.appSettingService.showError(resp.message);
           }
@@ -181,7 +181,7 @@ export class FollowUpComponent implements OnInit {
         (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
-            this.activeModal.close(resp);
+            // this.activeModal.close(resp);
           } else {
             this.appSettingService.showError(resp.message);
           }
@@ -242,6 +242,6 @@ private async generatePdfFromHtml(html: string): Promise<File> {
   }
 
   closeModal(): void {
-    this.activeModal.dismiss();
+    // this.activeModal.dismiss();
   }
 }

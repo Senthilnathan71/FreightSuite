@@ -1,0 +1,2327 @@
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+<div class="modern-booking-workspace ">
+  <!-- Smart Header with Dynamic Actions -->
+  <div class="smart-header">
+    <div class="header-brand">
+      <div class="brand-icon">
+        <i class="fas fa-anchor"></i>
+      </div>
+      <div class="brand-content">
+        <h1 class="workspace-title">House Job</h1>
+      </div>
+      @if(isEditMode){
+      <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+        <i class="fas fs-6 fa-info-circle"></i>
+      </a>
+      }
+    </div>
+
+    <div class="header-actions">
+      <div class="action-group" *ngIf="isEditMode">
+        <!-- <button class="action-btn action-secondary" (click)="openAuditLogs(auditLogModal)">
+          <i class="fas fa-history fs-2"></i>
+          <span>Report</span>
+        </button> -->
+        <button class="table-action-btn print" (click)="reportAndEmailModel(reportModel)">
+          <i class="fas fa-print"></i> Print
+        </button>
+      </div>
+      <div class="action-group" *ngIf="!isEditMode">
+        <button class="action-btn action-secondary" (click)="openUploadModal()">
+          <i class="fas fa-upload fs-2"></i>
+          <span>Upload</span>
+        </button>
+      </div>
+      <div class="action-group" *ngIf="isEditMode">
+        <button class="action-btn action-secondary" (click)="openAuditLogs(auditLogModal)">
+          <i class="fas fa-history fs-2"></i>
+          <span>Logs</span>
+        </button>
+      </div>
+      <div class="action-group">
+        <button class="action-btn action-secondary" (click)="navigateBack()">
+          <i class="fas fa-chevron-left fs-2"></i>
+          <span>Back</span>
+        </button>
+      </div>
+      <div class="action-group">
+        <button class="action-btn action-warning" (click)="resetForm()">
+          <i class="fas fa-sync-alt fs-2"></i>
+          <span>Reset</span>
+        </button>
+      </div>
+      <div class="action-group primary">
+        <button class="action-btn action-success" (click)="onSubmit()">
+          <i class="fas fa-save fs-2"></i>
+          <span>Save</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Smart Quick Form -->
+  <div class="quick-form-panel compact-form" [formGroup]="bookingForm">
+
+    <div class="quick-form-grid " [class.expanded]="isQuickFormExpanded">
+      <div class="smart-field-group">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+            formControlName="BookingNo">
+          <label for="text-input" [ngClass]="{
+          'input-label': true,
+          'bg-transparent': !b['BookingNo']?.getRawValue()
+           }">Booking No <span class="text-danger"></span></label>
+        </div>
+      </div>
+      <div class="smart-field-group">
+        <div class=" custom-form-group custom-form-group-select">
+          <div class="input-group ">
+            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
+              (click)="d1.toggle()" formControlName="BookingDateTime" [minDate]="minDate"
+              (keydown.arrowDown)="d1.open()" container="body" />
+            <button class="btn bi bi-calendar3 " (click)="d1.toggle()" type="button">
+              <i-feather name="calendar" class="feather-sm"></i-feather></button>
+          </div>
+          <label for="" class="input-label">Booking Date <span class="text-danger">*</span>
+          </label>
+
+        </div>
+      </div>
+      <div class="smart-field-group">
+        <div class="custom-form-group custom-form-group-select">
+          <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
+            class="ng-select" formControlName="DepartmentMasterSid" placeholder="Select Dept"
+            (change)="onDeptChange($event)" appendTo="body">
+          </ng-select>
+          <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
+          @if(bookingForm.get('DepartmentMasterSid')?.touched && bookingForm.get('DepartmentMasterSid')?.invalid){
+          <div class="error-message">
+            @if(bookingForm.get('DepartmentMasterSid')?.hasError('required')){
+            <span>Department name is required</span>
+            }
+          </div>
+          }
+        </div>
+      </div>
+      <div class="smart-field-group">
+        <div class="custom-form-group" >
+          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+            formControlName="HBLNo">
+          <label for="text-input" [ngClass]="{
+            'input-label': true,
+            'bg-transparent': !b['HBLNo']?.getRawValue()
+           }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger"></span></label>
+        </div>
+      </div>
+      <div class="smart-field-group">
+        <aside>
+          <div class="custom-form-group custom-form-group-select">
+            @if(isEditMode){
+            <ng-select name="status" class="ng-select" formControlName="status" id="text-input" appendTo="body">
+              <ng-option value="Active">Active</ng-option>
+              <ng-option value="Suspended">Suspended</ng-option>
+            </ng-select>
+            } @else {
+            <input type="text" name="status" class="form-control custom-input-field sm" value="Active" id="text-input"
+              disabled>
+            }
+            <label for="text-input" [ngClass]="{
+              'input-label': true,
+              'bg-transparent': !b['status']?.value
+            }">Status <span class="text-danger"></span></label>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="quick-form-grid d-none" [class.expanded]="isQuickFormExpanded">
+
+
+
+
+      <!-- Expandable Fields -->
+      <div class="expandable-fields" *ngIf="isQuickFormExpanded">
+        <div class="smart-field-group">
+          <label class="smart-label">Shipment No.</label>
+          <div class="smart-input-wrapper">
+            <input type="text" class="smart-input" placeholder="Enter shipment number">
+            <div class="input-status status-pending">DRAFT</div>
+          </div>
+        </div>
+
+        <div class="smart-field-group">
+          <label class="smart-label">Status</label>
+          <div class="smart-select-wrapper">
+            <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="name" class="smart-select"
+              placeholder="Select status">
+            </ng-select>
+            <div class="select-icon"><i class="fas fa-info-circle"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modern Navigation Pills -->
+  <div class="nav-pills-container">
+    <div class="nav-pills">
+      <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+        (click)="selectTab(tab.name)">
+        <div class="pill-icon">
+          <i [class]="tab.icon"></i>
+        </div>
+        <span class="pill-label">{{ tab.name }}</span>
+        <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <button class="nav-action-btn" (click)="toggleMinimizeMaximize()">
+        <i class="fas fa-expand"></i>
+      </button>
+      <button class="nav-action-btn">
+        <i class="fas fa-cog"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dynamic Content Area -->
+  <div class="content-workspace">
+
+    <!-- Shipment Details Tab -->
+    <div class="workspace-content" *ngIf="selectedTab === 'Shipment'">
+      <div class="content-layout">
+
+        <!-- Two Column Layout for Party Info and Vessel Details -->
+        <div class="two-column-layout">
+
+          <!-- Party Information Card - Left Half -->
+          <div class="info-card">
+            <div class="card-header">
+              <div class="header-content">
+                <h4 class="card-title">
+                  <i class="fas fa-users fs-4"></i>
+                  Party Information
+                </h4>
+                <!-- <button class="card-action-btn">
+                  <i class="fas fa-plus"></i>
+                </button> -->
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="col-md-12">
+
+
+                <div class="row compact-form" [formGroup]="bookingForm">
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                        class="ng-select" formControlName="CustomerMasterSid" placeholder="Select Customer"
+                        appendTo="body" (change)="onCustomerChange($event)">
+                      </ng-select>
+                      <label for="text-input" class="input-label">Customer <span class="text-danger">*</span></label>
+                      @if(bookingForm.get('CustomerMasterSid')?.touched &&
+                      bookingForm.get('CustomerMasterSid')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('CustomerMasterSid')?.hasError('required')){
+                        <span>Customer name is required</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </aside>
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="customerBranchList" bindLabel="Address" bindValue="Address" class="ng-select"
+                        formControlName="CustomerAddress" placeholder="Select Customer Address"
+                        (change)="onCustomerBranchChange($event)" appendTo="body">
+                      </ng-select>
+                      <label for="text-input" class="input-label">Customer Address <span
+                          class="text-danger">*</span></label>
+                      @if(bookingForm.get('CustomerAddress')?.touched && bookingForm.get('CustomerAddress')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('CustomerAddress')?.hasError('required')){
+                        <span>Customer Address is required</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </aside>
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="filteredShipperList" bindLabel="CustomerName" bindValue="CustomerName"
+                        class="ng-select" formControlName="ShipperName" placeholder="Select Shipper"
+                        (change)="setAddress('ShipperAddress',$event) ; onShipperChange($event)"
+                        (clear)="onShipperChange()" appendTo="body">
+                        <ng-template ng-option-tmp let-item="item">
+                          <div>
+                            <strong>{{ item.CustomerName }}</strong><br>
+                            <small>{{ item.CustomerAddress1 }}</small>
+                          </div>
+                        </ng-template>
+                      </ng-select>
+                      <label for="text-input" class="input-label">Shipper <span class="text-danger">*</span></label>
+                      @if(bookingForm.get('ShipperName')?.touched && bookingForm.get('ShipperName')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('ShipperName')?.hasError('required')){
+                        <span>Shipper Name is required</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </aside>
+
+
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group" style="margin-top: 10px;">
+                      <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="ShipperAddress">
+                      <label for="text-input" class="input-label">Shipper Address <span
+                          class="text-danger">*</span></label>
+                      @if(bookingForm.get('ShipperAddress')?.touched && bookingForm.get('ShipperAddress')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('ShipperAddress')?.hasError('required')){
+                        <span>Shipper Address is required</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="filteredConsigneeList" bindLabel="CustomerName" bindValue="CustomerName"
+                        class="ng-select" formControlName="ConsigneeName" placeholder="Select Consignee"
+                        (change)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)"
+                        (clear)="onShipperChange()" appendTo="body">
+                        <ng-template ng-option-tmp let-item="item">
+                          <div>
+                            <strong>{{ item.CustomerName }}</strong><br>
+                            <small>{{ item.CustomerAddress1 }}</small>
+                          </div>
+                        </ng-template>
+                      </ng-select>
+                      <label for="text-input" class="input-label">Consignee <span class="text-danger">*</span></label>
+                      @if(bookingForm.get('ConsigneeName')?.touched && bookingForm.get('ConsigneeName')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('ConsigneeName')?.hasError('required')){
+                        <span>Consignee Name is required</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </aside>
+
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group" style="margin-top: 10px;">
+                      <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="ConsigneeAddress">
+                      <label for="text-input" class="input-label">Consignee Address <span
+                          class="text-danger">*</span></label>
+                      @if(bookingForm.get('ConsigneeAddress')?.touched && bookingForm.get('ConsigneeAddress')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('ConsigneeAddress')?.hasError('required')){
+                        <span>Consignee Address is required</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName"
+                        class="ng-select" formControlName="Notify" placeholder="Select Notify"
+                        (change)="setAddress('NotifyAddress',$event)" appendTo="body">
+                        <ng-template ng-option-tmp let-item="item">
+                          <div>
+                            <strong>{{ item.CustomerName }}</strong><br>
+                            <small>{{ item.CustomerAddress1 }}</small>
+                          </div>
+                        </ng-template>
+                      </ng-select>
+                      <label for="text-input" class="input-label">Notify<span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group" style="margin-top: 10px;">
+                      <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="NotifyAddress">
+                      <label for="text-input" class="input-label">Notify Address<span
+                          class="text-danger"></span></label>
+                    </div>
+                  </aside>
+
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid" class="ng-select"
+                        formControlName="DestinationAgent" placeholder="Select Agent"
+                        (change)="setAddress('AgentAddress',$event)" appendTo="body">
+
+                        <ng-template ng-option-tmp let-item="item">
+                          <div>
+                            <strong>{{ item.CustomerName }} - {{ item.agentCountry }}</strong><br>
+                            <small>{{ item.CustomerAddress1 }}</small>
+                          </div>
+                        </ng-template>
+                      </ng-select>
+
+                      <label for="text-input" class="input-label">Destination Agent <span
+                          class="text-danger">*</span></label>
+                      @if(bookingForm.get('AgentName')?.touched && bookingForm.get('AgentName')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('AgentName')?.hasError('required')){
+                        <span>Destination Agent is required</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </aside>
+
+
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group">
+                      <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="AgentAddress">
+                      <label for="text-input" class="input-label">Agent Address<span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="carrierList" bindLabel="CustomerName" bindValue="CustomerName"
+                        class="ng-select" formControlName="CarrierName" placeholder="Select Carrier" appendTo="body">
+                      </ng-select>
+                      <label for="text-input" class="input-label">Carrier Name<span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="salesmanList" bindLabel="userName" bindValue="UserMasterSid" class="ng-select"
+                        formControlName="SalesmanSid" placeholder="Select Salesman" appendTo="body">
+                      </ng-select>
+                      <label for="text-input" class="input-label">Sales Person<span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group">
+                      <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                        [value]="quotationNumber" disabled>
+                      <label for="text-input" [ngClass]="{
+                        'input-label': true,
+                         'bg-transparent': !b['QuotationHeaderSid']?.getRawValue()
+                      }">Quotation No<span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group">
+                      <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                        formControlName="MBLNo">
+                      <label for="text-input" [ngClass]="{
+                        'input-label': true,
+                        'bg-transparent': !b['MBLNo']?.getRawValue()
+                      }">{{ selectedFCLLCL === 'AIR' ? 'MAWBL No' : 'MBL No' }}<span
+                          class="text-danger"></span></label>
+                    </div>
+                  </aside>
+                  <div class="col-md-6">
+                    <div class=" custom-form-group custom-form-group-select">
+                      <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="MBLDate"
+                          ngbDatepicker #d2="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d2.open()"
+                          (click)="d2.toggle()"container="body" />
+                        <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
+                          <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                      </div>
+                      <label for="shipmentDateExpected" class="input-label">{{selectedFCLLCL === 'AIR' ? 'MAWBL Date' :
+                        'MBL Date' }} <span class="text-danger"></span>
+                      </label>
+
+                    </div>
+                  </div>
+                  <aside class="col-md-6" *ngIf="b['ShipmentType']?.value">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="nominationList" bindLabel="name" bindValue="name" class="ng-select" appendTo="body"
+                        formControlName="NominatedBy" placeholder="Select NominatedBy">
+                      </ng-select>
+                      <label for="text-input" class="input-label">Nominated By <span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vessel & Route Card - Right Half -->
+          <div class="info-card">
+            <div class="card-header">
+              <div class="header-content">
+                <h4 class="card-title">
+                  <i class="fas fa-ship fs-4"></i>
+                  Vessel & Route
+                </h4>
+                <!-- <div class="card-status">
+                  <span class="status-badge status-draft">Draft</span>
+                </div> -->
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="col-md-12">
+                <div class="row compact-form" [formGroup]="bookingForm">
+
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
+                        formControlName="POO" appendTo="body" placeholder="Select POO">
+                      </ng-select>
+                      <label for="text-input" class="input-label">POO<span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="filteredPOL" bindLabel="PortName" bindValue="PortCode" class="ng-select"
+                        formControlName="POL" appendTo="body" placeholder="Select POL"
+                        (change)="handlePOLChange($event) ; onVesselChange($event)">
+                      </ng-select>
+                      <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
+                      @if(bookingForm.get('POL')?.touched && bookingForm.get('POL')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('POL')?.hasError('required')){
+                        <span>POL is required</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="filteredPOD" bindLabel="PortName" bindValue="PortCode" class="ng-select"
+                        formControlName="POD" appendTo="body"
+                        (change)="handlePODChange($event) ; onVesselChange($event)" placeholder="Select POD">
+                      </ng-select>
+                      <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
+                      @if(bookingForm.get('POD')?.touched && bookingForm.get('POD')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('POD')?.hasError('required')){
+                        <span>POD is required</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
+                        formControlName="FPD" appendTo="body" placeholder="Select FPD"
+                        (change)="handleFPODChange($event)">
+                      </ng-select>
+                      <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group">
+                      <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                        formControlName="POLTerminal">
+                      <label for="text-input" class="input-label">POL Terminal<span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group">
+                      <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                        formControlName="PODTerminal">
+                      <label for="text-input" class="input-label">POD Terminal<span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="headerVesselList" bindLabel="VesselName" bindValue="VesselName"
+                        class="ng-select" formControlName="VesselName" placeholder="Select Vessel" appendTo="body"
+                        (change)="onVesselChange($event)">
+                      </ng-select>
+                      <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo" class="ng-select"
+                        appendTo="body" formControlName="VoyageNo" placeholder="Select Voyage No"
+                        (change)="onVoyageChange($event)">
+                        <ng-template ng-option-tmp let-item="item">
+                          <!-- Voyage Number -->
+                          <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
+                            {{ item.VoyageNo }}
+                          </div>
+
+                          <!-- Ports Row -->
+                          <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; ">
+
+                            <!-- POL Section -->
+                            <div style="flex: 1; text-align: left;">
+                              <!-- <div style="font-weight: 800; margin-bottom: 2px;">POL: {{ item.POL?.PortName || 'N/A' }}</div> -->
+                              <div>ETA: {{ item.POL?.ETD | formatDate }}</div>
+                              <!-- <div>ETD: {{ item.POL?.ETD | date:'dd-MMM-yyyy' }}</div> -->
+                            </div>
+
+                            <!-- POD Section -->
+                            <div style="flex: 1; text-align: right;">
+                              <!-- <div style="font-weight: 800; margin-bottom: 2px;">POD: {{ item.POD?.PortName || 'N/A' }}</div> -->
+                              <!-- <div>ETA: {{ item.POD?.ETA | date:'dd-MMM-yyyy' }}</div> -->
+                              <div>ETD: {{ item.POD?.ETA | formatDate }}</div>
+                            </div>
+
+                          </div>
+                        </ng-template>
+
+                      </ng-select>
+                      <!-- <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageMasterHeaderSid" class="ng-select"
+                        appendTo="body" formControlName="VoyageNo" placeholder="Select Voyage No" (change)="onVoyageChange($event)">
+                  
+                        <ng-template ng-option-tmp let-item="item">
+                          <div>
+                            <strong>{{ item.VoyageNo }}</strong>
+                          </div>
+                  
+                          <div *ngIf="item.POL && item.POD" style="font-size: 12px;">
+                            ETA: {{ item.POL.ETA | date:'dd-MMM-yyyy' }} |
+                            ETD: {{ item.POD.ETD | date:'dd-MMM-yyyy' }}
+                          </div>
+                        </ng-template>
+                      </ng-select>   -->
+                      <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+                  <div class="col-md-6">
+                    <div class=" custom-form-group custom-form-group-select">
+                      <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETD"
+                          container="body" [minDate]="b['ETA']?.value" ngbDatepicker #d5="ngbDatepicker"
+                          (keydown.arrowDown)="d5.open()" (click)="d5.toggle()"/>
+                        <button class="btn  bi bi-calendar3 " (click)="d5.toggle()" type="button">
+                          <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                      </div>
+                      <label for="shipmentDateExpected" class="input-label">ETD <span class="text-danger"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class=" custom-form-group custom-form-group-select">
+                      <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETA"
+                          container="body" ngbDatepicker #d4="ngbDatepicker" [minDate]="minDate"
+                          (keydown.arrowDown)="d4.open()" (click)="d4.toggle()" />
+                        <button class="btn bi bi-calendar3 " (click)="d4.toggle()" type="button">
+                          <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                      </div>
+                      <label for="shipmentDateExpected" class="input-label">ETA <span class="text-danger"></span>
+                      </label>
+                    </div>
+                  </div>
+
+
+
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="incoList" bindLabel="IncoName" bindValue="IncoName" class="ng-select"
+                        appendTo="body" formControlName="IncoTerms" placeholder="Select IncoTerms">
+                      </ng-select>
+                      <label for="text-input" class="input-label">Inco Terms <span class="text-danger">*</span></label>
+                      @if(bookingForm.get('IncoTerms')?.touched && bookingForm.get('IncoTerms')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('IncoTerms')?.hasError('required')){
+                        <span>TOS is required</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </aside>
+
+
+                  <aside class="col-md-6">
+                    <div class=" custom-form-group custom-form-group-select">
+                      <div class="input-group">
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="DoValid"
+                          [minDate]="minDate" ngbDatepicker #d6="ngbDatepicker" (keydown.arrowDown)="d6.open()"
+                         container="body" (click)="d6.toggle()" />
+                        <button class="btn  bi bi-calendar3 " (click)="d6.toggle()" type="button">
+                          <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                      </div>
+                      <label for="shipmentDateExpected" class="input-label">Do Validity <span
+                          class="text-danger"></span>
+                      </label>
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="freightTermsList" bindLabel="name" bindValue="name" class="ng-select"
+                        appendTo="body" placeholder="Select Freight Terms" formControlName="FreightTerms">
+                      </ng-select>
+                      <label for="text-input" class="input-label">Freight PP/CC<span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-3 d-flex align-items-center mx-0">
+                    <div class="form-check form-check-inline p-0">
+                      <div class="form-check d-flex align-items-center">
+                        <input type="checkbox" id="" class="focus-ring form-check-input sm" formControlName="Coload"
+                          (keydown.enter)="toggleHeaderCheckboxes($event,'Coload')">
+                        <label for="" class="form-check-label sm">Co Load <span class="text-danger"></span></label>
+                      </div>
+                    </div>
+                  </aside>
+                  <aside class="col-md-3 d-flex align-items-center mx-0">
+                    <div class="form-check form-check-inline p-0">
+                      <div class="form-check d-flex align-items-center">
+                        <input type="checkbox" id="" class="focus-ring form-check-input sm" formControlName="ShipmentType"
+                          (keydown.enter)="toggleHeaderCheckboxes($event,'Nominated')">
+                        <label for="" class="form-check-label sm">Nominated <span class="text-danger"></span></label>
+                      </div>
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group">
+                      <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="InternalNote">
+                      <label for="text-input" class="input-label">Internal Note <span
+                          class="text-danger"></span></label>
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-6">
+                    <div class="custom-form-group">
+                      <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="GeneralNote">
+                      <label for="text-input" class="input-label">General Note <span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sidebar Information -->
+        <div class="info-sidebar">
+
+          <!-- Quick Stats -->
+          <div class="stats-widget">
+            <div class="widget-header">
+              <h5 class="widget-title">Booking Summary</h5>
+            </div>
+            @if(selectedFCLLCL === "FCL"){
+            <div class="widget-body">
+              <div class="stat-item">
+                <div class="stat-label">Containers</div>
+                <div class="stat-value">
+                  {{getContainerDisplay()}}
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Gross Weight</div>
+                <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Volume</div>
+                <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Status</div>
+                <div class="stat-value">
+                  <span class="status-badge status-active">{{b['status']?.value}}</span>
+                </div>
+              </div>
+            </div>
+            } @else if(selectedFCLLCL === "LCL"){
+            <div class="widget-body">
+              <div class="stat-item">
+                <div class="stat-label">Gross Weight</div>
+                <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Net Weight</div>
+                <div class="stat-value">{{c['NetWeight']?.value ? c['NetWeight']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Volume</div>
+                <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Status</div>
+                <div class="stat-value">
+                  <span class="status-badge status-active">{{b['status']?.value}}</span>
+                </div>
+              </div>
+            </div>
+            } @else if(selectedFCLLCL === "AIR"){
+            <div class="widget-body">
+              <div class="stat-item">
+                <div class="stat-label">Chargeable Weight</div>
+                <div class="stat-value">{{c['ChargeableWeight']?.value ? c['ChargeableWeight']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Gross Weight</div>
+                <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Volume</div>
+                <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Status</div>
+                <div class="stat-value">
+                  <span class="status-badge status-active">{{b['status']?.value}}</span>
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+
+          <!-- Recent Actions -->
+          <div class="activity-widget">
+            <div class="widget-header">
+              <h5 class="widget-title">Recent Activity</h5>
+            </div>
+            <div class="widget-body">
+              <div class="activity-item">
+                <div class="activity-icon">
+                  <i class="fas fa-plus"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-text">Booking created</div>
+                  <div class="activity-time">2 minutes ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon">
+                  <i class="fas fa-edit"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-text">Customer updated</div>
+                  <div class="activity-time">5 minutes ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Charges Tab -->
+    <div class="workspace-content" [hidden]="selectedTab !== 'Rate'">
+      <app-cost-entry screenName="Booking" [currencyList]="currencyList" [customerList]="customerList"
+        [dataItems]="bookingRateArr" [resetTrigger]="resetTriggerRate" [formData]="currentFormValue"
+        (dataEmitter)="handleRateChange($event)"></app-cost-entry>
+    </div>
+
+    <!-- Other Tabs -->
+    <div class="workspace-content" *ngIf="selectedTab === 'Cargo'">
+      <div class="empty-state d-none">
+        <div class="empty-icon">
+          <i class="fas fa-boxes"></i>
+        </div>
+        <h3 class="empty-title">Cargo Details</h3>
+        <p class="empty-description">Configure cargo information, container details, and package specifications.</p>
+        <button class="empty-action-btn">
+          <i class="fas fa-plus"></i>Add Cargo Details
+        </button>
+      </div>
+      <div class="col-md-12">
+        <div class="row compact-form" [formGroup]="cargoForm">
+
+          <aside class="col-md-4">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select [items]="modeOfCargoType" bindLabel="name" bindValue="name" class="ng-select"
+                formControlName="CargoType" placeholder="Select Cargo Type" appendTo="body">
+              </ng-select>
+              <label for="text-input" class="input-label">Cargo Type<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          @if(selectedFCLLCL === "FCL"){
+          <aside class="col-md-4">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerName"
+                class="ng-select" formControlName="ContainerType" placeholder="Select ContainerType" appendTo="body"
+                (change)="onContainerTypeChange($event)">
+              </ng-select>
+              <label for="text-input" class="input-label">Container Type<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" [onlyNumbers]
+                formControlName="NoofContainers">
+              <label for="text-input" class="input-label">No of Container<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          }
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="gross-weight" placeholder="" class="form-control custom-input-field sm"
+                formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
+                max="9999999.999">
+              <label for="text-input" class="input-label">
+                Gr Weight
+              </label>
+
+              <!-- Validation Messages -->
+              @if ((cargoForm.get('GrossWeight')?.touched || cargoForm.get('GrossWeight')?.dirty) &&
+              cargoForm.get('GrossWeight')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('GrossWeight')?.errors?.['max']) {
+                <span>Gross Weight cannot exceed 9,999,999.999</span>
+                } @else if (cargoForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+
+
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
+                max="9999999.999">
+              <label for="text-input" class="input-label">Net Weight<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((cargoForm.get('NetWeight')?.touched || cargoForm.get('NetWeight')?.dirty) &&
+              cargoForm.get('NetWeight')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('NetWeight')?.errors?.['max']) {
+                <span>Net Weight cannot exceed 9,999,999.999</span>
+                } @else if (cargoForm.get('NetWeight')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"
+                max="9999999.999">
+              <label for="text-input" class="input-label">Volume(CBM)<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((cargoForm.get('Volume')?.touched || cargoForm.get('Volume')?.dirty) &&
+              cargoForm.get('Volume')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('Volume')?.errors?.['max']) {
+                <span>Net Weight cannot exceed 9,999,999.999</span>
+                } @else if (cargoForm.get('Volume')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          @if(selectedFCLLCL === "AIR") {
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="ChargeableWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
+                [DecimalPrecisionAfter]="3" max="9999999.999">
+              <label for="text-input" class="input-label">Chargeable Weight<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((cargoForm.get('ChargeableWeight')?.touched || cargoForm.get('ChargeableWeight')?.dirty) &&
+              cargoForm.get('ChargeableWeight')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('ChargeableWeight')?.errors?.['max']) {
+                <span>Net Weight cannot exceed 9,999,999.999</span>
+                } @else if (cargoForm.get('ChargeableWeight')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          }
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm"
+                formControlName="NoOfPackage" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="0"
+                max="9999999.999">
+              <label for="text-input" class="input-label">No of Pkg<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((cargoForm.get('NoOfPackage')?.touched || cargoForm.get('NoOfPackage')?.dirty) &&
+              cargoForm.get('NoOfPackage')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('NoOfPackage')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 10 digits Number Only</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name" class="ng-select"
+                appendTo="body" placeholder="Select Shipment Terms" formControlName="ShipmentTerms">
+              </ng-select>
+              <label for="" class="input-label">Shipment Terms <span class="text-danger"></span></label>
+            </div>
+          </aside>
+
+          <aside class="col-md-4">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="name" class="ng-select"
+                placeholder="Select Movement Type" formControlName="MovementType" appendTo="body">
+              </ng-select>
+              <label for="" class="input-label">Movement Type <span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select [items]="modeOfTransport" bindLabel="name" bindValue="name"
+                placeholder="Select Mode of Transport" formControlName="ModeOfTransport" appendTo="body">
+
+              </ng-select>
+              <label for="" class="input-label">Mode of Transport <span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-4">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select [items]="stuffingAt" bindLabel="name" bindValue="name" class="ng-select"
+                placeholder="Select StuffingAt" formControlName="StuffingAt" (change)="handleCFSOrYard()
+                " appendTo="body">
+              </ng-select>
+              <label for="text-input" class="input-label">Stuffing at<span class="text-danger"></span></label>
+            </div>
+          </aside>
+
+
+        </div>
+      </div>
+      <div>
+        <div class="table-toolbar">
+          <div class="toolbar-left">
+            <button class="table-action-btn primary" (click)="openProductModal(productModal)">
+              <i class="fas fa-plus"></i> Add Product
+            </button>
+          </div>
+
+          <div class="toolbar-right">
+            <button class="table-action-btn export" (click)="reportProducts()">
+              <i class="fas fa-download fs-2"></i>
+              Export
+            </button>
+            <!-- <button class="table-action-btn print">
+                <i class="fas fa-print"></i> Print
+              </button> -->
+          </div>
+        </div>
+        @if(productDataLength > 0) {
+        <div class="modern-table-wrapper">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th width="10%">Action</th>
+                <th>Commodity</th>
+                <th>Shipping Bill No</th>
+                <th>Date</th>
+                <th>External Pkg</th>
+                <th>No of Pkg</th>
+                <th>Gross Weight</th>
+                <th>Net Wt</th>
+                <th>CBM</th>
+                <th>Cargo Received Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for(product of slicedProductArr ; track product ; let productIndex = $index){
+              <tr class="table-row">
+                <td>
+                  <div class="d-flex align-items-center justify-content-center">
+                    <a class="text-info mx-2" class="link mx-2 ps-3"
+                      (click)="openProductModal(productModal,productIndex,product.value)">
+                      <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                    </a>
+                    <a class="text-danger mx-2 ps-3 border-start"
+                      (click)="deleteBookingProduct(productIndex,product.value.BookingProductSid)">
+                      <i-feather name="trash-2" class="feather-sm"></i-feather>
+                    </a>
+                  </div>
+                </td>
+                <td>{{product.value.ProductName}}</td>
+                <td>{{product.value.ShippingBillNo}}</td>
+                <td>{{product.value.ShippingBillDate | formatDate}}</td>
+                <td>{{product.value.ExternaPkg}}</td>
+                <td>{{product.value.ExternlQty}}</td>
+                <td>{{product.value.GrossWeight}}</td>
+                <td>{{product.value.NetWeight}}</td>
+                <td>{{product.value.Volume}}</td>
+                <td>{{product.value.CargoRecDate | formatDate}}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-2">
+          <ngb-pagination class="d-flex justify-content-end" [collectionSize]="productDataLength" [pageSize]="pageSize"
+            [(page)]="page" (pageChange)="updateProductPagination()">
+          </ngb-pagination>
+        </div>
+        }@else {
+        <div class="col-12">
+          <div class="alert alert-info text-center">No Product added yet.</div>
+        </div>
+        }
+      </div>
+    </div>
+
+
+    <div class="workspace-content" *ngIf="selectedTab === 'Others'">
+      <div class="empty-state d-none">
+        <div class="empty-icon">
+          <i class="fas fa-ellipsis-h"></i>
+        </div>
+        <h3 class="empty-title">Additional Information</h3>
+        <p class="empty-description">Manage additional booking details, special instructions, and custom fields.</p>
+        <button class="empty-action-btn">
+          <i class="fas fa-plus"></i>Add Details
+        </button>
+      </div>
+      <div class="col-md-12">
+        <div class="row compact-form" [formGroup]="otherForm">
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="CustomerRefNo" [textWithNumbers]="20">
+              <label for="text-input" class="input-label">Customer Ref No<span class="text-danger"></span></label>
+              @if((otherForm.get('CustomerRefNo')?.touched || otherForm.get('CustomerRefNo')?.dirty) &&
+              otherForm.get('CustomerRefNo')?.invalid){
+              <div class="text-danger small">
+                @if(otherForm.get('CustomerRefNo')?.hasError('maxlength')){
+                <span>Max 20 Characters allowed</span>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="YardCFS"
+                [textWithNumbers]="20">
+              <label for="text-input" class="input-label">{{YardCFSLabel}}<span class="text-danger"></span></label>
+              @if((otherForm.get('YardCFS')?.touched || otherForm.get('YardCFS')?.dirty) &&
+              otherForm.get('YardCFS')?.invalid){
+              <div class="text-danger small">
+                @if(otherForm.get('YardCFS')?.hasError('maxlength')){
+                <span>Max 20 Characters allowed</span>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select [items]="modeOfReleaseType" bindLabel="name" bindValue="name" class="ng-select"
+                placeholder="Select Release type" formControlName="ReleaseType" appendTo="body">
+              </ng-select>
+              <label for="" class="input-label">Release Type <span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm" formControlName="HBLNo"
+                [textWithNumbers]="20">
+              <label for="text-input" [ngClass]="{
+                        'input-label': true,
+                        'bg-transparent': !o['HBLNo']?.getRawValue()
+                         }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger"></span></label>
+              </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+                placeholder="Select Forwarder" (change)="setAddressOthers('ForwarderAddress',$event)"
+                formControlName="Forwarder" [textWithNumbers]="20" appendTo="body">
+                <ng-template ng-option-tmp let-item="item">
+                  <div>
+                    <strong>{{ item.CustomerName }}</strong><br>
+                    <small>{{ item.CustomerAddress1 }}</small>
+                  </div>
+                </ng-template>
+              </ng-select>
+              <label for="text-input" class="input-label">Forwarder<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="ForwarderAddress" [textWithNumbers]="20">
+              <label for="text-input" class="input-label">Forwarder Address<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+                formControlName="NotifyParty" placeholder="Select Notify" appendTo="body"
+                (change)="setAddressOthers('NotifyPartyAddress',$event)">
+                <ng-template ng-option-tmp let-item="item">
+                  <div>
+                    <strong>{{ item.CustomerName }}</strong><br>
+                    <small>{{ item.CustomerAddress1 }}</small>
+                  </div>
+                </ng-template>
+              </ng-select>
+              <label for="text-input" class="input-label">Notify Party<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="NotifyPartyAddress" [textWithNumbers]="20">
+              <label for="text-input" class="input-label">Notify Address<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+                formControlName="Notify2" placeholder="Select Notify" appendTo="body"
+                (change)="setAddressOthers('NotifyAddress2',$event)">
+                <ng-template ng-option-tmp let-item="item">
+                  <div>
+                    <strong>{{ item.CustomerName }}</strong><br>
+                    <small>{{ item.CustomerAddress1 }}</small>
+                  </div>
+                </ng-template>
+              </ng-select>
+              <label for="text-input" class="input-label">Notify 2<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="NotifyAddress2" [textWithNumbers]="200">
+              <label for="text-input" class="input-label">Notify Address 2<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          @if(b['Coload'].value){
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
+                formControlName="Coloader" placeholder="Select Forwarder" appendTo="body">
+                <ng-template ng-option-tmp let-item="item">
+                  <div>
+                    <strong>{{ item.CustomerName }}</strong><br>
+                    <small>{{ item.CustomerAddress1 }}</small>
+                  </div>
+                </ng-template>
+              </ng-select>
+              <label for="text-input" class="input-label">Coloader<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          }
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="PickupPlace" [textWithNumbers]="200">
+              <label for="text-input" class="input-label">Pick Up Place<span class="text-danger"></span></label>
+            </div>
+          </aside>
+
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="DeliveryPlace" [textWithNumbers]="200">
+              <label for="text-input" class="input-label">Delivery Place<span class="text-danger"></span></label>
+            </div>
+          </aside>
+
+
+          <div class="col-md-3">
+            <div class=" custom-form-group custom-form-group-select">
+              <div class="input-group">
+                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                  formControlName="DeliveryDate" [minDate]="minDate" #d3="ngbDatepicker" (keydown.arrowDown)="d3.open()"
+                  (click)="d3.toggle()" container="body">
+                <button class="btn  bi bi-calendar3" (click)="d3.toggle()" type="button"> <i-feather
+                    name="calendar" class="feather-sm"></i-feather></button>
+              </div>
+              <label for="shipmentDateExpected" class="input-label">Delivery Date <span class="text-danger"></span>
+              </label>
+
+            </div>
+          </div>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="CHAName"
+                [textWithNumbers]="200">
+              <label for="text-input" class="input-label">CHA Name<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="PickupAddress" [textWithNumbers]="200">
+              <label for="text-input" class="input-label">Pick Up Address<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="DeliveryAddress" [textWithNumbers]="200">
+              <label for="text-input" class="input-label">Delivery Address<span class="text-danger"></span></label>
+            </div>
+          </aside>
+
+
+
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="currencyCode" class="ng-select"
+                placeholder="Select Cargo Currency" formControlName="CargoCurrency" appendTo="body">
+              </ng-select>
+              <label for="text-input" class="input-label">Cargo Curr<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="CargoValue" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="2"
+                max="9999999.999">
+              <label for="text-input" class="input-label">Cargo Value<span class="text-danger"></span></label>
+              <!-- Validation Messages -->
+              @if ((otherForm.get('CargoValue')?.touched || otherForm.get('CargoValue')?.dirty) &&
+              otherForm.get('CargoValue')?.invalid) {
+              <div class="error-message">
+                @if (otherForm.get('CargoValue')?.errors?.['decimalPrecision']) {
+                <small>Allowed: 10 Digits before and 2 digits after decimal point</small>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="CarrierBookingRef" [textWithNumbers]="200">
+              <label for="text-input" class="input-label">Carrier Booking Ref<span class="text-danger"></span></label>
+            </div>
+          </aside>
+
+
+          <div class="col-md-3">
+            <div class=" custom-form-group custom-form-group-select">
+              <div class="input-group">
+                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                  formControlName="CarrierBookingDate" #d10="ngbDatepicker" (keydown.arrowDown)="d10.open()"
+                  (click)="d10.toggle()" container="body">
+                <button class="btn btn-info bi bi-calendar3 text-white" (click)="d10.toggle()" type="button"> <i-feather
+                    name="calendar" class="feather-sm"></i-feather></button>
+              </div>
+              <label for="shipmentDateExpected" class="input-label">Carrier Booking Date <span class="text-danger"></span>
+              </label>
+
+            </div>
+          </div>
+          <aside class="col-md-3 d-flex align-items-center">
+            <div class="form-check form-check-inline p-0 mt-0">
+              <div class="form-check d-flex align-items-center">
+                <input type="checkbox" id="switchBl" class="form-check-input sm" formControlName="SwitchBL">
+                <label for="switchBl" class="form-check-label sm">Switch BL <span class="text-danger"></span></label>
+              </div>
+            </div>
+          </aside>
+          <aside class="col-md-3 d-flex align-items-center">
+            <div class="form-check form-check-inline p-0 mt-0">
+              <div class="form-check d-flex align-items-center">
+                <input type="checkbox" id="BacktoBack" class="form-check-input sm" formControlName="BacktoBack">
+                <label for="BacktoBack" class="form-check-label sm">Back to Back <span
+                    class="text-danger"></span></label>
+              </div>
+            </div>
+          </aside>
+          @if(selectedFCLLCL === "FCL"){
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Depo"
+                [textWithNumbers]="200">
+              <label for="text-input" class="input-label">Depo<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class=" custom-form-group custom-form-group-select">
+              <div class="input-group">
+                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                  formControlName="ROValidity" [minDate]="minDate" #d7="ngbDatepicker" (keydown.arrowDown)="d7.open()"
+                  (click)="d7.toggle()" container="body"/>
+                <button class="btn  bi bi-calendar3" (click)="d7.toggle()" type="button"> <i-feather
+                    name="calendar" class="feather-sm"></i-feather></button>
+              </div>
+              <label for="shipmentDacteExpected" class="input-label">Ro Validity <span class="text-danger"></span>
+              </label>
+
+            </div>
+          </aside>
+          }
+          @if(otherForm.get('SwitchBL')?.value){
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select class="ng-select" [items]="agentList" bindLabel="CustomerName" bindValue="CustomerName"
+                placeholder="Select BL Agent" formControlName="SwitchBLAgent" appendTo="body"
+                (change)="setAddressOthers('AgentAddress',$event)">
+                <ng-template ng-option-tmp let-item="item">
+                  <div>
+                    <strong>{{ item.CustomerName }}</strong><br>
+                    <small>{{ item.CustomerAddress1 }}</small>
+                  </div>
+                </ng-template>
+              </ng-select>
+              <label for="text-input" class="input-label">BL Agent <span class="text-danger"></span></label>
+            </div>
+          </aside>
+
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="AgentAddress">
+              <label for="text-input" class="input-label">Agent Address<span class="text-danger"></span></label>
+            </div>
+          </aside>
+
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select class="ng-select" [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName"
+                placeholder="Select BL Shipper" formControlName="SwitchBLShipper" appendTo="body">
+              </ng-select>
+              <label for="text-input" class="input-label">BL Shipper<span class="text-danger"></span></label>
+            </div>
+          </aside>
+
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select">
+              <ng-select class="ng-select" [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName"
+                formControlName="SwitchBLConsignee" placeholder="Select BL Consignee" appendTo="body">
+              </ng-select>
+              <label for="text-input" class="input-label">BL Consignee<span class="text-danger"></span></label>
+            </div>
+
+          </aside>
+
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="SwitchLocation">
+              <label for="text-input" class="input-label">Location<span class="text-danger"></span></label>
+            </div>
+          </aside>
+          }
+        </div>
+      </div>
+    </div>
+
+
+    <div class="workspace-content" [hidden]="selectedTab !== 'Connection'">
+      <app-connection screenName="Booking" [dataItems]="bookingConnectionsArr" [resetTrigger]="resetTriggerConnection"
+        [minDate]="minStartDate" [portList]="portList" [disableAdd]="PODandFPODsame" [vesselList]="vesselList"
+        (dataEmitter)="handleConnectionChange($event)">
+      </app-connection>
+      <!-- <ng-container *ngComponentOutlet="connectionComponent"></ng-container> -->
+    </div>
+
+
+    <div class="workspace-content" [hidden]="selectedTab !== 'Milestone'">
+      <app-milestone screenName="Booking" [resetTrigger]="resetTriggerMilestone"
+        [shipmentNo]="bookingHeader?.ShipmentNo" (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
+    </div>
+    
+    <div class="workspace-content" *ngIf="selectedTab === 'AR/AP'">
+      <ng-container *ngComponentOutlet="ArApcomponent"></ng-container>
+    </div>
+
+    <div class="workspace-content" *ngIf="selectedTab === 'Product'">
+      <div class="modern-table-container">
+        <div>
+          <div class="table-toolbar">
+            <div class="toolbar-left">
+              <button class="table-action-btn primary" (click)="openProductModal(productModal)">
+                <i class="fas fa-plus"></i> Add Product
+              </button>
+            </div>
+
+            <div class="toolbar-right">
+              <button class="table-action-btn export">
+                <i class="fas fa-download fs-2"></i>
+                Export
+              </button>
+              <button class="table-action-btn print">
+                <i class="fas fa-print"></i> Print
+              </button>
+            </div>
+          </div>
+          @if(productDataLength > 0) {
+          <div class="modern-table-wrapper">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th width="10%">Action</th>
+                  <th>Commodity</th>
+                  <th>Shipping Bill No</th>
+                  <th>Date</th>
+                  <th>External Pkg</th>
+                  <th>No of Pkg</th>
+                  <th>Gross Weight</th>
+                  <th>Net Wt</th>
+                  <th>CBM</th>
+                  <th>Cargo Received Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for(product of slicedProductArr ; track product ; let productIndex = $index){
+                <tr class="table-row">
+                  <td>
+                    <div class="d-flex align-items-center justify-content-center">
+                      <a class="text-info mx-2" class="link mx-2 ps-3"
+                        (click)="openProductModal(productModal,productIndex,product.value)">
+                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                      </a>
+                      <a class="text-danger mx-2 ps-3 border-start"
+                        (click)="deleteBookingProduct(productIndex,product.value.BookingProductSid)">
+                        <i-feather name="trash-2" class="feather-sm"></i-feather>
+                      </a>
+                    </div>
+                  </td>
+                  <td>{{product.value.ProductName}}</td>
+                  <td>{{product.value.ShippingBillNo}}</td>
+                  <td>{{product.value.ShippingBillDate | formatDate}}</td>
+                  <td>{{product.value.ExternaPkg}}</td>
+                  <td>{{product.value.ExternlQty}}</td>
+                  <td>{{product.value.GrossWeight}}</td>
+                  <td>{{product.value.NetWeight}}</td>
+                  <td>{{product.value.Volume}}</td>
+                  <td>{{product.value.CargoRecDate | formatDate}}</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="mt-2">
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="productDataLength"
+              [pageSize]="pageSize" [(page)]="page" (pageChange)="updateProductPagination()">
+            </ngb-pagination>
+          </div>
+          }@else {
+          <div class="col-12">
+            <div class="alert alert-info text-center">No Product added yet.</div>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="workspace-content" *ngIf="selectedTab === 'Edoc'">
+        <app-edoc [dataItems]="edocData" [resetTrigger]="edocResetTrigger" [formData]="currentEdocFormValue"
+            (dataEmitter)="handleEdocChange($event)">
+        </app-edoc>
+    </div>
+  </div>
+
+   <div class="workspace-content" [hidden]="selectedTab !== 'Mail'">
+            <app-email-entry [dataItems]="emailData" [resetTrigger]="emailResetTrigger"
+                [formData]="currentEmailFormValue" (dataChange)="handleEmailChange($event)">
+            </app-email-entry>
+        </div>
+
+        <div class="workspace-content" [hidden]="selectedTab !== 'Follow Up'">
+            <app-follow-up screenName="MasterJob" [dataItems]="followUpData" [resetTrigger]="followUpResetTrigger"
+                [formData]="currentFollowUpFormValue" (dataEmitter)="handleFollowUpChange($event)">
+            </app-follow-up>
+        </div>
+
+
+  <!-- Floating Action Button -->
+  <div class="floating-actions">
+    <button class="fab-btn primary" title="Quick Save" (click)="onSubmit()">
+      <i class="fas fa-save"></i>
+    </button>
+  </div>
+
+</div>
+
+
+<ng-template #productModal let-modal>
+  <div class="modal-header p-2 bg-info">
+    <h5 class="modal-title text-white">Add Product</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <div class="row compact-form" [formGroup]="productForm">
+      <aside class="col-md-4">
+        <div class="custom-form-group custom-form-group-select">
+          <ng-select [items]="productList" bindLabel="ProductName" bindValue="ProductName" formControlName="ProductName"
+            placeholder="Select Commodity" (change)="handleProductChange($event)">
+          </ng-select>
+          <label for="" class="input-label">Commodity <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+            formControlName="ShippingBillNo" [textWithNumbers]="100">
+          <label for="text-input" class="input-label">Shipping Bill No <span class="text-danger">{{countryOfCompany ===
+              "india" ? '*' : ''}}</span></label>
+          @if(productForm.get('ShippingBillNo')?.touched && productForm.get('ShippingBillNo')?.invalid){
+          <div class="error-message">
+            @if(productForm.get('ShippingBillNo')?.hasError('required')){
+            <span>Shipping Bill No is required</span>
+            }
+          </div>
+          }
+        </div>
+      </aside>
+      <div class="col-md-4">
+        <div class=" custom-form-group custom-form-group-select">
+          <div class="input-group">
+            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+              [minDate]="minDate" (keydown.arrowDown)="d2.open()" (click)="d2.toggle()"
+              formControlName="ShippingBillDate" />
+            <button class="btn btn-info bi bi-calendar3 text-white" (click)="d2.toggle()" type="button">
+              <i-feather name="calendar" class="feather-sm"></i-feather></button>
+          </div>
+          <label for="shipmentDateExpected" class="input-label"> Date <span class="text-danger">{{countryOfCompany ===
+              "india"
+              ? '*' : ''}}</span>
+          </label>
+          @if(productForm.get('ShippingBillDate')?.touched && productForm.get('ShippingBillDate')?.invalid){
+          <div class="error-message">
+            @if(productForm.get('ShippingBillDate')?.hasError('required')){
+            <span>Shipping Bill Date is required</span>
+            }
+          </div>
+          }
+        </div>
+      </div>
+      <aside class="col-md-4">
+        <div class="custom-form-group custom-form-group-select">
+          <ng-select [items]="packageTypeList" placeholder="Select Package Type" bindLabel="UOMName"
+            bindValue="UOMName" formControlName="ExternaPkg">
+          </ng-select>
+          <label for="text-input" class="input-label">External Pkg <span class="text-danger">*</span></label>
+          @if(productForm.get('ExternaPkg')?.touched && productForm.get('ExternaPkg')?.invalid){
+          <div class="error-message">
+            @if(productForm.get('ExternaPkg')?.hasError('required')){
+            <span>External Pkg is required</span>
+            }
+          </div>
+          }
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ExternlQty">
+          <label for="text-input" class="input-label">No. of Pkg <span class="text-danger">*</span></label>
+          @if(productForm.get('ExternlQty')?.touched && productForm.get('ExternlQty')?.invalid){
+          <div class="error-message">
+            @if(productForm.get('ExternlQty')?.hasError('required')){
+            <span>No. of Pkg is required</span>
+            }
+          </div>
+          }
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="GrossWeight"
+            DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
+          <label for="text-input" class="input-label">Gross Weight <span class="text-danger">*</span></label>
+          <!-- Validation Messages -->
+          @if ((productForm.get('GrossWeight')?.touched || productForm.get('GrossWeight')?.dirty) &&
+          productForm.get('GrossWeight')?.invalid) {
+          <div class="error-message">
+            @if (productForm.get('GrossWeight')?.errors?.['required']) {
+            <span>Gross Weight is required</span>
+            } @else if (productForm.get('GrossWeight')?.errors?.['max']) {
+            <span>Gross Weight cannot exceed 9,999,999.999</span>
+            } @else if (productForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
+            <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+            }
+          </div>
+          }
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="NetWeight"
+            DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
+          <label for="text-input" class="input-label">Net Wt <span class="text-danger">*</span></label>
+          <!-- Validation Messages -->
+          @if ((productForm.get('NetWeight')?.touched || productForm.get('NetWeight')?.dirty) &&
+          productForm.get('NetWeight')?.invalid) {
+          <div class="error-message">
+            @if (productForm.get('NetWeight')?.errors?.['required']) {
+            <span>Net Wt is required</span>
+            } @else if (productForm.get('NetWeight')?.errors?.['max']) {
+            <span>Net Wt cannot exceed 9,999,999.999</span>
+            } @else if (productForm.get('NetWeight')?.errors?.['decimalPrecision']) {
+            <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+            }
+          </div>
+          }
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Volume"
+            DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
+          <label for="text-input" class="input-label">CBM <span class="text-danger">*</span></label>
+          <!-- Validation Messages -->
+          @if ((productForm.get('Volume')?.touched || productForm.get('Volume')?.dirty) &&
+          productForm.get('Volume')?.invalid)
+          {
+          <div class="error-message">
+            @if (productForm.get('Volume')?.errors?.['required']) {
+            <span>CBM is required</span>
+            } @else if (productForm.get('Volume')?.errors?.['max']) {
+            <span>CBM cannot exceed 9,999,999.999</span>
+            } @else if (productForm.get('Volume')?.errors?.['decimalPrecision']) {
+            <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+            }
+          </div>
+          }
+        </div>
+      </aside>
+      <div class="col-md-4">
+        <div class=" custom-form-group custom-form-group-select">
+          <div class="input-group">
+            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker formControlName="CargoRecDate"
+              #d8="ngbDatepicker" [minDate]="minDate" (keydown.arrowDown)="d8.open()" (click)="d8.toggle()" container="body"/>
+            <button class="btn bi bi-calendar3 " (click)="d8.toggle()" type="button"> <i-feather
+                name="calendar" class="feather-sm"></i-feather></button>
+          </div>
+          <label for="shipmentDateExpected" class="input-label">Cargo Received Date <span class="text-danger"></span>
+          </label>
+        </div>
+      </div>
+
+      <aside class="col-md-4 d-flex align-items-center">
+        <div class="form-check form-check-inline p-0">
+          <div class="form-check d-flex align-items-center">
+            <input type="checkbox" id="" class="form-check-input sm" formControlName="IsHaz">
+            <label for="" class="form-check-label sm">If Haz <span class="text-danger"></span></label>
+          </div>
+        </div>
+      </aside>
+      @if(productForm.get('IsHaz')?.value){
+      <aside class="col-md-4">
+        <div class="custom-form-group custom-form-group-select">
+          <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
+            placeholder="Select IMCO">
+          </ng-select>
+
+          <label for="text-input" class="input-label">Imco Class <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="UnNo"
+            DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
+          <label for="text-input" class="input-label">Un No <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="PkgGroup">
+          <label for="text-input" class="input-label">Pkg Group <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      }
+      @if(selectedDepartmentType === "AIR"){
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Length"
+            DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
+          <label for="text-input" class="input-label">Length <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Width"
+            DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
+          <label for="text-input" class="input-label">Width <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Height"
+            DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="0" max="9999999.999">
+          <label for="text-input" class="input-label">Height <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group custom-form-group-select">
+          <ng-select [items]="uomList" bindLabel="UOMName" bindValue="UOMMasterSid" formControlName="UomMasterSid"
+            placeholder="Select UOM">
+          </ng-select>
+          <label for="text-input" class="input-label">Uom <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      }
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-info btn-sm" (click)="onProductSubmit()">Save</button>
+  </div>
+</ng-template>
+
+@if(isEditMode){
+<div class="col-12 mt-3">
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
+          <!-- eDoc Button -->
+
+          <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+            <i class="fas fa-file-alt me-1"></i> e-Doc
+          </button>
+          <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
+            <i class="fas fa-clipboard me-1"></i> Terms & Condition
+          </button>
+          <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openAuthority()">
+            <i class="fas fa-shield-alt me-1"></i> Authorize
+          </button>
+
+          <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEmail()">
+            <i class="fas fa-envelope me-1"></i> Email
+          </button>
+
+          <button type="button" appPreventMultiClick class="btn btn-outline-info me-auto " (click)="openFollowup()">
+            <i class="fas fa-paperclip me-1"></i> Followup
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+
+
+<ng-template #milestoneModal let-modal>
+  <div class="modal-header p-2 bg-info">
+    <h5 class="modal-title text-white">Add Milestone</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close"
+      (click)="modal.dismiss('Cross click')"></button>
+  </div>
+
+  <div class="modal-body">
+    <div class="row">
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Sno <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Milestone <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <div class="col-md-4">
+        <div class=" custom-form-group custom-form-group-select">
+          <div class="input-group">
+            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d6="ngbDatepicker"
+              (click)="d6.toggle()" container="body"/>
+            <button class="btn  bi bi-calendar3 " (click)="d6.toggle()" type="button">
+              <i-feather name="calendar" class="feather-sm"></i-feather></button>
+          </div>
+          <label for="" class="input-label"> Date & Time <span class="text-danger"></span>
+          </label>
+        </div>
+      </div>
+
+      <aside class="col-md-4 d-flex align-items-center">
+        <div class="form-check form-check-inline p-0">
+          <div class="form-check d-flex align-items-center">
+            <input type="checkbox" id="" class="focus-ring form-check-input sm p-0">
+            <label for="" class="form-check-label sm">Auto Caputered <span class="text-danger"></span></label>
+          </div>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+          <label for="text-input" class="input-label">Remarks <span class="text-danger"></span></label>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss('Cancel')">Cancel</button>
+    <button type="button" class=" btn btn-sm btn-info" (click)="modal.close('Save')">Save</button>
+  </div>
+</ng-template>
+<app-booking-upload #uploadModal [acceptedFormats]="'.xlsx,.xls'" [departmentList]="departmentList"
+  [maxFileSize]="2 * 1024 * 1024" (fileProcessed)="onFileProcessed($event)" (uploadError)="onUploadError($event)">
+</app-booking-upload>
+<ng-template #auditLogModal let-modal>
+  <div class="modal-header bg-info text-white p-2">
+    <h5 class="modal-title mb-0">Audit Logs</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body p-3">
+    <div class="table-responsive">
+      <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+        <thead>
+          <tr>
+            <th>Changed At</th>
+            <th>Changed By</th>
+            <th>Operation</th>
+            <th class="text-center">Old Value</th>
+            <th class="text-center">New Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of auditLogs">
+            <td>{{ log.changedAt | date:'medium' }}</td>
+            <td>{{ log.changedBy || '-' }}</td>
+            <td>{{ log.operation }}</td>
+            <td class="bg-light-danger">
+              <ul>
+                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+              </ul>
+            </td>
+            <td class="bg-light-success">
+              <ul>
+                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+              </ul>
+            </td>
+          </tr>
+          <tr *ngIf="auditLogs.length === 0">
+            <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+  </div>
+</ng-template>
+<ng-template #reportModel let-modal>
+
+  <div class="modal-header d-flex justify-content-between align-items-center p-2 bg-info" style="height : 50px;">
+    <h5 class="modal-title text-white mb-0">Booking Print</h5>
+    <div class="d-flex gap-2 align-items-center">
+
+      <div class="spinner-overlay">
+        <div class="spinner"></div>
+      </div>
+      <button type="button" class="btn btn-light-secondary btn-sm" (click)="downloadPDF()">
+        <i class="fas fa-download me-1"></i> Download
+      </button>
+      <button type="button" class="btn btn-light-secondary btn-sm email-btn" (click)="sendEmail()">
+        <i class="fas fa-envelope me-1"></i> Email
+      </button>
+      <div class="ms-3">
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-body position-relative" id="pdfContent">
+   <div style="margin: auto; border: 2px solid black;">
+
+  <!-- Company Info -->
+  <div
+    class="d-flex flex-column flex-md-row justify-content-between align-items-center pb-3 mb-4 text-center text-md-start p-3">
+
+    <div class="d-flex align-items-center gap-4 mb-3 mb-md-0">
+     <img src="assets/logo/dofi-logo.svg" width="100" height="100" class="img-fluid" alt="">
+      <h4 class="mb-0 fw-bold d-none d-md-block">{{currentCompany.companyName}}</h4>
+    </div>
+
+    <div class="text-center text-md-end mb-2">
+      <h5 class="fw-bold mb-1">{{currentCompany.companyName}}</h5>
+      <div>{{currentCompany.addressLine1}}</div>
+    </div>
+  </div>
+
+  <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+  <h5 class="text-center fw-bold m-0">Booking Confirmation - {{selectedDepartment?.departmentName}}</h5>
+
+ <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+  <!-- Customer & Booking Info -->
+  <div class="row px-3">
+    <div class="col-12 col-lg-6">
+      <div class="mb-1">
+        <div class="fw-bold me-2">Customer :</div>
+        <div class="fs-6 text-break">{{bookingHeader?.CustomerName}}</div>
+        <div class="text-break">{{bookingHeader?.CustomerAddress}}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Booking No</div>
+        <div class="text-break">: {{bookingHeader?.BookingNo}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Date</div>
+        <div class="text-break">: {{bookingHeader?.BookingDateTime | formatDate }}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Cut Off Date</div>
+        <div class="text-break">: {{bookingHeader?.voyageDetails?.POLCutOffDate | formatDate }}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap" *ngIf="bookingHeader?.quotationHeader?.QuoteNumber">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Quotation No</div>
+        <div class="text-break">: {{bookingHeader?.quotationHeader?.QuoteNumber}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+  <!-- Booking Details -->
+  <div class="row px-3">
+    <p class="fw-bold">We are pleased to confirm your booking as below :</p>
+
+    <div class="col-12 col-lg-6">
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Vessel/Voyage</div>
+        <div class="text-break">: {{bookingHeader?.VesselName && bookingHeader?.VoyageNo ? bookingHeader?.VesselName + ' / ' + bookingHeader?.VoyageNo : ''}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETA</div>
+        <div class="text-break">: {{bookingHeader?.voyageDetails?.POLETA | formatDate}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POD ETA</div>
+        <div class="text-break">: {{bookingHeader?.voyageDetails?.PODETA | formatDate }}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Final Destination</div>
+        <div class="text-break">: {{bookingHeader?.FPD}}</div>
+      </div>
+      <!-- <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
+        <div class="text-break">: {{bookingHeader?.voyageDetails?.POLETD | formatDate }}</div>
+      </div> -->
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier</div>
+        <div class="text-break">: {{bookingHeader?.CarrierName || 'N/A'}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier Booking</div>
+        <div class="text-break">: {{bookingHeader?.bookingOthers[0]?.CarrierBookingRef || 'N/A'}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Inco Terms</div>
+        <div class="text-break">: {{bookingHeader?.IncoTerms || 'N/A'}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Hand Over To</div>
+        <div class="text-break">: {{bookingHeader?.bookingOthers[0]?.YardCFS  || 'N/A'}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Remarks</div>
+        <div class="text-break">: {{bookingHeader?.InternalNote || 'N/A'}}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}</div>
+        <div class="text-break">: {{bookingHeader?.HBLNo || 'N/A'}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
+        <div class="text-break">: {{(bookingHeader?.voyageDetails?.POLETD | formatDate) || '-'}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">FPD ETA</div>
+        <div class="text-break">: {{getFPDETA() | formatDate}}</div>
+      </div>
+      @if(selectedFCLLCL === "LCL"){
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Pkg</div>
+        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoOfPackage || 'N/A'}}</div>
+      </div>
+      } @else if(selectedFCLLCL === "FCL"){
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Container Type</div>
+        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ContainerType || 'N/A'}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Containers</div>
+        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoofContainers || 'N/A'}}</div>
+      </div>
+      } @else if(selectedFCLLCL === "AIR"){
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Chargeable Weight</div>
+        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ChargeableWeight || 'N/A'}}</div>
+      </div>
+      }
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Gross Weight</div>
+        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.GrossWeight || 'N/A'}}</div>
+      </div>
+      
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Volume(CBM)</div>
+        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.Volume || 'N/A'}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Commodity</div>
+        <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.CargoType || 'N/A'}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Freight</div>
+        <div class="text-break">: {{ bookingHeader?.FreightTerms || 'N/A'}}</div>
+      </div>
+      <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Destination Agent</div>
+        <div class="text-break">: {{ bookingHeader?.AgentName || 'N/A'}}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="margin-top: 1.5rem; margin-bottom: 2rem;" class="px-3">
+    <div>
+      <p style="font-weight: bold;" class="m-0">Your's Sincerely</p>
+    </div>
+    <div class="d-flex">
+      <div class="text-break">{{userData?.userName || 'N/A'}}</div>
+    </div>
+    <p class="mt-3 text-center">IF YOU REQUIRE ANY FURTHER INFORMATION, PLEASE DO NOT
+      HESITATE TO <br>CONTACT US. THANK YOU FOR SHIPPING WITH US</p>
+  </div>
+
+  <div class="d-flex justify-content-between px-3 flex-wrap mb-1">
+    <div class="d-flex gap-2">
+      <div>Print On :</div>
+      <div>{{ currentDate | formatDate}}</div>
+    </div>
+    <div class="d-flex gap-2">
+      <div>Printed By :</div>
+      <div>{{userData?.userName || 'N/A'}}</div>
+    </div>
+  </div>
+</div>
+  </div>
+</ng-template>
+
+<!-- For PDF Attachment to mail -->
+<div style="display: none; position: absolute; left: -9999px;">
+  <div class="modal-body" id="pdfContent">
+
+    <div style="margin: auto; border: 2px solid black;">
+
+      <!-- Company Info -->
+      <div
+        class="d-flex flex-column flex-md-row justify-content-between align-items-center pb-3 mb-4 text-center text-md-start p-3">
+
+        <div class="d-flex align-items-center gap-4 mb-3 mb-md-0">
+          <img src="assets/logo/dofi-logo.svg" width="100" height="100" class="img-fluid" alt="">
+          <h4 class="mb-0 fw-bold d-none d-md-block">{{currentCompany.companyName}}</h4>
+        </div>
+
+        <div class="text-center text-md-end mb-2">
+          <h5 class="fw-bold mb-1">{{currentCompany.companyName}}</h5>
+          <div>{{currentCompany.addressLine1}}</div>
+        </div>
+      </div>
+
+      <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+      <h5 class="text-center fw-bold m-0">Booking Confirmation - {{selectedDepartment?.departmentName}}</h5>
+
+      <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+      <!-- Customer & Booking Info -->
+      <div class="row px-3">
+        <div class="col-12 col-lg-6">
+          <div class="mb-1">
+            <div class="fw-bold me-2">Customer :</div>
+            <div class="fs-6 text-break">{{bookingHeader?.CustomerName}}</div>
+            <div class="text-break">{{bookingHeader?.CustomerAddress}}</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Booking No</div>
+            <div class="text-break">: {{bookingHeader?.BookingNo}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Date</div>
+            <div class="text-break">: {{bookingHeader?.BookingDateTime | formatDate }}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Cut Off Date</div>
+            <div class="text-break">: {{bookingHeader?.voyageDetails?.POLCutOffDate | formatDate }}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap" *ngIf="bookingHeader?.quotationHeader?.QuoteNumber">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Quotation No</div>
+            <div class="text-break">: {{bookingHeader?.quotationHeader?.QuoteNumber}}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height: 1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
+
+      <!-- Booking Details -->
+      <div class="row px-3">
+        <p class="fw-bold">We are pleased to confirm your booking as below :</p>
+
+        <div class="col-12 col-lg-6">
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Vessel/Voyage</div>
+            <div class="text-break">: {{bookingHeader?.VesselName && bookingHeader?.VoyageNo ? bookingHeader?.VesselName
+              + ' / ' + bookingHeader?.VoyageNo : ''}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETA</div>
+            <div class="text-break">: {{bookingHeader?.voyageDetails?.POLETA | formatDate}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POD ETA</div>
+            <div class="text-break">: {{bookingHeader?.voyageDetails?.PODETA | formatDate }}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Final Destination</div>
+            <div class="text-break">: {{bookingHeader?.FPD}}</div>
+          </div>
+          <!-- <div class="d-flex mb-1 flex-wrap">
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
+        <div class="text-break">: {{bookingHeader?.voyageDetails?.POLETD | formatDate }}</div>
+      </div> -->
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier</div>
+            <div class="text-break">: {{bookingHeader?.CarrierName || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier Booking</div>
+            <div class="text-break">: {{bookingHeader?.bookingOthers[0]?.CarrierBookingRef || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Inco Terms</div>
+            <div class="text-break">: {{bookingHeader?.IncoTerms || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Hand Over To</div>
+            <div class="text-break">: {{bookingHeader?.bookingOthers[0]?.YardCFS || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Remarks</div>
+            <div class="text-break">: {{bookingHeader?.InternalNote || 'N/A'}}</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}</div>
+            <div class="text-break">: {{bookingHeader?.HBLNo || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
+            <div class="text-break">: {{(bookingHeader?.voyageDetails?.POLETD | formatDate) || '-'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">FPD ETA</div>
+            <div class="text-break">: {{getFPDETA() | formatDate}}</div>
+          </div>
+          @if(selectedFCLLCL === "LCL"){
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Pkg</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoOfPackage || 'N/A'}}</div>
+          </div>
+          } @else if(selectedFCLLCL === "FCL"){
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Container Type</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ContainerType || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Containers</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoofContainers || 'N/A'}}</div>
+          </div>
+          } @else if(selectedFCLLCL === "AIR"){
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Chargeable Weight</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ChargeableWeight || 'N/A'}}</div>
+          </div>
+          }
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Gross Weight</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.GrossWeight || 'N/A'}}</div>
+          </div>
+
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Volume(CBM)</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.Volume || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Commodity</div>
+            <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.CargoType || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Freight</div>
+            <div class="text-break">: {{ bookingHeader?.FreightTerms || 'N/A'}}</div>
+          </div>
+          <div class="d-flex mb-1 flex-wrap">
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Destination Agent</div>
+            <div class="text-break">: {{ bookingHeader?.AgentName || 'N/A'}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div style="margin-top: 1.5rem; margin-bottom: 2rem;" class="px-3">
+        <div>
+          <p style="font-weight: bold;" class="m-0">Your's Sincerely</p>
+        </div>
+        <div class="d-flex">
+          <div class="text-break">{{userData?.userName || 'N/A'}}</div>
+        </div>
+        <p class="mt-3 text-center">IF YOU REQUIRE ANY FURTHER INFORMATION, PLEASE DO NOT
+          HESITATE TO <br>CONTACT US. THANK YOU FOR SHIPPING WITH US</p>
+      </div>
+
+      <div class="d-flex justify-content-between px-3 flex-wrap mb-1">
+        <div class="d-flex gap-2">
+          <div>Print On :</div>
+          <div>{{ currentDate | formatDate}}</div>
+        </div>
+        <div class="d-flex gap-2">
+          <div>Printed By :</div>
+          <div>{{userData?.userName || 'N/A'}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
