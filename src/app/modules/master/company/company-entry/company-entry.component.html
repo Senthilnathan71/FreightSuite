@@ -17,7 +17,7 @@
       </div>
       <div class="col-md-8 pb-2">
         <div
-          class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
 
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
                   (click)="openAuditLogs(auditLogModal)">
@@ -39,6 +39,17 @@
             <i class="fas fa-save me-1"></i>
             {{isEditMode ? 'Update' : 'Save'}}
           </button>
+           <div ngbDropdown class="d-inline-block">
+                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                        </div>
+                    </div>
         </div>
       </div>
     </div>
@@ -520,13 +531,13 @@
     </div>
   </div>
 </ng-template>
-@if(isEditMode){
+<!-- @if(isEditMode){
 <div class="col-12 mt-3">
   <div class="card">
     <div class="card-body">
       <div class="row">
         <div class="col-md-12 d-flex flex-wrap justify-content-center gap-2">
-          <!-- eDoc Button -->
+          
 
           @if(hasPermission('Edoc')) {
           <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
@@ -555,7 +566,7 @@
     </div>
   </div>
 </div>
-}
+} -->
 
 
 <!-- BRANCH ENTRY -->
