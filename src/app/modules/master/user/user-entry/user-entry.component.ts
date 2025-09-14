@@ -584,26 +584,73 @@ export class UserEntryComponent implements OnInit {
 		input.type = 'password'; // Hide password on mouseup or mouseleave
 	}
 
+	// resetForm() {
+	// 	this.userForm.reset({
+	// 		userName: '',
+	// 		userEmail: '',
+	// 		department: [],
+	// 		DefaultDept: '',
+	// 		isSalesperson: false,
+	// 		userTypeId: null,
+	// 		contactNumber: '',
+	// 		status: 'Active',
+	// 		userPassword: null,
+	// 		CountryMasterSid: null,
+	// 		companies: [],
+	// 		roles: [],	 
+	// 	});
+	// 	this.userCompanies.clear();
+	// 	this.selectedCompanies = [];
+	// 	this.userInfos = [];
+	// 	this.setDefaultDept();
+	// }
+
 	resetForm() {
-		this.userForm.reset({
-			userName: '',
-			userEmail: '',
-			department: [],
-			DefaultDept: '',
-			isSalesperson: false,
-			userTypeId: null,
-			contactNumber: '',
-			status: 'Active',
-			userPassword: null,
-			CountryMasterSid: null,
-			companies: [],
-			roles: [],	 
-		});
-		this.userCompanies.clear();
-		this.selectedCompanies = [];
-		this.userInfos = [];
-		this.setDefaultDept();
-	}
+  // If editing an existing user, reload it (restore original state)
+  if (this.isEditMode && this.UserMasterSid) {
+    this.loadUserData(this.UserMasterSid);
+    return;
+  }
+
+  // Create-mode: reset form to sensible defaults
+  this.userForm.reset({
+    userName: '',
+    userEmail: '',
+    department: [],
+    DefaultDept: '',
+    isSalesperson: false,
+    userTypeId: null,
+    contactNumber: '',
+    status: 'Active',
+    userPassword: null,
+    CountryMasterSid: null,
+    companies: [],
+    roles: [],
+  });
+
+  // Clear form arrays
+  this.userCompanies.clear();
+  
+  // Reset password field validators for new entries
+  this.userForm.get('userPassword')?.setValidators([Validators.required, PasswordValidators.validate()]);
+  this.userForm.get('userPassword')?.updateValueAndValidity();
+
+  // Clear selected companies and default items
+  this.selectedCompanies = [];
+  this.defaultItems = {};
+  this.userInfos = [];
+
+  // Disable DefaultDept field
+  this.userForm.get('DefaultDept')?.disable();
+
+  // Reset form validation
+  this.userForm.markAsUntouched();
+  this.userForm.updateValueAndValidity();
+
+  // Clear any loaded user data for new entries
+  this.userData = null;
+  this.UserMasterSid = null;
+}
 
 
 	openTandC() {

@@ -213,6 +213,7 @@ applySorting() {
       this.page = 1;
       this.sortColumn = 'DocumentTypeName';
       this.sortDirection = 'asc';
+      this.loadDocTypes();
    }
 
    report(): void {

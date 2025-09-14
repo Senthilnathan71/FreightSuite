@@ -358,6 +358,13 @@ export class YearEntryComponent {
 	}
 
   reset() {
+  // If editing, reload the original record from server to restore original values
+  if (this.isEditMode && this.YearMasterSid) {
+    this.loadYearData(this.YearMasterSid);
+    return;
+  }
+
+  // Create-mode: reset to sensible defaults
   this.yearForm.reset({
     YearName: '',
     YearCode: '',
@@ -369,12 +376,15 @@ export class YearEntryComponent {
     status: 'Active'
   });
 
-  // Re-disable the status field
+  // Ensure status control is disabled (same behaviour as init)
   this.yearForm.get('status')?.disable();
 
-  // Disable the save button again
+  // Reset local state
+  this.yearData = null;
+  this.YearMasterSid = null;
+
+  // Disable save button until form becomes valid again
   this.btnDisable = true;
 }
-
 
 }

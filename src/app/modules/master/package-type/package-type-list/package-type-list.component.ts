@@ -376,6 +376,7 @@ applySorting() {
     this.searchType = 'PackageName';
     this.sortColumn = 'PackageName';
   this.sortDirection = 'asc';
+  this.loadPackageTypes();
   }
 
   report(): void {

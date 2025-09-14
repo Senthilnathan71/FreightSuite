@@ -183,16 +183,44 @@ export class UnitEntryComponent {
     });
   }
 
+  // reset() {
+  //   this.unitForm.reset({
+  //     jobType: 'FCL',
+  //     measurementType: 'Dimension',
+  //     status: 'A'
+  //   });
+  //   if (!this.isEditMode) {
+  //     this.unitForm.get('status')?.disable();
+  //   }
+  // }
+
   reset() {
-    this.unitForm.reset({
-      jobType: 'FCL',
-      measurementType: 'Dimension',
-      status: 'A'
-    });
-    if (!this.isEditMode) {
-      this.unitForm.get('status')?.disable();
-    }
+  // If editing an existing unit, reload it (restore original state)
+  if (this.isEditMode && this.idParam) {
+    this.loadUnit(this.idParam);
+    return;
   }
+
+  // Create-mode: reset form to sensible defaults
+  this.unitForm.reset({
+    unitName: '',
+    unitCode: '',
+    jobType: 'FCL',
+    measurementType: 'Dimension',
+    containerType: null,
+    status: 'A',
+    Remarks: ''
+  });
+
+  // Disable status field for new records
+  this.unitForm.get('status')?.disable();
+
+  // Clear error message
+  this.errorMessage = '';
+
+  // Reset any additional state variables if needed
+  this.unitData = null;
+}
 
   goBack() {
     this.router.navigate(['master/unit/list']);

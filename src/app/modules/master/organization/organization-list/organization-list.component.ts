@@ -223,6 +223,8 @@ getCountryName(countrySid: number): string {
     this.sortColumn = 'CustomerName';
     this.sortDirection = 'asc';
     this.searchPerformed = false;
+    this.filterValue = '';
+    this.loadOrganizations();
   }
 
   report(): void {

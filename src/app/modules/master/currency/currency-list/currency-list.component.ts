@@ -223,6 +223,7 @@ export class CurrencyListComponent {
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'currencyName';
     this.sortDirection = 'asc';
+    this.loadCurrencies();
   }
 
   getStatusText(status: string): string {

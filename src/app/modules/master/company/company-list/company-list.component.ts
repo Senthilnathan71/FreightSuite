@@ -240,6 +240,7 @@ private compareValues(valueA: any, valueB: any): number {
     this.searchPerformed = false;
     this.sortColumn = 'companyName';
     this.sortDirection = 'asc';
+    this.loadCompanies();
   }
  
   report(): void {

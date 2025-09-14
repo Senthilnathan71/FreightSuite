@@ -1,0 +1,591 @@
+<div class="row compact-form">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-2">
+                <h5 class="page-title mb-0 text-info">Receipt</h5>
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        (click)="openAuditLogs(auditLogModal)">
+                        <i class="fas fa-history me-1"></i>Logs
+                    </button> -->
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="card h-100 mb-0">
+            <div class="card-body pb-0">
+                <div class="row">
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="ModeofSearch" bindLabel="name" bindValue="name">
+
+                            </ng-select>
+                            <label for="" class="input-label">Search Type <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Receipt No <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d1="ngbDatepicker" formControlName="" (click)="d1.toggle()" />
+                                <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label class="input-label">Receipt Date <span class="text-danger"></span>
+                            </label>
+
+                        </div>
+                    </aside>
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0 mt-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" id="" class="focus-ring form-check-input sm p-0">
+                                <label for="" class="form-check-label sm">Multi Location <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Bank <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">GST No <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Currency <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Party <span class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Received From <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Ex Rate <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Address <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Narration <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Remarks <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Inst Mode <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Inst No <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d1="ngbDatepicker" formControlName="" (click)="d1.toggle()" />
+                                <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label class="input-label">Inst Date <span class="text-danger">*</span>
+                            </label>
+
+                        </div>
+                    </aside>
+                    <aside class="col-md-3">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d1="ngbDatepicker" formControlName="" (click)="d1.toggle()" />
+                                <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label class="input-label">Clearance Date <span class="text-danger"></span>
+                            </label>
+
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="mx-0  mt-2">
+
+        <div class="col-12">
+            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+                <div class="col-4 d-flex pb-2">
+                    <h5 class="page-title mb-0 text-info" >
+                        Details
+                    </h5>
+                </div>
+                <div class="col-8 pb-2">
+                    <div
+                        class="row d-flex  align-items-center  justify-content-end gap-1  mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openDubaiModal(dubaiModal)">
+                            <i class="fas fa-plus me-1"></i> Add
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 p-2 bg-white py-2 rounded shadow-sm ">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info">
+                            <!-- <th class="bg-transparent text-light" scope="col" width="10%">Action</th> -->
+                            <th class="bg-transparent text-light" scope="col">Ledger Name</th>
+                            <th class="bg-transparent text-light" scope="col">Branch</th>
+                            <th class="bg-transparent text-light" scope="col">Dr/Cr</th>
+                            <th class="bg-transparent text-light" scope="col">Currency</th>
+                            <th class="bg-transparent text-light" scope="col">Ex Rate</th>
+                            <th class="bg-transparent text-light" scope="col">Curr Amt</th>
+                            <th class="bg-transparent text-light" scope="col">Local Amount</th>
+                            <th class="bg-transparent text-light" scope="col">Narration</th>
+                            <th class="bg-transparent text-light" scope="col">Cost Center</th>
+                            <th class="bg-transparent text-light" scope="col">Profit Center</th>
+                            <th class="bg-transparent text-light" scope="col">Charge</th>
+                            <th class="bg-transparent text-light" scope="col">Master</th>
+                            <th class="bg-transparent text-light" scope="col">House</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2]; track $index) {
+                        <tr>
+                            <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <a class="text-info mx-2" class="link mx-2 ">
+                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
+                                    </a>
+                                    <a class="text-danger mx-2 ps-3 border-start">
+                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
+                                    </a>
+                                </div>
+                            </td> -->
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+
+
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+         <div class="col-12 mt-2">
+            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+                <div class="col d-flex pb-2 pt-2">
+                    <h5 class="page-title mb-1 text-info" >
+                        Voucher Matching
+                    </h5>
+                </div>
+            </div>
+        </div>
+
+         <div class="col-12 p-2 bg-white py-2 rounded shadow-sm ">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                    <thead>
+                       
+                        <tr class="bg-info">
+                            <!-- <th class="bg-transparent text-light" scope="col" width="10%">Action</th> -->
+                            <th rowspan="2" class="bg-transparent text-light text-center">Qty</th>
+                            <th class="bg-transparent text-light" scope="col">Voucher No</th>
+                            <th class="bg-transparent text-light" scope="col">Voucher Type</th>
+                            <th class="bg-transparent text-light" scope="col">Voucher Date</th>
+                            <th class="bg-transparent text-light" scope="col">Dr/Cr</th>
+                            <th class="bg-transparent text-light" scope="col">Curr</th>
+                            <th class="bg-transparent text-light" scope="col">Ex Rate</th>
+                            <th class="bg-transparent text-light" scope="col">Curr Amt</th>
+                            <th class="bg-transparent text-light" scope="col">Local Amount</th>
+                            <th class="bg-transparent text-light" scope="col">OS Curr Amt</th>
+                            <th class="bg-transparent text-light" scope="col">OS Local Amt</th>
+                            <th class="bg-transparent text-light" scope="col">Curr</th>
+                            <th class="bg-transparent text-light" scope="col">Ex Rate</th>
+                            <th class="bg-transparent text-light" scope="col">Curr Amt</th>
+                            <th class="bg-transparent text-light" scope="col">Local Amt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2]; track $index) {
+                        <tr>
+                            <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <a class="text-info mx-2" class="link mx-2 ">
+                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
+                                    </a>
+                                    <a class="text-danger mx-2 ps-3 border-start">
+                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
+                                    </a>
+                                </div>
+                            </td> -->
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                               <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+
+
+                        </tr>
+                        }
+                          <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="fw-bold">Total</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td></td>
+                            <td>2</td>
+                            <td>2</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+         <div class="col-12 mt-2">
+            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+                <div class="col d-flex pb-2 pt-2">
+                    <h5 class="page-title mb-1 text-info" >
+                       Inter Branch
+                    </h5>
+                </div>
+            </div>
+        </div>
+
+         <div class="col-12 p-2 bg-white py-2 rounded shadow-sm ">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                    <thead>
+                        <tr class="bg-info">
+                            <!-- <th class="bg-transparent text-light" scope="col" width="10%">Action</th> -->
+                            <th class="bg-transparent text-light" scope="col">Branch</th>
+                            <th class="bg-transparent text-light" scope="col">Curr Amt</th>
+                            <th class="bg-transparent text-light" scope="col">Inter Branch JV</th>
+                            <th class="bg-transparent text-light" scope="col">Voucher Type</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of [0,1,2]; track $index) {
+                        <tr>
+                            <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <a class="text-info mx-2" class="link mx-2 ">
+                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
+                                    </a>
+                                    <a class="text-danger mx-2 ps-3 border-start">
+                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
+                                    </a>
+                                </div>
+                            </td> -->
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">OMR</div>
+                            </td>
+                          
+                       
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+
+    <ng-template #dubaiModal let-modal>
+    <div class="modal-header p-2 bg-info text-white">
+        <h5 class="modal-title">Add Details</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="row">
+
+       
+          <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Ledger Name <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                        <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Branch <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                      <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Dr/Cr <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                      <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Currency <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                      <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Ex Rate <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                      <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Curr Amt <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                      <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Local Amt <span
+                                    class="text-danger">*</span></label>
+                        </div>
+                    </aside>
+                      <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Narration <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                      <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Cost Center <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                      <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Profit Center <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                      <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Charge <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                      <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Master <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                      <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">House <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                     </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-sm btn-secondary" (click)="modal.dismiss()">Cancel</button>
+        <button class="btn btn-sm btn-info">Save</button>
+    </div>
+</ng-template>

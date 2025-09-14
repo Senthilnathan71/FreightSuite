@@ -224,6 +224,7 @@ export class ChargeListComponent {
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'chargeName';
     this.sortDirection = 'asc';
+    this.loadCharges();
   }
 
   report(): void {

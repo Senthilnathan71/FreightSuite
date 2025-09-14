@@ -446,6 +446,14 @@ export class QuotationViewComponent {
     this.route.navigate(['crm/booking/entry'])
   }
 
+resetFilters(): void {
+  this.filterValue = '';
+  this.page = 1;
+  this.pageSize = 15;
+  this.quoteItems = [];
+  this.totalLengthOfCollection = 0;
+  this.searchQuotation();
+}
 
 
 }

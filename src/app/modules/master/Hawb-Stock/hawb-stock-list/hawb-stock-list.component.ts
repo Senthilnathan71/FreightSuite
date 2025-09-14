@@ -232,6 +232,7 @@ applySorting() {
     this.page = 1;
     this.sortColumn = 'AirwayBillType';
     this.sortDirection = 'asc';
+    this.loadHawbStocks();
   }
 
   getStatusClass(status: string): string {

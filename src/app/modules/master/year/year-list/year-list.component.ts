@@ -218,6 +218,7 @@ export class YearListComponent {
     this.page = 1;
     this.sortColumn = 'YearName';
     this.sortDirection = 'asc';
+    this.loadYears();
   }
 
   getStatusClass(status: string): string {

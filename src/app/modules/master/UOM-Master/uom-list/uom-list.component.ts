@@ -197,6 +197,7 @@ applySorting() {
     this.page = 1;
     this.sortColumn = 'UOMName';
     this.sortDirection = 'asc';
+    this.loadUoms();
   }
 
   report(): void {

@@ -387,6 +387,7 @@ else {
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'ClauseDescription';
     this.sortDirection = 'asc';
+    this.loadAllClauses();
   }
 
   getStatusClass(status: string): string {

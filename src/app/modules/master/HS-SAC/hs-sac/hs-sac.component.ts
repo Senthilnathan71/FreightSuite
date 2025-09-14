@@ -470,7 +470,8 @@ applySorting() {
     this.page = 1;
     this.hssacs = [];
     this.sortColumn = 'HSSACCode';
-  this.sortDirection = 'asc';
+    this.sortDirection = 'asc';
+    this.loadHssacs();
   }
 
   report(): void {

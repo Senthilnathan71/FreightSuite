@@ -197,6 +197,7 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
     this.page = 1;
     this.sortColumn = 'departmentCode';
     this.sortDirection = 'asc';
+    this.loadDepartments();
   }
 
   report(): void {

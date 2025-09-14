@@ -18,6 +18,7 @@ import { AuthorityEntryComponent } from 'src/app/modules/master/authority/author
 import { EdocComponent } from '../../edoc/edoc/edoc.component';
 import { take } from 'rxjs';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { iconsData } from 'src/assets/icons';
 
 @Component({
   selector: 'app-menu-entry',
@@ -67,23 +68,12 @@ export class MenuEntryComponent implements OnInit {
     { value: 'N', name: "Restricted" }
   ];
 
-  iconOptions = [
-    { value: 'home', label: 'Home' },
-    { value: 'settings', label: 'Settings' },
-    { value: 'users', label: 'Users' },
-    { value: 'file-text', label: 'Documents' },
-    { value: 'bar-chart-2', label: 'Reports' },
-    { value: 'calendar', label: 'Calendar' },
-    { value: 'mail', label: 'Mail' },
-    { value: 'shopping-cart', label: 'Shopping' },
-    { value: 'disc', label: 'Disc' },
-    { value: 'dollar-sign', label: 'Finance Master' },
-    { value: 'globe', label: 'Global Master' }
-    
-
-
-  ];
-
+  iconOptions = Object.values(iconsData)
+    .flat()
+    .map(item => ({
+      label: item.name,  // for display in dropdown
+      value: item.icon   // actual icon class
+    }));
 
   specialOptions = [
     'Add',
@@ -128,73 +118,73 @@ export class MenuEntryComponent implements OnInit {
     private excelReportService: ExcelExportService,
   ) { }
 
- ngOnInit(): void {
-  // this.appSettingService.getUser().subscribe(
-  //   user => {
-  //     if (user) {
-  //       this.userData = user;
-  //     }
-  //   }
-  // );
-  const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
-		}
-  this.initForm();
-  this.loadModules();
-
-  // Watch for module changes
-  this.menuForm.get('ModuleMasterSid')?.valueChanges.subscribe(moduleId => {
-    if (this.isSubMenu && moduleId) {
-      this.loadMainMenus(moduleId);
+  ngOnInit(): void {
+    // this.appSettingService.getUser().subscribe(
+    //   user => {
+    //     if (user) {
+    //       this.userData = user;
+    //     }
+    //   }
+    // );
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+    if (userProfile) {
+      this.userData = userProfile;
     }
-  });
+    this.initForm();
+    this.loadModules();
 
-  this.route.paramMap.subscribe(
-    (param: any) => {
-      this.MenuMasterSid = +param.get('id');
-      if (this.MenuMasterSid) {
-        this.isEditMode = true;
-        this.loadMenuData(this.MenuMasterSid);
-        this.loadMenuPermissions(this.MenuMasterSid);
-      } else {
-        this.addPermission();
+    // Watch for module changes
+    this.menuForm.get('ModuleMasterSid')?.valueChanges.subscribe(moduleId => {
+      if (this.isSubMenu && moduleId) {
+        this.loadMainMenus(moduleId);
       }
-    }
-  );
-}
+    });
+
+    this.route.paramMap.subscribe(
+      (param: any) => {
+        this.MenuMasterSid = +param.get('id');
+        if (this.MenuMasterSid) {
+          this.isEditMode = true;
+          this.loadMenuData(this.MenuMasterSid);
+          this.loadMenuPermissions(this.MenuMasterSid);
+        } else {
+          this.addPermission();
+        }
+      }
+    );
+  }
 
   onModuleChange(moduleId: number) {
-  if (this.isSubMenu) {
-    this.loadMainMenus(moduleId);
-  }
-}
-  loadMainMenus(moduleId: number) {
-  if (!moduleId) {
-    this.mainMenus = [];
-    return;
-  }
-
-  this.isLoading = true;
-  this.settingsService.getSubMenuList(moduleId).subscribe({
-    next: (menus: any[]) => {
-      this.mainMenus = menus.map(menu => ({
-        MenuMasterSid: menu.MenuMasterSid,
-        MenuName: menu.MenuName
-      }));
-      this.isLoading = false;
-      this.cdr.detectChanges(); // Force UI update
-    },
-    error: (error) => {
-      console.error('Error loading main menus:', error);
-      this.mainMenus = [];
-      this.isLoading = false;
-      this.cdr.detectChanges();
+    if (this.isSubMenu) {
+      this.loadMainMenus(moduleId);
     }
-  });
-}
+  }
+  loadMainMenus(moduleId: number) {
+    if (!moduleId) {
+      this.mainMenus = [];
+      return;
+    }
 
-   loadModules() {
+    this.isLoading = true;
+    this.settingsService.getSubMenuList(moduleId).subscribe({
+      next: (menus: any[]) => {
+        this.mainMenus = menus.map(menu => ({
+          MenuMasterSid: menu.MenuMasterSid,
+          MenuName: menu.MenuName
+        }));
+        this.isLoading = false;
+        this.cdr.detectChanges(); // Force UI update
+      },
+      error: (error) => {
+        console.error('Error loading main menus:', error);
+        this.mainMenus = [];
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  loadModules() {
     this.settingsService.getAllModule().subscribe({
       next: (response: any) => {
         this.moduleList = response.data.map((module: any) => ({
@@ -320,28 +310,28 @@ export class MenuEntryComponent implements OnInit {
   }
 
   onParentMenuChange(isChecked: boolean) {
-  console.log('IsSubMenu changed:', isChecked);
-  this.isSubMenu = isChecked;
-  const parentIdControl = this.menuForm.get('parentId');
-  const moduleId = this.menuForm.get('ModuleMasterSid')?.value;
-  console.log('Current moduleId:', moduleId);
+    console.log('IsSubMenu changed:', isChecked);
+    this.isSubMenu = isChecked;
+    const parentIdControl = this.menuForm.get('parentId');
+    const moduleId = this.menuForm.get('ModuleMasterSid')?.value;
+    console.log('Current moduleId:', moduleId);
 
-  if (this.isSubMenu) {
-    parentIdControl?.setValidators([Validators.required]);
-    if (moduleId) {
-      console.log('Loading main menus for module:', moduleId);
-      this.loadMainMenus(moduleId);
+    if (this.isSubMenu) {
+      parentIdControl?.setValidators([Validators.required]);
+      if (moduleId) {
+        console.log('Loading main menus for module:', moduleId);
+        this.loadMainMenus(moduleId);
+      } else {
+        console.log('No module selected');
+        this.mainMenus = [];
+      }
     } else {
-      console.log('No module selected');
+      parentIdControl?.clearValidators();
+      parentIdControl?.setValue(null);
       this.mainMenus = [];
     }
-  } else {
-    parentIdControl?.clearValidators();
-    parentIdControl?.setValue(null);
-    this.mainMenus = [];
+    parentIdControl?.updateValueAndValidity();
   }
-  parentIdControl?.updateValueAndValidity();
-}
 
   loadMenuPermissions(MenuMasterSid) {
     this.settingsService.getMenuPermissions(MenuMasterSid).subscribe(
@@ -573,9 +563,9 @@ export class MenuEntryComponent implements OnInit {
     });
   }
 
- 
 
-    openAuthority() {
+
+  openAuthority() {
     const MenuMasterSid = localStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, {

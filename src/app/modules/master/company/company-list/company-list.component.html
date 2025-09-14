@@ -67,7 +67,7 @@
     </div>
 </div>
 
-<div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+ <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf=" totalLengthOfCollection > 0">
     <div class="col-12 p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -174,9 +174,10 @@
             [ellipses]="false" [maxSize]="10">
         </ngb-pagination>
     </div>
-    <div class="col-12" *ngIf="totalLengthOfCollection === 0">
+    
+</div>
+<div class="col-12" *ngIf="totalLengthOfCollection === 0">
         <div>No records found</div>
     </div>
-</div>
 </div>
 

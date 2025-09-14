@@ -195,18 +195,42 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
         history.back();
     }
 
-    resetForm() {
-    this.ImcoForm.reset({
+//     resetForm() {
+//     this.ImcoForm.reset({
+//     ImcoClass: '',
+//     ImcoName: '',
+//     Description: '',
+//     ImcoUn: null,
+//     ImcoPageNo: null,
+//     PackingGroup: '',
+//     status: 'Active',  
+//     Remarks: ''
+//   });
+//     }
+
+resetForm() {
+  // If editing an existing IMCO, reload it (restore original state)
+  if (this.isEditMode && this.ImcoMasterSid) {
+    this.loadImco(this.ImcoMasterSid);
+    return;
+  }
+
+  // Create-mode: reset form to sensible defaults
+  this.ImcoForm.reset({
     ImcoClass: '',
     ImcoName: '',
     Description: '',
     ImcoUn: null,
     ImcoPageNo: null,
     PackingGroup: '',
-    status: 'Active',  
+    status: 'Active',
     Remarks: ''
   });
-    }
+
+  // Clear any loaded data for new entries
+  this.imcoData = null;
+  this.ImcoMasterSid = null;
+}
 
     showInfo() {
         if (!this.imcoData) return;

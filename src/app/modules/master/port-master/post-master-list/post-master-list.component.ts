@@ -284,6 +284,7 @@ applySorting() {
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'PortName';
   this.sortDirection = 'asc';
+  this.loadPorts();
   }
   report(): void {
     const formattedData = this.portList.map(item => ({

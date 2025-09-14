@@ -457,6 +457,7 @@ export class ProfitCenterComponent {
          this.profitCenters = [];
          this.sortColumn = 'ProfitCenterName';
          this.sortDirection = 'asc';
+         this.loadProfitCenters() 
        }
      
        report(): void {

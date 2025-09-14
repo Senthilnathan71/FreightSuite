@@ -235,7 +235,7 @@ export class ContainerTypeListComponent {
     this.page = 1;
     this.sortColumn = 'ContainerName';
     this.sortDirection = 'asc';
-    // this.loadContainerTypes();
+    this.loadContainerTypes();
   }
 
   report(): void {

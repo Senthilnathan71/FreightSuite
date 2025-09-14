@@ -275,5 +275,6 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
       this.totalLengthOfCollection = this.enquiryItems.length;
       this.page = 1;
       this.searchPerformed = false;
+      this.searchEnquiry();
     }
   }

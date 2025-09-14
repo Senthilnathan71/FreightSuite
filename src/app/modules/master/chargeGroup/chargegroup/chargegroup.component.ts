@@ -421,6 +421,7 @@ export class ChargegroupComponent implements OnInit {
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'GroupName';
     this.sortDirection = 'asc';
+    this.loadChargeGroups();
   }
 
   report(): void {

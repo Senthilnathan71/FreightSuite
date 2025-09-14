@@ -170,14 +170,14 @@
               <aside class="col-md-4">
                 <div class="custom-form-group">
                   <input type="text" id="stateGSTCode" formControlName="stateGSTCode" class="custom-input-field sm"
-                    (keypress)="onKeyPress($event, 'stateGSTCode')" maxlength="2" placeholder="" />
+                    (keypress)="onKeyPress($event, 'stateGSTCode')" maxlength="5" placeholder="" />
                   <label for="stateGSTCode" class="input-label">State GST Code <span
                       class="text-danger">*</span></label>
 
                   <div *ngIf="stateForm.get('stateGSTCode')?.touched && stateForm.get('stateGSTCode')?.errors"
                     class="error-message">
                     <span *ngIf="stateForm.get('stateGSTCode')?.hasError('required')">Required</span>
-                    <span *ngIf="stateForm.get('stateGSTCode')?.hasError('maxlength')">State GST Code must be exactly 2
+                    <span *ngIf="stateForm.get('stateGSTCode')?.hasError('maxlength')">State GST Code must be exactly 5
                       digits</span>
                     <span *ngIf="stateForm.get('stateGSTCode')?.hasError('pattern')">Only numeric values are
                       allowed</span>

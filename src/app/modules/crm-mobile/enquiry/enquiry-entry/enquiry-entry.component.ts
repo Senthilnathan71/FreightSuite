@@ -764,8 +764,80 @@ export class EnquiryEntryComponent implements OnInit {
   }
 
   resetForm() {
-    this.rateRequestForm.reset();
+  // If editing an existing enquiry, reload it from server to restore original state
+  if (this.isEditMode && this.EnquiryHeaderSid) {
+    this.loadEnquiry(this.EnquiryHeaderSid);
+    return;
   }
+
+  // Reset main header form to sensible defaults
+  this.rateRequestForm.reset({
+    CustomerMasterSid: null,
+    customerName: '',
+    enquiryNo: '',
+    EnquiryDate: '',
+    shipmentDate: '',
+    DepartmentMasterSid: '',
+    Segment: null,
+    CustomerAddress: null,
+    CustomerBranchSid: '',
+    Email: '',
+    EnquiryType: null,
+    IncoTerms: null,
+    ClearanceBy: null,
+    TransportBy: null,
+    Remarks: '',
+    status: '',
+    AuthorizerRemarks: '',
+    authorizerStatus: 'Pending'
+  });
+
+  // Clear and re-create routes (preserve lookups like ports)
+  const routesArray = this.rateRequestForm.get('routes') as FormArray;
+  routesArray.clear();
+  this.filteredPOLPorts = [];
+  this.filteredPODPorts = [];
+  this.filteredPorts = [...this.ports]; // reset filtered ports to full list
+  this.addRoute(); // adds one default route and one cargo row (same as init)
+
+  // Reset the other form used on second tab
+  if (this.enquiryOtherForm) {
+    this.enquiryOtherForm.reset({
+      EnquiryOtherSid: null,
+      ShipperName: null,
+      ShipperAddress: '',
+      ConsigneeName: null,
+      ConsigneeAddress: '',
+      FreightTerms: null,
+      AdditionalService: null,
+      PickupAddress: ''
+    });
+  }
+
+  // Reset UI / state flags
+  this.selectedDepartment = '';
+  this.selectedFCLLCL = '';
+  this.disableAddButtons = false;
+  this.rateRequestData = null;
+  this.quotationEnquiryNumber = null;
+  this.quotationCustomerId = null;
+  this.quotationDepartmentId = null;
+  this.authStateCache = undefined;
+  this.isAuthorizedUser = false;
+  this.isApproved = false;
+  this.btnDisable = false;
+
+  // Ensure controls that should be disabled on init are disabled again
+  this.rateRequestForm.get('Segment')?.enable(); // segment enabled in create mode
+  this.rateRequestForm.get('customerName')?.enable();
+  this.rateRequestForm.get('CustomerMasterSid')?.enable();
+  this.rateRequestForm.get('enquiryNo')?.enable();
+  this.rateRequestForm.get('EnquiryDate')?.enable();
+
+  // run change detection if you have a reference
+  try { (this as any).cdRef?.detectChanges(); } catch (e) { /* ignore if cdRef not injected */ }
+}
+
 
   goBack() {
     history.back();

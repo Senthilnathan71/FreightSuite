@@ -264,6 +264,7 @@ sort(column: string) {
     this.totalLengthOfCollection = 0;
     this.sortColumn = 'countryName';
     this.sortDirection = 'asc';
+    this.loadCountries();
   }
 
   report(): void {

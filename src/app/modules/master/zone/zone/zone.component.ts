@@ -429,6 +429,7 @@ applySorting() {
     this.searched = false;
     this.sortColumn = 'ZoneName'; 
   this.sortDirection = 'asc';
+  this.loadZones();
   }
 
   report() {

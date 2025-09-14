@@ -155,6 +155,7 @@ export class DocumentAuthorizationComponent {
         this.totalLengthOfCollection = 0;
         this.sortColumn = 'DocumentName';
         this.sortDirection = 'desc';
+        this.searchPendingApprovals();
     }
 
     report():void {

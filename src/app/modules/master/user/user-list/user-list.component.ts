@@ -265,6 +265,7 @@ export class UserListComponent {
     this.filterValue = '';
     this.searched = false;
     this.totalNumberOfCollection = 0;
+    this.loadUsers();
   }
 
   initResetPassForm() {

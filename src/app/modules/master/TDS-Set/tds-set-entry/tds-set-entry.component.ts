@@ -559,10 +559,45 @@ export class TdsSetEntryComponent implements OnInit {
     ]
 
     resetForm() {
-        this.tdsForm.reset({
-            status: 'Active'
-        })
-    }
+  // If editing an existing TDS set, reload it (restore original state)
+  if (this.isEditMode && this.TDSSetHeaderSid) {
+    this.loadTDS(this.TDSSetHeaderSid);
+    this.loadTDSDetailsByHeader(this.TDSSetHeaderSid);
+    this.loadExemptionDetailsByHeader(this.TDSSetHeaderSid);
+    return;
+  }
+
+  // Create-mode: reset header form to sensible defaults
+  this.tdsForm.reset({
+    TDSSetName: '',
+    TransactionLimit: '',
+    AnnualLimit: '',
+    TDSsetTransactionLimit: '',
+    TDSSetAnnualLimit: '',
+    EffectiveFrom: '',
+    status: 'Active'
+  });
+
+  // Reset related lists / pagination
+  this.tdsDetailList = [];
+  this.tdsExemptionList = [];
+  this.filteredDetailsList = [];
+  this.filteredExemptionList = [];
+  this.totalNumberOfDetails = 0;
+  this.totalNumberOfExemptions = 0;
+  this.page = 1;
+  this.exPage = 1;
+
+  // Reset min date to today for new entries
+  this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+
+  // Clear selected IDs/state
+  this.tdsData = null;
+  this.TDSSetHeaderSid = null;
+  this.TDSSetRateSid = null;
+  this.TDSExemptionSid = null;
+}
+
 
     showInfo() {
         if (!this.tdsData) return;
