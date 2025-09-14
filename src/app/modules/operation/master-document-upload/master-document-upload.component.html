@@ -1,16 +1,15 @@
 <!-- src/app/components/document-upload/document-upload.component.html -->
 <div class="document-upload-container">
-  <div class="header">
-    <h2>Bill of Lading Document Processing</h2>
+  <div class="header mb-3">
+    <h4>Bill of Lading Document Processing</h4>
     <p class="subtitle">Upload a PDF Bill of Lading to automatically extract and populate form data</p>
   </div>
 
   <!-- File Upload Section -->
-  <div class="upload-section">
+  <div class="upload-section d-flex flex-column align-items-center">
     <div class="upload-card">
-      <h3>Upload Document</h3>
       
-      <div class="file-upload-wrapper">
+      <div class="file-upload-wrapper dofi-max-w-450">
         <input 
           type="file" 
           id="pdfFile" 
@@ -98,57 +97,61 @@
       <div class="form-section-header">
         <h4>📋 Document Information</h4>
       </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="blNumber">B/L Number</label>
-          <input 
-            type="text" 
-            id="blNumber"
-            formControlName="blNumber"
-            placeholder="Enter Bill of Lading number"
-            [class.invalid]="isFieldInvalid('blNumber')"
-          >
+      <div class="form-grid compact-form">
+        <div class="custom-form-group">
+            <input 
+              type="text" 
+              id="blNumber"
+              formControlName="blNumber"
+              placeholder=""
+              [class.invalid]="isFieldInvalid('blNumber')"
+              class="form-control custom-input-field sm"
+            >
+          <label for="blNumber" class="input-label">B/L Number</label>
           <div class="error-text" *ngIf="isFieldInvalid('blNumber')">
             {{ getFieldError('blNumber') }}
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="dateOfIssue">Date of Issue</label>
-          <input 
-            type="date" 
-            id="dateOfIssue"
-            formControlName="dateOfIssue"
-            [class.invalid]="isFieldInvalid('dateOfIssue')"
-          >
+        <div class="custom-form-group">
+            <input 
+              type="date" 
+              id="dateOfIssue"
+              formControlName="dateOfIssue"
+              [class.invalid]="isFieldInvalid('dateOfIssue')"
+              class="form-control custom-input-field sm"
+            >
+          <label for="dateOfIssue" class="input-label">Date of Issue</label>
           <div class="error-text" *ngIf="isFieldInvalid('dateOfIssue')">
             {{ getFieldError('dateOfIssue') }}
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="placeOfIssue">Place of Issue</label>
-          <input 
-            type="text" 
-            id="placeOfIssue"
-            formControlName="placeOfIssue"
-            placeholder="Enter place of issue"
-            [class.invalid]="isFieldInvalid('placeOfIssue')"
-          >
+        <div class="custom-form-group">
+            <input 
+              type="text" 
+              id="placeOfIssue"
+              formControlName="placeOfIssue"
+              placeholder=""
+              [class.invalid]="isFieldInvalid('placeOfIssue')"
+              class="form-control custom-input-field sm"
+            >
+          <label for="placeOfIssue" class="input-label">Place of Issue</label>
           <div class="error-text" *ngIf="isFieldInvalid('placeOfIssue')">
             {{ getFieldError('placeOfIssue') }}
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="freightTerms">Freight Terms</label>
-          <input 
-            type="text" 
-            id="freightTerms"
-            formControlName="freightTerms"
-            placeholder="e.g., FREIGHT PREPAID"
-            [class.invalid]="isFieldInvalid('freightTerms')"
-          >
+        <div class="custom-form-group">
+            <input 
+              type="text" 
+              id="freightTerms"
+              formControlName="freightTerms"
+              placeholder=""
+              [class.invalid]="isFieldInvalid('freightTerms')"
+              class="form-control custom-input-field sm"
+            >
+          <label for="freightTerms" class="input-label">Freight Terms</label>
           <div class="error-text" *ngIf="isFieldInvalid('freightTerms')">
             {{ getFieldError('freightTerms') }}
           </div>
@@ -159,58 +162,62 @@
       <div class="form-section-header">
         <h4>👥 Parties Information</h4>
       </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="shipper">Shipper *</label>
-          <input 
-            type="text" 
-            id="shipper"
-            formControlName="shipper"
-            placeholder="Enter shipper company name"
-            [class.invalid]="isFieldInvalid('shipper')"
-          >
+      <div class="form-grid compact-form">
+        <div class="custom-form-group">
+            <input 
+              type="text" 
+              id="shipper"
+              formControlName="shipper"
+              placeholder=""
+              [class.invalid]="isFieldInvalid('shipper')"
+              class="form-control custom-input-field sm"
+            >
+          <label for="shipper" class="input-label">Shipper *</label>
           <div class="error-text" *ngIf="isFieldInvalid('shipper')">
             {{ getFieldError('shipper') }}
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="shipperAddress">Shipper Address</label>
-          <textarea 
-            id="shipperAddress"
-            formControlName="shipperAddress"
-            placeholder="Enter shipper address"
-            rows="2"
-            [class.invalid]="isFieldInvalid('shipperAddress')"
-          ></textarea>
+        <div class="custom-form-group">
+            <textarea 
+              id="shipperAddress"
+              formControlName="shipperAddress"
+              placeholder=""
+              rows="2"
+              [class.invalid]="isFieldInvalid('shipperAddress')"
+              class="form-control custom-input-field sm"
+            ></textarea>
+          <label for="shipperAddress" class="input-label">Shipper Address</label>
           <div class="error-text" *ngIf="isFieldInvalid('shipperAddress')">
             {{ getFieldError('shipperAddress') }}
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="consignee">Consignee *</label>
-          <input 
-            type="text" 
-            id="consignee"
-            formControlName="consignee"
-            placeholder="Enter consignee company name"
-            [class.invalid]="isFieldInvalid('consignee')"
-          >
+        <div class="custom-form-group">
+            <input 
+              type="text" 
+              id="consignee"
+              formControlName="consignee"
+              placeholder=""
+              [class.invalid]="isFieldInvalid('consignee')"
+              class="form-control custom-input-field sm"
+            >
+          <label for="consignee" class="input-label">Consignee *</label>
           <div class="error-text" *ngIf="isFieldInvalid('consignee')">
             {{ getFieldError('consignee') }}
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="consigneeAddress">Consignee Address</label>
-          <textarea 
-            id="consigneeAddress"
-            formControlName="consigneeAddress"
-            placeholder="Enter consignee address"
-            rows="2"
-            [class.invalid]="isFieldInvalid('consigneeAddress')"
-          ></textarea>
+        <div class="custom-form-group">
+            <textarea 
+              id="consigneeAddress"
+              formControlName="consigneeAddress"
+              placeholder=""
+              rows="2"
+              [class.invalid]="isFieldInvalid('consigneeAddress')"
+              class="form-control custom-input-field sm"
+            ></textarea>
+          <label for="consigneeAddress" class="input-label">Consignee Address</label>
           <div class="error-text" *ngIf="isFieldInvalid('consigneeAddress')">
             {{ getFieldError('consigneeAddress') }}
           </div>
@@ -218,14 +225,15 @@
       </div>
 
       <div class="form-group full-width">
-        <label for="notifyParty">Notify Party</label>
-        <input 
-          type="text" 
-          id="notifyParty"
-          formControlName="notifyParty"
-          placeholder="Enter notify party details"
-          [class.invalid]="isFieldInvalid('notifyParty')"
-        >
+          <input 
+            type="text" 
+            id="notifyParty"
+            formControlName="notifyParty"
+            placeholder=""
+            [class.invalid]="isFieldInvalid('notifyParty')"
+            class="form-control custom-input-field sm"
+          >
+        <label for="notifyParty" class="input-label">Notify Party</label>
         <div class="error-text" *ngIf="isFieldInvalid('notifyParty')">
           {{ getFieldError('notifyParty') }}
         </div>
@@ -236,35 +244,37 @@
         <h4>🚢 Ports & Places</h4>
       </div>
       <div class="form-grid">
-        <div class="form-group">
-          <label for="portOfLoading">Port of Loading *</label>
-          <input 
-            type="text" 
-            id="portOfLoading"
-            formControlName="portOfLoading"
-            placeholder="Enter port of loading"
-            [class.invalid]="isFieldInvalid('portOfLoading')"
-          >
+        <div class="custom-form-group">
+            <input 
+              type="text" 
+              id="portOfLoading"
+              formControlName="portOfLoading"
+              placeholder="Enter port of loading"
+              [class.invalid]="isFieldInvalid('portOfLoading')"
+              class="form-control custom-input-field sm"
+            >
+          <label for="portOfLoading" class="input-label">Port of Loading *</label>
           <div class="error-text" *ngIf="isFieldInvalid('portOfLoading')">
             {{ getFieldError('portOfLoading') }}
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="portOfDischarge">Port of Discharge *</label>
-          <input 
-            type="text" 
-            id="portOfDischarge"
-            formControlName="portOfDischarge"
-            placeholder="Enter port of discharge"
-            [class.invalid]="isFieldInvalid('portOfDischarge')"
-          >
+        <div class="custom-form-group">
+            <input 
+              type="text" 
+              id="portOfDischarge"
+              formControlName="portOfDischarge"
+              placeholder="Enter port of discharge"
+              [class.invalid]="isFieldInvalid('portOfDischarge')"
+              class="form-control custom-input-field sm"
+            >
+          <label for="portOfDischarge" class="input-label">Port of Discharge *</label>
           <div class="error-text" *ngIf="isFieldInvalid('portOfDischarge')">
             {{ getFieldError('portOfDischarge') }}
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="custom-form-group">
           <label for="placeOfReceipt">Place of Receipt</label>
           <input 
             type="text" 
@@ -278,7 +288,7 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="custom-form-group">
           <label for="placeOfDelivery">Place of Delivery</label>
           <input 
             type="text" 
@@ -316,7 +326,7 @@
         <h4>📦 Cargo Information</h4>
       </div>
       <div class="form-grid">
-        <div class="form-group">
+        <div class="custom-form-group">
           <label for="cargoDetails">Cargo Details *</label>
           <input 
             type="text" 
@@ -330,7 +340,7 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="custom-form-group">
           <label for="cargoDescription">Cargo Description</label>
           <input 
             type="text" 
@@ -344,13 +354,13 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="custom-form-group">
           <label for="numberOfPackages">Number of Packages</label>
           <input 
             type="text" 
             id="numberOfPackages"
             formControlName="numberOfPackages"
-            placeholder="e.g., 11"
+            placeholder=""
             [class.invalid]="isFieldInvalid('numberOfPackages')"
           >
           <div class="error-text" *ngIf="isFieldInvalid('numberOfPackages')">
@@ -358,7 +368,7 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="custom-form-group">
           <label for="packageType">Package Type</label>
           <input 
             type="text" 
@@ -372,7 +382,7 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="custom-form-group">
           <label for="grossWeight">Gross Weight</label>
           <input 
             type="text" 
@@ -386,7 +396,7 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="custom-form-group">
           <label for="measurement">Measurement</label>
           <input 
             type="text" 
@@ -406,7 +416,7 @@
         <h4>📋 Container Information</h4>
       </div>
       <div class="form-grid">
-        <div class="form-group">
+        <div class="custom-form-group">
           <label for="containerDetails">Container Details *</label>
           <input 
             type="text" 
@@ -420,7 +430,7 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="custom-form-group">
           <label for="consolNumber">Consol Number</label>
           <input 
             type="text" 

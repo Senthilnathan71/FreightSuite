@@ -314,7 +314,7 @@
   overflow: hidden;
   border: 1px solid #f1f5f9;
   transition: all 0.3s ease;
-  width: 450px !important;
+  // width: 450px !important;
   // &:hover {
   //   transform: translateY(-2px);
   //   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -1245,8 +1245,8 @@
 
 /* Two Column Layout for Shipment Tab */
 .two-column-layout {
-  display: flex;
-  gap: 18px;
+  // display: flex;
+  // gap: 18px;
   margin-bottom: 12px;
 }
 
@@ -1275,14 +1275,14 @@
   }
 }
 @media (max-width: 768px) {
-  .two-column-layout {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .info-card {
-    width: 100% !important;
-  }
+  // .two-column-layout {
+  //   display: flex;
+  //   flex-wrap: wrap;
+  //   gap: 8px;
+  // }
+  // .info-card {
+  //   width: 100% !important;
+  // }
    .form-check {
     margin-top: 0px;
   }
