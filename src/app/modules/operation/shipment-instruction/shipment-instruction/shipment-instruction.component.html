@@ -10,13 +10,13 @@
           <h5 class="page-title mb-0 text-info">Shipment Instruction (BL Format)</h5>
         </div>
         <!-- Search HBL -->
-         <div class="input-group dofi-max-w-450">
-              <input type="text" class="form-control rounded-start-pill" placeholder="Enter HBL Number" [(ngModel)]="searchHbl"
-                (keyup.enter)="searchShipment()">
-              <button class="btn btn-info rounded-end-pill" type="button" (click)="searchShipment()">
-                <i class="fas fa-search me-1"></i>
-              </button>
-            </div>
+        <div class="input-group dofi-max-w-450" *ngIf="showShipmentInstruction">
+          <input type="text" class="form-control rounded-start-pill" placeholder="Enter HBL Number"
+            [(ngModel)]="searchHbl" (keyup.enter)="searchShipment()">
+          <button class="btn btn-info rounded-end-pill" type="button" (click)="searchShipment()">
+            <i class="fas fa-search me-1"></i>
+          </button>
+        </div>
         <!-- Search HBL -->
       </div>
       <div class="col-md-auto ms-auto pb-2">
@@ -48,21 +48,97 @@
   </div>
 
   <!-- Search Section -->
-  <!-- <div class="col-12" >
-    <div class="card h-100 mb-3">
+  <div class="col-12" *ngIf="!showShipmentInstruction">
+    <div class="card h-100" style="min-height:calc(100vh - 180px)">
       <div class="card-body py-3 px-3">
-        <div class="row">
-          <div class="col-md-6 mx-auto">
-            <div class="d-flex align-items-center gap-2 mb-3">
-              <i class="fas fa-search fs-4"></i>
-              <h5 class="card-title mb-0">Search HBL</h5>
-            </div>
-            
+        <!-- Empty State for Shipment Instruction (BL Format) -->
+        <div class="container text-center py-5">
+          <!-- Icon / Illustration -->
+          <i class="fas fa-ship fs-5 text-secondary mb-4"></i>
+
+          <!-- Headline & Description -->
+          <h4 class="fw-semibold mb-0">Search for Shipment Instructions</h4>
+          <p class="text-body-secondary mb-3">
+            Enter a BL number or keyword to view details.
+          </p>
+
+          <!-- Search Input -->
+          <div class="d-flex justify-content-center gap-2 mb-5">
+            <input type="text" class="form-control w-auto" placeholder="e.g. BL1234567" aria-label="BL number search" [(ngModel)]="searchHbl" (keyup.enter)="searchShipment()">
+            <button type="submit" class="btn btn-info" (click)="searchShipment()">Search</button>
+          </div>
+
+          <!-- Skeleton Table Preview -->
+          <div class="table-responsive">
+            <table class="table table-borderless">
+              <!-- <thead class="table-light">
+                <tr>
+                  <th>BL No.</th>
+                  <th>Consignee</th>
+                  <th>Port</th>
+                  <th>Date</th>
+                </tr>
+              </thead> -->
+              <tbody>
+                <!-- Skeleton rows using Bootstrap 5 placeholders -->
+                <tr>
+                  <td colspan="4">
+                    <span class="placeholder col-12 placeholder-glow"></span>
+                  </td>
+                  <td colspan="4">
+                    <span class="placeholder col-12 placeholder-glow"></span>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="4">
+                    <span class="placeholder col-12 placeholder-glow"></span>
+                  </td>
+                  <td colspan="4">
+                    <span class="placeholder col-12 placeholder-glow"></span>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="4">
+                    <span class="placeholder col-12 placeholder-glow"></span>
+                  </td>
+                  <td colspan="4">
+                    <span class="placeholder col-12 placeholder-glow"></span>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="4">
+                    <span class="placeholder col-12 placeholder-glow"></span>
+                  </td>
+                  <td colspan="4">
+                    <span class="placeholder col-12 placeholder-glow"></span>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="4">
+                    <span class="placeholder col-12 placeholder-glow"></span>
+                  </td>
+                  <td colspan="4">
+                    <span class="placeholder col-12 placeholder-glow"></span>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="4">
+                    <span class="placeholder col-12 placeholder-glow"></span>
+                  </td>
+                  <td colspan="4">
+                    <span class="placeholder col-12 placeholder-glow"></span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
+
       </div>
     </div>
-  </div> -->
+  </div>
+
+
 
   <!-- Bill of Lading Format Section -->
   <div class="col-12" *ngIf="showShipmentInstruction">
