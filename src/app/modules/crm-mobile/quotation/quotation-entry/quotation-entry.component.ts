@@ -7,6 +7,7 @@ import {
   NgbDateParserFormatter,
   NgbDatepickerModule,
   NgbDateStruct,
+  NgbDropdownModule,
   NgbModal,
   NgbModalRef,
 } from '@ng-bootstrap/ng-bootstrap';
@@ -40,6 +41,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
     FeatherModule,
     NgbDatepickerModule,
     NgbAccordionDirective,
+    NgbDropdownModule,
     ReactiveFormsModule,
     OnlyNumbersDirective,
     OnlyTextDirective,

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
-import { NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { AppService } from 'src/app/service/app.service';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
@@ -25,7 +25,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     FormsModule,
     ReactiveFormsModule,
     PreventMultiClickDirective,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './meeting-update-list.component.html',
   styleUrls: ['./meeting-update-list.component.scss']
@@ -37,6 +38,7 @@ export class MeetingUpdateListComponent implements OnInit {
   // pagination
   page = 1;
   pageSize = 5;
+  isEditMode: boolean = false;
   totalLengthOfCollection: number = 0;
   searchText: string = '';
   isMobile: boolean = false;
@@ -322,6 +324,49 @@ export class MeetingUpdateListComponent implements OnInit {
     return user?.userName
  
   }
+
+  resetForm(): void {
+  // If editing an existing meeting, reload the original data
+  if (this.isEditMode && this.selectedMeeting && this.selectedMeeting.id) {
+    this.loadMeetingData(this.selectedMeeting.id);
+    return;
+  }
+
+  // Create-mode: reset only modified fields to their original values
+  const originalValues = {
+    customerName: this.selectedMeeting?.preCustomerMaster?.preCustomerName || '',
+    PreCustomerMeetingid: this.selectedMeeting?.id || '',
+    meetingDate: this.selectedMeeting?.meetingDate ? this.formatDateForInput(this.selectedMeeting.meetingDate) : '',
+    followUpDate: this.selectedMeeting?.followUpDate ? this.formatDateForInput(this.selectedMeeting.followUpDate) : '',
+    followUp: !!(this.selectedMeeting?.followUpDate || this.selectedMeeting?.followUpNote),
+    meetingType: this.selectedMeeting?.meetingType || '',
+    leadAssignTo: this.selectedMeeting?.leadAssignTo || '',
+    meetingNote: this.selectedMeeting?.meetingNote || '',
+    meetingStatus: this.selectedMeeting?.meetingStatus || 'scheduled',
+    followUpNote: this.selectedMeeting?.followUpNote || ''
+  };
+
+  // Patch the form with original values instead of resetting completely
+  this.meetingForm.patchValue(originalValues);
+
+  // Reset validation states
+  this.meetingForm.markAsPristine();
+  this.meetingForm.markAsUntouched();
+  
+  // Reset individual control validation states
+  Object.keys(this.meetingForm.controls).forEach(key => {
+    const control = this.meetingForm.get(key);
+    control?.markAsPristine();
+    control?.markAsUntouched();
+    control?.setErrors(null);
+  });
+
+  // Reset button state
+  this.btnDisable = false;
+
+  // Note: Removed the loadMeetings() call since we don't want to refresh the entire list
+  // when just resetting form modifications
+}
 
   toggleFollowUp(event: Event): void {
     const isChecked = (event.target as HTMLInputElement).checked;
