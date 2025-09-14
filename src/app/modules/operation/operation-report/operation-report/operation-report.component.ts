@@ -1,0 +1,130 @@
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgSelectModule } from '@ng-select/ng-select';
+
+@Component({
+  selector: 'app-operation-report',
+  standalone: true,
+  imports: [NgSelectModule, CommonModule,NgbDropdownModule],
+  templateUrl: './operation-report.component.html',
+  styleUrl: './operation-report.component.scss'
+})
+export class OperationReportComponent {
+
+  constructor(private modalService: NgbModal) {}
+  ModeofModules = [
+    { id: 1, name: "Settings" },
+    { id: 2, name: "CRM" },
+    { id: 3, name: "Master" },
+    { id: 4, name: "Operation" },
+    { id: 5, name: "Accounts" }
+  ]
+
+  reports = [
+    {
+      id: 1,
+      name: 'Agent DO uncollect',
+      parameters: [
+        { name: 'FROM DATE', value: '01-Jan-23' },
+        { name: 'TO DATE', value: '31-Jan-23' }
+      ]
+    },
+    {
+      id: 2,
+      name: 'B/L Issued List',
+      parameters: [
+        { name: 'FROM DATE', value: '14-Aug-22' },
+        { name: 'TO DATE', value: '13-Sep-23' }
+      ]
+    },
+    {
+      id: 3,
+      name: 'B/L Not Issued List',
+      parameters: [
+        { name: 'FROM DATE', value: '01-Jun-23' },
+        { name: 'TO DATE', value: '30-Jun-23' }
+      ]
+    },
+    {
+      id: 4,
+      name: 'Container Status Report',
+      parameters: [
+        { name: 'CONTAINER TYPE', value: '20FT' },
+        { name: 'STATUS', value: 'In Transit' }
+      ]
+    },
+    {
+      id: 5,
+      name: 'Shipment Tracking',
+      parameters: [
+        { name: 'SHIPMENT ID', value: 'SH12345' },
+        { name: 'DATE', value: '12-Sep-23' }
+      ]
+    },
+    {
+      id: 6,
+      name: 'Delivery Performance',
+      parameters: [
+        { name: 'START DATE', value: '01-Jan-23' },
+        { name: 'END DATE', value: '31-Dec-23' }
+      ]
+    },
+    {
+      id: 7,
+      name: 'Invoice Summary',
+      parameters: [
+        { name: 'CUSTOMER', value: 'ABC Corp' },
+        { name: 'PERIOD', value: 'Q1 2023' }
+      ]
+    },
+    {
+      id: 8,
+      name: 'Payment Status Report',
+      parameters: [
+        { name: 'DUE DATE', value: '30-Sep-23' },
+        { name: 'STATUS', value: 'Pending' }
+      ]
+    },
+    {
+      id: 9,
+      name: 'Warehouse Stock Levels',
+      parameters: [
+        { name: 'WAREHOUSE', value: 'Main' },
+        { name: 'ITEM CATEGORY', value: 'Electronics' }
+      ]
+    },
+    {
+      id: 10,
+      name: 'Customs Clearance Status',
+      parameters: [
+        { name: 'CLEARANCE DATE', value: '05-Sep-23' },
+        { name: 'STATUS', value: 'Cleared' }
+      ]
+    }
+  ];
+
+
+  selectedReportId: number | null = null;
+
+  selectReport(id: number) {
+    this.selectedReportId = id;
+  }
+
+  get selectedReport() {
+    return this.reports.find(r => r.id === this.selectedReportId) || null;
+  }
+
+  get selectedReportParameters() {
+    return this.selectedReport?.parameters || [];
+  }
+
+  get selectedReportName() {
+    return this.selectedReport?.name || '';
+  }
+
+
+   openPreviewModal(content: any) {
+    this.modalService.open(content, { centered: true, size: 'xl' });
+  }
+}
