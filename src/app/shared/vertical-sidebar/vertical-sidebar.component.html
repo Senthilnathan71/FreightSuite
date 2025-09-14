@@ -54,7 +54,7 @@
                 [ngClass]="[sidebarnavItem.class]" (click)="addExpandClass(sidebarnavItem.title)"
                 [routerLinkActive]="sidebarnavItem.submenu.length != 0 ? '' : 'active'">
                 <i-feather [name]="sidebarnavItem.icon" [ngClass]="[sidebarnavItem.icon]"></i-feather>
-                <span class="hide-menu" style="font-size: 16px; color: rgb(61, 61, 145);">{{sidebarnavItem.title |translate}}
+                <span class="hide-menu" style="font-size: 16px;">{{sidebarnavItem.title |translate}}
 
                     @if(sidebarnavItem.label != '') {
                     <span [ngClass]="[sidebarnavItem.labelClass]">{{sidebarnavItem.label | translate}}</span>
