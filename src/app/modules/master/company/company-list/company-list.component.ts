@@ -60,18 +60,15 @@ export class CompanyListComponent implements OnInit {
     //   user => {
     //     if (user) {
     //       this.userData = user;
-    //       this.checkPermissions();
           
     //     }
     //   }
     // )
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+		this.userData = userProfile;
+    this.checkPermissions();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
-			this.userData = userProfile;
-      this.checkPermissions();
-		}
    
    }
    checkPermissions() {

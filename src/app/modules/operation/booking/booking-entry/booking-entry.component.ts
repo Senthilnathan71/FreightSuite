@@ -989,8 +989,8 @@ auditLogs: any[] = []; // Stores audit logs
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess('Booking successfully updated.');
-            // this.router.navigate(['operation/booking/list']);
-            this.loadBookingById(this.BookingHeaderSid);
+            this.router.navigate(['operation/booking/list']);
+            // this.loadBookingById(this.BookingHeaderSid);
           } else {
             this.appSettingService.showError('Error updating booking.');
             console.error(resp.message);

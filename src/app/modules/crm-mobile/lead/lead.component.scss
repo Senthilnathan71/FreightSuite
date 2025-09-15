@@ -1,0 +1,555 @@
+// Enhanced Lead Entry Form Styles
+
+// Compact Header Card Styling
+.lead-header-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
+
+
+  .header-icon {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+  }
+
+  .page-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0;
+    background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+    backdrop-filter: blur(10px);
+    font-size: 12px;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      border-color: white;
+      transform: translateY(-1px);
+    }
+  }
+
+  .btn-light {
+    background-color: white;
+    color: #667eea;
+    border: none;
+    font-weight: 600;
+    font-size: 12px;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+// Progress Steps Styling
+.progress-steps {
+  .step-container {
+    position: relative;
+    padding: 20px 0;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+
+    &.completed {
+      .step-icon {
+        background: linear-gradient(135deg, #4CAF50, #2E7D32);
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+      }
+
+      .step-label {
+        color: #4CAF50;
+        font-weight: 600;
+      }
+    }
+
+    &.active {
+      .step-icon {
+        background: linear-gradient(135deg, #2196F3, #1976D2);
+        color: white;
+        animation: pulse 2s infinite;
+      }
+
+      .step-label {
+        color: #2196F3;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .step-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border: 3px solid #e9ecef;
+    color: #6c757d;
+    transition: all 0.3s ease;
+    margin-bottom: 8px;
+
+    i {
+      font-size: 18px;
+    }
+  }
+
+  .step-label {
+    font-size: 12px;
+    text-align: center;
+    color: #6c757d;
+    transition: all 0.3s ease;
+    font-weight: 500;
+  }
+
+  .step-line {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, #e9ecef 0%, #dee2e6 100%);
+    margin: 0 20px;
+    position: relative;
+    top: -25px;
+
+    &.completed {
+      background: linear-gradient(90deg, #4CAF50, #2E7D32);
+    }
+  }
+}
+
+// Custom Accordion Styling
+.custom-accordion {
+  .accordion-item {
+    border: none;
+    border-radius: 15px !important;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  .accordion-header {
+    .accordion-button {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border: none;
+      border-radius: 15px 15px 0 0;
+      padding: 20px 25px;
+      font-weight: 600;
+      font-size: 16px;
+      color: #495057;
+      position: relative;
+
+      &::after {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23495057'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+        transform: scale(1.2);
+      }
+
+      &:not(.collapsed) {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+
+        &::after {
+          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+        }
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+      }
+    }
+  }
+
+  .accordion-body {
+    padding: 25px;
+    background: white;
+  }
+}
+
+// Enhanced Form Styling
+.custom-form-group {
+  position: relative;
+
+  .custom-input-field {
+
+
+    &:valid:not(:placeholder-shown) {
+      border-color: #28a745;
+
+      +.input-label {
+        color: #28a745;
+      }
+    }
+
+    &.is-invalid {
+      border-color: #dc3545;
+
+      &:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+      }
+    }
+  }
+
+  // .input-label {
+  //   position: absolute;
+  //   top: -8px;
+  //   left: 12px;
+  //   background: white;
+  //   padding: 0 8px;
+  //   font-size: 12px;
+  //   font-weight: 600;
+  //   color: #6c757d;
+  //   transition: all 0.3s ease;
+  //   z-index: 1;
+  // }
+
+  .custom-form-group-select {
+    .ng-select {
+      .ng-select-container {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        min-height: 45px;
+        transition: all 0.3s ease;
+
+        &:hover {
+          border-color: #667eea;
+        }
+
+        .ng-value-container {
+          padding: 8px 15px;
+        }
+      }
+
+      &.ng-select-focused {
+        .ng-select-container {
+          border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+      }
+    }
+  }
+}
+
+// Error Message Styling
+.error-message {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #dc3545;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+
+  &::before {
+    content: '\f071';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    margin-right: 5px;
+    font-size: 11px;
+  }
+}
+
+// Enhanced Card Styling
+.lead-form-container {
+  .card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+  }
+}
+
+// Enhanced Accordion Headers
+.accordion-header-enhanced {
+  .accordion-button-enhanced {
+    .accordion-header-content {
+      display: flex;
+      align-items: center;
+      width: 100%;
+
+      .header-icon {
+        font-size: 16px;
+        color: #667eea;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .header-text {
+        flex: 1;
+
+        .card-title {
+          color: #333;
+          font-weight: 700;
+        }
+
+        small {
+          color: #6c757d;
+          font-size: 11px;
+        }
+      }
+    }
+
+    &:not(.collapsed) {
+      .accordion-header-content {
+        .header-icon {
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          transform: scale(1.1);
+        }
+
+        .header-text {
+
+
+          small {
+            color: rgba(255, 255, 255, 0.8);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Compact Action Buttons Styling
+.action-buttons-section {
+  .action-icon {
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 16px;
+    }
+  }
+
+  .action-btn-compact {
+    border: 1px solid #17a2b8;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 14px;
+      color: #17a2b8;
+      transition: all 0.3s ease;
+    }
+
+    span {
+      color: #17a2b8;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(23, 162, 184, 0.2);
+      background: #17a2b8;
+      border-color: #17a2b8;
+
+      i,
+      span {
+        color: white;
+      }
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  // Keep the original large action buttons with new class name
+
+}
+
+// Animations
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7);
+  }
+
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .lead-header-card {
+    .header-icon {
+      width: 35px;
+      height: 35px;
+
+      i {
+        font-size: 16px;
+      }
+    }
+
+    .page-title {
+      font-size: 1rem;
+    }
+
+    .btn-outline-light,
+    .btn-light {
+      font-size: 11px;
+      padding: 4px 8px;
+    }
+  }
+
+  .progress-steps {
+    .step-container {
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .step-line {
+      display: none;
+    }
+
+    .step {
+      flex-direction: row;
+      gap: 10px;
+    }
+  }
+
+  .custom-accordion {
+
+
+    .accordion-body {
+      padding: 20px;
+    }
+  }
+
+  .action-buttons-section {
+    .action-icon {
+      width: 30px;
+      height: 30px;
+
+      i {
+        font-size: 14px;
+      }
+    }
+
+    .action-btn-compact {
+      padding: 6px 10px;
+      font-size: 12px;
+
+      i {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 24px;
+
+  &.action-primary {
+    background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
+    color: white;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
+
+  &.action-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
+
+  &.action-warning {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    color: white;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
+
+  &.action-secondary {
+    background: rgba(107, 114, 128, 0.1);
+    color: #374151;
+    border: 1px solid rgba(107, 114, 128, 0.2);
+
+    &:hover {
+      background: rgba(107, 114, 128, 0.2);
+    }
+  }
+}
+
+.accordion-button {
+  --bs-accordion-btn-padding-y: .375rem;
+}

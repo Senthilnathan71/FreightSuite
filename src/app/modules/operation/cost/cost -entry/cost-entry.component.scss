@@ -124,7 +124,7 @@
     }
 
     td {
-      padding: 6px;
+      padding: 4px;
       color: #374151;
         white-space: nowrap;  
       vertical-align: middle;
@@ -136,7 +136,7 @@
 .actions-cell {
   .action-buttons {
     display: flex;
-    gap: 2px;
+    gap: 8px;
   }
 }
 
@@ -147,7 +147,7 @@
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 
   &.edit {
     color: #17a2b8;
@@ -378,4 +378,63 @@
   .content-workspace {
     height: calc(100vh - 160px);
   }
+}
+
+.split-table-container {
+  display: flex;
+  max-height: 300px;
+  overflow-x: scroll;
+}
+
+.table-fixed {
+  width: fit-content;
+}
+
+.table-fixed table,
+.table-scrollable table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.table-header {
+  background-color: #005a9e;
+  color: white;
+  padding: 6px;
+  min-width: 120px;
+  width: 100%;
+}
+.table-header1 {
+  background-color: #005a9e;
+  color: white;
+  padding: 6px;
+  min-width: 90px;
+  width: 100%;
+}
+table tbody td {
+  padding: 0px 10px; 
+}
+
+.table-scrollable {
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-grow: 1;
+}
+
+.scroll-inner {
+  overflow-x: scroll;
+  cursor: pointer;
+}
+
+.scroll-inner::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-inner::-webkit-scrollbar-thumb {
+  background-color: #999;
+  border-radius: 4px;
+}
+
+
+.ng-dropdown-panel {
+  z-index: 9999 !important; 
 }

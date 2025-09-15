@@ -3,7 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
-import { NgbModal, NgbModalModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -36,7 +36,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     DatePipe,
     PreventMultiClickDirective,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './module.component.html',
   styleUrls: ['./module.component.scss']
@@ -153,14 +154,14 @@ export class ModuleComponent implements OnInit {
       Remarks: ['', [Validators.required, Validators.maxLength(300)]]
     });
   }
-  resetForm(): void {
+  // resetForm(): void {
     
-    this.moduleForm.get('status')?.disable();
-    this.moduleForm.reset({
-      status: 'Active',
-      icon: ''
-    });
-  }
+  //   this.moduleForm.get('status')?.disable();
+  //   this.moduleForm.reset({
+  //     status: 'Active',
+  //     icon: ''
+  //   });
+  // }
 
   openModal(content: any): void {
     this.isEditMode = false;
@@ -310,8 +311,33 @@ applySorting() {
     this.totalAmountOfCollection = 0;
     this.searchPerformed = false;
     this.filterValue = '';
+    this.loadModule();
     this.searchType = 'ModuleName';
   }
+
+  resetForm(): void {
+  // If editing an existing module, reload it (restore original state)
+  if (this.isEditMode && this.ModuleMasterSid) {
+    this.editModule(this.ModuleMasterSid, this.modalRef);
+    return;
+  }
+
+  // Create-mode: reset form to sensible defaults
+  this.moduleForm.reset({
+    ModuleName: '',
+    ModuleCode: '',
+    icon: '',
+    status: 'Active',
+    Remarks: ''
+  });
+
+  // Enable status field if it was disabled
+  this.moduleForm.get('status')?.enable();
+
+  // Clear form validation states
+  this.moduleForm.markAsUntouched();
+  this.moduleForm.updateValueAndValidity();
+}
   trackByIndex(index: number, item: any): number {
   return index; // or return item.ModuleMasterSid if you want to track by ID
 }

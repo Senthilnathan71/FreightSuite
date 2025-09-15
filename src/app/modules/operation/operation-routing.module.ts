@@ -16,6 +16,7 @@ import { SplitBookingEntryComponent } from './Split-Booking/split-booking-entry/
 import { MergeBookingComponent } from './merge-booking/merge-booking/merge-booking.component';
 import { ShipmentInstructionComponent } from './shipment-instruction/shipment-instruction/shipment-instruction.component';
 import { HouseJobEntryComponent } from './house-job/house-job-entry/house-job-entry.component';
+import { OperationReportComponent } from './operation-report/operation-report/operation-report.component';
 
 export const OperationRoutes: Routes = [
   {
@@ -180,6 +181,14 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'House Job',
           urls: [{ title: 'Master', url: '/master' }, { title: 'House Job' }],
+        }
+      },
+      {
+        path: 'operation-report',
+        component: OperationReportComponent,
+        data: {
+          title: 'Operation Report',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Operation Report' }],
         },
       },
     ],

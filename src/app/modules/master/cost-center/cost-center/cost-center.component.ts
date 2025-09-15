@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
@@ -43,7 +43,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     PreventMultiClickDirective,
     NgbModalModule,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './cost-center.component.html',
   styleUrl: './cost-center.component.scss'

@@ -21,8 +21,6 @@ import { ReportListComponent } from './report/report-list/report-list.component'
 import { ReportEntryComponent } from './report/report-entry/report-entry.component';
 import { CompanyListComponent } from './company/company-list/company-list.component';
 import { CompanyEntryComponent } from './company/company-entry/company-entry.component';
-import { AirlineListComponent } from './airline/airline-list/airline-list.component';
-import { AirlineEntryComponent } from './airline/airline-entry/airline-entry.component';
 import { MilestoneListComponent } from './milestone/milestone-list/milestone-list.component';
 import { MilestoneEntryComponent } from './milestone/milestone-entry/milestone-entry.component';
 import { OrganizationListComponent } from './organization/organization-list/organization-list.component';
@@ -406,22 +404,7 @@ export const MasterRoutes: Routes = [
     ],
   },
 },
-      {
-        path: 'airline/list',
-        component: AirlineListComponent,
-        data: {
-          title: 'Airline',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Airline' }],
-        },
-      },
-      {
-        path: 'airline/entry',
-        component: AirlineEntryComponent,
-        data: {
-          title: 'Airline',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Airline' }],
-        },
-      },
+
       {
         path: 'container-type/list',
         component: ContainerTypeListComponent,

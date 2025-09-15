@@ -44,7 +44,7 @@
 
   <div class="charges-nav">
     <div class="charge-types">
-      <div class="charge-type" [ngClass]="{ 'active': selectedTab === 'Cost' }" (click)="selectTab('Cost')">
+      <!-- <div class="charge-type" [ngClass]="{ 'active': selectedTab === 'Cost' }" (click)="selectTab('Cost')">
         <i class="far fa-money-bill-alt fs-3"></i>
         <span>Cost</span>
       </div>
@@ -52,6 +52,12 @@
       <div class="charge-type" [ngClass]="{ 'active': selectedTab === 'Revenue' }" (click)="selectTab('Revenue')">
         <i class="fas fa-hand-holding-usd fs-3"></i>
         <span>Revenue</span>
+      </div> -->
+
+      <div class="charge-type" [ngClass]="{ 'active': selectedTab === 'Sales and cost' }"
+        (click)="selectTab('Sales and cost')">
+        <i class="fas fa-hand-holding-usd fs-3"></i>
+        <span>Sales and Cost</span>
       </div>
 
       <div class="charge-type" [ngClass]="{ 'active': selectedTab === 'Profit' }" (click)="selectTab('Profit')">
@@ -63,7 +69,7 @@
 
   <!-- Modern Table Container -->
   <!-- Cost Table -->
-  <div class="modern-table-container" *ngIf="selectedTab === 'Cost'">
+  <!-- <div class="modern-table-container" *ngIf="selectedTab === 'Cost'">
     <div class="table-toolbar">
       <div class="toolbar-left">
         <button class="table-action-btn primary" (click)="openModalBasedOnTab(rateModal)">
@@ -77,9 +83,7 @@
         <button class="table-action-btn export" (click)="reportCostRates()">
           <i class="fas fa-download"></i> Export
         </button>
-        <!-- <button class="table-action-btn print">
-          <i class="fas fa-print"></i> Print
-        </button> -->
+       
       </div>
     </div>
     @if(costDataLength > 0){
@@ -176,20 +180,23 @@
       <div class="alert alert-info text-center">No Cost Rate added yet.</div>
     </div>
     }
-  </div>
+  </div> -->
 
-  <div class="modern-table-container" *ngIf="selectedTab === 'Revenue'">
+  <div class="modern-table-container" *ngIf="selectedTab === 'Sales and cost'">
     <!-- Revenue Table -->
     <div class="table-toolbar">
       <div class="toolbar-left">
-        <button class="table-action-btn primary" (click)="openModalBasedOnTab(rateModal)">
+        <!-- <button class="table-action-btn primary" (click)="openModalBasedOnTab(rateModal)">
           <i class="fas fa-plus"></i> Add Revenue
-        </button>
+        </button> -->
         <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)">
           <i class="fas fa-plus"></i> Get Tariff
         </button>
       </div>
       <div class="toolbar-right">
+        <button class="table-action-btn primary" (click)="addRow()">
+          <i class="fas fa-plus"></i> Add Row
+        </button>
         <button class="table-action-btn export" (click)="reportRevenueRates()">
           <i class="fas fa-download"></i> Export
         </button>
@@ -198,100 +205,348 @@
         </button> -->
       </div>
     </div>
-    @if(revenueDataLength > 0){
-    <div class="modern-table-wrapper">
-      <table class="modern-table">
-        <thead>
-          <tr>
-            <th width="10%">Actions</th>
-            <th>Sno</th>
-            <th>Charge</th>
-            <th>Charge Desc</th>
-            <th>PP/CC</th>
-            <th>Unit</th>
-            <th>No of Unit</th>
-            <th>Dr/Cr</th>
-            <th>Curr</th>
-            <th>Ex Rate</th>
-            <th>Rate</th>
-            <th>Amount</th>
-            <th>Local Amount</th>
-            <th>Billing Party</th>
-            <th>Voucher No</th>
-            <th>Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for(rate of slicedRevenueFormArray ; track rate ; let rateIndex = $index){
-          <tr class="table-row">
-            <td class="actions-cell">
-              <div class="action-buttons">
-                <button class="action-icon edit" (click)="openModalBasedOnTab(rateModal,rate,rateIndex)">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="action-icon copy" (click)="copyRate(rateModal,rate)">
-                  <i class="fas fa-copy"></i>
-                </button>
-                <button class="action-icon delete" (click)="deleteRate(rateIndex,'Revenue',rate.BookingRatesSid)">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </td>
-            <td>{{rateIndex + 1}}</td>
-            <td>
-              <div class="charge-code-cell">
-                <span class="code">{{getChargeCode(rate.ChargeMasterSid)}}</span>
-                <span class="code-desc">{{getChargeName(rate.ChargeMasterSid)}}</span>
-              </div>
-            </td>
-            <td>{{rate.ChargeDescription}}</td>
-            <td>
-              @if(rate.PrepaidCollect === "Collect"){
-              <span class="type-badge type-collect">COLLECT</span>
-              }
-              @else{
-              <span class="type-badge type-prepaid">PREPAID</span>
-              }
-            </td>
-            <td>{{getUnitCode(rate.ChargeUomSid)}}</td>
-            <td>{{rate.NumberOfUnit}}</td>
-            <td>{{rate.DrCr === 'D' ? 'Debit' : 'Credit'}}</td>
-            <td>
-              <div class="currency-cell">
-                <span class="currency">
-                  {{getCurrencyCode(rate.CurrencyMasterSid)}}
-                </span>
-                <button class="currency-remove">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-            </td>
-            <td>{{rate.ExchangeRate}}</td>
-            <td>{{rate.Rate}}</td>
-            <td>{{rate.Amount}}</td>
-            <td>{{rate.LocalAmount}}</td>
-            <td>
-              <div class="party-cell" *ngIf="getCustomerName(rate.CustomerMasterSid)">
-                <div class="party-indicator active"></div> <span>{{getCustomerName(rate.CustomerMasterSid)}}</span>
-              </div>
-            </td>
-            <td>{{rate.VoucherHeaderSid}}</td>
-            <td>{{getDocTypeName(rate.VoucherTypeSid)}}</td>
-          </tr>
-          }
-        </tbody>
-      </table>
+
+
+    <div class="split-table-container compact-form">
+      <!-- Fixed First Half -->
+      <div class="table-fixed ">
+        <table>
+          <thead>
+            <tr>
+              <th class="bg-info text-white">Actions</th>
+              <th class="table-header1">Charge <span class="text-danger">*</span></th>
+              <th class="table-header1">ChargeDesc</th>
+              <th class="table-header1">PP/CC</th>
+              <th class="table-header1">Unit</th>
+              <th class="table-header1">No of Unit <span class="text-danger">*</span></th>
+            </tr>
+          </thead>
+          <tbody #leftTableBody>
+            <tr *ngFor="let row of revenueRows;let i = index">
+              <td class="actions-cell" style="width: 10px;">
+                <div class="action-buttons">
+                  <!-- <button class="action-icon edit">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-icon copy">
+                    <i class="fas fa-copy"></i>
+                  </button> -->
+                  <button class="action-icon delete" (click)="deleteRow(i)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+              <td>
+                <div class="custom-form-group custom-form-group-select">
+                  <ng-select class="ng-select " [items]="chargeList" formControlName="ChargeMasterSid"
+                    bindValue="ChargeMasterSid" placeholder="Select Charge" bindLabel="chargeName"
+                    (change)="onChargeChange($event)" appendTo="body">
+                  </ng-select>
+
+                </div>
+              </td>
+              <td>
+                <div class="custom-form-group">
+                  <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                    formControlName="ChargeDescription" [textWithNumbers]="100">
+                  <label for=" text-input" class="input-label"> <span class="text-danger"></span></label>
+                </div>
+              </td>
+              <td>
+                <div class="custom-form-group custom-form-group-select">
+                  <ng-select formControlName="PrepaidCollect" [items]="ppcc" bindLabel="name" bindValue="name"
+                    placeholder="Select PP/CC" appendTo="body">
+                  </ng-select>
+
+                </div>
+              </td>
+              <td>
+                <div class="custom-form-group custom-form-group-select">
+                  <ng-select formControlName="" [items]="uomList" bindLabel="UOMName" bindValue="ChargeMasterSid"
+                    placeholder="Select Unit" appendTo="body">
+                  </ng-select>
+
+                </div>
+              </td>
+              <td>
+                <div class="custom-form-group">
+                  <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end" formControlName="NumberOfUnit">
+                  <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Scrollable Second Half -->
+      <div class="table-scrollable">
+        <div class="scroll-inner" #scrollContainer (scroll)="syncScroll($event)">
+          <table>
+            <thead>
+              <tr>
+                <th style="background-color: #00b09b;" class="table-header">Curr</th>
+                <th style="background-color: #00b09b;" class="table-header">Ex Rate <span class="text-danger">*</span>
+                </th>
+                <th style="background-color: #00b09b;" class="table-header">Per Unit</th>
+                <th style="background-color: #00b09b;" class="table-header">Curr Amt</th>
+                <th style="background-color: #00b09b;" class="table-header">Dr/Cr</th>
+                <th style="background-color: #00b09b;" class="table-header">Local Amt</th>
+                <th style="background-color: #00b09b;" class="table-header">Billing Party<span
+                    class="text-danger">*</span></th>
+
+                <th class="table-header">Tax Group</th>
+                <th class="table-header">Reference</th>
+                <th class="table-header">Type</th>
+
+                <th style="background-color: rgb(216, 143, 179);" class="table-header">Curr</th>
+                <th style="background-color: rgb(216, 143, 179);" class="table-header">Ex Rate <span
+                    class="text-danger">*</span></th>
+                <th style="background-color: rgb(216, 143, 179);" class="table-header">Per Unit</th>
+                <th style="background-color: rgb(216, 143, 179);" class="table-header">Curr Amt</th>
+                <th style="background-color: rgb(216, 143, 179);" class="table-header">Dr/Cr</th>
+                <th style="background-color: rgb(216, 143, 179);" class="table-header">Local Amt</th>
+                <th style="background-color: rgb(216, 143, 179);" class="table-header">Creditor<span
+                    class="text-danger">*</span></th>
+                <th class="table-header">Tax Group</th>
+                <th class="table-header">Reference</th>
+                <th class="table-header">Gross Profit</th>
+                <th class="table-header">Status</th>
+                <th class="table-header">Remarks</th>
+                <th class="table-header">Show Type</th>
+                <th class="table-header">DisSeq</th>
+                <th class="table-header">Dept</th>
+                <th class="table-header"> Profit Share</th>
+                <th class="table-header">Neutral</th>
+                <th class="table-header">Shipment No</th>
+              </tr>
+            </thead>
+            <tbody #rightTableBody>
+              <tr *ngFor="let row of revenueRows">
+                <td>
+                   <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
+            formControlName="CurrencyMasterSid" placeholder="Select Curr" (change)="onCurrencyChange($event)" appendTo="body">
+                    </ng-select>
+
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="" [items]="drcr" bindLabel="name" bindValue="value" formControlName="DrCr" class="ng-select"
+            placeholder="Select Dr/Cr"
+                      container="body" appendTo="body">
+                    </ng-select>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+
+                <td>
+                  <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="customerList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+            formControlName="CustomerMasterSid" placeholder="Select Billing Party" appendTo="body">
+                    </ng-select>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="" [items]="" bindLabel="name" bindValue="id" placeholder=""
+                      container="body" appendTo="body">
+                    </ng-select>
+
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm ">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                   <div class="custom-form-group custom-form-group-select">
+                    <ng-select [items]="currencyList" bindLabel="currencyName" bindValue="CurrencyMasterSid"
+            formControlName="CurrencyMasterSid" placeholder="Select Currency" (change)="onCurrencyChange($event)" appendTo="body">
+                    </ng-select>
+
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="" [items]="drcr" bindLabel="name" bindValue="name" formControlName="DrCr" class="ng-select"
+            placeholder="Select Dr/Cr"
+                      container="body" appendTo="body">
+                    </ng-select>
+
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="" [items]="" bindLabel="name" bindValue="id" placeholder=""
+                      container="body" appendTo="body">
+                    </ng-select>
+
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="" [items]="ModeofStatus" bindLabel="name" bindValue="id" placeholder=""
+                      container="body" appendTo="body">
+                    </ng-select>
+
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="" [items]="ModeofShowType" bindLabel="name" bindValue="id"
+                      placeholder="" container="body" appendTo="body">
+                    </ng-select>
+
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="" [items]="ModeofProfitShare" bindLabel="name" bindValue="id"
+                      placeholder="" container="body" appendTo="body">
+                    </ng-select>
+
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group custom-form-group-select">
+                    <ng-select formControlName="" [items]="ModeofNeutral" bindLabel="name" bindValue="id" placeholder=""
+                      container="body" appendTo="body">
+                    </ng-select>
+
+                  </div>
+                </td>
+                <td>
+                  <div class="custom-form-group">
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm">
+                    <label for="text-input" class="input-label"> <span class="text-danger"></span></label>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="fw-bold">Total Sale :</td>
+                <td>0</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="fw-bold">Total Cost :</td>
+                <td>0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div class="mt-2">
+
+
+    <div class="mt-2 mb-1">
       <ngb-pagination class="d-flex justify-content-end" [collectionSize]="revenueDataLength" [pageSize]="pageSize1"
         [(page)]="page1" (pageChange)="updateRevenuePagination()" [rotate]="true" [ellipses]="false" [maxSize]="10">
       </ngb-pagination>
     </div>
-    } @else {
-    <div class="col-12">
-      <div class="alert alert-info text-center">No Revenue Rate added yet.</div>
-    </div>
-    }
+
 
 
     <!-- Profit Table -->
@@ -342,10 +597,9 @@
             <td>{{ row.profit }}</td>
             <td>{{ row.profitPercent }}</td>
           </tr>
-        
+
           <!-- Total row with computed values -->
-          <tr class="table-row table-total"
-            style="font-weight: bold;">
+          <tr class="table-row table-total" style="font-weight: bold;">
             <td>Total</td>
             <td>{{ calculateTotal('totalSales') | number:'1.2-2' }}</td>
             <td>{{ calculateTotal('totalCost') | number:'1.2-2' }}</td>

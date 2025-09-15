@@ -1,0 +1,461 @@
+<!-- Manifest Document Upload Component -->
+<div class="document-upload-container">
+  <div class="header mb-3 d-flex align-items-start gap-3">
+    <div class="">
+      <h4 class="text-start">Manifest Document Processing</h4>
+      <p class="subtitle">Upload a PDF Manifest to automatically extract master job and house job data</p>
+    </div>
+    <div class="ms-auto">
+      <div class="p-2" style="cursor:pointer" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Upload Section -->
+  <div class="upload-section">
+    <div class="upload-card">
+      <div class="d-flex flex-wrap gap-3">
+        <div class="file-upload-wrapper col">
+          <input type="file" id="manifestFile" accept=".pdf" (change)="onFileSelected($event)" [disabled]="isUploading" #fileInput>
+          <label for="manifestFile" class="file-label" [class.disabled]="isUploading">
+            <span class="file-text">
+              {{ selectedFile?.name || 'Choose PDF file...' }}
+            </span>
+            <span class="file-size" *ngIf="selectedFile">
+              ({{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB)
+            </span>
+          </label>
+        </div>
+
+        <button type="button" class="btn btn-info btn-sm process-btn" [disabled]="!selectedFile || isUploading" (click)="uploadAndProcess()">
+          <span *ngIf="!isUploading">
+            Process Document
+          </span>
+          <span *ngIf="isUploading">
+            <i class="spinner"></i>
+            {{ uploadProgress.message }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-section" *ngIf="isUploading || (uploadProgress.percentage > 0 && uploadProgress.stage !== 'uploading')">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="uploadProgress.percentage" [class]="uploadProgress.stage"></div>
+        </div>
+        <div class="progress-text">
+          {{ uploadProgress.message }} ({{ uploadProgress.percentage }}%)
+        </div>
+      </div>
+
+      <!-- Status Messages -->
+      <div class="status-messages">
+        <div *ngIf="uploadError" class="error-message">
+          <i class="error-icon">⚠️</i>
+          {{ uploadError }}
+        </div>
+
+        <div *ngIf="extractedData && !uploadError && !isUploading" class="success-message">
+          <i class="success-icon">✅</i>
+          Manifest processed successfully!
+          <span class="confidence-score">
+            Confidence: {{ getRoundedConfidence(extractedData.confidence) }}%
+          </span>
+          <button type="button" class="link-btn" (click)="showExtractedDataModal()">
+            View extracted data
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Section -->
+  <div class="form-section" *ngIf="extractedData">
+    <form [formGroup]="manifestForm" (ngSubmit)="onCreateJob()" class="manifest-form">
+      <div class="form-header">
+        <h3>Manifest Information</h3>
+        <p class="confidence-display">
+          Processing Confidence:
+          <span class="confidence-badge" [class]="extractedData.confidence > 0.7 ? 'high' : 'low'">
+            {{ getRoundedConfidence(extractedData.confidence) }}%
+          </span>
+        </p>
+      </div>
+
+      <!-- Master Job Information Section -->
+      <div class="form-section-header">
+        <h4>Master Job Information</h4>
+      </div>
+      <div class="form-grid compact-form">
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="manifestNumber" formControlName="manifestNumber" placeholder=""
+              [class.invalid]="isFieldInvalid('manifestNumber')" class="form-control custom-input-field sm">
+            <label for="manifestNumber" class="input-label">Manifest Number *</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('manifestNumber')">
+            {{ getFieldError('manifestNumber') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="vesselName" formControlName="vesselName" placeholder=""
+              [class.invalid]="isFieldInvalid('vesselName')" class="form-control custom-input-field sm">
+            <label for="vesselName" class="input-label">Vessel Name *</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('vesselName')">
+            {{ getFieldError('vesselName') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="voyageNumber" formControlName="voyageNumber" placeholder=""
+              [class.invalid]="isFieldInvalid('voyageNumber')" class="form-control custom-input-field sm">
+            <label for="voyageNumber" class="input-label">Voyage Number *</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('voyageNumber')">
+            {{ getFieldError('voyageNumber') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="portOfLoading" formControlName="portOfLoading" placeholder=""
+              [class.invalid]="isFieldInvalid('portOfLoading')" class="form-control custom-input-field sm">
+            <label for="portOfLoading" class="input-label">Port of Loading *</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('portOfLoading')">
+            {{ getFieldError('portOfLoading') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="portOfDischarge" formControlName="portOfDischarge" placeholder=""
+              [class.invalid]="isFieldInvalid('portOfDischarge')" class="form-control custom-input-field sm">
+            <label for="portOfDischarge" class="input-label">Port of Discharge *</label>
+          </div>
+          <div class="error-text" *ngIf="isFieldInvalid('portOfDischarge')">
+            {{ getFieldError('portOfDischarge') }}
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="date" id="dateOfDeparture" formControlName="dateOfDeparture"
+              class="form-control custom-input-field sm">
+            <label for="dateOfDeparture" class="input-label">Date of Departure</label>
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="date" id="dateOfArrival" formControlName="dateOfArrival"
+              class="form-control custom-input-field sm">
+            <label for="dateOfArrival" class="input-label">Date of Arrival</label>
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="agent" formControlName="agent" placeholder=""
+              class="form-control custom-input-field sm">
+            <label for="agent" class="input-label">Agent</label>
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="carrier" formControlName="carrier" placeholder=""
+              class="form-control custom-input-field sm">
+            <label for="carrier" class="input-label">Carrier</label>
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="number" id="totalContainers" formControlName="totalContainers" placeholder=""
+              class="form-control custom-input-field sm">
+            <label for="totalContainers" class="input-label">Total Containers</label>
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="totalWeight" formControlName="totalWeight" placeholder=""
+              class="form-control custom-input-field sm">
+            <label for="totalWeight" class="input-label">Total Weight</label>
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="totalVolume" formControlName="totalVolume" placeholder=""
+              class="form-control custom-input-field sm">
+            <label for="totalVolume" class="input-label">Total Volume</label>
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="jobNumber" formControlName="jobNumber" placeholder=""
+              class="form-control custom-input-field sm">
+            <label for="jobNumber" class="input-label">Job Number</label>
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="date" id="etd" formControlName="etd"
+              class="form-control custom-input-field sm">
+            <label for="etd" class="input-label">ETD</label>
+          </div>
+        </aside>
+
+        <aside>
+          <div class="custom-form-group">
+            <input type="date" id="eta" formControlName="eta"
+              class="form-control custom-input-field sm">
+            <label for="eta" class="input-label">ETA</label>
+          </div>
+        </aside>
+      </div>
+
+      <!-- House Jobs Section -->
+      <div class="form-section-header" *ngIf="houseJobsArray.length > 0">
+        <h4>House Jobs Information ({{ houseJobsArray.length }} found)
+          <button type="button" class="btn btn-outline-success btn-sm ms-2" (click)="addHouseJob()">
+            <i class="fas fa-plus"></i> Add House Job
+          </button>
+        </h4>
+      </div>
+
+      <div class="house-jobs-section" *ngIf="houseJobsArray.length > 0" formArrayName="houseJobs">
+        <div class="house-job-card" *ngFor="let houseJob of houseJobsArray.controls; let i = index" [formGroupName]="i">
+          <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">House Job #{{ i + 1 }}</h6>
+              <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeHouseJob(i)" *ngIf="houseJobsArray.length > 1">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="form-grid compact-form">
+                <aside>
+                  <div class="custom-form-group">
+                    <input type="text" [id]="'hblNumber' + i" formControlName="hblNumber" placeholder=""
+                      [class.invalid]="houseJob.get('hblNumber')?.invalid && houseJob.get('hblNumber')?.touched"
+                      class="form-control custom-input-field sm">
+                    <label [for]="'hblNumber' + i" class="input-label">HBL Number *</label>
+                  </div>
+                  <div class="error-text" *ngIf="houseJob.get('hblNumber')?.invalid && houseJob.get('hblNumber')?.touched">
+                    HBL Number is required
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <input type="text" [id]="'shipper' + i" formControlName="shipper" placeholder=""
+                      [class.invalid]="houseJob.get('shipper')?.invalid && houseJob.get('shipper')?.touched"
+                      class="form-control custom-input-field sm">
+                    <label [for]="'shipper' + i" class="input-label">Shipper *</label>
+                  </div>
+                  <div class="error-text" *ngIf="houseJob.get('shipper')?.invalid && houseJob.get('shipper')?.touched">
+                    Shipper is required
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <textarea [id]="'shipperAddress' + i" formControlName="shipperAddress" placeholder="" rows="1"
+                      class="form-control custom-input-field sm dofi-h-38"></textarea>
+                    <label [for]="'shipperAddress' + i" class="input-label">Shipper Address</label>
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <input type="text" [id]="'consignee' + i" formControlName="consignee" placeholder=""
+                      [class.invalid]="houseJob.get('consignee')?.invalid && houseJob.get('consignee')?.touched"
+                      class="form-control custom-input-field sm">
+                    <label [for]="'consignee' + i" class="input-label">Consignee *</label>
+                  </div>
+                  <div class="error-text" *ngIf="houseJob.get('consignee')?.invalid && houseJob.get('consignee')?.touched">
+                    Consignee is required
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <textarea [id]="'consigneeAddress' + i" formControlName="consigneeAddress" placeholder="" rows="1"
+                      class="form-control custom-input-field sm dofi-h-38"></textarea>
+                    <label [for]="'consigneeAddress' + i" class="input-label">Consignee Address</label>
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <input type="text" [id]="'notifyParty' + i" formControlName="notifyParty" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label [for]="'notifyParty' + i" class="input-label">Notify Party</label>
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <input type="text" [id]="'cargoDescription' + i" formControlName="cargoDescription" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label [for]="'cargoDescription' + i" class="input-label">Cargo Description</label>
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <input type="text" [id]="'numberOfPackages' + i" formControlName="numberOfPackages" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label [for]="'numberOfPackages' + i" class="input-label">Number of Packages</label>
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <input type="text" [id]="'packageType' + i" formControlName="packageType" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label [for]="'packageType' + i" class="input-label">Package Type</label>
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <input type="text" [id]="'grossWeight' + i" formControlName="grossWeight" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label [for]="'grossWeight' + i" class="input-label">Gross Weight</label>
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <input type="text" [id]="'netWeight' + i" formControlName="netWeight" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label [for]="'netWeight' + i" class="input-label">Net Weight</label>
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <input type="text" [id]="'measurement' + i" formControlName="measurement" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label [for]="'measurement' + i" class="input-label">Measurement</label>
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <input type="text" [id]="'containerNumbers' + i" formControlName="containerNumbers" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label [for]="'containerNumbers' + i" class="input-label">Container Numbers (comma-separated)</label>
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <input type="text" [id]="'marksAndNumbers' + i" formControlName="marksAndNumbers" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label [for]="'marksAndNumbers' + i" class="input-label">Marks & Numbers</label>
+                  </div>
+                </aside>
+
+                <aside>
+                  <div class="custom-form-group">
+                    <input type="text" [id]="'freightTerms' + i" formControlName="freightTerms" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label [for]="'freightTerms' + i" class="input-label">Freight Terms</label>
+                  </div>
+                </aside>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add House Job Button -->
+        <div class="text-center mt-3" *ngIf="houseJobsArray.length === 0">
+          <button type="button" class="btn btn-outline-success" (click)="addHouseJob()">
+            <i class="fas fa-plus me-2"></i>Add House Job
+          </button>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-light btn-sm" (click)="resetForm()">
+          Clear Form
+        </button>
+        <button type="submit" class="btn btn-info btn-sm" [disabled]="manifestForm.invalid">
+          Create Master Job
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Extracted Data Modal -->
+  <div id="extractedDataModal" class="modal" *ngIf="extractedData && showModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>Extracted Data Details</h4>
+        <span class="close" (click)="closeExtractedDataModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="confidence-display">
+          <div class="confidence-item">
+            <strong>Processing Confidence:</strong>
+            <span class="confidence-badge" [class]="extractedData.confidence > 0.7 ? 'high' : 'low'">
+              {{ getRoundedConfidence(extractedData.confidence) }}%
+            </span>
+          </div>
+        </div>
+
+        <div class="structured-data">
+          <h5>Structured Extracted Data:</h5>
+          <div class="data-sections">
+
+            <!-- Master Job Information -->
+            <div class="data-section">
+              <h6>Master Job Information</h6>
+              <div class="data-item" *ngIf="extractedData.masterJob.manifestNumber">
+                <strong>Manifest Number:</strong> {{ extractedData.masterJob.manifestNumber }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.masterJob.vesselName">
+                <strong>Vessel Name:</strong> {{ extractedData.masterJob.vesselName }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.masterJob.voyageNumber">
+                <strong>Voyage Number:</strong> {{ extractedData.masterJob.voyageNumber }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.masterJob.portOfLoading">
+                <strong>Port of Loading:</strong> {{ extractedData.masterJob.portOfLoading }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.masterJob.portOfDischarge">
+                <strong>Port of Discharge:</strong> {{ extractedData.masterJob.portOfDischarge }}
+              </div>
+              <div class="data-item" *ngIf="extractedData.masterJob.carrier">
+                <strong>Carrier:</strong> {{ extractedData.masterJob.carrier }}
+              </div>
+            </div>
+
+            <!-- House Jobs -->
+            <div class="data-section" *ngIf="extractedData.houseJobs && extractedData.houseJobs.length > 0">
+              <h6>House Jobs ({{ extractedData.houseJobs.length }} found)</h6>
+              <div *ngFor="let house of extractedData.houseJobs; let i = index" class="house-job-item">
+                <strong>HBL {{ i + 1 }}:</strong> {{ house.hblNumber || 'N/A' }}<br>
+                <small>{{ house.shipper }} → {{ house.consignee }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

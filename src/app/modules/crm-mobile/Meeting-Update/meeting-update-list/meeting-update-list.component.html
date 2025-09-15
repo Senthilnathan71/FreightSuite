@@ -1,11 +1,15 @@
-<ngx-spinner
+<!-- <ngx-spinner
   bdColor="rgba(0,0,0,0.8)"
   size="medium"
   color="#fff"
   type="ball-scale-ripple"
   [fullScreen]="true">
   <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner> -->
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
+
 <div class="row">
     <!-- Search Panel -->
     <div class="col-12">
@@ -166,11 +170,29 @@
 <!-- Update Meeting Modal -->
 <ng-template #modalContentAdd let-close="close">
     <div class="modal-header p-2 bg-info">
-        <h5 class="modal-title text-white">Update Meeting</h5>
-        <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
+        <h5 class="modal-title text-white">Edit Meeting</h5>
+        <a class="text-white ps-2" (click)="showInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
         </a>
+        <div class="ms-auto d-flex align-items-center">
+                <div ngbDropdown class="d-inline-block me-2">
+                    <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+                        ngbDropdownToggle>
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                                class="fas fa-file-alt me-1"></i> Edoc</button>
+                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                                class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                                class="fas fa-shield-alt me-1"></i> Authorize</button>
+                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                                class="fas fa-envelope me-1"></i> Email</button>
+                    </div>
+                </div>
         <button type="button" class="btn-close btn-close-white" (click)="close()"></button>
+        </div>
     </div>
 
     <form [formGroup]="meetingForm">
@@ -379,7 +401,7 @@
             </section>
         </div>
         <div class="modal-footer">
-            <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
+            <!-- <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
         <i class="fas fa-file-alt me-1"></i> e-Doc
       </button>
                 <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openTandC()">
@@ -391,10 +413,16 @@
                 
       <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto "(click)="openEmail()" >
         <i class="fas fa-envelope me-1"></i> Email
-      </button>
+      </button> -->
+      <button type="button" class="btn btn-secondary btn-sm" (click)="modalRef.dismiss()">Cancel</button>
+        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="resetForm()">
+            <i class="fas fa-sync-alt me-1"></i>
+            Reset
+          </button>
             <button class="btn btn-info btn-sm" appPreventMultiClick [disableTime]="2000" [isLoading]="btnDisable"
                 (click)="onUpdateMeeting()">
-                Save
+                Edit
             </button>
         </div>
     </form>

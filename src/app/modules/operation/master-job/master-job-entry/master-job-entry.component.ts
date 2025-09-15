@@ -39,6 +39,7 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { LoadingPlanEntryComponent } from '../../loading-plan/loading-plan-entry/loading-plan-entry.component';
 import { MasterDocumentUploadComponent } from '../../master-document-upload/master-document-upload.component';
+import { ManifestDocumentUploadComponent } from '../../manifest-document-upload/manifest-document-upload.component';
 
 @Component({
   selector: 'app-master-job-entry',
@@ -355,6 +356,88 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       backdrop: 'static',
       centered: true,
     });
+  }
+
+  uploadManifest() {
+    const modalRef = this.modalService.open(ManifestDocumentUploadComponent, {
+      size: 'xl',
+      backdrop: 'static',
+      centered: true,
+    });
+
+    // Reset component state when opening modal
+    setTimeout(() => {
+      modalRef.componentInstance.resetForm();
+    }, 100);
+
+    modalRef.componentInstance.createJob.subscribe((manifestData: any) => {
+      if (manifestData && manifestData.masterJob) {
+        // Populate the master job form with manifest data
+        this.populateFormFromManifest(manifestData);
+        modalRef.close();
+      }
+    });
+  }
+
+  private populateFormFromManifest(manifestData: any) {
+    const masterJob = manifestData.masterJob;
+
+    // Find ports by matching names or codes
+    const findPortByNameOrCode = (portName: string): any => {
+      if (!portName) return null;
+      return this.portList.find(port =>
+        port.PortName.toLowerCase().includes(portName.toLowerCase()) ||
+        port.PortCode.toLowerCase().includes(portName.toLowerCase())
+      );
+    };
+
+    const polPort = findPortByNameOrCode(masterJob.portOfLoading);
+    const podPort = findPortByNameOrCode(masterJob.portOfDischarge);
+
+    // Parse dates
+    const parseDate = (dateStr: string): Date | null => {
+      if (!dateStr) return null;
+      const date = new Date(dateStr);
+      return isNaN(date.getTime()) ? null : date;
+    };
+
+    // Update form with manifest data
+    this.masterJobForm.patchValue({
+      VesselName: masterJob.vesselName || '',
+      VoyageNo: masterJob.voyageNumber || '',
+      POL: polPort ? polPort.PortMasterSid : null,
+      POD: podPort ? podPort.PortMasterSid : null,
+      ETD: parseDate(masterJob.dateOfDeparture),
+      ETA: parseDate(masterJob.dateOfArrival),
+      CarrierName: masterJob.carrier || '',
+      DestinationAgent: masterJob.agent || '',
+      NoOfPkg: masterJob.totalContainers || 0,
+      GrossWeight: this.parseWeight(masterJob.totalWeight),
+      Volume: this.parseVolume(masterJob.totalVolume),
+    });
+
+    // Update port filters if ports were found
+    if (polPort) {
+      this.handlePOLChange(polPort);
+    }
+    if (podPort) {
+      this.handlePODChange(podPort);
+    }
+
+    // Show success message
+    this.toastr.success(`Manifest data loaded successfully with ${manifestData.houseJobs?.length || 0} house jobs`);
+  }
+
+  private parseWeight(weightStr: string): number {
+    if (!weightStr) return 0;
+    const match = weightStr.match(/[\d.,]+/);
+    return match ? parseFloat(match[0].replace(',', '')) : 0;
+  }
+
+  private parseVolume(volumeStr: string): number {
+    if (!volumeStr) return 0;
+    const match = volumeStr.match(/[\d.,]+/);
+    return match ? parseFloat(match[0].replace(',', '')) : 0;
   }
   initForm() {
     this.masterJobForm = this.fb.group({

@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, TemplateRef } from '@angular/core';
-import { NgbAccordionModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { LeadService } from '../Services/lead.service';
 import { City } from '../Interfaces/city.interface';
@@ -29,6 +29,7 @@ import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
   standalone: true,
   imports: [
     NgbAccordionModule,
+    NgbDropdownModule,
     CommonModule,
     ReactiveFormsModule,
     FeatherModule,
@@ -348,10 +349,54 @@ openAuditLogs(modal: TemplateRef<any>) {
     }
   }
 
-  reset() {
-    this.leadForm.reset();
+  // reset() {
+  //   this.leadForm.reset();
+  // }
+reset() {
+  // If editing an existing lead, reload it (restore original state)
+  if (this.isEditMode && this.PreCustomerMasterSid) {
+    this.loadLeadData(this.PreCustomerMasterSid);
+    return;
   }
 
+  // Create-mode: reset form to initial state with proper default values
+  this.leadForm.reset({
+    preCustomerName: null,
+    leadReferredBy: null,
+    leadFrom: null,
+    preCustomerType: null,
+    preCustomerAddress1: null,
+    preCustomerAddress2: null,
+    POBOX: null,
+    CountryMasterSid: null,
+    StateMasterSid: null,
+    CityMasterSid: null,
+    contactPerson: null,
+    email: null,
+    phone: null,
+    PreferredContactMode: 'Email',
+    LanguagePreferrence: null,
+    ServiceOfInterest: null,
+    PurchaseTimeline: null,
+    SpecificRequirements: null,
+    Industry: null,
+    CompanySize: null,
+    AnnualRevenue: null,
+    Notes: null,
+    status: 'Active'
+  });
+
+  // Reset validation state
+  this.leadForm.markAsUntouched();
+  this.leadForm.markAsPristine();
+  
+  // Reset related data arrays
+  this.stateList = [];
+  this.cityList = [];
+  
+  // Clear selected data
+  this.leadData = null;
+}
   goBack() {
     this.router.navigate(['crm/lead/list'])
   }
