@@ -70,6 +70,25 @@ export class CostEntryComponent implements OnInit {
     { name: 'Revenue', icon: 'fas fa-chart-line' },
     { name: 'Profit', icon: 'fas fa-dollar-sign' },
   ];
+  ModeofStatus=[
+    {id:'A',name:"Active"},
+    {id:'S',name:"Suspended"}
+  ]
+  ModeofShowType=[
+    {id:1,name:"All"},
+    {id:2,name:"Accounting"},
+    {id:3,name:"Non-Accounting"},
+    {id:4,name:"Manifest"},
+    {id:5,name:"Non-Manifest"}
+  ]
+  ModeofProfitShare=[
+    {id:1,name:"Yes"},
+    {id:2,name:"No"}
+  ]
+  ModeofNeutral=[
+     {id:1,name:"Yes"},
+    {id:2,name:"No"}
+  ]
   selectTab(tab: string) {
     this.selectedTab = tab;
   }
@@ -227,9 +246,10 @@ syncScroll(event: Event) {
     });
   }
 
-  deleteRow(index: number) {
-    this.revenueRows.splice(index, 1);
-  }
+ deleteRow(index: number): void {
+  this.revenueRows.splice(index, 1);
+}
+
 
 
   initRateForm() {
