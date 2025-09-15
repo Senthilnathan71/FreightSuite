@@ -140,6 +140,14 @@ export class OperationService {
     );
   }
 
+  getAllCustomers(payload) {
+    return this.http.post<{ data: any[] }>('customer', payload).pipe(
+      map((resp) => {
+        return resp.data;
+      })
+    );
+  }
+
   getCustomerBranchByCustomer(CustomerMasterSid: number) {
     return this.http.get<{ data: any[] }>(`customer-branch/fetch-by/${CustomerMasterSid}`).pipe(
       map((resp) => {
@@ -450,4 +458,20 @@ getAllPorts() {
     })
   );
 }
+
+  getAllBookingForMerging(payload: any) {
+    return this.http.post<{ data: any[] }>('merge-booking/allBookings', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  mergeBooking(payload: any) {
+    return this.http.post<{ data: any[] }>('merge-booking/merge', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
 }
