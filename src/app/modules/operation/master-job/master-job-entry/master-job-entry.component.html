@@ -30,7 +30,7 @@
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
                         <button class="text-dark" ngbDropdownItem (click)="uploadPDF()" [disabled]="isLoading">HBL</button>
-                        <button class="text-dark" ngbDropdownItem>Manifest</button>
+                        <button class="text-dark" ngbDropdownItem (click)="uploadManifest()" [disabled]="isLoading">Manifest</button>
                     </div>
                 </div>
             </div>

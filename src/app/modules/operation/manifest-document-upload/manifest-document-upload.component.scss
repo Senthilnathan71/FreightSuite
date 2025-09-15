@@ -1,0 +1,473 @@
+/* Manifest Document Upload Component Styles */
+
+.document-upload-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+
+  .subtitle {
+    color: #7f8c8d;
+    margin: 0;
+  }
+}
+
+/* Upload Section */
+.upload-section {
+  margin-bottom: 16px;
+
+  .upload-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+  }
+}
+
+.file-upload-wrapper {
+  #manifestFile {
+    display: none;
+  }
+
+  .file-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px;
+    border: 2px dashed var(--bs-border-color);
+    border-radius: 8px;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #495057;
+
+    &:hover:not(.disabled) {
+      border-color: #3498db;
+      background: #ebf3fd;
+    }
+
+    &.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .upload-icon {
+      font-size: 24px;
+    }
+
+    .file-text {
+      font-weight: 500;
+    }
+
+    .file-size {
+      color: #6c757d;
+      font-size: 14px;
+    }
+  }
+}
+
+.process-btn {
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ffffff40;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+/* Progress Bar */
+.progress-section {
+  margin-top: 20px;
+
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+
+    .progress-fill {
+      height: 100%;
+      transition: width 0.3s ease;
+      border-radius: 4px;
+
+      &.uploading {
+        background: linear-gradient(90deg, #3498db, #5dade2);
+      }
+
+      &.processing {
+        background: linear-gradient(90deg, #f39c12, #f7dc6f);
+      }
+
+      &.complete {
+        background: linear-gradient(90deg, #27ae60, #58d68d);
+      }
+
+      &.error {
+        background: linear-gradient(90deg, #e74c3c, #ec7063);
+      }
+    }
+  }
+
+  .progress-text {
+    margin-top: 8px;
+    text-align: center;
+    font-size: 14px;
+    color: #6c757d;
+  }
+}
+
+/* Status Messages */
+.status-messages {
+  margin-top: 20px;
+
+  .error-message, .success-message {
+    padding: 12px 16px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    position: unset;
+  }
+
+  .error-message {
+    background: #fdf2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+
+    .error-icon {
+      font-size: 16px;
+    }
+  }
+
+  .success-message {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #16a34a;
+
+    .success-icon {
+      font-size: 16px;
+    }
+
+    .confidence-score {
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .link-btn {
+      background: none;
+      border: none;
+      color: #2563eb;
+      text-decoration: underline;
+      cursor: pointer;
+      margin-left: 8px;
+
+      &:hover {
+        color: #1d4ed8;
+      }
+    }
+  }
+}
+
+/* Form Section */
+.form-section {
+  .manifest-form {
+    background: #fff;
+  }
+
+  .form-header {
+    margin-bottom: 16px;
+    text-align: center;
+
+    h3 {
+      margin: 0 0 8px 0;
+      color: #1f2937;
+    }
+
+    .confidence-display {
+      color: #7f8c8d;
+      margin: 0;
+
+      .confidence-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+
+        &.high {
+          background: #d1fae5;
+          color: #065f46;
+        }
+
+        &.low {
+          background: #fef2f2;
+          color: #b91c1c;
+        }
+      }
+    }
+  }
+
+  .form-section-header {
+    margin: 20px 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+
+    h4 {
+      margin: 0;
+      color: #1f2937;
+      font-size: 18px;
+    }
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .full-width {
+    grid-column: 1 / -1;
+  }
+
+  .house-jobs-section {
+    margin-top: 20px;
+
+    .house-job-card {
+      .card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+        .card-header {
+          background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+          border-bottom: 1px solid #dee2e6;
+          padding: 12px 16px;
+
+          h6 {
+            color: #495057;
+            font-weight: 600;
+          }
+
+          .btn-outline-danger {
+            padding: 4px 8px;
+            font-size: 12px;
+          }
+        }
+
+        .card-body {
+          padding: 16px;
+        }
+      }
+    }
+
+    .table {
+      font-size: 0.875rem;
+
+      th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+        padding: 8px;
+      }
+
+      td {
+        padding: 8px;
+        vertical-align: top;
+        border: 1px solid #dee2e6;
+
+        small {
+          line-height: 1.4;
+        }
+      }
+
+      tbody tr {
+        &:hover {
+          background-color: #f8f9fa;
+        }
+
+        &:nth-child(even) {
+          background-color: #fdfdfd;
+        }
+      }
+    }
+  }
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+/* Modal Styles */
+.modal {
+  display: block;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+
+  .modal-content {
+    background: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+
+  .modal-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h4 {
+      margin: 0;
+      color: #1f2937;
+    }
+
+    .close {
+      font-size: 28px;
+      font-weight: bold;
+      color: #9ca3af;
+      cursor: pointer;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #374151;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: 30px;
+
+    .confidence-display {
+      margin-bottom: 20px;
+      text-align: center;
+
+      .confidence-item {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #f9fafb;
+        border-radius: 8px;
+      }
+    }
+
+    .data-sections {
+      display: grid;
+      gap: 20px;
+    }
+
+    .data-section {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
+
+      h6 {
+        margin: 0 0 12px 0;
+        color: #1f2937;
+        font-weight: 600;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 8px;
+      }
+    }
+
+    .data-item {
+      padding: 8px;
+      background: #f9fafb;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      border-left: 4px solid #3b82f6;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      strong {
+        color: #1f2937;
+        display: block;
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
+    }
+
+    .house-job-item {
+      padding: 8px;
+      background: #f0fdf4;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      border-left: 4px solid #22c55e;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+.error-text {
+  color: #F93232;
+  font-size: 12px;
+}
+
+/* Animations */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .document-upload-container {
+    padding: 16px;
+  }
+
+  .upload-card, .manifest-form {
+    padding: 20px;
+  }
+
+  .header h4 {
+    font-size: 24px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
