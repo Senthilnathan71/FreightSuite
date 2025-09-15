@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
-import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router, RouterLink, RouterModule } from '@angular/router';
@@ -37,7 +37,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     DatePipe,
     PreventMultiClickDirective,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './role.component.html',
   styleUrl: './role.component.scss',
@@ -206,12 +207,38 @@ onKeyPress(event: KeyboardEvent, field: string) {
   }
 }
 
+  // resetForm(): void {
+  //   this.roleForm.get('status')?.disable();
+  //   this.roleForm.reset({
+  //     status: 'Active'
+  //   });
+  // }
+
   resetForm(): void {
-    this.roleForm.get('status')?.disable();
-    this.roleForm.reset({
-      status: 'Active'
-    });
+  // If editing an existing role, reload it (restore original state)
+  if (this.isEditMode && this.RoleMasterSid) {
+    this.loadRoleData(this.RoleMasterSid);
+    return;
   }
+
+  // Create-mode: reset form to sensible defaults
+  this.roleForm.reset({
+    UserRoleName: '',
+    UserRoleCode: '',
+    LicenseType: '',
+    status: 'Active'
+  });
+
+  // Enable status field if it was disabled
+  this.roleForm.get('status')?.enable();
+
+  // Clear form validation states
+  this.roleForm.markAsUntouched();
+  this.roleForm.updateValueAndValidity();
+
+  // Reset error message
+  this.errorMessage = '';
+}
 
  openModal(content: any): void {
   this.isEditMode = false;
@@ -389,6 +416,7 @@ applySorting() {
     this.searchType = 'UserRoleName';
     this.sortColumn = 'UserRoleName'; 
     this.sortDirection = 'asc';
+    this.loadRoles();
   }
   clearFilterValue() {
   this.filterValue = '';

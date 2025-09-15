@@ -268,7 +268,72 @@ clearFilterValue(){
 		this.searchForm.reset();
 		this.sortColumn = 'MenuMasterSid';
         this.sortDirection = 'asc';
+		this.fetchAllData();
 	}
+
+	resetForm(): void {
+  // If editing an existing role menu, reload the form data without reopening modal
+  if (this.isEditMode && this.RoleMenuMasterSid && this.roleMenuData) {
+    this.loadRoleMenuData(this.roleMenuData);
+    return;
+  }
+
+  // Create-mode: reset form to sensible defaults
+  this.roleMenuForm.reset({
+    Module: null,
+    MenuMasterSid: null,
+    RoleMasterSid: null,
+    Remarks: '',
+    MenuPermissions: {},
+    status: 'Active',
+    InsertRole: true,
+    ViewRole: true,
+    UpdateRole: true,
+    DeleteRole: false
+  });
+
+  // Clear related data
+  this.menuList = [];
+  this.selectedPermission = [];
+  this.menuPermissionList = [];
+  this.menuPermissionsFetched = false;
+
+  // Clear form validation states
+  this.roleMenuForm.markAsUntouched();
+  this.roleMenuForm.updateValueAndValidity();
+}
+
+// Helper method to load role menu data into the form
+private loadRoleMenuData(data: any) {
+  const ourModule = this.moduleList.find(module => module.ModuleName === data.Module);
+  this.filterMenuByModule(ourModule);
+  this.getMenuPermissions(data);
+  
+  let permissions = data.MenuPermissions;
+  if (typeof permissions === 'string') {
+    try {
+      permissions = JSON.parse(permissions);
+    } catch (e) {
+      console.error('Error parsing permissions:', e);
+      permissions = {};
+    }
+  }
+  
+  this.roleMenuForm.patchValue({
+    Module: data.Module,
+    MenuMasterSid: data.MenuMasterSid,
+    RoleMasterSid: data.RoleMasterSid,
+    Remarks: data.Remarks,
+    status: data.status === 'A' ? 'Active' : 'Suspended',
+  });
+  
+  if (permissions) {
+    this.selectedPermission = Object.entries(permissions)
+      .filter(([key, value]) => value === 'isTrue')
+      .map(([key]) => key);
+  }
+  this.updatePermissionControl();
+}
 
 	report(): void {
 		const formattedData = this.roleMenuList.map(item => ({

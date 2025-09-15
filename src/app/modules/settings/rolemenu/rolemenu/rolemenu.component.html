@@ -77,7 +77,7 @@
     </div>
     <ng-template #entrycontent let-modal>
         <div class="modal-header p-2 bg-info text-white">
-            <h4 class="modal-title">{{isEditMode ? 'Update Role Menu' : 'Role Menu'}}</h4>
+            <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Role Menu</h4>
             @if(isEditMode){
             <a class="text-white ps-2 w-2 h-2" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
@@ -233,8 +233,13 @@
       
             } -->
             <button type="button" class="btn btn-secondary btn-sm" (click)="closeModal()">Cancel</button>
+            <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="resetForm()">
+            <i class="fas fa-sync-alt me-1"></i>
+            Reset
+          </button>
             <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
-                [disabled]="roleMenuForm.invalid">{{isEditMode ?'Update':'Save'}}</button>
+                [disabled]="roleMenuForm.invalid">{{isEditMode ?'Edit':'Save'}}</button>
         </div>
     </ng-template>
 
