@@ -174,7 +174,6 @@ export class EnquiryEntryComponent implements OnInit {
     this.initializeForm();
     this.initOthersForm();
 
-
     this.userData = this.appSettingsService.getDecryptedUserProfile();
     const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingsService.decrypt(storedCompany) : null;
@@ -183,6 +182,14 @@ export class EnquiryEntryComponent implements OnInit {
 
     this.loadAllLookups().subscribe(() => {
       this.loadOtherFormLookups();
+
+      // Check for voice enquiry data first
+      this.activatedRoute.queryParams.subscribe(queryParams => {
+        if (queryParams['voice'] === 'true') {
+          this.handleVoiceEnquiryData();
+        }
+      });
+
       this.activatedRoute.paramMap.subscribe((params) => {
         this.EnquiryHeaderSid = +params.get('id');
         if (this.EnquiryHeaderSid) {
@@ -1011,6 +1018,111 @@ export class EnquiryEntryComponent implements OnInit {
     // 	centered: true,
     // 	backdrop: 'static'
     // });
+  }
+
+  private handleVoiceEnquiryData(): void {
+    const voiceData = this.leadService.getVoiceEnquiryData();
+
+    if (!voiceData || Object.keys(voiceData).length === 0) {
+      return;
+    }
+
+    console.log('Voice enquiry data received:', voiceData);
+
+    // Clear voice data after use
+    this.leadService.clearVoiceEnquiryData();
+
+    // Pre-fill form with voice data
+    this.prefillFormWithVoiceData(voiceData);
+
+    // Show notification about voice data
+    this.appSettingsService.showSuccess('Form pre-filled with voice input data. Please review and complete any missing fields.');
+  }
+
+  private prefillFormWithVoiceData(voiceData: any): void {
+    // Set basic form values
+    if (voiceData.CustomerMasterSid) {
+      this.rateRequestForm.patchValue({
+        CustomerMasterSid: voiceData.CustomerMasterSid,
+        customerName: voiceData.customerName
+      });
+    }
+
+    if (voiceData.DepartmentMasterSid) {
+      this.rateRequestForm.patchValue({
+        DepartmentMasterSid: voiceData.DepartmentMasterSid,
+        Segment: voiceData.Segment
+      });
+      this.selectedFCLLCL = voiceData.Segment;
+    }
+
+    if (voiceData.shipmentDate) {
+      this.rateRequestForm.patchValue({
+        shipmentDate: voiceData.shipmentDate
+      });
+    }
+
+    // Handle routes data
+    if (voiceData.routes && voiceData.routes.length > 0) {
+      const routesArray = this.rateRequestForm.get('routes') as FormArray;
+      routesArray.clear();
+
+      voiceData.routes.forEach((routeData: any, routeIndex: number) => {
+        const routeFormGroup = this.fb.group({
+          POO: [routeData.POO, Validators.required],
+          POL: [routeData.POL, Validators.required],
+          POD: [routeData.POD, Validators.required],
+          FDC: [routeData.FDC, Validators.required],
+          cargo: this.fb.array([])
+        });
+
+        // Handle cargo data
+        if (routeData.cargo && routeData.cargo.length > 0) {
+          const cargoArray = routeFormGroup.get('cargo') as FormArray;
+
+          routeData.cargo.forEach((cargoData: any) => {
+            const cargoForm = this.fb.group({
+              CargoType: [cargoData.CargoType || 'General', Validators.required],
+              ProductName: [cargoData.ProductName, Validators.required],
+              CargoDescription: [cargoData.CargoDescription],
+              PackageType: [cargoData.PackageType],
+              PackageQty: [cargoData.PackageQty],
+              Qty: [cargoData.Qty || '1'],
+              WeightUnitSid: [cargoData.WeightUnitSid],
+              GrossWeight: [cargoData.GrossWeight],
+              NetWeight: [cargoData.NetWeight],
+              ShipmentTerms: [cargoData.ShipmentTerms],
+              cbm: [cargoData.cbm || '1'],
+              ContainerType: [cargoData.ContainerType],
+              ChargeableWeight: [cargoData.ChargeableWeight],
+              length: [cargoData.length],
+              width: [cargoData.width],
+              height: [cargoData.height]
+            });
+
+            this.updateCargoValidators(cargoForm, this.selectedFCLLCL);
+            cargoArray.push(cargoForm);
+          });
+        } else {
+          // Add default cargo if none provided
+          this.addCargo(routeIndex);
+        }
+
+        routesArray.push(routeFormGroup);
+      });
+    }
+
+    // Mark form as touched to show validation
+    this.rateRequestForm.markAllAsTouched();
+
+    // Show additional info about voice extraction
+    if (voiceData.rawTranscription) {
+      console.log('Original voice transcription:', voiceData.rawTranscription);
+    }
+
+    if (voiceData.confidence) {
+      console.log('Extraction confidence scores:', voiceData.confidence);
+    }
   }
 
 

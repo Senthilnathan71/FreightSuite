@@ -15,6 +15,8 @@
   import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
   import { forkJoin } from 'rxjs';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { VoiceEnquiryComponent } from '../voice-enquiry/voice-enquiry.component';
 
   @Component({
     selector: 'app-enquiry-list',
@@ -59,13 +61,14 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     currentCompany : any;
     currentBranch : any;
     constructor(
-      private leadService: LeadService, 
-      private route: Router, 
+      private leadService: LeadService,
+      private route: Router,
       private appService: AppService,
       private appSettingService:AppSettingsService,
       private excelReportService : ExcelExportService,
       private datePipe : CustomDatePipe,
-       private spinner: NgxSpinnerService
+      private spinner: NgxSpinnerService,
+      private modalService: NgbModal
     ) { }
 
     ngOnInit(): void {
@@ -276,5 +279,36 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
       this.page = 1;
       this.searchPerformed = false;
       this.searchEnquiry();
+    }
+
+    openVoiceEnquiry(): void {
+      // Check browser support for speech recognition
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        this.appSettingService.showError('Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.');
+        return;
+      }
+
+      const modalRef = this.modalService.open(VoiceEnquiryComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static',
+        keyboard: false
+      });
+
+      modalRef.componentInstance.enquiryCreated.subscribe((enquiryData: any) => {
+        this.handleVoiceEnquiryCreated(enquiryData);
+      });
+
+      modalRef.componentInstance.modalClosed.subscribe(() => {
+        modalRef.close();
+      });
+    }
+
+    private handleVoiceEnquiryCreated(enquiryData: any): void {
+      // Navigate to enquiry entry page with pre-filled data
+      this.leadService.setVoiceEnquiryData(enquiryData);
+      this.route.navigate(['crm/enquiry/entry'], {
+        queryParams: { voice: 'true' }
+      });
     }
   }
