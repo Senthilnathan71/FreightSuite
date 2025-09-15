@@ -1,4 +1,4 @@
-import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -35,7 +35,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 })
 export class CostEntryComponent implements OnInit {
 
-  selectedTab = 'Cost';
+  selectedTab = 'Sales and cost';
   costFormArray: FormArray;
   revenueFormArray: FormArray;
   chargeList: any[] = [];
@@ -145,7 +145,13 @@ export class CostEntryComponent implements OnInit {
 
   @Output() dataEmitter = new EventEmitter<any[]>();
 
-
+  @ViewChild('scrollContainer') scrollContainer!: ElementRef;
+@ViewChild('leftTableBody') leftBody!: ElementRef;
+@ViewChild('rightTableBody') rightBody!: ElementRef;
+syncScroll(event: Event) {
+  const scrollTop = (event.target as HTMLElement).scrollTop;
+  this.leftBody.nativeElement.scrollTop = scrollTop;
+}
   rateForm!: FormGroup;
   currentRateIndex: number = -1;
 
@@ -181,6 +187,50 @@ export class CostEntryComponent implements OnInit {
       this.docTypeList = allMasters.docTypes;
     })
   }
+
+
+  revenueRows = [
+    {
+      charge: '',
+      chargeDesc: '',
+      ppcc: '',
+      unit: '',
+      noOfUnit: '',
+      drCr: '',
+      curr: '',
+      exRate: '',
+      rate: '',
+      amount: '',
+      localAmount: '',
+      billingParty: '',
+      voucherNo: '',
+      type: ''
+    }
+  ];
+
+  addRow() {
+    this.revenueRows.push({
+      charge: '',
+      chargeDesc: '',
+      ppcc: '',
+      unit: '',
+      noOfUnit: '',
+      drCr: '',
+      curr: '',
+      exRate: '',
+      rate: '',
+      amount: '',
+      localAmount: '',
+      billingParty: '',
+      voucherNo: '',
+      type: ''
+    });
+  }
+
+  deleteRow(index: number) {
+    this.revenueRows.splice(index, 1);
+  }
+
 
   initRateForm() {
     this.rateForm = this.fb.group({

@@ -124,7 +124,7 @@
     }
 
     td {
-      padding: 6px;
+      padding: 4px;
       color: #374151;
         white-space: nowrap;  
       vertical-align: middle;
@@ -136,7 +136,8 @@
 .actions-cell {
   .action-buttons {
     display: flex;
-    gap: 2px;
+    gap: 8px;
+  
   }
 }
 
@@ -147,7 +148,7 @@
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 
   &.edit {
     color: #17a2b8;
@@ -378,4 +379,52 @@
   .content-workspace {
     height: calc(100vh - 160px);
   }
+}
+
+.split-table-container {
+  display: flex;
+  max-height: 500px;
+}
+
+.table-fixed {
+  width: fit-content;
+  overflow: hidden;
+}
+
+.table-fixed table,
+.table-scrollable table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.table-fixed thead th,
+.table-scrollable thead th {
+  background-color: #005a9e;
+  color: white;
+  padding: 8px;
+  min-width: 100px;
+}
+table tbody td {
+  padding: 0px 10px; 
+}
+
+.table-scrollable {
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-grow: 1;
+}
+
+.scroll-inner {
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.scroll-inner::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-inner::-webkit-scrollbar-thumb {
+  background-color: #999;
+  border-radius: 4px;
 }
