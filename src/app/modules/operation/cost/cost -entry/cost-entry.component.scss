@@ -137,7 +137,6 @@
   .action-buttons {
     display: flex;
     gap: 8px;
-  
   }
 }
 
@@ -383,12 +382,12 @@
 
 .split-table-container {
   display: flex;
-  max-height: 500px;
+  max-height: 300px;
+  overflow-x: scroll;
 }
 
 .table-fixed {
   width: fit-content;
-  overflow: hidden;
 }
 
 .table-fixed table,
@@ -397,12 +396,19 @@
   width: 100%;
 }
 
-.table-fixed thead th,
-.table-scrollable thead th {
+.table-header {
   background-color: #005a9e;
   color: white;
-  padding: 8px;
-  min-width: 100px;
+  padding: 6px;
+  min-width: 120px;
+  width: 100%;
+}
+.table-header1 {
+  background-color: #005a9e;
+  color: white;
+  padding: 6px;
+  min-width: 90px;
+  width: 100%;
 }
 table tbody td {
   padding: 0px 10px; 
@@ -415,9 +421,8 @@ table tbody td {
 }
 
 .scroll-inner {
-  max-height: 500px;
-  overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: scroll;
+  cursor: pointer;
 }
 
 .scroll-inner::-webkit-scrollbar {
@@ -427,4 +432,9 @@ table tbody td {
 .scroll-inner::-webkit-scrollbar-thumb {
   background-color: #999;
   border-radius: 4px;
+}
+
+
+.ng-dropdown-panel {
+  z-index: 9999 !important; 
 }
