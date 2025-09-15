@@ -206,12 +206,38 @@ checkPermissions() {
         Status: [{value: 'A', disabled: false}, Validators.required]
       });
     }
-     resetForm(): void {
-      this.costCenterForm.get('Status')?.disable();
-      this.costCenterForm.reset({
-        Status: 'Active'
-      });
-     }
+    //  resetForm(): void {
+    //   this.costCenterForm.get('Status')?.disable();
+    //   this.costCenterForm.reset({
+    //     Status: 'Active'
+    //   });
+    //  }
+
+    resetForm(): void {
+  // If editing an existing cost center, reload it (restore original state)
+  if (this.isEditMode && this.CostCenterMasterSid) {
+    this.loadCostCenterData(this.CostCenterMasterSid);
+    return;
+  }
+
+  // Create-mode: reset form to initial state with proper default values
+  this.costCenterForm.reset({
+    CostCenterCode: null,
+    CostCenterName: null,
+    Remarks: null,
+    Status: 'Active'
+  });
+
+  // Re-enable the status field if it was disabled
+  this.costCenterForm.get('Status')?.enable();
+  
+  // Reset validation state
+  this.costCenterForm.markAsUntouched();
+  this.costCenterForm.markAsPristine();
+  
+  // Clear any stored data
+  this.costCenterData = null;
+}
   
      openModal(content: any): void {
       this.isEditMode = false;

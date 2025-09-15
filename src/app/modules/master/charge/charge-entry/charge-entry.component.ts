@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, F
 import { ActivatedRoute, Router } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -29,7 +29,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     NgbDatepickerModule,
     DatePipe,
     FormsModule,
-    MultiSelectComponent
+    MultiSelectComponent,
+    NgbDropdownModule
   ],
   templateUrl: './charge-entry.component.html',
   styleUrls: ['./charge-entry.component.scss'],

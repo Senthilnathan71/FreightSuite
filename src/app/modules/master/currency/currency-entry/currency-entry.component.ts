@@ -6,7 +6,7 @@ import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { Currency } from 'src/app/modules/crm-mobile/Interfaces/currency.interface';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -24,6 +24,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     FeatherModule,
     DatePipe,
     NgSelectModule,
+    NgbDropdownModule
   ],
   templateUrl: './currency-entry.component.html',
   styleUrls: ['./currency-entry.component.scss']

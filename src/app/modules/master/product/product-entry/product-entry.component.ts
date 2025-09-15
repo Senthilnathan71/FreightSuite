@@ -9,7 +9,7 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { CommonModule, DatePipe } from '@angular/common';
-import { NgbModal ,NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal ,NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -20,7 +20,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 @Component({
     selector: 'app-product-entry',
     standalone: true,
-    imports: [FeatherModule, NgSelectModule,ReactiveFormsModule,OnlyTextDirective,OnlyNumbersDirective,TextWithNumbersDirective,DatePipe,CommonModule],
+    imports: [FeatherModule, NgSelectModule,ReactiveFormsModule,OnlyTextDirective,OnlyNumbersDirective,TextWithNumbersDirective,DatePipe,CommonModule,NgbDropdownModule],
     templateUrl: './product-entry.component.html',
     styleUrl: './product-entry.component.scss',
 })

@@ -9,7 +9,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import { NgbModal,NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal,NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -29,7 +29,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
         OnlyTextDirective,
         TextWithNumbersDirective,
         DatePipe,
-        NgSelectModule
+        NgSelectModule,
+        NgbDropdownModule
     ],
     templateUrl: './vessel-entry.component.html',
     styleUrl: './vessel-entry.component.scss'

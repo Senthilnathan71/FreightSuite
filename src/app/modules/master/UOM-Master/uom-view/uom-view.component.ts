@@ -7,7 +7,7 @@ import { RouterModule } from '@angular/router';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
-import { NgbModal,NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal,NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
@@ -27,7 +27,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    NgbDropdownModule
   ],
   templateUrl: './uom-view.component.html',
   styleUrl: './uom-view.component.scss'

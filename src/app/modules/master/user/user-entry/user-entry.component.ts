@@ -4,7 +4,7 @@ import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { FfUser, UserRole } from 'src/app/modules/crm-mobile/Interfaces/ffuser.interface';
@@ -36,7 +36,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 		OnlyNumbersDirective,
 		TextWithNumbersDirective,
 		MultiSelectComponent,
-		FormsModule
+		FormsModule,
+		NgbDropdownModule
 	],
 	templateUrl: './user-entry.component.html',
 	styleUrl: './user-entry.component.scss'

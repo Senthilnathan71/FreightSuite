@@ -7,7 +7,7 @@ import { MasterService } from '../../master.service';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
-import { NgbModal,NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal,NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -24,7 +24,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     FeatherModule,
     NgSelectModule,
     DatePipe,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    NgbDropdownModule
   ],
   templateUrl: './milestone-entry.component.html',
   styleUrls: ['./milestone-entry.component.scss']

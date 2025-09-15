@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component,TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
-import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
 import { MasterService } from '../../master.service';
@@ -39,7 +39,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     ListpageComponent,
     PreventMultiClickDirective,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './package-type-list.component.html',
   styleUrl: './package-type-list.component.scss',
@@ -179,15 +180,42 @@ export class PackageTypeListComponent {
   
 }
 
-  resetForm(): void {
+  // resetForm(): void {
 
     
-    this.packageTypeForm.get('status')?.disable();
-    this.packageTypeForm.reset({
-      status: 'Active',
+  //   this.packageTypeForm.get('status')?.disable();
+  //   this.packageTypeForm.reset({
+  //     status: 'Active',
        
-    });
+  //   });
+  // }
+
+  resetForm(): void {
+  // If editing an existing package type, reload it (restore original state)
+  if (this.isEditMode && this.PackageTypeMasterSid) {
+    // You might want to implement a loadPackageTypeData method similar to other components
+    this.editPackageType(this.PackageTypeMasterSid, this.modalRef);
+    return;
   }
+
+  // Create-mode: reset form to initial state with proper default values
+  this.packageTypeForm.reset({
+    PackageName: null,
+    PackageCode: null,
+    status: 'Active',
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid
+  });
+
+  // Re-enable the status field if it was disabled
+  this.packageTypeForm.get('status')?.enable();
+  
+  // Reset validation state
+  this.packageTypeForm.markAsUntouched();
+  this.packageTypeForm.markAsPristine();
+  
+  // Clear any stored data
+  this.packageData = null;
+}
 
   openModal(content: any): void {
     this.isEditMode = false;

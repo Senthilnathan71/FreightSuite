@@ -2,7 +2,7 @@ import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -26,7 +26,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 		ReactiveFormsModule,
 		OnlyTextDirective,
 		OnlyNumbersDirective,
-		TextWithNumbersDirective
+		TextWithNumbersDirective,
+		NgbDropdownModule
 	],
 	templateUrl: 'doctype.component.html',
 	styleUrl: './doctype.component.scss'

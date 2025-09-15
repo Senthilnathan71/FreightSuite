@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
-import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
 import { MasterService } from '../../master.service';
@@ -39,7 +39,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     ListpageComponent,
     PreventMultiClickDirective,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './charge-tax.component.html',
   styleUrl: './charge-tax.component.scss',
@@ -202,12 +203,40 @@ export class ChargeTaxComponent implements OnInit {
     });
   }
 
+  // resetForm(): void {
+  //   this.chargeTaxForm.get('status')?.disable();
+  //   this.chargeTaxForm.reset({
+  //     status: 'Active'
+  //   });
+  // }
+
   resetForm(): void {
-    this.chargeTaxForm.get('status')?.disable();
-    this.chargeTaxForm.reset({
-      status: 'Active'
-    });
+  // If editing an existing charge tax, reload it (restore original state)
+  if (this.isEditMode && this.ChargeTaxMasterSid) {
+    this.loadChargeTaxData(this.ChargeTaxMasterSid);
+    return;
   }
+
+  // Create-mode: reset form to initial state with proper default values
+  this.chargeTaxForm.reset({
+    HSNCode: null,
+    description: null,
+    TaxGroup: null,
+    TaxRate: null,
+    Remarks: null,
+    status: 'Active'
+  });
+
+  // Re-enable the status field if it was disabled
+  this.chargeTaxForm.get('status')?.enable();
+  
+  // Reset validation state
+  this.chargeTaxForm.markAsUntouched();
+  this.chargeTaxForm.markAsPristine();
+  
+  // Clear any stored data
+  this.chargeTaxData = null;
+}
 
   openModal(content: any): void {
     this.isEditMode = false;

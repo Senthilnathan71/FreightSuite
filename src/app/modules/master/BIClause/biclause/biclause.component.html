@@ -25,16 +25,19 @@
   (onSearchClick)="onSearch($event)">
     </app-listpage> -->
 
-<ngx-spinner
+<!-- <ngx-spinner
   bdColor="rgba(0,0,0,0.8)"
   size="medium"
   color="#fff"
   type="ball-scale-ripple"
   [fullScreen]="true">
   <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner> -->
+
+
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
-
-
 
 
 <div class="row compact-form">
@@ -181,13 +184,39 @@
     <ng-template #content let-modal>
         <div class="modal-header p-2 bg-info text-white">
             <h4 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} BL Clause</h4>
-            @if(isEditMode){
+            <!-- @if(isEditMode){
             <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
                 (click)="modal.dismiss()"></button>
+        </div> -->
+         <a *ngIf="isEditMode" class="text-white ps-2" (click)="showInfo()">
+                <i class="fas fa-info-circle fs-6"></i>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center">
+                <div ngbDropdown class="d-inline-block me-2">
+                    <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+                        ngbDropdownToggle>
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                                class="fas fa-file-alt me-1"></i> Edoc</button>
+                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                                class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                                class="fas fa-shield-alt me-1"></i> Authorize</button>
+                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                                class="fas fa-envelope me-1"></i> Email</button>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                    (click)="modal.dismiss()"></button>
+            </div>
         </div>
         <div class="modal-body">
             <form [formGroup]="biclauseForm">
@@ -277,7 +306,7 @@
             </form>
         </div>
         <div class="modal-footer">
-            @if(isEditMode){
+            <!-- @if(isEditMode){
             @if(hasPermission('Edoc')) {
       <button type="button" appPreventMultiClick class="btn btn-outline-info" (click)="openEDoc()">
         <i class="fas fa-file-alt me-1"></i> e-Doc
@@ -299,18 +328,24 @@
         <i class="fas fa-envelope me-1"></i> Email
       </button>
     }
-}
+} -->
             
-            <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+            
            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
                   (click)="openAuditLogs(auditLogModal)">
             <i class="fas fa-history me-1"></i>Logs
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="resetForm()">
+            <i class="fas fa-sync-alt me-1"></i>
+            Reset
           </button>
       <button type="button" class="btn btn-info btn-sm" 
           (click)="onSubmit()" 
           [disabled]="btnDisable || biclauseForm.invalid"
           *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
-          {{ isEditMode ? 'Update' : 'Save' }}
+          {{ isEditMode ? 'Edit' : 'Save' }}
       </button>
         </div>
     </ng-template>

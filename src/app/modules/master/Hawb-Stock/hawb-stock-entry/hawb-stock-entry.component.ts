@@ -2,7 +2,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit,TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbModal, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule ,NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule ,NgbModalRef, NgbDropdownModule} from '@ng-bootstrap/ng-bootstrap';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
@@ -25,7 +25,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     NgSelectModule, 
     ReactiveFormsModule,
     NgbDatepickerModule,
-    DatePipe
+    DatePipe,
+    NgbDropdownModule
   ],
    templateUrl: './hawb-stock-entry.component.html',
   styleUrl: './hawb-stock-entry.component.scss',

@@ -7,7 +7,7 @@
                          <div class="brand-icon">
                         <i class="fas fa-building"></i>
                     </div>
-        <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit Company' :' Company'}}</h5>
+        <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add'}} Company</h5>
         @if(isEditMode){
         <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showCompanyInfo()">
           <i class="fas fs-6 fa-info-circle"></i>
@@ -37,7 +37,7 @@
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submitCompanyForm()"
             [disabled]="companyForm.invalid" *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))">
             <i class="fas fa-save me-1"></i>
-            {{isEditMode ? 'Update' : 'Save'}}
+            {{isEditMode ? 'Edit' : 'Save'}}
           </button>
            <div ngbDropdown class="d-inline-block">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
@@ -1080,7 +1080,7 @@
                 <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                   (click)="submitBranchForm()" [disabled]="branchForm.invalid">
                   <i class="fas fa-save me-1"></i>
-                  {{isModalEditMode ? 'Update' : 'Save'}}
+                  {{isModalEditMode ? 'Edit' : 'Save'}}
                 </button>
               </div>
 
@@ -1458,7 +1458,7 @@
       <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="submitBranchBankForm()"
         [disabled]="branchBankForm.invalid">
         <i class="fas fa-save me-1"></i>
-        {{isBankModalEdit ? 'Update' : 'Save'}}
+        {{isBankModalEdit ? 'Edit' : 'Save'}}
       </button>
     </div>
 
