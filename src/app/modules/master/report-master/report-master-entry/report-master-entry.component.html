@@ -1,0 +1,138 @@
+<div class="row compact-form">
+    <div class="col-12">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+            <div class="col-md-4 d-flex pb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="brand-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h5 class="page-title mb-0 text-info"> Report Master</h5>
+
+                </div>
+
+            </div>
+            <div class="col-md-8 pb-2">
+                <div
+                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        (click)="openAuditLogs(auditLogModal)">
+                        <i class="fas fa-history me-1"></i>Logs
+                    </button> -->
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-chevron-left me-1"></i>
+                        Back
+                    </button>
+                    <!-- <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80">
+                        <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
+                    </button> -->
+                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Reset
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                        <i class="fas fa-save me-1"></i>
+                        Save
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card h-100 mb-0">
+            <div class="card-body py-2 px-3">
+                <div class="row pb-2 rounded border border-top-0">
+
+                    <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                        <i class="fas fa-chart-bar fs-4"></i>
+                        <h5 class="card-titlename mb-0">Report Master Information</h5>
+                    </div>
+
+
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Report Name <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Report Display Name <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" formControlName="" bindValue="id" placeholder="Select "
+                                bindLabel="name">
+                            </ng-select>
+                            <label for="text-input" class="input-label">Report Menu <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" [items]="modeofreportFormat" formControlName="" bindValue="id"
+                                placeholder="Select report format" bindLabel="name">
+                            </ng-select>
+                            <label for="text-input" class="input-label">Report Format <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select class="ng-select" formControlName="" bindValue="id"
+                                placeholder="Select companies " bindLabel="name">
+                            </ng-select>
+                            <label for="text-input" class="input-label">Excluded Companies <span
+                                    class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                formControlName="">
+                            <label for="text-input" class="input-label">Query <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="mx-0">
+        <div class="col-12 p-2 bg-white py-2 rounded shadow-sm  mt-2">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 text-center">
+                    <thead>
+                        <tr class="bg-info text-light">
+                            <th class="bg-transparent text-light">Parameter Name</th>
+                            <th class="bg-transparent text-light">Parameter Type</th>
+                            <th class="bg-transparent text-light">Parameter Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ss</td>
+                            <td>ss</td>
+                            <td>ss</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+
+
+    </div>
+
+
+</div>

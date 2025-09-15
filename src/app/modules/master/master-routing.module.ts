@@ -72,6 +72,7 @@ import { DocumnetGenerationListComponent } from './document-number-generation/do
 import { DocumnetGenerationEntryComponent } from './document-number-generation/documnet-generation-entry/documnet-generation-entry.component';
 import { ContainerActivityListComponent } from './container-activity/container-activity-list/container-activity-list.component';
 import { ContainerActivityEntryComponent } from './container-activity/container-activity-entry/container-activity-entry.component';
+import { ReportMasterEntryComponent } from './report-master/report-master-entry/report-master-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -1115,6 +1116,17 @@ export const MasterRoutes: Routes = [
       urls: [
         { title: 'Master', url: '/master' },
         { title: 'Container Activity' },
+      ]
+    }
+  },  
+  {
+    path: 'report-master/enrty',
+    component: ReportMasterEntryComponent,
+    data: {
+      title: 'Report Master',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'Report Master' },
       ]
     }
   },
