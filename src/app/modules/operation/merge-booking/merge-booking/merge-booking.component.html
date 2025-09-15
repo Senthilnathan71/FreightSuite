@@ -2,7 +2,12 @@
   <div class="col-12">
     <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
       <div class="col-md-4 d-flex pb-2">
+        <div class="d-flex align-items-center gap-2">
+               <div class="brand-icon">
+                   <i class="fas fa-code-branch"></i>
+                    </div>
         <h4 class="page-title mb-0">Merge Booking</h4>
+        </div>
       </div>
       <div class="col-md-8 pb-2">
         <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
@@ -26,7 +31,7 @@
       <div class="col-md-6">
         <div class="card h-100 mb-0">
           <div class="card-body pb-0">
-            <h5 class="page-title mb-0">From :</h5>
+            <h5 class="page-title mb-1">From :</h5>
             <form [formGroup]="fromBookingForm">
               <div class="row">
                 <!-- Department -->
@@ -126,8 +131,8 @@
                   <div class="custom-form-group custom-form-group-select">
                     <ng-select class="ng-select"
                         [items]="ports"
-                        bindLabel="name"
-                        bindValue="name"
+                        bindLabel="PortName"
+                        bindValue="PortCode"
                         placeholder="Select FPD"
                         formControlName="FPD"
                         [disabled]="true">
@@ -189,10 +194,10 @@
         </div>
       </div>
       <!-- To Booking -->
-      <div class="col-md-6">
+      <div class="col-md-6 mt-2 mt-md-0">
         <div class="card h-100 mb-0">
           <div class="card-body pb-0">
-            <h5 class="page-title mb-0">To :</h5>
+            <h5 class="page-title mb-1">To :</h5>
             <form [formGroup]="toBookingForm">
               <div class="row">
                 <!-- Department -->
