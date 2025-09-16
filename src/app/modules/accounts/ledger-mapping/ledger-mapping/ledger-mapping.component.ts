@@ -15,6 +15,7 @@ import {
   NgbDatepickerModule,
   NgbDateAdapter,
   NgbDateParserFormatter,
+  NgbDropdownModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
@@ -61,7 +62,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     AuthorityEntryComponent,
     DetailsComponent,
     CustomDatePipe,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './ledger-mapping.component.html',
   styleUrl: './ledger-mapping.component.scss',
@@ -447,6 +449,38 @@ openAuditLogs(modal: TemplateRef<any>) {
     this.filterValue = '';
     this.loadLedgerMappings();
   }
+
+  reset(): void {
+  // If editing an existing ledger mapping, reload it (restore original state)
+  if (this.isEditMode && this.LedgerMappingId) {
+    this.loadLedgerMappingData(this.LedgerMappingId);
+    return;
+  }
+
+  // Create-mode: reset form to sensible defaults
+  this.ledgerForm.reset({
+    SubledgerName: '',
+    SubledgerType: '',
+    SubledgerMappingSid: '',
+    COAMasterSid: '',
+    Status: 'Active',
+    Remarks: ''
+  });
+
+  // Reset search and pagination
+  this.filterValue = '';
+  this.page = 1;
+  this.sortColumn = 'ledgerName';
+  this.sortDirection = 'asc';
+  
+  // Clear component state
+  this.ledgerMappingData = null;
+  this.LedgerMappingId = null;
+  this.subledgerMappingOptions = [];
+  
+  // Reload the list
+  this.loadLedgerMappings();
+}
 
   closeModal(): void {
     if (this.modalRef && typeof this.modalRef.close === 'function') {

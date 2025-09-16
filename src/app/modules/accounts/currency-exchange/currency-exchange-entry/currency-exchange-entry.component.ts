@@ -8,7 +8,7 @@ import { AccountsService } from '../../accounts.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -24,7 +24,8 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
     FormsModule,
     ReactiveFormsModule,
     NgbDatepickerModule,
-    DatePipe
+    DatePipe,
+    NgbDropdownModule
   ],
   templateUrl: './currency-exchange-entry.component.html',
   styleUrls: ['./currency-exchange-entry.component.scss'],

@@ -16,6 +16,7 @@ import {
   NgbDateAdapter,
   NgbDateParserFormatter,
   NgbCalendar,
+  NgbDropdownModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
@@ -61,7 +62,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     AuthorityEntryComponent,
     DetailsComponent,
     CustomDatePipe,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
 ],
   templateUrl: './tax-group-list.component.html',
   styleUrl: './tax-group-list.component.scss',
@@ -178,9 +180,55 @@ export class TaxGroupListComponent {
     });
   }
 
+  // resetForm(): void {
+  //   this.taxGroupForm.reset();
+  // }
+
   resetForm(): void {
-    this.taxGroupForm.reset();
+  // If editing an existing tax group, reload it (restore original state)
+  if (this.isEditMode && this.selectedId) {
+    this.masterService
+      .fetchTaxById(this.selectedId)
+      .pipe(take(1))
+      .subscribe({
+        next: (taxGroup: any) => {
+          this.taxGroupData = taxGroup;
+          this.taxGroupForm.patchValue({
+            TaxName: taxGroup.TaxName,
+            TaxCode: taxGroup.TaxCode,
+            TaxType: taxGroup.TaxType,
+            EffectiveFrom: new Date(taxGroup.EffectiveFrom),
+            TaxRate: taxGroup.TaxRate,
+            TaxExempt: taxGroup.TaxExempt === 'Y' ? true : false,
+            Remarks: taxGroup.Remarks,
+          });
+        },
+        error: () => {
+          this.appSettingService.showError('Error reloading tax group data.');
+        },
+      });
+    return;
   }
+
+  // Create-mode: reset form to sensible defaults
+  this.taxGroupForm.reset({
+    TaxName: '',
+    TaxCode: '',
+    TaxType: null,
+    EffectiveFrom: '',
+    TaxRate: null,
+    TaxExempt: false,
+    Remarks: ''
+  });
+
+  // Reset date to today for new entries
+  this.minDate = this.calendar.getToday();
+
+  // Clear component state
+  this.taxGroupData = null;
+  this.selectedId = null;
+  this.TaxMasterSid = null;
+}
 
   private formatDateForExport(date: string | Date): string {
   if (!date) return '';
