@@ -10,7 +10,7 @@ import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { ContainerType } from 'src/app/modules/crm-mobile/Interfaces/container-type.interface';
 import { Unit } from 'src/app/modules/crm-mobile/Interfaces/unit.interface';
-import { NgbModal ,NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal ,NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -31,7 +31,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     ReactiveFormsModule,
     OnlyTextDirective,
     TextWithNumbersDirective,
-    DatePipe
+    DatePipe,
+    NgbDropdownModule
   ],
   templateUrl: './unit-entry.component.html',
   styleUrls: ['./unit-entry.component.scss']

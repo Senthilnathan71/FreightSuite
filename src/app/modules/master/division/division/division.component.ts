@@ -15,6 +15,7 @@ import {
   NgbPagination,
   NgbModal,
   NgbModalRef,
+  NgbDropdownModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
@@ -54,7 +55,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     ListpageComponent,
     PreventMultiClickDirective,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './division.component.html',
   styleUrl: './division.component.scss',
@@ -208,14 +210,40 @@ export class DivisionComponent {
     });
   }
 
-  resetForm(): void {
-    // Disable status field and set to 'Active' for create mode
-    this.divisionForm.get('status')?.disable();
-    this.divisionForm.reset({
-      status: 'Active',
-    });
+  // resetForm(): void {
+  //   // Disable status field and set to 'Active' for create mode
+  //   this.divisionForm.get('status')?.disable();
+  //   this.divisionForm.reset({
+  //     status: 'Active',
+  //   });
     
+  // }
+
+  resetForm(): void {
+  // If editing an existing division, reload it (restore original state)
+  if (this.isEditMode && this.DivisionMasterSid) {
+    this.loadDivisionData(this.DivisionMasterSid);
+    return;
   }
+
+  // Create-mode: reset form to initial state with proper default values
+  this.divisionForm.reset({
+    DivisionName: null,
+    DivisionCode: null,
+    Remarks: null,
+    status: 'Active'
+  });
+
+  // Re-enable the status field if it was disabled
+  this.divisionForm.get('status')?.enable();
+  
+  // Reset validation state
+  this.divisionForm.markAsUntouched();
+  this.divisionForm.markAsPristine();
+  
+  // Clear any stored data
+  this.divisionData = null;
+}
 
   openModal(content: any): void {
     this.isEditMode = false;

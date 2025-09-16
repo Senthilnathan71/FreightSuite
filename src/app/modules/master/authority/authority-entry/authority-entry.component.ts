@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { NgbActiveModal, NgbModal, NgbModalModule, NgbModalRef, NgbModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
@@ -29,7 +29,8 @@ import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/mul
     NgbNavModule,
     PreventMultiClickDirective,
     NgbModalModule,
-    MultiSelectComponent
+    MultiSelectComponent,
+    NgbDropdownModule
   ],
   templateUrl: './authority-entry.component.html',
   styleUrls: ['./authority-entry.component.scss']

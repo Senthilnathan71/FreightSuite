@@ -9,7 +9,7 @@ import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { Zone } from 'src/app/modules/crm-mobile/Interfaces/zone.interface';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
@@ -27,7 +27,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     FeatherModule,
     NgSelectModule,
     DatePipe,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    NgbDropdownModule
   ],
   templateUrl: './state-entry.component.html',
   styleUrls: ['./state-entry.component.scss']

@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit,TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
-import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
 import { MasterService } from '../../master.service';
@@ -39,7 +39,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     DatePipe,
     ListpageComponent,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './sector-list.component.html',
   styleUrl: './sector-list.component.scss',
@@ -239,11 +240,11 @@ export class SectorComponent implements OnInit {
     });
   }
 
-  resetForm(): void {
-    this.sectorForm.reset({
-      status: 'Active'
-    });
-  }
+  // resetForm(): void {
+  //   this.sectorForm.reset({
+  //     status: 'Active'
+  //   });
+  // }
 
   openModal(content: any): void {
     this.isEditMode = false;
@@ -432,6 +433,33 @@ applySorting() {
     this.sortDirection = 'asc';
     this.loadSectors();
   }
+
+  resetForm(): void {
+  // If editing an existing sector, reload it (restore original state)
+  if (this.isEditMode && this.SectorMasterSid) {
+    this.loadSectorData(this.SectorMasterSid);
+    return;
+  }
+
+  // Create-mode: reset form to initial state with proper default values
+  this.sectorForm.reset({
+    sectorName: null,
+    sectorCode: null,
+    RegionName: null,
+    RegionCode: null,
+    status: 'Active'
+  });
+
+  // Disable status field for create mode
+  this.sectorForm.get('status')?.disable();
+  
+  // Reset validation state
+  this.sectorForm.markAsUntouched();
+  this.sectorForm.markAsPristine();
+  
+  // Clear any stored data
+  this.sectorData = null;
+}
 
   report(): void {
     const formattedData = this.sectorList.map(item => ({

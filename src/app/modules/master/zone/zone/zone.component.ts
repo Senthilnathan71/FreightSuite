@@ -4,7 +4,7 @@ import { FormsModule, FormGroup, FormBuilder, ReactiveFormsModule, Validators } 
 import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
-import { NgbModalModule, NgbPagination, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModalModule, NgbPagination, NgbModal, NgbModalRef, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MasterService } from '../../master.service';
@@ -44,7 +44,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     ListpageComponent,
     PreventMultiClickDirective,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './zone.component.html',
   styleUrl: './zone.component.scss'
@@ -201,13 +202,38 @@ export class ZoneComponent {
     });
   }
 
-   resetForm(): void {
+  //  resetForm(): void {
 
-    this.zoneForm.get('status')?.disable();
-    this.zoneForm.reset({
-      status: 'Active'
-    });
+  //   this.zoneForm.get('status')?.disable();
+  //   this.zoneForm.reset({
+  //     status: 'Active'
+  //   });
+  // }
+
+  resetForm(): void {
+  // If editing an existing zone, reload it (restore original state)
+  if (this.isEditMode && this.ZoneMasterSid) {
+    this.loadZoneData(this.ZoneMasterSid);
+    return;
   }
+
+  // Create-mode: reset form to initial state with proper default values
+  this.zoneForm.reset({
+    ZoneCode: null,
+    ZoneName: null,
+    status: 'Active'
+  });
+
+  // Re-enable the status field if it was disabled
+  this.zoneForm.get('status')?.enable();
+  
+  // Reset validation state
+  this.zoneForm.markAsUntouched();
+  this.zoneForm.markAsPristine();
+  
+  // Clear any stored data
+  this.zoneData = null;
+}
 
   openModal(content: any): void {
     this.isEditMode = false;

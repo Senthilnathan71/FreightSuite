@@ -3,7 +3,7 @@ import { Component,TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { take } from 'rxjs';
@@ -41,7 +41,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     PreventMultiClickDirective,
     NgbModalModule,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './inco.component.html',
   styleUrl: './inco.component.scss'
@@ -213,13 +214,44 @@ export class IncoComponent{
       Status: [{value: 'A', disabled: false}, Validators.required]
     });
   }
-   resetForm(): void {
-    this.incoForm.get('Status')?.disable();
-    this.incoForm.reset({
-      Status: 'Active'
-    });
-   }
+  //  resetForm(): void {
+  //   this.incoForm.get('Status')?.disable();
+  //   this.incoForm.reset({
+  //     Status: 'Active'
+  //   });
+  //  }
 
+  resetForm(): void {
+  // If editing an existing Inco, reload it (restore original state)
+  if (this.isEditMode && this.IncoMasterSid) {
+    this.loadIncoData(this.IncoMasterSid);
+    return;
+  }
+
+  // Create-mode: reset form to sensible defaults
+  this.incoForm.reset({
+    IncoCode: '',
+    IncoName: '',
+    IncoType: '',
+    OceanFreight: '',
+    Remarks: '',
+    IncoDescription: '',
+    Status: 'Active'
+  });
+
+  // Reset search and pagination
+  this.filterValue = '';
+  this.page = 1;
+  this.sortColumn = 'IncoName';
+  this.sortDirection = 'asc';
+  
+  // Clear selected data
+  this.incoData = null;
+  this.IncoMasterSid = null;
+  
+  // Reload the list if needed
+  this.loadIncos();
+}
    openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();

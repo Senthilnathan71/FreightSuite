@@ -313,15 +313,20 @@
     }
 
             } -->
-            <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
             <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
                 (click)="openAuditLogs(auditLogModal)">
                 <i class="fas fa-history me-1"></i>Logs
             </button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="resetForm()">
+            <i class="fas fa-sync-alt me-1"></i>
+            Reset
+          </button>
             <button type="button" class="btn btn-info btn-sm" (click)="onSubmit(); modal.close()"
                 *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
                 [disabled]="btnDisable || costCenterForm.invalid">
-                {{ isEditMode ? 'Update' : 'Save' }}
+                {{ isEditMode ? 'Edit' : 'Save' }}
             </button>
 
         </div>

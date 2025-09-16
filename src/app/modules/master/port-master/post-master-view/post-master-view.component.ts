@@ -14,7 +14,7 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { forkJoin } from 'rxjs';
-import { NgbModal ,NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal ,NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
@@ -40,7 +40,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     OnlyTextDirective,
     TextWithNumbersDirective,
     DatePipe,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    NgbDropdownModule
   ],
   templateUrl: './post-master-view.component.html',
   styleUrl: './post-master-view.component.scss'

@@ -20,6 +20,7 @@ import {
   NgbDateAdapter,
   NgbDateParserFormatter,
   NgbDatepickerModule,
+  NgbDropdownModule,
   NgbModal,
   NgbModalModule,
   NgbModalRef,
@@ -71,7 +72,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     CustomDatePipe,
     NgbTooltipModule,
     DatePipe,
-    MultiSelectComponent
+    MultiSelectComponent,
+    NgbDropdownModule
   ],
   templateUrl: './organization-entry.component.html',
   styleUrl: './organization-entry.component.scss',

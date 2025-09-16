@@ -1,5 +1,5 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
-import { NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MasterService } from '../../master.service';
@@ -39,7 +39,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     ListpageComponent,
     PreventMultiClickDirective,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './biclause.component.html',
   styleUrls: ['./biclause.component.scss']
@@ -389,6 +390,45 @@ else {
     this.sortDirection = 'asc';
     this.loadAllClauses();
   }
+
+  resetForm(): void {
+  // If editing an existing clause, reload it (restore original state)
+  if (this.isEditMode && this.currentClauseId) {
+    // Find the clause in the list and patch the form
+    const clause = this.allClauses.find(c => c.BLClauseMasterSid === this.currentClauseId);
+    if (clause) {
+      this.biclauseForm.patchValue({
+        ClauseDescription: clause.ClauseDescription,
+        Keyword: clause.Keyword,
+        Sortorder: clause.Sortorder?.toString() || '',
+        DefaultClause: clause.DefaultClause === 'Y',
+        status: clause.status || 'A'
+      });
+      this.biclauseForm.get('status')?.enable();
+    }
+    return;
+  }
+
+  // Create-mode: reset form to initial state with proper default values
+  this.biclauseForm.reset({
+    ClauseDescription: null,
+    Keyword: null,
+    Sortorder: null,
+    DefaultClause: false,
+    status: 'A'
+  });
+
+  // Re-enable the status field if it was disabled
+  this.biclauseForm.get('status')?.enable();
+  
+  // Reset validation state
+  this.biclauseForm.markAsUntouched();
+  this.biclauseForm.markAsPristine();
+  
+  // Clear any stored data
+  this.blclauseData = null;
+  this.currentClauseId = null;
+}
 
   getStatusClass(status: string): string {
     return status === 'A' ? 'bg-light-success' : 'bg-light-danger';

@@ -9,7 +9,7 @@ import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
@@ -33,7 +33,8 @@ interface IWindow extends Window {
     TextWithNumbersDirective,
     NgSelectModule,
     DatePipe,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    NgbDropdownModule
   ],
   templateUrl: './container-type-entry.component.html',
   styleUrl: './container-type-entry.component.scss'

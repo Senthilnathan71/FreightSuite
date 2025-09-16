@@ -10,7 +10,7 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Division } from 'src/app/modules/crm-mobile/Interfaces/division.interface';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -32,7 +32,8 @@ interface IWindow extends Window {
     OnlyNumbersDirective,
     OnlyTextDirective,
     TextWithNumbersDirective,
-    DatePipe
+    DatePipe,
+    NgbDropdownModule
   ],
   templateUrl: './department-entry.component.html',
   styleUrl: './department-entry.component.scss'

@@ -9,7 +9,7 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { DetailsComponent } from 'src/app/component/details/details.component';
@@ -36,7 +36,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     TextWithNumbersDirective,
     DatePipe,
     NgbDatepickerModule,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    NgbDropdownModule
   ],
   templateUrl: './year-entry.component.html',
   styleUrl: './year-entry.component.scss',

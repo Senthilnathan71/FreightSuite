@@ -9,7 +9,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
 import { forkJoin, take } from 'rxjs';
@@ -44,7 +44,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     ListpageComponent,
     PreventMultiClickDirective,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './city.component.html',
   styleUrl: './city.component.scss'
@@ -235,12 +236,39 @@ export class CityComponent {
     });
   }
 
+  // resetForm(): void {
+  //   this.cityForm.get('status')?.disable();
+  //   this.cityForm.reset({
+  //     status: 'Active'
+  //   });
+  // }
+
   resetForm(): void {
-    this.cityForm.get('status')?.disable();
-    this.cityForm.reset({
-      status: 'Active'
-    });
+  // If editing an existing city, reload it (restore original state)
+  if (this.isEditMode && this.CityMasterSid) {
+    this.loadLeadData(this.CityMasterSid);
+    return;
   }
+
+  // Create-mode: reset form to initial state with proper default values
+  this.cityForm.reset({
+    cityName: null,
+    cityCode: null,
+    StateMasterSid: null,
+    CountryMasterSid: null,
+    status: 'Active'
+  });
+
+  // Re-enable the status field if it was disabled
+  this.cityForm.get('status')?.enable();
+  
+  // Reset validation state
+  this.cityForm.markAsUntouched();
+  this.cityForm.markAsPristine();
+  
+  // Clear any stored data
+  this.cityData = null;
+}
 
   openModal(content: any): void {
     this.isEditMode = false;

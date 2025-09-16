@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, } from '@angular/forms';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination, } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination, } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatDialog } from '@angular/material/dialog';
 import { MasterService } from '../../master.service';
@@ -49,7 +49,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     ListpageComponent,
     PreventMultiClickDirective,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbDropdownModule
   ],
   templateUrl: './hs-sac.component.html',
   styleUrl: './hs-sac.component.scss',
@@ -230,12 +231,42 @@ export class HSSACComponent {
      this.loadHssacs();
   }
 
+  // resetForm(): void {
+  //   this.hssacForm.get('status')?.disable();
+  //   this.hssacForm.reset({
+  //     status: 'Active'
+  //   });
+  // }
+
   resetForm(): void {
-    this.hssacForm.get('status')?.disable();
-    this.hssacForm.reset({
-      status: 'Active'
-    });
+  // If editing an existing HSSAC, reload it (restore original state)
+  if (this.isEditMode && this.HSSACMasterSid) {
+    this.loadHssacData(this.HSSACMasterSid);
+    return;
   }
+
+  // Create-mode: reset form to initial state with proper default values
+  this.hssacForm.reset({
+    HSSACCode: null,
+    HSSACName: null,
+    ServiceName: null,
+    TaxRate: 'Default',
+    TaxType: null,
+    EffectiveFrom: null,
+    Remarks: null,
+    status: 'Active'
+  });
+
+  // Re-enable the status field if it was disabled
+  this.hssacForm.get('status')?.enable();
+  
+  // Reset validation state
+  this.hssacForm.markAsUntouched();
+  this.hssacForm.markAsPristine();
+  
+  // Clear any stored data
+  this.hssacData = null;
+}
 
   openModal(content: any): void {
     this.isEditMode = false;

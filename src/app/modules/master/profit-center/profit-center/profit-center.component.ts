@@ -3,7 +3,7 @@ import { Component, TemplateRef, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { take } from 'rxjs';
@@ -42,7 +42,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
       PreventMultiClickDirective,
       NgbModalModule,
       FavoriteStarComponent,
-      NgxSpinnerModule
+      NgxSpinnerModule,
+      NgbDropdownModule
     ],
   templateUrl: './profit-center.component.html',
   styleUrl: './profit-center.component.scss'
@@ -186,12 +187,38 @@ export class ProfitCenterComponent {
            Status: [{value: 'A', disabled: false}, Validators.required]
          });
        }
+        // resetForm(): void {
+        //  this.profitCenterForm.get('Status')?.disable();
+        //  this.profitCenterForm.reset({
+        //    Status: 'Active'
+        //  });
+        // }
+
         resetForm(): void {
-         this.profitCenterForm.get('Status')?.disable();
-         this.profitCenterForm.reset({
-           Status: 'Active'
-         });
-        }
+  // If editing an existing profit center, reload it (restore original state)
+  if (this.isEditMode && this.ProfitCenterMasterSid) {
+    this.loadProfitCenterData(this.ProfitCenterMasterSid);
+    return;
+  }
+
+  // Create-mode: reset form to initial state with proper default values
+  this.profitCenterForm.reset({
+    ProfitCenterCode: null,
+    ProfitCenterName: null,
+    Remarks: null,
+    Status: 'Active'
+  });
+
+  // Re-enable the status field if it was disabled
+  this.profitCenterForm.get('Status')?.enable();
+  
+  // Reset validation state
+  this.profitCenterForm.markAsUntouched();
+  this.profitCenterForm.markAsPristine();
+  
+  // Clear any stored data
+  this.profitCenterData = null;
+}
      
         openModal(content: any): void {
          this.isEditMode = false;
