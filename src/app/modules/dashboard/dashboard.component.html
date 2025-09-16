@@ -1,1 +1,454 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <!-- Hero Header Section -->
+  <div class="hero-header">
+    <div class="hero-content">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <div class="hero-text">
+            <h1 class="hero-title">
+              <i class="bi bi-speedometer2 me-3"></i>
+              Sales Dashboard
+            </h1>
+            <p class="hero-subtitle">
+              <i class="bi bi-graph-up me-2"></i>
+              Comprehensive freight forwarding business insights and analytics
+            </p>
+            <div class="hero-stats">
+              <div class="stat-pill">
+                <i class="bi bi-calendar-check text-success"></i>
+                <span>Today: {{getCurrentDate()}}</span>
+              </div>
+              <div class="stat-pill">
+                <i class="bi bi-people text-primary"></i>
+                <span>{{dashboardData?.salespeople?.length || 0}} Sales Team Members</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 text-end">
+          <div class="hero-graphic">
+            <div class="floating-icon">
+              <i class="bi bi-truck"></i>
+            </div>
+            <div class="floating-icon delay-1">
+              <i class="bi bi-globe"></i>
+            </div>
+            <div class="floating-icon delay-2">
+              <i class="bi bi-bar-chart"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Filter Section -->
+  <div class="container-fluid mb-5">
+    <div class="filter-section">
+      <div class="filter-card">
+        <div class="filter-header">
+          <h5><i class="bi bi-funnel-fill me-2"></i>Smart Filters</h5>
+          <p>Customize your dashboard view</p>
+        </div>
+        <div class="filter-body">
+          <div class="row g-4 align-items-end">
+            <div class="col-md-4">
+              <div class="filter-group">
+                <label class="filter-label">
+                  <i class="bi bi-person-badge me-2"></i>Sales Person
+                </label>
+                <div class="custom-select-wrapper">
+                  <select class="custom-select" [(ngModel)]="filters.salesperson" (change)="applyFilters()">
+                    <option value="">🌟 All Sales People</option>
+                    <option *ngFor="let person of dashboardData?.salespeople" [value]="person.name">
+                      👤 {{person.name}}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="filter-group">
+                <label class="filter-label">
+                  <i class="bi bi-calendar-range me-2"></i>Date From
+                </label>
+                <input type="date" class="custom-input" [(ngModel)]="dateFromString" (change)="onDateFromChange($event)">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="filter-group">
+                <label class="filter-label">
+                  <i class="bi bi-calendar-check me-2"></i>Date To
+                </label>
+                <input type="date" class="custom-input" [(ngModel)]="dateToString" (change)="onDateToChange($event)">
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="filter-actions">
+                <button class="btn-apply" (click)="applyFilters()">
+                  <i class="bi bi-search me-2"></i>Apply Filters
+                </button>
+                <button class="btn-reset" (click)="resetFilters()">
+                  <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2 text-muted">Loading dashboard data...</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading && dashboardData">
+    <!-- Sales Metrics Cards -->
+    <div class="container-fluid mb-4">
+      <div class="metrics-header">
+        <h3><i class="bi bi-graph-up-arrow me-3"></i>Sales Performance Metrics</h3>
+        <p>Real-time sales activity and conversion tracking</p>
+      </div>
+
+      <div class="sales-metrics-grid">
+        <!-- New Client Created -->
+        <div class="sales-metric-card metric-pink" (click)="navigateToClients()">
+          <div class="metric-icon-container">
+            <div class="metric-icon-bg">
+              <i class="bi bi-person-plus-fill"></i>
+            </div>
+          </div>
+          <div class="metric-info">
+            <h4 class="metric-title">New Client Created</h4>
+            <p class="metric-subtitle">Click here more...</p>
+            <div class="metric-value">{{dashboardData.salesMetrics.newClientCreated}}</div>
+          </div>
+          <div class="metric-decoration"></div>
+        </div>
+
+        <!-- Sales Call -->
+        <div class="sales-metric-card metric-blue" (click)="navigateToSalesCalls()">
+          <div class="metric-icon-container">
+            <div class="metric-icon-bg">
+              <i class="bi bi-telephone-fill"></i>
+            </div>
+          </div>
+          <div class="metric-info">
+            <h4 class="metric-title">Sales Call</h4>
+            <p class="metric-subtitle">Click here more...</p>
+            <div class="metric-value">{{dashboardData.salesMetrics.salesCall}}</div>
+          </div>
+          <div class="metric-decoration"></div>
+        </div>
+
+        <!-- Sales Call Closed -->
+        <div class="sales-metric-card metric-red" (click)="navigateToClosedCalls()">
+          <div class="metric-icon-container">
+            <div class="metric-icon-bg">
+              <i class="bi bi-telephone-x-fill"></i>
+            </div>
+          </div>
+          <div class="metric-info">
+            <h4 class="metric-title">Sales Call Closed</h4>
+            <p class="metric-subtitle">Click here more...</p>
+            <div class="metric-value">{{dashboardData.salesMetrics.salesCallClosed}}</div>
+          </div>
+          <div class="metric-decoration"></div>
+        </div>
+
+        <!-- Quotation Created -->
+        <div class="sales-metric-card metric-teal" (click)="navigateToQuotations()">
+          <div class="metric-icon-container">
+            <div class="metric-icon-bg">
+              <i class="bi bi-file-earmark-text-fill"></i>
+            </div>
+          </div>
+          <div class="metric-info">
+            <h4 class="metric-title">Quotation Created</h4>
+            <p class="metric-subtitle">Click here more...</p>
+            <div class="metric-value">{{dashboardData.salesMetrics.quotationCreated}}</div>
+          </div>
+          <div class="metric-decoration"></div>
+        </div>
+
+        <!-- Quotation Approved -->
+        <div class="sales-metric-card metric-orange" (click)="navigateToApprovedQuotations()">
+          <div class="metric-icon-container">
+            <div class="metric-icon-bg">
+              <i class="bi bi-file-earmark-check-fill"></i>
+            </div>
+          </div>
+          <div class="metric-info">
+            <h4 class="metric-title">Quotation Approved</h4>
+            <p class="metric-subtitle">Click here more...</p>
+            <div class="metric-value">{{dashboardData.salesMetrics.quotationApproved}}</div>
+          </div>
+          <div class="metric-decoration"></div>
+        </div>
+
+        <!-- Booking Quotation -->
+        <div class="sales-metric-card metric-light-blue" (click)="navigateToBookings()">
+          <div class="metric-icon-container">
+            <div class="metric-icon-bg">
+              <i class="bi bi-calendar-check-fill"></i>
+            </div>
+          </div>
+          <div class="metric-info">
+            <h4 class="metric-title">Booking Quotation</h4>
+            <p class="metric-subtitle">Click here more...</p>
+            <div class="metric-value">{{dashboardData.salesMetrics.bookingQuotation}}</div>
+          </div>
+          <div class="metric-decoration"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enhanced Client Meetings Table -->
+    <div class="container-fluid mb-5">
+      <div class="data-section">
+        <div class="section-header">
+          <div class="section-title">
+            <h4><i class="bi bi-people-fill me-3"></i>Client Meetings</h4>
+            <p>Track and manage client interactions</p>
+          </div>
+          <div class="section-actions">
+            <div class="search-wrapper">
+              <i class="bi bi-search search-icon"></i>
+              <input
+                type="text"
+                class="search-input"
+                placeholder="Search meetings, clients, or agenda..."
+                [(ngModel)]="meetingSearchTerm"
+                (input)="filterMeetings()">
+            </div>
+            <button class="action-btn primary">
+              <i class="bi bi-plus-circle me-2"></i>New Meeting
+            </button>
+          </div>
+        </div>
+        <div class="enhanced-table-wrapper">
+          <div class="table-stats">
+            <div class="stat-item">
+              <span class="count">{{filteredClientMeetings.length}}</span>
+              <span class="label">Total Meetings</span>
+            </div>
+            <div class="stat-item">
+              <span class="count">{{getStatusCount('Scheduled Today')}}</span>
+              <span class="label">Today</span>
+            </div>
+            <div class="stat-item">
+              <span class="count">{{getStatusCount('Pending')}}</span>
+              <span class="label">Pending</span>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th (click)="sortMeetings('client')" class="sortable">
+                      Client <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                    <th (click)="sortMeetings('agenda')" class="sortable">
+                      Agenda <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                    <th (click)="sortMeetings('salesperson')" class="sortable">
+                      Salesperson <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                    <th (click)="sortMeetings('date')" class="sortable">
+                      Date <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let meeting of filteredClientMeetings">
+                    <td class="fw-semibold">{{meeting.client}}</td>
+                    <td>{{meeting.agenda}}</td>
+                    <td>{{meeting.salesperson}}</td>
+                    <td>{{meeting.date | date:'MMM dd, yyyy'}}</td>
+                    <td>
+                      <span class="badge" [ngClass]="{
+                        'bg-danger': meeting.status === 'Pending',
+                        'bg-primary': meeting.status === 'Scheduled Today',
+                        'bg-success': meeting.status === 'Completed',
+                        'bg-warning': meeting.status === 'Overdue'
+                      }">
+                        {{meeting.status}}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="filteredClientMeetings.length === 0">
+                    <td colspan="5" class="text-center py-4 text-muted">
+                      No meetings found
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Meetings with Follow-up -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white border-bottom">
+            <div class="row align-items-center">
+              <div class="col">
+                <h5 class="fw-semibold mb-0">Meetings with Follow-up</h5>
+              </div>
+              <div class="col-auto">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Search follow-ups..."
+                  [(ngModel)]="followupSearchTerm"
+                  (input)="filterFollowups()">
+              </div>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th (click)="sortFollowups('client')" class="sortable">
+                      Client <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                    <th (click)="sortFollowups('salesperson')" class="sortable">
+                      Sales Person <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                    <th (click)="sortFollowups('meetingType')" class="sortable">
+                      Meeting Type <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                    <th (click)="sortFollowups('meetingDate')" class="sortable">
+                      Meeting Date <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                    <th>Follow-up Type</th>
+                    <th (click)="sortFollowups('followupDate')" class="sortable">
+                      Follow-up Date <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let followup of filteredFollowups">
+                    <td class="fw-semibold">{{followup.client}}</td>
+                    <td>{{followup.salesperson}}</td>
+                    <td>{{followup.meetingType}}</td>
+                    <td>{{followup.meetingDate | date:'MMM dd, yyyy'}}</td>
+                    <td>
+                      <span class="badge bg-info">{{followup.followupType}}</span>
+                    </td>
+                    <td>{{followup.followupDate | date:'MMM dd, yyyy'}}</td>
+                  </tr>
+                  <tr *ngIf="filteredFollowups.length === 0">
+                    <td colspan="6" class="text-center py-4 text-muted">
+                      No follow-ups found
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rate Requests and Quotation Approval -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white border-bottom">
+            <div class="row align-items-center">
+              <div class="col">
+                <h5 class="fw-semibold mb-0">Rate Requests & Quotation Approval</h5>
+              </div>
+              <div class="col-auto">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Search rate requests..."
+                  [(ngModel)]="rateRequestSearchTerm"
+                  (input)="filterRateRequests()">
+              </div>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th (click)="sortRateRequests('rateRequestNumber')" class="sortable">
+                      Rate Request # <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                    <th (click)="sortRateRequests('date')" class="sortable">
+                      Date <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                    <th (click)="sortRateRequests('quotationNumber')" class="sortable">
+                      Quotation # <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                    <th (click)="sortRateRequests('quoteDate')" class="sortable">
+                      Quote Date <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                    <th (click)="sortRateRequests('salesperson')" class="sortable">
+                      Salesperson <i class="bi bi-arrow-up-down ms-1"></i>
+                    </th>
+                    <th>Status</th>
+                    <th>Approved By</th>
+                    <th>Booking #</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let request of filteredRateRequests">
+                    <td class="fw-semibold">{{request.rateRequestNumber}}</td>
+                    <td>{{request.date | date:'MMM dd, yyyy'}}</td>
+                    <td>{{request.quotationNumber}}</td>
+                    <td>{{request.quoteDate | date:'MMM dd, yyyy'}}</td>
+                    <td>{{request.salesperson}}</td>
+                    <td>
+                      <span class="badge" [ngClass]="{
+                        'bg-warning': request.status === 'Pending',
+                        'bg-success': request.status === 'Approved',
+                        'bg-danger': request.status === 'Rejected'
+                      }">
+                        {{request.status}}
+                      </span>
+                    </td>
+                    <td>{{request.approvedBy || '-'}}</td>
+                    <td>{{request.bookingNumber || '-'}}</td>
+                    <td>{{request.amount | currency:'USD':'symbol':'1.0-0'}}</td>
+                  </tr>
+                  <tr *ngIf="filteredRateRequests.length === 0">
+                    <td colspan="9" class="text-center py-4 text-muted">
+                      No rate requests found
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && !dashboardData" class="text-center py-5">
+    <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+    <h4 class="mt-3">Unable to load dashboard data</h4>
+    <p class="text-muted">Please try refreshing the page or contact support.</p>
+    <button class="btn btn-primary" (click)="loadDashboardData()">
+      <i class="bi bi-arrow-clockwise me-1"></i>Retry
+    </button>
+  </div>
+</div>
