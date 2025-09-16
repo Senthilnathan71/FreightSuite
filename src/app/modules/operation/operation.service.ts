@@ -450,4 +450,12 @@ getAllPorts() {
     })
   );
 }
+
+  getHouseJobById(BookingHeaderSid: number) {
+    return this.http.get<{ data: any }>(`house-job/fetch/${BookingHeaderSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
 }

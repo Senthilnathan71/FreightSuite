@@ -1249,7 +1249,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
 
     const allShipments = (this.attachedBookings.getRawValue() || [])
       .filter(ship => !ship.MasterJobSid)
-      .map(shipment => shipment.BookingHeaderSid);
+      .map(shipment => {
+        return {
+          BookingHeaderSid : shipment.BookingHeaderSid,
+          HBLNo : shipment.HBLNo,
+        }
+    });
     formData['shipmentList'] = [...allShipments];
 
     // Debug logs
