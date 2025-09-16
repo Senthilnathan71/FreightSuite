@@ -7,23 +7,37 @@ import { LeadService } from '../../Services/lead.service';
 
 interface VoiceExtractionResult {
   extractedData: {
+    // Header fields
     customerName?: string;
-    polPort?: string;
-    podPort?: string;
-    cargoType?: string;
-    cargoDescription?: string;
-    weight?: number;
-    qty?: number;
-    containerType?: string;
     expectedShipDate?: string;
     department?: string;
     serviceType?: string;
+
+    // Route fields
+    polPort?: string;
+    podPort?: string;
+
+    // Cargo fields - Core from voice
+    cargoType?: string;
+    cargoDescription?: string;
+    product?: string;
+    grossWeight?: number;
+    qty?: number;
+
+    // Cargo fields - Smart defaults
+    packageType?: string;
+    weightUnit?: string;
+    netWeight?: number;
+    terms?: string;
+    cbm?: number;
+    containerType?: string;
     additionalInfo?: string;
   };
   confidence: {
     [key: string]: number;
   };
   missingFields: string[];
+  smartDefaults: { [key: string]: any };
   rawTranscription: string;
 }
 
@@ -57,6 +71,7 @@ export class VoiceEnquiryComponent implements OnInit, OnDestroy {
   missingFields: string[] = [];
   processingStage = '';
   showResults = false;
+  activeTab = 'header'; // Default active tab
 
   // Master data for validation
   customers: any[] = [];
@@ -240,12 +255,26 @@ export class VoiceEnquiryComponent implements OnInit, OnDestroy {
 
   private updateMissingFields(): void {
     const requiredFieldMapping = {
+      // Header mandatory fields
       'Customer Name': 'customerName',
-      'Service Type': 'serviceType',
-      'Port of Loading': 'polPort',
-      'Port of Discharge': 'podPort',
+      'Expected Shipment Date': 'expectedShipDate',
+      'Department Name': 'serviceType', // Using serviceType for department validation
+
+      // Route mandatory fields
+      'Port of Loading (POL)': 'polPort',
+      'Port of Discharge (POD)': 'podPort',
+
+      // Cargo mandatory fields
+      'Cargo Type': 'cargoType',
       'Cargo Description': 'cargoDescription',
-      'Expected Ship Date': 'expectedShipDate'
+      'Product': 'product',
+      'Package Type': 'packageType',
+      'Quantity': 'qty',
+      'Weight Unit': 'weightUnit',
+      'Gross Weight': 'grossWeight',
+      'Net Weight': 'netWeight',
+      'Terms (FCL/LCL)': 'terms',
+      'CBM': 'cbm'
     };
 
     this.missingFields = [];
@@ -279,35 +308,94 @@ export class VoiceEnquiryComponent implements OnInit, OnDestroy {
   private mapToEnquiryFormat(): any {
     const data = this.extractedData;
 
-    // Find matching master data IDs
-    const customer = this.customers.find(c =>
-      c.CustomerName.toLowerCase().includes(data.customerName?.toLowerCase())
-    );
+    // Find matching master data IDs with better matching logic
+    const customer = this.customers.find(c => {
+      if (!data.customerName) return false;
+      const customerNameLower = data.customerName.toLowerCase();
+      const customerDbNameLower = c.CustomerName.toLowerCase();
+      return customerDbNameLower.includes(customerNameLower) ||
+             customerNameLower.includes(customerDbNameLower);
+    });
 
-    const polPort = this.ports.find(p =>
-      p.PortName.toLowerCase().includes(data.polPort?.toLowerCase()) ||
-      p.PortCode.toLowerCase().includes(data.polPort?.toLowerCase())
-    );
+    // Improved port matching with common variations
+    const polPort = this.ports.find(p => {
+      if (!data.polPort) return false;
+      const polLower = data.polPort.toLowerCase();
+      const portNameLower = p.PortName.toLowerCase();
+      const portCodeLower = p.PortCode.toLowerCase();
 
-    const podPort = this.ports.find(p =>
-      p.PortName.toLowerCase().includes(data.podPort?.toLowerCase()) ||
-      p.PortCode.toLowerCase().includes(data.podPort?.toLowerCase())
-    );
+      // Check for exact matches first
+      if (portNameLower === polLower || portCodeLower === polLower) return true;
 
-    const department = this.departments.find(d =>
-      d.departmentName.toLowerCase().includes(data.department?.toLowerCase()) ||
-      d.departmentType.toLowerCase().includes(data.serviceType?.toLowerCase())
-    );
+      // Check for common port name variations
+      if (polLower.includes('chennai') && (portNameLower.includes('chennai') || portCodeLower.includes('maa'))) return true;
+      if (polLower.includes('mumbai') && (portNameLower.includes('mumbai') || portCodeLower.includes('bom'))) return true;
+      if (polLower.includes('delhi') && (portNameLower.includes('delhi') || portCodeLower.includes('del'))) return true;
+      if (polLower.includes('kolkata') && (portNameLower.includes('kolkata') || portCodeLower.includes('ccu'))) return true;
+      if (polLower.includes('kochi') && (portNameLower.includes('kochi') || portCodeLower.includes('cok'))) return true;
 
-    const containerType = this.containerTypes.find(ct =>
-      ct.ContainerName.toLowerCase().includes(data.containerType?.toLowerCase())
-    );
+      // General matching
+      return portNameLower.includes(polLower) || portCodeLower.includes(polLower) ||
+             polLower.includes(portNameLower) || polLower.includes(portCodeLower);
+    });
 
+    const podPort = this.ports.find(p => {
+      if (!data.podPort) return false;
+      const podLower = data.podPort.toLowerCase();
+      const portNameLower = p.PortName.toLowerCase();
+      const portCodeLower = p.PortCode.toLowerCase();
+
+      // Check for exact matches first
+      if (portNameLower === podLower || portCodeLower === podLower) return true;
+
+      // Check for common port name variations
+      if (podLower.includes('colombo') && (portNameLower.includes('colombo') || portCodeLower.includes('cmb'))) return true;
+      if (podLower.includes('singapore') && (portNameLower.includes('singapore') || portCodeLower.includes('sin'))) return true;
+      if (podLower.includes('dubai') && (portNameLower.includes('dubai') || portCodeLower.includes('dxb'))) return true;
+      if (podLower.includes('hamburg') && (portNameLower.includes('hamburg') || portCodeLower.includes('ham'))) return true;
+      if (podLower.includes('rotterdam') && (portNameLower.includes('rotterdam') || portCodeLower.includes('rtm'))) return true;
+
+      // General matching
+      return portNameLower.includes(podLower) || portCodeLower.includes(podLower) ||
+             podLower.includes(portNameLower) || podLower.includes(portCodeLower);
+    });
+
+    // Better department matching based on service type
+    const department = this.departments.find(d => {
+      if (data.serviceType) {
+        const serviceTypeLower = data.serviceType.toLowerCase();
+        const deptTypeLower = d.departmentType?.toLowerCase();
+        const deptNameLower = d.departmentName?.toLowerCase();
+
+        // Direct service type matching
+        if (serviceTypeLower === 'fcl' || serviceTypeLower === 'lcl') {
+          return deptTypeLower === 'sea';
+        }
+        if (serviceTypeLower === 'air') {
+          return deptTypeLower === 'air';
+        }
+        if (serviceTypeLower === 'road') {
+          return deptTypeLower === 'road';
+        }
+
+        // Fallback matching
+        return deptTypeLower?.includes(serviceTypeLower) ||
+               deptNameLower?.includes(serviceTypeLower);
+      }
+      return false;
+    });
+
+    const containerType = this.containerTypes.find(ct => {
+      if (!data.containerType) return false;
+      return ct.ContainerName.toLowerCase().includes(data.containerType.toLowerCase());
+    });
+
+    // Build the enquiry data with proper field mapping
     return {
       CustomerMasterSid: customer?.CustomerMasterSid,
       customerName: data.customerName,
       DepartmentMasterSid: department?.DepartmentMasterSid,
-      Segment: department?.departmentType === 'Sea' ? department.FCLLCL : department?.departmentType?.toUpperCase(),
+      Segment: this.getSegmentFromServiceType(data.serviceType, department),
       shipmentDate: data.expectedShipDate ? new Date(data.expectedShipDate) : null,
       Email: '', // Can be filled later
       routes: [{
@@ -317,18 +405,50 @@ export class VoiceEnquiryComponent implements OnInit, OnDestroy {
         FDC: podPort?.PortMasterSid,
         cargo: [{
           CargoType: data.cargoType || 'General',
-          ProductName: data.cargoDescription,
+          ProductName: data.product || data.cargoDescription,
           CargoDescription: data.cargoDescription,
           Qty: data.qty || 1,
-          GrossWeight: data.weight,
+          GrossWeight: data.grossWeight || data.weight, // Handle both field names
+          NetWeight: data.netWeight,
+          PackageType: data.packageType,
+          WeightUnit: data.weightUnit || 'KG',
           ContainerType: containerType?.ContainerName,
-          cbm: 1
+          cbm: data.cbm || 1,
+          Terms: data.terms || data.serviceType
         }]
       }],
       rawTranscription: this.finalTranscription,
       extractedFields: data,
-      confidence: this.confidence
+      confidence: this.confidence,
+      // Debug information
+      debugInfo: {
+        foundCustomer: !!customer,
+        foundPOL: !!polPort,
+        foundPOD: !!podPort,
+        foundDepartment: !!department,
+        polSearchTerm: data.polPort,
+        podSearchTerm: data.podPort,
+        serviceType: data.serviceType
+      }
     };
+  }
+
+  private getSegmentFromServiceType(serviceType: string, department: any): string {
+    if (!serviceType) return '';
+
+    const serviceTypeLower = serviceType.toLowerCase();
+
+    if (serviceTypeLower === 'fcl') return 'FCL';
+    if (serviceTypeLower === 'lcl') return 'LCL';
+    if (serviceTypeLower === 'air') return 'AIR';
+    if (serviceTypeLower === 'road') return 'ROAD';
+
+    // Fallback to department info
+    if (department?.departmentType === 'Sea') {
+      return department.FCLLCL || 'FCL';
+    }
+
+    return department?.departmentType?.toUpperCase() || serviceType.toUpperCase();
   }
 
   tryAgain(): void {
@@ -342,5 +462,83 @@ export class VoiceEnquiryComponent implements OnInit, OnDestroy {
 
   close(): void {
     this.modalClosed.emit();
+  }
+
+  // New methods for enhanced UI
+  getMissingFieldsBySection(section: string): string[] {
+    const sectionMappings = {
+      'header': ['Customer Name', 'Expected Shipment Date', 'Department Name'],
+      'route': ['Port of Loading (POL)', 'Port of Discharge (POD)'],
+      'cargo': ['Cargo Type', 'Cargo Description', 'Product', 'Package Type', 'Quantity', 'Weight Unit', 'Gross Weight', 'Net Weight', 'Terms (FCL/LCL)', 'CBM']
+    };
+
+    return this.missingFields.filter(field => sectionMappings[section]?.includes(field));
+  }
+
+  getFieldIcon(field: string): string {
+    if (this.confidence[field] >= 0.8) return 'check-circle';
+    if (this.confidence[field] >= 0.5) return 'alert-triangle';
+    if (this.confidence[field]) return 'x-circle';
+    return 'edit-3'; // For manually entered fields
+  }
+
+  getFieldColorClass(field: string): string {
+    if (this.confidence[field] >= 0.8) return 'text-success';
+    if (this.confidence[field] >= 0.5) return 'text-warning';
+    if (this.confidence[field]) return 'text-danger';
+    return 'text-primary'; // For manually entered fields
+  }
+
+  getFieldSource(field: string): string {
+    if (this.confidence[field] === 1.0 && this.extractedData[field]) {
+      return 'Manual entry';
+    } else if (this.confidence[field]) {
+      return 'Voice extracted';
+    }
+    return 'Smart default';
+  }
+
+  isAutoFilled(field: string): boolean {
+    // Check if field was auto-filled by smart defaults (no original confidence from voice)
+    return this.extractedData[field] && !this.confidence[field];
+  }
+
+  updateNetWeight(): void {
+    if (this.extractedData.grossWeight && !this.extractedData.netWeight) {
+      this.extractedData.netWeight = Math.round(this.extractedData.grossWeight * 0.9 * 100) / 100;
+      this.editField('netWeight', this.extractedData.netWeight);
+    }
+  }
+
+  useTemplate(templateType: string): void {
+    const templates = {
+      'electronics': {
+        transcription: 'Samsung India LCL shipment 2000 kg mobile phones Chennai to Colombo next week',
+        description: 'Mobile electronics shipment'
+      },
+      'textile': {
+        transcription: 'ABC Textiles FCL shipment 15000 kg cotton garments Mumbai to Dubai December 15th',
+        description: 'Textile goods shipment'
+      },
+      'machinery': {
+        transcription: 'Manufacturing Corp FCL shipment 8000 kg industrial machinery Kandla to Hamburg January 10th',
+        description: 'Heavy machinery shipment'
+      },
+      'food': {
+        transcription: 'Food Corp LCL shipment 3000 kg organic spices Kochi to New York next month',
+        description: 'Food products shipment'
+      }
+    };
+
+    const template = templates[templateType];
+    if (template) {
+      this.finalTranscription = template.transcription;
+      this.transcription = template.transcription;
+      this.processVoiceInput();
+    }
+  }
+
+  switchTab(tabName: string): void {
+    this.activeTab = tabName;
   }
 }
