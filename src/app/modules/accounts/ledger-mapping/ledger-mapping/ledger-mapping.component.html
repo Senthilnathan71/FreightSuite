@@ -1,11 +1,15 @@
-<ngx-spinner
+<!-- <ngx-spinner
   bdColor="rgba(0,0,0,0.8)"
   size="medium"
   color="#fff"
   type="ball-scale-ripple"
   [fullScreen]="true">
   <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner> -->
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
+
 
 <div class="row compact-form">
     <div class="col-12">
@@ -148,10 +152,36 @@
     <ng-template #content let-modal>
 
         <div class="modal-header bg-info text-white p-2">
-            <h5 class="modal-title">{{ isEditMode ? 'Edit Subledger Mapping' : 'Subledger Mapping' }}</h5>
-            <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                (click)="modal.dismiss()"></button>
+            <h5 class="modal-title">{{ isEditMode ? 'Edit' : 'Add' }} Subledger Mapping</h5>
+            <a *ngIf="isEditMode" class="text-white ps-2" (click)="showInfo()">
+                <i class="fas fa-info-circle fs-6"></i>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center">
+                <div ngbDropdown class="d-inline-block me-2">
+                    <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+                        ngbDropdownToggle>
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                                class="fas fa-file-alt me-1"></i> Edoc</button>
+                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                                class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                                class="fas fa-shield-alt me-1"></i> Authorize</button>
+                        <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                                class="fas fa-envelope me-1"></i> Email</button>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                    (click)="modal.dismiss()"></button>
+            </div>
         </div>
+            <!-- <button type="button" class="btn-close btn-close-white" aria-label="Close"
+                (click)="modal.dismiss()"></button>
+        </div> -->
         <div class="modal-body">
             <form [formGroup]="ledgerForm">
 
@@ -250,7 +280,7 @@
         </div>
 
                 <div class="modal-footer mt-2 p-0 pt-1">
-                     @if(isEditMode){
+                     <!-- @if(isEditMode){
                         <button type="button" appPreventMultiClick class="btn btn-outline-info " (click)="openEDoc()">
                             <i class="fas fa-file-alt me-1"></i> e-Doc
                         </button>
@@ -263,18 +293,23 @@
                         <button type="button" appPreventMultiClick class="btn btn-outline-info  me-auto " (click)="openEmail()">
                             <i class="fas fa-envelope me-1"></i> Email
                         </button>
-                        }
-                    <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+                        } -->
+                    
                     
  <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
                   (click)="openAuditLogs(auditLogModal)">
             <i class="fas fa-history me-1"></i>Logs
           </button>
-
+          <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="reset()">
+            <i class="fas fa-sync-alt me-1"></i>
+            Reset
+          </button>
 
                     <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()"
                         [disabled]="ledgerForm.invalid">
-                        {{isEditMode ? 'Update' : 'Save' }}
+                        {{isEditMode ? 'Edit' : 'Save' }}
                     </button>
                 </div>
          

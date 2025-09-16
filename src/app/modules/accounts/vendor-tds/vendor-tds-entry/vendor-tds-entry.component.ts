@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -31,7 +31,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     NgbDatepickerModule,
     DecimalPrecisionDirective,
     OnlyNumbersDirective,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    NgbDropdownModule
   ],
   templateUrl: './vendor-tds-entry.component.html',
   styleUrl: './vendor-tds-entry.component.scss',

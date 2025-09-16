@@ -10,7 +10,7 @@ import { Router ,ActivatedRoute } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
-import { NgbModal, NgbModalRef,NgbDateStruct, NgbCalendar } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalRef,NgbDateStruct, NgbCalendar, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -21,7 +21,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 @Component({
   selector: 'app-chart-account-entry',
   standalone: true,
-  imports: [NgSelectModule, ReactiveFormsModule, CommonModule],
+  imports: [NgSelectModule, ReactiveFormsModule, CommonModule, NgbDropdownModule],
   templateUrl: './chart-account-entry.component.html',
   styleUrl: './chart-account-entry.component.scss',
 })
