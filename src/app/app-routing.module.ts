@@ -18,7 +18,7 @@ export const Approutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'master/company/list',
+        redirectTo: 'dashboard',
         pathMatch: 'full'
       },
       {
