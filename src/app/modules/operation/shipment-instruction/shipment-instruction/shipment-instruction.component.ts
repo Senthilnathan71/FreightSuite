@@ -175,7 +175,7 @@ export class ShipmentInstructionComponent {
 
       // Date Information
       shippedOnBoard: formatDate(data.ETD),
-      placeAndDateOfIssue: `${getPortName(data.POL)}, ${formatDate(data.ETD)}`,
+      placeAndDateOfIssue: `${getPortName(data.POL)}, ${formatDate(String(new Date()))}`,
 
       // Rider Information (usually empty in initial data)
       riderMarksNo: '',
@@ -199,26 +199,27 @@ export class ShipmentInstructionComponent {
       bookingProducts.forEach((product: any, index: number) => {
         containers.push({
           containerNo: `${product.ShippingBillNo || 'Container'}`,
-          marksAndNos: `${product.ShippingBillNo || ''}\n${data.HBLNo || ''}`.trim(),
-          descriptionOfGoods: product.ProductName || bookingCargo.CargoType || '',
-          packCount: parseInt(product.ExternlQty) || bookingCargo.NoOfPackage || 0,
+          marksAndNos: `${product.MarksAndNumber || ''}\n${data.HBLNo || ''}`.trim(),
+          descriptionOfGoods: product.ProductDescription || '',
+          packCount: parseInt(product.ExternlQty)  || 0,
           packType: this.getPackageType(product.ExternaPkg) || 'Cartons',
-          grossWeight: parseFloat(product.GrossWeight) || parseFloat(bookingCargo.GrossWeight) || 0,
-          volume: parseFloat(product.Volume) || parseFloat(bookingCargo.Volume) || 0
+          grossWeight: parseFloat(product.GrossWeight)|| 0,
+          volume: parseFloat(product.Volume) || 0
         });
       });
-    } else if (bookingCargo) {
-      // Fallback to cargo information
-      containers.push({
-        containerNo: data.HBLNo,
-        marksAndNos: data.HBLNo,
-        descriptionOfGoods: bookingCargo.CargoType || 'General Cargo',
-        packCount: bookingCargo.NoOfPackage || 0,
-        packType: 'Cartons',
-        grossWeight: parseFloat(bookingCargo.GrossWeight) || 0,
-        volume: parseFloat(bookingCargo.Volume) || 0
-      });
-    }
+    } 
+    // else if (bookingCargo) {
+    //   // Fallback to cargo information
+    //   containers.push({
+    //     containerNo: data.HBLNo,
+    //     marksAndNos: data.HBLNo,
+    //     descriptionOfGoods: bookingCargo.CargoType || 'General Cargo',
+    //     packCount: bookingCargo.NoOfPackage || 0,
+    //     packType: 'Cartons',
+    //     grossWeight: parseFloat(bookingCargo.GrossWeight) || 0,
+    //     volume: parseFloat(bookingCargo.Volume) || 0
+    //   });
+    // }
 
     // Ensure at least one container row
     if (containers.length === 0) {
