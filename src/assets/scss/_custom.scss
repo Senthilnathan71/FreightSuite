@@ -289,6 +289,8 @@
   margin: 1rem auto;          /* Center with some margin */
 }
 
+
+
 .audit-log-modal .modal-content {
   max-height: 90vh;           /* Limit total height to viewport */
   display: flex;
@@ -299,3 +301,24 @@
   flex: 1 1 auto;
   overflow-y: auto;           /* Scroll only when content exceeds height */
 }
+
+.audit-log-modal1 .modal-dialog {
+  max-width: 80% !important;
+  margin: 1rem auto;
+  width: auto;
+  height: auto;
+}
+
+.audit-log-modal1 .modal-content {
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.audit-log-modal1 .modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+

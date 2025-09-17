@@ -1776,7 +1776,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy {
       size : 'xl',
       backdrop: 'static',
       centered: true,
-      windowClass : 'audit-log-modal',
+      
     });
     modalRef.componentInstance.screenName = 'Master Job';
     modalRef.componentInstance.closeModal.subscribe((data:boolean) => {
