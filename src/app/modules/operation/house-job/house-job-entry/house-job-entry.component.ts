@@ -622,7 +622,7 @@ auditLogs: any[] = []; // Stores audit logs
   }
 
   loadBookingById(BookingHeaderSid: number) {
-    this.operationService.getBookingById(BookingHeaderSid).subscribe(
+    this.operationService.getHouseJobById(BookingHeaderSid).subscribe(
       (resp: any) => {
         if (resp.status) {
           // this.resetForm();
