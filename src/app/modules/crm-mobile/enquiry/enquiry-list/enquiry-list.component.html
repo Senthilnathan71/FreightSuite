@@ -49,11 +49,17 @@
             <div class="col-md-auto pb-2">
                   <form class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0" >
                     <app-favorite-star screenName="Rate Request" class="mt-1 me-1"></app-favorite-star>
+                 <button type="button" class="btn btn-success btn-sm me-1" (click)="openVoiceEnquiry()" title="Create Enquiry by Voice">
+                    <i class="fas fa-microphone me-1" [class.me-1]="!isMobile"></i>
+                    @if (!isMobile) {
+                    Voice
+                    }
+                </button>
                  <button type="button" class="btn btn-info btn-sm" (click)="createNew()">
                     <!-- <i class="mdi mdi-plus" ></i> -->
                     <i class="fas fa-plus me-1" [class.me-1]="!isMobile"></i>
                     @if (!isMobile) {
-                    Create 
+                    Create
                     }
                 </button>
                   <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 

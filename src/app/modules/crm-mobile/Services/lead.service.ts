@@ -12,6 +12,7 @@ export class LeadService {
 
   constructor(private http: HttpClient) { }
   private quotationData: any = {};
+  private voiceEnquiryData: any = {};
 
 
   getAllLeads(CompanyMasterSid:number,BranchMasterSid:number) {
@@ -663,6 +664,44 @@ export class LeadService {
         return resp;
       })
     )
+  }
+
+  // Voice Enquiry Methods
+  processVoiceEnquiry(payload: any) {
+    return this.http.post<{ data: any }>('ff-enquiry/process-voice', payload).pipe(
+      map((resp) => {
+        return resp.data;
+      })
+    );
+  }
+
+  validateVoiceData(payload: any) {
+    return this.http.post<{ data: any }>('ff-enquiry/validate-voice-data', payload).pipe(
+      map((resp) => {
+        return resp.data;
+      })
+    );
+  }
+
+  getVoiceSuggestions(payload: any) {
+    return this.http.post<{ data: any }>('ff-enquiry/voice-suggestions', payload).pipe(
+      map((resp) => {
+        return resp.data;
+      })
+    );
+  }
+
+  // Voice Enquiry Data Management
+  setVoiceEnquiryData(data: any) {
+    this.voiceEnquiryData = data;
+  }
+
+  getVoiceEnquiryData() {
+    return this.voiceEnquiryData || {};
+  }
+
+  clearVoiceEnquiryData() {
+    this.voiceEnquiryData = {};
   }
 
 }
