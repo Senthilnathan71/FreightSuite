@@ -696,7 +696,7 @@
                     <div class="form-check form-check-inline p-0">
                       <div class="form-check d-flex align-items-center">
                         <input type="checkbox" id="" class="focus-ring form-check-input sm" formControlName="ShipmentType"
-                          (keydown.enter)="toggleHeaderCheckboxes($event,'Nominated')">
+                          (keydown.enter)="toggleHeaderCheckboxes($event,'ShipmentType')">
                         <label for="" class="form-check-label sm">Nominated <span class="text-danger"></span></label>
                       </div>
                     </div>
@@ -865,7 +865,7 @@
           @if(selectedFCLLCL === "FCL"){
           <aside class="col-md-4">
             <div class="custom-form-group custom-form-group-select">
-              <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerName"
+              <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerTypeMasterSid"
                 class="ng-select" formControlName="ContainerType" placeholder="Select ContainerType" appendTo="body"
                 (change)="onContainerTypeChange($event)">
               </ng-select>

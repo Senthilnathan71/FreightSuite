@@ -482,4 +482,20 @@ getAllPorts() {
       })
     );
   }
+
+  getAllMasterJobContainers(MasterJobSid: number) {
+    return this.http.get<{ data: any[] }>(`house-job/fetch-containers/${MasterJobSid}`).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  updateHouseById(HouseJobSid: number, payload: any) {
+    return this.http.patch<{ data: any }>(`house-job/update/${HouseJobSid}`,payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
 }
