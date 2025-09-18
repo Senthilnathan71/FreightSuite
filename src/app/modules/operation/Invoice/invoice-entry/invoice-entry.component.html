@@ -1,605 +1,452 @@
 <div class="row compact-form">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-2">
-                <h4 class="page-title mb-0">Invoice</h4>
-            </div>
-            <div class="col-md-8 pb-2">
-                <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                        (click)="openAuditLogs(auditLogModal)">
-                        <i class="fas fa-history me-1"></i>Logs
-                    </button> -->
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="goBack()">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1"></i>
-                        Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-save me-1"></i>
-                        Save
-                    </button>
+  <div class="col-12">
+    <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+      <div class="col-md-4 d-flex pb-2">
+        <h4 class="page-title mb-0">Invoice</h4>
+      </div>
+      <div class="col-md-8 pb-2">
+        <div class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+            <i class="fas fa-chevron-left me-1"></i> Back
+          </button>
 
-                </div>
-            </div>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onReset()">
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSave()">
+            <i class="fas fa-save me-1"></i> Save
+          </button>
         </div>
+      </div>
     </div>
+  </div>
 
-    <div class="col-md-12">
-        <div class="card h-100 mb-0">
-            <div class="card-body pb-0">
-                <div class="row">
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Invoice No <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select">
-                            <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d1="ngbDatepicker" formControlName="" (click)="d1.toggle()" />
-                                <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
-                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                            </div>
-                            <label class="input-label">Invoice Date <span class="text-danger"></span>
-                            </label>
+  <div class="col-md-12">
+    <div class="card h-100 mb-0">
+      <div class="card-body pb-0">
+        <form [formGroup]="invoiceForm" novalidate>
+          <div class="row">
+            <!-- 1. Invoice No (VoucherNumber) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" class="form-control custom-input-field sm" formControlName="VoucherNumber" readonly>
+                <label class="input-label">Invoice No</label>
+                
+              </div>
+            </aside>
 
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Customer Name <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Customer Address <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Ref No <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">IRN No <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Job No <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">HBL No <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Curr <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Ex Rate <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">GST No <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Invoice Type <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Remarks <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Invoice Type <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">IRN Status <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">MBL No <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select [items]="ModeofStatus" bindLabel="name" bindValue="name">
-
-                            </ng-select>
-                            <label for="" class="input-label">Status <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
+            <!-- 2. Invoice Date (VoucherDate) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select">
+                <div class="input-group">
+                  <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
+                    formControlName="VoucherDate" (click)="d1.toggle()" />
+                  <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
+                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
                 </div>
-            </div>
-        </div>
-    </div>
+                <label class="input-label">Invoice Date</label>
+              </div>
+            </aside>
 
+            <!-- 3. Customer Name (Customer selection) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select">
+                <ng-select
+                  [items]="customerList"
+                  bindLabel="CustomerName"
+                  bindValue="CustomerMasterSid"
+                  placeholder="Select customer"
+                  formControlName="CustomerMasterSid"
+                  (change)="onCustomerMasterChange($event)"
+                  appendTo="body">
+                  <ng-template ng-option-tmp let-item="item">
+                    <div>
+                      <small>{{ item.CustomerName }}</small>
+                    </div>
+                  </ng-template>
+                </ng-select>
+                <label class="input-label">Customer</label>
+              </div>
+            </aside>
 
-    <!-- <div class="mx-0">
-        <div class="col-12 p-2 bg-white py-2 rounded shadow-sm  mt-2">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">SNo No</th>
-                            <th class="bg-transparent text-light" scope="col">Charge</th>
-                            <th class="bg-transparent text-light" scope="col">Charge Desc</th>
-                            <th class="bg-transparent text-light" scope="col">SAC Code</th>
-                            <th class="bg-transparent text-light" scope="col">Unit</th>
-                            <th class="bg-transparent text-light" scope="col"> No of Unit</th>
-                            <th class="bg-transparent text-light" scope="col">Dr/Cr</th>
-                            <th class="bg-transparent text-light" scope="col">Curr</th>
-                            <th class="bg-transparent text-light" scope="col">EX Rate</th>
-                            <th class="bg-transparent text-light" scope="col">Rate</th>
-                            <th class="bg-transparent text-light" scope="col">Amount</th>
-                            <th class="bg-transparent text-light" scope="col">Taxable Amt</th>
-                            <th class="bg-transparent text-light" scope="col">CGST%</th>
-                            <th class="bg-transparent text-light" scope="col">CGST</th>
-                            <th class="bg-transparent text-light" scope="col">SGST%</th>
-                            <th class="bg-transparent text-light" scope="col">SGST</th>
-                            <th class="bg-transparent text-light" scope="col">Local Amount</th>
-                            <th class="bg-transparent text-light" scope="col">Job No</th>
-                            <th class="bg-transparent text-light" scope="col">House No</th>
+            <!-- 4. Customer Address (branch select) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select">
+                <ng-select
+                  [items]="customerBranchList.length ? customerBranchList : []"
+                  bindLabel="Address"
+                  bindValue="CustomerBranchSid"
+                  placeholder="Select branch"
+                  formControlName="PartyName"
+                  (change)="onBranchChange($event)"
+                  appendTo="body">
+                  <ng-template ng-option-tmp let-item="item">
+                    <div>
+                      <strong>{{ item.CustomerName }}</strong><br>
+                      <small>{{ item.Address }}</small>
+                    </div>
+                  </ng-template>
+                </ng-select>
+                <label class="input-label">Customer Address</label>
+              </div>
+            </aside>
 
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (item of [0,1,2]; track $index) {
-                        <tr>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2" class="link mx-2 ">
-                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
-                                    </a>
-                                    <a class="text-danger mx-2 ps-3 border-start">
-                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
-                                    </a>
-                                </div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
+            <!-- 5. Ref No (DocumentNumber) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm" formControlName="DocumentNumber">
+                <label class="input-label">Ref No</label>
+              </div>
+            </aside>
 
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">RO</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                        </tr>
-                        }
-                    </tbody>
+            <!-- 7. Job No (MasterJobSid) - ng-select showing MasterJobNumber and MBLNo -->
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select">
+                <ng-select
+                  [items]="masterJobList"
+                  bindLabel="displayLabel"
+                  bindValue="MasterJobSid"
+                  placeholder="Select master job"
+                  formControlName="MasterJobSid"
+                  (change)="onMasterJobSelected($event)"
+                  [clearable]="true"
+                  [searchable]="true"
+                  appendTo="body">
+                  <ng-template ng-option-tmp let-item="item">
+                    <div class="d-flex flex-column">
+                      <strong>{{ item.MasterJobNumber }}</strong>
+                      <small *ngIf="item.MBLNo">MBL: {{ item.MBLNo }}</small>
+                      <small *ngIf="item.HBLNo">HBL: {{ item.HBLNo }}</small>
+                    </div>
+                  </ng-template>
+                  <ng-template ng-label-tmp let-item="item">
+                    <div>
+                      {{ item.MasterJobNumber }} <small *ngIf="item.MBLNo"></small>
+                    </div>
+                  </ng-template>
+                </ng-select>
+                <label class="input-label">Job No</label>
+              </div>
+            </aside>
+
+            <!-- 15. MBL No -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" class="form-control custom-input-field sm" formControlName="MBLNo">
+                <label class="input-label">MBL No</label>
+              </div>
+            </aside>
+
+            <!-- 8. HBL No (HouseJob) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm" formControlName="HBLNo">
+                <label class="input-label">HBL No</label>
+              </div>
+            </aside>
+
+            <!-- 9. Currency (CurrencyCode) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select">
+                <ng-select [items]="currencyList"
+                           bindLabel="currencyCode"
+                           bindValue="currencyCode"
+                           placeholder="Select currency"
+                           formControlName="CurrencyCode"
+                           (change)="recalculateAllRows()">
+                </ng-select>
+                <label class="input-label">Currency</label>
+              </div>
+            </aside>
+
+            <!-- 10. Ex Rate (ExchangeRate) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="number" step="0.0001" class="custom-input-field sm" formControlName="ExchangeRate" (input)="recalculateAllRows()">
+                <label class="input-label">Ex Rate</label>
+              </div>
+            </aside>
+
+            <!-- 11. GST No (GSTNo) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm" formControlName="GSTNo">
+                <label class="input-label">GST No / VAT</label>
+              </div>
+            </aside>
+
+            <!-- 12. Invoice Type -->
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select">
+                <ng-select [items]="invoiceTypes" bindLabel="name" bindValue="id"
+                  placeholder="Select invoice type" formControlName="InvoiceType">
+                </ng-select>
+                <label class="input-label">Invoice Type</label>
+              </div>
+            </aside>
+
+            <!-- 13. Remarks -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm" formControlName="Remarks">
+                <label class="input-label">Remarks</label>
+              </div>
+            </aside>
+
+            <!-- 6. IRN No -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm" formControlName="IRNNumber">
+                <label class="input-label">IRN No</label>
+              </div>
+            </aside>
+
+            <!-- 14. IRN Status -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm" formControlName="IRNStatus">
+                <label class="input-label">IRN Status</label>
+              </div>
+            </aside>
+
+            <!-- Status -->
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select">
+                <ng-select [items]="ModeofStatus" bindLabel="name" bindValue="id" formControlName="status"></ng-select>
+                <label class="input-label">Status</label>
+              </div>
+            </aside>
+          </div>
+
+          <!-- Voucher Details Table -->
+          <div class="mx-0 mt-3">
+            <div class="col-12 p-2 bg-white py-2 rounded shadow-sm">
+                <div class="d-flex justify-content-end mt-2 mb-2">
+                  <button class="btn btn-secondary btn-sm me-2" (click)="addDetailRow()" type="button">Add Charge</button>
+                </div>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 text-center">
+                  <thead>
+                    <tr class="bg-info text-light align-middle">
+                      <th rowspan="2" class="bg-transparent text-light text-center">Sno</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center">Charge </th>
+                      <th rowspan="2" class="bg-transparent text-light text-center">Charge Description</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center">HSN/SAC</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center" >Unit</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center">No of Unit</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center w-60">Dr/Cr</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center">Curr</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center">Rate</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center">Ex Rate</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center">Amount</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center">Taxable Amt</th>
+                      <th colspan="2" class="bg-transparent text-light text-center">CGST</th>
+                      <th colspan="2" class="bg-transparent text-light text-center">SGST</th>
+                      <th colspan="2" class="bg-transparent text-light text-center">IGST</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center">Local Amount</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center">Job No.</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center">House No.</th>
+                      <th rowspan="2" class="bg-transparent text-light text-center">Action</th>
+                    </tr>
+                    <tr class="bg-info text-light align-middle">
+                      <th class="bg-transparent text-light text-center">Rate</th>
+                      <th class="bg-transparent text-light text-center">Amount</th>
+                      <th class="bg-transparent text-light text-center">Rate</th>
+                      <th class="bg-transparent text-light text-center">Amount</th>
+                      <th class="bg-transparent text-light text-center">Rate</th>
+                      <th class="bg-transparent text-light text-center">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="voucherDetails">
+                    <ng-container *ngFor="let row of details.controls; let i = index">
+                      <tr [formGroupName]="i">
+                        <td>{{ i + 1 }}</td>
+
+                        <td>
+                          <ng-select [items]="chargeList"
+                                     bindLabel="chargeCode"
+                                     bindValue="ChargeMasterSid"
+                                     formControlName="ChargeMasterSid"
+                                     (change)="onDetailChange(i, 'ChargeMasterSid')"
+                                     placeholder="Select charge" appendTo="body">
+                          </ng-select>
+                        </td>
+
+                        <td>
+                          <input class="form-control form-control-sm" formControlName="ChargeDescription" readonly>
+                        </td>
+
+                        <td>
+                          <ng-select
+                            [items]="hssacList"
+                            bindLabel="HSSACCode"
+                            bindValue="HSSACMasterSid"
+                            formControlName="HSSACMasterSid"
+                            placeholder="HSN/SAC"
+                            appendTo="body">
+                          </ng-select>
+                        </td>
+
+                        <td>
+                          <ng-select
+                            [items]="uomList"
+                            bindLabel="UOMCode"
+                            bindValue="UOMMasterSid"
+                            placeholder="Unit"
+                            formControlName="ChargeUOMSid"
+                            appendTo="body">
+                          </ng-select>
+                        </td>
+
+                        <td>
+                          <input type="number" min="0" class="form-control form-control-sm" formControlName="NumberOfUnit"
+                                 (input)="onDetailChange(i, 'NumberOfUnit')">
+                        </td>
+
+                        <td>
+                          <ng-select [items]="[{id:'Dr', name:'Dr'},{id:'Cr', name:'Cr'}]" bindLabel="name" bindValue="id" formControlName="DrCr" appendTo="body"></ng-select>
+                        </td>
+
+                        <td>
+                          <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="currencyCode" formControlName="CurrencyCode" (change)="onDetailChange(i,'CurrencyCode')" appendTo="body"></ng-select>
+                        </td>
+
+                        <td >
+                          <input type="number" step="0.01" class="form-control form-control-sm" formControlName="Rate" (input)="onDetailChange(i, 'Rate')">
+                        </td>
+
+                        <td>
+                          <input type="number" step="0.0001" class="form-control form-control-sm" formControlName="ExchangeRate" (input)="onDetailChange(i, 'ExchangeRate')">
+                        </td>
+
+                        <td>
+                          <input class="form-control form-control-sm" formControlName="Amount" readonly>
+                        </td>
+
+                        <td>
+                          <input class="form-control form-control-sm" formControlName="TaxableAmount" readonly>
+                        </td>
+
+                        <td>
+                          <input class="form-control form-control-sm" formControlName="TaxPercentage1" (input)="onDetailChange(i, 'TaxPercentage1')">
+                        </td>
+                        <td>
+                          <input class="form-control form-control-sm" formControlName="TaxAmount1" readonly>
+                        </td>
+
+                        <td>
+                          <input class="form-control form-control-sm" formControlName="TaxPercentage2" (input)="onDetailChange(i, 'TaxPercentage2')">
+                        </td>
+                        <td>
+                          <input class="form-control form-control-sm" formControlName="TaxAmount2" readonly>
+                        </td>
+
+                        <td>
+                          <input class="form-control form-control-sm" formControlName="TaxPercentageIGST" (input)="onDetailChange(i, 'TaxPercentageIGST')">
+                        </td>
+                        <td>
+                          <input class="form-control form-control-sm" formControlName="TaxAmountIGST" >
+                        </td>
+
+                        <td>
+                          <input class="form-control form-control-sm" formControlName="LocalAmount" readonly>
+                        </td>
+
+                        <!-- MasterJobSid column replaced with ng-select -->
+                        <td style="min-width:200px;">
+                          <ng-select
+                            [items]="masterJobList"
+                            bindLabel="displayLabel"
+                            bindValue="MasterJobSid"
+                            formControlName="MasterJobSid"
+                            placeholder="Select Job"
+                            [clearable]="true"
+                            [searchable]="true"
+                            appendTo="body">
+                            <ng-template ng-option-tmp let-item="item">
+                              <div>
+                                <strong>{{ item.MasterJobNumber }}</strong><br>
+                                <!-- <small>MBL: {{ item.MBLNo || '-' }} &nbsp; HBL: {{ item.HBLNo || '-' }}</small> -->
+                              </div>
+                            </ng-template>
+                          </ng-select>
+                        </td>
+
+                        <td><input class="form-control form-control-sm" formControlName="HouseJobSid"></td>
+
+                        <td>
+                          <button class="btn btn-danger btn-sm" (click)="removeDetailRow(i)" type="button">Remove</button>
+                        </td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
                 </table>
-            </div>
-        </div>
 
-         <div class="nav-pills-container mt-2">
-        <div class="nav-pills">
-            <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
-                (click)="selectTab(tab.name)">
-                <div class="pill-icon">
-                    <i [class]="tab.icon"></i>
-                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabs area -->
+          <div class="nav-pills-container mt-2">
+            <div class="nav-pills">
+              <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name" (click)="selectedTab = tab.name">
+                <div class="pill-icon"><i [class]="tab.icon"></i></div>
                 <span class="pill-label">{{ tab.name }}</span>
                 <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
+              </div>
             </div>
-        </div>
-        <div class="nav-actions">
-            <div class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80 me-2" (click)="openDubaiModal(dubaiModal)">
-                Dubai
-            </div>
-            <div class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80 " (click)="openIGSTModal(IGSTModal)">
-                IGST
-            </div>
-        </div>
-    </div>
+          </div>
 
-    <div class="content-workspace">
-        <div class="workspace-content" *ngIf="selectedTab === 'Others'">
-
-            <div>
-                <div class="row">
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Invoice Footer <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Invoice Note <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Reverse Credit Note <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Container No <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Invoice Footer <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-3">
-                        <div class=" custom-form-group custom-form-group-select">
-                            <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d2="ngbDatepicker" formControlName="" (click)="d2.toggle()" container="body" />
-                                <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
-                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                            </div>
-                            <label class="input-label">Due Date <span class="text-danger"></span>
-                            </label>
-
-                        </div>
-                    </aside>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div> -->
-
-
-    <div class="mx-0">
-        <div class="col-12 p-2 bg-white py-2 rounded shadow-sm  mt-2">
-
-
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 text-center">
-                    <thead>
-                        <tr class="bg-info text-light align-middle">
-                            <th rowspan="2" class="bg-transparent text-light text-center">Description</th>
-                            <th rowspan="2" class="bg-transparent text-light text-center">HSN/SAC</th>
-                            <th rowspan="2" class="bg-transparent text-light text-center">Qty</th>
-                            <th rowspan="2" class="bg-transparent text-light text-center">Total <br>Amount</th>
-                            <th rowspan="2" class="bg-transparent text-light text-center">Taxable <br>Amount</th>
-                            <th colspan="2" class="bg-transparent text-light text-center">CGST</th>
-                            <th colspan="2" class="bg-transparent text-light text-center">SGST</th>
-                            <th colspan="2" class="bg-transparent text-light text-center">IGST</th>
-                            <th rowspan="2" class="bg-transparent text-light text-center">Total Amount <br> (incl.tax)</th>
-                        </tr>
-                        <tr class="bg-info text-light align-middle">
-                            <th class="bg-transparent text-light text-center">Rate</th>
-                            <th class="bg-transparent text-light text-center">Amount</th>
-                            <th class="bg-transparent text-light text-center">Rate</th>
-                            <th class="bg-transparent text-light text-center">Amount</th>
-                            <th class="bg-transparent text-light text-center">Rate</th>
-                            <th class="bg-transparent text-light text-center">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">Home Painting Final</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">995473</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">1.0</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">8444.61</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">8444.61</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">9%</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">760.01</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">9%</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">760.01</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">0%</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">0.00</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">9964.63</td>
-                        </tr>
-                        <tr>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">Home Painting Token</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">995473</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">1.0</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">10548.31</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">10548.31</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">9%</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">949.35</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">9%</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">949.35</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">0%</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">0.00</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">12447.01</td>
-                        </tr>
-                        <tr class="fw-bold">
-                            <td class="fw-bold" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">Grand Total</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"></td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"></td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"></td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">18992.92</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"></td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">1709.36</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"></td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">1709.36</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;"></td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">0.00</td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">22411.64</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-
-        </div>
-
-        <div class="nav-pills-container mt-2">
-            <div class="nav-pills">
-                <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
-                    (click)="selectTab(tab.name)">
-                    <div class="pill-icon">
-                        <i [class]="tab.icon"></i>
-                    </div>
-                    <span class="pill-label">{{ tab.name }}</span>
-                    <div class="pill-indicator" *ngIf="selectedTab === tab.name"></div>
-                </div>
-            </div>
-            <div class="nav-actions">
-                <div class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80 me-2" (click)="openDubaiModal(dubaiModal)">
-                    Dubai
-                </div>
-                <div class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80 " (click)="openIGSTModal(IGSTModal)">
-                    IGST
-                </div>
-            </div>
-        </div>
-
-        <div class="content-workspace">
+          <!-- Others Tab -->
+          <div class="content-workspace">
             <div class="workspace-content" *ngIf="selectedTab === 'Others'">
+              <div class="row" formGroupName="voucherOthers">
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" class="custom-input-field sm" formControlName="Footer">
+                    <label class="input-label">Invoice Footer</label>
+                  </div>
+                </aside>
 
-                <div>
-                    <div class="row">
-                        <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Invoice Footer <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Invoice Note <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Reverse Credit Note <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Container No <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-3">
-                            <div class="custom-form-group">
-                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                    formControlName="">
-                                <label for="text-input" class="input-label">Invoice Footer <span
-                                        class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-3">
-                            <div class=" custom-form-group custom-form-group-select">
-                                <div class="input-group">
-                                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        #d2="ngbDatepicker" formControlName="" (click)="d2.toggle()" container="body" />
-                                    <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
-                                        <i-feather name="calendar" class="feather-sm"></i-feather></button>
-                                </div>
-                                <label class="input-label">Due Date <span class="text-danger"></span>
-                                </label>
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" class="custom-input-field sm" formControlName="VoucherNote">
+                    <label class="input-label">Invoice Note</label>
+                  </div>
+                </aside>
 
-                            </div>
-                        </aside>
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" class="custom-input-field sm" formControlName="ReverseCreditNote">
+                    <label class="input-label">Reverse Credit Note</label>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" class="custom-input-field sm" formControlName="ContainerNumber">
+                    <label class="input-label">Container No</label>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group custom-form-group-select">
+                    <div class="input-group">
+                      <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
+                             formControlName="DueDate" (click)="d2.toggle()" container="body" />
+                      <button class="btn bi bi-calendar3" (click)="d2.toggle()" type="button">
+                        <i-feather name="calendar" class="feather-sm"></i-feather></button>
                     </div>
-                </div>
+                    <label class="input-label">Due Date</label>
+                  </div>
+                </aside>
+              </div>
             </div>
-        </div>
+          </div>
+        </form>
+      </div>
     </div>
-
+  </div>
 </div>
-
-
-<ng-template #dubaiModal let-modal>
-    <div class="modal-header p-2 bg-info text-white">
-        <h5 class="modal-title">Dubai</h5>
-        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-    </div>
-    <div class="modal-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">VAT %</th>
-                        <th class="bg-transparent text-light" scope="col">VAT</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2]; track $index) {
-                    <tr>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <button class="btn btn-sm btn-secondary" (click)="modal.dismiss()">Cancel</button>
-        <button class="btn btn-sm btn-info">Save</button>
-    </div>
-</ng-template>
-
-<ng-template #IGSTModal let-modal>
-    <div class="modal-header p-2 bg-info text-white">
-        <h5 class="modal-title">IGST</h5>
-        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-    </div>
-    <div class="modal-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                <thead>
-                    <tr class="bg-info">
-                        <th class="bg-transparent text-light" scope="col">IGST %</th>
-                        <th class="bg-transparent text-light" scope="col">IGST</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of [0,1,2]; track $index) {
-                    <tr>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                            <div class="text-truncate">RO</div>
-                        </td>
-                        <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                            <div class="text-truncate">OMR</div>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <button class="btn btn-sm btn-secondary" (click)="modal.dismiss()">Cancel</button>
-        <button class="btn btn-sm btn-info">Save</button>
-    </div>
-</ng-template>

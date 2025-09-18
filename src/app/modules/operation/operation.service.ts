@@ -4,6 +4,7 @@ import { map } from "rxjs";
 import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.metadata";
 import { Vessel } from "../crm-mobile/Interfaces/vessel.interface";
 import { Uom } from "../crm-mobile/Interfaces/uom.interface";
+import { HSSAC } from "../crm-mobile/Interfaces/hs-sac.interfaces";
 
 @Injectable({
   providedIn: 'root',
@@ -482,4 +483,88 @@ getAllPorts() {
       })
     );
   }
+// ----- Invoice Operations ----- //
+
+createInvoice(payload: any) {
+  return this.http.post<{ data: any }>('invoice/create', payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+getAllInvoices() {
+  return this.http.get<{ data: any[] }>('invoice').pipe(
+    map((resp) => {
+     let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+getInvoiceById(VoucherHeaderSid: number) {
+  return this.http.get<{ data: any }>(`invoice/fetch/${VoucherHeaderSid}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+updateInvoiceById(VoucherHeaderSid: number, payload: any) {
+  return this.http.patch<{ data: any }>(`invoice/update/${VoucherHeaderSid}`, payload).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+deleteInvoiceById(VoucherHeaderSid: number) {
+  return this.http.delete<{ data: any }>(`invoice/deleteVoucher/${VoucherHeaderSid}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+searchInvoices(payload: any) {
+  return this.http.post<{ data: any }>('invoice/search-list', payload).pipe(
+    map((resp) => {
+     let response = resp;
+        return response;
+      })
+    );
+  }
+  getAllCharges(CompanyMasterSid: number) {
+    return this.http.post('charge',{ CompanyMasterSid }).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+  getAllHssac() {
+    return this.http.get<{ data: HSSAC[] }>('hssac').pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+   getAllSuledgermaster() {
+    return this.http.get<{ data: any[] }>('subledgermaster').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  getAllUom() {
+    return this.http.get('uom').pipe(
+      map((resp: any) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
 }

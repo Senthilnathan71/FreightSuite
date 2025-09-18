@@ -119,6 +119,14 @@ export const OperationRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'Invoice' }],
         },
       },
+      {
+        path: 'invoice/entry/:id',
+        component: InvoiceEntryComponent,
+        data: {
+          title: 'Invoice',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Invoice' }],
+        },
+      },
         {
         path: 'cargo-receipt/entry',
         component: CragoReceiptEntryComponent,

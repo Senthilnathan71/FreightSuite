@@ -1,6 +1,16 @@
+<!-- invoice-list.component.html -->
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
 <div class="row compact-form">
     <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
+        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm justify-content-between">
             <div class="col pb-2">
                 <h4 class="page-title mb-0">Invoice</h4>
             </div>
@@ -10,123 +20,182 @@
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
                         <div class="form-outline flex-grow-1 position-relative">
                             <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-                                aria-label="Search input">
-                            <button
+                                [(ngModel)]="filterValue" aria-label="Search input">
+                            <button *ngIf="filterValue"
                                 class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                                tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip" data-bs-placement="top"
-                                data-bs-title="Clear search"
+                                (click)="clearFilterValue()" tabindex="0" aria-label="Clear search"
+                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear search"
                                 onfocus="this.classList.replace('text-secondary','text-danger')"
                                 onblur="this.classList.replace('text-danger','text-secondary')">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                         <div class="mt-md-0 mt-1">
-                            <button type="submit" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
+                            <button type="submit" (click)="loadInvoices()"
+                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                                 <i class="fas fa-search me-1"></i> Search
                             </button>
                         </div>
+
                     </div>
                 </form>
             </div>
 
             <div class="col-md-auto pb-2">
-                <div class="" data-bs-theme="light">
-                    <form
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="TonavigateCreate()">
-                            <i class="fas fa-plus me-1"></i> Create
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-file-alt me-1"></i>
-                            Report
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                            <i class="fas fa-sync-alt me-1"></i>
-                            Reset
-                        </button>
-                    </form>
-                </div>
-            </div>
+                <form
+                    class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <app-favorite-star screenName="invoice" class="mt-1 me-1"></app-favorite-star>
+                    
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        (click)="navigateToAddNewInvoice()">
+                        <i class="fas fa-plus me-1"></i> Create
+                    </button>
 
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()"
+                        [disabled]="!searchPerformed">
+                        <i class="fas fa-file-alt me-1"></i> Report
+                    </button>
+
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()"
+                        [disabled]="!searchPerformed">
+                        <i class="fas fa-sync-alt me-1"></i> Reset
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0 && !loading">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                            <th class="bg-transparent text-light" scope="col">Invoice No</th>
-                            <th class="bg-transparent text-light" scope="col">Invoice Date</th>
-                            <th class="bg-transparent text-light" scope="col">Customer Name</th>
-                            <th class="bg-transparent text-light" scope="col">Curr</th>
-                            <th class="bg-transparent text-light" scope="col">Local Amount</th>
-                            <th class="bg-transparent text-light" scope="col">INR No</th>
-                            <th class="bg-transparent text-light" scope="col">Job No</th>
-                            <th class="bg-transparent text-light" scope="col">House No</th>
-                            <th class="bg-transparent text-light" scope="col">Status</th>
-                            <th class="bg-transparent text-light" scope="col">Create On</th>
-                            <th class="bg-transparent text-light" scope="col">Credit Note No</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Actions</th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('VoucherNumber')">
+                                Invoice No
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'VoucherNumber', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'VoucherNumber'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('VoucherDate')">
+                                Invoice Date
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'VoucherDate', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'VoucherDate'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('PartyName')">
+                                Customer Name
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'PartyName', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'PartyName'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('CurrencyCode')">
+                                CurrencyCode
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CurrencyCode', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CurrencyCode'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('LocalAmount')">
+                                Local Amount
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'LocalAmount', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'LocalAmount'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('IRNNumber')">
+                                INR No
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'INRNo', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'INRNo'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('masterJob')">
+                                Job No
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'masterJob', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'masterJob'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('HouseJobSid')">
+                                House No
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'HouseJobSid', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'HouseJobSid'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('CreateOn')">
+                                Create On
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CreateOn', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CreateOn'}"></i>
+                            </th>
+                            <th class="bg-transparent text-light" scope="col" (click)="sort('CreditNoteNo')">
+                                Credit Note No
+                                <i class="fas fa-sort ms-1"
+                                    [ngClass]="{'fa-sort-up': sortDirection === 'asc' && sortColumn === 'CreditNoteNo', 'fa-sort-down': sortDirection === 'desc' && sortColumn === 'CreditNoteNo'}"></i>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
-                        @for (item of [0,1,2]; track $index) {
-                        <tr>
+                        <tr *ngFor="let item of invoiceList; let i = index; trackBy: trackByIndex">
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center justify-content-center">
-                                    <a class="text-info mx-2" class="link mx-2 ">
-                                        <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
+                                    <a class="text-info mx-2" class="link mx-2 ps-3 cursor-pointer"
+                                        (click)="viewInvoice(item.VoucherHeaderSid)">
+                                        <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                     </a>
-                                    <a class="text-danger mx-2 ps-3 border-start">
-                                        <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
+                                    <a class="text-danger mx-2 ps-3 border-start cursor-pointer"
+                                        (click)="deleteInvoice(item.VoucherHeaderSid)">
+                                        <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
                                 </div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.VoucherNumber}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{formatDate(item.VoucherDate)}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.PartyName || 'N/A'}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.CurrencyCode || 'N/A'}}</div>
+                            </td>
+                           <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                <div class="text-truncate">{{item.LocalAmount || 'N/A'}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{item.IRNNumber || 'N/A'}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
+  <div class="text-truncate">{{item.MasterJobNumber || item.MasterJobSid || 'N/A'}}</div>
+</td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
+  <div class="text-truncate">{{item.HouseJobNumber || item.HouseJobSid || 'N/A'}}</div>
+</td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
-                            </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <span
-                                    class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
+                                @if(item.Status === "A"){
+                                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                                    Active</span>
+                                    Active
+                                </div>
+                                } @else {
+                                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                                    <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                                    Suspended
+                                </div>
+                                }
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">OMR</div>
+                                <div class="text-truncate">{{formatDate(item.CreateOn)}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">RO</div>
+                                <div class="text-truncate">{{item.CreditNoteNo || 'N/A'}}</div>
                             </td>
-
                         </tr>
-                        }
                     </tbody>
                 </table>
+            </div>
+            <div>
+                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalLengthOfCollection"
+                    [pageSize]="pageSize" [(page)]="page" (pageChange)="updatePaginatedData()" [maxSize]="10" [rotate]="true" [ellipses]="false">
+                </ngb-pagination>
             </div>
         </div>
     </div>
 
+    <!-- No records found -->
+    <div class="col-12" *ngIf="totalLengthOfCollection === 0 && searchPerformed && !loading">
+        <div class="alert alert-info mt-3">No records found</div>
+    </div>
 </div>
