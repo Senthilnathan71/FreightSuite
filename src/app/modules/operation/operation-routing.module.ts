@@ -72,19 +72,19 @@ export const OperationRoutes: Routes = [
       },
       
       {
-        path: 'report/list',
+        path: 'booking-report/list',
         component: ReportComponent,
         data: {
-          title: 'Report',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Report' }],
+          title: 'Booking Report',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Booking Report' }],
         },
       },
        {
-        path: 'report/entry',
+        path: 'booking-report/entry',
         component: ReportEntryComponent,
         data: {
-          title: 'Report',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Report' }],
+          title: 'Booking Report',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Booking Report' }],
         },
       },
        {

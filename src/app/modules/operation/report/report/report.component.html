@@ -1,10 +1,14 @@
-<div class="row compact-form">
-    <div class="col-12">
+<div class="row compact-form" [formGroup]="BookingForm">
+    <div class="col-12" >
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm">
             <div class="col pb-2">
-                <h4 class="page-title mb-0">Booking Report</h4>
+                <div class="d-flex align-items-center gap-2">
+                     <div class="brand-icon">
+                   <i class="fas fa-chart-line"></i>
+                </div>
+                <h5 class="page-title mb-0 text-info">Booking Report</h5>
+                </div>
             </div>
-
             <div class="col-md pb-2">
                 <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0">
                     <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
@@ -28,13 +32,12 @@
                     </div>
                 </form>
             </div>
-
             <div class="col-md-auto pb-2">
                 <div class="" data-bs-theme="light">
                     <form
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToCreate()">
-                            <i class="fas fa-plus me-1"></i> Create
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-90 dofi-max-w-90">
+                            Generate
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
                             <i class="fas fa-file-alt me-1"></i>
@@ -47,16 +50,130 @@
                     </form>
                 </div>
             </div>
-
         </div>
     </div>
-    <div class="row bg-white py-2 rounded shadow-sm mx-auto">
+    <div class="col-md-12 px-0">
+        <div class="card h-100 mb-0">
+            <div class="card-body pb-0">
+                <div class="row">
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <multi-select [control]="BookingForm.get('Dept')" [items]="departmentList"
+                                bindLabel="departmentName" bindValue="DepartmentMasterSid"
+                                placeholder="Select Departments"></multi-select>
+                            <label for="" class="input-label">
+                                Dept <span class="text-danger"></span>
+                            </label>
+                            @if(BookingForm.get('Dept')?.touched && BookingForm.get('Dept')?.invalid){
+                            <div class="error-message">
+                                @if(BookingForm.get('Dept')?.hasError('required')){
+                                <div>
+                                    Required
+                                </div>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                           <ng-select [items]="BranchList" bindLabel="branchName" bindValue="BranchMasterSid"
+                                    formControlName="Branch">
+                                </ng-select>
+                            <label for="text-input" class="input-label">Branch <span class="text-danger"></span></label>
+                            @if(BookingForm.get('Branch')?.touched && BookingForm.get('Branch')?.invalid){
+                            <div class="error-message">
+                                @if(BookingForm.get('Branch')?.hasError('required')){
+                                <div>
+                                    Required
+                                </div>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d1="ngbDatepicker" formControlName="FromBookingDate" (click)="d1.toggle()" />
+                                <button class="btn  bi bi-calendar3 " (click)="d1.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label class="input-label">From Booking Date <span class="text-danger">*</span>
+                            </label>
+                            @if(BookingForm.get('FromBookingDate')?.touched &&
+                            BookingForm.get('FromBookingDate')?.invalid){
+                            <div class="error-message">
+                                @if(BookingForm.get('FromBookingDate')?.hasError('required')){
+                                <div>
+                                    Required
+                                </div>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class=" custom-form-group custom-form-group-select">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d2="ngbDatepicker" formControlName="ToBookingDate" (click)="d2.toggle()" />
+                                <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                            </div>
+                            <label class="input-label">To Booking Date <span class="text-danger">*</span>
+                            </label>
+                            @if(BookingForm.get('ToBookingDate')?.touched && BookingForm.get('ToBookingDate')?.invalid){
+                            <div class="error-message">
+                                @if(BookingForm.get('ToBookingDate')?.hasError('required')){
+                                <div>
+                                    Required
+                                </div>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select [items]="SalesPersonList" bindLabel="userName" bindValue="UserMasterSid"
+                                    formControlName="SalesPerson">
+                                </ng-select>
+                                <label for="" class="input-label"> Sales Person <span
+                                        class="text-danger"></span></label>
+                                @if(BookingForm.get('SalesPerson')?.touched && BookingForm.get('SalesPerson')?.invalid){
+                                <div class="error-message">
+                                    @if(BookingForm.get('SalesPerson')?.hasError('required')){
+                                    <div>
+                                        Required
+                                    </div>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </div>
+                    </aside>
+                    <aside class="col-md-4">
+                        <div class="custom-form-group custom-form-group-select">
+                            <ng-select [items]="PODList" bindLabel="PortName" bindValue="PortMasterSid"
+                                formControlName="POD">
+                            </ng-select>
+                            <label for="" class="input-label"> POD <span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto mt-2">
         <div class="col-12 p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                            <!-- <th class="bg-transparent text-light" scope="col" width="10%">Action</th> -->
                             <th class="bg-transparent text-light" scope="col">Branch</th>
                             <th class="bg-transparent text-light" scope="col">Quotation No</th>
                             <th class="bg-transparent text-light" scope="col">Quotation Date</th>
@@ -83,13 +200,13 @@
                             <th class="bg-transparent text-light" scope="col">ETA</th>
                             <th class="bg-transparent text-light" scope="col">Created By</th>
                             <th class="bg-transparent text-light" scope="col">Created Date</th>
-                            <th class="bg-transparent text-light" scope="col" width="10%">Status</th>
+                            <!-- <th class="bg-transparent text-light" scope="col" width="10%">Status</th> -->
                         </tr>
                     </thead>
                     <tbody>
                         @for (item of [0,1,2]; track $index) {
                         <tr>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                            <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="d-flex align-items-center justify-content-center">
                                     <a class="text-info mx-2" class="link mx-2 ">
                                         <i-feather class="feather-sm text-info cursor-pointer" name="eye"></i-feather>
@@ -98,7 +215,7 @@
                                         <i-feather name="trash-2" class="feather-sm cursor-pointer"></i-feather>
                                     </a>
                                 </div>
-                            </td>
+                            </td> -->
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">OMR</div>
                             </td>
@@ -185,12 +302,12 @@
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <div class="text-truncate">RO</div>
                             </td>
-                            <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                            <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                 <span
                                     class="bg-light-success px-2  rounded-pill d-inline-flex align-items-center gap-1">
                                     <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
                                     Active</span>
-                            </td>
+                            </td> -->
                         </tr>
                         }
                     </tbody>
