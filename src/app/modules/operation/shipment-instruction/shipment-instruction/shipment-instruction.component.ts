@@ -45,7 +45,7 @@ export class ShipmentInstructionComponent {
         riderMarksNo: '',
         riderDesc: '',
         containers: []
-  }
+  } 
 
   packageTypeMap: { [key: string]: string } = {};
   portList: any
@@ -199,7 +199,7 @@ export class ShipmentInstructionComponent {
       bookingProducts.forEach((product: any, index: number) => {
         containers.push({
           containerNo: `${product.ShippingBillNo || 'Container'}`,
-          marksAndNos: `${product.MarksAndNumber || ''}\n${data.HBLNo || ''}`.trim(),
+          marksAndNos: product.MarksAndNumber,
           descriptionOfGoods: product.ProductDescription || '',
           packCount: parseInt(product.ExternlQty)  || 0,
           packType: this.getPackageType(product.ExternaPkg) || 'Cartons',
@@ -295,143 +295,275 @@ export class ShipmentInstructionComponent {
 
   saveShipmentInstruction() {
 
-    const BookingHeaderSid = this.bookingResponse.data.BookingHeaderSid
-    console.log(BookingHeaderSid, 'BookingHeaderSid')
+    const HouseJobSid = this.bookingResponse.data.HouseJobSid
+    console.log(HouseJobSid, 'BookingHeaderSid')
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
     const bookingFormValue = this.bookingResponse.data
-    const cargoFormValue = this.bookingResponse.data.bookingCargo[0]
-    const otherFormValue = this.bookingResponse.data.bookingOthers[0]
-    const detailFormValue = this.bookingResponse.data.bookingProduct
+    const cargoFormValue = this.bookingResponse.data.Cargo[0]
+    const otherFormValue = this.bookingResponse.data.Others[0]
+    const detailFormValue = this.bookingResponse.data.Products
+    // const payload = {
+    //   CompanyMasterSid: bookingFormValue?.CompanyMasterSid,
+    //   BranchMasterSid: bookingFormValue?.BranchMasterSid,
+    //   MenuMasterSid: currentMenuId,
+    //   DepartmentMasterSid: bookingFormValue.DepartmentMasterSid,
+    //   CustomerMasterSid: bookingFormValue.CustomerMasterSid,
+    //   CustomerBranchSid: bookingFormValue.CustomerBranchSid || null,
+    //   CustomerName: bookingFormValue.CustomerName,
+    //   CustomerAddress: bookingFormValue.CustomerAddress,
+    //   SalesmanSid: bookingFormValue.SalesmanSid || null,
+    //   ShipperName: this.shipmentData.shipper.name,
+    //   ShipperAddress: this.shipmentData.shipper.address,
+    //   ConsigneeName: this.shipmentData.ConsigneeName,
+    //   ConsigneeAddress: this.shipmentData.ConsigneeAddress,
+    //   Notify: this.shipmentData.Notify || '',
+    //   NotifyAddress: this.shipmentData.NotifyAddress || '',
+    //   DestinationAgent: this.shipmentData.DestinationAgent,
+    //   AgentAddress: this.shipmentData.AgentAddress || '',
+    //   CarrierName: bookingFormValue.CarrierName || null,
+    //   QuotationHeaderSid: bookingFormValue.QuotationHeaderSid || null,
+    //   HBLNo: this.shipmentData.HBLNo || '',
+    //   MBLNo: bookingFormValue.MBLNo || '',
+    //   MBLDate: bookingFormValue.MBLDate ? new Date(bookingFormValue.MBLDate) : null,
+    //   status: bookingFormValue.status === 'A' ? 'A' : 'S',
+    //   VesselName: this.shipmentData.VesselName || null,
+    //   VoyageMasterSid: this.shipmentData.VoyageMasterSid || null,
+    //   VoyageNo: bookingFormValue.VoyageNo || null,
+    //   ETA: bookingFormValue.ETA ? new Date(bookingFormValue.ETA) : null,
+    //   ETD: bookingFormValue.ETD ? new Date(bookingFormValue.ETD) : null,
+    //   POO: bookingFormValue.POO || null,
+    //   POL: this.shipmentData.portOfLoading,
+    //   POD: this.shipmentData.portOfDischarge,
+    //   POLTerminal: bookingFormValue.POLTerminal || '',
+    //   PODTerminal: bookingFormValue.PODTerminal || '',
+    //   FPD: bookingFormValue.FPD || null,
+    //   MovementType: bookingFormValue.MovementType || null,
+    //   DoValid: bookingFormValue.DoValid ? new Date(bookingFormValue.DoValid) : null,
+    //   Coload: bookingFormValue.Coload ? 'Y' : 'N',
+    //   ShipmentType: bookingFormValue.ShipmentType ? 'Y' : 'N',
+    //   IncoTerms: bookingFormValue.IncoTerms,
+    //   InternalNote: bookingFormValue.InternalNote || '',
+    //   GeneralNote: bookingFormValue.GeneralNote || '',
+    //   NominatedBy: bookingFormValue.NominatedBy || 'Self',
+    //   FreightTerms: bookingFormValue.FreightTerms || '',
+    //   ShipmentNo: bookingFormValue.ShipmentNo || '',
+    //   houseJobCargo: {
+    //     HouseJobCargoSid: cargoFormValue.HouseJobCargoSid || null,
+    //     CargoType: cargoFormValue.CargoType || null,
+
+    //     ContainerType: this.shipmentData.containers
+    //       .map(c => c.containerNo),
+
+    //     NoofContainers: this.shipmentData.containers.length || 0,
+
+    //     GrossWeight: this.shipmentData.containers
+    //       .reduce((sum, c) => sum + (c.grossWeight || 0), 0),
+
+    //     NetWeight: parseFloat(cargoFormValue.NetWeight) || 0,
+    //     Volume: this.shipmentData.containers
+    //       .reduce((sum, c) => sum + (c.volume || 0), 0),
+
+    //     ChargeableWeight: parseFloat(cargoFormValue.ChargeableWeight) || 0,
+    //     NoOfPackage: this.shipmentData.containers
+    //       .reduce((sum, c) => sum + (c.packCount || 0), 0),
+
+    //     ShipmentTerms: cargoFormValue.ShipmentTerms || null,
+    //     MovementType: cargoFormValue.MovementType || null,
+    //     FreightTerms: cargoFormValue.FreightTerms || null,
+    //     ModeOfTransport: cargoFormValue.ModeOfTransport || null,
+    //     StuffingAt: cargoFormValue.StuffingAt || 'Dock',
+    //   },
+
+    //   houseJobOthers: {
+    //     HouseJobOthersSid: otherFormValue.HouseJobOthersSid || null,
+    //     CustomerRefNo: otherFormValue.CustomerRefNo || '',
+    //     YardCFS: otherFormValue.YardCFS || '',
+    //     ReleaseType: otherFormValue.ReleaseType || null,
+    //     HBLNo: otherFormValue.HBLNo || '',
+    //     Forwarder: otherFormValue.Forwarder || null,
+    //     ForwarderAddress: otherFormValue.ForwarderAddress || '',
+    //     NotifyParty: otherFormValue.NotifyParty || null,
+    //     NotifyPartyAddress: otherFormValue.NotifyPartyAddress || '',
+    //     Notify2: otherFormValue?.Notify2,
+    //     NotifyAddress2: otherFormValue?.NotifyAddress2,
+    //     Coloader: otherFormValue?.Coloader,
+    //     PickupPlace: otherFormValue.PickupPlace || '',
+    //     DeliveryPlace: otherFormValue.DeliveryPlace || '',
+    //     DeliveryDate: otherFormValue.DeliveryDate ? new Date(otherFormValue.DeliveryDate) : null,
+    //     CHAName: otherFormValue.CHAName || '',
+    //     PickupAddress: otherFormValue.PickupAddress || '',
+    //     DeliveryAddress: otherFormValue.DeliveryAddress || '',
+    //     CargoCurrency: otherFormValue.CargoCurrency || null,
+    //     CargoValue: parseFloat(otherFormValue.CargoValue) || 0,
+    //     SwitchBL: otherFormValue.SwitchBL ? 'Y' : 'N',
+    //     BacktoBack: otherFormValue.BacktoBack ? 'Y' : 'N',
+    //     Depo: otherFormValue.Depo || '',
+    //     ROValidity: otherFormValue.ROValidity ? new Date(otherFormValue.ROValidity) : null,
+    //     SwitchBLAgent: otherFormValue?.SwitchBLAgent,
+    //     AgentAddress: otherFormValue?.AgentAddress,
+    //     SwitchBLShipper: otherFormValue?.SwitchBLShipper,
+    //     SwitchBLConsignee: otherFormValue?.SwitchBLConsignee,
+    //     SwitchLocation: otherFormValue?.SwitchLocation,
+    //     CarrierBookingRef: otherFormValue?.CarrierBookingRef,
+    //     CarrierBookingDate: otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null
+    //   },
+    //   houseJobProduct: detailFormValue.map((product: any) => ({
+    //     HouseJobProductSid: product.HouseJobProductSid || null,
+    //     ProductName: product.ProductName || '',
+    //     ShippingBillNo: product.ShippingBillNo || '',
+    //     ShippingBillDate: product.ShippingBillDate ? new Date(product.ShippingBillDate) : null,
+    //     ExternaPkg: product.ExternaPkg || null,
+    //     ExternlQty: String(product.ExternlQty),
+    //     GrossWeight: parseFloat(product.GrossWeight) || 0,
+    //     NetWeight: parseFloat(product.NetWeight) || 0,
+    //     Volume: parseFloat(product.Volume) || 0,
+    //     IsHaz: product.IsHaz ? 'Y' : 'N',
+    //     ImcoClass: product.ImcoClass || '',
+    //     UnNo: product.UnNo || '',
+    //     PkgGroup: product.PkgGroup || '',
+    //     Length: Number(product.Length),
+    //     Width: Number(product.Width),
+    //     Height: Number(product.Height),
+    //     UomMasterSid: product.UomMasterSid,
+    //     CargoRecDate: product.CargoRecDate
+    //   })),
+    //   bookingConnection: this.bookingResponse.data.houseConnections,
+    //   // bookingRates: this.bookingResponse.data.bookingRates,
+    // }
+
     const payload = {
-      CompanyMasterSid: bookingFormValue?.CompanyMasterSid,
-      BranchMasterSid: bookingFormValue?.BranchMasterSid,
-      MenuMasterSid: currentMenuId,
-      DepartmentMasterSid: bookingFormValue.DepartmentMasterSid,
-      CustomerMasterSid: bookingFormValue.CustomerMasterSid,
-      CustomerBranchSid: bookingFormValue.CustomerBranchSid || null,
-      CustomerName: bookingFormValue.CustomerName,
-      CustomerAddress: bookingFormValue.CustomerAddress,
-      SalesmanSid: bookingFormValue.SalesmanSid || null,
-      ShipperName: this.shipmentData.ShipperName,
-      ShipperAddress: this.shipmentData.ShipperAddress,
-      ConsigneeName: this.shipmentData.ConsigneeName,
-      ConsigneeAddress: this.shipmentData.ConsigneeAddress,
-      Notify: this.shipmentData.Notify || '',
-      NotifyAddress: this.shipmentData.NotifyAddress || '',
-      DestinationAgent: this.shipmentData.DestinationAgent,
-      AgentAddress: this.shipmentData.AgentAddress || '',
-      CarrierName: bookingFormValue.CarrierName || null,
-      QuotationHeaderSid: bookingFormValue.QuotationHeaderSid || null,
-      HBLNo: this.shipmentData.HBLNo || '',
-      MBLNo: bookingFormValue.MBLNo || '',
-      MBLDate: bookingFormValue.MBLDate ? new Date(bookingFormValue.MBLDate) : null,
-      status: bookingFormValue.status === 'A' ? 'A' : 'S',
-      VesselName: this.shipmentData.VesselName || null,
-      VoyageMasterSid: this.shipmentData.VoyageMasterSid || null,
-      VoyageNo: bookingFormValue.VoyageNo || null,
-      ETA: bookingFormValue.ETA ? new Date(bookingFormValue.ETA) : null,
-      ETD: bookingFormValue.ETD ? new Date(bookingFormValue.ETD) : null,
-      POO: bookingFormValue.POO || null,
-      POL: this.shipmentData.portOfLoading,
-      POD: this.shipmentData.portOfDischarge,
-      POLTerminal: bookingFormValue.POLTerminal || '',
-      PODTerminal: bookingFormValue.PODTerminal || '',
-      FPD: bookingFormValue.FPD || null,
-      MovementType: bookingFormValue.MovementType || null,
-      DoValid: bookingFormValue.DoValid ? new Date(bookingFormValue.DoValid) : null,
-      Coload: bookingFormValue.Coload ? 'Y' : 'N',
-      ShipmentType: bookingFormValue.ShipmentType ? 'Y' : 'N',
-      IncoTerms: bookingFormValue.IncoTerms,
-      InternalNote: bookingFormValue.InternalNote || '',
-      GeneralNote: bookingFormValue.GeneralNote || '',
-      NominatedBy: bookingFormValue.NominatedBy || 'Self',
-      FreightTerms: bookingFormValue.FreightTerms || '',
-      ShipmentNo: bookingFormValue.ShipmentNo || '',
-      bookingCargo: {
-        BookingCargoSid: cargoFormValue.BookingCargoSid || null,
-        CargoType: cargoFormValue.CargoType || null,
+  // ---------- Top-level booking info ----------
+  CompanyMasterSid: bookingFormValue?.CompanyMasterSid,
+  BranchMasterSid: bookingFormValue?.BranchMasterSid,
+  MenuMasterSid: currentMenuId,
+  DepartmentMasterSid: bookingFormValue.DepartmentMasterSid,
+  CustomerMasterSid: bookingFormValue.CustomerMasterSid,
+  CustomerBranchSid: bookingFormValue.CustomerBranchSid || null,
+  CustomerName: bookingFormValue.CustomerName,
+  CustomerAddress: bookingFormValue.CustomerAddress,
+  SalesmanSid: bookingFormValue.SalesmanSid || null,
 
-        ContainerType: this.shipmentData.containers
-          .map(c => c.containerNo),
+  // ---------- Shipment / party details ----------
+  ShipperName: this.shipmentData.shipper.name,
+  ShipperAddress: this.shipmentData.shipper.address,
+  ConsigneeName: this.shipmentData.consignee.name,
+  ConsigneeAddress: this.shipmentData.consignee.address,
+  Notify: this.shipmentData.notifyParty.name || '',
+  NotifyAddress: this.shipmentData.notifyParty.address || '',
+  DestinationAgent: bookingFormValue.DestinationAgent || '',          // or your own field name
 
-        NoofContainers: this.shipmentData.containers.length || 0,
+  AgentAddress: this.shipmentData.AgentAddress || '',               // if you keep a separate AgentAddress
+  CarrierName: bookingFormValue.CarrierName || null,
+  QuotationHeaderSid: bookingFormValue.QuotationHeaderSid || null,
+  HBLNo: this.shipmentData.billOfLadingNo || '',
+  MBLNo: bookingFormValue.MBLNo || '',
+  MBLDate: bookingFormValue.MBLDate ? new Date(bookingFormValue.MBLDate) : null,
+  status: bookingFormValue.status === 'A' ? 'A' : 'S',
+  VesselName: this.shipmentData.vesselVoyNo.split('/')[0]?.trim() || null,
+  VoyageMasterSid: bookingFormValue.VoyageMasterSid || null,
+  VoyageNo: bookingFormValue.VoyageNo || null,
+  ETA: bookingFormValue.ETA ? new Date(bookingFormValue.ETA) : null,
+  ETD: bookingFormValue.ETD ? new Date(bookingFormValue.ETD) : null,
+  POO: bookingFormValue.POO || null,
+  POL: this.shipmentData.portOfLoading || null,
+  POD: this.shipmentData.portOfDischarge || null,
+  POLTerminal: bookingFormValue.POLTerminal || '',
+  PODTerminal: bookingFormValue.PODTerminal || '',
+  FPD: bookingFormValue.FPD || null,
+  MovementType: bookingFormValue.MovementType || null,
+  DoValid: bookingFormValue.DoValid ? new Date(bookingFormValue.DoValid) : null,
+  Coload: bookingFormValue.Coload ? 'Y' : 'N',
+  ShipmentType: bookingFormValue.ShipmentType ? 'Y' : 'N',
+  IncoTerms: bookingFormValue.IncoTerms,
+  InternalNote: bookingFormValue.InternalNote || '',
+  GeneralNote: bookingFormValue.GeneralNote || '',
+  NominatedBy: bookingFormValue.NominatedBy || 'Self',
+  FreightTerms: bookingFormValue.FreightTerms || '',
+  ShipmentNo: bookingFormValue.ShipmentNo || '',
 
-        GrossWeight: this.shipmentData.containers
-          .reduce((sum, c) => sum + (c.grossWeight || 0), 0),
+  // ---------- Cargo ----------
+  houseJobCargo: {
+    HouseJobCargoSid: cargoFormValue.HouseJobCargoSid || null,
+    CargoType: cargoFormValue.CargoType || null,
 
-        NetWeight: parseFloat(cargoFormValue.NetWeight) || 0,
-        Volume: this.shipmentData.containers
-          .reduce((sum, c) => sum + (c.volume || 0), 0),
+    ContainerType: this.shipmentData.containers.map(c => c.containerNo),
+    NoofContainers: this.shipmentData.containers.length || 0,
+    GrossWeight: this.shipmentData.containers.reduce((sum, c) => sum + (c.grossWeight || 0), 0),
+    NetWeight: parseFloat(cargoFormValue.NetWeight) || 0,
+    Volume: this.shipmentData.containers.reduce((sum, c) => sum + (c.volume || 0), 0),
+    ChargeableWeight: parseFloat(cargoFormValue.ChargeableWeight) || 0,
+    NoOfPackage: this.shipmentData.containers.reduce((sum, c) => sum + (c.packCount || 0), 0),
 
-        ChargeableWeight: parseFloat(cargoFormValue.ChargeableWeight) || 0,
-        NoOfPackage: this.shipmentData.containers
-          .reduce((sum, c) => sum + (c.packCount || 0), 0),
+    ShipmentTerms: cargoFormValue.ShipmentTerms || null,
+    MovementType: cargoFormValue.MovementType || null,
+    FreightTerms: cargoFormValue.FreightTerms || null,
+    ModeOfTransport: cargoFormValue.ModeOfTransport || null,
+    StuffingAt: cargoFormValue.StuffingAt || 'Dock',
+  },
 
-        ShipmentTerms: cargoFormValue.ShipmentTerms || null,
-        MovementType: cargoFormValue.MovementType || null,
-        FreightTerms: cargoFormValue.FreightTerms || null,
-        ModeOfTransport: cargoFormValue.ModeOfTransport || null,
-        StuffingAt: cargoFormValue.StuffingAt || 'Dock',
-      },
+  // ---------- Other details ----------
+  houseJobOthers: {
+    HouseJobOthersSid: otherFormValue.HouseJobOthersSid || null,
+    CustomerRefNo: otherFormValue.CustomerRefNo || '',
+    YardCFS: otherFormValue.YardCFS || '',
+    ReleaseType: otherFormValue.ReleaseType || null,
+    HBLNo: otherFormValue.HBLNo || '',
+    Forwarder: otherFormValue.Forwarder || null,
+    ForwarderAddress: otherFormValue.ForwarderAddress || '',
+    NotifyParty: otherFormValue.NotifyParty || null,
+    NotifyPartyAddress: otherFormValue.NotifyPartyAddress || '',
+    Notify2: otherFormValue?.Notify2,
+    NotifyAddress2: otherFormValue?.NotifyAddress2,
+    Coloader: otherFormValue?.Coloader,
+    PickupPlace: otherFormValue.PickupPlace || '',
+    DeliveryPlace: otherFormValue.DeliveryPlace || '',
+    DeliveryDate: otherFormValue.DeliveryDate ? new Date(otherFormValue.DeliveryDate) : null,
+    CHAName: otherFormValue.CHAName || '',
+    PickupAddress: otherFormValue.PickupAddress || '',
+    DeliveryAddress: otherFormValue.DeliveryAddress || '',
+    CargoCurrency: otherFormValue.CargoCurrency || null,
+    CargoValue: parseFloat(otherFormValue.CargoValue) || 0,
+    SwitchBL: otherFormValue.SwitchBL ? 'Y' : 'N',
+    BacktoBack: otherFormValue.BacktoBack ? 'Y' : 'N',
+    Depo: otherFormValue.Depo || '',
+    ROValidity: otherFormValue.ROValidity ? new Date(otherFormValue.ROValidity) : null,
+    SwitchBLAgent: otherFormValue?.SwitchBLAgent,
+    AgentAddress: otherFormValue?.AgentAddress,
+    SwitchBLShipper: otherFormValue?.SwitchBLShipper,
+    SwitchBLConsignee: otherFormValue?.SwitchBLConsignee,
+    SwitchLocation: otherFormValue?.SwitchLocation,
+    CarrierBookingRef: otherFormValue?.CarrierBookingRef,
+    CarrierBookingDate: otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null
+  },
 
-      bookingOther: {
-        BookingOthersSid: otherFormValue.BookingOthersSid || null,
-        CustomerRefNo: otherFormValue.CustomerRefNo || '',
-        YardCFS: otherFormValue.YardCFS || '',
-        ReleaseType: otherFormValue.ReleaseType || null,
-        HBLNo: otherFormValue.HBLNo || '',
-        Forwarder: otherFormValue.Forwarder || null,
-        ForwarderAddress: otherFormValue.ForwarderAddress || '',
-        NotifyParty: otherFormValue.NotifyParty || null,
-        NotifyPartyAddress: otherFormValue.NotifyPartyAddress || '',
-        Notify2: otherFormValue?.Notify2,
-        NotifyAddress2: otherFormValue?.NotifyAddress2,
-        Coloader: otherFormValue?.Coloader,
-        PickupPlace: otherFormValue.PickupPlace || '',
-        DeliveryPlace: otherFormValue.DeliveryPlace || '',
-        DeliveryDate: otherFormValue.DeliveryDate ? new Date(otherFormValue.DeliveryDate) : null,
-        CHAName: otherFormValue.CHAName || '',
-        PickupAddress: otherFormValue.PickupAddress || '',
-        DeliveryAddress: otherFormValue.DeliveryAddress || '',
-        CargoCurrency: otherFormValue.CargoCurrency || null,
-        CargoValue: parseFloat(otherFormValue.CargoValue) || 0,
-        SwitchBL: otherFormValue.SwitchBL ? 'Y' : 'N',
-        BacktoBack: otherFormValue.BacktoBack ? 'Y' : 'N',
-        Depo: otherFormValue.Depo || '',
-        ROValidity: otherFormValue.ROValidity ? new Date(otherFormValue.ROValidity) : null,
-        SwitchBLAgent: otherFormValue?.SwitchBLAgent,
-        AgentAddress: otherFormValue?.AgentAddress,
-        SwitchBLShipper: otherFormValue?.SwitchBLShipper,
-        SwitchBLConsignee: otherFormValue?.SwitchBLConsignee,
-        SwitchLocation: otherFormValue?.SwitchLocation,
-        CarrierBookingRef: otherFormValue?.CarrierBookingRef,
-        CarrierBookingDate: otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null
-      },
-      bookingProduct: detailFormValue.map((product: any) => ({
-        BookingProductSid: product.BookingProductSid || null,
-        ProductName: product.ProductName || '',
-        ShippingBillNo: product.ShippingBillNo || '',
-        ShippingBillDate: product.ShippingBillDate ? new Date(product.ShippingBillDate) : null,
-        ExternaPkg: product.ExternaPkg || null,
-        ExternlQty: String(product.ExternlQty),
-        GrossWeight: parseFloat(product.GrossWeight) || 0,
-        NetWeight: parseFloat(product.NetWeight) || 0,
-        Volume: parseFloat(product.Volume) || 0,
-        IsHaz: product.IsHaz ? 'Y' : 'N',
-        ImcoClass: product.ImcoClass || '',
-        UnNo: product.UnNo || '',
-        PkgGroup: product.PkgGroup || '',
-        Length: Number(product.Length),
-        Width: Number(product.Width),
-        Height: Number(product.Height),
-        UomMasterSid: product.UomMasterSid,
-        CargoRecDate: product.CargoRecDate
-      })),
-      bookingConnection: this.bookingResponse.data.bookingConnection,
-      bookingRates: this.bookingResponse.data.bookingRates,
-    }
+  // ---------- Products ----------
+  houseJobProduct: detailFormValue.map((product: any) => ({
+    HouseJobProductSid: product.HouseJobProductSid || null,
+    ProductName: product.ProductName || '',
+    ShippingBillNo: product.ShippingBillNo || '',
+    ShippingBillDate: product.ShippingBillDate ? new Date(product.ShippingBillDate) : null,
+    ExternaPkg: product.ExternaPkg || null,
+    ExternlQty: String(product.ExternlQty),
+    GrossWeight: parseFloat(product.GrossWeight) || 0,
+    NetWeight: parseFloat(product.NetWeight) || 0,
+    Volume: parseFloat(product.Volume) || 0,
+    IsHaz: product.IsHaz ? 'Y' : 'N',
+    ImcoClass: product.ImcoClass || '',
+    UnNo: product.UnNo || '',
+    PkgGroup: product.PkgGroup || '',
+    Length: Number(product.Length),
+    Width: Number(product.Width),
+    Height: Number(product.Height),
+    UomMasterSid: product.UomMasterSid,
+    CargoRecDate: product.CargoRecDate
+  })),
+
+  bookingConnection: this.bookingResponse.data.houseConnections
+  // bookingRates: this.bookingResponse.data.bookingRates,
+};
+
     console.log('Final Payload:', payload);
-    this.operationService.updateBookingById(BookingHeaderSid, payload).subscribe({
+    this.operationService.updateHouseById(HouseJobSid, payload).subscribe({
       next: (resp: any) => {
         if (resp.status) {
           this.appSettingService.showSuccess('Booking successfully updated.');
