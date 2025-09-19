@@ -106,7 +106,7 @@ export class HouseJobEntryComponent  implements OnInit {
   ];
 
   // Variable Declaration - Header Part
-  BookingHeaderSid: number;
+  HouseJobSid: number;
   currentMenuId: any;
   selectedDepartment: any;
   selectedDepartmentType: string;
@@ -123,6 +123,8 @@ export class HouseJobEntryComponent  implements OnInit {
   consigneeList: any[] = [];
   filteredConsigneeList: any[] = [];
   agentList: any[] = [];
+  deliveryAgentList: any[] = [];
+  originAgentList: any[] = [];
   carrierList: any[] = [];
   notifyList: any[] = [];
   vesselList: any[] = [];
@@ -149,7 +151,7 @@ auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
 
 
-  bookingForm !: FormGroup;
+  houseJobForm !: FormGroup;
   modeOfTransport = [
     { id: 1, name: 'Rail' },
     { id: 2, name: 'Road' },
@@ -194,6 +196,7 @@ auditLogs: any[] = []; // Stores audit logs
   packageTypeList: any[];
   productForm !: FormGroup;
   countryOfCompany : string;
+  masterJobContainers : any[] = [];
 
   // Variable Declaration - Other Part
   YardCFSLabel: string = "Yard/CFS"
@@ -275,7 +278,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   tabs = [
     { name: 'Shipment', icon: 'fas fa-ship' },
-    { name: 'Product', icon: 'fas fa-box' },
+    // { name: 'Product', icon: 'fas fa-box' },
     { name: 'Cargo', icon: 'fas fa-boxes' },
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
@@ -331,10 +334,10 @@ auditLogs: any[] = []; // Stores audit logs
     this.initDetailsForm();
     this.loadHeaderLookups().subscribe(() => {
       this.currentRoute.paramMap.subscribe((param) => {
-        this.BookingHeaderSid = +param.get('id');
-        if (this.BookingHeaderSid) {
+        this.HouseJobSid = +param.get('id');
+        if (this.HouseJobSid) {
           this.isEditMode = true;
-          this.loadBookingById(this.BookingHeaderSid);
+          this.loadHouseById(this.HouseJobSid);
         } else {
           this.minDate = this.today;
         }
@@ -354,7 +357,8 @@ auditLogs: any[] = []; // Stores audit logs
 
   // Header Form Initialization
   initBookingForm() {
-    this.bookingForm = this.fb.group({
+    this.houseJobForm = this.fb.group({
+      MasterJobSid : [null],
       BookingNo: [{ value: '', disabled: true }],
       BookingDateTime: [{ value: '', disabled: true }],
       DepartmentMasterSid: [null, [Validators.required]],
@@ -370,6 +374,7 @@ auditLogs: any[] = []; // Stores audit logs
       Notify: [null],
       NotifyAddress: [''],
       DestinationAgent : [null, [Validators.required]],
+      AgentName : [''],
       AgentAddress: [''],
       CarrierName: [null],
       QuotationHeaderSid: [{ value: '', disabled: true }],
@@ -399,9 +404,9 @@ auditLogs: any[] = []; // Stores audit logs
       GeneralNote: [''],
       NominatedBy: ['Self'],
 
-      ShipmentNo: ['']
+      ShipmentNo: [{value : '',disabled : true}]
     })
-    this.bookingForm.valueChanges.subscribe(()=>{
+    this.houseJobForm.valueChanges.subscribe(()=>{
       this.syncFormValueWithRateComponent();
     })
   }
@@ -409,7 +414,7 @@ auditLogs: any[] = []; // Stores audit logs
   // Cargo Form Initiation
   initCargoForm() {
     this.cargoForm = this.fb.group({
-      BookingCargoSid: [null],
+      HouseJobCargoSid: [null],
       CargoType: [null],
       ContainerType: [null],
       NoofContainers: [''],
@@ -433,7 +438,7 @@ auditLogs: any[] = []; // Stores audit logs
   initProductForm() {
     const isIndianCompany = this.countryOfCompany === 'india';
     this.productForm = this.fb.group({
-      BookingProductSid: [null],
+      HouseJobProductSid: [null],
       ProductName: [null],
       ShippingBillNo: ['',isIndianCompany ? [Validators.required] : []],
       ShippingBillDate: [null,isIndianCompany ? [Validators.required] : []],
@@ -450,13 +455,15 @@ auditLogs: any[] = []; // Stores audit logs
       Width: [''],
       Height: [''],
       UomMasterSid: [null],
-      CargoRecDate : [null]
+      CargoRecDate : [null],
+      ContainerNo : [''],
+      MarksAndNumbers : ['']
     })
   }
 
   initOtherForm() {
     this.otherForm = this.fb.group({
-      BookingOthersSid: [null],
+      HouseJobOthersSid: [null],
       CustomerRefNo: [''],
       YardCFS: [''],
       ReleaseType: [null],
@@ -501,7 +508,7 @@ auditLogs: any[] = []; // Stores audit logs
   */
 
   get b(): { [key: string]: AbstractControl<any, any> } {
-    return this.bookingForm.controls || {}
+    return this.houseJobForm.controls || {}
   }
   get c(): { [key: string]: AbstractControl<any, any> } {
     return this.cargoForm.controls || {}
@@ -530,7 +537,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   createBookingProductGroup(data?: any): FormGroup {
     const productForm = this.fb.group({
-      BookingProductSid: [data?.BookingProductSid || null],
+      HouseJobProductSid: [data?.HouseJobProductSid || null],
       ProductName: [data?.ProductName || ''],
       ShippingBillNo: [data?.ShippingBillNo || ''],
       ShippingBillDate: [data?.ShippingBillDate ? new Date(data?.ShippingBillDate) : null],
@@ -547,14 +554,16 @@ auditLogs: any[] = []; // Stores audit logs
       Width : [data?.Width || ''],
       Height : [data?.Height || ''],
       UomMasterSid : [data?.UomMasterSid || null],
-      CargoRecDate : [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
+      CargoRecDate : [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null],
+      ContainerNo : [data?.ContainerNo || ''],
+      MarksAndNumbers : [data?.MarksAndNumbers || '']
     })
     return productForm;
   }
 
   createBookingConnectionGroup(data?: any): FormGroup {
     const connectionForm = this.fb.group({
-      BookingConnectionSid: [data?.BookingConnectionSid || null],
+      HouseJobConnectionSid: [data?.HouseJobConnectionSid || null],
       VesselName: [data?.VesselName || null],
       VoyageNo: [data?.VoyageNo || null],
       POL: [data?.POL || null],
@@ -583,6 +592,8 @@ auditLogs: any[] = []; // Stores audit logs
       this.consigneeList = customerMaster.consignees;
       this.filteredConsigneeList = customerMaster.consignees;
       this.agentList = customerMaster.agents;
+      this.deliveryAgentList = [...this.agentList];
+      this.originAgentList = [...this.agentList];
       this.carrierList = customerMaster.carriers;
       this.forwarderList = customerMaster.forwarder;
       this.notifyList = customerMaster.notify;
@@ -621,8 +632,8 @@ auditLogs: any[] = []; // Stores audit logs
     })
   }
 
-  loadBookingById(BookingHeaderSid: number) {
-    this.operationService.getBookingById(BookingHeaderSid).subscribe(
+  loadHouseById(HouseJobSid: number) {
+    this.operationService.getHouseJobById(HouseJobSid).subscribe(
       (resp: any) => {
         if (resp.status) {
           // this.resetForm();
@@ -639,9 +650,14 @@ auditLogs: any[] = []; // Stores audit logs
     this.bookingHeader = response;
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
+    const delivery = this.agentList.find(agent => agent.CustomerMasterSid === response.DestinationAgent);
+    const origin = this.agentList.find(agent => agent.CustomerMasterSid === response.CustomerName);
     this.onDeptChange(selectedDepartment);
     this.onCustomerChange(selectedCustomer);
-    this.bookingForm.patchValue({
+    this.handleDestAgentChange(delivery);
+    this.handleOriginAgentChange(origin);
+    this.houseJobForm.patchValue({
+      MasterJobSid : response.MasterJobSid,
       BookingNo: response.BookingNo,
       BookingDateTime:response.BookingDateTime ? new Date(response.BookingDateTime) : null,
       DepartmentMasterSid: response.DepartmentMasterSid,
@@ -656,7 +672,8 @@ auditLogs: any[] = []; // Stores audit logs
       ConsigneeAddress: response.ConsigneeAddress,
       Notify: response.Notify,
       NotifyAddress: response.NotifyAddress,
-      DestinationAgent: response.DestinationAgent,
+      DestinationAgent: response.DestinationAgent || null,
+      AgentName : response.AgentName || null,
       AgentAddress: response.AgentAddress,
       CarrierName: response.CarrierName,
       QuotationHeaderSid: response.QuotationHeaderSid,
@@ -693,9 +710,9 @@ auditLogs: any[] = []; // Stores audit logs
     this.PODandFPODsame = response.POD === response.FPD;
     this.minStartDate = response.ETA;
 
-    const cargoData = response.bookingCargo[0];
+    const cargoData = response.Cargo[0];
     this.cargoForm.patchValue({
-      BookingCargoSid: cargoData?.BookingCargoSid,
+      HouseJobCargoSid: cargoData?.HouseJobCargoSid,
       CargoType: cargoData?.CargoType,
       ContainerType: cargoData?.ContainerType,
       NoofContainers: cargoData?.NoofContainers,
@@ -711,9 +728,9 @@ auditLogs: any[] = []; // Stores audit logs
       StuffingAt: cargoData?.StuffingAt
     })
     this.handleCFSOrYard();
-    const otherData = response.bookingOthers[0];
+    const otherData = response.Others[0];
     this.otherForm.patchValue({
-      BookingOthersSid: otherData?.BookingOthersSid,
+      HouseJobOthersSid: otherData?.HouseJobOthersSid,
       CustomerRefNo: otherData?.CustomerRefNo,
       YardCFS: otherData?.YardCFS,
       ReleaseType : otherData?.ReleaseType || null,
@@ -747,7 +764,7 @@ auditLogs: any[] = []; // Stores audit logs
     })
 
     this.bookingProducts.clear();
-    const productsFromResponse = response.bookingProduct || [];
+    const productsFromResponse = response.Products || [];
     this.productDataLength = productsFromResponse.length;
     for (const productData of productsFromResponse) {
       const formWithData = this.createBookingProductGroup(productData);
@@ -756,15 +773,15 @@ auditLogs: any[] = []; // Stores audit logs
     this.updateProductPagination();
     this.handleProductRelatedCalculation();
 
-    this.bookingConnectionsArr = (response.bookingConnection || []).map(connection => {
+    this.bookingConnectionsArr = (response.Connections || []).map(connection => {
       return {
         ...connection,
-        TransactionSid : connection.BookingConnectionSid,
+        TransactionSid : connection.HouseJobConnectionSid,
       }
     }); // for child component
     this.connectionResult = [...this.bookingConnectionsArr]
 
-    this.bookingRateArr = response.bookingRates || [];
+    this.bookingRateArr = response.costRevenueCharges || [];
     this.rateResult = [...this.bookingRateArr];
 
   }
@@ -781,10 +798,11 @@ auditLogs: any[] = []; // Stores audit logs
     this.initProductForm();
     if (!this.productLookupsLoaded) {
       this.loadProductLookups();
+      this.loadAllMasterJobContainers();
     }
     if (data) {
       this.productForm.patchValue({
-        BookingProductSid: data?.BookingProductSid,
+        HouseJobProductSid: data?.HouseJobProductSid,
         ProductName: data?.ProductName,
         ShippingBillNo: data?.ShippingBillNo,
         ShippingBillDate: new Date(data?.ShippingBillDate),
@@ -801,7 +819,9 @@ auditLogs: any[] = []; // Stores audit logs
         Width: data?.Width,
         Height: data?.Height,
         UomMasterSid: data?.UomMasterSid,
-        CargoRecDate : data?.CargoRecDate
+        CargoRecDate : data?.CargoRecDate,
+        ContainerNo : data?.ContainerNo,
+        MarksAndNumbers : data?.MarksAndNumbers
       })
       const productItem = this.slicedProductArr[productIndex];
       this.currentProductIndex = this.bookingProducts.controls.indexOf(productItem);
@@ -816,6 +836,18 @@ auditLogs: any[] = []; // Stores audit logs
       backdrop: 'static',
       centered: true,
     });
+  }
+
+  loadAllMasterJobContainers(){
+    const MasterJobSid = this.houseJobForm.get('MasterJobSid')?.value;
+    if(!MasterJobSid) return;
+    this.operationService.getAllMasterJobContainers(MasterJobSid).subscribe((resp: any) => {
+      if (resp.status) {
+        this.masterJobContainers = resp.data;
+      } else {
+        this.appSettingService.showError("Error loading containers");
+      }
+    })
   }
 
   onProductSubmit() {
@@ -869,14 +901,13 @@ auditLogs: any[] = []; // Stores audit logs
 
 
   onSubmit() {
-    console.log('Submit triggered');
-    if (this.bookingForm.invalid) {
-      this.bookingForm.markAllAsTouched();
-      this.bookingForm.updateValueAndValidity();
+    if (this.houseJobForm.invalid) {
+      this.houseJobForm.markAllAsTouched();
+      this.houseJobForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
     }
-    const bookingFormValue = this.bookingForm.getRawValue();
+    const houseJobFormValue = this.houseJobForm.getRawValue();
     const cargoFormValue = this.cargoForm.getRawValue();
     const otherFormValue = this.otherForm.getRawValue();
     const detailFormValue = this.detailForm.getRawValue();
@@ -884,52 +915,54 @@ auditLogs: any[] = []; // Stores audit logs
     const currentMenuId = Number(localStorage.getItem('currentMenuId'));
 
     const payload = {
+      MasterJobSid : houseJobFormValue.MasterJobSid,
+      BookingNo : houseJobFormValue.BookingNo,
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       MenuMasterSid : currentMenuId,
-      DepartmentMasterSid: bookingFormValue.DepartmentMasterSid,
-      CustomerMasterSid: bookingFormValue.CustomerMasterSid,
-      CustomerBranchSid: bookingFormValue.CustomerBranchSid || null,
-      CustomerName: bookingFormValue.CustomerName,
-      CustomerAddress: bookingFormValue.CustomerAddress,
-      SalesmanSid: bookingFormValue.SalesmanSid || null,
-      ShipperName: bookingFormValue.ShipperName,
-      ShipperAddress: bookingFormValue.ShipperAddress,
-      ConsigneeName: bookingFormValue.ConsigneeName,
-      ConsigneeAddress: bookingFormValue.ConsigneeAddress,
-      Notify: bookingFormValue.Notify || '',
-      NotifyAddress: bookingFormValue.NotifyAddress || '',
-      DestinationAgent: bookingFormValue.DestinationAgent,
-      AgentAddress: bookingFormValue.AgentAddress || '',
-      CarrierName: bookingFormValue.CarrierName || null,
-      QuotationHeaderSid: bookingFormValue.QuotationHeaderSid || null,
-      HBLNo: bookingFormValue.HBLNo || '',
-      MBLNo: bookingFormValue.MBLNo || '',
-      MBLDate: bookingFormValue.MBLDate ? new Date(bookingFormValue.MBLDate) : null,
-      status: bookingFormValue.status === 'Active' ? 'A' : 'S',
-      VesselName: bookingFormValue.VesselName || null,
-      VoyageMasterSid: bookingFormValue.VoyageMasterSid || null,
-      VoyageNo: bookingFormValue.VoyageNo || null,
-      ETA: bookingFormValue.ETA ? new Date(bookingFormValue.ETA) : null,
-      ETD: bookingFormValue.ETD ? new Date(bookingFormValue.ETD) : null,
-      POO: bookingFormValue.POO || null,
-      POL: bookingFormValue.POL,
-      POD: bookingFormValue.POD,
-      POLTerminal: bookingFormValue.POLTerminal || '',
-      PODTerminal: bookingFormValue.PODTerminal || '',
-      FPD: bookingFormValue.FPD || null,
-      MovementType: bookingFormValue.MovementType || null,
-      DoValid: bookingFormValue.DoValid ? new Date(bookingFormValue.DoValid) : null,
-      Coload: bookingFormValue.Coload ? 'Y' : 'N',
-      ShipmentType: bookingFormValue.ShipmentType ? 'Y' : 'N',
-      IncoTerms: bookingFormValue.IncoTerms,
-      InternalNote: bookingFormValue.InternalNote || '',
-      GeneralNote: bookingFormValue.GeneralNote || '',
-      NominatedBy: bookingFormValue.NominatedBy || 'Self',
-      FreightTerms : bookingFormValue.FreightTerms || '',
-      ShipmentNo: bookingFormValue.ShipmentNo || '',
-      bookingCargo: {
-        BookingCargoSid : cargoFormValue.BookingCargoSid || null,
+      DepartmentMasterSid: houseJobFormValue.DepartmentMasterSid,
+      CustomerMasterSid: houseJobFormValue.CustomerMasterSid,
+      CustomerBranchSid: houseJobFormValue.CustomerBranchSid || null,
+      CustomerName: houseJobFormValue.CustomerName,
+      CustomerAddress: houseJobFormValue.CustomerAddress,
+      SalesmanSid: houseJobFormValue.SalesmanSid || null,
+      ShipperName: houseJobFormValue.ShipperName,
+      ShipperAddress: houseJobFormValue.ShipperAddress,
+      ConsigneeName: houseJobFormValue.ConsigneeName,
+      ConsigneeAddress: houseJobFormValue.ConsigneeAddress,
+      Notify: houseJobFormValue.Notify || '',
+      NotifyAddress: houseJobFormValue.NotifyAddress || '',
+      DestinationAgent: houseJobFormValue.DestinationAgent,
+      AgentAddress: houseJobFormValue.AgentAddress || '',
+      CarrierName: houseJobFormValue.CarrierName || null,
+      QuotationHeaderSid: houseJobFormValue.QuotationHeaderSid || null,
+      HBLNo: houseJobFormValue.HBLNo || '',
+      MBLNo: houseJobFormValue.MBLNo || '',
+      MBLDate: houseJobFormValue.MBLDate ? new Date(houseJobFormValue.MBLDate) : null,
+      status: houseJobFormValue.status === 'Active' ? 'A' : 'S',
+      VesselName: houseJobFormValue.VesselName || null,
+      VoyageMasterSid: houseJobFormValue.VoyageMasterSid || null,
+      VoyageNo: houseJobFormValue.VoyageNo || null,
+      ETA: houseJobFormValue.ETA ? new Date(houseJobFormValue.ETA) : null,
+      ETD: houseJobFormValue.ETD ? new Date(houseJobFormValue.ETD) : null,
+      POO: houseJobFormValue.POO || null,
+      POL: houseJobFormValue.POL,
+      POD: houseJobFormValue.POD,
+      POLTerminal: houseJobFormValue.POLTerminal || '',
+      PODTerminal: houseJobFormValue.PODTerminal || '',
+      FPD: houseJobFormValue.FPD || null,
+      MovementType: houseJobFormValue.MovementType || null,
+      DoValid: houseJobFormValue.DoValid ? new Date(houseJobFormValue.DoValid) : null,
+      Coload: houseJobFormValue.Coload ? 'Y' : 'N',
+      ShipmentType: houseJobFormValue.ShipmentType ? 'Y' : 'N',
+      IncoTerms: houseJobFormValue.IncoTerms,
+      InternalNote: houseJobFormValue.InternalNote || '',
+      GeneralNote: houseJobFormValue.GeneralNote || '',
+      NominatedBy: houseJobFormValue.NominatedBy || 'Self',
+      FreightTerms : houseJobFormValue.FreightTerms || '',
+      ShipmentNo: houseJobFormValue.ShipmentNo || '',
+      houseJobCargo: {
+        HouseJobCargoSid : cargoFormValue.HouseJobCargoSid || null,
         CargoType: cargoFormValue.CargoType || null,
         ContainerType: cargoFormValue.ContainerType || null,
         NoofContainers: parseFloat(cargoFormValue.NoofContainers) || 0,
@@ -944,8 +977,8 @@ auditLogs: any[] = []; // Stores audit logs
         ModeOfTransport : cargoFormValue.ModeOfTransport || null,
         StuffingAt: cargoFormValue.StuffingAt || 'Dock',
       },
-      bookingOther: {
-        BookingOthersSid : otherFormValue.BookingOthersSid || null,
+      houseJobOthers: {
+        HouseJobOthersSid : otherFormValue.HouseJobOthersSid || null,
         CustomerRefNo: otherFormValue.CustomerRefNo || '',
         YardCFS: otherFormValue.YardCFS || '',
         ReleaseType: otherFormValue.ReleaseType || null,
@@ -977,8 +1010,8 @@ auditLogs: any[] = []; // Stores audit logs
         CarrierBookingRef : otherFormValue?.CarrierBookingRef,
         CarrierBookingDate : otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null
       },
-      bookingProducts: detailFormValue.bookingProducts.map((product: any) => ({
-        BookingProductSid : product.BookingProductSid || null,
+      houseJobProduct: detailFormValue.bookingProducts.map((product: any) => ({
+        HouseJobProductSid : product.HouseJobProductSid || null,
         ProductName: product.ProductName || '',
         ShippingBillNo: product.ShippingBillNo || '',
         ShippingBillDate: product.ShippingBillDate ? new Date(product.ShippingBillDate) : null,
@@ -995,9 +1028,11 @@ auditLogs: any[] = []; // Stores audit logs
         Width: Number(product.Width),
         Height: Number(product.Height),
         UomMasterSid: product.UomMasterSid,
-        CargoRecDate : product.CargoRecDate
+        CargoRecDate : product.CargoRecDate,
+        ContainerNo : product.ContainerNo,
+        MarksAndNumbers : product.MarksAndNumbers,
       })),
-      bookingConnections: this.connectionResult,
+      houseConnections: this.connectionResult,
       bookingRates: this.rateResult,
       milestones: this.milestoneResult ,
       ...(this.isEditMode ? { updatedBy: currUserEmail } : { createdBy: currUserEmail })
@@ -1005,13 +1040,12 @@ auditLogs: any[] = []; // Stores audit logs
 
     console.log('Submitted payload:', payload);
 
-    if (this.isEditMode && this.BookingHeaderSid) {
-      this.operationService.updateBookingById(this.BookingHeaderSid, payload).subscribe({
+    if (this.isEditMode && this.HouseJobSid) {
+      this.operationService.updateHouseById(this.HouseJobSid, payload).subscribe({
         next: (resp: any) => {
           if (resp.status) {
-            this.appSettingService.showSuccess('Booking successfully updated.');
-            // this.router.navigate(['operation/booking/list']);
-            this.loadBookingById(this.BookingHeaderSid);
+            this.appSettingService.showSuccess('House Job successfully updated.');
+            this.loadHouseById(this.HouseJobSid);
           } else {
             this.appSettingService.showError('Error updating booking.');
             console.error(resp.message);
@@ -1022,24 +1056,25 @@ auditLogs: any[] = []; // Stores audit logs
           console.error(err);
         }
       });
-    } else {
-      this.operationService.createBooking(payload).subscribe({
-        next: (resp: any) => {
-          if (resp.status) {
-            this.appSettingService.showSuccess('Booking successfully created.');
-            const bookingId = resp.data?.newBooking?.BookingHeaderSid;
-            this.router.navigate(['operation/booking/entry', bookingId]);
-          } else {
-            this.appSettingService.showError('Error creating booking.');
-            console.error(resp.message);
-          }
-        },
-        error: (err) => {
-          this.appSettingService.showError('Failed to create booking.');
-          console.error(err);
-        }
-      });
-    }
+    } 
+    // else {
+    //   this.operationService.createHouse(payload).subscribe({
+    //     next: (resp: any) => {
+    //       if (resp.status) {
+    //         this.appSettingService.showSuccess('Booking successfully created.');
+    //         const bookingId = resp.data?.newBooking?.HouseJobSid;
+    //         this.router.navigate(['operation/booking/entry', bookingId]);
+    //       } else {
+    //         this.appSettingService.showError('Error creating booking.');
+    //         console.error(resp.message);
+    //       }
+    //     },
+    //     error: (err) => {
+    //       this.appSettingService.showError('Failed to create booking.');
+    //       console.error(err);
+    //     }
+    //   });
+    // }
   }
 
   /**
@@ -1140,6 +1175,23 @@ auditLogs: any[] = []; // Stores audit logs
     }
     this.filteredShipperList = this.shipperList.filter(s => s.CustomerMasterSid !== consignee.CustomerMasterSid);
   }
+
+  handleDestAgentChange(agent?: any) {
+    if (!agent) {
+      this.originAgentList = [...this.agentList];
+      return;
+    }
+    this.originAgentList = this.agentList.filter(s => s.CustomerMasterSid !== agent.CustomerMasterSid);
+  }
+
+  handleOriginAgentChange(agent?: any) {
+    if (!agent) {
+      this.deliveryAgentList = [...this.agentList];
+      return;
+    }
+    this.deliveryAgentList = this.agentList.filter(s => s.CustomerMasterSid !== agent.CustomerMasterSid);
+  }
+
 
   handleImportExport() {
     // Early return if no department selected - clear both fields
@@ -1399,7 +1451,7 @@ auditLogs: any[] = []; // Stores audit logs
     if (fieldName) {
       const element = event.target as HTMLInputElement;
       element.checked = !element.checked;
-      this.bookingForm.get(`${fieldName}`)?.setValue(element.checked);
+      this.houseJobForm.get(`${fieldName}`)?.setValue(element.checked);
     }
   }
 
@@ -1422,12 +1474,12 @@ auditLogs: any[] = []; // Stores audit logs
     this.productForm.get('PkgGroup')?.setValue(product.PackingGroup);
   }
 
-  deleteBookingProduct(productIndex: number, BookingProductSid?: number) {
+  deleteBookingProduct(productIndex: number, HouseJobProductSid?: number) {
     const productToDelete = this.slicedProductArr[productIndex];
     const realIndex = this.bookingProducts.controls.indexOf(productToDelete);
 
-    if (BookingProductSid) {
-      this.operationService.deleteBookingProduct(BookingProductSid).subscribe(
+    if (HouseJobProductSid) {
+      this.operationService.deleteBookingProduct(HouseJobProductSid).subscribe(
         (resp: any) => {
           if (resp.status) {
             this.bookingProducts.removeAt(realIndex);
@@ -1573,7 +1625,7 @@ auditLogs: any[] = []; // Stores audit logs
   isQuickFormExpanded = false;
 
 resetForm() {
-  this.bookingForm.reset({
+  this.houseJobForm.reset({
     status: 'Active'
   });
 
@@ -1616,7 +1668,7 @@ resetForm() {
       const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
       modalRef.componentInstance.item = this.bookingData;
       modalRef.componentInstance.idLabel = 'Booking Id';
-      modalRef.componentInstance.idValue = this.bookingData?.BookingHeaderSid;
+      modalRef.componentInstance.idValue = this.bookingData?.HouseJobSid;
     }
 
   openTandC() {
@@ -1633,7 +1685,7 @@ resetForm() {
               });
               modalRef.componentInstance.terms = this.TandCList;
               modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-              modalRef.componentInstance.DocumentSid = this.BookingHeaderSid;
+              modalRef.componentInstance.DocumentSid = this.HouseJobSid;
     
             } else {
               this.appSettingService.showError('Error loading Terms and Conditions');
@@ -1753,7 +1805,7 @@ ${this.userData['userName']}`;
       return;
     }
     const modalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
-    modalRef.componentInstance.documentSid = this.bookingHeader?.BookingHeaderSid;
+    modalRef.componentInstance.documentSid = this.bookingHeader?.HouseJobSid;
     modalRef.componentInstance.parentEmail = toEmail;
     modalRef.componentInstance.parentSubject = `Booking No.${this.bookingHeader.BookingNo} Date:${this.datePipe.transform(this.bookingHeader?.BookingDateTime)} ${ formattedPOL } - ${ formattedPOD }${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`;
     modalRef.componentInstance.parentMailbody = `
@@ -1784,9 +1836,9 @@ ${this.userData['userName']}`;
   }
 
   openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.BookingHeaderSid) return;
+  if (!this.HouseJobSid) return;
 
-  this.operationService.getAuditLogsBooking('BookingHeader', this.BookingHeaderSid.toString()).subscribe({
+  this.operationService.getAuditLogsBooking('BookingHeader', this.HouseJobSid.toString()).subscribe({
     next: (logs: any[]) => {
       const formatFields = (val: any) => {
         if (!val) return ['NA'];

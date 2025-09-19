@@ -654,7 +654,7 @@ export class LoadingPlanEntryComponent {
         if (resp.status) {
           this.appSettingService.showSuccess('Master Job generated successfully');
           if(resp.data){
-            this.router.navigate(['/operation/master-job/entry', resp.data?.createdMasterJob?.MasterJobSid]);
+            this.router.navigate(['/operation/master-job/entry', resp.data?.newMasterJob?.MasterJobSid]);
           }
         } else {
           this.appSettingService.showError('Error generating master job');

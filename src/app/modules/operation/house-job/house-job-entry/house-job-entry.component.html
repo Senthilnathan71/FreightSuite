@@ -24,7 +24,7 @@
           <i class="fas fa-history fs-2"></i>
           <span>Report</span>
         </button> -->
-        <button class="table-action-btn print" (click)="reportAndEmailModel(reportModel)">
+        <button class="table-action-btn print">
           <i class="fas fa-print"></i> Print
         </button>
       </div>
@@ -62,9 +62,21 @@
   </div>
 
   <!-- Smart Quick Form -->
-  <div class="quick-form-panel compact-form" [formGroup]="bookingForm">
+  <div class="quick-form-panel compact-form" [formGroup]="houseJobForm">
 
     <div class="quick-form-grid " [class.expanded]="isQuickFormExpanded">
+
+      <div class="smart-field-group">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+            formControlName="HBLNo">
+          <label for="text-input" [ngClass]="{
+            'input-label': true,
+            'bg-transparent': !b['HBLNo']?.getRawValue()
+           }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger">*</span></label>
+        </div>
+      </div>
+
       <div class="smart-field-group">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
@@ -96,36 +108,25 @@
             (change)="onDeptChange($event)" appendTo="body">
           </ng-select>
           <label for="" class="input-label">Dept <span class="text-danger">*</span></label>
-          @if(bookingForm.get('DepartmentMasterSid')?.touched && bookingForm.get('DepartmentMasterSid')?.invalid){
+          @if(houseJobForm.get('DepartmentMasterSid')?.touched && houseJobForm.get('DepartmentMasterSid')?.invalid){
           <div class="error-message">
-            @if(bookingForm.get('DepartmentMasterSid')?.hasError('required')){
+            @if(houseJobForm.get('DepartmentMasterSid')?.hasError('required')){
             <span>Department name is required</span>
             }
           </div>
           }
         </div>
       </div>
+
       <div class="smart-field-group">
-        <div class="custom-form-group" >
-          <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-            formControlName="HBLNo">
-          <label for="text-input" [ngClass]="{
-            'input-label': true,
-            'bg-transparent': !b['HBLNo']?.getRawValue()
-           }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger">*</span></label>
-        </div>
+        <aside>
+          <div class="custom-form-group">
+            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm" formControlName="ShipmentNo">
+            <label for="text-input" class="input-label">Shipment No <span class="text-danger">*</span></label>
+
+          </div>
+        </aside>
       </div>
-      <div class="smart-field-group">
-       <aside >
-                    <div class="custom-form-group">
-                      <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        >
-                      <label for="text-input" class="input-label">Shipment No <span
-                          class="text-danger">*</span></label>
-                     
-                    </div>
-                  </aside>
-                  </div>
       <div class="smart-field-group">
         <aside>
           <div class="custom-form-group custom-form-group-select">
@@ -202,7 +203,7 @@
   <div class="content-workspace">
 
     <!-- Shipment Details Tab -->
-    <div class="workspace-content" *ngIf="selectedTab === 'Shipment'">
+    <div class="workspace-content" [hidden]="selectedTab !== 'Shipment'">
       <div class="content-layout">
 
         <!-- Two Column Layout for Party Info and Vessel Details -->
@@ -225,7 +226,7 @@
               <div class="col-md-12">
 
 
-                <div class="row compact-form" [formGroup]="bookingForm">
+                <div class="row compact-form" [formGroup]="houseJobForm">
 
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select">
@@ -234,10 +235,10 @@
                         appendTo="body" (change)="onCustomerChange($event)">
                       </ng-select>
                       <label for="text-input" class="input-label">Customer <span class="text-danger">*</span></label>
-                      @if(bookingForm.get('CustomerMasterSid')?.touched &&
-                      bookingForm.get('CustomerMasterSid')?.invalid){
+                      @if(houseJobForm.get('CustomerMasterSid')?.touched &&
+                      houseJobForm.get('CustomerMasterSid')?.invalid){
                       <div class="error-message">
-                        @if(bookingForm.get('CustomerMasterSid')?.hasError('required')){
+                        @if(houseJobForm.get('CustomerMasterSid')?.hasError('required')){
                         <span>Customer name is required</span>
                         }
                       </div>
@@ -252,9 +253,9 @@
                       </ng-select>
                       <label for="text-input" class="input-label">Customer Address <span
                           class="text-danger">*</span></label>
-                      @if(bookingForm.get('CustomerAddress')?.touched && bookingForm.get('CustomerAddress')?.invalid){
+                      @if(houseJobForm.get('CustomerAddress')?.touched && houseJobForm.get('CustomerAddress')?.invalid){
                       <div class="error-message">
-                        @if(bookingForm.get('CustomerAddress')?.hasError('required')){
+                        @if(houseJobForm.get('CustomerAddress')?.hasError('required')){
                         <span>Customer Address is required</span>
                         }
                       </div>
@@ -275,9 +276,9 @@
                         </ng-template>
                       </ng-select>
                       <label for="text-input" class="input-label">Shipper <span class="text-danger">*</span></label>
-                      @if(bookingForm.get('ShipperName')?.touched && bookingForm.get('ShipperName')?.invalid){
+                      @if(houseJobForm.get('ShipperName')?.touched && houseJobForm.get('ShipperName')?.invalid){
                       <div class="error-message">
-                        @if(bookingForm.get('ShipperName')?.hasError('required')){
+                        @if(houseJobForm.get('ShipperName')?.hasError('required')){
                         <span>Shipper Name is required</span>
                         }
                       </div>
@@ -293,9 +294,9 @@
                         formControlName="ShipperAddress">
                       <label for="text-input" class="input-label">Shipper Address <span
                           class="text-danger">*</span></label>
-                      @if(bookingForm.get('ShipperAddress')?.touched && bookingForm.get('ShipperAddress')?.invalid){
+                      @if(houseJobForm.get('ShipperAddress')?.touched && houseJobForm.get('ShipperAddress')?.invalid){
                       <div class="error-message">
-                        @if(bookingForm.get('ShipperAddress')?.hasError('required')){
+                        @if(houseJobForm.get('ShipperAddress')?.hasError('required')){
                         <span>Shipper Address is required</span>
                         }
                       </div>
@@ -317,9 +318,9 @@
                         </ng-template>
                       </ng-select>
                       <label for="text-input" class="input-label">Consignee <span class="text-danger">*</span></label>
-                      @if(bookingForm.get('ConsigneeName')?.touched && bookingForm.get('ConsigneeName')?.invalid){
+                      @if(houseJobForm.get('ConsigneeName')?.touched && houseJobForm.get('ConsigneeName')?.invalid){
                       <div class="error-message">
-                        @if(bookingForm.get('ConsigneeName')?.hasError('required')){
+                        @if(houseJobForm.get('ConsigneeName')?.hasError('required')){
                         <span>Consignee Name is required</span>
                         }
                       </div>
@@ -334,9 +335,9 @@
                         formControlName="ConsigneeAddress">
                       <label for="text-input" class="input-label">Consignee Address <span
                           class="text-danger">*</span></label>
-                      @if(bookingForm.get('ConsigneeAddress')?.touched && bookingForm.get('ConsigneeAddress')?.invalid){
+                      @if(houseJobForm.get('ConsigneeAddress')?.touched && houseJobForm.get('ConsigneeAddress')?.invalid){
                       <div class="error-message">
-                        @if(bookingForm.get('ConsigneeAddress')?.hasError('required')){
+                        @if(houseJobForm.get('ConsigneeAddress')?.hasError('required')){
                         <span>Consignee Address is required</span>
                         }
                       </div>
@@ -344,10 +345,10 @@
                     </div>
                   </aside>
 
-                  <aside class="col-md-6">
+                  <aside class="col-md-6" [formGroup]="otherForm">
                     <div class="custom-form-group custom-form-group-select">
                       <ng-select [items]="notifyList" bindLabel="CustomerName" bindValue="CustomerName"
-                        class="ng-select" formControlName="Notify" placeholder="Select Notify"
+                        class="ng-select" formControlName="NotifyParty" placeholder="Select Notify"
                         (change)="setAddress('NotifyAddress',$event)" appendTo="body">
                         <ng-template ng-option-tmp let-item="item">
                           <div>
@@ -360,10 +361,10 @@
                     </div>
                   </aside>
 
-                  <aside class="col-md-6">
+                  <aside class="col-md-6" [formGroup]="otherForm">
                     <div class="custom-form-group" style="margin-top: 10px;">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="NotifyAddress">
+                        formControlName="NotifyPartyAddress">
                       <label for="text-input" class="input-label">Notify Address<span
                           class="text-danger"></span></label>
                     </div>
@@ -386,9 +387,9 @@
 
                       <label for="text-input" class="input-label">Destination Agent <span
                           class="text-danger">*</span></label>
-                      @if(bookingForm.get('AgentName')?.touched && bookingForm.get('AgentName')?.invalid){
+                      @if(houseJobForm.get('AgentName')?.touched && houseJobForm.get('AgentName')?.invalid){
                       <div class="error-message">
-                        @if(bookingForm.get('AgentName')?.hasError('required')){
+                        @if(houseJobForm.get('AgentName')?.hasError('required')){
                         <span>Destination Agent is required</span>
                         }
                       </div>
@@ -424,36 +425,73 @@
                       <label for="text-input" class="input-label">Sales Person<span class="text-danger"></span></label>
                     </div>
                   </aside>
-                   <aside class="col-md-6">
-                    <div class="custom-form-group">
-                      <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                       >
-                      <label for="text-input" class="input-label">Delivery Agent<span class="text-danger"></span></label>
-                    </div>
-                  </aside>
-                   <aside class="col-md-6">
-                    <div class="custom-form-group">
-                      <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                       >
-                      <label for="text-input" class="input-label">Origin Agent<span class="text-danger"></span></label>
-                    </div>
-                  </aside>
-                   <aside class="col-md-6">
+                  <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select">
-                      <ng-select [items]="modeoftransport" bindLabel="name" bindValue="name"
-                        class="ng-select" formControlName="" placeholder="Select Carrier" appendTo="body">
+                      <ng-select [items]="deliveryAgentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                        class="ng-select" formControlName="DestinationAgent" placeholder="Select Agent"
+                        (change)="setAddress('AgentAddress',$event) ; handleDestAgentChange($event)" appendTo="body">
+
+                        <ng-template ng-option-tmp let-item="item">
+                          <div>
+                            <strong>{{ item.CustomerName }} - {{ item.agentCountry }}</strong><br>
+                            <small>{{ item.CustomerAddress1 }}</small>
+                          </div>
+                        </ng-template>
                       </ng-select>
-                      <label for="text-input" class="input-label">Mode of Transport<span class="text-danger"></span></label>
+
+                      <label for="text-input" class="input-label">Delivery Agent <span
+                          class="text-danger">*</span></label>
+                      @if(houseJobForm.get('DestinationAgent')?.touched && houseJobForm.get('DestinationAgent')?.invalid){
+                      <div class="error-message">
+                        @if(houseJobForm.get('DestinationAgent')?.hasError('required')){
+                        <span>Destination Agent is required</span>
+                        }
+                      </div>
+                      }
                     </div>
                   </aside>
-                   <aside class="col-md-6">
-            <div class="custom-form-group custom-form-group-select">
-              <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name" class="ng-select"
-                appendTo="body" placeholder="Select Shipment Terms" formControlName="ShipmentTerms">
-              </ng-select>
-              <label for="" class="input-label">Shipment Terms <span class="text-danger"></span></label>
-            </div>
-          </aside>
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="originAgentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
+                        class="ng-select" formControlName="AgentName" placeholder="Select Origin Agent"
+                        (change)="handleOriginAgentChange($event)" appendTo="body">
+
+                        <ng-template ng-option-tmp let-item="item">
+                          <div>
+                            <strong>{{ item.CustomerName }} - {{ item.agentCountry }}</strong><br>
+                            <small>{{ item.CustomerAddress1 }}</small>
+                          </div>
+                        </ng-template>
+                      </ng-select>
+
+                      <label for="text-input" class="input-label">Origin Agent <span
+                          class="text-danger">*</span></label>
+                      @if(houseJobForm.get('DestinationAgent')?.touched && houseJobForm.get('DestinationAgent')?.invalid){
+                      <div class="error-message">
+                        @if(houseJobForm.get('DestinationAgent')?.hasError('required')){
+                        <span>Destination Agent is required</span>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </aside>
+                  <aside class="col-md-6" [formGroup]="cargoForm">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="modeoftransport" bindLabel="name" bindValue="name" class="ng-select"
+                        formControlName="ModeOfTransport" placeholder="Select Carrier" appendTo="body">
+                      </ng-select>
+                      <label for="text-input" class="input-label">Mode of Transport<span
+                          class="text-danger"></span></label>
+                    </div>
+                  </aside>
+                  <aside class="col-md-6">
+                    <div class="custom-form-group custom-form-group-select">
+                      <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name" class="ng-select"
+                        appendTo="body" placeholder="Select Shipment Terms" formControlName="FreightTerms">
+                      </ng-select>
+                      <label for="" class="input-label">Shipment Terms <span class="text-danger"></span></label>
+                    </div>
+                  </aside>
                   <!-- <aside class="col-md-6">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
@@ -494,8 +532,8 @@
                   </div> -->
                   <aside class="col-md-6" *ngIf="b['ShipmentType']?.value">
                     <div class="custom-form-group custom-form-group-select">
-                      <ng-select [items]="nominationList" bindLabel="name" bindValue="name" class="ng-select" appendTo="body"
-                        formControlName="NominatedBy" placeholder="Select NominatedBy">
+                      <ng-select [items]="nominationList" bindLabel="name" bindValue="name" class="ng-select"
+                        appendTo="body" formControlName="NominatedBy" placeholder="Select NominatedBy">
                       </ng-select>
                       <label for="text-input" class="input-label">Nominated By <span class="text-danger"></span></label>
                     </div>
@@ -521,7 +559,7 @@
             </div>
             <div class="card-body">
               <div class="col-md-12">
-                <div class="row compact-form" [formGroup]="bookingForm">
+                <div class="row compact-form" [formGroup]="houseJobForm">
 
 
                   <aside class="col-md-6">
@@ -540,9 +578,9 @@
                         (change)="handlePOLChange($event) ; onVesselChange($event)">
                       </ng-select>
                       <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
-                      @if(bookingForm.get('POL')?.touched && bookingForm.get('POL')?.invalid){
+                      @if(houseJobForm.get('POL')?.touched && houseJobForm.get('POL')?.invalid){
                       <div class="error-message">
-                        @if(bookingForm.get('POL')?.hasError('required')){
+                        @if(houseJobForm.get('POL')?.hasError('required')){
                         <span>POL is required</span>
                         }
                       </div>
@@ -557,9 +595,9 @@
                         (change)="handlePODChange($event) ; onVesselChange($event)" placeholder="Select POD">
                       </ng-select>
                       <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
-                      @if(bookingForm.get('POD')?.touched && bookingForm.get('POD')?.invalid){
+                      @if(houseJobForm.get('POD')?.touched && houseJobForm.get('POD')?.invalid){
                       <div class="error-message">
-                        @if(bookingForm.get('POD')?.hasError('required')){
+                        @if(houseJobForm.get('POD')?.hasError('required')){
                         <span>POD is required</span>
                         }
                       </div>
@@ -656,7 +694,7 @@
                       <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="ETD"
                           container="body" [minDate]="b['ETA']?.value" ngbDatepicker #d5="ngbDatepicker"
-                          (keydown.arrowDown)="d5.open()" (click)="d5.toggle()"/>
+                          (keydown.arrowDown)="d5.open()" (click)="d5.toggle()" />
                         <button class="btn  bi bi-calendar3 " (click)="d5.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
@@ -688,9 +726,9 @@
                         appendTo="body" formControlName="IncoTerms" placeholder="Select IncoTerms">
                       </ng-select>
                       <label for="text-input" class="input-label">Inco Terms <span class="text-danger">*</span></label>
-                      @if(bookingForm.get('IncoTerms')?.touched && bookingForm.get('IncoTerms')?.invalid){
+                      @if(houseJobForm.get('IncoTerms')?.touched && houseJobForm.get('IncoTerms')?.invalid){
                       <div class="error-message">
-                        @if(bookingForm.get('IncoTerms')?.hasError('required')){
+                        @if(houseJobForm.get('IncoTerms')?.hasError('required')){
                         <span>TOS is required</span>
                         }
                       </div>
@@ -698,7 +736,7 @@
                     </div>
                   </aside>
 
-<!-- 
+                  <!-- 
                   <aside class="col-md-6">
                     <div class=" custom-form-group custom-form-group-select">
                       <div class="input-group">
@@ -719,7 +757,8 @@
                       <ng-select [items]="freightTermsList" bindLabel="name" bindValue="name" class="ng-select"
                         appendTo="body" placeholder="Select Freight Terms" formControlName="FreightTerms">
                       </ng-select>
-                      <label for="text-input" class="input-label">Freight PP/CC <span class="text-danger">*</span></label>
+                      <label for="text-input" class="input-label">Freight PP/CC <span
+                          class="text-danger">*</span></label>
                     </div>
                   </aside>
 
@@ -735,8 +774,8 @@
                   <aside class="col-md-6 d-flex align-items-center mx-0">
                     <div class="form-check form-check-inline p-0">
                       <div class="form-check d-flex align-items-center">
-                        <input type="checkbox" id="" class="focus-ring form-check-input sm" formControlName="ShipmentType"
-                          (keydown.enter)="toggleHeaderCheckboxes($event,'Nominated')">
+                        <input type="checkbox" id="" class="focus-ring form-check-input sm"
+                          formControlName="ShipmentType" (keydown.enter)="toggleHeaderCheckboxes($event,'Nominated')">
                         <label for="" class="form-check-label sm">Co Loaded By <span class="text-danger"></span></label>
                       </div>
                     </div>
@@ -771,7 +810,7 @@
           <!-- Quick Stats -->
           <div class="stats-widget">
             <div class="widget-header">
-              <h5 class="widget-title">Booking Summary</h5>
+              <h5 class="widget-title">House Summary</h5>
             </div>
             @if(selectedFCLLCL === "FCL"){
             <div class="widget-body">
@@ -874,13 +913,13 @@
 
     <!-- Charges Tab -->
     <div class="workspace-content" [hidden]="selectedTab !== 'Rate'">
-      <app-cost-entry screenName="Booking" [currencyList]="currencyList" [customerList]="customerList"
+      <!-- <app-cost-entry screenName="Booking" [currencyList]="currencyList" [customerList]="customerList"
         [dataItems]="bookingRateArr" [resetTrigger]="resetTriggerRate" [formData]="currentFormValue"
-        (dataEmitter)="handleRateChange($event)"></app-cost-entry>
+        (dataEmitter)="handleRateChange($event)"></app-cost-entry> -->
     </div>
 
     <!-- Other Tabs -->
-    <div class="workspace-content" *ngIf="selectedTab === 'Cargo'">
+    <div class="workspace-content" [hidden]="selectedTab !== 'Cargo'">
       <div class="empty-state d-none">
         <div class="empty-icon">
           <i class="fas fa-boxes"></i>
@@ -905,7 +944,7 @@
           @if(selectedFCLLCL === "FCL"){
           <aside class="col-md-4">
             <div class="custom-form-group custom-form-group-select">
-              <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerName"
+              <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerTypeMasterSid"
                 class="ng-select" formControlName="ContainerType" placeholder="Select ContainerType" appendTo="body"
                 (change)="onContainerTypeChange($event)">
               </ng-select>
@@ -1092,6 +1131,7 @@
                 <th>Net Wt</th>
                 <th>CBM</th>
                 <th>Cargo Received Date</th>
+                <th>Container No.</th>
               </tr>
             </thead>
             <tbody>
@@ -1118,6 +1158,7 @@
                 <td>{{product.value.NetWeight}}</td>
                 <td>{{product.value.Volume}}</td>
                 <td>{{product.value.CargoRecDate | formatDate}}</td>
+                <td>{{product.value.ContainerNo}}</td>
               </tr>
               }
             </tbody>
@@ -1190,13 +1231,14 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm" formControlName="HBLNo"
-                [textWithNumbers]="20">
+              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                formControlName="HBLNo" [textWithNumbers]="20">
               <label for="text-input" [ngClass]="{
                         'input-label': true,
                         'bg-transparent': !o['HBLNo']?.getRawValue()
-                         }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger"></span></label>
-              </div>
+                         }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span
+                  class="text-danger"></span></label>
+            </div>
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select">
@@ -1303,8 +1345,8 @@
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="DeliveryDate" [minDate]="minDate" #d3="ngbDatepicker" (keydown.arrowDown)="d3.open()"
                   (click)="d3.toggle()" container="body">
-                <button class="btn  bi bi-calendar3" (click)="d3.toggle()" type="button"> <i-feather
-                    name="calendar" class="feather-sm"></i-feather></button>
+                <button class="btn  bi bi-calendar3" (click)="d3.toggle()" type="button"> <i-feather name="calendar"
+                    class="feather-sm"></i-feather></button>
               </div>
               <label for="shipmentDateExpected" class="input-label">Delivery Date <span class="text-danger"></span>
               </label>
@@ -1378,7 +1420,8 @@
                 <button class="btn btn-info bi bi-calendar3 text-white" (click)="d10.toggle()" type="button"> <i-feather
                     name="calendar" class="feather-sm"></i-feather></button>
               </div>
-              <label for="shipmentDateExpected" class="input-label">Carrier Booking Date <span class="text-danger"></span>
+              <label for="shipmentDateExpected" class="input-label">Carrier Booking Date <span
+                  class="text-danger"></span>
               </label>
 
             </div>
@@ -1413,9 +1456,9 @@
               <div class="input-group">
                 <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                   formControlName="ROValidity" [minDate]="minDate" #d7="ngbDatepicker" (keydown.arrowDown)="d7.open()"
-                  (click)="d7.toggle()" container="body"/>
-                <button class="btn  bi bi-calendar3" (click)="d7.toggle()" type="button"> <i-feather
-                    name="calendar" class="feather-sm"></i-feather></button>
+                  (click)="d7.toggle()" container="body" />
+                <button class="btn  bi bi-calendar3" (click)="d7.toggle()" type="button"> <i-feather name="calendar"
+                    class="feather-sm"></i-feather></button>
               </div>
               <label for="shipmentDacteExpected" class="input-label">Ro Validity <span class="text-danger"></span>
               </label>
@@ -1493,12 +1536,12 @@
       <app-milestone screenName="Booking" [resetTrigger]="resetTriggerMilestone"
         [shipmentNo]="bookingHeader?.ShipmentNo" (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
     </div>
-    
+
     <div class="workspace-content" *ngIf="selectedTab === 'AR/AP'">
       <ng-container *ngComponentOutlet="ArApcomponent"></ng-container>
     </div>
 
-    <div class="workspace-content" *ngIf="selectedTab === 'Product'">
+    <!-- <div class="workspace-content" *ngIf="selectedTab === 'Product'">
       <div class="modern-table-container">
         <div>
           <div class="table-toolbar">
@@ -1533,7 +1576,7 @@
                   <th>Net Wt</th>
                   <th>CBM</th>
                   <th>Container</th>
-                  <!-- <th>Cargo Received Date</th> -->
+                  <th>Cargo Received Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -1559,7 +1602,7 @@
                   <td>{{product.value.GrossWeight}}</td>
                   <td>{{product.value.NetWeight}}</td>
                   <td>{{product.value.Volume}}</td>
-                  <!-- <td>{{product.value.CargoRecDate | formatDate}}</td> -->
+                  <td>{{product.value.CargoRecDate | formatDate}}</td>
                    <td>cash</td>
                 </tr>
                 }
@@ -1578,26 +1621,26 @@
           }
         </div>
       </div>
-    </div>
+    </div> -->
 
     <div class="workspace-content" *ngIf="selectedTab === 'Edoc'">
-        <app-edoc [dataItems]="edocData" [resetTrigger]="edocResetTrigger" [formData]="currentEdocFormValue"
-            (dataEmitter)="handleEdocChange($event)">
-        </app-edoc>
+      <app-edoc [dataItems]="edocData" [resetTrigger]="edocResetTrigger" [formData]="currentEdocFormValue"
+        (dataEmitter)="handleEdocChange($event)">
+      </app-edoc>
     </div>
   </div>
 
-   <div class="workspace-content" [hidden]="selectedTab !== 'Mail'">
-            <app-email-entry [dataItems]="emailData" [resetTrigger]="emailResetTrigger"
-                [formData]="currentEmailFormValue" (dataChange)="handleEmailChange($event)">
-            </app-email-entry>
-        </div>
+  <div class="workspace-content" [hidden]="selectedTab !== 'Mail'">
+    <app-email-entry [dataItems]="emailData" [resetTrigger]="emailResetTrigger" [formData]="currentEmailFormValue"
+      (dataChange)="handleEmailChange($event)">
+    </app-email-entry>
+  </div>
 
-        <div class="workspace-content" [hidden]="selectedTab !== 'Follow Up'">
-            <app-follow-up screenName="MasterJob" [dataItems]="followUpData" [resetTrigger]="followUpResetTrigger"
-                [formData]="currentFollowUpFormValue" (dataEmitter)="handleFollowUpChange($event)">
-            </app-follow-up>
-        </div>
+  <div class="workspace-content" [hidden]="selectedTab !== 'Follow Up'">
+    <app-follow-up screenName="MasterJob" [dataItems]="followUpData" [resetTrigger]="followUpResetTrigger"
+      [formData]="currentFollowUpFormValue" (dataEmitter)="handleFollowUpChange($event)">
+    </app-follow-up>
+  </div>
 
 
   <!-- Floating Action Button -->
@@ -1664,8 +1707,8 @@
       </div>
       <aside class="col-md-4">
         <div class="custom-form-group custom-form-group-select">
-          <ng-select [items]="packageTypeList" placeholder="Select Package Type" bindLabel="UOMName"
-            bindValue="UOMName" formControlName="ExternaPkg">
+          <ng-select [items]="packageTypeList" placeholder="Select Package Type" bindLabel="UOMName" bindValue="UOMName"
+            formControlName="ExternaPkg">
           </ng-select>
           <label for="text-input" class="input-label">External Pkg <span class="text-danger">*</span></label>
           @if(productForm.get('ExternaPkg')?.touched && productForm.get('ExternaPkg')?.invalid){
@@ -1751,7 +1794,7 @@
           }
         </div>
       </aside>
-      <!-- <div class="col-md-4">
+      <div class="col-md-4">
         <div class=" custom-form-group custom-form-group-select">
           <div class="input-group">
             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker formControlName="CargoRecDate"
@@ -1826,12 +1869,14 @@
           <label for="text-input" class="input-label">Uom <span class="text-danger"></span></label>
         </div>
       </aside>
-      } -->
-        <aside class="col-md-4">
-        <div class="custom-form-group">
-          <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ExternlQty">
-          <label for="text-input" class="input-label">Container <span class="text-danger"></span></label>
-        
+      }
+      <aside class="col-md-4">
+        <div class="custom-form-group custom-form-group-select">
+           <ng-select [items]="masterJobContainers" placeholder="Select Container No" bindLabel="ContainerNumber" bindValue="ContainerNumber"
+            formControlName="ContainerNo">
+          </ng-select>
+          <label for="text-input" class="input-label">Container No<span class="text-danger"></span></label>
+
         </div>
       </aside>
     </div>
@@ -1877,7 +1922,7 @@
 
 
 
-<ng-template #milestoneModal let-modal>
+<!-- <ng-template #milestoneModal let-modal>
   <div class="modal-header p-2 bg-info">
     <h5 class="modal-title text-white">Add Milestone</h5>
     <button type="button" class="btn-close btn-close-white" aria-label="Close"
@@ -1931,7 +1976,7 @@
     <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss('Cancel')">Cancel</button>
     <button type="button" class=" btn btn-sm btn-info" (click)="modal.close('Save')">Save</button>
   </div>
-</ng-template>
+</ng-template> -->
 <app-booking-upload #uploadModal [acceptedFormats]="'.xlsx,.xls'" [departmentList]="departmentList"
   [maxFileSize]="2 * 1024 * 1024" (fileProcessed)="onFileProcessed($event)" (uploadError)="onUploadError($event)">
 </app-booking-upload>
@@ -1979,7 +2024,7 @@
     <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
   </div>
 </ng-template>
-<ng-template #reportModel let-modal>
+<!-- <ng-template #reportModel let-modal>
 
   <div class="modal-header d-flex justify-content-between align-items-center p-2 bg-info" style="height : 50px;">
     <h5 class="modal-title text-white mb-0">Booking Print</h5>
@@ -2002,7 +2047,6 @@
   <div class="modal-body position-relative" id="pdfContent">
    <div style="margin: auto; border: 2px solid black;">
 
-  <!-- Company Info -->
   <div
     class="d-flex flex-column flex-md-row justify-content-between align-items-center pb-3 mb-4 text-center text-md-start p-3">
 
@@ -2023,7 +2067,6 @@
 
  <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
 
-  <!-- Customer & Booking Info -->
   <div class="row px-3">
     <div class="col-12 col-lg-6">
       <div class="mb-1">
@@ -2055,7 +2098,6 @@
 
   <div style="height: 1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
 
-  <!-- Booking Details -->
   <div class="row px-3">
     <p class="fw-bold">We are pleased to confirm your booking as below :</p>
 
@@ -2076,10 +2118,10 @@
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Final Destination</div>
         <div class="text-break">: {{bookingHeader?.FPD}}</div>
       </div>
-      <!-- <div class="d-flex mb-1 flex-wrap">
+      <div class="d-flex mb-1 flex-wrap">
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
         <div class="text-break">: {{bookingHeader?.voyageDetails?.POLETD | formatDate }}</div>
-      </div> -->
+      </div>
       <div class="d-flex mb-1 flex-wrap">
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier</div>
         <div class="text-break">: {{bookingHeader?.CarrierName || 'N/A'}}</div>
@@ -2159,7 +2201,6 @@
     </div>
   </div>
 
-  <!-- Footer -->
   <div style="margin-top: 1.5rem; margin-bottom: 2rem;" class="px-3">
     <div>
       <p style="font-weight: bold;" class="m-0">Your's Sincerely</p>
@@ -2183,15 +2224,13 @@
   </div>
 </div>
   </div>
-</ng-template>
+</ng-template> -->
 
-<!-- For PDF Attachment to mail -->
-<div style="display: none; position: absolute; left: -9999px;">
+<!-- <div style="display: none; position: absolute; left: -9999px;">
   <div class="modal-body" id="pdfContent">
 
     <div style="margin: auto; border: 2px solid black;">
 
-      <!-- Company Info -->
       <div
         class="d-flex flex-column flex-md-row justify-content-between align-items-center pb-3 mb-4 text-center text-md-start p-3">
 
@@ -2212,7 +2251,6 @@
 
       <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
 
-      <!-- Customer & Booking Info -->
       <div class="row px-3">
         <div class="col-12 col-lg-6">
           <div class="mb-1">
@@ -2244,7 +2282,6 @@
 
       <div style="height: 1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
 
-      <!-- Booking Details -->
       <div class="row px-3">
         <p class="fw-bold">We are pleased to confirm your booking as below :</p>
 
@@ -2266,10 +2303,10 @@
             <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Final Destination</div>
             <div class="text-break">: {{bookingHeader?.FPD}}</div>
           </div>
-          <!-- <div class="d-flex mb-1 flex-wrap">
+          <div class="d-flex mb-1 flex-wrap">
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
         <div class="text-break">: {{bookingHeader?.voyageDetails?.POLETD | formatDate }}</div>
-      </div> -->
+      </div>
           <div class="d-flex mb-1 flex-wrap">
             <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier</div>
             <div class="text-break">: {{bookingHeader?.CarrierName || 'N/A'}}</div>
@@ -2349,7 +2386,6 @@
         </div>
       </div>
 
-      <!-- Footer -->
       <div style="margin-top: 1.5rem; margin-bottom: 2rem;" class="px-3">
         <div>
           <p style="font-weight: bold;" class="m-0">Your's Sincerely</p>
@@ -2373,4 +2409,4 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
