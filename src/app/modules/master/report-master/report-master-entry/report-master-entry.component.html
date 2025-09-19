@@ -1,138 +1,256 @@
-<div class="row compact-form">
-    <div class="col-12">
-        <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-2">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="brand-icon">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                    <h5 class="page-title mb-0 text-info"> Report Master</h5>
-
-                </div>
-
-            </div>
-            <div class="col-md-8 pb-2">
-                <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                        (click)="openAuditLogs(auditLogModal)">
-                        <i class="fas fa-history me-1"></i>Logs
-                    </button> -->
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-chevron-left me-1"></i>
-                        Back
-                    </button>
-                    <!-- <button class="btn btn-sm btn-light-secondary dofi-min-w-80 dofi-max-w-80">
-                        <i-feather name="edit-3" class="feather-sm me-1"></i-feather> Edit
-                    </button> -->
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-sync-alt me-1"></i>
-                        Reset
-                    </button>
-
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-save me-1"></i>
-                        Save
-                    </button>
-
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-12">
-        <div class="card h-100 mb-0">
-            <div class="card-body py-2 px-3">
-                <div class="row pb-2 rounded border border-top-0">
-
-                    <div class="card-header-title d-flex align-items-center gap-2 mb-1">
-                        <i class="fas fa-chart-bar fs-4"></i>
-                        <h5 class="card-titlename mb-0">Report Master Information</h5>
+<form [formGroup]="reportForm">
+    <div class="row compact-form">
+        <div class="col-12">
+            <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
+                <div class="col-md-4 d-flex pb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="brand-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h4 class="page-title mb-0 text-info"> {{isEditMode ? 'Edit' : ''}} Report Master</h4>
+                        @if(isEditMode){
+                        <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+                            <i class="fas fs-6 fa-info-circle"></i>
+                        </a>
+                        }
                     </div>
 
-
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Report Name <span
-                                    class="text-danger"></span></label>
+                </div>
+                <div class="col-md-8 pb-2">
+                    <div
+                        class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                            (click)="openAuditLogs(auditLogModal)">
+                            <i class="fas fa-history me-1"></i>Logs
+                        </button>
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="navigateback()">
+                            <i class="fas fa-chevron-left me-1"></i>
+                            Back
+                        </button>
+                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="resetForm()">
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Reset
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                            (click)="onSubmit()" [disabled]="!reportForm.valid">
+                            <i class="fas fa-save me-1"></i>
+                            Save
+                        </button>
+                        <div ngbDropdown class="d-inline-block">
+                            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+                                ngbDropdownToggle>
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                                <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                                        class="fas fa-file-alt me-1"></i> Edoc</button>
+                                <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                                        class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                                <button class="text-dark" ngbDropdownItem appPreventMultiClick
+                                    (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+                                <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                                        class="fas fa-envelope me-1"></i> Email</button>
+                            </div>
                         </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Report Display Name <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="" bindValue="id" placeholder="Select "
-                                bindLabel="name">
-                            </ng-select>
-                            <label for="text-input" class="input-label">Report Menu <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" [items]="modeofreportFormat" formControlName="" bindValue="id"
-                                placeholder="Select report format" bindLabel="name">
-                            </ng-select>
-                            <label for="text-input" class="input-label">Report Format <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group custom-form-group-select">
-                            <ng-select class="ng-select" formControlName="" bindValue="id"
-                                placeholder="Select companies " bindLabel="name">
-                            </ng-select>
-                            <label for="text-input" class="input-label">Excluded Companies <span
-                                    class="text-danger"></span></label>
-                        </div>
-                    </aside>
-                    <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="">
-                            <label for="text-input" class="input-label">Query <span class="text-danger"></span></label>
-                        </div>
-                    </aside>
+                    </div>
                 </div>
             </div>
-
         </div>
-    </div>
 
-    <div class="mx-0">
-        <div class="col-12 p-2 bg-white py-2 rounded shadow-sm  mt-2">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 text-center">
-                    <thead>
-                        <tr class="bg-info text-light">
-                            <th class="bg-transparent text-light">Parameter Name</th>
-                            <th class="bg-transparent text-light">Parameter Type</th>
-                            <th class="bg-transparent text-light">Parameter Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>ss</td>
-                            <td>ss</td>
-                            <td>ss</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="col-12">
+            <div class="card h-100 mb-0">
+                <div class="card-body py-2 px-3">
+                    <div class="row pb-2 rounded border border-top-0">
+
+                        <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                            <i class="fas fa-chart-bar fs-4"></i>
+                            <h5 class="card-titlename mb-0">Report Master Information</h5>
+                        </div>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="reportName">
+                                <label for="text-input" class="input-label">Report Name <span
+                                        class="text-danger"></span></label>
+                                @if(reportForm.get('reportName').touched && reportForm.get('reportName').invalid){
+                                <div class="error-message">
+                                    @if(reportForm.get('reportName').hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="displayName">
+                                <label for="text-input" class="input-label">Report Display Name <span
+                                        class="text-danger"></span></label>
+                                @if(reportForm.get('displayName').touched && reportForm.get('displayName').invalid){
+                                <div class="error-message">
+                                    @if(reportForm.get('displayName').hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" [items]="reportMenus" bindLabel="MenuName"
+                                    bindValue="MenuMasterSid" formControlName="reportMenuId" placeholder="Select Menu">
+                                </ng-select>
+
+
+                                <label for="text-input" class="input-label">Report Menu <span
+                                        class="text-danger"></span></label>
+                                @if(reportForm.get('reportMenuId').touched && reportForm.get('reportMenuId').invalid){
+                                <div class="error-message">
+                                    @if(reportForm.get('reportMenuId').hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" [items]="modeofreportFormat"
+                                    formControlName="reportFormatId" bindValue="name" placeholder="Select report format"
+                                    bindLabel="name">
+                                </ng-select>
+                                <label for="text-input" class="input-label">Report Format <span
+                                        class="text-danger"></span></label>
+                                @if(reportForm.get('reportFormatId').touched &&
+                                reportForm.get('reportFormatId').invalid){
+                                <div class="error-message">
+                                    @if(reportForm.get('reportFormatId').hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" [items]="modeofreportType" formControlName="reportType"
+                                    bindValue="name" placeholder="Select report type" bindLabel="name">
+                                </ng-select>
+                                <label for="text-input" class="input-label">Report Type <span
+                                        class="text-danger"></span></label>
+                                @if(reportForm.get('reportType').touched &&
+                                reportForm.get('reportType').invalid){
+                                <div class="error-message">
+                                    @if(reportForm.get('reportType').hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select">
+                                <multi-select [control]="reportForm.get('excludedCompanyIds')"
+                                    [items]="excludedCompanies" bindLabel="companyName" bindValue="CompanyMasterSid"
+                                    placeholder="Select item">
+                                </multi-select>
+                                <label for="text-input" class="input-label">Excluded Companies <span
+                                        class="text-danger"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group">
+                                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                                    formControlName="query">
+                                <label for="text-input" class="input-label">Query <span
+                                        class="text-danger"></span></label>
+
+                                @if(reportForm.get('query').touched &&
+                                reportForm.get('query').invalid){
+                                <div class="error-message">
+                                    @if(reportForm.get('query').hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+
             </div>
         </div>
 
-
-
-
+        <div class="mx-0">
+            <div class="col-12 p-2 bg-white py-2 rounded shadow-sm  mt-2">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 ">
+                        <thead>
+                            <tr class="bg-info text-light">
+                                <th class="bg-transparent text-light">Parameter Name</th>
+                                <th class="bg-transparent text-light">Parameter Type</th>
+                                <th class="bg-transparent text-light">Parameter Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>ss</td>
+                                <td>ss</td>
+                                <td>ss</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
+</form>
 
 
-</div>
+<ng-template #auditLogModal let-modal>
+    <div class="modal-header bg-info text-white p-2">
+        <h5 class="modal-title mb-0">Audit Logs</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body p-3">
+        <div class="table-responsive">
+            <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Changed At</th>
+                        <th>Changed By</th>
+                        <th>Operation</th>
+                        <th class="text-center">Old Value</th>
+                        <th class="text-center">New Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let log of auditLogs">
+                        <td>{{ log.changedAt | date:'medium' }}</td>
+                        <td>{{ log.changedBy || '-' }}</td>
+                        <td>{{ log.operation }}</td>
+                        <td class="bg-light-danger">
+                            <ul>
+                                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                        <td class="bg-light-success">
+                            <ul>
+                                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr *ngIf="auditLogs.length === 0">
+                        <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
+    </div>
+</ng-template>

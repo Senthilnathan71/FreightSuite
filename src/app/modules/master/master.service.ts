@@ -3629,7 +3629,59 @@ getAuditLogsContainer(tableName: string, recordId?: string) {
     )
   }
 
+// Report-master
 
+  getReportMasterById(ReportMasterSid: number) {
+  return this.http.get<{ data: any }>(`report-master/fetch/${ReportMasterSid}`).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+updateReportById(ReportMasterSid: number, payload: any) {
+  return this.http.patch<{ data: any }>(`report-master/update/${ReportMasterSid}`, payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+createReportMaster(payload: any) {
+  return this.http.post<{ data: any }>('report-master/create', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+
+  deleteReportMasterDetail(id: number) {
+    return this.http.delete<{ data: any }>(`report-master/delete/${id}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+  searchReportMaster(payload: any) {
+  return this.http.post<{ data: any[] }>('report-master/search-list', payload).pipe(
+    map((resp) => {
+      let response = resp;
+      return response;
+    })
+  );
+}
+// Menu
+ getAllMenu(){
+    return this.http.get<{data:any[]}>('menu').pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
 }
 
 
