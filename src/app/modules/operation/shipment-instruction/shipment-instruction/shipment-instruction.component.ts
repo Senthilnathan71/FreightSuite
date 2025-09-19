@@ -480,7 +480,8 @@ export class ShipmentInstructionComponent {
   NominatedBy: bookingFormValue.NominatedBy || 'Self',
   FreightTerms: bookingFormValue.FreightTerms || '',
   ShipmentNo: bookingFormValue.ShipmentNo || '',
-
+  createdBy: otherFormValue.createdBy,
+  updatedBy: otherFormValue.updatedBy,
   // ---------- Cargo ----------
   houseJobCargo: {
     HouseJobCargoSid: cargoFormValue.HouseJobCargoSid || null,
@@ -499,6 +500,9 @@ export class ShipmentInstructionComponent {
     FreightTerms: cargoFormValue.FreightTerms || null,
     ModeOfTransport: cargoFormValue.ModeOfTransport || null,
     StuffingAt: cargoFormValue.StuffingAt || 'Dock',
+    createdBy: otherFormValue.createdBy,
+    updatedBy: otherFormValue.updatedBy,
+    status: otherFormValue.status
   },
 
   // ---------- Other details ----------
@@ -533,7 +537,10 @@ export class ShipmentInstructionComponent {
     SwitchBLConsignee: otherFormValue?.SwitchBLConsignee,
     SwitchLocation: otherFormValue?.SwitchLocation,
     CarrierBookingRef: otherFormValue?.CarrierBookingRef,
-    CarrierBookingDate: otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null
+    CarrierBookingDate: otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null,
+    createdBy: otherFormValue.createdBy,
+    updatedBy: otherFormValue.updatedBy,
+    status: otherFormValue.status
   },
 
   // ---------- Products ----------
@@ -555,7 +562,10 @@ export class ShipmentInstructionComponent {
     Width: Number(product.Width),
     Height: Number(product.Height),
     UomMasterSid: product.UomMasterSid,
-    CargoRecDate: product.CargoRecDate
+    CargoRecDate: product.CargoRecDate,
+    createdBy: otherFormValue.createdBy,
+    updatedBy: otherFormValue.updatedBy,
+    status: otherFormValue.status
   })),
 
   bookingConnection: this.bookingResponse.data.houseConnections
