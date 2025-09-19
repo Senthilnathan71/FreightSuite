@@ -104,9 +104,9 @@ export class ShipmentInstructionComponent {
 
     // Extract data from the response
     const data = bookingData.data || bookingData;
-    const bookingOthers = data.bookingOthers?.[0] || {};
-    const bookingProduct = data.bookingProduct?.[0] || {};
-    const bookingCargo = data.bookingCargo?.[0] || {};
+    const bookingOthers = data.Others?.[0] || {};
+    const bookingProduct = data.Products?.[0] || {};
+    const bookingCargo = data.Cargo?.[0] || {};
     const voyageDetails = data.voyageDetails || {};
 
     // Format dates
@@ -191,8 +191,8 @@ export class ShipmentInstructionComponent {
 
   mapContainerData(data: any) {
     const containers = [];
-    const bookingProducts = data.bookingProduct || [];
-    const bookingCargo = data.bookingCargo?.[0] || {};
+    const bookingProducts = data.Products || [];
+    const bookingCargo = data.Cargo?.[0] || {};
 
     if (bookingProducts.length > 0) {
       // Map each product to a container row
@@ -303,8 +303,8 @@ export class ShipmentInstructionComponent {
     const otherFormValue = this.bookingResponse.data.bookingOthers[0]
     const detailFormValue = this.bookingResponse.data.bookingProduct
     const payload = {
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      CompanyMasterSid: bookingFormValue?.CompanyMasterSid,
+      BranchMasterSid: bookingFormValue?.BranchMasterSid,
       MenuMasterSid: currentMenuId,
       DepartmentMasterSid: bookingFormValue.DepartmentMasterSid,
       CustomerMasterSid: bookingFormValue.CustomerMasterSid,

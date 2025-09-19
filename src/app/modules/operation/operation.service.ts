@@ -110,7 +110,7 @@ export class OperationService {
   }
 
   getBookingByBookingNumber(BookingNumber: string) {
-    return this.http.get<{ data: any }>(`ff-booking/shiping_Ins/fetch/${BookingNumber}`).pipe(
+    return this.http.get<{ data: any }>(`house-job/shiping_Ins/fetch/${BookingNumber}`).pipe(
       map((resp) => {
         let response = resp;
         return response;
