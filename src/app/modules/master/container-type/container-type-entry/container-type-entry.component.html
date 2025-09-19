@@ -3,15 +3,15 @@
         <div class="row bg-white mb-2 align-items-center pt-2 rounded shadow-sm mx-0">
             <div class="col-md-4 d-flex pb-2">
                 <div class="d-flex align-items-center gap-2">
-                     <div class="brand-icon">
+                    <div class="brand-icon">
                         <i class="fas fa-industry"></i>
                     </div>
-                <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add'}} Container Type</h5>
-                @if(isEditMode){
-                <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
-                    <i class="fas fs-6 fa-info-circle"></i>
-                </a>
-                }
+                    <h5 class="page-title mb-0 text-info">{{isEditMode ? 'Edit' : 'Add'}} Container Type</h5>
+                    @if(isEditMode){
+                    <a class="text-info ps-2 d-flex align-items-center w-2 h-2" (click)="showInfo()">
+                        <i class="fas fs-6 fa-info-circle"></i>
+                    </a>
+                    }
                 </div>
             </div>
             <div class="col-md-8 pb-2">
@@ -34,19 +34,25 @@
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
                         *ngIf="!isEditMode || (isEditMode && hasPermission('Edit'))"
-                        [disabled]="containertypeForm.invalid || containertypeForm.pristine">
+                        [disabled]="containertypeForm.invalid || (!isEditMode && containertypeForm.pristine)">
                         <i class="fas fa-save me-1"></i>
                         {{isEditMode ? 'Edit':'Save'}}
                     </button>
+
                     <div ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+                        <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
+                            ngbDropdownToggle>
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
                         <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
+                                    class="fas fa-file-alt me-1"></i> Edoc</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
+                                    class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
+                                    class="fas fa-shield-alt me-1"></i> Authorize</button>
+                            <button class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
+                                    class="fas fa-envelope me-1"></i> Email</button>
                         </div>
                     </div>
                 </div>
@@ -57,11 +63,11 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body py-3 px-4">
-                <div class="row pb-3 rounded shadow-sm">
-                      <div class="card-header-title d-flex align-items-center gap-2 mb-1">
-                         <i class="fas fa-industry fs-4"></i>
-                        <h5 class="card-titlename mb-0">Container Type Information</h5>
-                    </div>
+                    <div class="row pb-3 rounded shadow-sm">
+                        <div class="card-header-title d-flex align-items-center gap-2 mb-1">
+                            <i class="fas fa-industry fs-4"></i>
+                            <h5 class="card-titlename mb-0">Container Type Information</h5>
+                        </div>
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="ContainerName" type="text" id="text-input" placeholder=""
@@ -92,7 +98,8 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="ContainerCode" type="text" id="text-input" placeholder=""
-                                    class="custom-input-field sm" [textWithNumbers]="4">
+                                    class="custom-input-field sm" [textWithNumbers]="4" attern="[A-Z]*"
+                                    oninput="this.value = this.value.toUpperCase().replace(/[^A-Z]/g, '').substring(0,4)">
                                 <label for="text-input" class="input-label">Container Code <span
                                         class="text-danger fw-bold">*</span></label>
                                 @if(containertypeForm.get('ContainerCode')?.touched &&
@@ -135,7 +142,8 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="ContainerIsoCode" type="text" placeholder="" id="text-input"
-                                    class="custom-input-field sm" [textWithNumbers]="4">
+                                    class="custom-input-field sm" [textWithNumbers]="4"
+                                    style="text-transform: uppercase;">
                                 <label for="text-input" class="input-label"> ISO Code <span
                                         class="text-danger fw-bold">*</span></label>
                                 @if(containertypeForm.get('ContainerIsoCode')?.touched &&
@@ -156,10 +164,11 @@
                         </aside>
 
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="text" formControlName="ContainerSize" id="text-input" placeholder=""
-                                    class="custom-input-field sm">
-                                <label for="text-input" class="input-label">Container Size <span
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!containertypeForm.get('ContainerSize')?.value">
+                                <ng-select [items]="containerSizes" formControlName="ContainerSize"
+                                    [class.is-invalid]="containertypeForm.get('ContainerSize')?.invalid && containertypeForm.get('ContainerSize')?.touched">
+                                </ng-select>
+                                <label class="input-label">Container Size <span
                                         class="text-danger fw-bold">*</span></label>
                                 @if(containertypeForm.get('ContainerSize')?.touched &&
                                 containertypeForm.get('ContainerSize')?.invalid){
@@ -171,18 +180,15 @@
                                     }
                                 </div>
                                 }
-                                <button type="button" class="t ms-2 mic-btn"
-                                    (click)="startVoiceRecognitionFor('ContainerSize')"><i class="fas fa-microphone"
-                                        [ngStyle]="{'color': activeControl === 'ContainerSize' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input formControlName="ContainerCategory" type="text" id="text-input" placeholder=""
-                                    class="custom-input-field sm">
-                                <label for="text-input" class="input-label">Container Category <span
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!containertypeForm.get('ContainerCategory')?.value">
+                                <ng-select [items]="containerCategories" formControlName="ContainerCategory"
+                                    [class.is-invalid]="containertypeForm.get('ContainerCategory')?.invalid && containertypeForm.get('ContainerCategory')?.touched">
+                                </ng-select>
+                                <label class="input-label">Container Category <span
                                         class="text-danger fw-bold">*</span></label>
                                 @if(containertypeForm.get('ContainerCategory')?.touched &&
                                 containertypeForm.get('ContainerCategory')?.invalid){
@@ -192,24 +198,24 @@
                                     }
                                 </div>
                                 }
-                                <button type="button" class=" ms-2 mic-btn"
-                                    (click)="startVoiceRecognitionFor('ContainerCategory')"><i class="fas fa-microphone"
-                                        [ngStyle]="{'color': activeControl === 'ContainerCategory' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button>
                             </div>
                         </aside>
 
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="GrossWeight" type="number" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="8"
+                                    [DecimalPrecisionAfter]="3" max="999.999">
                                 <label for="" class="input-label">Gross Weight <span
-                                        class="text-danger fw-bold">*</span></label>
-                                @if(containertypeForm.get('GrossWeight')?.touched &&
-                                containertypeForm.get('GrossWeight')?.invalid){
+                                        class="text-danger fw-bold"></span></label>
+                                @if ((containertypeForm.get('GrossWeight')?.touched ||
+                                containertypeForm.get('GrossWeight')?.dirty) &&
+                                containertypeForm.get('GrossWeight')?.invalid) {
                                 <div class="error-message">
-                                    @if(containertypeForm.get('GrossWeight')?.hasError('required')){
-                                    <span>Required</span>
+                                    @if (containertypeForm.get('GrossWeight')?.errors?.['max']) {
+                                    <span>Gross Weight cannot exceed 999.999</span>
+                                    } @else if (containertypeForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
+                                    <small>Allowed: 8 Digits before and 3 digits after decimal point</small>
                                     }
                                 </div>
                                 }
@@ -223,14 +229,18 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="TareWeight" type="number" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="6"
+                                    [DecimalPrecisionAfter]="3" max="99.999">
                                 <label for="" class="input-label">Tare Weight <span
-                                        class="text-danger fw-bold">*</span></label>
-                                @if(containertypeForm.get('TareWeight')?.touched &&
-                                containertypeForm.get('TareWeight')?.invalid){
+                                        class="text-danger fw-bold"></span></label>
+                                @if ((containertypeForm.get('TareWeight')?.touched ||
+                                containertypeForm.get('TareWeight')?.dirty) &&
+                                containertypeForm.get('TareWeight')?.invalid) {
                                 <div class="error-message">
-                                    @if(containertypeForm.get('TareWeight')?.hasError('required')){
-                                    <span>Required</span>
+                                    @if (containertypeForm.get('TareWeight')?.errors?.['max']) {
+                                    <span>TareWeight cannot exceed 99.999</span>
+                                    } @else if (containertypeForm.get('TareWeight')?.errors?.['decimalPrecision']) {
+                                    <small>Allowed: 6 Digits before and 3 digits after decimal point</small>
                                     }
                                 </div>
                                 }
@@ -244,14 +254,18 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="MaxVolume" type="number" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="3"
+                                    [DecimalPrecisionAfter]="0" max="999">
                                 <label for="" class="input-label"> Max Volume <span
-                                        class="text-danger fw-bold">*</span></label>
-                                @if(containertypeForm.get('MaxVolume')?.touched &&
-                                containertypeForm.get('MaxVolume')?.invalid){
+                                        class="text-danger fw-bold"></span></label>
+                                @if ((containertypeForm.get('MaxVolume')?.touched ||
+                                containertypeForm.get('MaxVolume')?.dirty) &&
+                                containertypeForm.get('MaxVolume')?.invalid) {
                                 <div class="error-message">
-                                    @if(containertypeForm.get('MaxVolume')?.hasError('required')){
-                                    <span>Required</span>
+                                    @if (containertypeForm.get('MaxVolume')?.errors?.['max']) {
+                                    <span>MaxVolume cannot exceed 999</span>
+                                    } @else if (containertypeForm.get('MaxVolume')?.errors?.['decimalPrecision']) {
+                                    <small>Allowed: 3 Digits before and 0 digits after decimal point</small>
                                     }
                                 </div>
                                 }
@@ -265,9 +279,9 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="Length" type="number" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm text-end">
                                 <label for="" class="input-label"> Length <span
-                                        class="text-danger fw-bold">*</span></label>
+                                        class="text-danger fw-bold"></span></label>
                                 @if(containertypeForm.get('Length')?.touched &&
                                 containertypeForm.get('Length')?.invalid){
                                 <div class="error-message">
@@ -289,13 +303,13 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="Width" type="number" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm text-end">
                                 <label for="" class="input-label"> Width <span
-                                        class="text-danger fw-bold">*</span></label>
+                                        class="text-danger fw-bold"></span></label>
                                 @if(containertypeForm.get('Width')?.touched && containertypeForm.get('Width')?.invalid){
                                 <div class="error-message">
-                                    @if(containertypeForm.get('Width')?.hasError('required')){
-                                    <span>Required</span>
+                                    @if(containertypeForm.get('Width')?.hasError('pattern')){
+                                    <span>Only whole numbers allowed</span>
                                     }
                                 </div>
                                 }
@@ -308,14 +322,14 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input formControlName="Height" type="number" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm text-end">
                                 <label for="" class="input-label"> Height <span
-                                        class="text-danger fw-bold">*</span></label>
+                                        class="text-danger fw-bold"></span></label>
                                 @if(containertypeForm.get('Height')?.touched &&
                                 containertypeForm.get('Height')?.invalid){
                                 <div class="error-message">
-                                    @if(containertypeForm.get('Height')?.hasError('required')){
-                                    <span>Required</span>
+                                    @if(containertypeForm.get('Height')?.hasError('pattern')){
+                                    <span>Only whole numbers allowed</span>
                                     }
                                 </div>
                                 }
@@ -327,11 +341,12 @@
                         </aside>
 
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input formControlName="NoOfTeu" type="number" placeholder=""
-                                    class="custom-input-field sm">
-                                <label for="" class="input-label"> No of TEU <span
-                                        class="text-danger fw-bold">*</span></label>
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!containertypeForm.get('NoOfTeu')?.value">
+                                <ng-select [items]="noOfTeuOptions" bindLabel="label" bindValue="value"
+                                    formControlName="NoOfTeu" 
+                                    [class.is-invalid]="containertypeForm.get('NoOfTeu')?.invalid && containertypeForm.get('NoOfTeu')?.touched">
+                                </ng-select>
+                                <label class="input-label ">No of TEU <span class="text-danger fw-bold">*</span></label>
                                 @if(containertypeForm.get('NoOfTeu')?.touched &&
                                 containertypeForm.get('NoOfTeu')?.invalid){
                                 <div class="error-message">
@@ -340,10 +355,6 @@
                                     }
                                 </div>
                                 }
-                                <button type="button" class=" ms-2 mic-btn"
-                                    (click)="startVoiceRecognitionFor('NoOfTeu')"><i class="fas fa-microphone"
-                                        [ngStyle]="{'color': activeControl === 'NoOfTeu' && isListening ? '#0d6efd' : '#000', 'transition': 'color 0.3s'}">
-                                    </i></button>
                             </div>
                         </aside>
 
@@ -352,7 +363,7 @@
                                 <input type="textarea" formControlName="Remarks" id="text-input" placeholder=""
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label">Remarks <span
-                                        class="text-danger fw-bold">*</span></label>
+                                        class="text-danger fw-bold"></span></label>
                                 @if(containertypeForm.get('Remarks')?.touched &&
                                 containertypeForm.get('Remarks')?.invalid){
                                 <div class="error-message">

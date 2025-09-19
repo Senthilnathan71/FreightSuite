@@ -22,6 +22,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 
 
 @Component({
@@ -40,7 +41,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
     PreventMultiClickDirective,
     FavoriteStarComponent,
     NgxSpinnerModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    TextWithNumbersDirective
   ],
   templateUrl: './biclause.component.html',
   styleUrls: ['./biclause.component.scss']

@@ -113,7 +113,7 @@
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Actions</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                             <th class="bg-transparent text-light" scope="col" (click)="sort('ClauseDescription')">
                                 Clause Description
                                 <i class="fas fa-sort ms-1"
@@ -227,7 +227,7 @@
                             <div class="custom-form-group">
                                 <input type="text" id="ClauseDescription" formControlName="ClauseDescription"
                                     class="custom-input-field sm" placeholder="" [class.is-invalid]="biclauseForm.get('ClauseDescription')?.invalid && 
-                                                biclauseForm.get('ClauseDescription')?.touched">
+                                                biclauseForm.get('ClauseDescription')?.touched" [textWithNumbers]="500">
                                 <label for="ClauseDescription" class="input-label">Clause Description <span
                                         class="text-danger">*</span></label>
                                 <div *ngIf="biclauseForm.get('ClauseDescription')?.touched && 
@@ -246,7 +246,7 @@
                             <div class="custom-form-group">
                                 <input type="text" id="Keyword" formControlName="Keyword" class="custom-input-field sm"
                                     placeholder="" [class.is-invalid]="biclauseForm.get('Keyword')?.invalid && 
-                                                biclauseForm.get('Keyword')?.touched">
+                                                biclauseForm.get('Keyword')?.touched" [textWithNumbers]="5">
                                 <label for="Keyword" class="input-label">Keyword <span
                                         class="text-danger">*</span></label>
                                 <div *ngIf="biclauseForm.get('Keyword')?.touched && 
@@ -276,7 +276,7 @@
                         </aside>
 
                         <aside class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!biclauseForm.get('status')?.value">
                                 <ng-select formControlName="status" [items]="statusOptions" bindLabel="name"
                                     bindValue="id" placeholder="Select Status" [class.is-invalid]="biclauseForm.get('status')?.invalid && 
                biclauseForm.get('status')?.touched" [disabled]="biclauseForm.get('status')?.disabled">

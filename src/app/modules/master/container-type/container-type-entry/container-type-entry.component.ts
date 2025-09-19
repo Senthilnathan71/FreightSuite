@@ -17,6 +17,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
@@ -34,7 +35,8 @@ interface IWindow extends Window {
     NgSelectModule,
     DatePipe,
     PreventMultiClickDirective,
-    NgbDropdownModule
+    NgbDropdownModule,
+    DecimalPrecisionDirective
   ],
   templateUrl: './container-type-entry.component.html',
   styleUrl: './container-type-entry.component.scss'
@@ -55,6 +57,39 @@ export class ContainerTypeEntryComponent {
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }
   ];
+  
+containerCategories = [
+  'Dry storage container',
+  'Flat rack container',
+  'Open top container',
+  'Open side storage container',
+  'Refrigerated ISO containers',
+  'ISO Tanks',
+  'Half height containers',
+  'Special purpose container',
+  'General'
+];
+
+containerSizes = [
+  "20' STD",
+  "40' STD",
+  "40' HC",
+  "45' HC",
+  "20' OT",
+  "40' OT",
+  "20' FR",
+  "40' FR",
+  "20' RFC",
+  "40' RFC",
+  "20' BULK",
+  "20' TANK",
+  "45' PW"
+];
+
+noOfTeuOptions = [
+  {value: 1, label: '1'},
+  {value: 2, label: '2'}
+];
 
   companyList: any[] =[];
   currentMenuId: number;
@@ -231,12 +266,10 @@ export class ContainerTypeEntryComponent {
         // Add pattern validation if needed for format
       ]],
       ContainerSize: ['', [
-        Validators.required,
-        Validators.maxLength(10)
-      ]],
+      Validators.required 
+    ]],
       ContainerIsoCode: ['', [
         Validators.required,
-        Validators.maxLength(10)
       ]],
       ContainerName: ['', [
         Validators.required,
@@ -244,48 +277,19 @@ export class ContainerTypeEntryComponent {
       ]],
       ContainerCategory: ['', [
         Validators.required,
-        Validators.maxLength(10)
+        Validators.maxLength(100)
       ]],
-      Length: ['', [
-        Validators.required,
-        Validators.min(0),
-        Validators.pattern(/^\d+$/)
-      ]],
-      Width: ['', [
-        Validators.required,
-        Validators.min(0),
-        Validators.pattern(/^\d+$/)
-      ]],
-      Height: ['', [
-        Validators.required,
-        Validators.min(0),
-        Validators.pattern(/^\d+$/)
-      ]],
-      MaxVolume: ['', [
-        Validators.required,
-        Validators.min(0),
-        Validators.pattern(/^\d{1,3}$/) // Matches decimal(3,0)
-      ]],
-      TareWeight: ['', [
-        Validators.required,
-        Validators.min(0),
-        Validators.pattern(/^\d{1,3}(\.\d{1,3})?$/) // Matches decimal(6,3)
-      ]],
-      GrossWeight: ['', [
-        Validators.required,
-        Validators.min(0),
-        Validators.pattern(/^\d{1,5}(\.\d{1,3})?$/) // Matches decimal(8,3)
-      ]],
+      Length: [''],
+      Width: [''],
+      Height: [''],
+      MaxVolume: [''],
+      TareWeight: [''],
+      GrossWeight: [''],
       NoOfTeu: ['', [
         Validators.required,
-        Validators.min(0),
-        Validators.max(9), // Single digit as per decimal(1,0)
-        Validators.pattern(/^\d$/)
+       
       ]],
-      Remarks: ['', [
-        Validators.required,
-        Validators.maxLength(300)
-      ]],
+      Remarks: [''],
       status: [{ value: 'A', disabled: false }, Validators.required],
     });
 }
@@ -333,7 +337,10 @@ resetForm(): void {
             console.log(resp.message);
             if(resp.status) {
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['master/container-type/list']);
+              this.router.navigate(['master/container-type/entry',resp.data.ContainerTypeMasterSid]);
+              if (this.ContainerTypeMasterSid) {
+            this.loadContainerData(this.ContainerTypeMasterSid);
+          }
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -348,8 +355,10 @@ resetForm(): void {
           (resp: any) => {
             console.log(resp);
             if (resp.status) {
+              
+              this.loadContainerData(resp.data.ContainerTypeMasterSid);
               this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['master/container-type/list']);
+              this.router.navigate(['master/container-type/entry',resp.data.ContainerTypeMasterSid]);
             } else {
               this.appSettingService.showError(resp.message);
             }
@@ -370,21 +379,28 @@ resetForm(): void {
   };
 
   loadContainerData(id: number) {
-    this.masterService.getContainerTypeById(id).subscribe(
-      (data) => {
-        this.containerData = data;
-        this.containertypeForm.patchValue({
-          ...data,
-          // CompanyMasterSid: data.CompanyMasterSid,
-          status: data.status
-        },
-      );
-      },
-      (error) => {
-        this.appSettingService.showError('Error loading container data.');
-      }
-    );
-  }
+  this.masterService.getContainerTypeById(id).subscribe(
+    (data) => {
+      this.containerData = data;
+      console.log('API Data:', data); // Debug log
+      console.log('NoOfTeu value:', data.NoOfTeu, 'Type:', typeof data.NoOfTeu); // Debug log
+      
+      // Convert NoOfTeu to number if needed
+      const patchData = {
+        ...data,
+        NoOfTeu: typeof data.NoOfTeu === 'string' ? parseInt(data.NoOfTeu, 10) : data.NoOfTeu,
+        status: data.status
+      };
+      
+      console.log('Patch Data:', patchData); // Debug log
+      
+      this.containertypeForm.patchValue(patchData);
+    },
+    (error) => {
+      this.appSettingService.showError('Error loading container data.');
+    }
+  );
+}
   openAuditLogs(modal: TemplateRef<any>) {
   if (!this.ContainerTypeMasterSid) return;
 

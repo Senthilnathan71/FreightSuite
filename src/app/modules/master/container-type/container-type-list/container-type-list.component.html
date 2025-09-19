@@ -102,7 +102,7 @@
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
                     <thead>
                         <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="10%">Actions</th>
+                            <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
                             <th class="bg-transparent text-light" scope="col" (click)="sort('ContainerName')">
                                 Container Name
                                 <i class="fas fa-sort ms-1"
@@ -162,7 +162,7 @@
                                 <div class="text-truncate">{{item.ContainerCategory}}</div>
                             </td>
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                                <div class="text-truncate">{{item.NoOfTeu}}</div>
+                                <div class="text-truncate text-end">{{item.NoOfTeu}}</div>
                             </td>
                             <!-- <td>
                                     <div class="text-truncate">{{ companyMap[item.CompanyMasterSid] || item.CompanyMasterSid}}</div>
